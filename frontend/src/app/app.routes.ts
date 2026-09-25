@@ -30,6 +30,26 @@ export const routes: Routes = [
         loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
       },
       {
+        path: 'homework',
+        title: 'Домашние задания',
+        loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
+      },
+      {
+        path: 'homework/review',
+        title: 'На проверку',
+        loadComponent: () => import('@features/homework').then((m) => m.ReviewQueuePage),
+      },
+      {
+        path: 'homework/tasks/:taskId',
+        title: 'Проверка работы',
+        loadComponent: () => import('@features/homework').then((m) => m.TaskReviewPage),
+      },
+      {
+        path: 'homework/:assignmentId',
+        title: 'Задание',
+        loadComponent: () => import('@features/homework').then((m) => m.AssignmentPage),
+      },
+      {
         path: 'billing',
         title: 'Оплаты',
         loadComponent: () => import('@features/billing').then((m) => m.BillingOverviewPage),
@@ -60,6 +80,16 @@ export const routes: Routes = [
         path: '',
         title: 'Личный кабинет',
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
+      },
+      {
+        path: 'homework',
+        title: 'Домашние задания',
+        loadComponent: () => import('@features/homework').then((m) => m.MyHomeworkPage),
+      },
+      {
+        path: 'homework/:taskId',
+        title: 'Задание',
+        loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
       },
       {
         path: 'billing',

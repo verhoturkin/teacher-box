@@ -230,6 +230,106 @@ a.p-button {
   }
 }
 
+.tb-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tb-assign {
+  display: flex;
+  margin-top: 1rem;
+}
+
+.tb-subtitle {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tb-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tb-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Files */
+.tb-files {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tb-files__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tb-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--p-primary-color);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Homework */
+.tb-submission {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.tb-submission--old {
+  opacity: 0.75;
+}
+
+.tb-preview {
+  min-height: 12rem;
+  padding: 0.75rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-content-border-radius);
+}
+
+.tb-markdown {
+  overflow-wrap: anywhere;
+
+  :first-child {
+    margin-top: 0;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  pre {
+    overflow-x: auto;
+    padding: 0.75rem;
+    background: var(--p-surface-100);
+    border-radius: 6px;
+  }
+}
+
 .tb-sr-only {
   position: absolute;
   width: 1px;

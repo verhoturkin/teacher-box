@@ -11,7 +11,8 @@ import { AuthService } from '@core/auth/auth.service';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
 
-describe('app routes', () => {
+// The first navigation loads lazy chunks cold, which can be slow under a parallel coverage run.
+describe('app routes', { timeout: 20_000 }, () => {
   let harness: RouterTestingHarness;
   let auth: AuthService;
 
@@ -109,6 +110,37 @@ describe('app routes', () => {
     await harness.navigateByUrl('/cabinet/billing');
     backend.expectOne('/api/me/billing');
     expect(title()).toBe('Оплаты — Teacher Box');
+  });
+
+  it('opens the homework pages', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/homework');
+    backend.expectOne('/api/teacher/homework/assignments');
+    expect(title()).toBe('Домашние задания — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/homework/review');
+    backend.expectOne('/api/teacher/homework/review-queue');
+    expect(title()).toBe('На проверку — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/homework/tasks/t-1');
+    backend.expectOne('/api/teacher/homework/tasks/t-1');
+    expect(title()).toBe('Проверка работы — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/homework/a-1');
+    backend.expectOne('/api/teacher/homework/assignments/a-1');
+    backend.expectOne('/api/teacher/students');
+    expect(title()).toBe('Задание — Teacher Box');
+
+    auth.acceptSession(authResponse('STUDENT'));
+    await harness.navigateByUrl('/cabinet/homework');
+    backend.expectOne('/api/me/homework');
+    expect(title()).toBe('Домашние задания — Teacher Box');
+
+    await harness.navigateByUrl('/cabinet/homework/t-1');
+    backend.expectOne('/api/me/homework/tasks/t-1');
+    expect(title()).toBe('Задание — Teacher Box');
   });
 
   it('opens the teacher account page', async () => {

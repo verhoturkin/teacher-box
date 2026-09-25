@@ -1,0 +1,122 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { providePrimeNG } from 'primeng/config';
+import { assignmentDetails } from '@testing/homework-fixtures';
+import { bodyText, buttonByText } from '@testing/dom';
+import { AssignmentDetails } from '../data-access/homework.models';
+import { AssignmentDialog } from './assignment-dialog';
+
+describe('AssignmentDialog', () => {
+  let fixture: ComponentFixture<AssignmentDialog>;
+  let backend: HttpTestingController;
+  let saved: AssignmentDetails[];
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [AssignmentDialog],
+      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(AssignmentDialog);
+    saved = [];
+    fixture.componentInstance.saved.subscribe((value) => saved.push(value));
+    fixture.componentRef.setInput('students', [
+      { id: 's-1', displayName: 'Анна' },
+      { id: 's-2', displayName: 'Борис' },
+    ]);
+  });
+
+  afterEach(() => {
+    backend.verify();
+    fixture.destroy();
+  });
+
+  async function open(assignment: AssignmentDetails | null): Promise<AssignmentDialog> {
+    fixture.componentRef.setInput('assignment', assignment);
+    fixture.componentRef.setInput('visible', true);
+    await fixture.whenStable();
+    return fixture.componentInstance;
+  }
+
+  it('creates an assignment for the chosen students', async () => {
+    const dialog = await open(null);
+    expect(bodyText()).toContain('Новое задание');
+    expect(document.body.querySelector('#assignment-students')).not.toBeNull();
+
+    dialog.form.patchValue({
+      title: '  Дроби ',
+      description: 'Решить **№1**',
+      dueAt: new Date(Date.UTC(2026, 8, 10, 12, 0)),
+      studentIds: ['s-1', 's-2'],
+    });
+    await fixture.whenStable();
+    buttonByText(document.body, 'Выдать').click();
+
+    const request = backend.expectOne('/api/teacher/homework/assignments');
+    expect(request.request.body).toEqual({
+      title: 'Дроби',
+      description: 'Решить **№1**',
+      dueAt: '2026-09-10T12:00:00.000Z',
+      studentIds: ['s-1', 's-2'],
+    });
+    request.flush(assignmentDetails());
+    await fixture.whenStable();
+
+    expect(saved).toHaveLength(1);
+    expect(dialog.visible()).toBe(false);
+  });
+
+  it('previews the description', async () => {
+    const dialog = await open(null);
+    dialog.form.controls.description.setValue('**важно**');
+    dialog.mode.setValue('preview');
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('.tb-preview strong')?.textContent).toBe('важно');
+    expect(document.body.querySelector('#assignment-description')).toBeNull();
+  });
+
+  it('edits an existing assignment with its version', async () => {
+    const dialog = await open(assignmentDetails({ version: 3, dueAt: null, description: null }));
+    expect(bodyText()).toContain('Редактирование задания');
+    expect(dialog.form.controls.title.value).toBe('Дроби');
+    expect(document.body.querySelector('#assignment-students')).toBeNull();
+
+    dialog.save();
+
+    const request = backend.expectOne('/api/teacher/homework/assignments/a-1');
+    expect(request.request.body).toEqual({ title: 'Дроби', description: null, dueAt: null, version: 3 });
+    request.flush(assignmentDetails());
+  });
+
+  it('prefills the deadline when editing', async () => {
+    const dialog = await open(assignmentDetails());
+
+    expect(dialog.form.controls.dueAt.value?.toISOString()).toBe('2026-09-10T15:00:00.000Z');
+  });
+
+  it('shows errors and keeps the dialog open', async () => {
+    const dialog = await open(null);
+    dialog.form.patchValue({ title: 'x' });
+    dialog.save();
+
+    backend
+      .expectOne('/api/teacher/homework/assignments')
+      .flush({ status: 422, code: 'student.deactivated' }, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Нельзя выдать задание ученику с отключённым доступом');
+    expect(dialog.visible()).toBe(true);
+  });
+
+  it('does not save without a title and closes on cancel', async () => {
+    const dialog = await open(null);
+
+    dialog.save();
+    backend.expectNone('/api/teacher/homework/assignments');
+
+    buttonByText(document.body, 'Отмена').click();
+    expect(dialog.visible()).toBe(false);
+  });
+});

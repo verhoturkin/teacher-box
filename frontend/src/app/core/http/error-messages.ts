@@ -29,6 +29,27 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'account.deactivated': 'Сначала верните ученику доступ',
   'account.already-deactivated': 'Доступ ученика уже отключён',
   'account.not-deactivated': 'Доступ ученика не был отключён',
+  // billing
+  'lesson.not-found': 'Занятие не найдено',
+  'lesson.already-cancelled': 'Занятие уже отменено',
+  'lesson.duration-invalid': 'Длительность занятия — от 1 до 600 минут',
+  'lesson.price-invalid': 'Стоимость не может быть отрицательной',
+  'payment.not-found': 'Оплата не найдена',
+  'payment.already-voided': 'Оплата уже аннулирована',
+  'payment.amount-invalid': 'Сумма оплаты должна быть больше нуля',
+  'account.price-invalid': 'Цена занятия не может быть отрицательной',
+  // homework
+  'assignment.not-found': 'Задание не найдено',
+  'assignment.title-invalid': 'Название задания — от 1 до 200 символов',
+  'student.deactivated': 'Нельзя выдать задание ученику с отключённым доступом',
+  'task.not-found': 'Задание не найдено',
+  'task.already-accepted': 'Работа уже принята учителем',
+  'task.not-submitted': 'Работа ещё не сдана',
+  'submission.empty': 'Напишите ответ или прикрепите файл',
+  'file.type-not-allowed': 'Такой тип файла загружать нельзя',
+  'file.too-large': 'Файл слишком большой',
+  'file.too-many': 'Слишком много файлов за один раз',
+  'file.name-invalid': 'Некорректное имя файла',
 };
 
 const STATUS_MESSAGES: Readonly<Record<number, string>> = {

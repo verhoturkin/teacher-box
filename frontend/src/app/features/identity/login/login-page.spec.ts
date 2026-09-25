@@ -37,8 +37,15 @@ describe('LoginPage', () => {
     await fixture.whenStable();
   }
 
-  it('disables submit until the form is filled', () => {
-    expect(buttonByText(hostElement(fixture), 'Войти').disabled).toBe(true);
+  it('asks for credentials instead of disabling the button', async () => {
+    const button = buttonByText(hostElement(fixture), 'Войти');
+    expect(button.disabled).toBe(false);
+
+    button.click();
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).textContent).toContain('Введите логин и пароль');
+    backend.expectNone('/api/auth/login');
   });
 
   it('signs in and opens the start page of the role', async () => {

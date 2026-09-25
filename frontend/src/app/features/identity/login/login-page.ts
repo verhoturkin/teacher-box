@@ -39,14 +39,8 @@ import { describeError } from '@core/http/error-messages';
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
-          <p-button
-            type="submit"
-            label="Войти"
-            icon="pi pi-sign-in"
-            [loading]="pending()"
-            [disabled]="form.invalid"
-            [fluid]="true"
-          />
+          <!-- Never disabled: Enter must always submit (also right after password manager autofill). -->
+          <p-button type="submit" label="Войти" icon="pi pi-sign-in" [loading]="pending()" [fluid]="true" />
         </form>
       </p-card>
     </main>
@@ -70,7 +64,11 @@ export class LoginPage {
   });
 
   protected submit(): void {
-    if (this.form.invalid || this.pending()) {
+    if (this.pending()) {
+      return;
+    }
+    if (this.form.invalid) {
+      this.error.set('Введите логин и пароль');
       return;
     }
     const { login, password } = this.form.getRawValue();
