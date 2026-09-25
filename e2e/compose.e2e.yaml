@@ -1,0 +1,10 @@
+# Overrides of compose.single.yaml for the E2E run (scripts/e2e.sh): a known teacher password,
+# a separate port and no .env of the developer.
+services:
+  app:
+    env_file: !reset []
+    environment:
+      TEACHERBOX_IDENTITY_TEACHER_PASSWORD: ${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}
+      TEACHERBOX_BACKUP_CRON: "-"
+    ports: !override
+      - "${E2E_PORT:-8091}:8080"

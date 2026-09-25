@@ -67,6 +67,9 @@ teacher-box/
 ├── compose.single.yaml          # вариант 2: один контейнер
 ├── .env.example                 # все настраиваемые переменные окружения
 ├── .githooks/pre-commit         # тесты перед коммитом
+├── .github/workflows/ci.yml     # CI: backend, frontend, образы обоих вариантов, e2e
+├── e2e/                         # E2E-тесты (Playwright) против запущенного инстанса
+├── scripts/e2e.sh               # запуск E2E на свежем single-контейнере
 └── scripts/verify.sh            # полная проверка (то же, что в pre-commit и CI)
 ```
 
@@ -151,6 +154,9 @@ cd frontend && npm run build           # production-сборка
 # Всё сразу (то же делает pre-commit и CI)
 ./scripts/verify.sh                    # все проверки
 ./scripts/verify.sh backend|frontend   # только одна часть
+
+# E2E (Playwright) на свежем single-контейнере (порт 8091, данные удаляются после прогона)
+./scripts/e2e.sh                       # в CI; локально можно E2E_BROWSER_CHANNEL=chrome
 
 # Docker
 docker compose -f compose.split.yaml up -d --build    # вариант 1: два контейнера

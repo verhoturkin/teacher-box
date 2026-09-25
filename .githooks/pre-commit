@@ -10,12 +10,14 @@ ROOT="$(git rev-parse --show-toplevel)"
 backend=false
 frontend=false
 docker=false
+e2e=false
 
 while IFS= read -r file; do
     case "$file" in
         backend/*) backend=true ;;
         frontend/*) frontend=true ;;
         docker/* | compose.*.yaml | .dockerignore | .env.example) docker=true ;;
+        e2e/*) e2e=true ;;
     esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 
@@ -27,4 +29,7 @@ if [ "$frontend" = true ]; then
 fi
 if [ "$docker" = true ]; then
     "$ROOT/scripts/verify.sh" docker
+fi
+if [ "$e2e" = true ]; then
+    "$ROOT/scripts/verify.sh" e2e
 fi

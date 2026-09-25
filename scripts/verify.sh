@@ -6,6 +6,7 @@
 #   scripts/verify.sh backend    # mvnw verify: tests, coverage gates, module verification
 #   scripts/verify.sh frontend   # lint, tests with coverage gates, production build
 #   scripts/verify.sh docker     # compose files are valid (and images build if the daemon is up)
+#   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
 #
 set -euo pipefail
 
@@ -51,18 +52,29 @@ verify_docker() {
     fi
 }
 
+verify_e2e() {
+    step "e2e: typecheck"
+    cd "$ROOT/e2e"
+    if [ ! -d node_modules ]; then
+        npx -y npm@11 ci --no-audit --no-fund
+    fi
+    npm run typecheck
+}
+
 target="${1:-all}"
 case "$target" in
     all)
         verify_backend
         verify_frontend
+        verify_e2e
         verify_docker
         ;;
     backend) verify_backend ;;
     frontend) verify_frontend ;;
     docker) verify_docker ;;
+    e2e) verify_e2e ;;
     *)
-        echo "usage: $0 [all|backend|frontend|docker]" >&2
+        echo "usage: $0 [all|backend|frontend|docker|e2e]" >&2
         exit 2
         ;;
 esac

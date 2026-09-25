@@ -1,0 +1,18 @@
+{
+  "name": "teacher-box-e2e",
+  "private": true,
+  "description": "End-to-end tests of Teacher Box against a running instance (compose.single.yaml)",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=11"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.4",
+    "typescript": "5.9.3"
+  }
+}
