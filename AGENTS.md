@@ -27,7 +27,7 @@
 | Backend | Java | 25 (LTS) |
 | | Spring Boot | 4.1.x |
 | | Spring Modulith | 2.1.x |
-| | Spring Data JDBC + Flyway | managed by Boot |
+| | Spring JDBC (`JdbcClient`, явный SQL) + Flyway | managed by Boot |
 | | Spring Security 7 (OAuth2 Resource Server, JWT HS256) | managed by Boot |
 | | БД | H2 2.x, file mode, schema-per-module ([ADR-0002](docs/adr/0002-embedded-database.md)) |
 | | Сборка | Maven (через `mvnw`) |
@@ -84,7 +84,7 @@ teacher-box/
 │                          #   фасады (interfaces), DTO (records), доменные события (records)
 ├── domain/                # агрегаты, value objects, правила. Чистая Java, без Spring
 ├── application/           # use-case сервисы (@Service, @Transactional), реализуют api-фасады
-├── persistence/           # Spring Data JDBC репозитории, row-mapping
+├── persistence/           # репозитории на JdbcClient: явный SQL только к своей схеме
 ├── web/                   # REST-контроллеры и их request/response DTO
 └── <adapter>/             # внешние интеграции модуля (telegram/, vk/, llm/ ...)
 ```
@@ -175,7 +175,15 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Только constructor injection; поля `private final`. Никакого `@Autowired` на полях.
 - Null-safety: `@NullMarked` (JSpecify) в `package-info.java` каждого пакета; nullable — явно `@Nullable`.
 - Идентификаторы — `UUID` (v7, генерируются через `shared.Ids`).
-- Агрегаты Spring Data JDBC имеют `@Version` (оптимистическая блокировка).
+- Доступ к БД — `JdbcClient` с явным SQL; имена таблиц всегда с префиксом схемы модуля
+  (`billing.payments`), без кавычек. Изменяемые таблицы имеют колонку `version`
+  (оптимистическая блокировка: `UPDATE ... WHERE id = ? AND version = ?`).
+- Миграции модуля: бин `ModuleMigrations.initializer(dataSource, "<module>")` в конфигурации модуля,
+  скрипты — `src/main/resources/db/migration/<module>/V<n>__<описание>.sql`.
+- Инфраструктура `platform` регистрируется как auto-configuration
+  (`META-INF/spring/...AutoConfiguration.imports`), поэтому она доступна и в изолированных
+  `@ApplicationModuleTest`. Бизнес-модули получают её только через типы Spring/`shared`
+  (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 - Ошибки: доменные исключения из `shared.error` → `ProblemDetail` (RFC 9457) в `platform`.
 - Валидация входных DTO — Jakarta Validation на уровне `web`.
 - `domain` не импортирует Spring (проверяется ArchUnit).
@@ -211,7 +219,9 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
   и его разрешённые зависимости (проверка изоляции в рантайме), события — через `Scenario`.
 - **Web** — MockMvc/`MockMvcTester`: коды ответов, валидация, авторизация по ролям,
   доступ ученика только к своим данным.
-- **Persistence** — `@DataJdbcTest` на H2 с реальными Flyway-миграциями модуля.
+- **Persistence** — репозитории на H2 in-memory с реальными Flyway-миграциями модуля
+  (`@JdbcTest` + `@Import` конфигурации модуля или `@ApplicationModuleTest`).
+- **Изоляция данных** — `SchemaIsolationTests` запрещает SQL-ссылки на чужие схемы.
 - **Architecture** — `ModularityTests` (Modulith verify + генерация документации) и ArchUnit.
 - **Adapters** — внешние HTTP API (Telegram, VK, MAX, LLM) — через `MockRestServiceServer`,
   без реальных сетевых вызовов.

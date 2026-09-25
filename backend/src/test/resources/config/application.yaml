@@ -1,0 +1,8 @@
+# Test overrides. Loaded on top of classpath:application.yaml because config/ has higher precedence.
+spring:
+  datasource:
+    # Unique in-memory database per Spring context.
+    url: jdbc:h2:mem:${random.uuid};DB_CLOSE_DELAY=-1
+
+teacherbox:
+  data-dir: ${java.io.tmpdir}/teacherbox-test/${random.uuid}

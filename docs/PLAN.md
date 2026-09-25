@@ -17,22 +17,25 @@
 
 ## Этап 1. Каркас backend
 
-- [ ] 1.1 **B** Maven-проект `backend/`: Spring Boot 4.1, Java 25, Maven Wrapper,
-      зависимости (webmvc, security, oauth2-resource-server, data-jdbc, flyway, h2,
+- [x] 1.1 **B** Maven-проект `backend/`: Spring Boot 4.1, Java 25, Maven Wrapper,
+      зависимости (webmvc, security, oauth2-resource-server, jdbc, flyway, h2,
       validation, actuator, modulith), JaCoCo с порогами 90/80.
-- [ ] 1.2 **B** Пакеты-модули `shared`, `platform`, `identity`, `billing`, `homework`,
+- [x] 1.2 **B** Пакеты-модули `shared`, `platform`, `identity`, `billing`, `homework`,
       `notifications`, `ai` с `package-info.java` (`@ApplicationModule`, `@NullMarked`).
-- [ ] 1.3 **B** `shared`: `Ids` (UUID v7), `Money`, `CurrentUser`/`Role`, доменные исключения
-      (`NotFoundException`, `ConflictException`, `ForbiddenException`, `ValidationException`),
-      `FileStorage` (интерфейс), `ModuleSchema` (описание схемы модуля).
-- [ ] 1.4 **B** `platform/persistence`: H2 file mode (`/data/db`), per-module Flyway
-      (своя схема + своя history-таблица), зависимость JDBC-бинов от миграций.
-- [ ] 1.5 **B** `platform/web`: `ProblemDetail`-обработчик ошибок, `platform/storage`:
+- [x] 1.3 **B** `shared`: `Ids` (UUID v7), `Money`, `CurrentUser`/`Role`, доменные исключения
+      (`NotFoundException`, `ConflictException`, `ForbiddenException`, `BusinessRuleException`),
+      `FileStorage` (интерфейс), `JwtClaims`.
+- [x] 1.4 **B** H2 file mode (`<data-dir>/db`), `shared/persistence/ModuleMigrations`:
+      per-module Flyway (своя схема + своя history-таблица), JDBC-бины ждут миграций.
+- [x] 1.5 **B** `platform/web`: `ProblemDetail`-обработчик ошибок, `platform/storage`:
       `LocalFileStorage` с namespace'ами модулей и защитой от path traversal.
-- [ ] 1.6 **B** Архитектурные тесты: `ModularityTests` (verify + Documenter),
+- [x] 1.6 **B** Архитектурные тесты: `ModularityTests` (verify + Documenter),
       ArchUnit (domain без Spring, нет field injection, контроллеры только в `web`,
       модули не зависят от `platform`), smoke-тест контекста.
-- [ ] 1.7 **B** Профили `dev`/`prod`, `application.yaml`, actuator `health`/`info`.
+- [x] 1.7 **B** `application.yaml` (переопределение через env `TEACHERBOX_*`), actuator `health`/`info`.
+- [x] 1.8 **B** `platform/security`: stateless filter chain по URL-конвенциям, HS256-ключ
+      (env или файл в `/data/keys`), `JwtEncoder`/`JwtDecoder`, `PasswordEncoder`,
+      резолвер `CurrentUser`, 401/403 в формате ProblemDetail.
 
 ## Этап 2. Каркас frontend
 
@@ -68,8 +71,7 @@
       `refresh_tokens`. Инвариант «учитель ровно один».
 - [ ] 4.2 **B** Bootstrap учителя из `TEACHERBOX_TEACHER_LOGIN/PASSWORD` при первом старте
       (если пароль не задан — сгенерировать и один раз вывести в лог).
-- [ ] 4.3 **B** JWT: HS256, ключ из `TEACHERBOX_JWT_SECRET` или сгенерированный и сохранённый
-      в `/data/keys`; access-токен 15 мин (в памяти SPA); refresh-токен — случайный,
+- [ ] 4.3 **B** Выпуск JWT (инфраструктура ключа — в 1.8); access-токен 15 мин (в памяти SPA); refresh-токен — случайный,
       хранится хешем, HttpOnly+SameSite=Strict cookie, ротация, детект повторного использования.
 - [ ] 4.4 **B** `POST /api/auth/login|refresh|logout`, защита от перебора (блокировка
       после N неудач), `POST /api/me/password`.

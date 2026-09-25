@@ -1,0 +1,4 @@
+ru.teacherbox.platform.core.PlatformCoreAutoConfiguration
+ru.teacherbox.platform.security.PlatformSecurityAutoConfiguration
+ru.teacherbox.platform.storage.PlatformStorageAutoConfiguration
+ru.teacherbox.platform.web.PlatformWebAutoConfiguration
