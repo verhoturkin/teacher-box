@@ -152,6 +152,16 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(title()).toBe('Мой аккаунт — Teacher Box');
   });
 
+  it('opens the notifications page in both areas', async () => {
+    auth.acceptSession(authResponse('STUDENT'));
+    await harness.navigateByUrl('/cabinet/notifications');
+    expect(title()).toBe('Уведомления — Teacher Box');
+
+    auth.acceptSession(authResponse('TEACHER'));
+    await harness.navigateByUrl('/teacher/notifications');
+    expect(title()).toBe('Уведомления — Teacher Box');
+  });
+
   it('opens invitation links without signing in', async () => {
     await harness.navigateByUrl('/invite/abc');
 

@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 /** Test clock that can be moved forward. */
 public final class MutableClock extends Clock {
@@ -15,8 +16,9 @@ public final class MutableClock extends Clock {
         this.now = start;
     }
 
+    /** Current time truncated to microseconds, the precision of database timestamps. */
     public static MutableClock startingNow() {
-        return new MutableClock(Instant.now());
+        return new MutableClock(Instant.now().truncatedTo(ChronoUnit.MICROS));
     }
 
     public void advance(Duration duration) {

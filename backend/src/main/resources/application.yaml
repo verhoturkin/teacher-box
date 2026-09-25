@@ -56,3 +56,6 @@ info:
 teacherbox:
   # Root for all persistent data. Overridden by TEACHERBOX_DATA_DIR (/data in Docker).
   data-dir: ./data
+  notifications:
+    # Address of the portal for links in messenger messages, e.g. https://school.example.com
+    public-url: ${TEACHERBOX_PUBLIC_URL:}

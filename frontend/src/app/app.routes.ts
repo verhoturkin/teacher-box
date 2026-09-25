@@ -65,6 +65,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
       },
       {
+        path: 'notifications',
+        title: 'Уведомления',
+        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
+      },
+      {
         path: 'account',
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
@@ -95,6 +100,11 @@ export const routes: Routes = [
         path: 'billing',
         title: 'Оплаты',
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
+      },
+      {
+        path: 'notifications',
+        title: 'Уведомления',
+        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
       },
       {
         path: 'account',

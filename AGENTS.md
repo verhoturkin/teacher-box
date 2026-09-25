@@ -103,7 +103,7 @@ teacher-box/
    | `identity` | `shared` |
    | `billing` | `shared`, `identity::api` |
    | `homework` | `shared`, `identity::api` |
-   | `notifications` | `shared`, `identity::api`, `billing::api`, `homework::api` (только события) |
+   | `notifications` | `shared`, `identity::api` (события и `UserDirectory`), `billing::api`, `homework::api` (только события) |
    | `ai` | `shared` |
 
    Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.

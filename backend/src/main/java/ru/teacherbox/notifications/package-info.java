@@ -1,4 +1,9 @@
-@ApplicationModule(displayName = "Notifications", allowedDependencies = "shared")
+/**
+ * Notifications: personal area inbox and delivery to messengers (Telegram, VK, MAX).
+ * Listens to events of other modules and never calls their services.
+ */
+@ApplicationModule(displayName = "Notifications",
+        allowedDependencies = {"shared", "identity :: api", "billing :: api", "homework :: api"})
 @NullMarked
 package ru.teacherbox.notifications;
 

@@ -5,11 +5,12 @@ import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
+import { NotificationBell } from '@core/notifications/notification-bell';
 
 /** Application frame: navigation bar with the user menu and routed content. */
 @Component({
   selector: 'tb-shell',
-  imports: [Button, Menu, Menubar, RouterOutlet, RouterLink],
+  imports: [Button, Menu, Menubar, NotificationBell, RouterOutlet, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-menubar [model]="items()" styleClass="tb-shell__bar">
@@ -22,6 +23,7 @@ import { AuthService } from '@core/auth/auth.service';
       <ng-template #end>
         <div class="tb-shell__user">
           <span class="tb-shell__area">{{ areaTitle() }}</span>
+          <tb-notification-bell [link]="homeLink() + '/notifications'" />
           <p-button
             [label]="userName()"
             icon="pi pi-user"
