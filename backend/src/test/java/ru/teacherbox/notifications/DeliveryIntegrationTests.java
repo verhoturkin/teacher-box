@@ -7,10 +7,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.notifications.application.DeliveryDispatcher;
 import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.NotificationService;
+import ru.teacherbox.notifications.application.NotificationsHousekeeping;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.Delivery;
@@ -21,6 +23,7 @@ import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
+import ru.teacherbox.testing.TestUsers;
 
 /** The outbox: messages to messengers with retries. */
 @NotificationsIntegrationTest
@@ -40,6 +43,9 @@ class DeliveryIntegrationTests {
 
     @Autowired
     FakeMessengerChannel telegram;
+
+    @Autowired
+    NotificationsHousekeeping housekeeping;
 
     @Autowired
     FakeUserDirectory directory;
@@ -175,6 +181,47 @@ class DeliveryIntegrationTests {
             assertThat(sent.externalId()).isEqualTo("7007");
             assertThat(sent.text()).hasSize(4000).endsWith("…");
         });
+    }
+
+    @Test
+    void housekeepingRemovesOldFinishedDeliveriesOnly() {
+        UUID student = connectedStudent("7008");
+        notifications.notify(student, NotificationKind.MESSAGE, "Отправлено давно", null, null);
+        dispatcher.dispatch();
+        clock.advance(Duration.ofMinutes(1));
+        notifications.notify(student, NotificationKind.MESSAGE, "Ещё ждёт", null, null);
+
+        assertThat(housekeeping.purge(clock.instant())).as("too recent").isZero();
+        housekeeping.purge(clock.instant().plus(Duration.ofDays(91)));
+
+        assertThat(deliveries.findByRecipient(student)).singleElement()
+                .satisfies(delivery -> assertThat(delivery.status()).isEqualTo(DeliveryStatus.PENDING));
+    }
+
+    @Test
+    void teacherSeesFailedDeliveries(@Autowired MockMvcTester mvc) {
+        UUID student = connectedStudent("7009");
+        notifications.notify(student, NotificationKind.MESSAGE, "Не дошло", null, null);
+        telegram.failWith(new DeliveryException("Telegram 403: Forbidden: bot was blocked by the user", true));
+        dispatcher.dispatch();
+        UUID teacher = directory.teacherId();
+        links.save(new ChannelLink(Ids.newId(), teacher, ChannelType.TELEGRAM, "7010", null, true, clock.instant()));
+        clock.advance(Duration.ofSeconds(1));
+        notifications.notify(teacher, NotificationKind.MESSAGE, "Учителю", null, null);
+        dispatcher.dispatch();
+
+        assertThat(mvc.get().uri("/api/teacher/notifications/status").with(TestUsers.teacher(teacher)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.channels[0]").isEqualTo("TELEGRAM");
+                    assertThat(json).extractingPath("$.failedDeliveries[0].recipientName").isNull();
+                    assertThat(json).extractingPath("$.failedDeliveries[1].recipientName").isEqualTo("Ученик 7009");
+                    assertThat(json).extractingPath("$.failedDeliveries[1].channel").isEqualTo("TELEGRAM");
+                    assertThat(json).extractingPath("$.failedDeliveries[1].error").asString().contains("blocked");
+                    assertThat(json).extractingPath("$.failedDeliveries[1].text").isEqualTo("Не дошло");
+                });
+        assertThat(mvc.get().uri("/api/teacher/notifications/status").with(TestUsers.student(student)))
+                .hasStatus(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
     private UUID connectedStudent(String chatId) {

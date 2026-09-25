@@ -62,6 +62,25 @@ public final class NotificationViews {
     public record LinkCodeView(ChannelType channel, String code, Instant expiresAt, @Nullable String url) {
     }
 
+    /**
+     * A message that could not be delivered to a messenger.
+     *
+     * @param recipientName student name, or {@code null} for the teacher
+     */
+    public record FailedDelivery(
+            UUID recipientId,
+            @Nullable String recipientName,
+            ChannelType channel,
+            int attempts,
+            @Nullable String error,
+            String text,
+            Instant createdAt) {
+    }
+
+    /** Messengers configured on the server and recent delivery problems (for the teacher). */
+    public record NotificationsStatus(List<ChannelType> channels, List<FailedDelivery> failedDeliveries) {
+    }
+
     public record BroadcastResult(int recipients) {
     }
 }

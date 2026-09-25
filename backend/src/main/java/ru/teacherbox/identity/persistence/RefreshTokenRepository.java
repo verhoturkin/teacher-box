@@ -75,6 +75,13 @@ public class RefreshTokenRepository {
                 .update();
     }
 
+    /** Removes tokens that expired before {@code cutoff}; they can no longer be used or reused. */
+    public int deleteExpiredBefore(Instant cutoff) {
+        return jdbc.sql("delete from identity.refresh_tokens where expires_at < :cutoff")
+                .param("cutoff", cutoff)
+                .update();
+    }
+
     private static RefreshToken map(ResultSet rs, int rowNum) throws SQLException {
         return RefreshToken.restore(
                 rs.getObject("id", UUID.class),

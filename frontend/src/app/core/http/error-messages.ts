@@ -57,6 +57,9 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
   'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
   'notifications.channel-not-linked': 'Мессенджер не подключён',
+  // platform
+  'backup.not-found': 'Резервная копия не найдена',
+  'auth.rate-limited': 'Слишком много попыток входа. Подождите минуту и попробуйте снова',
   // ai
   'ai.disabled': 'ИИ-помощник не настроен на сервере',
   'ai.limit-exceeded': 'Исчерпан месячный лимит токенов ИИ',

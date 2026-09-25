@@ -84,6 +84,18 @@ public class DeliveryRepository {
                 .list();
     }
 
+    /** The latest deliveries that were given up, newest first. */
+    public List<Delivery> findFailed(int limit) {
+        return jdbc.sql(SELECT + """
+                 where status = 'FAILED'
+                 order by created_at desc, id desc
+                 fetch first :limit rows only
+                """)
+                .param("limit", limit)
+                .query(DeliveryRepository::map)
+                .list();
+    }
+
     /** Gives up pending deliveries to a channel the recipient no longer uses. */
     public int cancelPending(UUID recipientId, ChannelType channel, String reason) {
         return jdbc.sql("""
@@ -93,6 +105,15 @@ public class DeliveryRepository {
                 .param("recipientId", recipientId)
                 .param("channel", channel.name())
                 .param("reason", reason)
+                .update();
+    }
+
+    /** Removes sent and failed deliveries created before {@code cutoff}; pending ones stay. */
+    public int deleteFinishedBefore(Instant cutoff) {
+        return jdbc.sql("""
+                delete from notifications.deliveries where status in ('SENT', 'FAILED') and created_at < :cutoff
+                """)
+                .param("cutoff", cutoff)
                 .update();
     }
 

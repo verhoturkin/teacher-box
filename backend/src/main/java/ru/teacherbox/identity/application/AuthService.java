@@ -72,7 +72,6 @@ public class AuthService {
         }
         user.recordSuccessfulLogin(now);
         users.update(user);
-        log.info("User {} signed in", user.id());
         return sessionIssuer.startSession(user);
     }
 

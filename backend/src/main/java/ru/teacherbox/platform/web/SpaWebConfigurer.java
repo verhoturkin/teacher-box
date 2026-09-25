@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 final class SpaWebConfigurer implements WebMvcConfigurer {
 
-    private static final String[] HASHED_ASSETS = {"/*.js", "/*.css", "/media/**"};
+    private static final String[] HASHED_BUNDLES = {"/*.js", "/*.css"};
 
     private final String location;
 
@@ -28,9 +28,14 @@ final class SpaWebConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(HASHED_ASSETS)
+        CacheControl forever = CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable();
+        registry.addResourceHandler(HASHED_BUNDLES)
                 .addResourceLocations(location)
-                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable());
+                .setCacheControl(forever);
+        // Fonts and images referenced by the styles; the part matched by ** is resolved against media/.
+        registry.addResourceHandler("/media/**")
+                .addResourceLocations(location + "media/")
+                .setCacheControl(forever);
         registry.addResourceHandler("/**")
                 .addResourceLocations(location)
                 .setCacheControl(CacheControl.noCache())

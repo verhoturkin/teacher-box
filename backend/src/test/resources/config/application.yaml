@@ -9,3 +9,7 @@ teacherbox:
   # Background jobs are invoked explicitly in tests.
   scheduling:
     enabled: false
+  security:
+    # Many sign-ins from one address in module tests; the limiter has its own tests.
+    auth-rate-limit:
+      requests: 0

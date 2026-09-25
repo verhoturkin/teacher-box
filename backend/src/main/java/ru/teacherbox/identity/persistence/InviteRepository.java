@@ -80,6 +80,13 @@ public class InviteRepository {
                 .update();
     }
 
+    /** Removes invitations that expired before {@code cutoff} (used, revoked or never opened). */
+    public int deleteExpiredBefore(Instant cutoff) {
+        return jdbc.sql("delete from identity.invites where expires_at < :cutoff")
+                .param("cutoff", cutoff)
+                .update();
+    }
+
     private static Invite map(ResultSet rs, int rowNum) throws SQLException {
         return Invite.restore(
                 rs.getObject("id", UUID.class),

@@ -4,15 +4,19 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.notifications.application.NotificationViews.FailedDelivery;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationPage;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationView;
+import ru.teacherbox.notifications.application.NotificationViews.NotificationsStatus;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.Delivery;
 import ru.teacherbox.notifications.domain.InboxNotification;
@@ -34,6 +38,7 @@ public class NotificationService {
     /** Messengers limit a message to about 4000 characters. */
     static final int MAX_MESSENGER_TEXT = 4000;
     static final int MAX_PAGE_SIZE = 100;
+    static final int FAILED_DELIVERIES = 50;
 
     private final InboxRepository inbox;
     private final ChannelLinkRepository links;
@@ -121,6 +126,21 @@ public class NotificationService {
     @Transactional
     public int markAllRead(UUID recipientId) {
         return inbox.markAllRead(recipientId, clock.instant());
+    }
+
+    /** Messengers of this instance and the latest failed deliveries with the recipients' names. */
+    @Transactional(readOnly = true)
+    public NotificationsStatus status() {
+        List<Delivery> failed = deliveries.findFailed(FAILED_DELIVERIES);
+        Map<UUID, String> names = users.findStudents(failed.stream().map(Delivery::recipientId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName));
+        List<FailedDelivery> views = failed.stream()
+                .map(delivery -> new FailedDelivery(delivery.recipientId(), names.get(delivery.recipientId()),
+                        delivery.channel(), delivery.attempts(), delivery.lastError(), delivery.text(),
+                        delivery.createdAt()))
+                .toList();
+        return new NotificationsStatus(channels.available(), views);
     }
 
     /** Deactivated students keep their inbox but get nothing in messengers. */

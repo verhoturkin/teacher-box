@@ -26,7 +26,7 @@ final class ProblemSecurityHandlers {
                 write(response, HttpStatus.FORBIDDEN, "access.denied", "Access denied");
     }
 
-    private static void write(HttpServletResponse response, HttpStatus status, String code, String detail)
+    static void write(HttpServletResponse response, HttpStatus status, String code, String detail)
             throws IOException {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

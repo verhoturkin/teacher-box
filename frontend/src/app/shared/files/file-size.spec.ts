@@ -1,4 +1,4 @@
-import { formatFileSize } from './homework-labels';
+import { formatFileSize } from './file-size';
 
 describe('formatFileSize', () => {
   it('uses the largest fitting unit', () => {

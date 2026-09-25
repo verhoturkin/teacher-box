@@ -41,6 +41,15 @@ class BundledSpaIntegrationTest {
     }
 
     @Test
+    void mediaFilesAreServedAndCachedForever() {
+        assertThat(mvc.get().uri("/media/icons-XYZ789.woff2"))
+                .hasStatusOk()
+                .hasHeader("Cache-Control", "max-age=31536000, public, immutable")
+                .hasBodyTextEqualTo("font-bytes");
+        assertThat(mvc.get().uri("/media/missing.woff2")).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void missingFilesAndApiPathsAreNotFound() {
         assertThat(mvc.get().uri("/missing.js")).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(mvc.get().uri("/api/unknown")).hasStatus(HttpStatus.UNAUTHORIZED);

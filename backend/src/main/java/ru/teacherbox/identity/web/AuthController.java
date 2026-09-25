@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Clock;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -18,11 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.identity.application.AuthService;
 import ru.teacherbox.identity.application.InviteService;
 import ru.teacherbox.identity.application.Session;
+import ru.teacherbox.shared.error.UnauthorizedException;
 
 /** Public authentication endpoints (see ADR-0003). */
 @RestController
 @RequestMapping("/api/auth")
 class AuthController {
+
+    /** Security audit trail (sign-ins); can be routed separately by the logging configuration. */
+    private static final Logger AUDIT = LoggerFactory.getLogger("teacherbox.audit");
 
     record LoginRequest(@NotBlank @Size(max = 64) String login, @NotBlank @Size(max = 128) String password) {
     }
@@ -40,9 +46,20 @@ class AuthController {
         this.clock = clock;
     }
 
+    /** Every attempt is written to the audit log with the client address. */
     @PostMapping("/login")
     ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
-        return withSession(authService.login(request.login(), request.password()), http);
+        Session session;
+        try {
+            session = authService.login(request.login(), request.password());
+        } catch (UnauthorizedException e) {
+            AUDIT.warn("Sign-in failed: login={} ip={} reason={}", request.login().strip(), http.getRemoteAddr(),
+                    e.code());
+            throw e;
+        }
+        AUDIT.info("Sign-in succeeded: user={} role={} ip={}", session.user().id(), session.user().role(),
+                http.getRemoteAddr());
+        return withSession(session, http);
     }
 
     @PostMapping("/refresh")

@@ -23,6 +23,17 @@ services:
       - teacherbox-data:/data
     # Lets the embedded database close cleanly on shutdown.
     stop_grace_period: 30s
+    # Memory for the JVM (it takes 75% of the limit, see JAVA_TOOL_OPTIONS in the Dockerfile).
+    deploy:
+      resources:
+        limits:
+          memory: ${TEACHERBOX_MEMORY_LIMIT:-1g}
+          cpus: "${TEACHERBOX_CPU_LIMIT:-2}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
 
 volumes:
   teacherbox-data:

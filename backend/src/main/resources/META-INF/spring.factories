@@ -1,0 +1,2 @@
+# Restores a backup dropped into <data-dir>/restore/ before the database is opened.
+org.springframework.context.ApplicationListener=ru.teacherbox.platform.backup.PendingRestore

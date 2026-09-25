@@ -96,6 +96,16 @@ class PlatformSecurityIntegrationTest {
     }
 
     @Test
+    void securityHeadersAreSent() {
+        assertThat(mvc.get().uri("/api/auth/ping"))
+                .hasHeader("Content-Security-Policy", PlatformSecurityAutoConfiguration.CONTENT_SECURITY_POLICY)
+                .hasHeader("Permissions-Policy", PlatformSecurityAutoConfiguration.PERMISSIONS_POLICY)
+                .hasHeader("Referrer-Policy", "strict-origin-when-cross-origin")
+                .hasHeader("X-Content-Type-Options", "nosniff")
+                .hasHeader("X-Frame-Options", "DENY");
+    }
+
+    @Test
     void passwordEncoderUsesBcryptByDefault() {
         String hash = passwordEncoder.encode("secret-password");
 
