@@ -13,6 +13,13 @@ export const FEATURE_LABELS: Record<AiFeature, string> = {
   REVIEW_DRAFT: 'Черновики проверки',
 };
 
+/** Names of `TEACHERBOX_AI_PROVIDER` values. */
+export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
+  anthropic: 'Anthropic (Claude)',
+  gemini: 'Google Gemini',
+  'openai-compatible': 'OpenAI-совместимый API',
+};
+
 const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success' | 'danger' | 'warn' }> = {
   SUCCEEDED: { label: 'Готово', severity: 'success' },
   FAILED: { label: 'Ошибка', severity: 'danger' },
@@ -32,8 +39,8 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
           <p>ИИ-помощник не настроен.</p>
           <p class="tb-muted">
             Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера:
-            TEACHERBOX_AI_PROVIDER (anthropic или openai-compatible), TEACHERBOX_AI_API_KEY и при необходимости
-            TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL — и перезапустите портал.
+            TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY и при
+            необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и перезапустите портал.
           </p>
         </p-card>
       } @else {
@@ -42,7 +49,7 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
             <div class="tb-stat">
               <span class="tb-muted">Модель</span>
               <span class="tb-stat__value">{{ status.model }}</span>
-              <small class="tb-muted">{{ status.provider }}</small>
+              <small class="tb-muted">{{ providerName(status.provider) }}</small>
             </div>
           </p-card>
           @if (report(); as report) {
@@ -137,6 +144,10 @@ export class AiUsagePage implements OnInit {
         });
       }
     });
+  }
+
+  protected providerName(provider: string | null): string {
+    return provider === null ? '' : (PROVIDER_NAMES[provider] ?? provider);
   }
 
   protected statusLabel(row: AiRequestLog): { label: string; severity: 'success' | 'danger' | 'warn' } {

@@ -130,6 +130,11 @@ TEACHERBOX_AI_PROVIDER=anthropic
 TEACHERBOX_AI_API_KEY=sk-ant-...
 # модель по умолчанию — claude-opus-5
 
+# или Google Gemini: ключ Gemini API — на aistudio.google.com («Get API key»)
+TEACHERBOX_AI_PROVIDER=gemini
+TEACHERBOX_AI_API_KEY=AIza...
+# модель по умолчанию — gemini-3.8-flash
+
 # или OpenAI-совместимый сервис
 TEACHERBOX_AI_PROVIDER=openai-compatible
 TEACHERBOX_AI_BASE_URL=https://api.openai.com/v1     # OpenRouter: https://openrouter.ai/api/v1
@@ -147,6 +152,13 @@ TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT=2000000
 После перезапуска появятся кнопки «Сгенерировать с ИИ» в редакторе задания и «Черновик
 проверки» на странице проверки. Тексты уходят провайдеру только по вашему нажатию; ответ ИИ
 всегда черновик, который вы правите сами. Расход — на странице «ИИ».
+
+Про Gemini: подписка Google AI Pro к порталу не подключается — она действует только в
+приложении Gemini и в веб-интерфейсе AI Studio, а обращения программ к Gemini API оплачиваются
+отдельно (есть бесплатный уровень с дневными лимитами). На бесплатном уровне Google может
+использовать тексты запросов для улучшения своих продуктов, а в запросах на проверку бывают
+ответы учеников — для них лучше включить оплату в AI Studio. Из России Gemini API недоступен,
+нужен прокси (см. ниже).
 
 ## Прокси для Telegram и ИИ
 

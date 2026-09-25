@@ -1,8 +1,12 @@
 package ru.teacherbox.ai.openai;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -12,27 +16,57 @@ import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.shared.http.OutboundHttp;
+import ru.teacherbox.shared.http.OutboundProxy;
 import tools.jackson.databind.JsonNode;
 
 /**
  * Any provider with an OpenAI-compatible {@code /chat/completions} endpoint (OpenAI, OpenRouter,
- * Ollama, LM Studio, vLLM, ...). The answer format is requested with a JSON schema
+ * Gemini, Ollama, LM Studio, vLLM, ...). The answer format is requested with a JSON schema
  * {@code response_format}; providers that ignore it are handled by lenient parsing upstream.
  */
 public class OpenAiCompatibleLlmClient implements LlmClient {
 
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleLlmClient.class);
+
     private final RestClient http;
+    private final String provider;
     private final String model;
 
     /** @param http client with the API base URL and authorization already configured */
     public OpenAiCompatibleLlmClient(RestClient http, String model) {
+        this(http, AiProperties.OPENAI_COMPATIBLE, model);
+    }
+
+    /** @param provider id of the provider for the usage log, e.g. {@code gemini} */
+    public OpenAiCompatibleLlmClient(RestClient http, String provider, String model) {
         this.http = http;
+        this.provider = provider;
         this.model = model;
+    }
+
+    /**
+     * Client of a {@code /chat/completions} API: the key as a bearer token, the provider timeout
+     * and the AI proxy. Also used for Gemini, whose API has an OpenAI-compatible endpoint.
+     */
+    public static RestClient http(RestClient.Builder builder, AiProperties properties, String baseUrl) {
+        OutboundProxy proxy = properties.outboundProxy();
+        if (proxy != null) {
+            log.info("The AI provider is reached through the proxy {}", proxy);
+        }
+        RestClient.Builder http = builder.clone()
+                .baseUrl(baseUrl.strip().replaceAll("/+$", ""))
+                .requestFactory(OutboundHttp.requestFactory(CONNECT_TIMEOUT, properties.timeout(), proxy));
+        if (AiProperties.hasText(properties.apiKey())) {
+            http.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.apiKey().strip());
+        }
+        return http.build();
     }
 
     @Override
     public String provider() {
-        return AiProperties.OPENAI_COMPATIBLE;
+        return provider;
     }
 
     @Override

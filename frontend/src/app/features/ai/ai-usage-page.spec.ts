@@ -39,10 +39,20 @@ describe('AiUsagePage', () => {
     expect(text).toContain('TEACHERBOX_AI_PROVIDER');
   });
 
+  it('names Gemini', async () => {
+    expect(await render(aiStatus({ provider: 'gemini', model: 'gemini-3.8-flash' }), usageReport())).toContain(
+      'Модель gemini-3.8-flash Google Gemini',
+    );
+  });
+
+  it('keeps an unknown provider id as is', async () => {
+    expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain('Модель m custom');
+  });
+
   it('shows the model, the monthly usage and recent requests', async () => {
     const text = await render(aiStatus(), usageReport());
 
-    expect(text).toContain('Модель claude-opus-5 anthropic');
+    expect(text).toContain('Модель claude-opus-5 Anthropic (Claude)');
     expect(text).toContain('Использование за 2026-09');
     expect(text).toMatch(/Токенов: 500.000 из 2.000.000/);
     expect(text).toMatch(/Черновики заданий: 3 запр., 3.000 токенов/);
