@@ -162,6 +162,74 @@ body {
   }
 }
 
+.tb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tb-back {
+  margin-bottom: 0.5rem;
+}
+
+/* Links styled as PrimeNG buttons */
+a.p-button {
+  text-decoration: none;
+}
+
+.tb-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+
+/* Key figures */
+.tb-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tb-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tb-stat__value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Money */
+.tb-amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tb-negative {
+  color: var(--p-red-500);
+}
+
+.tb-positive {
+  color: var(--p-green-600);
+}
+
+.tb-inactive td {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.tb-link {
+  color: var(--p-primary-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .tb-sr-only {
   position: absolute;
   width: 1px;

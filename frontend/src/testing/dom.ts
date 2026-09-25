@@ -44,3 +44,17 @@ export function typeInto(input: HTMLInputElement | HTMLTextAreaElement, value: s
 export function bodyText(): string {
   return document.body.textContent;
 }
+
+/**
+ * Visible text for assertions: text nodes joined with single spaces, all whitespace (including the
+ * non-breaking spaces used by number formatting) collapsed. «Поступления</span><span>5 000 ₽» becomes
+ * «Поступления 5 000 ₽».
+ */
+export function readableText(root: Node): string {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const parts: string[] = [];
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+    parts.push(node.textContent ?? '');
+  }
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+}

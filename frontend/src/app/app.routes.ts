@@ -30,6 +30,21 @@ export const routes: Routes = [
         loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
       },
       {
+        path: 'billing',
+        title: 'Оплаты',
+        loadComponent: () => import('@features/billing').then((m) => m.BillingOverviewPage),
+      },
+      {
+        path: 'billing/report',
+        title: 'Отчёт за месяц',
+        loadComponent: () => import('@features/billing').then((m) => m.MonthlyReportPage),
+      },
+      {
+        path: 'billing/students/:studentId',
+        title: 'История оплат',
+        loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
+      },
+      {
         path: 'account',
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
@@ -45,6 +60,11 @@ export const routes: Routes = [
         path: '',
         title: 'Личный кабинет',
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
+      },
+      {
+        path: 'billing',
+        title: 'Оплаты',
+        loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
       },
       {
         path: 'account',

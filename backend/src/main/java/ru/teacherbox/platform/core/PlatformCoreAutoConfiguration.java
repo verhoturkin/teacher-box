@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
  * Core infrastructure shared by all modules. Registered as auto-configuration so that it is also
@@ -18,5 +19,11 @@ public class PlatformCoreAutoConfiguration {
     @ConditionalOnMissingBean
     Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    InstanceTimeZone instanceTimeZone(PlatformProperties properties) {
+        return new InstanceTimeZone(properties.timezone());
     }
 }

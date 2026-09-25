@@ -89,6 +89,28 @@ describe('app routes', () => {
     expect(text()).toContain('ivan');
   });
 
+  it('opens the billing pages', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/billing');
+    backend.expectOne('/api/teacher/billing/overview');
+    expect(title()).toBe('Оплаты — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/billing/report');
+    backend.expectOne((request) => request.url === '/api/teacher/billing/reports/monthly');
+    expect(title()).toBe('Отчёт за месяц — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/billing/students/s-1');
+    backend.expectOne('/api/teacher/billing/students/s-1');
+    expect(title()).toBe('История оплат — Teacher Box');
+
+    auth.acceptSession(authResponse('STUDENT'));
+    await harness.navigateByUrl('/cabinet/billing');
+    backend.expectOne('/api/me/billing');
+    expect(title()).toBe('Оплаты — Teacher Box');
+  });
+
   it('opens the teacher account page', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
