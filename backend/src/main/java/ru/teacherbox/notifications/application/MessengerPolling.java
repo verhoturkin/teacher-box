@@ -23,12 +23,14 @@ public class MessengerPolling implements SmartLifecycle {
 
     private final MessengerChannels channels;
     private final ChannelService channelService;
+    private final MessengerHealth health;
     private final List<Thread> threads = new ArrayList<>();
     private volatile boolean running;
 
-    public MessengerPolling(MessengerChannels channels, ChannelService channelService) {
+    public MessengerPolling(MessengerChannels channels, ChannelService channelService, MessengerHealth health) {
         this.channels = channels;
         this.channelService = channelService;
+        this.health = health;
     }
 
     @Override
@@ -70,16 +72,19 @@ public class MessengerPolling implements SmartLifecycle {
     }
 
     private void loop(MessengerChannel channel) {
-        log.info("Receiving messages from {}", channel.type());
         Duration backoff = MIN_BACKOFF;
         while (running) {
             try {
                 pollOnce(channel);
+                if (health.succeeded(channel.type())) {
+                    log.info("Receiving messages from {}", channel.type());
+                }
                 backoff = MIN_BACKOFF;
             } catch (RuntimeException e) {
                 if (!running) {
                     return;
                 }
+                health.failed(channel.type(), String.valueOf(e.getMessage()));
                 log.warn("Polling {} failed, retrying in {} s: {}", channel.type(), backoff.toSeconds(), e.getMessage());
                 if (!pause(backoff)) {
                     return;

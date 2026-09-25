@@ -12,7 +12,13 @@ import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { RowType } from '@shared/ui/row-type.directive';
 import { SettingsApi } from './data-access/settings-api';
-import { BackupInfo, FailedDelivery, MessengerType, NotificationsStatus } from './data-access/settings.models';
+import {
+  BackupInfo,
+  FailedDelivery,
+  MessengerStatus,
+  MessengerType,
+  NotificationsStatus,
+} from './data-access/settings.models';
 
 export const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'TELEGRAM', name: 'Telegram' },
@@ -44,14 +50,35 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       <p-card header="Интеграции">
         <ul class="tb-integrations">
           @for (messenger of messengers; track messenger.type) {
+            @let state = messengerStatus(messenger.type);
             <li>
               <span>{{ messenger.name }}</span>
-              @if (configured(messenger.type)) {
-                <p-tag value="Подключён" severity="success" />
-              } @else {
-                <p-tag value="Не настроен" severity="secondary" />
+              @switch (state?.connection) {
+                @case ('OK') {
+                  <p-tag value="Работает" severity="success" />
+                }
+                @case ('PENDING') {
+                  <p-tag value="Подключается" severity="info" />
+                }
+                @case ('ERROR') {
+                  <p-tag value="Нет связи" severity="danger" />
+                }
+                @default {
+                  <p-tag value="Не настроен" severity="secondary" />
+                }
               }
             </li>
+            @if (state?.connection === 'ERROR') {
+              <li class="tb-integration-error">
+                <small>
+                  {{ state?.error }}
+                  @if (messenger.type === 'TELEGRAM') {
+                    <br />Если Telegram заблокирован в сети сервера, укажите прокси в
+                    TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
+                  }
+                </small>
+              </li>
+            }
           }
           <li>
             <span>ИИ-помощник</span>
@@ -166,6 +193,11 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       }
     }
 
+    .tb-integration-error {
+      overflow-wrap: anywhere;
+      color: var(--p-red-500);
+    }
+
     .tb-error-cell {
       overflow-wrap: anywhere;
     }
@@ -201,8 +233,8 @@ export class SettingsPage implements OnInit {
     this.reloadBackups();
   }
 
-  protected configured(type: MessengerType): boolean {
-    return this.status()?.channels.includes(type) ?? false;
+  protected messengerStatus(type: MessengerType): MessengerStatus | null {
+    return this.status()?.channels.find((status) => status.channel === type) ?? null;
   }
 
   protected messengerName(row: FailedDelivery): string {

@@ -1,11 +1,10 @@
 package ru.teacherbox.notifications.application;
 
-import java.net.http.HttpClient;
 import java.time.Duration;
 import org.jspecify.annotations.Nullable;
-import org.springframework.http.client.BufferingClientHttpRequestFactory;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
+import ru.teacherbox.shared.http.OutboundHttp;
+import ru.teacherbox.shared.http.OutboundProxy;
 
 /** HTTP settings shared by the messenger adapters. */
 public final class MessengerHttp {
@@ -18,22 +17,16 @@ public final class MessengerHttp {
     private MessengerHttp() {
     }
 
-    /**
-     * A client whose read timeout is longer than a long polling request. HTTP/1.1 is used because the
-     * JDK client otherwise tries an h2c upgrade on plain-HTTP endpoints (e.g. a self-hosted Bot API
-     * server or a proxy), which some servers break on; long polling gains nothing from HTTP/2. Request
-     * bodies are buffered so that they go with {@code Content-Length} instead of chunked encoding.
-     */
+    /** A direct client whose read timeout is longer than a long polling request. */
     public static RestClient client(RestClient.Builder builder, String baseUrl) {
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(CONNECT_TIMEOUT)
-                .build();
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(READ_TIMEOUT);
+        return client(builder, baseUrl, null);
+    }
+
+    /** The same client that goes through a proxy when one is given. */
+    public static RestClient client(RestClient.Builder builder, String baseUrl, @Nullable OutboundProxy proxy) {
         return builder.clone()
                 .baseUrl(baseUrl)
-                .requestFactory(new BufferingClientHttpRequestFactory(requestFactory))
+                .requestFactory(OutboundHttp.requestFactory(CONNECT_TIMEOUT, READ_TIMEOUT, proxy))
                 .build();
     }
 

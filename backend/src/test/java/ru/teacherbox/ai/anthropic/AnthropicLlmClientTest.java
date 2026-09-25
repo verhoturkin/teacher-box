@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
@@ -33,6 +34,7 @@ class AnthropicLlmClientTest {
     private final AtomicReference<String> requestBody = new AtomicReference<>();
     private final AtomicReference<String> apiKey = new AtomicReference<>();
     private final AtomicReference<String> beta = new AtomicReference<>();
+    private final AtomicReference<String> uri = new AtomicReference<>();
     private final AtomicReference<Integer> status = new AtomicReference<>(200);
     private final AtomicReference<String> responseBody = new AtomicReference<>();
     private HttpServer server;
@@ -41,6 +43,7 @@ class AnthropicLlmClientTest {
     void startServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/v1/messages", exchange -> {
+            uri.set(exchange.getRequestURI().toString());
             requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             apiKey.set(exchange.getRequestHeaders().getFirst("x-api-key"));
             beta.set(exchange.getRequestHeaders().getFirst("anthropic-beta"));
@@ -160,6 +163,30 @@ class AnthropicLlmClientTest {
                     .isInstanceOfSatisfying(LlmException.class,
                             e -> assertThat(e.reason()).isEqualTo(LlmException.Reason.UNAVAILABLE));
         }
+    }
+
+    @Test
+    void goesThroughTheConfiguredProxy() {
+        respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
+        ApplicationContextRunner runner = new ApplicationContextRunner()
+                .withUserConfiguration(AnthropicConfigurationTest.PropertiesConfiguration.class,
+                        AnthropicConfiguration.class)
+                .withPropertyValues("teacherbox.ai.provider=anthropic", "teacherbox.ai.api-key=test-key",
+                        "teacherbox.ai.base-url=http://api.anthropic.test",
+                        "teacherbox.ai.proxy=http://127.0.0.1:" + server.getAddress().getPort());
+
+        runner.run(context -> {
+            LlmResponse response = context.getBean(AnthropicLlmClient.class).complete(REQUEST);
+
+            assertThat(response.text()).isEqualTo("{}");
+            assertThat(uri.get()).as("the proxy gets the full target address")
+                    .isEqualTo("http://api.anthropic.test/v1/messages");
+            assertThat(apiKey.get()).isEqualTo("test-key");
+        });
+        runner.withPropertyValues("teacherbox.ai.proxy=socks5://user:secret@vpn:1080")
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .hasRootCauseMessage("Proxies with a login and password are not supported; "
+                                + "use a proxy without authentication that listens on a private address"));
     }
 
     private AnthropicLlmClient client(OutputConfig.Effort effort, boolean fallbacks) {

@@ -8,7 +8,12 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -151,6 +156,41 @@ class TelegramChannelTest {
                 .run(context -> assertThat(context).doesNotHaveBean(TelegramChannel.class));
         runner.withPropertyValues("teacherbox.notifications.telegram.bot-token=123:ABC")
                 .run(context -> assertThat(context).hasSingleBean(TelegramChannel.class));
+    }
+
+    @Test
+    void goesThroughTheConfiguredProxy() throws IOException {
+        AtomicReference<String> uri = new AtomicReference<>();
+        HttpServer proxy = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        proxy.createContext("/", exchange -> {
+            uri.set(exchange.getRequestURI().toString());
+            exchange.getRequestBody().readAllBytes();
+            byte[] body = "{\"ok\": true, \"result\": {}}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        proxy.start();
+        ApplicationContextRunner runner = new ApplicationContextRunner()
+                .withUserConfiguration(PropertiesConfiguration.class, TelegramConfiguration.class)
+                .withBean(RestClient.Builder.class, RestClient::builder)
+                .withPropertyValues("teacherbox.notifications.telegram.bot-token=123:ABC",
+                        "teacherbox.notifications.telegram.api-url=http://api.telegram.test");
+        try {
+            runner.withPropertyValues("teacherbox.notifications.telegram.proxy=http://127.0.0.1:"
+                            + proxy.getAddress().getPort())
+                    .run(context -> {
+                        context.getBean(TelegramChannel.class).send("42", "Привет");
+
+                        assertThat(uri.get()).isEqualTo("http://api.telegram.test/bot123:ABC/sendMessage");
+                    });
+        } finally {
+            proxy.stop(0);
+        }
+        runner.withPropertyValues("teacherbox.notifications.telegram.proxy=socks5://vpn")
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .hasMessageContaining("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY"));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

@@ -7,18 +7,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import ru.teacherbox.notifications.FakeMessengerChannel;
+import ru.teacherbox.notifications.application.NotificationViews.Connection;
+import ru.teacherbox.notifications.application.NotificationViews.MessengerStatus;
 import ru.teacherbox.notifications.domain.ChannelType;
 
 class MessengerPollingTest {
 
     private final ChannelService channelService = mock(ChannelService.class);
+    private final MessengerHealth health = new MessengerHealth(
+            Clock.fixed(Instant.parse("2026-09-26T10:00:00Z"), ZoneOffset.UTC));
 
     @Test
     void repliesToEveryIncomingMessage() {
@@ -26,7 +33,7 @@ class MessengerPollingTest {
         telegram.receive(new IncomingMessage("1", "@a", "/start ABCD2345"));
         telegram.receive(new IncomingMessage("2", null, "привет"));
         when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
-        MessengerPolling polling = new MessengerPolling(channels(telegram), channelService);
+        MessengerPolling polling = new MessengerPolling(channels(telegram), channelService, health);
 
         assertThat(polling.pollOnce(telegram)).isEqualTo(2);
 
@@ -42,7 +49,7 @@ class MessengerPollingTest {
         telegram.failWith(new DeliveryException("blocked", true));
         when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
 
-        assertThat(new MessengerPolling(channels(telegram), channelService).pollOnce(telegram)).isEqualTo(1);
+        assertThat(new MessengerPolling(channels(telegram), channelService, health).pollOnce(telegram)).isEqualTo(1);
     }
 
     @Test
@@ -82,7 +89,7 @@ class MessengerPollingTest {
             }
         };
         when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
-        MessengerPolling polling = new MessengerPolling(channels(flaky), channelService);
+        MessengerPolling polling = new MessengerPolling(channels(flaky), channelService, health);
 
         polling.start();
         try {
@@ -94,6 +101,58 @@ class MessengerPollingTest {
 
         assertThat(polling.isRunning()).isFalse();
         assertThat(replies.sent()).containsExactly(new FakeMessengerChannel.Sent("9", "ответ"));
+        assertThat(health.status(ChannelType.MAX).connection()).as("recovered after the first error")
+                .isEqualTo(Connection.OK);
+    }
+
+    @Test
+    void unreachableMessengerIsReported() {
+        MessengerChannel blocked = new MessengerChannel() {
+            @Override
+            public ChannelType type() {
+                return ChannelType.TELEGRAM;
+            }
+
+            @Override
+            public Optional<String> chatLink(String code) {
+                return Optional.empty();
+            }
+
+            @Override
+            public void send(String externalId, String text) {
+                throw new DeliveryException("unreachable", false);
+            }
+
+            @Override
+            public List<IncomingMessage> poll() {
+                throw new IllegalStateException("Telegram getUpdates: Connection refused");
+            }
+        };
+        MessengerPolling polling = new MessengerPolling(channels(blocked), channelService, health);
+
+        polling.start();
+        try {
+            await().atMost(Duration.ofSeconds(10))
+                    .until(() -> health.status(ChannelType.TELEGRAM).connection() == Connection.ERROR);
+        } finally {
+            polling.stop();
+        }
+
+        MessengerStatus status = health.status(ChannelType.TELEGRAM);
+        assertThat(status.error()).isEqualTo("Telegram getUpdates: Connection refused");
+        assertThat(status.checkedAt()).isEqualTo(Instant.parse("2026-09-26T10:00:00Z"));
+    }
+
+    @Test
+    void healthStartsPendingAndReportsRecovery() {
+        assertThat(health.status(ChannelType.VK))
+                .isEqualTo(new MessengerStatus(ChannelType.VK, Connection.PENDING, null, null));
+        assertThat(health.succeeded(ChannelType.VK)).as("first success").isTrue();
+        assertThat(health.succeeded(ChannelType.VK)).isFalse();
+        health.failed(ChannelType.VK, "timeout");
+        assertThat(health.status(ChannelType.VK).connection()).isEqualTo(Connection.ERROR);
+        assertThat(health.succeeded(ChannelType.VK)).as("recovered").isTrue();
+        assertThat(health.status(ChannelType.VK).error()).isNull();
     }
 
     @Test

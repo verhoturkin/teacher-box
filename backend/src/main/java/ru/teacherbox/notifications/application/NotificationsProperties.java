@@ -22,8 +22,14 @@ public record NotificationsProperties(
         @DefaultValue Vk vk,
         @DefaultValue Max max) {
 
-    /** Telegram bot from @BotFather. */
-    public record Telegram(@Nullable String botToken, @DefaultValue("https://api.telegram.org") String apiUrl) {
+    /**
+     * Telegram bot from @BotFather.
+     *
+     * @param proxy {@code http://host:port} or {@code socks5://host:port} when Telegram is blocked
+     *              from the server's network
+     */
+    public record Telegram(@Nullable String botToken, @DefaultValue("https://api.telegram.org") String apiUrl,
+            @Nullable String proxy) {
     }
 
     /**

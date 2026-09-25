@@ -68,6 +68,19 @@ docker compose -f compose.single.yaml cp app:/data/backups ./teacherbox-backups
 - Пароль учителя, сгенерированный при первом запуске, печатается один раз:
   `docker compose logs | grep "Teacher account"`.
 
+## Внешние интеграции и прокси
+
+- Telegram и провайдер ИИ могут ходить через прокси (`TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`,
+  `TEACHERBOX_AI_PROXY`; `http://` или `socks5://`, без пароля) — см. README, раздел «Прокси
+  для Telegram и ИИ». Неверный адрес прокси останавливает запуск с сообщением о переменной.
+- При старте в журнале видно, через какой прокси идут запросы:
+  `Telegram is reached through the proxy socks5://...`.
+- Связь с мессенджерами проверяется непрерывно (long polling): при сбое в журнале
+  `Polling TELEGRAM failed, retrying in N s: <причина>`, после восстановления —
+  `Receiving messages from TELEGRAM`. Текущее состояние — «Настройки» → «Интеграции».
+- Типичные причины: прокси слушает только `127.0.0.1` (из контейнера не виден), VPN не
+  подключён, неверный порт или тип прокси (`http` вместо `socks5`).
+
 ## Ресурсы
 
 - Лимиты контейнера: `TEACHERBOX_MEMORY_LIMIT` (по умолчанию 1 ГБ; JVM берёт 75%) и

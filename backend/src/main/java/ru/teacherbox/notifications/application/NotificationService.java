@@ -44,16 +44,18 @@ public class NotificationService {
     private final ChannelLinkRepository links;
     private final DeliveryRepository deliveries;
     private final MessengerChannels channels;
+    private final MessengerHealth health;
     private final UserDirectory users;
     private final NotificationsProperties properties;
     private final Clock clock;
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
-            MessengerChannels channels, UserDirectory users, NotificationsProperties properties, Clock clock) {
+            MessengerChannels channels, MessengerHealth health, UserDirectory users, NotificationsProperties properties, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
         this.channels = channels;
+        this.health = health;
         this.users = users;
         this.properties = properties;
         this.clock = clock;
@@ -140,7 +142,7 @@ public class NotificationService {
                         delivery.channel(), delivery.attempts(), delivery.lastError(), delivery.text(),
                         delivery.createdAt()))
                 .toList();
-        return new NotificationsStatus(channels.available(), views);
+        return new NotificationsStatus(channels.available().stream().map(health::status).toList(), views);
     }
 
     /** Deactivated students keep their inbox but get nothing in messengers. */

@@ -19,6 +19,9 @@ services:
         required: false
     environment:
       TEACHERBOX_DATA_DIR: /data
+    # A proxy on the host (e.g. a VPN client for Telegram) is reachable as host.docker.internal.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - teacherbox-data:/data
     # Lets the embedded database close cleanly on shutdown.

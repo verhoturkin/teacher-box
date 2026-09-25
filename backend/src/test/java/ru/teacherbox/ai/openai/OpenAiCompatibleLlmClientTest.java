@@ -124,6 +124,13 @@ class OpenAiCompatibleLlmClientTest {
         runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
                         "teacherbox.ai.model=gpt", "teacherbox.ai.api-key=sk-test")
                 .run(context -> assertThat(context).hasSingleBean(OpenAiCompatibleLlmClient.class));
+        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
+                        "teacherbox.ai.model=gpt", "teacherbox.ai.proxy=socks5://vpn:1080")
+                .run(context -> assertThat(context).hasSingleBean(OpenAiCompatibleLlmClient.class));
+        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
+                        "teacherbox.ai.model=gpt", "teacherbox.ai.proxy=ftp://vpn:21")
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .hasMessageContaining("TEACHERBOX_AI_PROXY: Unsupported proxy scheme 'ftp'"));
     }
 
     @Test

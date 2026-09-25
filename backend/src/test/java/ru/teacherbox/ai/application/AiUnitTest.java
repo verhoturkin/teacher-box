@@ -42,7 +42,7 @@ class AiUnitTest {
         when(repository.totalTokens(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(0L);
         AiUsage usage = new AiUsage(repository, new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                new AiProperties(null, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0),
+                new AiProperties(null, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0, null),
                 new ru.teacherbox.shared.time.InstanceTimeZone(java.time.ZoneId.of("UTC")),
                 java.time.Clock.systemUTC());
 
@@ -100,6 +100,6 @@ class AiUnitTest {
     }
 
     private static AiProperties properties(String provider) {
-        return new AiProperties(provider, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0);
+        return new AiProperties(provider, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0, null);
     }
 }

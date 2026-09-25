@@ -213,7 +213,9 @@ class DeliveryIntegrationTests {
         assertThat(mvc.get().uri("/api/teacher/notifications/status").with(TestUsers.teacher(teacher)))
                 .hasStatusOk()
                 .bodyJson().satisfies(json -> {
-                    assertThat(json).extractingPath("$.channels[0]").isEqualTo("TELEGRAM");
+                    assertThat(json).extractingPath("$.channels[0].channel").isEqualTo("TELEGRAM");
+                    assertThat(json).extractingPath("$.channels[0].connection").as("polling is off in tests")
+                            .isEqualTo("PENDING");
                     assertThat(json).extractingPath("$.failedDeliveries[0].recipientName").isNull();
                     assertThat(json).extractingPath("$.failedDeliveries[1].recipientName").isEqualTo("Ученик 7009");
                     assertThat(json).extractingPath("$.failedDeliveries[1].channel").isEqualTo("TELEGRAM");

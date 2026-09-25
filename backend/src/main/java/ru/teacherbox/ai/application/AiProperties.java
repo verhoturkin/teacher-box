@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
+import ru.teacherbox.shared.http.OutboundProxy;
 
 /**
  * Settings of the AI module ({@code TEACHERBOX_AI_*}). The module is off until a provider is set.
@@ -19,6 +20,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param maxTokens         output limit of one answer
  * @param timeout           timeout of one HTTP call to the provider
  * @param monthlyTokenLimit input + output tokens per calendar month, {@code 0} = unlimited
+ * @param proxy             {@code http://host:port} or {@code socks5://host:port} when the provider is
+ *                          blocked from the server's network
  */
 @ConfigurationProperties("teacherbox.ai")
 public record AiProperties(
@@ -30,7 +33,8 @@ public record AiProperties(
         @DefaultValue("true") boolean fallbacks,
         @DefaultValue("16000") long maxTokens,
         @DefaultValue("120s") Duration timeout,
-        @DefaultValue("2000000") long monthlyTokenLimit) {
+        @DefaultValue("2000000") long monthlyTokenLimit,
+        @Nullable String proxy) {
 
     public static final String ANTHROPIC = "anthropic";
     public static final String OPENAI_COMPATIBLE = "openai-compatible";
@@ -39,6 +43,11 @@ public record AiProperties(
     /** Normalized provider id, empty when AI is off. */
     public String providerId() {
         return provider == null ? "" : provider.strip().toLowerCase(Locale.ROOT);
+    }
+
+    /** The proxy for calls to the provider, or {@code null} for direct calls. */
+    public @Nullable OutboundProxy outboundProxy() {
+        return OutboundProxy.setting("TEACHERBOX_AI_PROXY", proxy);
     }
 
     public static boolean hasText(@Nullable String value) {

@@ -77,8 +77,24 @@ public final class NotificationViews {
             Instant createdAt) {
     }
 
+    /** State of the connection to a messenger API. */
+    public enum Connection {
+        /** No request has completed yet (just started, or message receiving is off). */
+        PENDING,
+        OK,
+        ERROR
+    }
+
+    /**
+     * @param error     why the latest request failed
+     * @param checkedAt when the latest request completed
+     */
+    public record MessengerStatus(ChannelType channel, Connection connection, @Nullable String error,
+            @Nullable Instant checkedAt) {
+    }
+
     /** Messengers configured on the server and recent delivery problems (for the teacher). */
-    public record NotificationsStatus(List<ChannelType> channels, List<FailedDelivery> failedDeliveries) {
+    public record NotificationsStatus(List<MessengerStatus> channels, List<FailedDelivery> failedDeliveries) {
     }
 
     public record BroadcastResult(int recipients) {

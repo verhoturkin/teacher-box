@@ -17,7 +17,10 @@ const BACKUP: BackupInfo = {
 };
 
 const STATUS: NotificationsStatus = {
-  channels: ['TELEGRAM'],
+  channels: [
+    { channel: 'TELEGRAM', connection: 'OK', error: null, checkedAt: '2026-09-26T10:00:00Z' },
+    { channel: 'MAX', connection: 'PENDING', error: null, checkedAt: null },
+  ],
   failedDeliveries: [
     {
       recipientId: 's-1',
@@ -73,11 +76,28 @@ describe('SettingsPage', () => {
     await render();
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Telegram Подключён');
+    expect(text).toContain('Telegram Работает');
     expect(text).toContain('ВКонтакте Не настроен');
+    expect(text).toContain('MAX Подключается');
+    expect(text).not.toContain('прокси');
     expect(text).toContain('ИИ-помощник claude-opus-5');
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
+  });
+
+  it('explains a messenger without connection', async () => {
+    await render({
+      channels: [
+        { channel: 'TELEGRAM', connection: 'ERROR', error: 'Telegram getUpdates: Connection timed out', checkedAt: null },
+        { channel: 'VK', connection: 'ERROR', error: 'VK: 5 User authorization failed', checkedAt: null },
+      ],
+      failedDeliveries: [],
+    });
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Telegram Нет связи Telegram getUpdates: Connection timed out');
+    expect(text).toContain('укажите прокси в TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY');
+    expect(text).toContain('ВКонтакте Нет связи VK: 5 User authorization failed MAX');
   });
 
   it('shows empty states', async () => {

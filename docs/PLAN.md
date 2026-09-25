@@ -192,16 +192,16 @@ Google; главная страница собирается из виджето
 
 ## Этап 11. Исходящий прокси для внешних интеграций
 
-- [ ] 11.1 **B** `shared.http.OutboundProxy`: разбор `http://[user:pass@]host:port` и
+- [x] 11.1 **B** `shared.http.OutboundProxy`: разбор `http://[user:pass@]host:port` и
       `socks5://host:port`, фабрика HTTP-клиента для `RestClient` (JDK `HttpClient` не умеет
       SOCKS — с прокси используется `HttpURLConnection` + `java.net.Proxy`, HTTP/1.1),
       пароль прокси не попадает в логи. Тесты с локальными HTTP- и SOCKS5-прокси.
-- [ ] 11.2 **B** Telegram через `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`: long polling и
+- [x] 11.2 **B** Telegram через `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`: long polling и
       отправка; проверка связи (`getMe`) при старте — понятная ошибка в логе и статус в
       «Настройках». VK и MAX всегда ходят напрямую (российские сервисы).
-- [ ] 11.3 **B** ИИ через `TEACHERBOX_AI_PROXY`: Anthropic SDK (`proxy` + `proxyAuthenticator`)
+- [x] 11.3 **B** ИИ через `TEACHERBOX_AI_PROXY`: Anthropic SDK (`proxy` + `proxyAuthenticator`)
       и OpenAI-совместимые провайдеры — API Anthropic, OpenAI и Gemini из РФ недоступны.
-- [ ] 11.4 **D** `extra_hosts: host.docker.internal:host-gateway` в compose; документация:
+- [x] 11.4 **D** `extra_hosts: host.docker.internal:host-gateway` в compose; документация:
       прокси на хосте, прокси в соседнем контейнере (xray/sing-box с входом SOCKS5/HTTP),
       альтернатива — свой адрес Bot API (`..._TELEGRAM_API_URL`, реверс-прокси на зарубежном
       VPS). `.env.example`, README, `docs/operations.md`.

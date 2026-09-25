@@ -50,7 +50,7 @@ teacher-box/
 ├── backend/                     # Spring Boot приложение (Maven)
 │   └── src/main/java/ru/teacherbox/
 │       ├── TeacherBoxApplication.java
-│       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки
+│       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки, HTTP-клиенты
 │       ├── platform/            # инфраструктура: security, ошибки HTTP, миграции, бэкапы, SPA
 │       ├── identity/            # 1. аутентификация
 │       ├── billing/             # 2. оплата занятий
@@ -194,6 +194,9 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Модульные тесты: мета-аннотация `@<Module>IntegrationTest` (`@ApplicationModuleTest` +
   MockMvc + `MutableClock`), зависимости на другие модули — через `@MockitoBean` их `api`-фасадов.
 - Ошибки: доменные исключения из `shared.error` → `ProblemDetail` (RFC 9457) в `platform`.
+- Внешние HTTP API — `RestClient` с фабрикой `shared.http.OutboundHttp` (HTTP/1.1, буферизация
+  тела, прокси). Прокси — своя переменная у каждой интеграции (`TEACHERBOX_<MODULE>_..._PROXY`,
+  разбор через `OutboundProxy.setting`), российские сервисы ходят напрямую ([ADR-0009](docs/adr/0009-external-integrations.md)).
 - Валидация входных DTO — Jakarta Validation на уровне `web`.
 - `domain` не импортирует Spring (проверяется ArchUnit).
 - Конфигурация модуля — типизированные `@ConfigurationProperties` records с префиксом
