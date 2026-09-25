@@ -6,3 +6,6 @@ spring:
 
 teacherbox:
   data-dir: ${java.io.tmpdir}/teacherbox-test/${random.uuid}
+  # Background jobs are invoked explicitly in tests.
+  scheduling:
+    enabled: false

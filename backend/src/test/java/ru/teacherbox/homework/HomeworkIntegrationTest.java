@@ -1,0 +1,44 @@
+package ru.teacherbox.homework;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.modulith.test.ApplicationModuleTest;
+import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.testing.FakeUserDirectory;
+import ru.teacherbox.testing.MutableClock;
+
+/**
+ * Homework module bootstrapped alone; the identity facade is replaced by {@link FakeUserDirectory}.
+ * All test classes using this annotation share one context and database.
+ */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@ApplicationModuleTest
+@AutoConfigureMockMvc
+@Import(HomeworkIntegrationTest.Beans.class)
+@TestPropertySource(properties = {
+        "teacherbox.homework.max-file-size=1KB",
+        "teacherbox.homework.max-files-per-upload=2"
+})
+public @interface HomeworkIntegrationTest {
+
+    @TestConfiguration
+    class Beans {
+
+        @Bean
+        FakeUserDirectory userDirectory() {
+            return new FakeUserDirectory();
+        }
+
+        @Bean
+        MutableClock clock() {
+            return MutableClock.startingNow();
+        }
+    }
+}
