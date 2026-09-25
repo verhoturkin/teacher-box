@@ -7,7 +7,8 @@ package ru.teacherbox.shared.error;
  * frontend may use to pick a localized message.
  */
 public abstract sealed class DomainException extends RuntimeException
-        permits NotFoundException, ConflictException, ForbiddenException, BusinessRuleException {
+        permits NotFoundException, ConflictException, ForbiddenException, BusinessRuleException,
+        UnauthorizedException {
 
     private final String code;
 

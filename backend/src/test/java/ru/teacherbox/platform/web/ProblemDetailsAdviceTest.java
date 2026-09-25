@@ -20,6 +20,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.ForbiddenException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.error.UnauthorizedException;
 
 class ProblemDetailsAdviceTest {
 
@@ -34,6 +35,7 @@ class ProblemDetailsAdviceTest {
         assertProblem("/conflict", HttpStatus.CONFLICT, "thing.exists");
         assertProblem("/forbidden", HttpStatus.FORBIDDEN, "thing.forbidden");
         assertProblem("/rule", HttpStatus.UNPROCESSABLE_CONTENT, "thing.rule");
+        assertProblem("/unauthorized", HttpStatus.UNAUTHORIZED, "thing.credentials");
     }
 
     @Test
@@ -100,6 +102,11 @@ class ProblemDetailsAdviceTest {
         @GetMapping("/rule")
         void rule() {
             throw new BusinessRuleException("thing.rule", "Rule violated");
+        }
+
+        @GetMapping("/unauthorized")
+        void unauthorized() {
+            throw new UnauthorizedException("thing.credentials", "Wrong credentials");
         }
 
         @GetMapping("/optimistic")

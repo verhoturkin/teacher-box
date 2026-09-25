@@ -23,6 +23,7 @@ import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.DomainException;
 import ru.teacherbox.shared.error.ForbiddenException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.error.UnauthorizedException;
 
 /**
  * Translates exceptions into RFC 9457 {@link ProblemDetail} responses.
@@ -40,6 +41,7 @@ public class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
             case ConflictException ignored -> HttpStatus.CONFLICT;
             case ForbiddenException ignored -> HttpStatus.FORBIDDEN;
             case BusinessRuleException ignored -> HttpStatus.UNPROCESSABLE_CONTENT;
+            case UnauthorizedException ignored -> HttpStatus.UNAUTHORIZED;
         };
         return problem(status, ex.code(), ex.getMessage());
     }

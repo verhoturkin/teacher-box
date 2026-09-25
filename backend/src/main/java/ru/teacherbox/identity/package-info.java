@@ -1,3 +1,6 @@
+/**
+ * Identity: authentication of the teacher and students, invitations, sessions (ADR-0003).
+ */
 @ApplicationModule(displayName = "Identity", allowedDependencies = "shared")
 @NullMarked
 package ru.teacherbox.identity;

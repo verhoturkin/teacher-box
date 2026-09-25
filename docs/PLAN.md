@@ -66,20 +66,20 @@
 
 ## Этап 4. Подсистема аутентификации (`identity`)
 
-- [ ] 4.1 **B** Схема `identity`: `users` (id, role, login, password_hash, display_name,
+- [x] 4.1 **B** Схема `identity`: `users` (id, role, login, password_hash, display_name,
       email, phone, status, failed_attempts, locked_until, version), `invites`,
       `refresh_tokens`. Инвариант «учитель ровно один».
-- [ ] 4.2 **B** Bootstrap учителя из `TEACHERBOX_TEACHER_LOGIN/PASSWORD` при первом старте
+- [x] 4.2 **B** Bootstrap учителя из `TEACHERBOX_IDENTITY_TEACHER_LOGIN/PASSWORD` при первом старте
       (если пароль не задан — сгенерировать и один раз вывести в лог).
-- [ ] 4.3 **B** Выпуск JWT (инфраструктура ключа — в 1.8); access-токен 15 мин (в памяти SPA); refresh-токен — случайный,
+- [x] 4.3 **B** Выпуск JWT (инфраструктура ключа — в 1.8); access-токен 15 мин (в памяти SPA); refresh-токен — случайный,
       хранится хешем, HttpOnly+SameSite=Strict cookie, ротация, детект повторного использования.
-- [ ] 4.4 **B** `POST /api/auth/login|refresh|logout`, защита от перебора (блокировка
-      после N неудач), `POST /api/me/password`.
-- [ ] 4.5 **B** Учитель: CRUD учеников `/api/teacher/students`, выдача/перевыпуск
+- [x] 4.4 **B** `POST /api/auth/login|refresh|logout`, защита от перебора (блокировка
+      после N неудач), `POST /api/me/password` (завершает все сессии, выдаёт новую текущему браузеру).
+- [x] 4.5 **B** Учитель: CRUD учеников `/api/teacher/students`, выдача/перевыпуск
       приглашения, деактивация (отзыв всех refresh-токенов).
-- [ ] 4.6 **B** Приглашение: `GET /api/auth/invites/{token}`, `POST .../accept`
+- [x] 4.6 **B** Приглашение: `GET /api/auth/invites/{token}`, `POST .../accept`
       (ученик задаёт логин+пароль).
-- [ ] 4.7 **B** `identity.api`: `StudentDirectory` (exists/active/displayName),
+- [x] 4.7 **B** `identity.api`: `StudentDirectory` (exists/active/displayName),
       `TeacherDirectory` (teacherId), события `StudentRegistered`, `StudentActivated`,
       `StudentDeactivated`.
 - [ ] 4.8 **F** `core/auth`: `AuthService` (signals), `authInterceptor` (Bearer + авто-refresh

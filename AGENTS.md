@@ -181,9 +181,12 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Миграции модуля: бин `ModuleMigrations.initializer(dataSource, "<module>")` в конфигурации модуля,
   скрипты — `src/main/resources/db/migration/<module>/V<n>__<описание>.sql`.
 - Инфраструктура `platform` регистрируется как auto-configuration
-  (`META-INF/spring/...AutoConfiguration.imports`), поэтому она доступна и в изолированных
-  `@ApplicationModuleTest`. Бизнес-модули получают её только через типы Spring/`shared`
-  (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
+  (`META-INF/spring/...AutoConfiguration.imports`); `shared` и `platform` объявлены
+  shared-модулями (`@Modulithic(sharedModules = ...)`), поэтому поднимаются в каждом
+  изолированном `@ApplicationModuleTest`. Бизнес-модули получают инфраструктуру только через
+  типы Spring/`shared` (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
+- Модульные тесты: мета-аннотация `@<Module>IntegrationTest` (`@ApplicationModuleTest` +
+  MockMvc + `MutableClock`), зависимости на другие модули — через `@MockitoBean` их `api`-фасадов.
 - Ошибки: доменные исключения из `shared.error` → `ProblemDetail` (RFC 9457) в `platform`.
 - Валидация входных DTO — Jakarta Validation на уровне `web`.
 - `domain` не импортирует Spring (проверяется ArchUnit).
