@@ -13,7 +13,8 @@ import {
   reviewQueueItem,
   taskDetails,
 } from '@testing/homework-fixtures';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { aiStatus } from '@testing/ai-fixtures';
+import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { AssignmentDialog } from './assignment-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -186,10 +187,11 @@ describe('ReviewQueuePage', () => {
 });
 
 describe('TaskReviewPage', () => {
-  async function render(details = taskDetails()) {
+  async function render(details = taskDetails(), aiEnabled = false) {
     const context = configure();
     const fixture = TestBed.createComponent(TaskReviewPage);
     fixture.componentRef.setInput('taskId', 't-1');
+    context.backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/homework/tasks/t-1').flush(details);
     await fixture.whenStable();
@@ -242,5 +244,59 @@ describe('TaskReviewPage', () => {
     backend.expectOne('/api/teacher/homework/tasks/t-1/review').flush(null, { status: 500, statusText: 'Error' });
 
     expect(buttonByText(host, 'Принять')).toBeDefined();
+  });
+
+  it('fills the form with an AI review draft', async () => {
+    const details = taskDetails();
+    const { fixture, host, backend } = await render(details, true);
+
+    buttonByText(host, 'Черновик проверки').click();
+    const request = backend.expectOne('/api/teacher/ai/review-draft');
+    expect(request.request.body).toEqual({
+      title: details.assignment.title,
+      description: details.assignment.description,
+      answer: details.submissions[0]?.text,
+    });
+    request.flush({ comment: 'Почти верно, проверь №2', grade: '4', accept: false });
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.getRawValue()).toEqual({ grade: '4', comment: 'Почти верно, проверь №2' });
+    expect(readableText(host)).toContain('ИИ предлагает вернуть работу на доработку');
+  });
+
+  it('suggests accepting and tolerates a missing grade', async () => {
+    const { fixture, host, backend } = await render(taskDetails(), true);
+
+    buttonByText(host, 'Черновик проверки').click();
+    backend.expectOne('/api/teacher/ai/review-draft').flush({ comment: 'Отлично', grade: null, accept: true });
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.controls.grade.value).toBe('');
+    expect(readableText(host)).toContain('ИИ предлагает принять работу');
+  });
+
+  it('keeps the form when the AI draft fails', async () => {
+    const { fixture, host, backend } = await render(taskDetails(), true);
+
+    buttonByText(host, 'Черновик проверки').click();
+    backend.expectOne('/api/teacher/ai/review-draft').flush(null, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.controls.comment.value).toBe('');
+    expect(buttonByText(host, 'Черновик проверки')).toBeDefined();
+  });
+
+  it('offers no AI draft without a text answer or when AI is off', async () => {
+    const withoutText = taskDetails();
+    const filesOnly = { ...withoutText, submissions: withoutText.submissions.map((s) => ({ ...s, text: null })) };
+    const { host } = await render(filesOnly, true);
+    expect(bodyText()).not.toContain('Черновик проверки');
+    expect(host.textContent).toContain('Принять');
+  });
+
+  it('hides the AI draft when AI is off', async () => {
+    const { host } = await render(taskDetails(), false);
+
+    expect(host.textContent).not.toContain('Черновик проверки');
   });
 });

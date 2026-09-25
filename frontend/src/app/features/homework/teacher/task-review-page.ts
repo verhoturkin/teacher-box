@@ -1,12 +1,15 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
+import { AiApi } from '@features/ai';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -28,6 +31,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
     ButtonLabel,
     Card,
     InputText,
+    Message,
     Textarea,
     MarkdownView,
     AttachmentList,
@@ -56,6 +60,24 @@ import { TaskStatusTag } from '../ui/task-status-tag';
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
           <p-card header="Проверка">
             <form class="tb-form tb-form--narrow" [formGroup]="form">
+              @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
+                <div>
+                  <p-button
+                    label="Черновик проверки"
+                    icon="pi pi-sparkles"
+                    size="small"
+                    [outlined]="true"
+                    [loading]="drafting()"
+                    (onClick)="draftReview(task)"
+                  />
+                </div>
+              }
+              @if (suggestion(); as decision) {
+                <p-message severity="info" styleClass="tb-form-message">
+                  ИИ предлагает {{ decision === 'ACCEPT' ? 'принять работу' : 'вернуть работу на доработку' }}.
+                  Проверьте черновик перед отправкой.
+                </p-message>
+              }
               <div class="tb-field">
                 <label for="review-grade">Оценка</label>
                 <input pInputText id="review-grade" formControlName="grade" autocomplete="off" placeholder="например, 5" />
@@ -91,12 +113,16 @@ export class TaskReviewPage implements OnInit {
   private readonly api = inject(HomeworkApi);
   private readonly messages = inject(MessageService);
   private readonly fileSaver = inject(FileSaver);
+  private readonly ai = inject(AiApi);
 
   /** Route parameter. */
   readonly taskId = input.required<string>();
 
   protected readonly task = signal<TaskDetails | null>(null);
   protected readonly pending = signal(false);
+  protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
+  protected readonly drafting = signal(false);
+  protected readonly suggestion = signal<ReviewDecision | null>(null);
   readonly form = new FormGroup({
     grade: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20)] }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
@@ -133,6 +159,32 @@ export class TaskReviewPage implements OnInit {
       });
   }
 
+  /** Text of the latest submission that has one (only text is sent to the AI, files are not). */
+  protected latestAnswer(task: TaskDetails): string | null {
+    const answer = task.submissions.find((submission) => (submission.text ?? '').trim() !== '');
+    return answer?.text ?? null;
+  }
+
+  protected draftReview(task: TaskDetails): void {
+    const answer = this.latestAnswer(task);
+    if (answer === null || this.drafting()) {
+      return;
+    }
+    this.drafting.set(true);
+    this.ai
+      .reviewDraft({ title: task.assignment.title, description: task.assignment.description, answer })
+      .subscribe({
+        next: (draft) => {
+          this.drafting.set(false);
+          this.form.patchValue({ grade: draft.grade ?? '', comment: draft.comment });
+          this.suggestion.set(draft.accept ? 'ACCEPT' : 'RETURN');
+        },
+        error: () => {
+          this.drafting.set(false);
+        },
+      });
+  }
+
   protected download(file: Attachment): void {
     this.api.teacherFile(file.id).subscribe((blob) => {
       this.fileSaver.save(blob, file.filename);
@@ -141,6 +193,7 @@ export class TaskReviewPage implements OnInit {
 
   private show(task: TaskDetails): void {
     this.task.set(task);
+    this.suggestion.set(null);
     this.form.reset({ grade: task.grade ?? '', comment: task.teacherComment ?? '' });
   }
 }

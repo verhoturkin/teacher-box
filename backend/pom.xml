@@ -19,6 +19,7 @@
 
     <properties>
         <java.version>25</java.version>
+        <anthropic-java.version>2.65.0</anthropic-java.version>
         <spring-modulith.version>2.1.1</spring-modulith.version>
         <archunit.version>1.5.1</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
@@ -93,6 +94,13 @@
         <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
+        </dependency>
+
+        <!-- AI: official Anthropic SDK (ADR-0006) -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>${anthropic-java.version}</version>
         </dependency>
 
         <!-- Test -->

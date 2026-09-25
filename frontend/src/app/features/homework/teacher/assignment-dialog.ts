@@ -20,6 +20,7 @@ import { MultiSelect } from 'primeng/multiselect';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
@@ -43,6 +44,7 @@ export interface StudentOption {
     MultiSelect,
     SelectButton,
     Textarea,
+    HomeworkDraftDialog,
     MarkdownView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,7 +58,12 @@ export interface StudentOption {
         <div class="tb-field">
           <div class="tb-field__header">
             <label for="assignment-description">Задание</label>
-            <p-selectbutton [options]="modes" [formControl]="mode" optionLabel="label" optionValue="value" size="small" ariaLabel="Режим редактора" />
+            <div class="tb-actions">
+              @if (aiEnabled()) {
+                <p-button label="Сгенерировать с ИИ" icon="pi pi-sparkles" size="small" [text]="true" (onClick)="draftVisible.set(true)" />
+              }
+              <p-selectbutton [options]="modes" [formControl]="mode" optionLabel="label" optionValue="value" size="small" ariaLabel="Режим редактора" />
+            </div>
           </div>
           @if (modeValue() === 'edit') {
             <textarea pTextarea id="assignment-description" formControlName="description" rows="10"></textarea>
@@ -108,10 +115,14 @@ export interface StudentOption {
         <p-button [label]="assignment() === null ? 'Выдать' : 'Сохранить'" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
       </ng-template>
     </p-dialog>
+    @if (aiEnabled()) {
+      <tb-homework-draft-dialog [(visible)]="draftVisible" [topic]="titleValue()" (generated)="applyDraft($event)" />
+    }
   `,
 })
 export class AssignmentDialog {
   private readonly api = inject(HomeworkApi);
+  private readonly ai = inject(AiApi);
 
   readonly visible = model(false);
   /** Assignment to edit; `null` creates a new one. */
@@ -136,6 +147,9 @@ export class AssignmentDialog {
   });
   protected readonly descriptionValue = toSignal(this.form.controls.description.valueChanges, { initialValue: '' });
   protected readonly modeValue = toSignal(this.mode.valueChanges, { initialValue: this.mode.value });
+  protected readonly titleValue = toSignal(this.form.controls.title.valueChanges, { initialValue: '' });
+  protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
+  protected readonly draftVisible = signal(false);
 
   constructor() {
     effect(() => {
@@ -151,6 +165,12 @@ export class AssignmentDialog {
         });
       }
     });
+  }
+
+  /** Puts an AI draft into the editor; the teacher reviews it before saving. */
+  applyDraft(draft: HomeworkDraft): void {
+    this.form.patchValue({ title: draft.title, description: draft.description });
+    this.mode.setValue('preview');
   }
 
   save(): void {

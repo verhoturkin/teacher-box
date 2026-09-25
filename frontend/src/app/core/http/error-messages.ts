@@ -50,6 +50,20 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'file.too-large': 'Файл слишком большой',
   'file.too-many': 'Слишком много файлов за один раз',
   'file.name-invalid': 'Некорректное имя файла',
+  // notifications
+  'notification.not-found': 'Уведомление не найдено',
+  'notification.title-invalid': 'Тема сообщения — от 1 до 300 символов',
+  'notification.body-invalid': 'Слишком длинный текст сообщения',
+  'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
+  'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
+  'notifications.channel-not-linked': 'Мессенджер не подключён',
+  // ai
+  'ai.disabled': 'ИИ-помощник не настроен на сервере',
+  'ai.limit-exceeded': 'Исчерпан месячный лимит токенов ИИ',
+  'ai.refused': 'Модель отказалась выполнять этот запрос. Попробуйте переформулировать',
+  'ai.truncated': 'Ответ модели оказался слишком длинным. Попробуйте упростить запрос',
+  'ai.invalid-answer': 'Модель вернула ответ в неверном формате. Попробуйте ещё раз',
+  'ai.unavailable': 'Сервис ИИ сейчас недоступен. Попробуйте позже',
 };
 
 const STATUS_MESSAGES: Readonly<Record<number, string>> = {

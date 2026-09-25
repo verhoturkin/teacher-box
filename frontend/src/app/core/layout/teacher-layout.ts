@@ -7,6 +7,7 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: 'Ученики', icon: 'pi pi-users', routerLink: '/teacher/students' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/teacher/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/teacher/billing' },
+  { label: 'ИИ', icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
 ];
 
 /** Frame of the teacher area (`/teacher/**`). */

@@ -226,7 +226,8 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
   (`@JdbcTest` + `@Import` конфигурации модуля или `@ApplicationModuleTest`).
 - **Изоляция данных** — `SchemaIsolationTests` запрещает SQL-ссылки на чужие схемы.
 - **Architecture** — `ModularityTests` (Modulith verify + генерация документации) и ArchUnit.
-- **Adapters** — внешние HTTP API (Telegram, VK, MAX, LLM) — через `MockRestServiceServer`,
+- **Adapters** — внешние HTTP API (Telegram, VK, MAX, LLM) — через `MockRestServiceServer`
+  (или локальный HTTP-сервер для клиентов не на `RestClient`, например Anthropic SDK),
   без реальных сетевых вызовов.
 
 Обязательные виды тестов frontend:

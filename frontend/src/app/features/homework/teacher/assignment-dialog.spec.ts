@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
+import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails } from '@testing/homework-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { AssignmentDetails } from '../data-access/homework.models';
@@ -32,7 +33,10 @@ describe('AssignmentDialog', () => {
     fixture.destroy();
   });
 
-  async function open(assignment: AssignmentDetails | null): Promise<AssignmentDialog> {
+  async function open(assignment: AssignmentDetails | null, aiEnabled = false): Promise<AssignmentDialog> {
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: aiEnabled }));
+    });
     fixture.componentRef.setInput('assignment', assignment);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
@@ -118,5 +122,29 @@ describe('AssignmentDialog', () => {
 
     buttonByText(document.body, 'Отмена').click();
     expect(dialog.visible()).toBe(false);
+  });
+
+  it('hides the AI button when AI is off', async () => {
+    await open(null);
+
+    expect(bodyText()).not.toContain('Сгенерировать с ИИ');
+  });
+
+  it('puts an AI draft into the editor', async () => {
+    const dialog = await open(null, true);
+    dialog.form.controls.title.setValue('Дроби');
+    await fixture.whenStable();
+
+    buttonByText(document.body, 'Сгенерировать с ИИ').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Черновик задания с ИИ');
+
+    dialog.applyDraft({ title: 'Сложение дробей', description: '1. **Сложите** 1/2 и 1/3' });
+    await fixture.whenStable();
+
+    expect(dialog.form.controls.title.value).toBe('Сложение дробей');
+    expect(dialog.form.controls.description.value).toBe('1. **Сложите** 1/2 и 1/3');
+    expect(dialog.mode.value).toBe('preview');
+    expect(document.body.querySelector('.tb-preview strong')?.textContent).toBe('Сложите');
   });
 });

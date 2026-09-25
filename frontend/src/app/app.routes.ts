@@ -65,6 +65,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
       },
       {
+        path: 'ai',
+        title: 'ИИ-помощник',
+        loadComponent: () => import('@features/ai').then((m) => m.AiUsagePage),
+      },
+      {
         path: 'notifications',
         title: 'Уведомления',
         loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),

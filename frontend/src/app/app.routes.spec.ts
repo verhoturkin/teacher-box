@@ -162,6 +162,15 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(title()).toBe('Уведомления — Teacher Box');
   });
 
+  it('opens the AI assistant page for the teacher', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl('/teacher/ai');
+
+    TestBed.inject(HttpTestingController).expectOne('/api/teacher/ai/status');
+    expect(title()).toBe('ИИ-помощник — Teacher Box');
+  });
+
   it('opens invitation links without signing in', async () => {
     await harness.navigateByUrl('/invite/abc');
 
