@@ -24,7 +24,7 @@ Self-hosted портал для репетитора: ученики, учёт �
 Нужен компьютер, сервер или NAS с **Docker** и **Docker Compose v2** и ~1 ГБ свободной памяти.
 
 ```bash
-git clone https://github.com/<you>/teacher-box.git
+git clone https://github.com/verhoturkin/teacher-box.git
 cd teacher-box
 cp .env.example .env
 ```
