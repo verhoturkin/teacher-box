@@ -1,5 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { errorMessage, messageForCode } from './error-messages';
+import { describeError, errorMessage, messageForCode } from './error-messages';
+
+describe('describeError', () => {
+  it('uses the message of a known code or the fallback', () => {
+    const known = new HttpErrorResponse({ status: 409, error: { status: 409, code: 'login.taken' } });
+    const unknown = new HttpErrorResponse({ status: 409, error: { status: 409, code: 'x.y' } });
+
+    expect(describeError(known, 'fallback')).toBe('Этот логин уже занят');
+    expect(describeError(unknown, 'fallback')).toBe('fallback');
+    expect(describeError(new Error('x'), 'fallback')).toBe('fallback');
+  });
+});
 
 function httpError(status: number, error: unknown = null): HttpErrorResponse {
   return new HttpErrorResponse({ status, error });

@@ -24,3 +24,6 @@ frontend/.angular/
 # Runtime data
 data/
 *.log
+
+# Local preview configuration (machine-specific paths)
+.claude/launch.json

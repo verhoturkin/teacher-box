@@ -15,9 +15,19 @@
   text-decoration: none;
 }
 
+.tb-shell__user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .tb-shell__area {
   color: var(--p-text-muted-color);
   font-size: 0.875rem;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 }
 
 .tb-shell__content {

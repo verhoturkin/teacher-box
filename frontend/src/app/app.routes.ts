@@ -1,9 +1,22 @@
 import { Routes } from '@angular/router';
+import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'teacher' },
+  { path: '', pathMatch: 'full', redirectTo: redirectToHome },
+  {
+    path: 'login',
+    title: 'Вход',
+    canActivate: [guestGuard],
+    loadComponent: () => import('@features/identity').then((m) => m.LoginPage),
+  },
+  {
+    path: 'invite/:token',
+    title: 'Приглашение',
+    loadComponent: () => import('@features/identity').then((m) => m.InvitePage),
+  },
   {
     path: 'teacher',
+    canActivate: [roleGuard('TEACHER')],
     loadComponent: () => import('@core/layout/teacher-layout').then((m) => m.TeacherLayout),
     children: [
       {
@@ -11,16 +24,32 @@ export const routes: Routes = [
         title: 'Главная',
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
+      {
+        path: 'students',
+        title: 'Ученики',
+        loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
+      },
+      {
+        path: 'account',
+        title: 'Мой аккаунт',
+        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+      },
     ],
   },
   {
     path: 'cabinet',
+    canActivate: [roleGuard('STUDENT')],
     loadComponent: () => import('@core/layout/student-layout').then((m) => m.StudentLayout),
     children: [
       {
         path: '',
         title: 'Личный кабинет',
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
+      },
+      {
+        path: 'account',
+        title: 'Мой аккаунт',
+        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
     ],
   },

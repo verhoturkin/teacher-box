@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+
 /** RFC 9457 problem response produced by the backend (see ProblemDetailsAdvice). */
 export interface ProblemDetail {
   readonly status: number;
@@ -16,4 +18,15 @@ export function isProblemDetail(value: unknown): value is ProblemDetail {
     'status' in value &&
     typeof value.status === 'number'
   );
+}
+
+/** Backend error code of a failed HTTP call, if the response is a problem detail. */
+export function problemCode(error: unknown): string | null {
+  if (error instanceof HttpErrorResponse) {
+    const body: unknown = error.error;
+    if (isProblemDetail(body) && body.code !== undefined) {
+      return body.code;
+    }
+  }
+  return null;
 }

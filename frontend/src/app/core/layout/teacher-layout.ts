@@ -4,6 +4,7 @@ import { Shell } from './shell';
 
 export const TEACHER_MENU: MenuItem[] = [
   { label: 'Главная', icon: 'pi pi-home', routerLink: '/teacher', routerLinkActiveOptions: { exact: true } },
+  { label: 'Ученики', icon: 'pi pi-users', routerLink: '/teacher/students' },
 ];
 
 /** Frame of the teacher area (`/teacher/**`). */

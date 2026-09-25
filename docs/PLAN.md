@@ -79,12 +79,12 @@
       приглашения, деактивация (отзыв всех refresh-токенов).
 - [x] 4.6 **B** Приглашение: `GET /api/auth/invites/{token}`, `POST .../accept`
       (ученик задаёт логин+пароль).
-- [x] 4.7 **B** `identity.api`: `StudentDirectory` (exists/active/displayName),
-      `TeacherDirectory` (teacherId), события `StudentRegistered`, `StudentActivated`,
+- [x] 4.7 **B** `identity.api`: `UserDirectory` (teacherId, findStudent(s), currentStudents),
+      события `StudentRegistered`, `StudentActivated`,
       `StudentDeactivated`.
-- [ ] 4.8 **F** `core/auth`: `AuthService` (signals), `authInterceptor` (Bearer + авто-refresh
+- [x] 4.8 **F** `core/auth`: `AuthService` (signals), `authInterceptor` (Bearer + авто-refresh
       при 401), `roleGuard`, восстановление сессии при загрузке приложения.
-- [ ] 4.9 **F** Страницы: вход, принятие приглашения, смена пароля; учитель — реестр учеников
+- [x] 4.9 **F** Страницы: вход, принятие приглашения, смена пароля; учитель — реестр учеников
       (таблица, создание, приглашение со ссылкой и копированием, деактивация).
 
 ## Этап 5. Подсистема учёта оплаты (`billing`)

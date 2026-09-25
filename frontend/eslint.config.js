@@ -77,6 +77,8 @@ module.exports = defineConfig([
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
       '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
+      // Angular validators are static methods (Validators.required) and do not use `this`.
+      '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
       'no-restricted-imports': restrictImports(),
     },
   },
@@ -94,6 +96,8 @@ module.exports = defineConfig([
     files: ['**/*.spec.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
+      // expect(service.method).toHaveBeenCalled() passes spied methods unbound by design.
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
   {
