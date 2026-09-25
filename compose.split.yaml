@@ -1,0 +1,43 @@
+# Variant 1 (ADR-0004): backend and frontend in separate containers.
+#
+#   cp .env.example .env    # adjust settings
+#   docker compose -f compose.split.yaml up -d --build
+#
+# Only the frontend (nginx) is published; it proxies /api to the backend over the internal network.
+name: teacher-box
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: backend
+    image: teacher-box-backend:${TEACHERBOX_VERSION:-latest}
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TEACHERBOX_DATA_DIR: /data
+    volumes:
+      - teacherbox-data:/data
+    # Lets the embedded database close cleanly on shutdown.
+    stop_grace_period: 30s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: frontend
+    image: teacher-box-frontend:${TEACHERBOX_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "${TEACHERBOX_HTTP_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  teacherbox-data:

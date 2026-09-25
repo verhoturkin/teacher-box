@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# Runs the verification of every part touched by the commit (AGENTS.md §8).
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+backend=false
+frontend=false
+docker=false
+
+while IFS= read -r file; do
+    case "$file" in
+        backend/*) backend=true ;;
+        frontend/*) frontend=true ;;
+        docker/* | compose.*.yaml | .dockerignore | .env.example) docker=true ;;
+    esac
+done < <(git diff --cached --name-only --diff-filter=ACMRD)
+
+if [ "$backend" = true ]; then
+    "$ROOT/scripts/verify.sh" backend
+fi
+if [ "$frontend" = true ]; then
+    "$ROOT/scripts/verify.sh" frontend
+fi
+if [ "$docker" = true ]; then
+    "$ROOT/scripts/verify.sh" docker
+fi

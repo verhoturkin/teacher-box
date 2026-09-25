@@ -62,7 +62,7 @@ teacher-box/
 │       ├── core/                # auth, interceptors, guards, layout, конфиг
 │       ├── shared/              # переиспользуемые UI-компоненты, pipes
 │       └── features/<module>/   # зеркало модулей бекенда: data-access + teacher/ + student/
-├── docker/                      # Dockerfile'ы и nginx.conf
+├── docker/                      # Dockerfile (targets: backend, frontend, single) и nginx
 ├── compose.split.yaml           # вариант 1: backend + frontend в разных контейнерах
 ├── compose.single.yaml          # вариант 2: один контейнер
 ├── .env.example                 # все настраиваемые переменные окружения
@@ -137,8 +137,8 @@ teacher-box/
 
 ```bash
 # Backend
-cd backend && ./mvnw verify            # сборка + все тесты + JaCoCo-пороги + Modulith verify
-cd backend && ./mvnw spring-boot:run   # запуск (профиль dev, данные в ./backend/data)
+cd backend && ./mvnw clean verify      # сборка + все тесты + JaCoCo-пороги + Modulith verify
+cd backend && ./mvnw spring-boot:run   # запуск (данные в ./backend/data)
 cd backend && ./mvnw test -Dtest=ModularityTests
 
 # Frontend

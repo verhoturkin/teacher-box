@@ -17,7 +17,8 @@
    (таблица в AGENTS.md §4.2). Нужен доступ к чужим данным — добавь метод в фасад `api`
    или подпишись на событие; никогда не читай чужую схему БД.
 4. **Проверка перед коммитом (обязательно):**
-   - backend затронут → `cd backend && ./mvnw verify` (Windows: `.\mvnw.cmd verify`);
+   - backend затронут → `cd backend && ./mvnw clean verify` (Windows: `.\mvnw.cmd clean verify`;
+     `clean` обязателен — после `-Pbundle-frontend` в `target/classes/static` остаётся SPA);
    - frontend затронут → `cd frontend && npm run lint && npm test && npm run build`;
    - Docker-файлы затронуты → `docker compose -f <file> config` и, если daemon доступен, сборка.
    Коммить только при зелёном результате. Если что-то падает — чини причину, не ослабляй

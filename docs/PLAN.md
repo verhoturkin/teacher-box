@@ -51,17 +51,17 @@
 
 ## Этап 3. Сборка и Docker
 
-- [ ] 3.1 **D** `scripts/verify.sh` (backend/frontend/all) и `.githooks/pre-commit`
+- [x] 3.1 **D** `scripts/verify.sh` (backend/frontend/all) и `.githooks/pre-commit`
       (проверяет только затронутые части).
-- [ ] 3.2 **D** `docker/backend.Dockerfile` — multi-stage (Maven → JRE 25), non-root,
+- [x] 3.2 **D** `docker/Dockerfile` target `backend` — multi-stage (Maven → JRE 25), non-root,
       volume `/data`, healthcheck.
-- [ ] 3.3 **D** `docker/frontend.Dockerfile` — multi-stage (Node → nginx-unprivileged),
-      `docker/nginx.conf`: SPA fallback, прокси `/api` → backend, gzip, security headers.
-- [ ] 3.4 **D** `compose.split.yaml` — вариант 1 (два контейнера, сеть, volume, healthchecks).
-- [ ] 3.5 **B/D** Maven-профиль `bundle-frontend` (кладёт собранный фронт в `static/`),
-      SPA-fallback контроллер в `platform/web`; `docker/single.Dockerfile`;
+- [x] 3.3 **D** target `frontend` — multi-stage (Node → nginx-unprivileged),
+      `docker/nginx/default.conf.template`: SPA fallback, прокси `/api` → backend, gzip, security headers.
+- [x] 3.4 **D** `compose.split.yaml` — вариант 1 (два контейнера, сеть, volume, healthchecks).
+- [x] 3.5 **B/D** Maven-профиль `bundle-frontend` (кладёт собранный фронт в `static/`),
+      SPA-fallback в `platform/web`; target `single`;
       `compose.single.yaml` — вариант 2 (один контейнер).
-- [ ] 3.6 **D** `.env.example` со всеми переменными, smoke-проверка обоих вариантов
+- [x] 3.6 **D** `.env.example` со всеми переменными, smoke-проверка обоих вариантов
       (`/actuator/health`, открывается `/`).
 
 ## Этап 4. Подсистема аутентификации (`identity`)

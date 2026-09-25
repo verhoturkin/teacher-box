@@ -23,6 +23,10 @@ spring:
       max-request-size: 30MB
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  web:
+    resources:
+      # Static files are served by platform/web (SpaWebConfigurer) only when the frontend is bundled.
+      add-mappings: false
 
 server:
   port: 8080
