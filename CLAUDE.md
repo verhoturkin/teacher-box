@@ -28,20 +28,22 @@
 
 - ОС: Windows 11, основная оболочка PowerShell 5.1 (нет `&&` — используй `;` и `if ($?)`),
   Git Bash доступен для `*.sh` скриптов.
-- Установлены: JDK 25, Maven 3.9 (но используем `mvnw`), Node 22, npm 10, Docker (daemon
+- Установлены: JDK 25, Maven 3.9 (но используем `mvnw`), Node 22, npm 10 (для установки пакетов используй `npx -y npm@11 ci|install` — ADR-0007), Docker (daemon
   может быть не запущен — проверяй `docker info`).
 - Кодировка файлов — UTF-8 без BOM, переводы строк — LF (см. `.gitattributes`).
 
 ## Актуальность знаний
 
-Angular 22, PrimeNG 22, Spring Boot 4.1, Spring Security 7, Spring Modulith 2.1, Jackson 3,
-JUnit 6, TypeScript 6 — новее, чем многие примеры в интернете. Перед использованием
+Angular 21, PrimeNG 21, Spring Boot 4.1, Spring Security 7, Spring Modulith 2.1, Jackson 3,
+JUnit 6 — новее, чем многие примеры в интернете. Перед использованием
 незнакомого API **сверяйся с актуальной документацией** (context7 MCP), а не с памятью.
 Типичные ловушки:
 - Boot 4: стартеры модульные (`spring-boot-starter-webmvc`, `spring-boot-starter-flyway`,
   `spring-boot-starter-webmvc-test` и т.д.), Jackson 3 — пакет `tools.jackson`.
-- Angular 22: zoneless по умолчанию, `ng test` = Vitest, standalone по умолчанию.
-- PrimeNG 22: темы через `providePrimeNG({ theme: { preset: Aura } })` из `@primeuix/themes`.
+- Angular 21: zoneless по умолчанию, `ng test` = Vitest, standalone по умолчанию.
+- **Не обновляй PrimeNG/@primeuix/themes/primeicons до 22/3/8** — они под коммерческой лицензией
+  PrimeUI (ADR-0007). Angular — только в пределах 21.x.
+- PrimeNG 21: темы через `providePrimeNG({ theme: { preset: Aura } })` из `@primeuix/themes`.
 - Модуль `ai`: перед изменениями кода интеграции с Claude/LLM загружай skill `claude-api`
   (модели, параметры, лимиты).
 

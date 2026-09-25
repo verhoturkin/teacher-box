@@ -12,7 +12,7 @@
 - [x] 0.1 `AGENTS.md`, `CLAUDE.md` — правила, архитектура, соглашения.
 - [x] 0.2 `docs/PLAN.md` — этот план.
 - [x] 0.3 ADR: 0001 модульный монолит, 0002 встраиваемая БД, 0003 аутентификация,
-      0004 варианты поставки, 0005 уведомления, 0006 ИИ.
+      0004 варианты поставки, 0005 уведомления, 0006 ИИ, 0007 версии и лицензия frontend.
 - [x] 0.4 `.gitignore`, `.gitattributes`, `.editorconfig`, README (кратко).
 
 ## Этап 1. Каркас backend
@@ -39,15 +39,15 @@
 
 ## Этап 2. Каркас frontend
 
-- [ ] 2.1 **F** Angular 22 workspace `frontend/` (standalone, zoneless, SCSS, routing),
+- [x] 2.1 **F** Angular 21 LTS workspace `frontend/` (standalone, zoneless, SCSS, routing),
       строгий `tsconfig`, `strictTemplates`.
-- [ ] 2.2 **F** PrimeNG 22 + Aura, русская локаль PrimeNG и Angular (`ru`), primeicons.
-- [ ] 2.3 **F** ESLint (angular-eslint + typescript-eslint type-checked): запрет `any`,
+- [x] 2.2 **F** PrimeNG 21 (MIT, см. ADR-0007) + Aura, русская локаль PrimeNG и Angular (`ru`), primeicons.
+- [x] 2.3 **F** ESLint (angular-eslint + typescript-eslint type-checked): запрет `any`,
       `no-unsafe-*`, границы фич (`no-restricted-imports`).
-- [ ] 2.4 **F** Vitest + coverage-пороги 90/80, `npm test` в режиме однократного прогона.
-- [ ] 2.5 **F** `core/`: `AppConfig`, `ApiErrorInterceptor` (ProblemDetail → Toast),
+- [x] 2.4 **F** Vitest + coverage-пороги 90/80, `npm test` в режиме однократного прогона.
+- [x] 2.5 **F** `core/`: `AppConfig`, `ApiErrorInterceptor` (ProblemDetail → Toast),
       layout-оболочки учителя и ученика (Menubar/Sidebar), страница 404.
-- [ ] 2.6 **F** `proxy.conf.json` для dev (`/api` → `localhost:8080`).
+- [x] 2.6 **F** `proxy.conf.json` для dev (`/api` → `localhost:8080`).
 
 ## Этап 3. Сборка и Docker
 

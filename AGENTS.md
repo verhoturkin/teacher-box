@@ -32,9 +32,9 @@
 | | БД | H2 2.x, file mode, schema-per-module ([ADR-0002](docs/adr/0002-embedded-database.md)) |
 | | Сборка | Maven (через `mvnw`) |
 | | Тесты | JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo |
-| Frontend | Angular (standalone, signals, zoneless) | 22.x |
-| | PrimeNG + @primeuix/themes (Aura) | 22.x |
-| | TypeScript | 6.0.x, `strict` |
+| Frontend | Angular (standalone, signals, zoneless) | 21.2 LTS ([ADR-0007](docs/adr/0007-frontend-stack-licensing.md)) |
+| | PrimeNG (MIT) + @primeuix/themes 2 (Aura) + primeicons 7 | 21.1.x |
+| | TypeScript | 5.9.x, `strict` |
 | | Тесты | Vitest (через `ng test`), jsdom |
 | | Линтер | ESLint + angular-eslint + typescript-eslint (type-checked) |
 | Поставка | Docker, Docker Compose | 2 варианта: split и single |
@@ -142,7 +142,7 @@ cd backend && ./mvnw spring-boot:run   # запуск (профиль dev, да�
 cd backend && ./mvnw test -Dtest=ModularityTests
 
 # Frontend
-cd frontend && npm ci
+cd frontend && npx -y npm@11 ci     # установка: нужен npm >= 11 (ADR-0007)
 cd frontend && npm run lint            # ESLint (no any, границы фич)
 cd frontend && npm test                # Vitest + coverage-пороги (однократный прогон)
 cd frontend && npm start               # dev-сервер :4200, прокси /api -> :8080

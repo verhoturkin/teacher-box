@@ -11,5 +11,5 @@ Self-hosted портал для учителя: ученики, учёт опл�
 ## Стек
 
 - Backend: Java 25, Spring Boot 4, Spring Modulith, H2 (файловый режим)
-- Frontend: Angular 22, PrimeNG 22, TypeScript (strict)
+- Frontend: Angular 21 LTS, PrimeNG 21 (MIT), TypeScript (strict)
 - Поставка: Docker Compose — два контейнера (`compose.split.yaml`) или один (`compose.single.yaml`)

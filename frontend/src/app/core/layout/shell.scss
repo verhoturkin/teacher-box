@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tb-shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--p-primary-color);
+  text-decoration: none;
+}
+
+.tb-shell__area {
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+.tb-shell__content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
