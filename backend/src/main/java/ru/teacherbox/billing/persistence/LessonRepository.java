@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.billing.domain.BillingCurrency;
@@ -32,12 +33,18 @@ public class LessonRepository {
     }
 
     public void insert(Lesson lesson) {
+        insert(lesson, null);
+    }
+
+    /** @param scheduleCompletionId the outcome in the schedule the lesson is charged for */
+    public void insert(Lesson lesson, @Nullable UUID scheduleCompletionId) {
         jdbc.sql("""
                 insert into billing.lessons (id, student_id, lesson_date, duration_minutes, price, topic, status,
-                    created_at, cancelled_at, cancel_reason)
+                    created_at, cancelled_at, cancel_reason, schedule_completion_id)
                 values (:id, :studentId, :date, :duration, :price, :topic, :status, :createdAt, :cancelledAt,
-                    :cancelReason)
+                    :cancelReason, :scheduleCompletionId)
                 """)
+                .param("scheduleCompletionId", scheduleCompletionId)
                 .param("id", lesson.id())
                 .param("studentId", lesson.studentId())
                 .param("date", lesson.date())
@@ -63,6 +70,13 @@ public class LessonRepository {
                 .param("cancelledAt", lesson.cancelledAt())
                 .param("cancelReason", lesson.cancelReason())
                 .update();
+    }
+
+    public Optional<Lesson> findByScheduleCompletion(UUID scheduleCompletionId) {
+        return jdbc.sql(SELECT + " where schedule_completion_id = :completionId")
+                .param("completionId", scheduleCompletionId)
+                .query(this::map)
+                .optional();
     }
 
     public Optional<Lesson> findById(UUID id) {

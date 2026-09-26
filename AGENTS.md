@@ -17,6 +17,8 @@
   3. `homework` — домашние задания: выдача, сдача, проверка, вложения.
   4. `notifications` — уведомления: ЛК (inbox), Telegram-бот, ЛС мессенджеров (VK, MAX).
   5. `ai` — интеграция с LLM: генерация заданий, черновик проверки работы.
+  6. `schedule` — расписание: занятия и еженедельные серии, запросы учеников на перенос/отмену,
+     напоминания, подписка на календарь (ICS).
 
 Пошаговый план — [`docs/PLAN.md`](docs/PLAN.md). Архитектурные решения — [`docs/adr/`](docs/adr).
 
@@ -56,7 +58,8 @@ teacher-box/
 │       ├── billing/             # 2. оплата занятий
 │       ├── homework/            # 3. домашние задания
 │       ├── notifications/       # 4. уведомления
-│       └── ai/                  # 5. интеграция с ИИ
+│       ├── ai/                  # 5. интеграция с ИИ
+│       └── schedule/            # 6. расписание занятий
 ├── frontend/                    # Angular приложение
 │   └── src/app/
 │       ├── core/                # auth, interceptors, guards, layout, конфиг
@@ -104,14 +107,15 @@ teacher-box/
    | `shared` | — |
    | `platform` | `shared` |
    | `identity` | `shared` |
-   | `billing` | `shared`, `identity::api` |
+   | `billing` | `shared`, `identity::api`, `schedule::api` (только события: итог занятия → начисление) |
    | `homework` | `shared`, `identity::api` |
-   | `notifications` | `shared`, `identity::api` (события и `UserDirectory`), `billing::api`, `homework::api` (только события) |
+   | `notifications` | `shared`, `identity::api` (события и `UserDirectory`), `billing::api`, `homework::api`, `schedule::api` (только события) |
    | `ai` | `shared` |
+   | `schedule` | `shared`, `identity::api` |
 
    Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.
 3. **Данные:** у каждого модуля своя схема БД (`identity`, `billing`, `homework`,
-   `notifications`, `ai`), свои Flyway-миграции в `db/migration/<module>/` и своя
+   `notifications`, `ai`, `schedule`), свои Flyway-миграции в `db/migration/<module>/` и своя
    таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
    схемами и JOIN между схемами. Между модулями передаются только идентификаторы (UUID).
 4. **Взаимодействие:**
@@ -131,7 +135,8 @@ teacher-box/
 - `STUDENT` — только к собственным данным. Любой endpoint, отдающий данные ученика, обязан
   проверять, что `studentId` == текущий пользователь (или роль `TEACHER`). Для каждого такого
   endpoint'а обязателен тест «чужой ученик получает 403/404».
-- REST-префиксы: `/api/auth/**` (публичные), `/api/teacher/**` (TEACHER),
+- REST-префиксы: `/api/auth/**` (публичные), `/api/public/**` (без входа, доступ по секретной
+  ссылке — например, лента календаря), `/api/teacher/**` (TEACHER),
   `/api/me/**` (любой аутентифицированный: ЛК), `/api/<module>/**` — по правилам модуля.
 
 ## 5. Команды

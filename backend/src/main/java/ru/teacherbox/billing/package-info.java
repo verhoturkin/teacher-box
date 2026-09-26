@@ -1,7 +1,7 @@
 /**
  * Billing: lesson log, payments, balances and reports.
  */
-@ApplicationModule(displayName = "Billing", allowedDependencies = {"shared", "identity :: api"})
+@ApplicationModule(displayName = "Billing", allowedDependencies = {"shared", "identity :: api", "schedule :: api"})
 @NullMarked
 package ru.teacherbox.billing;
 

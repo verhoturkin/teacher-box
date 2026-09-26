@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
  */
 class SchemaIsolationTests {
 
-    static final List<String> MODULES = List.of("identity", "billing", "homework", "notifications", "ai");
+    static final List<String> MODULES = List.of("identity", "billing", "homework", "notifications", "ai", "schedule");
 
     private static final Path JAVA_ROOT = Path.of("src/main/java/ru/teacherbox");
     private static final Path MIGRATIONS_ROOT = Path.of("src/main/resources/db/migration");

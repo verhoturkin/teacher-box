@@ -28,6 +28,12 @@ export const KIND_ICONS: Record<NotificationKind, string> = {
   LESSON_CANCELLED: 'pi pi-calendar-times',
   PAYMENT_RECORDED: 'pi pi-wallet',
   PAYMENT_VOIDED: 'pi pi-wallet',
+  SCHEDULE_LESSON_PLANNED: 'pi pi-calendar-plus',
+  SCHEDULE_LESSON_MOVED: 'pi pi-calendar',
+  SCHEDULE_LESSON_CANCELLED: 'pi pi-calendar-times',
+  SCHEDULE_REMINDER: 'pi pi-clock',
+  SCHEDULE_REQUEST: 'pi pi-question-circle',
+  SCHEDULE_REQUEST_ANSWERED: 'pi pi-comments',
   STUDENT_ACTIVATED: 'pi pi-user-plus',
   MESSAGE: 'pi pi-envelope',
 };

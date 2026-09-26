@@ -25,6 +25,8 @@ import ru.teacherbox.billing.persistence.LessonRepository;
 import ru.teacherbox.billing.persistence.PaymentRepository;
 import ru.teacherbox.billing.persistence.StudentAccountRepository;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.schedule.api.LessonCompleted;
+import ru.teacherbox.schedule.api.LessonCompletionRevoked;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.money.Money;
@@ -32,6 +34,9 @@ import ru.teacherbox.shared.money.Money;
 /** Changes of the ledger: lessons, payments and lesson prices. Only the teacher calls these operations. */
 @Service
 public class BillingService {
+
+    /** Reason of a charge cancelled because its outcome in the schedule was changed. */
+    static final String SCHEDULE_CHANGED = "Итог занятия изменён в расписании";
 
     /**
      * @param durationMinutes defaults to the configured lesson duration
@@ -80,11 +85,40 @@ public class BillingService {
                 : command.durationMinutes();
         Lesson lesson = Lesson.record(Ids.newId(), command.studentId(), command.date(), duration, price,
                 command.topic(), command.status(), now);
-        lessons.insert(lesson);
+        insert(lesson, null, now);
+        return LessonView.of(lesson);
+    }
+
+    /**
+     * Charges a lesson whose outcome the teacher marked in the schedule, at the student's lesson price.
+     * An outcome that is already charged is skipped (events may be delivered again).
+     */
+    @Transactional
+    public void recordScheduledLesson(LessonCompleted completed) {
+        if (lessons.findByScheduleCompletion(completed.completionId()).isPresent()) {
+            return;
+        }
+        StudentAccount account = accountOf(completed.studentId());
+        Instant now = clock.instant();
+        Lesson lesson = Lesson.record(Ids.newId(), completed.studentId(), completed.date(),
+                completed.durationMinutes(), account.lessonPrice(), completed.topic(),
+                completed.missed() ? LessonStatus.MISSED : LessonStatus.CONDUCTED, now);
+        insert(lesson, completed.completionId(), now);
+    }
+
+    /** The outcome in the schedule was withdrawn: its charge is cancelled (and stays in the history). */
+    @Transactional
+    public void revokeScheduledLesson(LessonCompletionRevoked revoked) {
+        lessons.findByScheduleCompletion(revoked.completionId())
+                .filter(lesson -> lesson.status() != LessonStatus.CANCELLED)
+                .ifPresent(lesson -> cancelLesson(lesson.id(), SCHEDULE_CHANGED));
+    }
+
+    private void insert(Lesson lesson, @Nullable UUID scheduleCompletionId, Instant now) {
+        lessons.insert(lesson, scheduleCompletionId);
         events.publishEvent(new LessonRecorded(lesson.id(), lesson.studentId(), lesson.date(),
                 lesson.durationMinutes(), lesson.price(), lesson.status() == LessonStatus.MISSED,
                 balanceOf(lesson.studentId()), now));
-        return LessonView.of(lesson);
     }
 
     @Transactional

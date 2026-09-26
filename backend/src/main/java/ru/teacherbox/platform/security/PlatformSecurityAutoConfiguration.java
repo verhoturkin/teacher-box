@@ -102,6 +102,8 @@ public class PlatformSecurityAutoConfiguration {
                 .requestCache(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        // Resources behind secret links (e.g. calendar feeds) for clients that cannot sign in.
+                        .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
