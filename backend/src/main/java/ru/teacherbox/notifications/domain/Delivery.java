@@ -47,8 +47,14 @@ public final class Delivery {
 
     public static Delivery schedule(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,
             String externalId, String text, Instant now) {
+        return schedule(id, notificationId, recipientId, channel, externalId, text, now, now);
+    }
+
+    /** @param notBefore the first attempt is made at this time (e.g. after the recipient's quiet hours) */
+    public static Delivery schedule(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,
+            String externalId, String text, Instant now, Instant notBefore) {
         return new Delivery(id, notificationId, recipientId, channel, externalId, text, DeliveryStatus.PENDING, 0,
-                now, null, now, null);
+                notBefore.isAfter(now) ? notBefore : now, null, now, null);
     }
 
     public static Delivery restore(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,

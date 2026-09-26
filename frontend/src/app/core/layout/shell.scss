@@ -12,6 +12,7 @@
   font-weight: 600;
   font-size: 1.125rem;
   color: var(--p-primary-color);
+  white-space: nowrap;
   text-decoration: none;
 }
 
@@ -25,7 +26,7 @@
   color: var(--p-text-muted-color);
   font-size: 0.875rem;
 
-  @media (max-width: 640px) {
+  @media (max-width: 1440px) {
     display: none;
   }
 }

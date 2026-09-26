@@ -1,11 +1,14 @@
 package ru.teacherbox.notifications.application;
 
 import java.time.Instant;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.notifications.domain.NotificationTopic;
+import ru.teacherbox.notifications.domain.Preferences;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 
@@ -98,5 +101,33 @@ public final class NotificationViews {
     }
 
     public record BroadcastResult(int recipients) {
+    }
+
+    /** A message the teacher sent to students. */
+    public record BroadcastView(UUID id, String title, @Nullable String body, int recipients, Instant createdAt) {
+    }
+
+    /**
+     * A student with the messengers they connected.
+     *
+     * @param failedDeliveries messages that could not be delivered in the last 30 days
+     */
+    public record StudentChannels(UUID studentId, String displayName, List<ChannelView> channels,
+            long failedDeliveries) {
+    }
+
+    /**
+     * What the user gets in messengers.
+     *
+     * @param mutedTopics topics not sent to messengers
+     * @param quietFrom   start of the quiet hours (instance time zone), or {@code null}
+     */
+    public record PreferencesView(List<NotificationTopic> mutedTopics, @Nullable LocalTime quietFrom,
+            @Nullable LocalTime quietTo) {
+
+        static PreferencesView of(Preferences preferences) {
+            return new PreferencesView(preferences.mutedTopics().stream().sorted().toList(), preferences.quietFrom(),
+                    preferences.quietTo());
+        }
     }
 }

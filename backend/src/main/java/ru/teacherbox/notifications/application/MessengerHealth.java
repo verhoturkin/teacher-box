@@ -33,6 +33,11 @@ public class MessengerHealth {
         statuses.put(channel, new MessengerStatus(channel, Connection.ERROR, error, clock.instant()));
     }
 
+    /** Forgets the state after the messenger was configured again. */
+    public void reset(ChannelType channel) {
+        statuses.remove(channel);
+    }
+
     public MessengerStatus status(ChannelType channel) {
         return statuses.getOrDefault(channel, new MessengerStatus(channel, Connection.PENDING, null, null));
     }

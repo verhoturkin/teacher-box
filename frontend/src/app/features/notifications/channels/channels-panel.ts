@@ -7,6 +7,7 @@ import {
   computed,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +19,8 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Subscription, interval, switchMap } from 'rxjs';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState, ChannelType, LinkCode } from '../data-access/notifications.models';
-import { CHANNEL_HAS_START_LINK, CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
+import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
+import { LinkCodeView } from './link-code-view';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -26,16 +28,16 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 /** Messengers of the current user: connect with a one-time code, pause, disconnect. */
 @Component({
   selector: 'tb-channels-panel',
-  imports: [DatePipe, FormsModule, Button, Card, Dialog, ToggleSwitch],
+  imports: [DatePipe, FormsModule, Button, Card, Dialog, LinkCodeView, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Мессенджеры">
+    <p-card [header]="header()">
       @if (channels(); as channels) {
         @if (channels.length === 0) {
           <p class="tb-muted">
             @if (teacher()) {
-              Боты мессенджеров не настроены. Чтобы уведомления приходили в Telegram, ВКонтакте или MAX, укажите токены
-              ботов в настройках сервера (переменные TEACHERBOX_NOTIFICATIONS_*).
+              Боты мессенджеров ещё не подключены. Подключите бота выше — и сможете получать уведомления сами и
+              присылать их ученикам.
             } @else {
               Уведомления приходят в личный кабинет. Мессенджеры пока не подключены учителем.
             }
@@ -88,28 +90,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       [draggable]="false"
     >
       @if (linkCode(); as code) {
-        <div class="tb-link-code">
-          @if (code.url !== null && startLink(code.channel)) {
-            <p>Откройте бота и нажмите «Запустить» — аккаунт подключится автоматически.</p>
-            <a class="p-button tb-link-code__open" [href]="code.url" target="_blank" rel="noopener">
-              <i class="pi pi-external-link" aria-hidden="true"></i>
-              <span>Открыть {{ names[code.channel] }}</span>
-            </a>
-            <p class="tb-muted">Или отправьте боту код:</p>
-          } @else {
-            <p>
-              Отправьте этот код
-              @if (code.url !== null) {
-                <a [href]="code.url" target="_blank" rel="noopener">боту {{ names[code.channel] }}</a>
-              } @else {
-                боту {{ names[code.channel] }}
-              }
-              в личные сообщения:
-            </p>
-          }
-          <div class="tb-link-code__value">{{ code.code }}</div>
-          <small class="tb-muted">Код действует до {{ code.expiresAt | date: 'HH:mm' }}. Ждём подключения…</small>
-        </div>
+        <tb-link-code-view [code]="code" />
       }
       <ng-template #footer>
         <p-button label="Закрыть" severity="secondary" [text]="true" (onClick)="closeLink()" />
@@ -143,32 +124,6 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       flex-direction: column;
     }
 
-    .tb-link-code {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-
-      p {
-        margin: 0;
-      }
-    }
-
-    .tb-link-code__open {
-      display: inline-flex;
-      gap: 0.5rem;
-      text-decoration: none;
-    }
-
-    .tb-link-code__value {
-      padding: 0.5rem 1rem;
-      border-radius: var(--p-border-radius-md);
-      background: var(--p-surface-100);
-      font-family: monospace;
-      font-size: 1.75rem;
-      letter-spacing: 0.15em;
-      user-select: all;
-    }
   `,
 })
 export class ChannelsPanel implements OnInit {
@@ -178,6 +133,10 @@ export class ChannelsPanel implements OnInit {
 
   /** The teacher sees how to configure bots instead of a hint for students. */
   readonly teacher = input(false);
+  /** Card title. */
+  readonly header = input('Мессенджеры');
+  /** An account was connected or disconnected. */
+  readonly changed = output();
 
   protected readonly names = CHANNEL_NAMES;
   protected readonly icons = CHANNEL_ICONS;
@@ -196,10 +155,6 @@ export class ChannelsPanel implements OnInit {
 
   ngOnInit(): void {
     this.reload();
-  }
-
-  protected startLink(channel: ChannelType): boolean {
-    return CHANNEL_HAS_START_LINK[channel];
   }
 
   connect(channel: ChannelType): void {
@@ -230,10 +185,12 @@ export class ChannelsPanel implements OnInit {
     this.api.unlink(channel).subscribe(() => {
       this.messages.add({ severity: 'info', summary: 'Отключено', detail: `${CHANNEL_NAMES[channel]} отключён` });
       this.reload();
+      this.changed.emit();
     });
   }
 
-  private reload(): void {
+  /** Reloads the messengers (e.g. after the teacher configured a bot). */
+  reload(): void {
     this.api.channels().subscribe((channels) => {
       this.channels.set(channels);
     });
@@ -249,6 +206,7 @@ export class ChannelsPanel implements OnInit {
         if (channels.some((state) => state.channel === channel && state.linked)) {
           this.closeLink();
           this.messages.add({ severity: 'success', summary: 'Готово', detail: `${CHANNEL_NAMES[channel]} подключён` });
+          this.changed.emit();
         }
       });
   }

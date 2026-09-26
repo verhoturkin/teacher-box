@@ -9,6 +9,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.IOException;
+import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -136,24 +137,56 @@ class VkChannelTest {
     }
 
     @Test
-    void enabledOnlyWhenConfigured() {
+    void checksTheTokenByTheCommunityName() {
+        String getById = "https://api.vk.com/method/groups.getById";
+        server.expect(requestTo(getById))
+                .andExpect(content().string(containsString("group_id=123")))
+                .andRespond(withSuccess("{\"response\": {\"groups\": [{\"id\": 123, \"name\": \"Школа\"}]}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo(getById))
+                .andRespond(withSuccess("{\"response\": [{\"id\": 123, \"name\": \"Старый формат\"}]}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo(getById)).andRespond(withSuccess("{\"response\": {\"groups\": []}}",
+                MediaType.APPLICATION_JSON));
+        server.expect(requestTo(getById)).andRespond(withSuccess(
+                "{\"error\": {\"error_code\": 5, \"error_msg\": \"User authorization failed\"}}",
+                MediaType.APPLICATION_JSON));
+        server.expect(requestTo(getById)).andRespond(request -> {
+            throw new IOException("DNS failure for vk-token");
+        });
+
+        assertThat(channel.botName()).isEqualTo("Школа");
+        assertThat(channel.botName()).isEqualTo("Старый формат");
+        assertThat(channel.botName()).isEqualTo("club123");
+        assertThatThrownBy(channel::botName).hasMessage("VK 5: User authorization failed");
+        assertThatThrownBy(channel::botName).hasMessageContaining("DNS failure").hasMessageNotContaining("vk-token");
+    }
+
+    @Test
+    void factoryReadsTheEnvironment() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(PropertiesConfiguration.class, VkConfiguration.class)
+                .withUserConfiguration(PropertiesConfiguration.class, VkChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
 
-        runner.run(context -> assertThat(context).doesNotHaveBean(VkChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token= ", "teacherbox.notifications.max.token= ")
-                .run(context -> assertThat(context).doesNotHaveBean(VkChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.vk.token=vk-token")
-                .run(context -> assertThat(context).doesNotHaveBean(VkChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.vk.token=", "teacherbox.notifications.vk.group-id=",
-                        "teacherbox.notifications.public-url=")
+        runner.withPropertyValues("teacherbox.notifications.vk.token=", "teacherbox.notifications.vk.group-id=")
                 .run(context -> {
-                    assertThat(context).hasNotFailed().doesNotHaveBean(VkChannel.class);
-                    assertThat(context.getBean(NotificationsProperties.class).vk().groupId()).isNull();
+                    VkChannelFactory factory = context.getBean(VkChannelFactory.class);
+                    assertThat(factory.type()).isEqualTo(ChannelType.VK);
+                    assertThat(factory.fromEnvironment()).isNull();
+                    assertThat(factory.create(new Credentials("token", 1L))).isInstanceOf(VkChannel.class);
+                    assertThatThrownBy(() -> factory.create(new Credentials("token", null)))
+                            .isInstanceOf(IllegalArgumentException.class);
+                    assertThatThrownBy(() -> factory.create(new Credentials(" ", 1L)))
+                            .isInstanceOf(IllegalArgumentException.class);
+                    assertThatThrownBy(() -> factory.create(new Credentials("token", 0L)))
+                            .isInstanceOf(IllegalArgumentException.class);
                 });
+        runner.withPropertyValues("teacherbox.notifications.vk.token=vk-token")
+                .run(context -> assertThatThrownBy(() -> context.getBean(VkChannelFactory.class).fromEnvironment())
+                        .hasMessageContaining("TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID"));
         runner.withPropertyValues("teacherbox.notifications.vk.token=vk-token", "teacherbox.notifications.vk.group-id=123")
-                .run(context -> assertThat(context).hasSingleBean(VkChannel.class));
+                .run(context -> assertThat(context.getBean(VkChannelFactory.class).fromEnvironment())
+                        .isEqualTo(new Credentials("vk-token", 123L)));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

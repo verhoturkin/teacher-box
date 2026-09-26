@@ -14,6 +14,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Objects;
+import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -146,16 +148,39 @@ class TelegramChannelTest {
     }
 
     @Test
-    void enabledOnlyWhenConfigured() {
+    void checksTheTokenByTheBotName() {
+        server.expect(requestTo(API + "getMe"))
+                .andRespond(withSuccess("{\"ok\": true, \"result\": {\"username\": \"school_bot\"}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "getMe"))
+                .andRespond(withSuccess("{\"ok\": true, \"result\": {}}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "getMe")).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"ok\": false, \"description\": \"Unauthorized\"}"));
+
+        assertThat(channel.botName()).isEqualTo("@school_bot");
+        assertThat(channel.chatLink("ABCD2345")).contains("https://t.me/school_bot?start=ABCD2345");
+        assertThatThrownBy(channel::botName).hasMessage("Telegram getMe returned no bot name");
+        assertThatThrownBy(channel::botName).hasMessage("Telegram getMe 401: Unauthorized");
+    }
+
+    @Test
+    void factoryReadsTheEnvironment() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(PropertiesConfiguration.class, TelegramConfiguration.class)
+                .withUserConfiguration(PropertiesConfiguration.class, TelegramChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
 
-        runner.run(context -> assertThat(context).doesNotHaveBean(TelegramChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token= ", "teacherbox.notifications.max.token= ")
-                .run(context -> assertThat(context).doesNotHaveBean(TelegramChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token=123:ABC")
-                .run(context -> assertThat(context).hasSingleBean(TelegramChannel.class));
+        runner.run(context -> {
+            TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
+            assertThat(factory.type()).isEqualTo(ChannelType.TELEGRAM);
+            assertThat(factory.fromEnvironment()).isNull();
+            assertThatThrownBy(() -> factory.create(new Credentials(" ", null)))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThat(factory.create(new Credentials("123:ABC", null))).isInstanceOf(TelegramChannel.class);
+        });
+        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token= 123:ABC ")
+                .run(context -> assertThat(context.getBean(TelegramChannelFactory.class).fromEnvironment())
+                        .isEqualTo(new Credentials("123:ABC", null)));
     }
 
     @Test
@@ -173,7 +198,7 @@ class TelegramChannelTest {
         });
         proxy.start();
         ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(PropertiesConfiguration.class, TelegramConfiguration.class)
+                .withUserConfiguration(PropertiesConfiguration.class, TelegramChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder)
                 .withPropertyValues("teacherbox.notifications.telegram.bot-token=123:ABC",
                         "teacherbox.notifications.telegram.api-url=http://api.telegram.test");
@@ -181,7 +206,8 @@ class TelegramChannelTest {
             runner.withPropertyValues("teacherbox.notifications.telegram.proxy=http://127.0.0.1:"
                             + proxy.getAddress().getPort())
                     .run(context -> {
-                        context.getBean(TelegramChannel.class).send("42", "Привет");
+                        TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
+                        factory.create(Objects.requireNonNull(factory.fromEnvironment())).send("42", "Привет");
 
                         assertThat(uri.get()).isEqualTo("http://api.telegram.test/bot123:ABC/sendMessage");
                     });
@@ -190,7 +216,7 @@ class TelegramChannelTest {
         }
         runner.withPropertyValues("teacherbox.notifications.telegram.proxy=socks5://vpn")
                 .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasMessageContaining("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY"));
+                        .hasStackTraceContaining("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY"));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

@@ -57,6 +57,11 @@ public class ChannelLinkRepository {
                 .list();
     }
 
+    /** Connected accounts of all users. */
+    public List<ChannelLink> findAll() {
+        return jdbc.sql(SELECT + " order by recipient_id, channel").query(ChannelLinkRepository::map).list();
+    }
+
     public Optional<ChannelLink> find(UUID recipientId, ChannelType channel) {
         return jdbc.sql(SELECT + " where recipient_id = :recipientId and channel = :channel")
                 .param("recipientId", recipientId)

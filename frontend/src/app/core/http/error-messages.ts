@@ -57,6 +57,10 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
   'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
   'notifications.channel-not-linked': 'Мессенджер не подключён',
+  'notifications.channel-from-environment': 'Этот бот задан в переменных окружения сервера — измените его там',
+  'notifications.channel-check-failed': 'Мессенджер не принял токен. Проверьте его и попробуйте снова',
+  'notifications.test-failed': 'Не удалось отправить тестовое сообщение',
+  'notification.quiet-hours-invalid': 'Укажите начало и конец тихих часов, они не должны совпадать',
   // platform
   'backup.not-found': 'Резервная копия не найдена',
   'auth.rate-limited': 'Слишком много попыток входа. Подождите минуту и попробуйте снова',

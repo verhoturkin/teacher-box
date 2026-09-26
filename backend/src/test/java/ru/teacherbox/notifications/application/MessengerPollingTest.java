@@ -73,6 +73,11 @@ class MessengerPollingTest {
             }
 
             @Override
+            public String botName() {
+                return "bot";
+            }
+
+            @Override
             public List<IncomingMessage> poll() {
                 if (polls.incrementAndGet() == 1) {
                     throw new IllegalStateException("network is down");
@@ -124,6 +129,11 @@ class MessengerPollingTest {
             }
 
             @Override
+            public String botName() {
+                return "bot";
+            }
+
+            @Override
             public List<IncomingMessage> poll() {
                 throw new IllegalStateException("Telegram getUpdates: Connection refused");
             }
@@ -156,6 +166,33 @@ class MessengerPollingTest {
     }
 
     @Test
+    void restartsPollingWithTheNewAdapter() {
+        MessengerChannels registry = channels();
+        FakeMessengerChannel first = new FakeMessengerChannel(ChannelType.TELEGRAM);
+        registry.put(first);
+        when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
+        MessengerPolling polling = new MessengerPolling(registry, channelService, health);
+        polling.restart(ChannelType.TELEGRAM);
+        assertThat(polling.isRunning()).as("restarting before start does nothing").isFalse();
+
+        polling.start();
+        try {
+            FakeMessengerChannel second = new FakeMessengerChannel(ChannelType.TELEGRAM);
+            second.receive(new IncomingMessage("5", null, "код"));
+            registry.put(second);
+            polling.restart(ChannelType.TELEGRAM);
+            polling.restart(ChannelType.VK);
+
+            await().atMost(Duration.ofSeconds(10)).until(() -> !second.sent().isEmpty());
+            registry.remove(ChannelType.TELEGRAM);
+            polling.restart(ChannelType.TELEGRAM);
+        } finally {
+            polling.stop();
+        }
+        assertThat(first.sent()).isEmpty();
+    }
+
+    @Test
     void backoffDoublesUpToAMinute() {
         assertThat(MessengerPolling.nextBackoff(Duration.ofSeconds(1))).isEqualTo(Duration.ofSeconds(2));
         assertThat(MessengerPolling.nextBackoff(Duration.ofSeconds(40))).isEqualTo(Duration.ofMinutes(1));
@@ -170,6 +207,15 @@ class MessengerPollingTest {
         assertThat(registry.available()).containsExactly(ChannelType.VK);
         assertThat(registry.isAvailable(ChannelType.TELEGRAM)).isFalse();
         assertThat(registry.find(ChannelType.VK)).isPresent();
+
+        FakeMessengerChannel configured = new FakeMessengerChannel(ChannelType.VK);
+        registry.put(configured);
+        registry.put(new FakeMessengerChannel(ChannelType.MAX));
+        assertThat(registry.find(ChannelType.VK)).as("a configured bot replaces the bean").containsSame(configured);
+        assertThat(registry.all()).hasSize(2);
+        registry.remove(ChannelType.VK);
+        assertThat(registry.find(ChannelType.VK)).as("the bean is used again").isPresent().get()
+                .isNotSameAs(configured);
     }
 
     private static MessengerChannels channels(MessengerChannel... channels) {

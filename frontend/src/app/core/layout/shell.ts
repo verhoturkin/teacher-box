@@ -13,7 +13,7 @@ import { NotificationBell } from '@core/notifications/notification-bell';
   imports: [Button, Menu, Menubar, NotificationBell, RouterOutlet, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-menubar [model]="items()" styleClass="tb-shell__bar">
+    <p-menubar [model]="items()" styleClass="tb-shell__bar" breakpoint="1200px">
       <ng-template #start>
         <a class="tb-shell__brand" [routerLink]="homeLink()">
           <i class="pi pi-graduation-cap" aria-hidden="true"></i>
@@ -48,9 +48,12 @@ export class Shell {
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();
   readonly areaTitle = input.required<string>();
+  /** Links shown in the user menu before «Мой аккаунт» (e.g. the teacher's settings). */
+  readonly userLinks = input<MenuItem[]>([]);
 
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [
+    ...this.userLinks(),
     { label: 'Мой аккаунт', icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     {

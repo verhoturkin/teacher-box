@@ -64,6 +64,11 @@ public final class FakeMessengerChannel implements MessengerChannel {
     }
 
     @Override
+    public String botName() {
+        return "@test_bot";
+    }
+
+    @Override
     public List<IncomingMessage> poll() {
         List<IncomingMessage> batch = new ArrayList<>(incoming);
         incoming.removeAll(batch);

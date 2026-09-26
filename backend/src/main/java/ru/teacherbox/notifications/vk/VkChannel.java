@@ -114,6 +114,28 @@ public class VkChannel implements MessengerChannel {
         return messages;
     }
 
+    /** Name of the community; also checks the token. */
+    @Override
+    public String botName() {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("group_id", Long.toString(groupId));
+        JsonNode response;
+        try {
+            response = method("groups.getById", form);
+        } catch (RestClientException e) {
+            throw new IllegalStateException("VK groups.getById: " + MessengerHttp.redact(e.getMessage(), token));
+        }
+        JsonNode error = response.path("error");
+        if (!error.isMissingNode()) {
+            throw new IllegalStateException("VK " + error.path("error_code").asInt() + ": "
+                    + error.path("error_msg").asString(""));
+        }
+        JsonNode result = response.path("response");
+        JsonNode groups = result.has("groups") ? result.path("groups") : result;
+        String name = groups.path(0).path("name").asString("");
+        return name.isEmpty() ? "club" + groupId : name;
+    }
+
     /** Gets a long poll server and key; keeps the event position unless {@code resetPosition}. */
     private void connect(boolean resetPosition) {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();

@@ -1,7 +1,10 @@
 package ru.teacherbox.notifications.application;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,20 +16,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.notifications.application.NotificationViews.BroadcastView;
+import ru.teacherbox.notifications.application.NotificationViews.ChannelView;
 import ru.teacherbox.notifications.application.NotificationViews.FailedDelivery;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationPage;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationView;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationsStatus;
+import ru.teacherbox.notifications.application.NotificationViews.StudentChannels;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.Delivery;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
+import ru.teacherbox.notifications.domain.Preferences;
+import ru.teacherbox.notifications.persistence.BroadcastRepository;
+import ru.teacherbox.notifications.persistence.BroadcastRepository.Broadcast;
 import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.InboxRepository;
+import ru.teacherbox.notifications.persistence.PreferencesRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
  * Puts notifications into the personal area inbox and schedules their delivery to the recipient's
@@ -39,23 +50,36 @@ public class NotificationService {
     static final int MAX_MESSENGER_TEXT = 4000;
     static final int MAX_PAGE_SIZE = 100;
     static final int FAILED_DELIVERIES = 50;
+    static final int BROADCAST_HISTORY = 20;
+    static final Duration PROBLEMS_WINDOW = Duration.ofDays(30);
+    static final String CONNECT_TITLE = "Подключите мессенджер";
+    static final String CONNECT_BODY = "Чтобы получать уведомления в Telegram, ВКонтакте или MAX, откройте раздел "
+            + "«Уведомления» и нажмите «Подключить».";
 
     private final InboxRepository inbox;
     private final ChannelLinkRepository links;
     private final DeliveryRepository deliveries;
     private final MessengerChannels channels;
     private final MessengerHealth health;
+    private final PreferencesRepository preferences;
+    private final BroadcastRepository broadcasts;
     private final UserDirectory users;
     private final NotificationsProperties properties;
+    private final ZoneId zone;
     private final Clock clock;
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
-            MessengerChannels channels, MessengerHealth health, UserDirectory users, NotificationsProperties properties, Clock clock) {
+            MessengerChannels channels, MessengerHealth health, PreferencesRepository preferences,
+            BroadcastRepository broadcasts, UserDirectory users, NotificationsProperties properties,
+            InstanceTimeZone timeZone, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
         this.channels = channels;
         this.health = health;
+        this.preferences = preferences;
+        this.broadcasts = broadcasts;
+        this.zone = timeZone.zoneId();
         this.users = users;
         this.properties = properties;
         this.clock = clock;
@@ -73,12 +97,14 @@ public class NotificationService {
         InboxNotification notification = InboxNotification.create(Ids.newId(), recipientId, kind, title, body, link,
                 now);
         inbox.insert(notification);
-        if (mayUseMessengers(recipientId)) {
+        Preferences settings = preferences.find(recipientId).orElse(Preferences.DEFAULT);
+        if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {
             String text = truncate(notification.messengerText(properties.publicUrl()));
+            Instant notBefore = settings.deliverAt(now, zone);
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
                 if (channelLink.enabled() && channels.isAvailable(channelLink.channel())) {
                     deliveries.insert(Delivery.schedule(Ids.newId(), notification.id(), recipientId,
-                            channelLink.channel(), channelLink.externalId(), text, now));
+                            channelLink.channel(), channelLink.externalId(), text, now, notBefore));
                 }
             }
         }
@@ -97,6 +123,47 @@ public class NotificationService {
             throw new BusinessRuleException("notification.no-recipients", "There are no students to notify");
         }
         recipients.forEach(id -> notify(id, NotificationKind.MESSAGE, title, body, null));
+        broadcasts.insert(new Broadcast(Ids.newId(), title.strip(), body == null || body.isBlank() ? null : body.strip(),
+                recipients.size(), clock.instant()));
+        return recipients.size();
+    }
+
+    /** The teacher's latest messages to students, newest first. */
+    @Transactional(readOnly = true)
+    public List<BroadcastView> broadcasts() {
+        return broadcasts.findLatest(BROADCAST_HISTORY).stream()
+                .map(broadcast -> new BroadcastView(broadcast.id(), broadcast.title(), broadcast.body(),
+                        broadcast.recipients(), broadcast.createdAt()))
+                .toList();
+    }
+
+    /** Current students with their connected messengers and recent delivery problems. */
+    @Transactional(readOnly = true)
+    public List<StudentChannels> studentChannels() {
+        Map<UUID, List<ChannelLink>> linked = links.findAll().stream()
+                .collect(Collectors.groupingBy(ChannelLink::recipientId));
+        Map<UUID, Long> failed = deliveries.failedCountsSince(clock.instant().minus(PROBLEMS_WINDOW));
+        return users.currentStudents().stream()
+                .sorted(Comparator.comparing(StudentSummary::displayName, String.CASE_INSENSITIVE_ORDER))
+                .map(student -> new StudentChannels(student.id(), student.displayName(),
+                        linked.getOrDefault(student.id(), List.of()).stream().map(ChannelView::of).toList(),
+                        failed.getOrDefault(student.id(), 0L)))
+                .toList();
+    }
+
+    /**
+     * Asks students without a connected messenger to connect one (the given ones, or all of them).
+     *
+     * @return number of students asked
+     */
+    @Transactional
+    public int remindToConnect(List<UUID> studentIds) {
+        Set<UUID> withMessengers = links.findAll().stream().map(ChannelLink::recipientId).collect(Collectors.toSet());
+        List<UUID> recipients = (studentIds.isEmpty() ? allCurrentStudents() : currentStudents(studentIds)).stream()
+                .filter(id -> !withMessengers.contains(id))
+                .toList();
+        recipients.forEach(id -> notify(id, NotificationKind.MESSAGE, CONNECT_TITLE, CONNECT_BODY,
+                "/cabinet/notifications"));
         return recipients.size();
     }
 

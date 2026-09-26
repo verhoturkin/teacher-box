@@ -3,7 +3,9 @@ package ru.teacherbox.notifications.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -109,6 +111,18 @@ public class DeliveryRepository {
     }
 
     /** Removes sent and failed deliveries created before {@code cutoff}; pending ones stay. */
+    /** Number of failed deliveries per recipient created since {@code since}. */
+    public Map<UUID, Long> failedCountsSince(Instant since) {
+        Map<UUID, Long> counts = new HashMap<>();
+        jdbc.sql("select recipient_id, count(*) as failed from notifications.deliveries "
+                        + "where status = 'FAILED' and created_at >= :since group by recipient_id")
+                .param("since", since)
+                .query(rs -> {
+                    counts.put(rs.getObject("recipient_id", UUID.class), rs.getLong("failed"));
+                });
+        return counts;
+    }
+
     public int deleteFinishedBefore(Instant cutoff) {
         return jdbc.sql("""
                 delete from notifications.deliveries where status in ('SENT', 'FAILED') and created_at < :cutoff

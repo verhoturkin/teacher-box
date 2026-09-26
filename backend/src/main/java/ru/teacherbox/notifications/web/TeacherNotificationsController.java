@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.notifications.application.NotificationService;
 import ru.teacherbox.notifications.application.NotificationViews.BroadcastResult;
+import ru.teacherbox.notifications.application.NotificationViews.BroadcastView;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationsStatus;
+import ru.teacherbox.notifications.application.NotificationViews.StudentChannels;
 import ru.teacherbox.notifications.domain.InboxNotification;
 
-/** Messages from the teacher to students. */
+/** Messages from the teacher to students and the students' messengers. */
 @RestController
 @RequestMapping("/api/teacher/notifications")
 class TeacherNotificationsController {
@@ -27,10 +29,31 @@ class TeacherNotificationsController {
             @Nullable List<UUID> studentIds) {
     }
 
+    record RemindRequest(@Nullable List<UUID> studentIds) {
+    }
+
     private final NotificationService notifications;
 
     TeacherNotificationsController(NotificationService notifications) {
         this.notifications = notifications;
+    }
+
+    /** Current students and the messengers they connected. */
+    @GetMapping("/students")
+    List<StudentChannels> students() {
+        return notifications.studentChannels();
+    }
+
+    /** Asks students without messengers (the given ones or all) to connect one. */
+    @PostMapping("/remind-connect")
+    BroadcastResult remindToConnect(@RequestBody RemindRequest request) {
+        return new BroadcastResult(notifications.remindToConnect(
+                request.studentIds() == null ? List.of() : request.studentIds()));
+    }
+
+    @GetMapping("/broadcasts")
+    List<BroadcastView> broadcasts() {
+        return notifications.broadcasts();
     }
 
     @GetMapping("/status")

@@ -2,8 +2,10 @@ package ru.teacherbox.notifications.web;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +19,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.notifications.application.ChannelService;
 import ru.teacherbox.notifications.application.NotificationService;
+import ru.teacherbox.notifications.application.PreferencesService;
 import ru.teacherbox.notifications.application.NotificationViews.ChannelView;
 import ru.teacherbox.notifications.application.NotificationViews.LinkCodeView;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationPage;
+import ru.teacherbox.notifications.application.NotificationViews.PreferencesView;
 import ru.teacherbox.notifications.application.NotificationViews.UnreadCount;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.notifications.domain.NotificationTopic;
 import ru.teacherbox.shared.security.CurrentUser;
 
 /** The current user's notifications and messenger settings (teacher and students alike). */
@@ -32,12 +37,30 @@ class MyNotificationsController {
     record ChannelSettingsRequest(@NotNull Boolean enabled) {
     }
 
+    /** @param quietFrom and {@code quietTo}: both or none (no quiet hours) */
+    record PreferencesRequest(@NotNull List<NotificationTopic> mutedTopics, @Nullable LocalTime quietFrom,
+            @Nullable LocalTime quietTo) {
+    }
+
     private final NotificationService notifications;
     private final ChannelService channels;
+    private final PreferencesService preferences;
 
-    MyNotificationsController(NotificationService notifications, ChannelService channels) {
+    MyNotificationsController(NotificationService notifications, ChannelService channels,
+            PreferencesService preferences) {
         this.notifications = notifications;
         this.channels = channels;
+        this.preferences = preferences;
+    }
+
+    @GetMapping("/notifications/preferences")
+    PreferencesView preferences(CurrentUser user) {
+        return preferences.get(user.id());
+    }
+
+    @PutMapping("/notifications/preferences")
+    PreferencesView savePreferences(CurrentUser user, @Valid @RequestBody PreferencesRequest request) {
+        return preferences.save(user.id(), request.mutedTopics(), request.quietFrom(), request.quietTo());
     }
 
     @GetMapping("/notifications")

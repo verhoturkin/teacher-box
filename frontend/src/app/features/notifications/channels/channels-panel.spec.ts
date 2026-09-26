@@ -43,7 +43,7 @@ describe('ChannelsPanel', () => {
   it('tells the teacher how to configure bots', async () => {
     await render([], true);
 
-    expect(readableText(hostElement(fixture))).toContain('TEACHERBOX_NOTIFICATIONS_');
+    expect(readableText(hostElement(fixture))).toContain('Подключите бота выше');
   });
 
   it('shows connected and available messengers', async () => {
@@ -59,6 +59,8 @@ describe('ChannelsPanel', () => {
 
   it('connects a messenger with a deep link and waits for the bot', async () => {
     await render([channel()]);
+    let changes = 0;
+    fixture.componentInstance.changed.subscribe(() => changes++);
     vi.useFakeTimers();
 
     buttonByText(hostElement(fixture), 'Подключить').click();
@@ -78,6 +80,7 @@ describe('ChannelsPanel', () => {
     fixture.detectChanges();
 
     expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Telegram подключён' }));
+    expect(changes).toBe(1);
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectNone('/api/me/channels');
     expect(readableText(hostElement(fixture))).toContain('@maria');
@@ -122,6 +125,8 @@ describe('ChannelsPanel', () => {
 
   it('pauses and disconnects a messenger', async () => {
     await render([channel({ linked: true, enabled: true, displayName: '@maria' }), channel({ channel: 'MAX' })]);
+    let changes = 0;
+    fixture.componentInstance.changed.subscribe(() => changes++);
 
     fixture.componentInstance.setEnabled('TELEGRAM', false);
     const toggle = backend.expectOne('/api/me/channels/TELEGRAM');
@@ -135,6 +140,7 @@ describe('ChannelsPanel', () => {
     await fixture.whenStable();
 
     expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Telegram отключён' }));
+    expect(changes).toBe(1);
     expect(readableText(hostElement(fixture))).toContain('Telegram не подключён');
   });
 });

@@ -80,6 +80,16 @@ public class TelegramChannel implements MessengerChannel {
         return messages;
     }
 
+    @Override
+    public String botName() {
+        String name = call("getMe", Map.of()).path("result").path("username").asString("");
+        if (name.isEmpty()) {
+            throw new IllegalStateException("Telegram getMe returned no bot name");
+        }
+        username = name;
+        return "@" + name;
+    }
+
     private Optional<String> botUsername() {
         if (username == null) {
             try {

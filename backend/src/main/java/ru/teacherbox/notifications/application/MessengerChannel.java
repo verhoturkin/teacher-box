@@ -5,8 +5,9 @@ import java.util.Optional;
 import ru.teacherbox.notifications.domain.ChannelType;
 
 /**
- * A messenger adapter (SPI). A bean exists only when the messenger is configured; the adapters talk
- * to the messenger APIs directly with long polling, so the instance needs no public webhook address.
+ * A messenger adapter (SPI), created by a {@link MessengerChannelFactory} when the messenger is
+ * configured. The adapters talk to the messenger APIs directly with long polling, so the instance
+ * needs no public webhook address.
  */
 public interface MessengerChannel {
 
@@ -27,4 +28,12 @@ public interface MessengerChannel {
 
     /** Waits for new messages to the bot (long polling) and returns them. */
     List<IncomingMessage> poll();
+
+    /**
+     * The bot's name in the messenger (e.g. {@code @school_bot}); asks the messenger, so it also
+     * checks the token.
+     *
+     * @throws IllegalStateException if the messenger does not accept the settings
+     */
+    String botName();
 }

@@ -1,17 +1,20 @@
 package ru.teacherbox.notifications.application;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
+import ru.teacherbox.notifications.domain.ChannelType;
 
 /**
- * Receives messages to the bots: one virtual thread per configured messenger runs long polling.
- * Disabled together with scheduled jobs ({@code teacherbox.scheduling.enabled=false}, e.g. in tests).
+ * Receives messages to the bots: one virtual thread per configured messenger runs long polling. A
+ * messenger configured again in the settings page gets a new thread. Disabled together with
+ * scheduled jobs ({@code teacherbox.scheduling.enabled=false}, e.g. in tests).
  */
 @Component
 @ConditionalOnBooleanProperty(name = "teacherbox.scheduling.enabled", matchIfMissing = true)
@@ -24,7 +27,7 @@ public class MessengerPolling implements SmartLifecycle {
     private final MessengerChannels channels;
     private final ChannelService channelService;
     private final MessengerHealth health;
-    private final List<Thread> threads = new ArrayList<>();
+    private final Map<ChannelType, Thread> threads = new ConcurrentHashMap<>();
     private volatile boolean running;
 
     public MessengerPolling(MessengerChannels channels, ChannelService channelService, MessengerHealth health) {
@@ -36,21 +39,31 @@ public class MessengerPolling implements SmartLifecycle {
     @Override
     public synchronized void start() {
         running = true;
-        for (MessengerChannel channel : channels.all()) {
-            threads.add(Thread.ofVirtual().name("messenger-" + channel.type()).start(() -> loop(channel)));
-        }
+        channels.all().forEach(this::startPolling);
     }
 
     @Override
     public synchronized void stop() {
         running = false;
-        threads.forEach(Thread::interrupt);
+        threads.values().forEach(Thread::interrupt);
         threads.clear();
     }
 
     @Override
     public boolean isRunning() {
         return running;
+    }
+
+    /** Stops polling the messenger and starts again with its current adapter, if there is one. */
+    public synchronized void restart(ChannelType type) {
+        if (!running) {
+            return;
+        }
+        Thread previous = threads.remove(type);
+        if (previous != null) {
+            previous.interrupt();
+        }
+        channels.find(type).ifPresent(this::startPolling);
     }
 
     /**
@@ -71,9 +84,13 @@ public class MessengerPolling implements SmartLifecycle {
         return messages.size();
     }
 
+    private void startPolling(MessengerChannel channel) {
+        threads.put(channel.type(), Thread.ofVirtual().name("messenger-" + channel.type()).start(() -> loop(channel)));
+    }
+
     private void loop(MessengerChannel channel) {
         Duration backoff = MIN_BACKOFF;
-        while (running) {
+        while (active()) {
             try {
                 pollOnce(channel);
                 if (health.succeeded(channel.type())) {
@@ -81,7 +98,7 @@ public class MessengerPolling implements SmartLifecycle {
                 }
                 backoff = MIN_BACKOFF;
             } catch (RuntimeException e) {
-                if (!running) {
+                if (!active()) {
                     return;
                 }
                 health.failed(channel.type(), String.valueOf(e.getMessage()));
@@ -92,6 +109,11 @@ public class MessengerPolling implements SmartLifecycle {
                 backoff = nextBackoff(backoff);
             }
         }
+    }
+
+    /** The service runs and this polling thread has not been replaced. */
+    private boolean active() {
+        return running && !Thread.currentThread().isInterrupted();
     }
 
     static Duration nextBackoff(Duration current) {

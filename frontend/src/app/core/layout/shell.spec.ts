@@ -22,6 +22,7 @@ describe('Shell', () => {
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
     fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
+    fixture.componentRef.setInput('userLinks', [{ label: 'Настройки', routerLink: '/teacher/settings' }]);
     await fixture.whenStable();
   });
 
@@ -40,6 +41,7 @@ describe('Shell', () => {
   it('signs out from the user menu', async () => {
     buttonByText(hostElement(fixture), 'Меню пользователя').click();
     await fixture.whenStable();
+    expect(bodyText()).toContain('Настройки');
     expect(bodyText()).toContain('Мой аккаунт');
 
     const logout = Array.from(document.body.querySelectorAll('a')).find((element) =>

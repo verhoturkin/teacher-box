@@ -108,6 +108,21 @@ public class MaxChannel implements MessengerChannel {
                 payload.isEmpty() ? "/start" : "/start " + payload));
     }
 
+    @Override
+    public String botName() {
+        JsonNode me = get("/me");
+        String name = me.path("username").asString("");
+        if (!name.isEmpty()) {
+            username = name;
+            return "@" + name;
+        }
+        String title = me.path("name").asString("");
+        if (title.isEmpty()) {
+            throw new IllegalStateException("MAX /me returned no bot name");
+        }
+        return title;
+    }
+
     private Optional<String> botUsername() {
         if (username == null) {
             try {

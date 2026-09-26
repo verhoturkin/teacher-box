@@ -10,6 +10,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.IOException;
+import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -131,16 +132,38 @@ class MaxChannelTest {
     }
 
     @Test
-    void enabledOnlyWhenConfigured() {
+    void checksTheTokenByTheBotName() {
+        server.expect(requestTo(API + "/me"))
+                .andRespond(withSuccess("{\"user_id\": 1, \"username\": \"school_bot\"}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "/me"))
+                .andRespond(withSuccess("{\"user_id\": 1, \"name\": \"Школа\"}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "/me")).andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "/me")).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON).body("{\"message\": \"Invalid access_token\"}"));
+
+        assertThat(channel.botName()).isEqualTo("@school_bot");
+        assertThat(channel.botName()).isEqualTo("Школа");
+        assertThatThrownBy(channel::botName).hasMessage("MAX /me returned no bot name");
+        assertThatThrownBy(channel::botName).hasMessage("MAX 401: Invalid access_token");
+    }
+
+    @Test
+    void factoryReadsTheEnvironment() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(PropertiesConfiguration.class, MaxConfiguration.class)
+                .withUserConfiguration(PropertiesConfiguration.class, MaxChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
 
-        runner.run(context -> assertThat(context).doesNotHaveBean(MaxChannel.class));
-        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token= ", "teacherbox.notifications.max.token= ")
-                .run(context -> assertThat(context).doesNotHaveBean(MaxChannel.class));
+        runner.run(context -> {
+            MaxChannelFactory factory = context.getBean(MaxChannelFactory.class);
+            assertThat(factory.type()).isEqualTo(ChannelType.MAX);
+            assertThat(factory.fromEnvironment()).isNull();
+            assertThat(factory.create(new Credentials("token", null))).isInstanceOf(MaxChannel.class);
+            assertThatThrownBy(() -> factory.create(new Credentials("", null)))
+                    .isInstanceOf(IllegalArgumentException.class);
+        });
         runner.withPropertyValues("teacherbox.notifications.max.token=max-token")
-                .run(context -> assertThat(context).hasSingleBean(MaxChannel.class));
+                .run(context -> assertThat(context.getBean(MaxChannelFactory.class).fromEnvironment())
+                        .isEqualTo(new Credentials("max-token", null)));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)
