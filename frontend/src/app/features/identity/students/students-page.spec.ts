@@ -1,10 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
-import { Student } from '../data-access/identity.models';
+import { aGroup } from '@testing/identity-fixtures';
+import { Student, StudentGroup } from '../data-access/identity.models';
 import { StudentsPage } from './students-page';
 
 function student(overrides: Partial<Student>): Student {
@@ -40,7 +42,7 @@ describe('StudentsPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [StudentsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentsPage);
@@ -53,8 +55,9 @@ describe('StudentsPage', () => {
     fixture.destroy();
   });
 
-  async function loadStudents(students: Student[]): Promise<void> {
+  async function loadStudents(students: Student[], groups: StudentGroup[] = []): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
+    backend.expectOne('/api/teacher/groups').flush(groups);
     await fixture.whenStable();
   }
 
@@ -170,8 +173,42 @@ describe('StudentsPage', () => {
 
   it('stops loading when the list cannot be loaded', async () => {
     backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
+    backend.expectOne('/api/teacher/groups').flush([]);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Пока нет ни одного ученика');
+  });
+
+  it('shows the current groups of each student', async () => {
+    await loadStudents(
+      [MARIA],
+      [
+        aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+        aGroup({ id: 'g2', name: 'Английский', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+        aGroup({ id: 'g3', name: 'Прошлый год', archivedAt: '2026-06-01T10:00:00Z', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+      ],
+    );
+
+    expect(rowsText()[0]).toContain('ОГЭ, Английский');
+    expect(rowsText()[0]).not.toContain('Прошлый год');
+  });
+
+  it('switches to the groups tab through the address', async () => {
+    await loadStudents([MARIA]);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    Array.from(host.querySelectorAll('[role="tab"]')).find((tab) => tab.textContent.includes('Группы'))?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith([], { queryParams: { tab: 'groups' }, replaceUrl: true });
+
+    fixture.componentRef.setInput('tab', 'groups');
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    backend.expectOne('/api/teacher/students').flush([MARIA]);
+    backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
+    await fixture.whenStable();
+
+    expect(host.textContent).toContain('Создать группу');
+    expect(host.textContent).not.toContain('Добавить ученика');
   });
 });

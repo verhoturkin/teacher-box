@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
   assignmentDetails,
@@ -15,6 +16,7 @@ import {
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { aGroup } from '@testing/identity-fixtures';
 import { AssignmentDialog } from './assignment-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -98,6 +100,8 @@ describe('AssignmentPage', () => {
     context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
     context.backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
+    context.backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
@@ -159,6 +163,15 @@ describe('AssignmentPage', () => {
     });
     fixture.destroy();
   });
+  it('adds the students of a group who do not have the assignment yet', async () => {
+    const { fixture } = await render();
+
+    fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker).picked.emit(['s-1', 's-3', 's-9']);
+
+    expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
+    fixture.destroy();
+  });
+
 });
 
 describe('ReviewQueuePage', () => {

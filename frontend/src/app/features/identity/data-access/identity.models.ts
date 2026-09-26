@@ -55,3 +55,24 @@ export interface Account {
   readonly email: string | null;
   readonly phone: string | null;
 }
+
+/** Mirrors `GroupView` of the backend. */
+export interface StudentGroup {
+  readonly id: string;
+  readonly name: string;
+  readonly members: readonly GroupMember[];
+  readonly archivedAt: string | null;
+  readonly createdAt: string;
+  readonly version: number;
+}
+
+export interface GroupMember {
+  readonly id: string;
+  readonly displayName: string;
+  readonly status: AccountStatus;
+}
+
+export interface GroupInput {
+  readonly name: string;
+  readonly memberIds: readonly string[];
+}

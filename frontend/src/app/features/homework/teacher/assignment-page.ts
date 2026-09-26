@@ -9,7 +9,7 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
-import { IdentityApi } from '@features/identity/parts';
+import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -41,6 +41,7 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
     FilePicker,
     TaskStatusTag,
     AssignmentDialog,
+    GroupPicker,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,6 +122,7 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
               ariaLabel="Выдать ещё ученикам"
               styleClass="tb-grow"
             />
+            <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button label="Выдать" [disabled]="selectedToAssign().length === 0" (onClick)="assign()" />
           </div>
         </p-card>
@@ -211,6 +213,12 @@ export class AssignmentPage implements OnInit {
         });
       },
     });
+  }
+
+  /** Adds the students of a chosen group who do not have the assignment yet. */
+  protected addStudents(ids: readonly string[]): void {
+    const available = new Set(this.unassigned().map((student) => student.id));
+    this.toAssign.setValue([...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))])]);
   }
 
   protected assign(): void {

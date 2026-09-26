@@ -21,6 +21,7 @@ import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai/parts';
+import { GroupPicker } from '@features/identity/parts';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
@@ -44,6 +45,7 @@ export interface StudentOption {
     MultiSelect,
     SelectButton,
     Textarea,
+    GroupPicker,
     HomeworkDraftDialog,
     MarkdownView,
   ],
@@ -104,6 +106,9 @@ export interface StudentOption {
               appendTo="body"
               [fluid]="true"
             />
+            @if (visible()) {
+              <tb-group-picker inputId="assignment-group" (picked)="addStudents($event)" />
+            }
           </div>
         }
         @if (error(); as message) {
@@ -171,6 +176,13 @@ export class AssignmentDialog {
   applyDraft(draft: HomeworkDraft): void {
     this.form.patchValue({ title: draft.title, description: draft.description });
     this.mode.setValue('preview');
+  }
+
+  /** Adds the students of a chosen group who can get the assignment. */
+  addStudents(ids: readonly string[]): void {
+    const control = this.form.controls.studentIds;
+    const known = new Set(this.students().map((student) => student.id));
+    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
   }
 
   save(): void {

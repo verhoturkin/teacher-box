@@ -145,3 +145,14 @@ export interface MyBillingSummary {
   readonly lessonPrice: number;
   readonly lastPayment: Payment | null;
 }
+
+/** Lesson price of a group, charged to every participant. */
+export interface GroupPrice {
+  readonly groupId: string;
+  readonly lessonPrice: number;
+}
+
+export interface GroupPrices {
+  readonly currency: string;
+  readonly prices: readonly GroupPrice[];
+}

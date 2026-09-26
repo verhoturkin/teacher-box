@@ -35,15 +35,17 @@ public class StudentAdminService {
     private final UserRepository users;
     private final InviteRepository invites;
     private final RefreshTokenRepository refreshTokens;
+    private final GroupService groups;
     private final ApplicationEventPublisher events;
     private final IdentityProperties properties;
     private final Clock clock;
 
     public StudentAdminService(UserRepository users, InviteRepository invites, RefreshTokenRepository refreshTokens,
-            ApplicationEventPublisher events, IdentityProperties properties, Clock clock) {
+            GroupService groups, ApplicationEventPublisher events, IdentityProperties properties, Clock clock) {
         this.users = users;
         this.invites = invites;
         this.refreshTokens = refreshTokens;
+        this.groups = groups;
         this.events = events;
         this.properties = properties;
         this.clock = clock;
@@ -109,6 +111,7 @@ public class StudentAdminService {
         users.update(student);
         invites.revokeUnusedByUser(studentId, now);
         refreshTokens.revokeAllOfUser(studentId, now);
+        groups.removeStudent(studentId);
         events.publishEvent(new StudentDeactivated(studentId, now));
         return view(student, now);
     }

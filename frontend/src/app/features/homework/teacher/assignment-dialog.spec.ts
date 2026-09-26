@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails } from '@testing/homework-fixtures';
+import { aGroup } from '@testing/identity-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { AssignmentDetails } from '../data-access/homework.models';
 import { AssignmentDialog } from './assignment-dialog';
@@ -40,8 +41,21 @@ describe('AssignmentDialog', () => {
     fixture.componentRef.setInput('assignment', assignment);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
+    backend.match('/api/teacher/groups').forEach((request) => {
+      request.flush([aGroup({ members: [{ id: 's-2', displayName: 'Борис', status: 'ACTIVE' }] })]);
+    });
+    await fixture.whenStable();
     return fixture.componentInstance;
   }
+
+  it('adds the students of a group', async () => {
+    const dialog = await open(null);
+    dialog.form.patchValue({ studentIds: ['s-1'] });
+
+    dialog.addStudents(['s-2', 'unknown', 's-1']);
+
+    expect(dialog.form.controls.studentIds.value).toEqual(['s-1', 's-2']);
+  });
 
   it('creates an assignment for the chosen students', async () => {
     const dialog = await open(null);

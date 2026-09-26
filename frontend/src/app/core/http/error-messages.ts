@@ -27,6 +27,12 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'profile.note-invalid': 'Слишком длинная заметка',
   'student.not-found': 'Ученик не найден',
   'account.deactivated': 'Сначала верните ученику доступ',
+  'group.not-found': 'Группа не найдена',
+  'group.name-invalid': 'Название группы должно содержать от 1 до 100 символов',
+  'group.member-invalid': 'В группу можно добавить только учеников с доступом к порталу',
+  'group.too-many-members': 'В группе может быть не больше 100 учеников',
+  'group.archived': 'Группа уже в архиве',
+  'group.not-archived': 'Группа не в архиве',
   'account.already-deactivated': 'Доступ ученика уже отключён',
   'account.not-deactivated': 'Доступ ученика не был отключён',
   // billing

@@ -7,6 +7,7 @@ import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 
 /** A student the teacher can write to. */
@@ -18,7 +19,7 @@ export interface Recipient {
 /** The teacher writes a message to chosen students or to everybody. */
 @Component({
   selector: 'tb-broadcast-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, MultiSelect, Textarea],
+  imports: [ReactiveFormsModule, Button, Dialog, GroupPicker, InputText, Message, MultiSelect, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog header="Сообщение ученикам" [(visible)]="visible" [modal]="true" [style]="{ width: '36rem' }" [draggable]="false">
@@ -37,6 +38,9 @@ export interface Recipient {
             appendTo="body"
             [fluid]="true"
           />
+          @if (visible()) {
+            <tb-group-picker inputId="broadcast-group" (picked)="addStudents($event)" />
+          }
           <small class="tb-hint">Если никого не выбрать, сообщение получат все ученики.</small>
         </div>
         <div class="tb-field">
@@ -82,6 +86,13 @@ export class BroadcastDialog {
         this.form.reset();
       }
     });
+  }
+
+  /** Adds the students of a chosen group. */
+  addStudents(ids: readonly string[]): void {
+    const control = this.form.controls.studentIds;
+    const known = new Set(this.students().map((student) => student.id));
+    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
   }
 
   send(): void {

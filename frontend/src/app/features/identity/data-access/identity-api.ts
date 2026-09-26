@@ -6,9 +6,11 @@ import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
   Account,
   CreatedStudent,
+  GroupInput,
   InviteInfo,
   IssuedInvite,
   Student,
+  StudentGroup,
   StudentProfileInput,
 } from './identity.models';
 
@@ -39,6 +41,26 @@ export class IdentityApi {
 
   reactivate(id: string): Observable<Student> {
     return this.http.post<Student>(`/api/teacher/students/${id}/reactivate`, null);
+  }
+
+  listGroups(): Observable<StudentGroup[]> {
+    return this.http.get<StudentGroup[]>('/api/teacher/groups');
+  }
+
+  createGroup(group: GroupInput): Observable<StudentGroup> {
+    return this.http.post<StudentGroup>('/api/teacher/groups', group);
+  }
+
+  updateGroup(id: string, group: GroupInput, version: number): Observable<StudentGroup> {
+    return this.http.put<StudentGroup>(`/api/teacher/groups/${id}`, { ...group, version });
+  }
+
+  archiveGroup(id: string): Observable<StudentGroup> {
+    return this.http.post<StudentGroup>(`/api/teacher/groups/${id}/archive`, null);
+  }
+
+  restoreGroup(id: string): Observable<StudentGroup> {
+    return this.http.post<StudentGroup>(`/api/teacher/groups/${id}/restore`, null);
   }
 
   /** Invitation errors are shown on the page itself. */
