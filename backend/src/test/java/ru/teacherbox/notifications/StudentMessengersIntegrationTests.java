@@ -2,12 +2,15 @@ package ru.teacherbox.notifications;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jayway.jsonpath.JsonPath;
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.notifications.application.DeliveryDispatcher;
@@ -77,6 +80,27 @@ class StudentMessengersIntegrationTests {
     }
 
     @Test
+    void summarizesMessengersForTheHomePage() throws UnsupportedEncodingException {
+        String before = summary();
+        UUID connected = directory.addStudent("Сводка с ботом");
+        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "8003", null, true, clock.instant()));
+        directory.addStudent("Сводка без бота");
+        telegram.failWith(new DeliveryException("Forbidden: bot was blocked by the user", true));
+        notifications.notify(connected, NotificationKind.MESSAGE, "Не дойдёт", null, null);
+        dispatcher.dispatch();
+        telegram.reset();
+
+        String after = summary();
+
+        assertThat(number(after, "$.failedDeliveries")).isEqualTo(number(before, "$.failedDeliveries") + 1);
+        assertThat(number(after, "$.students")).isEqualTo(number(before, "$.students") + 2);
+        assertThat(number(after, "$.studentsWithMessenger")).isEqualTo(number(before, "$.studentsWithMessenger") + 1);
+        assertThat(JsonPath.<Boolean>read(after, "$.messengerConfigured")).isTrue();
+        assertThat(mvc.get().uri("/api/teacher/notifications/summary").with(TestUsers.student(connected)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void remindsStudentsWithoutMessengers() {
         UUID connected = directory.addStudent("Уже подключён");
         links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "8002", null, true, clock.instant()));
@@ -117,6 +141,16 @@ class StudentMessengersIntegrationTests {
                 });
         assertThat(mvc.get().uri("/api/teacher/notifications/broadcasts")
                 .with(TestUsers.student(UUID.randomUUID()))).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    private String summary() throws UnsupportedEncodingException {
+        MvcTestResult result = mvc.get().uri("/api/teacher/notifications/summary").with(teacher()).exchange();
+        assertThat(result).hasStatusOk();
+        return result.getResponse().getContentAsString();
+    }
+
+    private static long number(String json, String path) {
+        return JsonPath.<Number>read(json, path).longValue();
     }
 
     private RequestPostProcessor teacher() {

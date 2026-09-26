@@ -2,7 +2,9 @@ import {
   CalendarFeed,
   ChangeRequest,
   LessonSeries,
+  MyScheduleSummary,
   ScheduleSettings,
+  ScheduleSummary,
   ScheduledLesson,
 } from '@features/schedule/data-access/schedule.models';
 
@@ -79,4 +81,12 @@ export function scheduleSettings(overrides: Partial<ScheduleSettings> = {}): Sch
 
 export function calendarFeed(overrides: Partial<CalendarFeed> = {}): CalendarFeed {
   return { enabled: false, createdAt: null, path: null, ...overrides };
+}
+
+export function scheduleSummary(overrides: Partial<ScheduleSummary> = {}): ScheduleSummary {
+  return { today: [], weekLessons: 0, unmarked: 0, pendingRequests: 0, hasLessons: true, ...overrides };
+}
+
+export function myScheduleSummary(overrides: Partial<MyScheduleSummary> = {}): MyScheduleSummary {
+  return { next: null, weekLessons: 0, pendingRequests: 0, ...overrides };
 }

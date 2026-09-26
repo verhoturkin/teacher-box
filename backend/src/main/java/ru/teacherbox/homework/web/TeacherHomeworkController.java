@@ -24,9 +24,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AssignmentService;
+import ru.teacherbox.homework.application.HomeworkSummaryService;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
+import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.ReviewService;
@@ -61,10 +63,18 @@ class TeacherHomeworkController {
 
     private final AssignmentService assignments;
     private final ReviewService reviews;
+    private final HomeworkSummaryService summaries;
 
-    TeacherHomeworkController(AssignmentService assignments, ReviewService reviews) {
+    TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
+            HomeworkSummaryService summaries) {
         this.assignments = assignments;
         this.reviews = reviews;
+        this.summaries = summaries;
+    }
+
+    @GetMapping("/summary")
+    HomeworkSummary summary() {
+        return summaries.teacherSummary();
     }
 
     @GetMapping("/assignments")

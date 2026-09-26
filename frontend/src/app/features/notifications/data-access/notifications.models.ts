@@ -125,3 +125,13 @@ export interface NotificationPreferences {
   readonly quietFrom: string | null;
   readonly quietTo: string | null;
 }
+
+/** Mirrors `TeacherNotificationsSummary`. */
+export interface TeacherNotificationsSummary {
+  /** Messages that could not be delivered in the last 30 days. */
+  readonly failedDeliveries: number;
+  /** At least one messenger bot works. */
+  readonly messengerConfigured: boolean;
+  readonly students: number;
+  readonly studentsWithMessenger: number;
+}

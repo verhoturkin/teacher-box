@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { IdentityApi } from '@features/identity';
+import { IdentityApi } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastDialog, Recipient } from './broadcast-dialog';

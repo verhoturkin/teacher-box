@@ -30,6 +30,7 @@ import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
+import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesPlanned;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
 import ru.teacherbox.schedule.domain.LessonStatus;
@@ -143,6 +144,11 @@ class TeacherScheduleController {
     }
 
     /** Lessons that have ended without a marked outcome. */
+    @GetMapping("/summary")
+    ScheduleSummary summary() {
+        return queries.summary();
+    }
+
     @GetMapping("/unmarked")
     List<LessonView> unmarked() {
         return queries.unmarked();

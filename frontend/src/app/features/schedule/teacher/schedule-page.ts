@@ -6,7 +6,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
-import { IdentityApi } from '@features/identity';
+import { IdentityApi } from '@features/identity/parts';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {

@@ -2,6 +2,8 @@ import {
   AssignmentDetails,
   AssignmentSummary,
   Attachment,
+  HomeworkSummary,
+  MyHomeworkSummary,
   MyTask,
   ReviewQueueItem,
   Submission,
@@ -129,4 +131,12 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
     reviewedAt: null,
     ...overrides,
   };
+}
+
+export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): HomeworkSummary {
+  return { toReview: 0, overdue: 0, dueSoon: 0, oldestToReview: [], ...overrides };
+}
+
+export function myHomeworkSummary(overrides: Partial<MyHomeworkSummary> = {}): MyHomeworkSummary {
+  return { open: 0, overdue: 0, upcoming: [], ...overrides };
 }

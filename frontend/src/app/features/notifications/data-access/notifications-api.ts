@@ -13,6 +13,7 @@ import {
   NotificationPage,
   NotificationPreferences,
   StudentMessengers,
+  TeacherNotificationsSummary,
 } from './notifications.models';
 
 /** HTTP client of the notifications module. */
@@ -107,5 +108,10 @@ export class NotificationsApi {
     return this.http
       .post<{ recipients: number }>('/api/teacher/notifications/remind-connect', { studentIds })
       .pipe(map((response) => response.recipients));
+  }
+
+  /** Teacher: notifications at a glance. */
+  summary(): Observable<TeacherNotificationsSummary> {
+    return this.http.get<TeacherNotificationsSummary>('/api/teacher/notifications/summary');
   }
 }

@@ -157,3 +157,23 @@ export interface BusyTime {
   readonly start: string;
   readonly end: string;
 }
+
+/** Mirrors `ScheduleSummary`: the teacher's schedule at a glance. */
+export interface ScheduleSummary {
+  /** Lessons of today in the instance time zone, cancelled ones included. */
+  readonly today: ScheduledLesson[];
+  /** Scheduled lessons that have not ended, from now to the end of the 7th day. */
+  readonly weekLessons: number;
+  /** Lessons that ended without an outcome. */
+  readonly unmarked: number;
+  readonly pendingRequests: number;
+  /** At least one lesson was ever planned. */
+  readonly hasLessons: boolean;
+}
+
+/** Mirrors `MyScheduleSummary`: a student's schedule at a glance. */
+export interface MyScheduleSummary {
+  readonly next: ScheduledLesson | null;
+  readonly weekLessons: number;
+  readonly pendingRequests: number;
+}

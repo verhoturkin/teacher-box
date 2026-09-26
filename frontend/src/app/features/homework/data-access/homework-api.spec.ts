@@ -78,4 +78,12 @@ describe('HomeworkApi', () => {
     backend.expectOne('/api/me/homework/tasks/t-1');
     expect(backend.expectOne('/api/me/homework/attachments/f-1').request.responseType).toBe('blob');
   });
+
+  it('loads the summaries of the home pages', () => {
+    api.summary().subscribe();
+    api.mySummary().subscribe();
+
+    expect(backend.expectOne('/api/teacher/homework/summary').request.method).toBe('GET');
+    expect(backend.expectOne('/api/me/homework/summary').request.method).toBe('GET');
+  });
 });

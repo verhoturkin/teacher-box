@@ -1,7 +1,9 @@
 import {
   BillingOverview,
+  BillingSummary,
   Lesson,
   MonthlyReport,
+  MyBillingSummary,
   Payment,
   StudentBalance,
   StudentLedger,
@@ -97,4 +99,21 @@ export function monthlyReport(overrides: Partial<MonthlyReport> = {}): MonthlyRe
     payments: [{ studentName: 'Иван Петров', payment: payment() }],
     ...overrides,
   };
+}
+
+export function billingSummary(overrides: Partial<BillingSummary> = {}): BillingSummary {
+  return {
+    currency: 'RUB',
+    totalDebt: 0,
+    debtors: 0,
+    topDebtors: [],
+    income: 0,
+    month: '2026-09',
+    priceSet: true,
+    ...overrides,
+  };
+}
+
+export function myBillingSummary(overrides: Partial<MyBillingSummary> = {}): MyBillingSummary {
+  return { currency: 'RUB', balance: 0, lessonPrice: 150_000, lastPayment: null, ...overrides };
 }

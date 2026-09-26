@@ -69,4 +69,12 @@ describe('BillingApi', () => {
 
     expect(saved).toBe(200_000);
   });
+
+  it('loads the summaries of the home pages', () => {
+    api.summary().subscribe();
+    api.mySummary().subscribe();
+
+    expect(backend.expectOne('/api/teacher/billing/summary').request.method).toBe('GET');
+    expect(backend.expectOne('/api/me/billing/summary').request.method).toBe('GET');
+  });
 });

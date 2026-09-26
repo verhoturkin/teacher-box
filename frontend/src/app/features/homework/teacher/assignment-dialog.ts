@@ -20,7 +20,7 @@ import { MultiSelect } from 'primeng/multiselect';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
-import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai';
+import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai/parts';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';

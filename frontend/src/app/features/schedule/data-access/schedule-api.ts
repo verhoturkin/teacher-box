@@ -13,8 +13,10 @@ import {
   GoogleCalendarStatus,
   LessonOutcome,
   LessonSeries,
+  MyScheduleSummary,
   PlanLessonRequest,
   ScheduleSettings,
+  ScheduleSummary,
   ScheduledLesson,
   SeriesPlanned,
   SeriesRequest,
@@ -146,6 +148,14 @@ export class ScheduleApi {
     return this.http.get<BusyTime[]>('/api/teacher/schedule/google/busy', {
       params: new HttpParams().set('from', from).set('to', to),
     });
+  }
+
+  summary(): Observable<ScheduleSummary> {
+    return this.http.get<ScheduleSummary>('/api/teacher/schedule/summary');
+  }
+
+  mySummary(): Observable<MyScheduleSummary> {
+    return this.http.get<MyScheduleSummary>('/api/me/schedule/summary');
   }
 }
 

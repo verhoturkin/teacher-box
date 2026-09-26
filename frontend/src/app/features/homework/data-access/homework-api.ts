@@ -6,6 +6,8 @@ import {
   AssignmentInput,
   AssignmentSummary,
   Attachment,
+  HomeworkSummary,
+  MyHomeworkSummary,
   MyTask,
   ReviewDecision,
   ReviewQueueItem,
@@ -86,6 +88,14 @@ export class HomeworkApi {
 
   myFile(attachmentId: string): Observable<Blob> {
     return this.http.get(`${ME}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+
+  summary(): Observable<HomeworkSummary> {
+    return this.http.get<HomeworkSummary>('/api/teacher/homework/summary');
+  }
+
+  mySummary(): Observable<MyHomeworkSummary> {
+    return this.http.get<MyHomeworkSummary>('/api/me/homework/summary');
   }
 }
 

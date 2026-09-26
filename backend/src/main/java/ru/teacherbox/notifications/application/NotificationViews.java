@@ -117,6 +117,18 @@ public final class NotificationViews {
     }
 
     /**
+     * Notifications at a glance for the teacher.
+     *
+     * @param failedDeliveries      messages to anybody that could not be delivered in the last 30 days
+     * @param messengerConfigured   at least one messenger bot works
+     * @param students              current students
+     * @param studentsWithMessenger current students who connected a messenger
+     */
+    public record TeacherNotificationsSummary(long failedDeliveries, boolean messengerConfigured, int students,
+            int studentsWithMessenger) {
+    }
+
+    /**
      * What the user gets in messengers.
      *
      * @param mutedTopics topics not sent to messengers

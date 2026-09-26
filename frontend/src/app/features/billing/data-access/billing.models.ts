@@ -114,3 +114,34 @@ export interface RecordPaymentRequest {
   readonly method: PaymentMethod;
   readonly comment: string | null;
 }
+
+/** A student who owes money; `balance` is negative. */
+export interface Debtor {
+  readonly studentId: string;
+  readonly displayName: string;
+  readonly balance: number;
+}
+
+/** Mirrors `BillingSummary`: finances at a glance. */
+export interface BillingSummary {
+  readonly currency: string;
+  readonly totalDebt: number;
+  /** Number of students with a negative balance. */
+  readonly debtors: number;
+  /** The largest debts first. */
+  readonly topDebtors: Debtor[];
+  /** Valid payments dated in the current month. */
+  readonly income: number;
+  /** `yyyy-MM`. */
+  readonly month: string;
+  /** A lesson price is set (by default or for a student). */
+  readonly priceSet: boolean;
+}
+
+/** Mirrors `MyBillingSummary`. */
+export interface MyBillingSummary {
+  readonly currency: string;
+  readonly balance: number;
+  readonly lessonPrice: number;
+  readonly lastPayment: Payment | null;
+}

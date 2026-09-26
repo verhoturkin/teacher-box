@@ -126,4 +126,12 @@ describe('ScheduleApi', () => {
       ).request.method,
     ).toBe('GET');
   });
+
+  it('loads the summaries of the home pages', () => {
+    api.summary().subscribe();
+    api.mySummary().subscribe();
+
+    expect(backend.expectOne('/api/teacher/schedule/summary').request.method).toBe('GET');
+    expect(backend.expectOne('/api/me/schedule/summary').request.method).toBe('GET');
+  });
 });

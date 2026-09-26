@@ -16,6 +16,7 @@ import ru.teacherbox.notifications.application.NotificationViews.BroadcastResult
 import ru.teacherbox.notifications.application.NotificationViews.BroadcastView;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationsStatus;
 import ru.teacherbox.notifications.application.NotificationViews.StudentChannels;
+import ru.teacherbox.notifications.application.NotificationViews.TeacherNotificationsSummary;
 import ru.teacherbox.notifications.domain.InboxNotification;
 
 /** Messages from the teacher to students and the students' messengers. */
@@ -39,6 +40,11 @@ class TeacherNotificationsController {
     }
 
     /** Current students and the messengers they connected. */
+    @GetMapping("/summary")
+    TeacherNotificationsSummary summary() {
+        return notifications.teacherSummary();
+    }
+
     @GetMapping("/students")
     List<StudentChannels> students() {
         return notifications.studentChannels();

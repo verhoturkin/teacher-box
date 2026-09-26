@@ -64,7 +64,7 @@ teacher-box/
 │   └── src/app/
 │       ├── core/                # auth, interceptors, guards, layout, конфиг
 │       ├── shared/              # переиспользуемые UI-компоненты, pipes
-│       └── features/<module>/   # зеркало модулей бекенда: data-access + teacher/ + student/
+│       └── features/<module>/   # зеркало модулей бекенда: data-access + teacher/ + student/ + home/
 ├── docker/                      # Dockerfile (targets: backend, frontend, single) и nginx
 ├── compose.split.yaml           # вариант 1: backend + frontend в разных контейнерах
 ├── compose.single.yaml          # вариант 2: один контейнер
@@ -127,7 +127,11 @@ teacher-box/
      про `notifications`).
 5. **Файлы:** модуль пишет файлы только в свой namespace хранилища (`FileStorage`, `/data/files/<module>/`).
 6. **Frontend** повторяет границы: `features/<module>/` не импортирует внутренности другой
-   фичи; общие вещи — только из `core/` и `shared/` (правило ESLint `no-restricted-imports`).
+   фичи, только её публичные входы: `@features/<name>` (`index.ts` — страницы для ленивых
+   маршрутов) и `@features/<name>/parts` (`parts.ts` — виджеты, панели, API и типы для
+   встраивания; страниц там нет, чтобы они не попадали в чужие бандлы). Общие вещи — только из
+   `core/` и `shared/` (правило ESLint `no-restricted-imports`). Виджеты главной живут в своих
+   фичах, `features/home` только собирает их.
 
 ### 4.3 Роли и доступ
 

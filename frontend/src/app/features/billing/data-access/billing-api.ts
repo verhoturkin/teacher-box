@@ -3,8 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import {
   BillingOverview,
+  BillingSummary,
   Lesson,
   MonthlyReport,
+  MyBillingSummary,
   Payment,
   RecordLessonRequest,
   RecordPaymentRequest,
@@ -56,5 +58,13 @@ export class BillingApi {
     return this.http.get<MonthlyReport>('/api/teacher/billing/reports/monthly', {
       params: new HttpParams().set('month', month),
     });
+  }
+
+  summary(): Observable<BillingSummary> {
+    return this.http.get<BillingSummary>('/api/teacher/billing/summary');
+  }
+
+  mySummary(): Observable<MyBillingSummary> {
+    return this.http.get<MyBillingSummary>('/api/me/billing/summary');
   }
 }

@@ -23,6 +23,7 @@ import ru.teacherbox.notifications.application.NotificationViews.NotificationPag
 import ru.teacherbox.notifications.application.NotificationViews.NotificationView;
 import ru.teacherbox.notifications.application.NotificationViews.NotificationsStatus;
 import ru.teacherbox.notifications.application.NotificationViews.StudentChannels;
+import ru.teacherbox.notifications.application.NotificationViews.TeacherNotificationsSummary;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.Delivery;
 import ru.teacherbox.notifications.domain.InboxNotification;
@@ -149,6 +150,16 @@ public class NotificationService {
                         linked.getOrDefault(student.id(), List.of()).stream().map(ChannelView::of).toList(),
                         failed.getOrDefault(student.id(), 0L)))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TeacherNotificationsSummary teacherSummary() {
+        List<StudentChannels> students = studentChannels();
+        long failed = deliveries.failedCountsSince(clock.instant().minus(PROBLEMS_WINDOW)).values().stream()
+                .mapToLong(Long::longValue)
+                .sum();
+        return new TeacherNotificationsSummary(failed, !channels.available().isEmpty(), students.size(),
+                Math.toIntExact(students.stream().filter(student -> !student.channels().isEmpty()).count()));
     }
 
     /**

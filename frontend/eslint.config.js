@@ -22,13 +22,16 @@ function restrictImports(...patterns) {
   return ['error', { patterns: [NO_DEEP_RELATIVE, ...patterns] }];
 }
 
-/** Feature boundaries (AGENTS.md §4.2 rule 6): other features only via their public index. */
+/**
+ * Feature boundaries (AGENTS.md §4.2 rule 6): other features only via their public entries —
+ * @features/<name> (pages) and @features/<name>/parts (widgets, panels, data access).
+ */
 const featureBoundaries = features.map((feature) => ({
   files: [`src/app/features/${feature}/**/*.ts`],
   rules: {
     'no-restricted-imports': restrictImports({
-      regex: `^@features/(?!${feature}/)[^/]+/`,
-      message: 'Import other features only through their public API: @features/<name>.',
+      regex: `^@features/(?!${feature}/)[^/]+/(?!parts$)`,
+      message: 'Import other features only through their public API: @features/<name> or @features/<name>/parts.',
     }),
   },
 }));

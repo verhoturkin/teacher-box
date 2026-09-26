@@ -54,6 +54,11 @@ export function formatLessonStart(iso: string): string {
   return DAY_TIME.format(new Date(iso));
 }
 
+/** «18:00–19:00» in the browser's time zone. */
+export function formatClockRange(startsAt: string, endsAt: string): string {
+  return `${TIME.format(new Date(startsAt))}–${TIME.format(new Date(endsAt))}`;
+}
+
 /** «чт, 01.10, 18:00–19:00». */
 export function formatLessonTime(startsAt: string, endsAt: string): string {
   return `${formatLessonStart(startsAt)}–${TIME.format(new Date(endsAt))}`;

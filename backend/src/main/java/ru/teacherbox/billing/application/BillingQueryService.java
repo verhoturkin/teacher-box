@@ -1,5 +1,6 @@
 package ru.teacherbox.billing.application;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Comparator;
@@ -13,11 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.billing.application.BillingViews.BillingSummary;
+import ru.teacherbox.billing.application.BillingViews.Debtor;
 import ru.teacherbox.billing.application.BillingViews.JournalLesson;
 import ru.teacherbox.billing.application.BillingViews.JournalPayment;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.MonthlyReport;
 import ru.teacherbox.billing.application.BillingViews.MonthlyStudentRow;
+import ru.teacherbox.billing.application.BillingViews.MyBillingSummary;
 import ru.teacherbox.billing.application.BillingViews.Overview;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentBalance;
@@ -35,6 +39,7 @@ import ru.teacherbox.billing.persistence.StudentAccountRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** Balances, histories and reports. */
 @Service
@@ -42,6 +47,7 @@ import ru.teacherbox.shared.error.NotFoundException;
 public class BillingQueryService {
 
     private static final String UNKNOWN_STUDENT = "Неизвестный ученик";
+    private static final int TOP_DEBTORS = 5;
 
     private final StudentAccountRepository accounts;
     private final LessonRepository lessons;
@@ -51,10 +57,13 @@ public class BillingQueryService {
     private final BillingService billingService;
     private final BillingProperties properties;
     private final BillingCurrency currency;
+    private final InstanceTimeZone timeZone;
+    private final Clock clock;
 
     public BillingQueryService(StudentAccountRepository accounts, LessonRepository lessons,
             PaymentRepository payments, BalanceQueries balances, UserDirectory directory,
-            BillingService billingService, BillingProperties properties, BillingCurrency currency) {
+            BillingService billingService, BillingProperties properties, BillingCurrency currency,
+            InstanceTimeZone timeZone, Clock clock) {
         this.accounts = accounts;
         this.lessons = lessons;
         this.payments = payments;
@@ -63,6 +72,8 @@ public class BillingQueryService {
         this.billingService = billingService;
         this.properties = properties;
         this.currency = currency;
+        this.timeZone = timeZone;
+        this.clock = clock;
     }
 
     /** Current students plus deactivated students that still have ledger entries. */
@@ -84,6 +95,33 @@ public class BillingQueryService {
         long debt = rows.stream().mapToLong(StudentBalance::balance).filter(b -> b < 0).map(Math::negateExact).sum();
         long prepaid = rows.stream().mapToLong(StudentBalance::balance).filter(b -> b > 0).sum();
         return new Overview(currency.code(), defaultPrice, properties.defaultLessonDuration(), debt, prepaid, rows);
+    }
+
+    public BillingSummary summary() {
+        Overview overview = overview();
+        List<Debtor> debtors = overview.students().stream()
+                .filter(student -> student.balance() < 0)
+                .sorted(Comparator.comparingLong(StudentBalance::balance))
+                .map(student -> new Debtor(student.studentId(), student.displayName(), student.balance()))
+                .toList();
+        YearMonth month = YearMonth.from(timeZone.today(clock));
+        long income = payments.findBetween(month.atDay(1), month.atEndOfMonth()).stream()
+                .filter(payment -> !payment.isVoided())
+                .mapToLong(payment -> payment.amount().amountMinor())
+                .sum();
+        boolean priceSet = overview.defaultLessonPrice() > 0
+                || overview.students().stream().anyMatch(student -> student.lessonPrice() > 0);
+        return new BillingSummary(overview.currency(), overview.totalDebt(), debtors.size(),
+                debtors.stream().limit(TOP_DEBTORS).toList(), income, month.toString(), priceSet);
+    }
+
+    public MyBillingSummary studentSummary(UUID studentId) {
+        StudentLedger ledger = ledger(studentId);
+        PaymentView last = ledger.payments().stream()
+                .filter(payment -> payment.voidedAt() == null)
+                .max(Comparator.comparing(PaymentView::paidOn).thenComparing(PaymentView::createdAt))
+                .orElse(null);
+        return new MyBillingSummary(ledger.currency(), ledger.balance(), ledger.lessonPrice(), last);
     }
 
     public StudentLedger ledger(UUID studentId) {

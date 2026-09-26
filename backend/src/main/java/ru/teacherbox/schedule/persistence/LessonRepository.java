@@ -95,6 +95,21 @@ public class LessonRepository {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(this::map).optional();
     }
 
+    /** Whether any lesson was ever planned. */
+    public boolean exists() {
+        return jdbc.sql("select count(*) from schedule.lessons").query(Long.class).single() > 0;
+    }
+
+    /** The student's nearest scheduled lesson that has not ended at {@code now}. */
+    public Optional<Lesson> findNextScheduled(UUID studentId, Instant now) {
+        return jdbc.sql(SELECT + " where student_id = :studentId and status = 'SCHEDULED' and ends_at > :now"
+                        + ORDER + " limit 1")
+                .param("studentId", studentId)
+                .param("now", now)
+                .query(this::map)
+                .optional();
+    }
+
     /** Lessons that start in {@code [from, to)}. */
     public List<Lesson> findStartingBetween(Instant from, Instant to) {
         return jdbc.sql(SELECT + " where starts_at >= :from and starts_at < :to" + ORDER)

@@ -17,11 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
+import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
+import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.LessonStatus;
+import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.schedule.domain.Series;
 import ru.teacherbox.schedule.persistence.ChangeRequestRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
@@ -38,6 +42,8 @@ public class ScheduleQueries {
     /** Longest period of one calendar request. */
     static final int MAX_RANGE_DAYS = 400;
     private static final int STUDENT_REQUESTS = 20;
+    /** Days of the «this week» counters, today included. */
+    private static final int WEEK_DAYS = 7;
 
     private final LessonRepository lessons;
     private final SeriesRepository series;
@@ -101,6 +107,33 @@ public class ScheduleQueries {
         return active.stream().map(item -> SeriesView.of(item, names.get(item.studentId()))).toList();
     }
 
+    public ScheduleSummary summary() {
+        Instant now = clock.instant();
+        LocalDate today = LocalDate.ofInstant(now, zone);
+        List<LessonView> week = lessons(today, today.plusDays(WEEK_DAYS));
+        Instant tomorrow = start(today.plusDays(1));
+        return new ScheduleSummary(
+                week.stream().filter(lesson -> lesson.startsAt().isBefore(tomorrow)).toList(),
+                Math.toIntExact(week.stream().filter(lesson -> upcoming(lesson.status(), lesson.endsAt(), now)).count()),
+                lessons.findUnmarked(now).size(),
+                requests.findPending().size(),
+                lessons.exists());
+    }
+
+    public MyScheduleSummary studentSummary(UUID studentId) {
+        Instant now = clock.instant();
+        LocalDate today = LocalDate.ofInstant(now, zone);
+        LessonView next = lessons.findNextScheduled(studentId, now).map(lesson -> views(List.of(lesson)).getFirst())
+                .orElse(null);
+        long week = lessons.findStartingBetween(studentId, start(today), start(today.plusDays(WEEK_DAYS))).stream()
+                .filter(lesson -> upcoming(lesson.status(), lesson.endsAt(), now))
+                .count();
+        long pending = requests.findByStudent(studentId, STUDENT_REQUESTS).stream()
+                .filter(request -> request.status() == RequestStatus.PENDING)
+                .count();
+        return new MyScheduleSummary(next, Math.toIntExact(week), Math.toIntExact(pending));
+    }
+
     public ScheduleSettings settings() {
         return new ScheduleSettings(zone.getId(), properties.defaultDuration(),
                 properties.lateCancellation().toMinutes(),
@@ -141,6 +174,10 @@ public class ScheduleQueries {
                     "The period must be 1-" + MAX_RANGE_DAYS + " days long");
         }
         return start(from);
+    }
+
+    private static boolean upcoming(LessonStatus status, Instant endsAt, Instant now) {
+        return status == LessonStatus.SCHEDULED && endsAt.isAfter(now);
     }
 
     private Instant start(LocalDate day) {

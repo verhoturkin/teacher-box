@@ -24,6 +24,7 @@ import ru.teacherbox.schedule.application.FeedService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.ScheduleViews.FeedView;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
+import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
 import ru.teacherbox.shared.error.ForbiddenException;
@@ -56,6 +57,11 @@ class MyScheduleController {
     @GetMapping("/settings")
     ScheduleSettings settings() {
         return queries.settings();
+    }
+
+    @GetMapping("/summary")
+    MyScheduleSummary summary(CurrentUser user) {
+        return queries.studentSummary(studentId(user));
     }
 
     @GetMapping("/lessons")

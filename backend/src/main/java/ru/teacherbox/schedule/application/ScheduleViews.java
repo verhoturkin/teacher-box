@@ -120,4 +120,27 @@ public final class ScheduleViews {
         return kind == ChangeKind.CANCEL
                 && Duration.between(requestedAt, lessonStartsAt).compareTo(lateCancellation) < 0;
     }
+
+    /**
+     * The teacher's schedule at a glance.
+     *
+     * @param today           lessons of today in the instance time zone (cancelled ones included)
+     * @param weekLessons     scheduled lessons that have not ended, from now to the end of the 7th day
+     * @param unmarked        lessons that ended without an outcome
+     * @param pendingRequests unanswered requests of students
+     * @param hasLessons      at least one lesson was ever planned
+     */
+    public record ScheduleSummary(List<LessonView> today, int weekLessons, int unmarked, int pendingRequests,
+            boolean hasLessons) {
+    }
+
+    /**
+     * A student's schedule at a glance.
+     *
+     * @param next            the nearest scheduled lesson that has not ended
+     * @param weekLessons     scheduled lessons that have not ended, from now to the end of the 7th day
+     * @param pendingRequests the student's unanswered requests
+     */
+    public record MyScheduleSummary(@Nullable LessonView next, int weekLessons, int pendingRequests) {
+    }
 }

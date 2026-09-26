@@ -136,4 +136,36 @@ public final class BillingViews {
             List<JournalLesson> lessons,
             List<JournalPayment> payments) {
     }
+
+    /** A student who owes money; {@code balance} is negative. */
+    public record Debtor(UUID studentId, String displayName, long balance) {
+    }
+
+    /**
+     * Finances at a glance.
+     *
+     * @param debtors    number of students with a negative balance
+     * @param topDebtors the largest debts first
+     * @param income     valid payments dated in the current month
+     * @param month      the current month, {@code yyyy-MM}
+     * @param priceSet   a lesson price is set (by default or for a student)
+     */
+    public record BillingSummary(
+            String currency,
+            long totalDebt,
+            int debtors,
+            List<Debtor> topDebtors,
+            long income,
+            String month,
+            boolean priceSet) {
+    }
+
+    /**
+     * A student's finances at a glance.
+     *
+     * @param balance     positive: prepaid, negative: owed
+     * @param lastPayment the latest valid payment
+     */
+    public record MyBillingSummary(String currency, long balance, long lessonPrice, @Nullable PaymentView lastPayment) {
+    }
 }

@@ -107,4 +107,25 @@ public final class HomeworkViews {
             Instant assignedAt,
             @Nullable Instant reviewedAt) {
     }
+
+    /**
+     * Homework at a glance for the teacher.
+     *
+     * @param toReview       submitted works waiting for review
+     * @param overdue        open tasks of current students past their due date
+     * @param dueSoon        open tasks of current students due within the next days
+     * @param oldestToReview the works waiting longest
+     */
+    public record HomeworkSummary(int toReview, int overdue, int dueSoon, List<ReviewQueueItem> oldestToReview) {
+    }
+
+    /**
+     * A student's homework at a glance.
+     *
+     * @param open     tasks the student still has to do
+     * @param overdue  open tasks past their due date
+     * @param upcoming open tasks, the nearest due date first (tasks without a date last)
+     */
+    public record MyHomeworkSummary(int open, int overdue, List<MyTask> upcoming) {
+    }
 }

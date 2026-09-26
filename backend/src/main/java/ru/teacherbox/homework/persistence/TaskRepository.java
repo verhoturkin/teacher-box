@@ -111,6 +111,22 @@ public class TaskRepository {
                 .list();
     }
 
+    /** A due date of an open task. */
+    public record OpenDeadline(UUID studentId, Instant dueAt) {
+    }
+
+    /** Due dates of all open tasks that have one. */
+    public List<OpenDeadline> findOpenDeadlines() {
+        return jdbc.sql("""
+                select t.student_id, a.due_at from homework.tasks t
+                join homework.assignments a on a.id = t.assignment_id
+                where t.status in ('ASSIGNED', 'RETURNED') and a.due_at is not null
+                """)
+                .query((rs, rowNum) -> new OpenDeadline(rs.getObject("student_id", UUID.class),
+                        rs.getObject("due_at", Instant.class)))
+                .list();
+    }
+
     /** Number of tasks per status for every assignment. */
     public Map<UUID, Map<TaskStatus, Integer>> statusCounts() {
         Map<UUID, Map<TaskStatus, Integer>> counts = new HashMap<>();

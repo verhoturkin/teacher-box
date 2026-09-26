@@ -54,7 +54,7 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     expect(TestBed.inject(Router).url).toBe('/teacher');
     expect(text()).toContain('Кабинет учителя');
-    expect(text()).toContain('Добро пожаловать в Teacher Box');
+    expect(text()).toContain('Главная');
     expect(title()).toBe('Главная — Teacher Box');
   });
 

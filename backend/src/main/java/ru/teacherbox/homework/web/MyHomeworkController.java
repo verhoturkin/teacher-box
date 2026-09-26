@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ru.teacherbox.homework.application.HomeworkSummaryService;
+import ru.teacherbox.homework.application.HomeworkViews.MyHomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.StudentHomeworkService;
@@ -25,9 +27,16 @@ import ru.teacherbox.shared.security.CurrentUser;
 class MyHomeworkController {
 
     private final StudentHomeworkService homework;
+    private final HomeworkSummaryService summaries;
 
-    MyHomeworkController(StudentHomeworkService homework) {
+    MyHomeworkController(StudentHomeworkService homework, HomeworkSummaryService summaries) {
         this.homework = homework;
+        this.summaries = summaries;
+    }
+
+    @GetMapping("/summary")
+    MyHomeworkSummary summary(CurrentUser user) {
+        return summaries.studentSummary(studentId(user));
     }
 
     @GetMapping

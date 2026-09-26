@@ -102,3 +102,22 @@ export interface AssignmentInput {
   readonly description: string | null;
   readonly dueAt: string | null;
 }
+
+/** Mirrors `HomeworkSummary`: homework at a glance for the teacher. */
+export interface HomeworkSummary {
+  readonly toReview: number;
+  /** Open tasks of current students past their due date. */
+  readonly overdue: number;
+  /** Open tasks of current students due within three days. */
+  readonly dueSoon: number;
+  /** The works waiting longest. */
+  readonly oldestToReview: ReviewQueueItem[];
+}
+
+/** Mirrors `MyHomeworkSummary`. */
+export interface MyHomeworkSummary {
+  readonly open: number;
+  readonly overdue: number;
+  /** Open tasks, the nearest due date first. */
+  readonly upcoming: MyTask[];
+}

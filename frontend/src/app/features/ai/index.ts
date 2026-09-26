@@ -1,5 +1,2 @@
-/** Public API of the AI feature: the usage page (lazy route) and helpers used by homework. */
+/** Public API of the AI feature (pages are lazy-loaded by the application routes). */
 export { AiUsagePage } from './ai-usage-page';
-export { AiApi } from './data-access/ai-api';
-export type { HomeworkDraft, ReviewDraft } from './data-access/ai.models';
-export { HomeworkDraftDialog } from './homework-draft-dialog';

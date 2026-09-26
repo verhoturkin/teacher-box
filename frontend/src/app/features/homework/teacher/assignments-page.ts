@@ -5,7 +5,7 @@ import { Badge } from 'primeng/badge';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
-import { IdentityApi } from '@features/identity';
+import { IdentityApi } from '@features/identity/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentSummary } from '../data-access/homework.models';

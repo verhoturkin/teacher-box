@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
+import ru.teacherbox.billing.application.BillingViews.BillingSummary;
 import ru.teacherbox.billing.application.BillingViews.MonthlyReport;
 import ru.teacherbox.billing.application.BillingViews.Overview;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
@@ -72,6 +73,11 @@ class TeacherBillingController {
     @GetMapping("/overview")
     Overview overview() {
         return queries.overview();
+    }
+
+    @GetMapping("/summary")
+    BillingSummary summary() {
+        return queries.summary();
     }
 
     @GetMapping("/students/{studentId}")

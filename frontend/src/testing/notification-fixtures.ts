@@ -7,6 +7,7 @@ import {
   NotificationPage,
   NotificationPreferences,
   StudentMessengers,
+  TeacherNotificationsSummary,
 } from '@features/notifications/data-access/notifications.models';
 
 export function notification(overrides: Partial<NotificationItem> = {}): NotificationItem {
@@ -84,4 +85,10 @@ export function broadcastItem(overrides: Partial<BroadcastItem> = {}): Broadcast
 
 export function preferences(overrides: Partial<NotificationPreferences> = {}): NotificationPreferences {
   return { mutedTopics: [], quietFrom: null, quietTo: null, ...overrides };
+}
+
+export function teacherNotificationsSummary(
+  overrides: Partial<TeacherNotificationsSummary> = {},
+): TeacherNotificationsSummary {
+  return { failedDeliveries: 0, messengerConfigured: true, students: 1, studentsWithMessenger: 0, ...overrides };
 }

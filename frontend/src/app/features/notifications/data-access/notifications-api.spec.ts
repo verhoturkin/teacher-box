@@ -71,6 +71,7 @@ describe('NotificationsApi', () => {
     api.removeBot('MAX').subscribe();
     api.testBot('TELEGRAM').subscribe();
     api.studentMessengers().subscribe();
+    api.summary().subscribe();
     api.broadcasts().subscribe();
     api.remindToConnect(['s-1']).subscribe((count) => (recipients = count));
 
@@ -82,6 +83,7 @@ describe('NotificationsApi', () => {
     const test = backend.expectOne({ method: 'POST', url: '/api/teacher/notifications/channels/TELEGRAM/test' });
     expect(test.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/students' });
+    backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/summary' });
     backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/broadcasts' });
     const remind = backend.expectOne({ method: 'POST', url: '/api/teacher/notifications/remind-connect' });
     expect(remind.request.body).toEqual({ studentIds: ['s-1'] });
