@@ -100,4 +100,30 @@ describe('ScheduleApi', () => {
     expect(backend.expectOne({ method: 'POST', url: '/api/me/schedule/feed' })).toBeTruthy();
     expect(backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/feed' })).toBeTruthy();
   });
+
+  it('calls the Google Calendar endpoints', () => {
+    api.googleStatus().subscribe();
+    api.saveGoogleClient('id', 'secret').subscribe();
+    api.authorizeGoogle('https://school', true).subscribe();
+    api.syncGoogle().subscribe();
+    api.disconnectGoogle().subscribe();
+    api.googleBusy('2026-10-01T00:00:00Z', '2026-10-08T00:00:00Z').subscribe();
+
+    expect(backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/google' })).toBeTruthy();
+    expect(backend.expectOne('/api/teacher/schedule/google/client').request.body).toEqual({
+      clientId: 'id',
+      clientSecret: 'secret',
+    });
+    expect(backend.expectOne('/api/teacher/schedule/google/authorize').request.body).toEqual({
+      origin: 'https://school',
+      busy: true,
+    });
+    expect(backend.expectOne('/api/teacher/schedule/google/sync').request.method).toBe('POST');
+    expect(backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/google' })).toBeTruthy();
+    expect(
+      backend.expectOne(
+        '/api/teacher/schedule/google/busy?from=2026-10-01T00:00:00Z&to=2026-10-08T00:00:00Z',
+      ).request.method,
+    ).toBe('GET');
+  });
 });

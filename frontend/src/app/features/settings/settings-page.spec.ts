@@ -64,6 +64,17 @@ describe('SettingsPage', () => {
     backend.expectOne('/api/teacher/notifications/status').flush(status);
     backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     backend.expectOne('/api/teacher/backups').flush(backups);
+    backend.expectOne('/api/teacher/schedule/google').flush({
+      clientConfigured: false,
+      clientFromEnvironment: false,
+      clientId: null,
+      status: 'NOT_CONNECTED',
+      busyEnabled: false,
+      lastError: null,
+      lastSyncAt: null,
+      connectedAt: null,
+      callbackPath: '/api/public/schedule/google/callback',
+    });
     await fixture.whenStable();
   }
 

@@ -392,3 +392,8 @@ a.p-button {
   outline: 2px dashed var(--p-orange-500);
   outline-offset: 1px;
 }
+
+/* Busy time from the teacher's Google Calendar */
+.tb-busy {
+  --fc-classic-background-event: var(--p-surface-500);
+}

@@ -134,3 +134,26 @@ export interface ChangeRequestBody {
   readonly proposedStartsAt: string | null;
   readonly comment: string | null;
 }
+
+export type GoogleStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'NEEDS_RECONNECT';
+
+/** Mirrors `GoogleStatusView` of the backend. */
+export interface GoogleCalendarStatus {
+  readonly clientConfigured: boolean;
+  /** The OAuth client is set by environment variables and cannot be changed in the UI. */
+  readonly clientFromEnvironment: boolean;
+  readonly clientId: string | null;
+  readonly status: GoogleStatus;
+  readonly busyEnabled: boolean;
+  readonly lastError: string | null;
+  readonly lastSyncAt: string | null;
+  readonly connectedAt: string | null;
+  /** Path of the redirect URI to register in Google Cloud. */
+  readonly callbackPath: string;
+}
+
+/** A time when the teacher is busy in their own Google calendars. */
+export interface BusyTime {
+  readonly start: string;
+  readonly end: string;
+}

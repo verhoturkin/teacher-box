@@ -15,7 +15,7 @@ import classicTheme from '@fullcalendar/angular/themes/classic';
 import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import ruLocale from 'fullcalendar/locales/ru';
 import { toIsoDate } from '@shared/dates/iso-date';
-import { ScheduledLesson } from '../data-access/schedule.models';
+import { BusyTime, ScheduledLesson } from '../data-access/schedule.models';
 
 /** Days `[from, to)` shown by the calendar (`yyyy-MM-dd`, browser time zone). */
 export interface CalendarRange {
@@ -56,6 +56,8 @@ export class ScheduleCalendar {
   readonly initialView = input<CalendarView>('timeGridWeek');
   /** Day to show first (`yyyy-MM-dd`); today by default. */
   readonly initialDate = input<string | null>(null);
+  /** Busy times of the teacher's own calendars, shown in the background. */
+  readonly busy = input<readonly BusyTime[]>([]);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -82,7 +84,16 @@ export class ScheduleCalendar {
       selectMirror: editable,
       editable,
       eventDurationEditable: false,
-      events: this.lessons().map((lesson) => this.toEvent(lesson, editable)),
+      events: [
+        ...this.lessons().map((lesson) => this.toEvent(lesson, editable)),
+        ...this.busy().map((busy, index) => ({
+          id: `busy-${String(index)}`,
+          start: busy.start,
+          end: busy.end,
+          display: 'background',
+          className: 'tb-busy',
+        })),
+      ],
       datesSet: (info: DatesSetInfo) => {
         this.rangeChange.emit({ from: toIsoDate(info.start), to: toIsoDate(info.end) });
       },

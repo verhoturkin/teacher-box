@@ -93,6 +93,9 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.request-pending': 'По этому занятию уже есть запрос, дождитесь ответа учителя',
   'schedule.request-resolved': 'На запрос уже ответили',
   'schedule.students-only': 'Раздел доступен только ученикам',
+  'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
+  'schedule.google-client-from-environment': 'OAuth-клиент Google задан в переменных окружения сервера',
+  'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
 };
 
 const STATUS_MESSAGES: Readonly<Record<number, string>> = {

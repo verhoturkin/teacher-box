@@ -10,6 +10,7 @@ import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.schedule.api.ChangeKind;
+import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
 import ru.teacherbox.schedule.api.LessonRescheduled;
@@ -146,6 +147,14 @@ class ScheduleNotifications {
             notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_REMINDER,
                     "Скоро урок: " + name(event.studentId()) + ", " + when, in + link, TEACHER_LINK);
         }
+    }
+
+    @ApplicationModuleListener
+    void on(GoogleCalendarDisconnected event) {
+        notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_CALENDAR, "Google Календарь отключён",
+                "Google больше не принимает доступ портала, занятия не попадают в календарь. "
+                        + "Подключите календарь заново в настройках.",
+                "/teacher/settings");
     }
 
     private String name(UUID studentId) {

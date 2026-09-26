@@ -8,6 +8,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { AiApi } from '@features/ai';
+import { GoogleCalendarPanel } from '@features/schedule';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -38,6 +39,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     ButtonLabel,
     Card,
     ConfirmDialog,
+    GoogleCalendarPanel,
     TableModule,
     Tag,
     RowType,
@@ -94,6 +96,8 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
           Боты и ИИ подключаются переменными окружения сервера (см. .env.example) и перезапуском портала.
         </small>
       </p-card>
+
+      <tb-google-calendar-panel />
 
       <p-card header="Неудачные доставки уведомлений">
         @if (failed().length === 0) {

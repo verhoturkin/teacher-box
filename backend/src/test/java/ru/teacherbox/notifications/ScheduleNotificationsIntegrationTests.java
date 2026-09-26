@@ -18,6 +18,7 @@ import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.InboxRepository;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
+import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
 import ru.teacherbox.schedule.api.LessonRescheduled;
@@ -176,6 +177,16 @@ class ScheduleNotificationsIntegrationTests {
                         .isEqualTo("Через 1 час. Ссылка на урок: https://zoom.us/j/1"));
         assertThat(inbox.findPage(last, 0, 10).getFirst().body())
                 .isEqualTo("Через 1 час. Тема: Дроби. Ссылка на урок: https://zoom.us/j/1");
+    }
+
+    @Test
+    void lostCalendarAccessIsReportedToTheTeacher(Scenario scenario) {
+        scenario.publish(new GoogleCalendarDisconnected("invalid_grant", Instant.now()))
+                .andWaitForStateChange(() -> teacherNotifications("Google Календарь отключён"), list -> !list.isEmpty())
+                .andVerify(list -> {
+                    assertThat(list.getFirst().kind()).isEqualTo(NotificationKind.SCHEDULE_CALENDAR);
+                    assertThat(list.getFirst().link()).isEqualTo("/teacher/settings");
+                });
     }
 
     private InboxNotification latest(Scenario scenario, UUID recipient, Object event) {

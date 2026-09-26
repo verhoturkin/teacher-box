@@ -4,11 +4,13 @@ import { Observable } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
   ApproveRequest,
+  BusyTime,
   CalendarFeed,
   CancelLessonRequest,
   ChangeRequest,
   ChangeRequestBody,
   EditLessonRequest,
+  GoogleCalendarStatus,
   LessonOutcome,
   LessonSeries,
   PlanLessonRequest,
@@ -116,6 +118,34 @@ export class ScheduleApi {
 
   disableFeed(): Observable<unknown> {
     return this.http.delete('/api/me/schedule/feed');
+  }
+
+  googleStatus(): Observable<GoogleCalendarStatus> {
+    return this.http.get<GoogleCalendarStatus>('/api/teacher/schedule/google');
+  }
+
+  saveGoogleClient(clientId: string, clientSecret: string): Observable<GoogleCalendarStatus> {
+    return this.http.put<GoogleCalendarStatus>('/api/teacher/schedule/google/client', { clientId, clientSecret });
+  }
+
+  /** @returns the address of Google's consent page */
+  authorizeGoogle(origin: string, busy: boolean): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>('/api/teacher/schedule/google/authorize', { origin, busy });
+  }
+
+  syncGoogle(): Observable<{ changed: number }> {
+    return this.http.post<{ changed: number }>('/api/teacher/schedule/google/sync', null);
+  }
+
+  disconnectGoogle(): Observable<unknown> {
+    return this.http.delete('/api/teacher/schedule/google');
+  }
+
+  /** Busy times of the teacher's own calendars in `[from, to)` (ISO instants). */
+  googleBusy(from: string, to: string): Observable<BusyTime[]> {
+    return this.http.get<BusyTime[]>('/api/teacher/schedule/google/busy', {
+      params: new HttpParams().set('from', from).set('to', to),
+    });
   }
 }
 

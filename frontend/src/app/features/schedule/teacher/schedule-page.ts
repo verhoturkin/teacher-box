@@ -7,9 +7,10 @@ import { Tag } from 'primeng/tag';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { IdentityApi } from '@features/identity';
-import { toIsoDate } from '@shared/dates/iso-date';
+import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
+  BusyTime,
   ChangeRequest,
   LessonOutcome,
   LessonSeries,
@@ -71,6 +72,7 @@ const CLICK_SELECTION_MINUTES = 30;
       <p-card>
         <tb-schedule-calendar
           [lessons]="lessons()"
+          [busy]="busy()"
           [editable]="true"
           (rangeChange)="onRange($event)"
           (lessonClick)="openLesson($event)"
@@ -243,6 +245,7 @@ export class SchedulePage implements OnInit {
   protected readonly requests = signal<ChangeRequest[]>([]);
   protected readonly unmarked = signal<ScheduledLesson[]>([]);
   protected readonly series = signal<LessonSeries[]>([]);
+  protected readonly busy = signal<BusyTime[]>([]);
   protected readonly defaultDuration = computed(() => this.settings()?.defaultDurationMinutes ?? 60);
   protected readonly localTimeHint = computed(() => {
     const zone = this.settings()?.timeZone;
@@ -262,6 +265,7 @@ export class SchedulePage implements OnInit {
   protected readonly answering = signal<ChangeRequest | null>(null);
 
   private range: CalendarRange | null = null;
+  private busyEnabled = false;
 
   ngOnInit(): void {
     this.api.settings().subscribe((settings) => {
@@ -275,11 +279,16 @@ export class SchedulePage implements OnInit {
       );
     });
     this.loadSidePanels();
+    this.api.googleStatus().subscribe((status) => {
+      this.busyEnabled = status.status === 'CONNECTED' && status.busyEnabled;
+      this.loadBusy();
+    });
   }
 
   onRange(range: CalendarRange): void {
     this.range = range;
     this.loadLessons();
+    this.loadBusy();
   }
 
   /** Reloads everything a change of a lesson, series or request can affect. */
@@ -427,6 +436,20 @@ export class SchedulePage implements OnInit {
     this.api.lessons(widened.from, widened.to).subscribe((lessons) => {
       this.lessons.set(lessons);
     });
+  }
+
+  /** Busy times of the teacher's Google calendars, if the teacher allowed reading them. */
+  private loadBusy(): void {
+    const range = this.range;
+    if (range === null || !this.busyEnabled) {
+      return;
+    }
+    const widened = widen(range);
+    this.api
+      .googleBusy(fromIsoDate(widened.from).toISOString(), fromIsoDate(widened.to).toISOString())
+      .subscribe((busy) => {
+        this.busy.set(busy);
+      });
   }
 
   private loadSidePanels(): void {

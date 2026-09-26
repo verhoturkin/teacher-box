@@ -48,7 +48,14 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/schedule/series').flush([lessonSeries()]);
   }
 
-  async function render(settings = scheduleSettings(), unmarked: ScheduledLesson[] = []): Promise<string> {
+  async function render(
+    settings = scheduleSettings(),
+    unmarked: ScheduledLesson[] = [],
+    google: { status: 'CONNECTED' | 'NOT_CONNECTED'; busyEnabled: boolean } = {
+      status: 'NOT_CONNECTED',
+      busyEnabled: false,
+    },
+  ): Promise<string> {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(settings);
     backend.expectOne('/api/teacher/students').flush([
@@ -57,6 +64,7 @@ describe('SchedulePage', () => {
     ]);
     flushSidePanels(unmarked);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    backend.expectOne('/api/teacher/schedule/google').flush(google);
     await fixture.whenStable();
     lessonsRequest().flush([scheduledLesson()]);
     await fixture.whenStable();
@@ -83,6 +91,17 @@ describe('SchedulePage', () => {
     expect(text).toContain('Регулярные занятия');
     expect(text).toContain('Вт, Чт в 18:00');
     expect(text).not.toContain('часовому поясу этого устройства');
+  });
+
+  it('shows busy times from the teacher’s Google Calendar', async () => {
+    await render(scheduleSettings(), [], { status: 'CONNECTED', busyEnabled: true });
+
+    const busy = backend.match((request) => request.url === '/api/teacher/schedule/google/busy');
+    expect(busy.length).toBeGreaterThan(0);
+    for (const request of busy) {
+      expect(request.request.params.get('from')).toMatch(/Z$/);
+      request.flush([{ start: '2026-10-01T09:00:00Z', end: '2026-10-01T10:00:00Z' }]);
+    }
   });
 
   it('explains times when the portal is in another time zone', async () => {
