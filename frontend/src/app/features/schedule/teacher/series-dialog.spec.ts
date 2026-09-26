@@ -41,7 +41,7 @@ describe('SeriesDialog', () => {
     const dialog = await open();
     expect(bodyText()).toContain('Регулярные занятия');
     dialog.form.patchValue({
-      studentId: 's-1',
+      owner: 'student:s-1',
       weekdays: ['THURSDAY', 'TUESDAY'],
       startTime: new Date(2026, 0, 1, 18, 30),
       intervalWeeks: 2,
@@ -56,6 +56,7 @@ describe('SeriesDialog', () => {
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/series' });
     expect(request.request.body).toEqual({
       studentId: 's-1',
+      groupId: null,
       weekdays: ['TUESDAY', 'THURSDAY'],
       startTime: '18:30',
       durationMinutes: 60,
@@ -73,7 +74,7 @@ describe('SeriesDialog', () => {
   it('offers to save overlapping lessons anyway and shows other errors', async () => {
     const dialog = await open();
     dialog.form.patchValue({
-      studentId: 's-1',
+      owner: 'group:g-1',
       weekdays: ['MONDAY'],
       startTime: new Date(2026, 0, 1, 9, 0),
       startsOn: new Date(2026, 9, 5),
@@ -104,7 +105,7 @@ describe('SeriesDialog', () => {
 
     expect(bodyText()).toContain('Изменить регулярные занятия');
     expect(bodyText()).toContain('Время указывается по часовому поясу портала: Pacific/Chatham');
-    expect(dialog.form.controls.studentId.disabled).toBe(true);
+    expect(dialog.form.controls.owner.disabled).toBe(true);
     expect(dialog.form.controls.weekdays.value).toEqual(['TUESDAY', 'THURSDAY']);
     expect(dialog.form.controls.startsOn.value?.getFullYear()).toBeGreaterThanOrEqual(2026);
 

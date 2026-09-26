@@ -5,12 +5,13 @@ import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
-import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
+import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
+import { AttendanceDialog } from '../teacher/attendance-dialog';
 
-/** Teacher's home: today's lessons with a link to the lesson and quick marks. */
+/** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
-  imports: [RouterLink, Button, Card, Tag],
+  imports: [RouterLink, Button, Card, Tag, AttendanceDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Сегодня">
@@ -23,7 +24,10 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
             <li class="tb-today__lesson" [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'">
               <span class="tb-today__time">{{ time(lesson) }}</span>
               <div class="tb-today__info">
-                <strong>{{ lesson.studentName ?? 'Ученик' }}</strong>
+                <strong>{{ with(lesson) }}</strong>
+                @if (lesson.groupId !== null) {
+                  <small class="tb-muted">Учеников: {{ lesson.participants.length }}</small>
+                }
                 @if (lesson.topic !== null) {
                   <small class="tb-muted">{{ lesson.topic }}</small>
                 }
@@ -37,7 +41,16 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
                     <span>Урок</span>
                   </a>
                 }
-                @if (started(lesson)) {
+                @if (started(lesson) && lesson.groupId !== null) {
+                  <p-button
+                    label="Отметить"
+                    icon="pi pi-users"
+                    size="small"
+                    [text]="true"
+                    [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                    (onClick)="openAttendance(lesson)"
+                  />
+                } @else if (started(lesson)) {
                   <p-button
                     icon="pi pi-check"
                     size="small"
@@ -67,6 +80,8 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
         <a routerLink="/teacher/schedule">Расписание</a>
       </div>
     </p-card>
+
+    <tb-attendance-dialog [(visible)]="attendanceVisible" [lesson]="attendanceLesson()" (saved)="changed.emit()" />
   `,
   styles: `
     .tb-today {
@@ -121,6 +136,9 @@ export class TodayLessonsWidget {
 
   protected readonly statuses = STATUS_LABELS;
   protected readonly pending = signal<string | null>(null);
+  protected readonly with = lessonWith;
+  protected readonly attendanceVisible = signal(false);
+  protected readonly attendanceLesson = signal<ScheduledLesson | null>(null);
 
   protected time(lesson: ScheduledLesson): string {
     return formatClockRange(lesson.startsAt, lesson.endsAt);
@@ -128,6 +146,11 @@ export class TodayLessonsWidget {
 
   protected started(lesson: ScheduledLesson): boolean {
     return new Date(lesson.startsAt).getTime() <= this.now().getTime();
+  }
+
+  openAttendance(lesson: ScheduledLesson): void {
+    this.attendanceLesson.set(lesson);
+    this.attendanceVisible.set(true);
   }
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {

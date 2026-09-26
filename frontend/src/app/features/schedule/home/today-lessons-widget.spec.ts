@@ -1,11 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
-import { at, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
+import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { at, groupLesson, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { ScheduleSummary } from '../data-access/schedule.models';
+import { AttendanceDialog } from '../teacher/attendance-dialog';
 import { TodayLessonsWidget } from './today-lessons-widget';
 
 describe('TodayLessonsWidget', () => {
@@ -82,6 +84,20 @@ describe('TodayLessonsWidget', () => {
       .expectOne('/api/teacher/schedule/lessons/l-1/outcome')
       .flush(null, { status: 500, statusText: 'Error' });
 
+    expect(changes).toBe(1);
+  });
+
+  it('opens the attendance of a group lesson that has started', async () => {
+    await render(scheduleSummary({ today: [groupLesson()] }));
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Группа «ОГЭ» Учеников: 2');
+    buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Кто был на занятии');
+    const dialog = fixture.debugElement.query(By.directive(AttendanceDialog)).injector.get(AttendanceDialog);
+    dialog.saved.emit(groupLesson({ status: 'CONDUCTED' }));
     expect(changes).toBe(1);
   });
 });

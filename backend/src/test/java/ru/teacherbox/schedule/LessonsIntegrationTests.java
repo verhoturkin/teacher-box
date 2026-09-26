@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ class LessonsIntegrationTests {
             assertThat(json).extractingPath("$.endsAt").isEqualTo(start.plusSeconds(3600).toString());
         });
         assertThat(events).contains(LessonScheduled.class)
-                .matching(LessonScheduled::studentId, student)
+                .matching(LessonScheduled::studentIds, List.of(student))
                 .matching(LessonScheduled::startsAt, start);
 
         LocalDate day = LocalDate.ofInstant(start, MOSCOW);
@@ -115,7 +116,7 @@ class LessonsIntegrationTests {
         assertThat(events).contains(LessonRescheduled.class)
                 .matching(LessonRescheduled::previousStartsAt, start)
                 .matching(LessonRescheduled::startsAt, later)
-                .matching(LessonRescheduled::byRequest, false);
+                .matching(event -> event.requestedBy() == null);
     }
 
     @Test

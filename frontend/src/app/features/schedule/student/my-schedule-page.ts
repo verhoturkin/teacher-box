@@ -7,11 +7,12 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
 import {
-  KIND_LABELS,
   REQUEST_STATUS_LABELS,
   STATUS_LABELS,
   formatLessonStart,
   formatLessonTime,
+  lessonWith,
+  requestKindLabel,
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
@@ -42,15 +43,21 @@ export const UPCOMING_DAYS = 60;
                 <li>
                   <div class="tb-schedule-list__main">
                     <strong>{{ time(lesson) }}</strong>
+                    @if (lesson.groupId !== null) {
+                      <span>{{ with(lesson) }}</span>
+                    }
                     @if (lesson.topic !== null) {
                       <span>{{ lesson.topic }}</span>
                     }
                     @if (lesson.status !== 'SCHEDULED') {
                       <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
                     }
-                    @if (lesson.pendingRequest; as request) {
+                    @if (excused(lesson)) {
+                      <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
+                    }
+                    @if (lesson.pendingRequests[0]; as request) {
                       <small class="tb-muted">
-                        Запрос «{{ kinds[request.kind] }}» ждёт ответа учителя
+                        Запрос «{{ kind(request) }}» ждёт ответа учителя
                         <p-button label="Отозвать" [link]="true" size="small" (onClick)="withdraw(request)" />
                       </small>
                     }
@@ -62,9 +69,15 @@ export const UPCOMING_DAYS = 60;
                         <span pButtonLabel>Подключиться</span>
                       </a>
                     }
-                    @if (lesson.status === 'SCHEDULED' && lesson.pendingRequest === null) {
+                    @if (lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !excused(lesson)) {
                       <p-button label="Перенести" size="small" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />
-                      <p-button label="Отменить" size="small" severity="secondary" [text]="true" (onClick)="ask(lesson, 'CANCEL')" />
+                      <p-button
+                        [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
+                        size="small"
+                        severity="secondary"
+                        [text]="true"
+                        (onClick)="ask(lesson, 'CANCEL')"
+                      />
                     }
                   </div>
                 </li>
@@ -90,7 +103,12 @@ export const UPCOMING_DAYS = 60;
               @for (request of requests(); track request.id) {
                 <li>
                   <div class="tb-schedule-list__main">
-                    <span>{{ kinds[request.kind] }}: {{ start(request.lessonStartsAt) }}</span>
+                    <span>
+                      {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
+                      @if (request.groupName !== null) {
+                        · группа «{{ request.groupName }}»
+                      }
+                    </span>
                     @if (request.answer !== null) {
                       <small class="tb-muted">Учитель: {{ request.answer }}</small>
                     }
@@ -157,7 +175,8 @@ export class MySchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly messages = inject(MessageService);
 
-  protected readonly kinds = KIND_LABELS;
+  protected readonly kind = requestKindLabel;
+  protected readonly with = lessonWith;
   protected readonly statuses = STATUS_LABELS;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
   protected readonly settings = signal<ScheduleSettings | null>(null);
@@ -185,6 +204,11 @@ export class MySchedulePage implements OnInit {
   onRange(range: CalendarRange): void {
     this.range = range;
     this.loadCalendar();
+  }
+
+  /** The student said they would not come to this group lesson. */
+  protected excused(lesson: ScheduledLesson): boolean {
+    return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');
   }
 
   ask(lesson: ScheduledLesson, kind: ChangeKind): void {

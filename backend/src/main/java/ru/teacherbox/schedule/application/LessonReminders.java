@@ -52,9 +52,9 @@ public class LessonReminders {
             List<Integer> already = lessons.remindersSent(lesson.id());
             int nearest = due.getFirst();
             if (!already.contains(nearest)) {
-                events.publishEvent(new LessonStartingSoon(lesson.id(), lesson.studentId(), lesson.startsAt(),
-                        lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), Duration.ofMinutes(nearest),
-                        nearest == advances.getFirst().toMinutes(), now));
+                events.publishEvent(new LessonStartingSoon(lesson.id(), lesson.groupId(), lesson.expectedIds(),
+                        lesson.startsAt(), lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(),
+                        Duration.ofMinutes(nearest), nearest == advances.getFirst().toMinutes(), now));
                 sent++;
             }
             lessons.markRemindersSent(lesson.id(), due.stream().filter(minutes -> !already.contains(minutes)).toList(),

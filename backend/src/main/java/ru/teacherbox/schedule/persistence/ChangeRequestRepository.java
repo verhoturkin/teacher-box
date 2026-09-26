@@ -73,9 +73,19 @@ public class ChangeRequestRepository {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(this::map).optional();
     }
 
-    public Optional<ChangeRequest> findPendingForLesson(UUID lessonId) {
-        return jdbc.sql(SELECT + " where lesson_id = :lessonId and status = 'PENDING'")
+    /** Unanswered requests about a lesson (a group lesson may have one of every participant). */
+    public List<ChangeRequest> findPendingForLesson(UUID lessonId) {
+        return jdbc.sql(SELECT + " where lesson_id = :lessonId and status = 'PENDING' order by created_at, id")
                 .param("lessonId", lessonId)
+                .query(this::map)
+                .list();
+    }
+
+    /** The student's unanswered request about a lesson. */
+    public Optional<ChangeRequest> findPendingForLesson(UUID lessonId, UUID studentId) {
+        return jdbc.sql(SELECT + " where lesson_id = :lessonId and student_id = :studentId and status = 'PENDING'")
+                .param("lessonId", lessonId)
+                .param("studentId", studentId)
                 .query(this::map)
                 .optional();
     }

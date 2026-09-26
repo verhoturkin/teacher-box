@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
+import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { CalendarRange, LessonMove, ScheduleCalendar, lessonClasses } from './schedule-calendar';
@@ -28,12 +28,16 @@ describe('ScheduleCalendar', () => {
 
     const text = await render([
       scheduledLesson({ topic: 'Дроби' }),
-      scheduledLesson({ id: 'l-2', studentName: null, pendingRequest: changeRequest() }),
+      scheduledLesson({ id: 'l-2', studentName: null, pendingRequests: [changeRequest()] }),
+      groupLesson({ topic: 'Разбор' }),
+      groupLesson({ id: 'gl-2', groupName: null }),
     ]);
 
     expect(ranges).toEqual([{ from: '2026-09-28', to: '2026-10-05' }]);
     expect(text).toContain('Иван Петров · Дроби');
     expect(text).toContain('? Ученик');
+    expect(text).toContain('ОГЭ · Разбор');
+    expect(text).toContain('Группа');
   });
 
   it('shows the student the topics', async () => {
@@ -75,7 +79,8 @@ describe('ScheduleCalendar', () => {
 describe('lessonClasses', () => {
   it('marks lessons by status and open requests', () => {
     expect(lessonClasses(scheduledLesson({ status: 'CANCELLED' }))).toEqual(['tb-lesson', 'tb-lesson--cancelled']);
-    expect(lessonClasses(scheduledLesson({ pendingRequest: changeRequest() }))).toEqual([
+    expect(lessonClasses(groupLesson())).toEqual(['tb-lesson', 'tb-lesson--scheduled', 'tb-lesson--group']);
+    expect(lessonClasses(scheduledLesson({ pendingRequests: [changeRequest()] }))).toEqual([
       'tb-lesson',
       'tb-lesson--scheduled',
       'tb-lesson--request',

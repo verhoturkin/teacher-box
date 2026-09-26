@@ -11,6 +11,7 @@ describe('ScheduleApi', () => {
 
   const series: SeriesRequest = {
     studentId: 's-1',
+    groupId: null,
     weekdays: ['MONDAY'],
     startTime: '18:00',
     durationMinutes: 60,
@@ -35,7 +36,7 @@ describe('ScheduleApi', () => {
   it('calls the teacher lesson endpoints', () => {
     const details = { startsAt: '2026-10-01T15:00:00Z', durationMinutes: 60, topic: null, meetingUrl: null, allowOverlap: false };
     api.lessons('2026-09-28', '2026-10-05').subscribe();
-    api.plan({ studentId: 's-1', ...details }).subscribe();
+    api.plan({ studentId: 's-1', groupId: null, ...details }).subscribe();
     api.edit('l-1', details).subscribe();
     api.cancel('l-1', { reason: null, byStudent: true, charge: false }).subscribe();
     api.setOutcome('l-1', 'MISSED').subscribe();

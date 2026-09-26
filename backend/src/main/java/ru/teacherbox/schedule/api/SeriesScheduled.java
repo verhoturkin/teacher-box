@@ -11,12 +11,15 @@ import org.jspecify.annotations.Nullable;
 /**
  * Regular lessons were planned, e.g. every Tuesday and Thursday at 18:00.
  *
+ * @param groupId       the group of a group series, {@code null} for a series with one student
+ * @param studentIds    students of the series (the members of the group when it was planned)
  * @param startTime     local time in the instance time zone
  * @param intervalWeeks 1 = every week, 2 = every other week, ...
  */
 public record SeriesScheduled(
         UUID seriesId,
-        UUID studentId,
+        @Nullable UUID groupId,
+        List<UUID> studentIds,
         List<DayOfWeek> weekdays,
         LocalTime startTime,
         int durationMinutes,
@@ -24,4 +27,9 @@ public record SeriesScheduled(
         LocalDate startsOn,
         @Nullable LocalDate endsOn,
         Instant occurredAt) {
+
+    public SeriesScheduled {
+        studentIds = List.copyOf(studentIds);
+        weekdays = List.copyOf(weekdays);
+    }
 }

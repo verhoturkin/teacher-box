@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import ru.teacherbox.identity.api.StudentSummary;
-import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
+import ru.teacherbox.schedule.application.ScheduleDirectory;
+import ru.teacherbox.schedule.application.ScheduleNames;
 import ru.teacherbox.schedule.application.ScheduleProperties;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.GoogleConnection;
@@ -83,7 +83,7 @@ public class GoogleCalendarService {
     private final GoogleApi api;
     private final GoogleRepository repository;
     private final LessonRepository lessons;
-    private final UserDirectory directory;
+    private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
     private final ZoneId zone;
@@ -91,7 +91,7 @@ public class GoogleCalendarService {
     private volatile @Nullable AccessToken accessToken;
 
     public GoogleCalendarService(GoogleApi api, GoogleRepository repository, LessonRepository lessons,
-            UserDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
+            ScheduleDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
             InstanceTimeZone timeZone, Clock clock) {
         this.api = api;
         this.repository = repository;
@@ -221,13 +221,13 @@ public class GoogleCalendarService {
                     pending.add(lesson);
                 }
             }
-            Map<UUID, String> names = names(pending);
+            ScheduleNames names = directory.namesOf(pending);
             for (Lesson lesson : pending.subList(0, Math.min(pending.size(), SYNC_BATCH))) {
                 if (lesson.status() == LessonStatus.CANCELLED) {
                     api.deleteEvent(token, calendarId, eventId(lesson.id()));
                     repository.forget(lesson.id());
                 } else {
-                    api.putEvent(token, calendarId, eventId(lesson.id()), event(lesson, names.get(lesson.studentId())));
+                    api.putEvent(token, calendarId, eventId(lesson.id()), event(lesson, names.title(lesson)));
                     repository.markSynced(lesson.id(), lesson.version(), clock.instant());
                 }
                 changed++;
@@ -343,11 +343,6 @@ public class GoogleCalendarService {
         Instant now = clock.instant();
         repository.save(connection().needsReconnect(String.valueOf(e.getMessage()), now));
         events.publishEvent(new GoogleCalendarDisconnected(String.valueOf(e.getMessage()), now));
-    }
-
-    private Map<UUID, String> names(List<Lesson> found) {
-        return directory.findStudents(found.stream().map(Lesson::studentId).distinct().toList()).stream()
-                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName));
     }
 
     private GoogleConnection connection() {

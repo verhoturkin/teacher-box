@@ -19,17 +19,19 @@ import {
   SeriesPlanned,
 } from '../data-access/schedule.models';
 import {
-  KIND_LABELS,
   browserTimeZone,
   formatLessonStart,
   formatLessonTime,
   formatWeekly,
+  lessonWith,
+  requestKindLabel,
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { CalendarRange, LessonMove, ScheduleCalendar, SlotSelection } from '../ui/schedule-calendar';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
+import { LessonGroup } from './lesson-owner';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 
@@ -89,8 +91,11 @@ const CLICK_SELECTION_MINUTES = 30;
                 <li>
                   <div>
                     <strong>{{ request.studentName ?? 'Ученик' }}</strong>
-                    <p-tag [value]="kinds[request.kind]" [severity]="request.late ? 'warn' : 'info'" />
+                    <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
                     <div class="tb-muted">
+                      @if (request.groupName !== null) {
+                        {{ request.groupName }},
+                      }
                       {{ start(request.lessonStartsAt) }}
                       @if (request.proposedStartsAt !== null) {
                         → {{ start(request.proposedStartsAt) }}
@@ -110,10 +115,19 @@ const CLICK_SELECTION_MINUTES = 30;
               @for (lesson of unmarked(); track lesson.id) {
                 <li>
                   <div>
-                    <strong>{{ lesson.studentName ?? 'Ученик' }}</strong>
+                    <strong>{{ with(lesson) }}</strong>
                     <div class="tb-muted">{{ time(lesson) }}</div>
                   </div>
                   <div class="tb-actions">
+                    @if (lesson.groupId !== null) {
+                      <p-button
+                        label="Отметить"
+                        icon="pi pi-users"
+                        size="small"
+                        [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                        (onClick)="openLesson(lesson)"
+                      />
+                    } @else {
                     <p-button
                       icon="pi pi-check"
                       severity="success"
@@ -129,6 +143,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
                       (onClick)="mark(lesson, 'MISSED')"
                     />
+                    }
                   </div>
                 </li>
               }
@@ -144,7 +159,7 @@ const CLICK_SELECTION_MINUTES = 30;
               @for (item of series(); track item.id) {
                 <li>
                   <div>
-                    <strong>{{ item.studentName ?? 'Ученик' }}</strong>
+                    <strong>{{ with(item) }}</strong>
                     <div class="tb-muted">{{ weekly(item) }}</div>
                   </div>
                   <div class="tb-actions">
@@ -152,7 +167,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       icon="pi pi-pencil"
                       [text]="true"
                       size="small"
-                      [ariaLabel]="'Изменить расписание: ' + (item.studentName ?? 'ученик')"
+                      [ariaLabel]="'Изменить расписание: ' + with(item)"
                       (onClick)="editSeries(item)"
                     />
                     <p-button
@@ -160,7 +175,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [text]="true"
                       severity="danger"
                       size="small"
-                      [ariaLabel]="'Завершить расписание: ' + (item.studentName ?? 'ученик')"
+                      [ariaLabel]="'Завершить расписание: ' + with(item)"
                       (onClick)="stopSeries(item)"
                     />
                   </div>
@@ -177,6 +192,7 @@ const CLICK_SELECTION_MINUTES = 30;
     <tb-lesson-dialog
       [(visible)]="lessonDialogVisible"
       [students]="students()"
+      [groups]="groups()"
       [lesson]="editing()"
       [slot]="slot()"
       [defaultDuration]="defaultDuration()"
@@ -191,6 +207,7 @@ const CLICK_SELECTION_MINUTES = 30;
     <tb-series-dialog
       [(visible)]="seriesDialogVisible"
       [students]="students()"
+      [groups]="groups()"
       [series]="editingSeries()"
       [defaultDuration]="defaultDuration()"
       [timeZone]="settings()?.timeZone ?? null"
@@ -238,9 +255,11 @@ export class SchedulePage implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
-  protected readonly kinds = KIND_LABELS;
+  protected readonly kind = requestKindLabel;
+  protected readonly with = lessonWith;
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly students = signal<LessonStudent[]>([]);
+  protected readonly groups = signal<LessonGroup[]>([]);
   protected readonly lessons = signal<ScheduledLesson[]>([]);
   protected readonly requests = signal<ChangeRequest[]>([]);
   protected readonly unmarked = signal<ScheduledLesson[]>([]);
@@ -276,6 +295,13 @@ export class SchedulePage implements OnInit {
         students
           .filter((student) => student.status !== 'DEACTIVATED')
           .map((student) => ({ id: student.id, displayName: student.displayName })),
+      );
+    });
+    this.identity.listGroups().subscribe((groups) => {
+      this.groups.set(
+        groups
+          .filter((group) => group.archivedAt === null && group.members.length > 0)
+          .map((group) => ({ id: group.id, name: group.name })),
       );
     });
     this.loadSidePanels();

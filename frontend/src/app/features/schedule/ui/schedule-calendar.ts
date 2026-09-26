@@ -139,19 +139,22 @@ export class ScheduleCalendar {
   }
 
   private title(lesson: ScheduledLesson): string {
-    const request = lesson.pendingRequest === null ? '' : '? ';
-    if (this.showStudent()) {
-      const name = lesson.studentName ?? 'Ученик';
+    const request = lesson.pendingRequests.length === 0 ? '' : '? ';
+    if (this.showStudent() || lesson.groupId !== null) {
+      const name = lesson.groupId !== null ? (lesson.groupName ?? 'Группа') : (lesson.studentName ?? 'Ученик');
       return request + (lesson.topic === null ? name : `${name} · ${lesson.topic}`);
     }
     return request + (lesson.topic ?? 'Занятие');
   }
 }
 
-/** CSS classes of a lesson event: its status and whether a request waits for an answer. */
+/** CSS classes of a lesson event: its status, a group lesson and whether a request waits for an answer. */
 export function lessonClasses(lesson: ScheduledLesson): string[] {
   const classes = ['tb-lesson', `tb-lesson--${lesson.status.toLowerCase()}`];
-  if (lesson.pendingRequest !== null) {
+  if (lesson.groupId !== null) {
+    classes.push('tb-lesson--group');
+  }
+  if (lesson.pendingRequests.length > 0) {
     classes.push('tb-lesson--request');
   }
   return classes;

@@ -1,0 +1,87 @@
+package ru.teacherbox.schedule.application;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+import ru.teacherbox.identity.api.GroupSummary;
+import ru.teacherbox.identity.api.StudentGroups;
+import ru.teacherbox.identity.api.StudentSummary;
+import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.shared.error.NotFoundException;
+
+/** Students and groups of identity as the schedule needs them: names and checks. */
+@Component
+public class ScheduleDirectory {
+
+    private final UserDirectory users;
+    private final StudentGroups groups;
+
+    public ScheduleDirectory(UserDirectory users, StudentGroups groups) {
+        this.users = users;
+        this.groups = groups;
+    }
+
+    /** Names for the participants and groups of the lessons. */
+    public ScheduleNames namesOf(Collection<Lesson> lessons) {
+        Set<UUID> students = new HashSet<>();
+        Set<UUID> groupIds = new HashSet<>();
+        for (Lesson lesson : lessons) {
+            students.addAll(lesson.studentIds());
+            if (lesson.groupId() != null) {
+                groupIds.add(lesson.groupId());
+            }
+        }
+        return names(students, groupIds);
+    }
+
+    /** Names for the students and groups of the series. */
+    public ScheduleNames namesOfSeries(Collection<Series> series) {
+        return names(series.stream().map(Series::studentId).filter(Objects::nonNull).collect(Collectors.toSet()),
+                series.stream().map(Series::groupId).filter(Objects::nonNull).collect(Collectors.toSet()));
+    }
+
+    public ScheduleNames names(Collection<UUID> studentIds, Collection<UUID> groupIds) {
+        return new ScheduleNames(
+                users.findStudents(Set.copyOf(studentIds)).stream()
+                        .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName)),
+                groups.findGroups(Set.copyOf(groupIds)).stream()
+                        .collect(Collectors.toMap(GroupSummary::id, GroupSummary::name)));
+    }
+
+    /** A student who can get lessons (not deactivated). */
+    public StudentSummary currentStudent(UUID studentId) {
+        return users.findStudent(studentId)
+                .filter(StudentSummary::isCurrent)
+                .orElseThrow(() -> new NotFoundException("schedule.student-not-found", "Student not found"));
+    }
+
+    /** A group that can get lessons (not archived). */
+    public GroupSummary currentGroup(UUID groupId) {
+        return groups.findGroup(groupId)
+                .filter(group -> !group.archived())
+                .orElseThrow(() -> new NotFoundException("schedule.group-not-found", "Group not found"));
+    }
+
+    /** The current members of a group in their order, or none for an archived or unknown group. */
+    public List<UUID> membersOf(UUID groupId) {
+        return groups.findGroup(groupId)
+                .filter(group -> !group.archived())
+                .map(GroupSummary::memberIds)
+                .orElse(List.of());
+    }
+
+    public UUID teacherId() {
+        return users.teacherId();
+    }
+
+    public boolean isCurrentStudent(UUID studentId) {
+        return users.isCurrentStudent(studentId);
+    }
+}

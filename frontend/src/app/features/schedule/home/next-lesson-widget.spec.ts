@@ -4,7 +4,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
-import { changeRequest, myScheduleSummary, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
+import {
+  changeRequest,
+  groupLesson,
+  myScheduleSummary,
+  scheduleSettings,
+  scheduledLesson,
+} from '@testing/schedule-fixtures';
 import { MyScheduleSummary } from '../data-access/schedule.models';
 import { NextLessonWidget } from './next-lesson-widget';
 
@@ -69,7 +75,7 @@ describe('NextLessonWidget', () => {
   });
 
   it('shows a pending request instead of the buttons', async () => {
-    const lesson = scheduledLesson({ pendingRequest: changeRequest({ kind: 'CANCEL' }) });
+    const lesson = scheduledLesson({ pendingRequests: [changeRequest({ kind: 'CANCEL' })] });
     await render(myScheduleSummary({ next: lesson, pendingRequests: 1 }));
 
     expect(readableText(hostElement(fixture))).toContain('Отмена: запрос отправлен, ждём ответа учителя');
@@ -77,5 +83,18 @@ describe('NextLessonWidget', () => {
     fixture.componentInstance.ask(lesson, 'RESCHEDULE');
     fixture.detectChanges();
     expect(bodyText()).not.toContain('Перенести занятие');
+  });
+
+  it('lets a group member say they will not come', async () => {
+    await render(myScheduleSummary({ next: groupLesson() }));
+
+    expect(readableText(hostElement(fixture))).toContain('Группа «ОГЭ»');
+    buttonByText(hostElement(fixture), 'Не приду').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Не приду на занятие');
+    expect(bodyText()).toContain('пройдёт без вас');
+    expect(bodyText()).toContain('Предупредить учителя');
   });
 });

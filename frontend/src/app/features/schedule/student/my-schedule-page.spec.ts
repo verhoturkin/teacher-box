@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
-import { calendarFeed, changeRequest, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
+import { calendarFeed, changeRequest, groupLesson, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { MySchedulePage } from './my-schedule-page';
 
@@ -95,7 +95,7 @@ describe('MySchedulePage', () => {
   it('shows requests and withdraws a pending one', async () => {
     const pending = changeRequest({ kind: 'CANCEL' });
     const text = await render(
-      [scheduledLesson({ ...future(24), pendingRequest: pending })],
+      [scheduledLesson({ ...future(24), pendingRequests: [pending] })],
       [pending, changeRequest({ id: 'r-2', status: 'DECLINED', answer: 'Проведём' })],
     );
 
@@ -111,5 +111,23 @@ describe('MySchedulePage', () => {
     for (const request of lessonRequests()) {
       request.flush([]);
     }
+  });
+
+  it('shows group lessons and a notice that the student will not come', async () => {
+    const text = await render(
+      [
+        groupLesson({ ...future(72), participants: [{ studentId: 's-1', studentName: null, attendance: 'EXCUSED' }] }),
+        groupLesson({ id: 'gl-2', ...future(96), participants: [{ studentId: 's-1', studentName: null, attendance: 'EXPECTED' }] }),
+      ],
+      [changeRequest({ id: 'r-3', kind: 'CANCEL', groupId: 'g-1', groupName: 'ОГЭ', status: 'APPROVED' })],
+    );
+
+    expect(text).toContain('Группа «ОГЭ»');
+    expect(text).toContain('Вы предупредили, что не придёте');
+    expect(text).toContain('Не придёт');
+    expect(text).toContain('группа «ОГЭ»');
+    buttonByText(hostElement(fixture), 'Не приду').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Не приду на занятие');
   });
 });

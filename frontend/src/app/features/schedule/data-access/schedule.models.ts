@@ -4,6 +4,9 @@ export type CancelledBy = 'TEACHER' | 'STUDENT';
 export type ChangeKind = 'RESCHEDULE' | 'CANCEL';
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'WITHDRAWN' | 'OUTDATED';
 export type Weekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+/** Attendance of a participant: EXPECTED until the lesson is marked. */
+export type Attendance = 'EXPECTED' | 'ATTENDED' | 'MISSED' | 'EXCUSED';
+export type AttendanceMark = Exclude<Attendance, 'EXPECTED'>;
 
 /** Mirrors `RequestView` of the backend. */
 export interface ChangeRequest {
@@ -11,6 +14,9 @@ export interface ChangeRequest {
   readonly lessonId: string;
   readonly studentId: string;
   readonly studentName: string | null;
+  /** The group of a group lesson. */
+  readonly groupId: string | null;
+  readonly groupName: string | null;
   readonly kind: ChangeKind;
   readonly lessonStartsAt: string;
   readonly proposedStartsAt: string | null;
@@ -24,11 +30,24 @@ export interface ChangeRequest {
   readonly resolvedAt: string | null;
 }
 
-/** Mirrors `LessonView` of the backend. */
-export interface ScheduledLesson {
-  readonly id: string;
+/** Mirrors `ParticipantView` of the backend. */
+export interface Participant {
   readonly studentId: string;
   readonly studentName: string | null;
+  readonly attendance: Attendance;
+}
+
+/** Mirrors `LessonView` of the backend: a lesson with one student or with a group. */
+export interface ScheduledLesson {
+  readonly id: string;
+  /** The student of a lesson with one student. */
+  readonly studentId: string | null;
+  readonly studentName: string | null;
+  /** The group of a group lesson. */
+  readonly groupId: string | null;
+  readonly groupName: string | null;
+  /** Students of the lesson; a student sees only themselves. */
+  readonly participants: readonly Participant[];
   readonly seriesId: string | null;
   readonly startsAt: string;
   readonly endsAt: string;
@@ -40,14 +59,17 @@ export interface ScheduledLesson {
   readonly cancelReason: string | null;
   /** The time the lesson was first planned for, if it moved. */
   readonly originalStartsAt: string | null;
-  readonly pendingRequest: ChangeRequest | null;
+  /** Unanswered requests of the participants (a student sees only their own). */
+  readonly pendingRequests: readonly ChangeRequest[];
 }
 
-/** Mirrors `SeriesView` of the backend. */
+/** Mirrors `SeriesView` of the backend: regular lessons with a student or with a group. */
 export interface LessonSeries {
   readonly id: string;
-  readonly studentId: string;
+  readonly studentId: string | null;
   readonly studentName: string | null;
+  readonly groupId: string | null;
+  readonly groupName: string | null;
   readonly weekdays: Weekday[];
   /** Local time in the instance time zone, `HH:mm:ss`. */
   readonly startTime: string;
@@ -82,8 +104,10 @@ export interface CalendarFeed {
   readonly path: string | null;
 }
 
+/** A lesson with a student or with a group: exactly one of the two ids. */
 export interface PlanLessonRequest {
-  readonly studentId: string;
+  readonly studentId: string | null;
+  readonly groupId: string | null;
   readonly startsAt: string;
   readonly durationMinutes: number;
   readonly topic: string | null;
@@ -107,8 +131,10 @@ export interface CancelLessonRequest {
   readonly charge: boolean;
 }
 
+/** Regular lessons with a student or with a group: exactly one of the two ids. */
 export interface SeriesRequest {
-  readonly studentId: string;
+  readonly studentId: string | null;
+  readonly groupId: string | null;
   readonly weekdays: Weekday[];
   /** `HH:mm` in the instance time zone. */
   readonly startTime: string;

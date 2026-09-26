@@ -391,7 +391,12 @@ a.p-button {
   --fc-classic-strong-border: var(--p-text-muted-color);
 }
 
-/* Lesson events by status */
+/* Lesson events by status; a planned group lesson has its own color */
+.tb-lesson--group.tb-lesson--scheduled {
+  --fc-classic-event: var(--p-teal-600);
+  --fc-classic-event-contrast: #fff;
+}
+
 .tb-lesson--conducted {
   --fc-classic-event: var(--p-green-600);
   --fc-classic-event-contrast: #fff;

@@ -26,6 +26,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonSeries, SeriesPlanned, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { LessonStudent, MEETING_URL_PATTERN } from './lesson-dialog';
+import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 
 export const INTERVAL_OPTIONS = [
   { label: 'Каждую неделю', value: 1 },
@@ -52,14 +53,17 @@ export const INTERVAL_OPTIONS = [
     >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="series-student">Ученик</label>
+          <label for="series-student">С кем</label>
           <p-select
             inputId="series-student"
-            formControlName="studentId"
-            [options]="studentOptions()"
+            formControlName="owner"
+            [options]="ownerOptions()"
+            [group]="true"
+            optionGroupLabel="label"
+            optionGroupChildren="items"
             optionLabel="label"
             optionValue="value"
-            placeholder="Выберите ученика"
+            placeholder="Выберите ученика или группу"
             [filter]="true"
             appendTo="body"
             [fluid]="true"
@@ -177,6 +181,8 @@ export class SeriesDialog {
 
   readonly visible = model(false);
   readonly students = input.required<readonly LessonStudent[]>();
+  /** Groups with students; empty when the teacher has none. */
+  readonly groups = input<readonly LessonGroup[]>([]);
   /** The series to change; `null` plans a new one. */
   readonly series = input<LessonSeries | null>(null);
   readonly defaultDuration = input(60);
@@ -186,9 +192,7 @@ export class SeriesDialog {
 
   protected readonly weekdays = [...WEEKDAYS];
   protected readonly intervals = INTERVAL_OPTIONS;
-  protected readonly studentOptions = computed(() =>
-    this.students().map((student) => ({ label: student.displayName, value: student.id })),
-  );
+  protected readonly ownerOptions = computed(() => ownerOptions(this.students(), this.groups()));
   protected readonly otherTimeZone = computed(() => {
     const zone = this.timeZone();
     return zone === null || zone === browserTimeZone() ? null : zone;
@@ -198,7 +202,7 @@ export class SeriesDialog {
   protected readonly overlap = signal(false);
 
   readonly form = new FormGroup({
-    studentId: new FormControl<string | null>(null, [Validators.required]),
+    owner: new FormControl<OwnerValue | null>(null, [Validators.required]),
     weekdays: new FormControl<Weekday[]>([], { nonNullable: true, validators: [Validators.required] }),
     startTime: new FormControl<Date | null>(null, [Validators.required]),
     durationMinutes: new FormControl<number | null>(60, [
@@ -233,7 +237,7 @@ export class SeriesDialog {
     if (
       this.form.invalid ||
       this.pending() ||
-      value.studentId === null ||
+      value.owner === null ||
       value.startTime === null ||
       value.startsOn === null
     ) {
@@ -243,7 +247,7 @@ export class SeriesDialog {
     this.error.set(null);
     this.overlap.set(false);
     const request = {
-      studentId: value.studentId,
+      ...ownerIds(value.owner),
       weekdays: WEEKDAYS.map((day) => day.value).filter((day) => value.weekdays.includes(day)),
       startTime: toTime(value.startTime),
       durationMinutes: value.durationMinutes ?? this.defaultDuration(),
@@ -279,7 +283,7 @@ export class SeriesDialog {
     const series = this.series();
     const endsOn = series?.endsOn ?? null;
     this.form.reset({
-      studentId: series?.studentId ?? null,
+      owner: series === null ? null : ownerValue(series),
       weekdays: series?.weekdays ?? [],
       startTime: series === null ? null : fromTime(series.startTime),
       durationMinutes: series?.durationMinutes ?? this.defaultDuration(),
@@ -290,9 +294,9 @@ export class SeriesDialog {
       meetingUrl: series?.meetingUrl ?? '',
     });
     if (series === null) {
-      this.form.controls.studentId.enable();
+      this.form.controls.owner.enable();
     } else {
-      this.form.controls.studentId.disable();
+      this.form.controls.owner.disable();
     }
   }
 }

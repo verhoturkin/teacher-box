@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -33,6 +34,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesPlanned;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
+import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.LessonStatus;
 
 /** The teacher's schedule: lessons, regular series, outcomes and students' requests. */
@@ -40,8 +42,10 @@ import ru.teacherbox.schedule.domain.LessonStatus;
 @RequestMapping("/api/teacher/schedule")
 class TeacherScheduleController {
 
+    /** A lesson with a student or with a group: exactly one of {@code studentId} and {@code groupId}. */
     record LessonRequest(
-            @NotNull UUID studentId,
+            @Nullable UUID studentId,
+            @Nullable UUID groupId,
             @NotNull Instant startsAt,
             @Min(1) @Max(600) @Nullable Integer durationMinutes,
             @Size(max = 500) @Nullable String topic,
@@ -64,9 +68,18 @@ class TeacherScheduleController {
     record OutcomeRequest(@NotNull LessonStatus outcome) {
     }
 
-    /** @param startsOn first day; for a change — the day the new settings apply from */
+    /** Attendance of every participant: ATTENDED, MISSED or EXCUSED. */
+    record AttendanceRequest(@NotEmpty Map<@NotNull UUID, @NotNull Attendance> marks) {
+    }
+
+    /**
+     * Regular lessons with a student or with a group: exactly one of {@code studentId} and {@code groupId}.
+     *
+     * @param startsOn first day; for a change — the day the new settings apply from
+     */
     record SeriesRequest(
-            @NotNull UUID studentId,
+            @Nullable UUID studentId,
+            @Nullable UUID groupId,
             @NotEmpty Set<DayOfWeek> weekdays,
             @NotNull LocalTime startTime,
             @Min(1) @Max(600) @Nullable Integer durationMinutes,
@@ -78,7 +91,7 @@ class TeacherScheduleController {
             @Nullable Boolean allowOverlap) {
 
         ScheduleService.PlanSeries command() {
-            return new ScheduleService.PlanSeries(studentId, weekdays, startTime, durationMinutes,
+            return new ScheduleService.PlanSeries(studentId, groupId, weekdays, startTime, durationMinutes,
                     intervalWeeks == null ? 1 : intervalWeeks, startsOn, endsOn, topic, meetingUrl, yes(allowOverlap));
         }
     }
@@ -117,7 +130,7 @@ class TeacherScheduleController {
     @PostMapping("/lessons")
     @ResponseStatus(HttpStatus.CREATED)
     LessonView plan(@Valid @RequestBody LessonRequest request) {
-        return schedule.plan(new ScheduleService.PlanLesson(request.studentId(), request.startsAt(),
+        return schedule.plan(new ScheduleService.PlanLesson(request.studentId(), request.groupId(), request.startsAt(),
                 request.durationMinutes(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())));
     }
 
@@ -136,6 +149,11 @@ class TeacherScheduleController {
     @PutMapping("/lessons/{lessonId}/outcome")
     LessonView outcome(@PathVariable UUID lessonId, @Valid @RequestBody OutcomeRequest request) {
         return schedule.setOutcome(lessonId, request.outcome());
+    }
+
+    @PutMapping("/lessons/{lessonId}/attendance")
+    LessonView attendance(@PathVariable UUID lessonId, @Valid @RequestBody AttendanceRequest request) {
+        return schedule.markAttendance(lessonId, request.marks());
     }
 
     @DeleteMapping("/lessons/{lessonId}/outcome")

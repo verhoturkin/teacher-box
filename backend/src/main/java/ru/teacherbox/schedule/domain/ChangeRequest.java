@@ -42,8 +42,11 @@ public final class ChangeRequest {
      * @param proposedStartsAt required for {@link ChangeKind#RESCHEDULE} and must be in the future;
      *                         not allowed for {@link ChangeKind#CANCEL}
      */
-    public static ChangeRequest open(UUID id, Lesson lesson, ChangeKind kind, @Nullable Instant proposedStartsAt,
-            @Nullable String comment, Instant now) {
+    public static ChangeRequest open(UUID id, Lesson lesson, UUID studentId, ChangeKind kind,
+            @Nullable Instant proposedStartsAt, @Nullable String comment, Instant now) {
+        if (!lesson.hasParticipant(studentId)) {
+            throw new IllegalArgumentException("The student does not take part in the lesson");
+        }
         if (lesson.status() != LessonStatus.SCHEDULED || !lesson.startsAt().isAfter(now)) {
             throw new BusinessRuleException("schedule.request-not-allowed",
                     "Only an upcoming planned lesson can be moved or cancelled");
@@ -54,7 +57,7 @@ public final class ChangeRequest {
         if (kind == ChangeKind.CANCEL && proposedStartsAt != null) {
             throw new BusinessRuleException("schedule.proposed-time-invalid", "A cancellation has no new time");
         }
-        return new ChangeRequest(id, lesson.id(), lesson.studentId(), kind, proposedStartsAt, Texts.optional(comment),
+        return new ChangeRequest(id, lesson.id(), studentId, kind, proposedStartsAt, Texts.optional(comment),
                 RequestStatus.PENDING, null, now, null, 0);
     }
 

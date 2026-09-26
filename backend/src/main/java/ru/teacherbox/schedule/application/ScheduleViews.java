@@ -10,9 +10,11 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
+import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
+import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.schedule.domain.Series;
 
@@ -22,14 +24,29 @@ public final class ScheduleViews {
     private ScheduleViews() {
     }
 
+    /** A participant of a lesson with their attendance. */
+    public record ParticipantView(UUID studentId, @Nullable String studentName, Attendance attendance) {
+
+        static ParticipantView of(Participant participant, ScheduleNames names) {
+            return new ParticipantView(participant.studentId(), names.student(participant.studentId()),
+                    participant.attendance());
+        }
+    }
+
     /**
+     * A lesson with one student ({@code studentId}) or with a group ({@code groupId}).
+     *
+     * @param participants     students of the lesson with their attendance
      * @param originalStartsAt the time the lesson was first planned for, if it moved
-     * @param pendingRequest   the student's unanswered request about this lesson
+     * @param pendingRequests  unanswered requests of the participants about this lesson
      */
     public record LessonView(
             UUID id,
-            UUID studentId,
+            @Nullable UUID studentId,
             @Nullable String studentName,
+            @Nullable UUID groupId,
+            @Nullable String groupName,
+            List<ParticipantView> participants,
             @Nullable UUID seriesId,
             Instant startsAt,
             Instant endsAt,
@@ -40,24 +57,40 @@ public final class ScheduleViews {
             @Nullable CancelledBy cancelledBy,
             @Nullable String cancelReason,
             @Nullable Instant originalStartsAt,
-            @Nullable RequestView pendingRequest) {
+            List<RequestView> pendingRequests) {
 
-        static LessonView of(Lesson lesson, @Nullable String studentName, @Nullable RequestView pendingRequest) {
-            return new LessonView(lesson.id(), lesson.studentId(), studentName, lesson.seriesId(), lesson.startsAt(),
-                    lesson.endsAt(), lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), lesson.status(),
-                    lesson.cancelledBy(), lesson.cancelReason(), lesson.originalStartsAt(), pendingRequest);
+        static LessonView of(Lesson lesson, ScheduleNames names, List<RequestView> pendingRequests) {
+            UUID studentId = lesson.isGroup() ? null : lesson.studentId();
+            return new LessonView(lesson.id(), studentId, studentId == null ? null : names.student(studentId),
+                    lesson.groupId(), names.group(lesson.groupId()),
+                    lesson.participants().stream().map(participant -> ParticipantView.of(participant, names)).toList(),
+                    lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.topic(),
+                    lesson.meetingUrl(), lesson.status(), lesson.cancelledBy(), lesson.cancelReason(),
+                    lesson.originalStartsAt(), List.copyOf(pendingRequests));
+        }
+
+        /** What a participant sees: their own attendance and requests, not those of classmates. */
+        LessonView forStudent(UUID participantId) {
+            return new LessonView(id, studentId, studentName, groupId, groupName,
+                    participants.stream().filter(participant -> participant.studentId().equals(participantId)).toList(),
+                    seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, status, cancelledBy, cancelReason,
+                    originalStartsAt,
+                    pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList());
         }
     }
 
     /**
-     * @param late   a cancellation asked for later than the cancellation policy allows
-     * @param answer the teacher's comment on the decision
+     * @param groupId  the group of a group lesson
+     * @param late     a cancellation asked for later than the cancellation policy allows
+     * @param answer   the teacher's comment on the decision
      */
     public record RequestView(
             UUID id,
             UUID lessonId,
             UUID studentId,
             @Nullable String studentName,
+            @Nullable UUID groupId,
+            @Nullable String groupName,
             ChangeKind kind,
             Instant lessonStartsAt,
             @Nullable Instant proposedStartsAt,
@@ -68,19 +101,22 @@ public final class ScheduleViews {
             Instant createdAt,
             @Nullable Instant resolvedAt) {
 
-        static RequestView of(ChangeRequest request, Instant lessonStartsAt, @Nullable String studentName,
-                Duration lateCancellation) {
-            return new RequestView(request.id(), request.lessonId(), request.studentId(), studentName, request.kind(),
-                    lessonStartsAt, request.proposedStartsAt(), request.comment(), request.status(),
-                    isLate(request.kind(), lessonStartsAt, request.createdAt(), lateCancellation),
+        static RequestView of(ChangeRequest request, Lesson lesson, ScheduleNames names, Duration lateCancellation) {
+            return new RequestView(request.id(), request.lessonId(), request.studentId(),
+                    names.student(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
+                    request.kind(), lesson.startsAt(), request.proposedStartsAt(), request.comment(), request.status(),
+                    isLate(request.kind(), lesson.startsAt(), request.createdAt(), lateCancellation),
                     request.resolutionComment(), request.createdAt(), request.resolvedAt());
         }
     }
 
+    /** A series with one student ({@code studentId}) or with a group ({@code groupId}). */
     public record SeriesView(
             UUID id,
-            UUID studentId,
+            @Nullable UUID studentId,
             @Nullable String studentName,
+            @Nullable UUID groupId,
+            @Nullable String groupName,
             List<DayOfWeek> weekdays,
             LocalTime startTime,
             int durationMinutes,
@@ -90,10 +126,12 @@ public final class ScheduleViews {
             @Nullable String topic,
             @Nullable String meetingUrl) {
 
-        static SeriesView of(Series series, @Nullable String studentName) {
-            return new SeriesView(series.id(), series.studentId(), studentName, series.weekdays(),
-                    series.startTime(), series.durationMinutes(), series.intervalWeeks(), series.startsOn(),
-                    series.endsOn(), series.topic(), series.meetingUrl());
+        static SeriesView of(Series series, ScheduleNames names) {
+            UUID studentId = series.studentId();
+            return new SeriesView(series.id(), studentId, studentId == null ? null : names.student(studentId),
+                    series.groupId(), names.group(series.groupId()), series.weekdays(), series.startTime(),
+                    series.durationMinutes(), series.intervalWeeks(), series.startsOn(), series.endsOn(),
+                    series.topic(), series.meetingUrl());
         }
     }
 

@@ -22,8 +22,8 @@ import ru.teacherbox.schedule.domain.Series;
 public class SeriesRepository {
 
     private static final String SELECT = """
-            select id, student_id, weekdays, start_time, duration_minutes, interval_weeks, starts_on, ends_on, topic,
-                   meeting_url, generated_until, created_at, updated_at, version
+            select id, student_id, group_id, weekdays, start_time, duration_minutes, interval_weeks, starts_on,
+                   ends_on, topic, meeting_url, generated_until, created_at, updated_at, version
             from schedule.series
             """;
 
@@ -35,13 +35,15 @@ public class SeriesRepository {
 
     public void insert(Series series) {
         jdbc.sql("""
-                insert into schedule.series (id, student_id, weekdays, start_time, duration_minutes, interval_weeks,
-                    starts_on, ends_on, topic, meeting_url, generated_until, created_at, updated_at, version)
-                values (:id, :studentId, :weekdays, :startTime, :duration, :interval, :startsOn, :endsOn, :topic,
-                    :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version)
+                insert into schedule.series (id, student_id, group_id, weekdays, start_time, duration_minutes,
+                    interval_weeks, starts_on, ends_on, topic, meeting_url, generated_until, created_at, updated_at,
+                    version)
+                values (:id, :studentId, :groupId, :weekdays, :startTime, :duration, :interval, :startsOn, :endsOn,
+                    :topic, :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", series.id())
                 .param("studentId", series.studentId())
+                .param("groupId", series.groupId())
                 .param("weekdays", weekdays(series.weekdays()))
                 .param("startTime", series.startTime())
                 .param("duration", series.durationMinutes())
@@ -104,6 +106,7 @@ public class SeriesRepository {
         return Series.restore(
                 rs.getObject("id", UUID.class),
                 rs.getObject("student_id", UUID.class),
+                rs.getObject("group_id", UUID.class),
                 weekdays(rs.getString("weekdays")),
                 rs.getObject("start_time", LocalTime.class),
                 rs.getInt("duration_minutes"),

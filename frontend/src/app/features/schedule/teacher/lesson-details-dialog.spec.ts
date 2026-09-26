@@ -1,10 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { at, changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
+import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { ScheduledLesson } from '../data-access/schedule.models';
+import { AttendanceDialog } from './attendance-dialog';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 
 describe('LessonDetailsDialog', () => {
@@ -46,7 +48,7 @@ describe('LessonDetailsDialog', () => {
         topic: 'Дроби',
         meetingUrl: 'https://zoom.us/j/1',
         originalStartsAt: at(2026, 9, 30, 17),
-        pendingRequest: changeRequest({ comment: 'Можно позже?' }),
+        pendingRequests: [changeRequest({ comment: 'Можно позже?' })],
       }),
     );
 
@@ -142,5 +144,39 @@ describe('LessonDetailsDialog', () => {
     fixture.componentInstance.mark('CONDUCTED');
     fixture.componentInstance.editLesson();
     expect(edited).toHaveLength(1);
+  });
+
+  it('shows the students of a group lesson and opens their attendance', async () => {
+    await open(
+      groupLesson({
+        startsAt: at(2026, 9, 29, 18),
+        endsAt: at(2026, 9, 29, 19, 30),
+        pendingRequests: [changeRequest({ kind: 'CANCEL', groupId: 'g-1', studentName: 'Мария', comment: 'Болею' })],
+      }),
+    );
+
+    const text = bodyText();
+    expect(text).toContain('Группа «ОГЭ»');
+    expect(text).toContain('Мария');
+    expect(text).toContain('Предупредил');
+    expect(text).toContain('Мария: Не придёт');
+    expect(() => buttonByText(document.body, 'Проведено')).toThrow();
+
+    buttonByText(document.body, 'Отметить посещаемость').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Кто был на занятии');
+    fixture.debugElement.query(By.directive(AttendanceDialog)).injector.get(AttendanceDialog).saved
+      .emit(groupLesson({ status: 'CONDUCTED' }));
+    expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('cancels a group lesson only on behalf of the teacher', async () => {
+    await open(groupLesson());
+
+    buttonByText(document.body, 'Отменить').click();
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('#lesson-cancel-by-student')).toBeNull();
   });
 });

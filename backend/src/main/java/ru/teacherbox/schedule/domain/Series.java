@@ -29,7 +29,8 @@ public final class Series {
     public static final int MAX_INTERVAL_WEEKS = 4;
 
     private final UUID id;
-    private final UUID studentId;
+    private final @Nullable UUID studentId;
+    private final @Nullable UUID groupId;
     private final Set<DayOfWeek> weekdays;
     private final LocalTime startTime;
     private final int durationMinutes;
@@ -43,11 +44,16 @@ public final class Series {
     private Instant updatedAt;
     private long version;
 
-    private Series(UUID id, UUID studentId, Set<DayOfWeek> weekdays, LocalTime startTime, int durationMinutes,
-            int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn, @Nullable String topic,
-            @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt, Instant updatedAt, long version) {
+    private Series(UUID id, @Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
+            LocalTime startTime, int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
+            @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
+            Instant updatedAt, long version) {
+        if ((studentId == null) == (groupId == null)) {
+            throw new IllegalArgumentException("A series belongs either to a student or to a group");
+        }
         this.id = Objects.requireNonNull(id);
-        this.studentId = Objects.requireNonNull(studentId);
+        this.studentId = studentId;
+        this.groupId = groupId;
         this.weekdays = EnumSet.copyOf(weekdays);
         this.startTime = Objects.requireNonNull(startTime);
         this.durationMinutes = durationMinutes;
@@ -62,7 +68,12 @@ public final class Series {
         this.version = version;
     }
 
-    public static Series create(UUID id, UUID studentId, Collection<DayOfWeek> weekdays, LocalTime startTime,
+    /**
+     * @param studentId the student of a series of lessons with one student
+     * @param groupId   the group of a series of group lessons (exactly one of the two is given)
+     */
+    public static Series create(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
+            Collection<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
             @Nullable String topic, @Nullable String meetingUrl, Instant now) {
         if (weekdays.isEmpty()) {
@@ -75,17 +86,18 @@ public final class Series {
         if (endsOn != null && endsOn.isBefore(startsOn)) {
             throw new BusinessRuleException("schedule.series-dates-invalid", "The series ends before it starts");
         }
-        return new Series(id, studentId, EnumSet.copyOf(weekdays), startTime.withSecond(0).withNano(0),
+        return new Series(id, studentId, groupId, EnumSet.copyOf(weekdays), startTime.withSecond(0).withNano(0),
                 Texts.duration(durationMinutes), intervalWeeks, startsOn, endsOn, Texts.optional(topic),
                 Texts.meetingUrl(meetingUrl), startsOn.minusDays(1), now, now, 0);
     }
 
-    public static Series restore(UUID id, UUID studentId, Set<DayOfWeek> weekdays, LocalTime startTime,
+    public static Series restore(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
+            Set<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
             @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
             Instant updatedAt, long version) {
-        return new Series(id, studentId, weekdays, startTime, durationMinutes, intervalWeeks, startsOn, endsOn, topic,
-                meetingUrl, generatedUntil, createdAt, updatedAt, version);
+        return new Series(id, studentId, groupId, weekdays, startTime, durationMinutes, intervalWeeks, startsOn, endsOn,
+                topic, meetingUrl, generatedUntil, createdAt, updatedAt, version);
     }
 
     /** Days with a lesson in {@code [from, to]}, in order. */
@@ -144,8 +156,19 @@ public final class Series {
         return id;
     }
 
-    public UUID studentId() {
+    /** The student of a series of lessons with one student, {@code null} for a group series. */
+    public @Nullable UUID studentId() {
         return studentId;
+    }
+
+    /** The group of a series of group lessons. */
+    public @Nullable UUID groupId() {
+        return groupId;
+    }
+
+    /** Whether the series belongs to the same student or group as the given one. */
+    public boolean sameOwner(@Nullable UUID otherStudentId, @Nullable UUID otherGroupId) {
+        return Objects.equals(studentId, otherStudentId) && Objects.equals(groupId, otherGroupId);
     }
 
     /** Weekdays from Monday to Sunday. */
