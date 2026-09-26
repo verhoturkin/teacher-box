@@ -230,7 +230,8 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Компоненты UI — PrimeNG. Собственные компоненты — только если в PrimeNG нет подходящего.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
-- Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/login`, `/invite/:token`.
+- Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),
+  `/login`, `/invite/:token`.
 
 ## 7. Тестирование
 

@@ -72,6 +72,12 @@ describe('AuthService', () => {
     expect(auth.homeUrl()).toBe('/cabinet');
   });
 
+  it('routes the administrator to the administration area', () => {
+    auth.acceptSession(authResponse('ADMIN'));
+
+    expect(auth.homeUrl()).toBe('/admin');
+  });
+
   it('treats a token expiring within 30 seconds as stale', () => {
     auth.acceptSession(authResponse('TEACHER', 10));
 

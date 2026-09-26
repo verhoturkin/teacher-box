@@ -1,5 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { isProblemDetail, problemCode } from './problem-detail';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { REQUEST_ID_HEADER, isProblemDetail, problemCode, requestCode } from './problem-detail';
 
 describe('problemCode', () => {
   it('extracts the code of a problem response', () => {
@@ -25,5 +25,28 @@ describe('isProblemDetail', () => {
     expect(isProblemDetail('error')).toBe(false);
     expect(isProblemDetail({})).toBe(false);
     expect(isProblemDetail({ status: '404' })).toBe(false);
+  });
+});
+
+describe('requestCode', () => {
+  it('takes the code from the problem or the response header', () => {
+    expect(requestCode(new HttpErrorResponse({ status: 500, error: { status: 500, requestId: 'abc123' } }))).toBe(
+      'abc123',
+    );
+    expect(
+      requestCode(
+        new HttpErrorResponse({
+          status: 502,
+          error: '<html>Bad Gateway</html>',
+          headers: new HttpHeaders({ [REQUEST_ID_HEADER]: 'proxy-1' }),
+        }),
+      ),
+    ).toBe('proxy-1');
+  });
+
+  it('is empty without a response', () => {
+    expect(requestCode(new HttpErrorResponse({ status: 0 }))).toBeNull();
+    expect(requestCode(new HttpErrorResponse({ status: 500, error: { status: 500, requestId: '' } }))).toBeNull();
+    expect(requestCode(new Error('x'))).toBeNull();
   });
 });

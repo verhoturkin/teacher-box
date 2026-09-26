@@ -1,4 +1,5 @@
-export type Role = 'TEACHER' | 'STUDENT';
+/** `ADMIN` is a technical account without access to students' data (ADR-0010). */
+export type Role = 'TEACHER' | 'STUDENT' | 'ADMIN';
 
 /** The signed-in user as returned by the backend. */
 export interface SessionUser {

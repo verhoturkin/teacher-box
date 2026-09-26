@@ -9,6 +9,8 @@ export interface ProblemDetail {
   readonly code?: string;
   /** Field validation errors: field name → message. */
   readonly errors?: Readonly<Record<string, string>>;
+  /** Code of the request in the server log, e.g. `k3m9x2ab7c`. */
+  readonly requestId?: string;
 }
 
 export function isProblemDetail(value: unknown): value is ProblemDetail {
@@ -29,4 +31,19 @@ export function problemCode(error: unknown): string | null {
     }
   }
   return null;
+}
+
+/** Header with the code of the request in the server log. */
+export const REQUEST_ID_HEADER = 'X-Request-Id';
+
+/** Code of a failed request in the server log, so that the user can name it to the administrator. */
+export function requestCode(error: unknown): string | null {
+  if (!(error instanceof HttpErrorResponse)) {
+    return null;
+  }
+  const body: unknown = error.error;
+  if (isProblemDetail(body) && typeof body.requestId === 'string' && body.requestId !== '') {
+    return body.requestId;
+  }
+  return error.headers.get(REQUEST_ID_HEADER);
 }

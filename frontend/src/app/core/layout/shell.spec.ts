@@ -38,6 +38,15 @@ describe('Shell', () => {
     expect(text).toContain('Анна Сергеевна');
   });
 
+  it('has no notification bell for the administrator', async () => {
+    expect(hostElement(fixture).querySelector('tb-notification-bell')).not.toBeNull();
+
+    fixture.componentRef.setInput('notifications', false);
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('tb-notification-bell')).toBeNull();
+  });
+
   it('signs out from the user menu', async () => {
     buttonByText(hostElement(fixture), 'Меню пользователя').click();
     await fixture.whenStable();

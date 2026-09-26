@@ -39,6 +39,32 @@ describe('app routes', { timeout: 20_000 }, () => {
     return TestBed.inject(Title).getTitle();
   }
 
+  it('leads the administrator to the log and the other administration pages', async () => {
+    auth.acceptSession(authResponse('ADMIN'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/');
+    expect(TestBed.inject(Router).url).toBe('/admin/logs');
+    expect(title()).toBe('Журнал — Teacher Box');
+    expect(text()).toContain('Администрирование');
+    backend.match(() => true);
+
+    for (const [url, heading] of [
+      ['/admin/status', 'Состояние'],
+      ['/admin/events', 'События'],
+      ['/admin/integrations', 'Интеграции'],
+      ['/admin/diagnostics', 'Диагностика'],
+      ['/admin/account', 'Мой аккаунт'],
+    ] as const) {
+      await harness.navigateByUrl(url);
+      expect(title()).toBe(`${heading} — Teacher Box`);
+      backend.match(() => true);
+    }
+    await harness.navigateByUrl('/teacher');
+    expect(TestBed.inject(Router).url).toBe('/admin/logs');
+    backend.match(() => true);
+  });
+
   it('shows the sign-in page to anonymous visitors', async () => {
     await harness.navigateByUrl('/');
 

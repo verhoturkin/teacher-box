@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { isProblemDetail, problemCode } from './problem-detail';
+import { isProblemDetail, problemCode, requestCode } from './problem-detail';
 
 /** Localized messages for backend error codes. Unknown codes fall back to the HTTP status. */
 const CODE_MESSAGES: Readonly<Record<string, string>> = {
@@ -100,6 +100,9 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
   'schedule.google-client-from-environment': 'OAuth-клиент Google задан в переменных окружения сервера',
   'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
+  // administrator
+  'admin.logger-invalid': 'Некорректное имя раздела журнала',
+  'admin.duration-invalid': 'Время — от 1 минуты до 24 часов',
 };
 
 const STATUS_MESSAGES: Readonly<Record<number, string>> = {
@@ -120,10 +123,12 @@ export function messageForCode(code: string): string | undefined {
   return CODE_MESSAGES[code];
 }
 
+const SERVER_ERROR = 500;
+
 /** Message for the backend error code of `error`, or `fallback` when the code is unknown. */
 export function describeError(error: unknown, fallback: string): string {
   const code = problemCode(error);
-  return (code === null ? undefined : messageForCode(code)) ?? fallback;
+  return withRequestCode((code === null ? undefined : messageForCode(code)) ?? fallback, error);
 }
 
 /** Human-readable (Russian) message for a failed HTTP call. */
@@ -132,8 +137,17 @@ export function errorMessage(error: HttpErrorResponse): string {
   if (isProblemDetail(body) && body.code !== undefined) {
     const known = messageForCode(body.code);
     if (known !== undefined) {
-      return known;
+      return withRequestCode(known, error);
     }
   }
-  return STATUS_MESSAGES[error.status] ?? FALLBACK;
+  return withRequestCode(STATUS_MESSAGES[error.status] ?? FALLBACK, error);
+}
+
+/** Server failures get the request code: the user names it, the administrator finds it in the log. */
+function withRequestCode(message: string, error: unknown): string {
+  if (!(error instanceof HttpErrorResponse) || error.status < SERVER_ERROR) {
+    return message;
+  }
+  const code = requestCode(error);
+  return code === null ? message : `${message}. Код ошибки: ${code}`;
 }

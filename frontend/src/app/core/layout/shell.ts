@@ -23,7 +23,9 @@ import { NotificationBell } from '@core/notifications/notification-bell';
       <ng-template #end>
         <div class="tb-shell__user">
           <span class="tb-shell__area">{{ areaTitle() }}</span>
-          <tb-notification-bell [link]="homeLink() + '/notifications'" />
+          @if (notifications()) {
+            <tb-notification-bell [link]="homeLink() + '/notifications'" />
+          }
           <p-button
             [label]="userName()"
             icon="pi pi-user"
@@ -50,6 +52,8 @@ export class Shell {
   readonly areaTitle = input.required<string>();
   /** Links shown in the user menu before «Мой аккаунт» (e.g. the teacher's settings). */
   readonly userLinks = input<MenuItem[]>([]);
+  /** The notification bell (the administrator has no notifications). */
+  readonly notifications = input(true);
 
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [

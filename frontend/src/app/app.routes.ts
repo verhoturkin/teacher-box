@@ -134,6 +134,44 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'admin',
+    canActivate: [roleGuard('ADMIN')],
+    loadComponent: () => import('@core/layout/admin-layout').then((m) => m.AdminLayout),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'logs' },
+      {
+        path: 'logs',
+        title: 'Журнал',
+        loadComponent: () => import('@features/admin').then((m) => m.LogPage),
+      },
+      {
+        path: 'status',
+        title: 'Состояние',
+        loadComponent: () => import('@features/admin').then((m) => m.StatusPage),
+      },
+      {
+        path: 'events',
+        title: 'События',
+        loadComponent: () => import('@features/admin').then((m) => m.EventsPage),
+      },
+      {
+        path: 'integrations',
+        title: 'Интеграции',
+        loadComponent: () => import('@features/admin').then((m) => m.IntegrationsPage),
+      },
+      {
+        path: 'diagnostics',
+        title: 'Диагностика',
+        loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),
+      },
+      {
+        path: 'account',
+        title: 'Мой аккаунт',
+        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+      },
+    ],
+  },
+  {
     path: '**',
     title: 'Страница не найдена',
     loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),

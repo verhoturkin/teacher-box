@@ -45,3 +45,26 @@ describe('errorMessage', () => {
     expect(messageForCode('nope')).toBeUndefined();
   });
 });
+
+describe('request codes in messages', () => {
+  it('adds the code to server errors so that the user can name it', () => {
+    const failure = new HttpErrorResponse({
+      status: 500,
+      error: { status: 500, code: 'internal.error', requestId: 'k3m9x2ab7c' },
+    });
+
+    expect(errorMessage(failure)).toBe('Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c');
+    expect(errorMessage(httpError(503, { status: 503, requestId: 'q1' }))).toBe(
+      'Произошла ошибка. Попробуйте позже. Код ошибки: q1',
+    );
+    expect(describeError(failure, 'Не удалось сохранить')).toBe('Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c');
+    expect(describeError(httpError(502, { status: 502, requestId: 'g1' }), 'Не удалось сохранить')).toBe(
+      'Не удалось сохранить. Код ошибки: g1',
+    );
+  });
+
+  it('keeps other messages short', () => {
+    expect(errorMessage(httpError(404, { status: 404, requestId: 'r1' }))).toBe('Не найдено');
+    expect(errorMessage(httpError(503))).toBe('Произошла ошибка. Попробуйте позже');
+  });
+});

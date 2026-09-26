@@ -3,6 +3,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import localeRu from '@angular/common/locales/ru';
 import {
   ApplicationConfig,
+  ErrorHandler,
   LOCALE_ID,
   inject,
   provideAppInitializer,
@@ -13,6 +14,7 @@ import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { authInterceptor } from '@core/auth/auth.interceptor';
+import { ReportingErrorHandler } from '@core/errors/reporting-error-handler';
 import { AuthService } from '@core/auth/auth.service';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
@@ -24,6 +26,7 @@ registerLocaleData(localeRu);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: ReportingErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
     // Order matters: the error toast sees the final result after the auth retry.
     provideHttpClient(withInterceptors([apiErrorInterceptor, authInterceptor])),
