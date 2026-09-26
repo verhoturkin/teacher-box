@@ -1,11 +1,26 @@
-# Overrides of compose.single.yaml for the E2E run (scripts/e2e.sh): a known teacher password,
-# a separate port and no .env of the developer.
+# Overrides of compose.single.yaml for the E2E run (scripts/e2e.sh): known teacher and administrator
+# passwords, a separate port, no .env of the developer and an imitation of the Telegram Bot API.
 services:
   app:
     env_file: !reset []
     environment:
       TEACHERBOX_IDENTITY_TEACHER_PASSWORD: ${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}
+      TEACHERBOX_IDENTITY_ADMIN_PASSWORD: ${E2E_ADMIN_PASSWORD:-e2e-admin-pass}
+      TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL: http://telegram:8099
       TEACHERBOX_BACKUP_CRON: "-"
       TEACHERBOX_BILLING_DEFAULT_LESSON_PRICE: "1500"
     ports: !override
       - "${E2E_PORT:-8091}:8080"
+
+  telegram:
+    image: node:22-alpine
+    command: ["node", "/mock/server.mjs"]
+    volumes:
+      - ./e2e/telegram-mock:/mock:ro
+    ports:
+      - "${E2E_TELEGRAM_PORT:-8099}:8099"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8099/health"]
+      interval: 2s
+      timeout: 2s
+      retries: 15

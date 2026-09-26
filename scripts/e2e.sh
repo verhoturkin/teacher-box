@@ -12,6 +12,9 @@ cd "$ROOT"
 
 export E2E_PORT="${E2E_PORT:-8091}"
 export E2E_TEACHER_PASSWORD="${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}"
+export E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-e2e-admin-pass}"
+export E2E_TELEGRAM_PORT="${E2E_TELEGRAM_PORT:-8099}"
+export E2E_TELEGRAM_URL="${E2E_TELEGRAM_URL:-http://localhost:${E2E_TELEGRAM_PORT}}"
 export E2E_BASE_URL="${E2E_BASE_URL:-http://localhost:${E2E_PORT}}"
 
 compose() {

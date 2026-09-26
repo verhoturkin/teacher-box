@@ -4,7 +4,7 @@ import { type Browser, type Page, expect, test } from '@playwright/test';
  * The main scenario of the portal, from the teacher's first sign-in to the student's inbox:
  * a student is invited and signs up, gets homework and hands it in, the teacher registers a
  * payment and the student sees the notification in the personal area; a lesson from the schedule
- * is charged, and the student moves a lesson with the teacher's consent.
+ * is charged, and the student moves a lesson with the teacher's consent; the home pages sum it up.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -154,4 +154,17 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
 
   await student.reload();
   await expect(student.getByText('Согласовано')).toBeVisible();
+});
+
+test('the home pages sum up the day', async ({ page, browser }) => {
+  await signIn(page, 'teacher', TEACHER_PASSWORD);
+  await expect(page.getByText('Требует внимания')).toBeVisible();
+  await expect(page.getByText(/Поступило за/)).toBeVisible();
+  await expect(page.getByText('Впереди на неделе:')).toBeVisible();
+
+  const student = await studentPage(browser);
+  await expect(student.getByText('Ближайшее занятие')).toBeVisible();
+  await expect(student.getByText('Проценты')).toBeVisible();
+  await expect(student.getByText('аванс 1 500 ₽')).toBeVisible();
+  await expect(student.getByText('Открытых заданий нет')).toBeVisible();
 });
