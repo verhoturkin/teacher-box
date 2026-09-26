@@ -3,7 +3,8 @@ import { type Browser, type Page, expect, test } from '@playwright/test';
 /**
  * The main scenario of the portal, from the teacher's first sign-in to the student's inbox:
  * a student is invited and signs up, gets homework and hands it in, the teacher registers a
- * payment and the student sees the notification in the personal area.
+ * payment and the student sees the notification in the personal area; a lesson from the schedule
+ * is charged, and the student moves a lesson with the teacher's consent.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -22,6 +23,27 @@ async function signIn(page: Page, login: string, password: string): Promise<void
   await page.getByLabel('Логин').fill(login);
   await page.locator('#password').fill(password);
   await page.getByRole('button', { name: 'Войти' }).click();
+}
+
+/** `dd.MM.yyyy HH:mm` of a day relative to today (the format of the date pickers). */
+function dateTime(daysFromToday: number, hours: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromToday);
+  const pad = (value: number): string => String(value).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:00`;
+}
+
+async function planLesson(page: Page, daysFromToday: number, hours: number, topic: string): Promise<void> {
+  await page.getByRole('menuitem', { name: 'Расписание' }).click();
+  // The accessible name starts with the icon glyph.
+  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await page.locator('p-select:has(#schedule-lesson-student)').click();
+  await page.getByRole('option', { name: STUDENT_NAME }).click();
+  // The date picker parses typed keys, not a pasted value.
+  await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
+  await page.locator('#schedule-lesson-topic').fill(topic);
+  await page.getByRole('button', { name: 'Сохранить' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
 }
 
 async function studentPage(browser: Browser): Promise<Page> {
@@ -98,4 +120,38 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
   await expect(student).toHaveURL(/\/cabinet\/notifications$/);
   await expect(student.getByText('Получена оплата 3 000 ₽')).toBeVisible({ timeout: 20_000 });
   await expect(student.getByText(`Новое задание: «${HOMEWORK_TITLE}»`)).toBeVisible();
+});
+
+test('a lesson marked in the schedule is charged', async ({ page }) => {
+  await signIn(page, 'teacher', TEACHER_PASSWORD);
+  await planLesson(page, -1, 10, 'Повторение');
+
+  await page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` }).click();
+  await expect(page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` })).toBeHidden();
+
+  await page.getByRole('menuitem', { name: 'Оплаты' }).click();
+  await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('1 500');
+  await page.getByRole('link', { name: STUDENT_NAME }).click();
+  await expect(page.getByText('Повторение')).toBeVisible();
+});
+
+test('the student moves a lesson when the teacher agrees', async ({ page, browser }) => {
+  await signIn(page, 'teacher', TEACHER_PASSWORD);
+  await planLesson(page, 3, 15, 'Проценты');
+
+  const student = await studentPage(browser);
+  await student.getByRole('menuitem', { name: 'Расписание' }).click();
+  await student.getByRole('button', { name: 'Перенести' }).click();
+  await student.locator('#request-start').pressSequentially(dateTime(4, 16));
+  await student.locator('#request-comment').fill('Можно на день позже?');
+  await student.getByRole('button', { name: 'Отправить учителю' }).click();
+  await expect(student.getByText('ждёт ответа учителя')).toBeVisible();
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Ответить' }).click();
+  await page.getByRole('button', { name: 'Согласовать' }).click();
+  await expect(page.getByRole('button', { name: 'Ответить' })).toBeHidden();
+
+  await student.reload();
+  await expect(student.getByText('Согласовано')).toBeVisible();
 });

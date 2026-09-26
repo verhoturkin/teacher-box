@@ -30,6 +30,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
       },
       {
+        path: 'schedule',
+        title: 'Расписание',
+        loadComponent: () => import('@features/schedule').then((m) => m.SchedulePage),
+      },
+      {
         path: 'homework',
         title: 'Домашние задания',
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
@@ -95,6 +100,11 @@ export const routes: Routes = [
         path: '',
         title: 'Личный кабинет',
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
+      },
+      {
+        path: 'schedule',
+        title: 'Расписание',
+        loadComponent: () => import('@features/schedule').then((m) => m.MySchedulePage),
       },
       {
         path: 'homework',

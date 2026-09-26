@@ -28,6 +28,18 @@ MIT** (как и `@primeuix/themes` 2.x, `primeicons` 7).
   (reading 'edgesOut')` при разрешении optional peer-зависимостей vitest). Локально без обновления
   глобального npm: `npx -y npm@11 ci`.
 
+### Календарь (версия 1.1)
+
+- В PrimeNG нет календаря-расписания, поэтому используется **FullCalendar 7** (`@fullcalendar/angular`,
+  `fullcalendar`, `temporal-polyfill` — все MIT) только с бесплатными видами: неделя (`timegrid`),
+  месяц (`daygrid`), список (`list`), перетаскивание (`interaction`). Платные плагины (resource,
+  timeline, scheduler) не подключаются.
+- Стили — `skeleton.css` и тема `classic` из пакета (подключены в `angular.json`, без внедрения
+  стилей в рантайме — совместимо с CSP); палитра темы задана через CSS-переменные `--fc-classic-*`,
+  привязанные к токенам PrimeNG, поэтому календарь следует светлой и тёмной теме портала.
+- Обёртка `features/schedule/ui/schedule-calendar` — единственное место, где используется
+  FullCalendar; в тестах (jsdom) календарь рендерится по-настоящему.
+
 ## Последствия
 
 - (+) Полностью открытый стек, никаких лицензионных проверок в рантайме.

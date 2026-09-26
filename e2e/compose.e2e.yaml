@@ -6,5 +6,6 @@ services:
     environment:
       TEACHERBOX_IDENTITY_TEACHER_PASSWORD: ${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}
       TEACHERBOX_BACKUP_CRON: "-"
+      TEACHERBOX_BILLING_DEFAULT_LESSON_PRICE: "1500"
     ports: !override
       - "${E2E_PORT:-8091}:8080"

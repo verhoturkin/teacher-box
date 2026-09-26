@@ -338,3 +338,57 @@ a.p-button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* Calendar (FullCalendar, classic theme) in the colors of the PrimeNG theme */
+:root {
+  --fc-classic-button: var(--p-primary-color);
+  --fc-classic-button-border: var(--p-primary-color);
+  --fc-classic-button-strong: var(--p-primary-active-color);
+  --fc-classic-button-strong-border: var(--p-primary-active-color);
+  --fc-classic-button-outline: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
+  --fc-classic-button-foreground: var(--p-primary-contrast-color);
+  --fc-classic-primary: var(--p-primary-color);
+  --fc-classic-primary-foreground: var(--p-primary-contrast-color);
+  --fc-classic-event: var(--p-primary-color);
+  --fc-classic-event-contrast: var(--p-primary-contrast-color);
+  --fc-classic-background-event: var(--p-green-500);
+  --fc-classic-background-event-opacity: 15%;
+  --fc-classic-background-event-foreground-opacity: 50%;
+  --fc-classic-highlight: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+  --fc-classic-today: color-mix(in srgb, var(--p-yellow-400) 15%, transparent);
+  --fc-classic-now: var(--p-red-500);
+  --fc-classic-small-dot-width: 8px;
+  --fc-classic-large-dot-width: 10px;
+  --fc-classic-background: var(--p-content-background);
+  --fc-classic-faint: color-mix(in srgb, var(--p-text-color) 4%, transparent);
+  --fc-classic-muted: color-mix(in srgb, var(--p-text-color) 8%, transparent);
+  --fc-classic-strong: color-mix(in srgb, var(--p-text-color) 14%, transparent);
+  --fc-classic-foreground: var(--p-text-color);
+  --fc-classic-faint-foreground: var(--p-text-muted-color);
+  --fc-classic-muted-foreground: var(--p-text-muted-color);
+  --fc-classic-border: var(--p-content-border-color);
+  --fc-classic-strong-border: var(--p-text-muted-color);
+}
+
+/* Lesson events by status */
+.tb-lesson--conducted {
+  --fc-classic-event: var(--p-green-600);
+  --fc-classic-event-contrast: #fff;
+}
+
+.tb-lesson--missed {
+  --fc-classic-event: var(--p-orange-500);
+  --fc-classic-event-contrast: #fff;
+}
+
+.tb-lesson--cancelled {
+  --fc-classic-event: var(--p-surface-400);
+  --fc-classic-event-contrast: #fff;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.tb-lesson--request {
+  outline: 2px dashed var(--p-orange-500);
+  outline-offset: 1px;
+}
