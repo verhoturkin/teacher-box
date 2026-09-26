@@ -36,6 +36,19 @@ server:
     include-stacktrace: never
     include-message: never
 
+logging:
+  file:
+    # JSON log for the administrator's log search (ADR-0010); the console stays human-readable.
+    name: ${teacherbox.data-dir}/logs/teacher-box.log
+  structured:
+    format:
+      file: ecs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 100MB
+      max-history: 30
+
 management:
   endpoints:
     web:

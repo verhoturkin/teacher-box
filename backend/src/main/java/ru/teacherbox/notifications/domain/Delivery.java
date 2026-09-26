@@ -82,6 +82,16 @@ public final class Delivery {
         nextAttemptAt = now.plus(backoff(attempts));
     }
 
+    /** Tries a given up delivery once more from the start (the administrator's decision). */
+    public void retry(Instant now) {
+        if (status != DeliveryStatus.FAILED) {
+            throw new IllegalStateException("Only failed deliveries can be retried");
+        }
+        status = DeliveryStatus.PENDING;
+        attempts = 0;
+        nextAttemptAt = now;
+    }
+
     /** Gives up immediately (e.g. the channel is no longer configured). */
     public void abandon(String reason) {
         status = DeliveryStatus.FAILED;

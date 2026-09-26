@@ -105,7 +105,8 @@ class TeacherBootstrapTest {
     }
 
     private TeacherBootstrap bootstrap(IdentityProperties.Teacher teacher) {
-        IdentityProperties properties = new IdentityProperties(teacher, Duration.ofMinutes(15), Duration.ofDays(30),
+        IdentityProperties properties = new IdentityProperties(teacher, new IdentityProperties.Admin("admin", null),
+                Duration.ofMinutes(15), Duration.ofDays(30),
                 Duration.ofSeconds(20), Duration.ofDays(7), 5, Duration.ofMinutes(15));
         return new TeacherBootstrap(users, encoder, properties, clock);
     }

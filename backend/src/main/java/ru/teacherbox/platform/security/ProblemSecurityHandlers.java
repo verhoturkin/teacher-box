@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import ru.teacherbox.platform.web.RequestIdFilter;
 
 /** 401/403 responses from the security filter chain in the same ProblemDetail format as the API. */
 final class ProblemSecurityHandlers {
@@ -31,8 +32,10 @@ final class ProblemSecurityHandlers {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
+        String requestId = RequestIdFilter.current();
         response.getWriter().write("""
-                {"type":"about:blank","title":"%s","status":%d,"detail":"%s","code":"%s"}"""
-                .formatted(status.getReasonPhrase(), status.value(), detail, code));
+                {"type":"about:blank","title":"%s","status":%d,"detail":"%s","code":"%s"%s}"""
+                .formatted(status.getReasonPhrase(), status.value(), detail, code,
+                        requestId == null ? "" : ",\"requestId\":\"" + requestId + "\""));
     }
 }

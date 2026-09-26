@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,8 +35,9 @@ import ru.teacherbox.shared.security.JwtClaims;
 /**
  * Stateless API security based on HS256-signed access tokens.
  *
- * <p>URL conventions: {@code /api/auth/**} is public, {@code /api/teacher/**} requires the teacher role,
- * the rest of {@code /api/**} requires authentication; everything else (SPA assets) is public.
+ * <p>URL conventions: {@code /api/auth/**} and {@code /api/public/**} are public, {@code /api/admin/**}
+ * requires the administrator, {@code /api/teacher/**} the teacher, the rest of {@code /api/**} the teacher or
+ * a student (the administrator only reaches their own account); everything else (SPA assets) is public.
  */
 @AutoConfiguration(after = PlatformCoreAutoConfiguration.class, beforeName = {
         "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
@@ -104,8 +106,13 @@ public class PlatformSecurityAutoConfiguration {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Resources behind secret links (e.g. calendar feeds) for clients that cannot sign in.
                         .requestMatchers("/api/public/**").permitAll()
+                        // Browser errors are reported also before sign-in (rate-limited, see ClientErrorController).
+                        .requestMatchers(HttpMethod.POST, "/api/client-errors").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
-                        .requestMatchers("/api/**").authenticated()
+                        // The administrator has only their own account; the rest is for the teacher and students.
+                        .requestMatchers("/api/me", "/api/me/password").authenticated()
+                        .requestMatchers("/api/**").hasAnyRole("TEACHER", "STUDENT")
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").denyAll()
                         .anyRequest().permitAll())

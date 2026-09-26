@@ -90,6 +90,11 @@
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-starter-jdbc</artifactId>
         </dependency>
+        <!-- Event Publication Registry API for the administrator's «Events» page (ADR-0010) -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-events-core</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jspecify</groupId>

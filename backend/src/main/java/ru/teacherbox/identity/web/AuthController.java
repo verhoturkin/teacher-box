@@ -21,6 +21,7 @@ import ru.teacherbox.identity.application.AuthService;
 import ru.teacherbox.identity.application.InviteService;
 import ru.teacherbox.identity.application.Session;
 import ru.teacherbox.shared.error.UnauthorizedException;
+import ru.teacherbox.shared.diagnostics.AuditLog;
 
 /** Public authentication endpoints (see ADR-0003). */
 @RestController
@@ -28,7 +29,7 @@ import ru.teacherbox.shared.error.UnauthorizedException;
 class AuthController {
 
     /** Security audit trail (sign-ins); can be routed separately by the logging configuration. */
-    private static final Logger AUDIT = LoggerFactory.getLogger("teacherbox.audit");
+    private static final Logger AUDIT = LoggerFactory.getLogger(AuditLog.LOGGER);
 
     record LoginRequest(@NotBlank @Size(max = 64) String login, @NotBlank @Size(max = 128) String password) {
     }

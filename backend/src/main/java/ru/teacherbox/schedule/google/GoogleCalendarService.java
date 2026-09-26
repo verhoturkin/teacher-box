@@ -247,6 +247,28 @@ public class GoogleCalendarService {
         return changed;
     }
 
+    /**
+     * The administrator's check: an access token is obtained and the portal's calendar is looked up.
+     *
+     * @return what was found, or {@code null} when Google Calendar is not connected
+     * @throws GoogleException if Google does not answer or no longer accepts the access
+     */
+    public @Nullable String checkConnection() {
+        GoogleConnection connection = connection();
+        String calendarId = connection.calendarId();
+        if (!connection.isConnected() || calendarId == null) {
+            return null;
+        }
+        try {
+            return api.calendarExists(token(connection), calendarId)
+                    ? "Календарь портала доступен"
+                    : "Календарь портала удалён в Google — синхронизация создаст его заново";
+        } catch (GoogleAuthException e) {
+            lost(e);
+            throw e;
+        }
+    }
+
     /** Busy times of the teacher's own calendars, if the teacher allowed reading them. */
     public List<GoogleApi.Busy> busy(Instant from, Instant to) {
         GoogleConnection connection = connection();

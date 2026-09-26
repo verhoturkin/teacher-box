@@ -22,6 +22,10 @@ public final class TestUsers {
         return as(studentId, Role.STUDENT, "Ученик");
     }
 
+    public static RequestPostProcessor admin(UUID adminId) {
+        return as(adminId, Role.ADMIN, "Администратор");
+    }
+
     private static RequestPostProcessor as(UUID id, Role role, String name) {
         return jwt()
                 .jwt(token -> token.subject(id.toString()).claim(JwtClaims.ROLE, role.name())

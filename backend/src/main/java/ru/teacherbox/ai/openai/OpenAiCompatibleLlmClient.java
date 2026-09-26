@@ -114,6 +114,26 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         return new LlmResponse(text, response.path("model").asString(model), inputTokens, outputTokens);
     }
 
+    /** The list of models ({@code GET /models}): no tokens are spent. */
+    @Override
+    public String ping() {
+        JsonNode response;
+        try {
+            response = http.get().uri("/models").retrieve().body(JsonNode.class);
+        } catch (RestClientResponseException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE,
+                    "Provider " + e.getStatusCode().value() + ": " + describe(e));
+        } catch (RestClientException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE, "Provider: " + e.getMessage());
+        }
+        List<String> ids = response == null ? List.of() : response.path("data").valueStream()
+                .map(entry -> entry.path("id").asString(""))
+                .toList();
+        boolean listed = ids.stream().anyMatch(id -> id.equals(model) || id.endsWith("/" + model));
+        return listed ? "Модель " + model + " доступна"
+                : "Провайдер отвечает, но модели " + model + " нет среди " + ids.size() + " доступных";
+    }
+
     private Map<String, Object> body(LlmRequest request) {
         Map<String, Object> jsonSchema = new LinkedHashMap<>();
         jsonSchema.put("name", request.schemaName());

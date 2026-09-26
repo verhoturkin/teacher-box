@@ -18,4 +18,13 @@ public interface LlmClient {
      * @throws LlmException if the provider failed, declined the request or cut the answer short
      */
     LlmResponse complete(LlmRequest request);
+
+    /**
+     * Checks that the provider answers and accepts the key, without spending tokens (the administrator's
+     * integration check).
+     *
+     * @return what the provider said about the model, e.g. its display name
+     * @throws LlmException if the provider is unreachable or rejects the request
+     */
+    String ping();
 }

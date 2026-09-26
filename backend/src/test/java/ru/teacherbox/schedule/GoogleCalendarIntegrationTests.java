@@ -250,6 +250,38 @@ class GoogleCalendarIntegrationTests {
     }
 
     @Test
+    void theAdministratorChecksTheConnection() {
+        assertThat(check()).bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$[?(@.name == 'Google Календарь')].state").asArray()
+                    .containsExactly("NOT_CONFIGURED");
+        });
+
+        connect();
+        when(google.calendarExists("access-1", CALENDAR)).thenReturn(true, false)
+                .thenThrow(new GoogleException("Google calendar 503: Backend Error"))
+                .thenThrow(new GoogleAuthException("invalid_grant"));
+
+        assertThat(check()).bodyJson().extractingPath("$[?(@.name == 'Google Календарь')].detail").asArray()
+                .containsExactly("Календарь портала доступен");
+        assertThat(check()).bodyJson().extractingPath("$[?(@.name == 'Google Календарь')].detail").asArray()
+                .containsExactly("Календарь портала удалён в Google — синхронизация создаст его заново");
+        assertThat(check()).bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$[?(@.name == 'Google Календарь')].state").asArray()
+                    .containsExactly("FAILED");
+            assertThat(json).extractingPath("$[?(@.name == 'Google Календарь')].detail").asArray()
+                    .containsExactly("Google calendar 503: Backend Error");
+        });
+        assertThat(check()).bodyJson().extractingPath("$[?(@.name == 'Google Календарь')].state").asArray()
+                .containsExactly("FAILED");
+        assertThat(get("/api/teacher/schedule/google")).bodyJson().extractingPath("$.status")
+                .isEqualTo("NEEDS_RECONNECT");
+    }
+
+    private MvcTestResult check() {
+        return mvc.post().uri("/api/admin/integrations/check").with(TestUsers.admin(UUID.randomUUID())).exchange();
+    }
+
+    @Test
     void disconnectingRevokesTheToken() {
         connect();
         doThrow(new GoogleException("offline")).when(google).revoke("refresh-1");

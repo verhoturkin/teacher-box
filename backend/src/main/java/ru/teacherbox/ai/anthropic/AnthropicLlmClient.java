@@ -85,6 +85,19 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
         return new LlmResponse(text, message.model().asString(), inputTokens, outputTokens);
     }
 
+    /** The Models API: no tokens are spent. */
+    @Override
+    public String ping() {
+        try {
+            return "Модель " + client.models().retrieve(model).displayName() + " доступна";
+        } catch (AnthropicServiceException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE,
+                    "Anthropic API " + e.statusCode() + ": " + e.getMessage());
+        } catch (AnthropicException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE, "Anthropic API: " + e.getMessage());
+        }
+    }
+
     MessageCreateParams params(LlmRequest request) {
         OutputConfig.Builder output = OutputConfig.builder()
                 .format(JsonOutputFormat.builder().schema(schema(request.schema())).build());

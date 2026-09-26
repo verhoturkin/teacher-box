@@ -10,6 +10,7 @@ import ru.teacherbox.identity.domain.LoginPolicy;
  * Settings of the identity module ({@code TEACHERBOX_IDENTITY_*}).
  *
  * @param teacher           the teacher account created on first start
+ * @param admin             the optional administrator account (ADR-0010)
  * @param accessTokenTtl    lifetime of access tokens (JWT)
  * @param refreshTokenTtl   lifetime of refresh tokens (sliding)
  * @param refreshReuseGrace window in which a just rotated refresh token is still accepted
@@ -21,6 +22,7 @@ import ru.teacherbox.identity.domain.LoginPolicy;
 @ConfigurationProperties("teacherbox.identity")
 public record IdentityProperties(
         @DefaultValue Teacher teacher,
+        @DefaultValue Admin admin,
         @DefaultValue("15m") Duration accessTokenTtl,
         @DefaultValue("30d") Duration refreshTokenTtl,
         @DefaultValue("20s") Duration refreshReuseGrace,
@@ -40,6 +42,17 @@ public record IdentityProperties(
             @Nullable String password,
             @DefaultValue("Учитель") String name,
             @DefaultValue("false") boolean resetPassword) {
+    }
+
+    /**
+     * @param login    administrator login ({@code TEACHERBOX_IDENTITY_ADMIN_LOGIN})
+     * @param password administrator password; when empty there is no administrator
+     */
+    public record Admin(@DefaultValue("admin") String login, @Nullable String password) {
+
+        public boolean enabled() {
+            return password != null && !password.isBlank();
+        }
     }
 
     public LoginPolicy loginPolicy() {

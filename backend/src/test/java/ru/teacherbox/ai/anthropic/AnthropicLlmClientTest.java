@@ -166,6 +166,51 @@ class AnthropicLlmClientTest {
     }
 
     @Test
+    void pingAsksTheModelsApi() {
+        AtomicReference<String> path = new AtomicReference<>();
+        AtomicReference<Integer> modelStatus = new AtomicReference<>(200);
+        server.createContext("/v1/models", exchange -> {
+            path.set(exchange.getRequestURI().getPath());
+            byte[] body = (modelStatus.get() == 200
+                    ? """
+                    {"type": "model", "id": "claude-opus-5", "display_name": "Claude Opus 5",
+                     "created_at": "2026-01-01T00:00:00Z"}
+                    """
+                    : """
+                    {"type": "error", "error": {"type": "authentication_error", "message": "invalid x-api-key"}}
+                    """).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(modelStatus.get(), body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
+        try (AnthropicLlmClient client = client(null, false)) {
+            assertThat(client.ping()).isEqualTo("Модель Claude Opus 5 доступна");
+            assertThat(path.get()).isEqualTo("/v1/models/claude-opus-5");
+
+            modelStatus.set(401);
+            assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class, e -> {
+                assertThat(e.reason()).isEqualTo(LlmException.Reason.UNAVAILABLE);
+                assertThat(e.getMessage()).contains("401");
+            });
+        }
+    }
+
+    @Test
+    void pingReportsNetworkErrors() throws IOException {
+        int closedPort;
+        try (ServerSocket socket = new ServerSocket(0)) {
+            closedPort = socket.getLocalPort();
+        }
+        try (AnthropicLlmClient client = new AnthropicLlmClient(AnthropicOkHttpClient.builder()
+                .apiKey("test-key").baseUrl("http://127.0.0.1:" + closedPort).maxRetries(0).build(),
+                "claude-opus-5", null, false, 16000)) {
+            assertThatThrownBy(client::ping).isInstanceOf(LlmException.class);
+        }
+    }
+
+    @Test
     void goesThroughTheConfiguredProxy() {
         respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
         ApplicationContextRunner runner = new ApplicationContextRunner()

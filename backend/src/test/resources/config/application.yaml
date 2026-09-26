@@ -13,3 +13,8 @@ teacherbox:
     # Many sign-ins from one address in module tests; the limiter has its own tests.
     auth-rate-limit:
       requests: 0
+
+logging:
+  file:
+    # No log files in tests; the log search has its own fixtures.
+    name: ""

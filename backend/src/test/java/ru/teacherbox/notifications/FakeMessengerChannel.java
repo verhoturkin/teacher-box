@@ -20,6 +20,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
     private final List<Sent> sent = new CopyOnWriteArrayList<>();
     private final List<IncomingMessage> incoming = new CopyOnWriteArrayList<>();
     private volatile @Nullable RuntimeException failure;
+    private volatile @Nullable RuntimeException botNameFailure;
 
     public FakeMessengerChannel(ChannelType type) {
         this.type = type;
@@ -28,6 +29,11 @@ public final class FakeMessengerChannel implements MessengerChannel {
     /** Subsequent sends fail with the given error (usually a {@link DeliveryException}) until {@link #reset()}. */
     public void failWith(RuntimeException error) {
         failure = error;
+    }
+
+    /** Asking for the bot's name fails with the given error ({@code null}: it succeeds again). */
+    public void failBotName(@Nullable RuntimeException error) {
+        botNameFailure = error;
     }
 
     public void receive(IncomingMessage message) {
@@ -65,6 +71,10 @@ public final class FakeMessengerChannel implements MessengerChannel {
 
     @Override
     public String botName() {
+        RuntimeException error = botNameFailure;
+        if (error != null) {
+            throw error;
+        }
         return "@test_bot";
     }
 

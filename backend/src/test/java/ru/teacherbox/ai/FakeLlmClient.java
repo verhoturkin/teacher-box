@@ -13,6 +13,7 @@ public final class FakeLlmClient implements LlmClient {
 
     private final Deque<Object> answers = new ArrayDeque<>();
     private @Nullable LlmRequest lastRequest;
+    private @Nullable LlmException pingError;
 
     public synchronized void answer(String json, long inputTokens, long outputTokens) {
         answers.add(new LlmResponse(json, "fake-model-1", inputTokens, outputTokens));
@@ -26,9 +27,15 @@ public final class FakeLlmClient implements LlmClient {
         return lastRequest;
     }
 
+    /** The next pings fail with this error ({@code null}: they succeed). */
+    public synchronized void failPing(@Nullable LlmException error) {
+        pingError = error;
+    }
+
     public synchronized void reset() {
         answers.clear();
         lastRequest = null;
+        pingError = null;
     }
 
     @Override
@@ -52,5 +59,13 @@ public final class FakeLlmClient implements LlmClient {
             return response;
         }
         throw new IllegalStateException("No answer scripted");
+    }
+
+    @Override
+    public synchronized String ping() {
+        if (pingError != null) {
+            throw pingError;
+        }
+        return "Модель fake-model доступна";
     }
 }

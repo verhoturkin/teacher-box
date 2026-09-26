@@ -151,6 +151,42 @@ class OpenAiCompatibleLlmClientTest {
         authorizedServer.verify();
     }
 
+    @Test
+    void pingListsTheModelsWithoutSpendingTokens() {
+        String models = "http://ollama:11434/v1/models";
+        server.expect(requestTo(models)).andExpect(method(HttpMethod.GET)).andRespond(withSuccess("""
+                {"data": [{"id": "llama3.1:8b"}, {"id": "qwen3:14b"}]}
+                """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withSuccess("""
+                {"data": [{"id": "models/other"}]}
+                """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON).body("""
+                        {"error": {"message": "Invalid API key"}}
+                        """));
+        server.expect(requestTo(models)).andRespond(request -> {
+            throw new IOException("Connection refused");
+        });
+
+        assertThat(client.ping()).isEqualTo("Модель qwen3:14b доступна");
+        assertThat(client.ping()).isEqualTo("Провайдер отвечает, но модели qwen3:14b нет среди 1 доступных");
+        assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class,
+                e -> assertThat(e.getMessage()).isEqualTo("Provider 401: Invalid API key"));
+        assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class,
+                e -> assertThat(e.reason()).isEqualTo(LlmException.Reason.UNAVAILABLE));
+        server.verify();
+    }
+
+    @Test
+    void pingFindsGeminiModelsByTheirFullName() {
+        OpenAiCompatibleLlmClient gemini = new OpenAiCompatibleLlmClient(builder.build(), "gemini", "gemini-3.8-flash");
+        server.expect(requestTo("http://ollama:11434/v1/models")).andRespond(withSuccess("""
+                {"data": [{"id": "models/gemini-3.8-flash"}]}
+                """, MediaType.APPLICATION_JSON));
+
+        assertThat(gemini.ping()).isEqualTo("Модель gemini-3.8-flash доступна");
+    }
+
     private void assertReason(LlmException.Reason reason) {
         assertThatThrownBy(() -> client.complete(REQUEST))
                 .isInstanceOfSatisfying(LlmException.class, e -> assertThat(e.reason()).isEqualTo(reason));

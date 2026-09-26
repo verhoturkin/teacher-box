@@ -109,6 +109,10 @@ public class UserRepository {
         return jdbc.sql(SELECT + " where role = 'TEACHER'").query(UserRepository::map).optional();
     }
 
+    public Optional<User> findAdministrator() {
+        return jdbc.sql(SELECT + " where role = 'ADMIN'").query(UserRepository::map).optional();
+    }
+
     public Optional<User> findStudent(UUID id) {
         return jdbc.sql(SELECT + " where id = :id and role = 'STUDENT'")
                 .param("id", id)

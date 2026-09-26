@@ -15,6 +15,9 @@ import ru.teacherbox.shared.security.Role;
  */
 public final class User {
 
+    /** Display name of the administrator account. */
+    public static final String ADMINISTRATOR_NAME = "Администратор";
+
     private final UUID id;
     private final Role role;
     private @Nullable String login;
@@ -46,6 +49,12 @@ public final class User {
     public static User newTeacher(UUID id, String login, String passwordHash, Profile profile, Instant now) {
         return new User(id, Role.TEACHER, Logins.normalize(login), passwordHash, profile, AccountStatus.ACTIVE,
                 0, null, now, now, 0);
+    }
+
+    /** The administrator account (ADR-0010). */
+    public static User newAdministrator(UUID id, String login, String passwordHash, Instant now) {
+        return new User(id, Role.ADMIN, Logins.normalize(login), passwordHash, Profile.named(ADMINISTRATOR_NAME),
+                AccountStatus.ACTIVE, 0, null, now, now, 0);
     }
 
     public static User newStudent(UUID id, Profile profile, Instant now) {
@@ -107,6 +116,23 @@ public final class User {
         touch(now);
     }
 
+    /** Nobody can sign in as the administrator until it is enabled again with a new password. */
+    public void disableAdministrator(Instant now) {
+        requireAdministrator();
+        this.status = AccountStatus.DEACTIVATED;
+        this.passwordHash = null;
+        resetFailures();
+        touch(now);
+    }
+
+    public void enableAdministrator(String newPasswordHash, Instant now) {
+        requireAdministrator();
+        this.status = AccountStatus.ACTIVE;
+        this.passwordHash = newPasswordHash;
+        resetFailures();
+        touch(now);
+    }
+
     public boolean isLocked(Instant now) {
         return lockedUntil != null && now.isBefore(lockedUntil);
     }
@@ -134,6 +160,12 @@ public final class User {
 
     public boolean isTeacher() {
         return role == Role.TEACHER;
+    }
+
+    private void requireAdministrator() {
+        if (role != Role.ADMIN) {
+            throw new BusinessRuleException("account.not-administrator", "Operation is only allowed for the administrator");
+        }
     }
 
     private void requireStudent() {
