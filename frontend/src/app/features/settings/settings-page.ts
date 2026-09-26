@@ -8,6 +8,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { AiApi } from '@features/ai/parts';
+import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { GoogleCalendarPanel } from '@features/schedule/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
@@ -40,6 +41,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     Card,
     ConfirmDialog,
     GoogleCalendarPanel,
+    MeetingsSettingsPanel,
     TableModule,
     Tag,
     RowType,
@@ -101,6 +103,8 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       </p-card>
 
       <tb-google-calendar-panel />
+
+      <tb-meetings-settings-panel />
 
       <p-card header="Неудачные доставки уведомлений">
         @if (failed().length === 0) {

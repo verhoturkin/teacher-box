@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
 import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
@@ -11,7 +12,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
 /** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
-  imports: [RouterLink, Button, Card, Tag, AttendanceDialog],
+  imports: [RouterLink, Button, Card, Tag, AttendanceDialog, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Сегодня">
@@ -35,11 +36,8 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
               @if (lesson.status !== 'SCHEDULED') {
                 <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
               } @else {
-                @if (lesson.meetingUrl !== null) {
-                  <a class="p-button p-button-sm p-button-outlined tb-today__join" [href]="lesson.meetingUrl" target="_blank" rel="noopener">
-                    <i class="pi pi-video" aria-hidden="true"></i>
-                    <span>Урок</span>
-                  </a>
+                @if (lesson.joinUrl; as url) {
+                  <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" [outlined]="true" />
                 }
                 @if (started(lesson) && lesson.groupId !== null) {
                   <p-button
@@ -116,12 +114,6 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
       flex: 1;
       flex-direction: column;
       min-width: 8rem;
-    }
-
-    .tb-today__join {
-      display: inline-flex;
-      gap: 0.5rem;
-      text-decoration: none;
     }
   `,
 })

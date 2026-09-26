@@ -37,6 +37,8 @@ public final class ScheduleViews {
      * A lesson with one student ({@code studentId}) or with a group ({@code groupId}).
      *
      * @param participants     students of the lesson with their attendance
+     * @param meetingUrl       the lesson's own link to the online lesson
+     * @param joinUrl          where the lesson takes place: its own link or the room of the student or group
      * @param originalStartsAt the time the lesson was first planned for, if it moved
      * @param pendingRequests  unanswered requests of the participants about this lesson
      */
@@ -53,6 +55,7 @@ public final class ScheduleViews {
             int durationMinutes,
             @Nullable String topic,
             @Nullable String meetingUrl,
+            @Nullable String joinUrl,
             LessonStatus status,
             @Nullable CancelledBy cancelledBy,
             @Nullable String cancelReason,
@@ -65,7 +68,8 @@ public final class ScheduleViews {
                     lesson.groupId(), names.group(lesson.groupId()),
                     lesson.participants().stream().map(participant -> ParticipantView.of(participant, names)).toList(),
                     lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.topic(),
-                    lesson.meetingUrl(), lesson.status(), lesson.cancelledBy(), lesson.cancelReason(),
+                    lesson.meetingUrl(), names.joinUrl(lesson), lesson.status(), lesson.cancelledBy(),
+                    lesson.cancelReason(),
                     lesson.originalStartsAt(), List.copyOf(pendingRequests));
         }
 
@@ -73,8 +77,8 @@ public final class ScheduleViews {
         LessonView forStudent(UUID participantId) {
             return new LessonView(id, studentId, studentName, groupId, groupName,
                     participants.stream().filter(participant -> participant.studentId().equals(participantId)).toList(),
-                    seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, status, cancelledBy, cancelReason,
-                    originalStartsAt,
+                    seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy,
+                    cancelReason, originalStartsAt,
                     pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList());
         }
     }

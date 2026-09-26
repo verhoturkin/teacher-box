@@ -27,6 +27,7 @@ export function scheduledLesson(overrides: Partial<ScheduledLesson> = {}): Sched
     durationMinutes: 60,
     topic: null,
     meetingUrl: null,
+    joinUrl: null,
     status: 'SCHEDULED',
     cancelledBy: null,
     cancelReason: null,

@@ -47,14 +47,14 @@ describe('NextLessonWidget', () => {
   it('shows the lesson with its link and asks to move it', async () => {
     await render(
       myScheduleSummary({
-        next: scheduledLesson({ topic: 'Дроби', meetingUrl: 'https://meet.example.com/1' }),
+        next: scheduledLesson({ topic: 'Дроби', joinUrl: 'https://meet.example.com/1' }),
         weekLessons: 2,
       }),
     );
     const text = readableText(hostElement(fixture));
     expect(text).toContain('18:00–19:00 Дроби');
     expect(text).toContain('Войти в урок');
-    expect(hostElement(fixture).querySelector('a.tb-next__join')?.getAttribute('href')).toBe(
+    expect(hostElement(fixture).querySelector('tb-join-lesson-button a')?.getAttribute('href')).toBe(
       'https://meet.example.com/1',
     );
 

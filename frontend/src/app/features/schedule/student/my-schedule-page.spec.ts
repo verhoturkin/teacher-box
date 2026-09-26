@@ -51,7 +51,7 @@ describe('MySchedulePage', () => {
 
   it('lists upcoming lessons with the link to the online lesson', async () => {
     const text = await render([
-      scheduledLesson({ ...future(24), topic: 'Дроби', meetingUrl: 'https://zoom.us/j/1' }),
+      scheduledLesson({ ...future(24), topic: 'Дроби', joinUrl: 'https://zoom.us/j/1' }),
       scheduledLesson({ id: 'l-2', ...future(48), status: 'CANCELLED' }),
       scheduledLesson({ id: 'l-0', ...future(-5) }),
     ]);

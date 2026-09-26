@@ -53,7 +53,10 @@ export interface ScheduledLesson {
   readonly endsAt: string;
   readonly durationMinutes: number;
   readonly topic: string | null;
+  /** The lesson's own link to the online lesson. */
   readonly meetingUrl: string | null;
+  /** Where the lesson takes place: its own link or the room of the student or the group. */
+  readonly joinUrl: string | null;
   readonly status: ScheduleLessonStatus;
   readonly cancelledBy: CancelledBy | null;
   readonly cancelReason: string | null;

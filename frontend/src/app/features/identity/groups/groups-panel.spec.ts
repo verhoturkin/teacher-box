@@ -2,11 +2,13 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
+import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { StudentGroup } from '../data-access/identity.models';
+import { RoomDialog } from '@features/meetings/parts';
 import { GroupFormDialog } from './group-form-dialog';
 import { GroupsPanel } from './groups-panel';
 
@@ -22,7 +24,7 @@ describe('GroupsPanel', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [GroupsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupsPanel);
@@ -41,6 +43,8 @@ describe('GroupsPanel', () => {
     backend.expectOne('/api/teacher/groups').flush(groups);
     backend.expectOne('/api/teacher/students').flush([aStudent({ id: 'student-1' })]);
     backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
+    backend.expectOne('/api/teacher/meetings/rooms').flush([aRoom({ ownerId: 'g1', ownerType: 'GROUP', ownerName: 'ОГЭ 9 класс' })]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus({ status: 'CONNECTED' }));
     await fixture.whenStable();
   }
 
@@ -63,6 +67,7 @@ describe('GroupsPanel', () => {
     expect(rows()[0]).toContain('ОГЭ 9 класс');
     expect(rows()[0]).toContain('Мария, Борис');
     expect(rows()[0]).toMatch(/800/);
+    expect(rows()[0]).toContain('Телемост');
 
     requireElement(host, '#show-archived', HTMLInputElement).click();
     await fixture.whenStable();
@@ -134,9 +139,25 @@ describe('GroupsPanel', () => {
     const students = backend.expectOne('/api/teacher/students');
     const prices = backend.expectOne('/api/teacher/billing/groups');
     backend.expectOne('/api/teacher/groups').flush(null, { status: 500, statusText: 'Error' });
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     expect(students.cancelled && prices.cancelled).toBe(true);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Групп пока нет');
+  });
+
+  it('sets up the video room of a group', async () => {
+    await load([CURRENT]);
+
+    buttonByText(host, 'Видеовстреча: ОГЭ 9 класс').click();
+    await fixture.whenStable();
+    const dialog = fixture.debugElement.query(By.directive(RoomDialog)).injector.get(RoomDialog);
+    expect(dialog.canCreate()).toBe(true);
+    expect(dialog.room()?.ownerType).toBe('GROUP');
+
+    dialog.changed.emit(null);
+    await fixture.whenStable();
+    expect(rows()[0]).not.toContain('Телемост');
   });
 });

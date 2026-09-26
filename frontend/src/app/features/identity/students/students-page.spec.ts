@@ -1,11 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
+import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
+import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { StudentsPage } from './students-page';
 
@@ -55,9 +58,15 @@ describe('StudentsPage', () => {
     fixture.destroy();
   });
 
-  async function loadStudents(students: Student[], groups: StudentGroup[] = []): Promise<void> {
+  async function loadStudents(
+    students: Student[],
+    groups: StudentGroup[] = [],
+    rooms: MeetingRoom[] = [],
+  ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
     backend.expectOne('/api/teacher/groups').flush(groups);
+    backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
   }
 
@@ -174,6 +183,8 @@ describe('StudentsPage', () => {
   it('stops loading when the list cannot be loaded', async () => {
     backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
     backend.expectOne('/api/teacher/groups').flush([]);
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Пока нет ни одного ученика');
@@ -206,9 +217,31 @@ describe('StudentsPage', () => {
     backend.expectOne('/api/teacher/groups').flush([aGroup()]);
     backend.expectOne('/api/teacher/students').flush([MARIA]);
     backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Создать группу');
     expect(host.textContent).not.toContain('Добавить ученика');
+  });
+
+  it('shows the video room of a student and edits it', async () => {
+    await loadStudents([MARIA, BORIS], [], [aRoom({ ownerId: 'm' })]);
+
+    expect(rowsText()[0]).toContain('Телемост');
+    expect(rowsText()[1]).toContain('Добавить');
+    buttonByText(host, 'Видеовстреча: Мария').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Видеовстреча: Мария');
+
+    const dialog = fixture.debugElement.query(By.directive(RoomDialog)).injector.get(RoomDialog);
+    dialog.changed.emit(null);
+    await fixture.whenStable();
+    expect(rowsText()[0]).not.toContain('Телемост');
+
+    buttonByText(host, 'Добавить видеовстречу: Борис').click();
+    dialog.changed.emit(aRoom({ ownerId: 'b', telemost: false, joinUrl: 'https://zoom.us/j/1' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).toContain('Ссылка');
   });
 });

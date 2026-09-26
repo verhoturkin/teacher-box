@@ -227,7 +227,7 @@ public class GoogleCalendarService {
                     api.deleteEvent(token, calendarId, eventId(lesson.id()));
                     repository.forget(lesson.id());
                 } else {
-                    api.putEvent(token, calendarId, eventId(lesson.id()), event(lesson, names.title(lesson)));
+                    api.putEvent(token, calendarId, eventId(lesson.id()), event(lesson, names.title(lesson), names.joinUrl(lesson)));
                     repository.markSynced(lesson.id(), lesson.version(), clock.instant());
                 }
                 changed++;
@@ -288,7 +288,7 @@ public class GoogleCalendarService {
         return lessonId.toString().replace("-", "");
     }
 
-    Map<String, Object> event(Lesson lesson, @Nullable String studentName) {
+    Map<String, Object> event(Lesson lesson, @Nullable String studentName, @Nullable String joinUrl) {
         String name = studentName == null ? "ученик" : studentName;
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("summary", "Урок: " + name + (lesson.topic() == null ? "" : " — " + lesson.topic()));
@@ -296,9 +296,9 @@ public class GoogleCalendarService {
         if (lesson.topic() != null) {
             description.add("Тема: " + lesson.topic());
         }
-        if (lesson.meetingUrl() != null) {
-            description.add("Ссылка на урок: " + lesson.meetingUrl());
-            event.put("location", lesson.meetingUrl());
+        if (joinUrl != null) {
+            description.add("Ссылка на урок: " + joinUrl);
+            event.put("location", joinUrl);
         }
         switch (lesson.status()) {
             case CONDUCTED -> {

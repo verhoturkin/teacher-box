@@ -3,6 +3,7 @@ package ru.teacherbox.schedule.application;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import ru.teacherbox.identity.api.GroupSummary;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.meetings.api.MeetingRooms;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.Series;
 import ru.teacherbox.shared.error.NotFoundException;
@@ -22,23 +24,31 @@ public class ScheduleDirectory {
 
     private final UserDirectory users;
     private final StudentGroups groups;
+    private final MeetingRooms rooms;
 
-    public ScheduleDirectory(UserDirectory users, StudentGroups groups) {
+    public ScheduleDirectory(UserDirectory users, StudentGroups groups, MeetingRooms rooms) {
         this.users = users;
         this.groups = groups;
+        this.rooms = rooms;
     }
 
-    /** Names for the participants and groups of the lessons. */
+    /** Names for the participants and groups of the lessons and the links of their rooms. */
     public ScheduleNames namesOf(Collection<Lesson> lessons) {
         Set<UUID> students = new HashSet<>();
         Set<UUID> groupIds = new HashSet<>();
+        Set<UUID> owners = new HashSet<>();
         for (Lesson lesson : lessons) {
             students.addAll(lesson.studentIds());
-            if (lesson.groupId() != null) {
-                groupIds.add(lesson.groupId());
+            UUID groupId = lesson.groupId();
+            if (groupId != null) {
+                groupIds.add(groupId);
+                owners.add(groupId);
+            } else {
+                owners.add(lesson.studentId());
             }
         }
-        return names(students, groupIds);
+        ScheduleNames names = names(students, groupIds);
+        return new ScheduleNames(names.students(), names.groups(), owners.isEmpty() ? Map.of() : rooms.links(owners));
     }
 
     /** Names for the students and groups of the series. */

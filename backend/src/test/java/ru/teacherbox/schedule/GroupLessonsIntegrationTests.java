@@ -38,6 +38,7 @@ import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.persistence.LessonRepository;
+import ru.teacherbox.testing.FakeMeetingRooms;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -57,6 +58,9 @@ class GroupLessonsIntegrationTests {
 
     @Autowired
     FakeStudentGroups groups;
+
+    @Autowired
+    FakeMeetingRooms rooms;
 
     @Autowired
     LessonRepository lessons;
@@ -96,6 +100,30 @@ class GroupLessonsIntegrationTests {
         UUID stranger = directory.addStudent("Чужой");
         assertThat(mvc.get().uri("/api/me/schedule/lessons/" + lessonId).with(TestUsers.student(stranger)))
                 .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void aLessonTakesPlaceInTheRoomOfItsStudentOrGroup() throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        UUID group = groups.addGroup("Комнаты", anna);
+        rooms.put(anna, "https://telemost.yandex.ru/j/111");
+        rooms.put(group, "https://telemost.yandex.ru/j/222");
+
+        String single = id(post("/api/teacher/schedule/lessons", LessonsIntegrationTests.lesson(anna, Slots.next(clock),
+                60, true)));
+        String own = id(post("/api/teacher/schedule/lessons", """
+                {"studentId":"%s","startsAt":"%s","meetingUrl":"https://zoom.us/j/9","allowOverlap":true}
+                """.formatted(anna, Slots.next(clock))));
+
+        assertThat(post("/api/teacher/schedule/lessons", groupLesson(group, Slots.next(clock))))
+                .bodyJson().extractingPath("$.joinUrl").isEqualTo("https://telemost.yandex.ru/j/222");
+        assertThat(mvc.get().uri("/api/me/schedule/lessons/" + single).with(TestUsers.student(anna))).bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$.meetingUrl").isNull();
+                    assertThat(json).extractingPath("$.joinUrl").isEqualTo("https://telemost.yandex.ru/j/111");
+                });
+        assertThat(mvc.get().uri("/api/teacher/schedule/lessons/" + own).with(teacher())).bodyJson()
+                .extractingPath("$.joinUrl").isEqualTo("https://zoom.us/j/9");
     }
 
     @Test

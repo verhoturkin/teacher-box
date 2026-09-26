@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
@@ -28,7 +29,7 @@ export const UPCOMING_DAYS = 60;
  */
 @Component({
   selector: 'tb-my-schedule-page',
-  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, ScheduleCalendar],
+  imports: [Button, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, JoinLessonButton, ScheduleCalendar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="tb-page-title">Расписание</h1>
@@ -63,11 +64,8 @@ export const UPCOMING_DAYS = 60;
                     }
                   </div>
                   <div class="tb-actions">
-                    @if (lesson.meetingUrl !== null && lesson.status === 'SCHEDULED') {
-                      <a pButton [href]="lesson.meetingUrl" target="_blank" rel="noopener" size="small">
-                        <i pButtonIcon class="pi pi-video"></i>
-                        <span pButtonLabel>Подключиться</span>
-                      </a>
+                    @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
+                      <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" [small]="true" />
                     }
                     @if (lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !excused(lesson)) {
                       <p-button label="Перенести" size="small" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />

@@ -14,6 +14,7 @@ export type NotificationKind =
   | 'SCHEDULE_REQUEST'
   | 'SCHEDULE_REQUEST_ANSWERED'
   | 'SCHEDULE_CALENDAR'
+  | 'MEETING_LINK'
   | 'STUDENT_ACTIVATED'
   | 'MESSAGE';
 

@@ -5,6 +5,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { Observable } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduledLesson } from '../data-access/schedule.models';
@@ -25,7 +26,7 @@ import { AttendanceDialog } from './attendance-dialog';
  */
 @Component({
   selector: 'tb-lesson-details-dialog',
-  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog],
+  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog header="Занятие" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
@@ -42,8 +43,10 @@ import { AttendanceDialog } from './attendance-dialog';
           @if (lesson.topic !== null) {
             <div>Тема: {{ lesson.topic }}</div>
           }
-          @if (lesson.meetingUrl !== null) {
-            <a [href]="lesson.meetingUrl" target="_blank" rel="noopener">Ссылка на урок</a>
+          @if (lesson.joinUrl; as url) {
+            <div>
+              <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" />
+            </div>
           }
           @if (lesson.cancelReason !== null) {
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>

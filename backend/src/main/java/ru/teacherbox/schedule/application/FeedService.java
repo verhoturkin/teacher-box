@@ -86,7 +86,7 @@ public class FeedService {
                     lesson -> "Урок: " + Objects.requireNonNullElse(names.title(lesson),
                             lesson.isGroup() ? "группа" : "ученик")
                             + (lesson.topic() == null ? "" : " — " + lesson.topic()),
-                    now));
+                    names::joinUrl, now));
         }
         if (!directory.isCurrentStudent(ownerId)) {
             return Optional.empty();
@@ -96,6 +96,6 @@ public class FeedService {
         return Optional.of(IcsWriter.calendar("Занятия — Teacher Box", own,
                 lesson -> (lesson.isGroup() ? "Занятие группы «" + names.group(lesson.groupId()) + "»" : "Занятие")
                         + (lesson.topic() == null ? "" : ": " + lesson.topic()),
-                now));
+                names::joinUrl, now));
     }
 }

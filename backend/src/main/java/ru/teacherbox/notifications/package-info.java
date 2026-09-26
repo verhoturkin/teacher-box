@@ -4,7 +4,7 @@
  */
 @ApplicationModule(displayName = "Notifications",
         allowedDependencies = {"shared", "identity :: api", "billing :: api", "homework :: api",
-                "schedule :: api"})
+                "schedule :: api", "meetings :: api"})
 @NullMarked
 package ru.teacherbox.notifications;
 

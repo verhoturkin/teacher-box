@@ -11,6 +11,7 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
+import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
@@ -32,6 +33,8 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
     MoneyPipe,
     RowType,
     GroupFormDialog,
+    RoomCell,
+    RoomDialog,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,6 +54,7 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
             <th>Группа</th>
             <th>Ученики</th>
             <th>Цена занятия</th>
+            <th>Видеовстреча</th>
             <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
           </tr>
         </ng-template>
@@ -76,6 +80,15 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
                 <span class="tb-muted">—</span>
               }
             </td>
+            <td>
+              @if (!group.archivedAt) {
+                <tb-room-cell
+                  [room]="roomOf(group.id)"
+                  [name]="group.name"
+                  (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
+                />
+              }
+            </td>
             <td class="tb-actions-column">
               <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" pTooltip="Изменить"
                 [ariaLabel]="'Изменить группу: ' + group.name" (onClick)="openEdit(group)" />
@@ -91,7 +104,7 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="4" class="tb-empty">
+            <td colspan="5" class="tb-empty">
               {{ groups().length === 0 ? 'Групп пока нет. Создайте группу, если занимаетесь с несколькими учениками сразу.' : 'Все группы в архиве' }}
             </td>
           </tr>
@@ -107,6 +120,13 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
       [currency]="currency()"
       (saved)="onSaved($event)"
     />
+    <tb-room-dialog
+      [(visible)]="roomVisible"
+      [owner]="roomOwner()"
+      [room]="ownerRoom()"
+      [canCreate]="canCreateRooms()"
+      (changed)="onRoomChanged($event)"
+    />
     <p-confirmdialog key="groups" />
   `,
   styles: `
@@ -119,6 +139,7 @@ export class GroupsPanel implements OnInit {
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly meetings = inject(MeetingsApi);
 
   /** A group was created, changed or archived. */
   readonly changed = output();
@@ -130,10 +151,20 @@ export class GroupsPanel implements OnInit {
   protected readonly loading = signal(true);
   protected readonly showArchived = new FormControl(false, { nonNullable: true });
   private readonly includeArchived = toSignal(this.showArchived.valueChanges, { initialValue: false });
-  protected readonly visibleGroups = computed(() =>
-    this.groups().filter((group) => this.includeArchived() || group.archivedAt === null),
-  );
+  protected readonly visibleGroups = computed(() => {
+    // New rows when the rooms arrive: the table re-renders the columns only for a new value.
+    this.rooms();
+    return this.groups().filter((group) => this.includeArchived() || group.archivedAt === null);
+  });
 
+  protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
+  protected readonly canCreateRooms = signal(false);
+  protected readonly roomVisible = signal(false);
+  protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
+  protected readonly ownerRoom = computed(() => {
+    const owner = this.roomOwner();
+    return owner === null ? null : this.roomOf(owner.id);
+  });
   protected readonly formVisible = signal(false);
   protected readonly edited = signal<StudentGroup | null>(null);
   protected readonly editedPrice = computed(() => {
@@ -157,6 +188,41 @@ export class GroupsPanel implements OnInit {
       error: () => {
         this.loading.set(false);
       },
+    });
+    this.loadRooms();
+  }
+
+  protected roomOf(ownerId: string): MeetingRoom | null {
+    return this.rooms().get(ownerId) ?? null;
+  }
+
+  protected openRoom(owner: RoomOwnerRef): void {
+    this.roomOwner.set(owner);
+    this.roomVisible.set(true);
+  }
+
+  protected onRoomChanged(room: MeetingRoom | null): void {
+    const owner = this.roomOwner();
+    if (owner === null) {
+      return;
+    }
+    this.rooms.update((rooms) => {
+      const next = new Map(rooms);
+      if (room === null) {
+        next.delete(owner.id);
+      } else {
+        next.set(owner.id, room);
+      }
+      return next;
+    });
+  }
+
+  private loadRooms(): void {
+    this.meetings.rooms().subscribe((rooms) => {
+      this.rooms.set(new Map(rooms.map((room) => [room.ownerId, room])));
+    });
+    this.meetings.yandexStatus().subscribe((status) => {
+      this.canCreateRooms.set(status.status === 'CONNECTED' || status.tokenFromEnvironment);
     });
   }
 

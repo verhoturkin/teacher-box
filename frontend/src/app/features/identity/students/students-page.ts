@@ -15,6 +15,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
+import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, IssuedInvite, Student, StudentGroup } from '../data-access/identity.models';
@@ -55,6 +56,8 @@ function isStudentsTab(value: unknown): value is StudentsTab {
     RowType,
     GroupsPanel,
     InviteLinkDialog,
+    RoomCell,
+    RoomDialog,
     StudentFormDialog,
   ],
   providers: [ConfirmationService],
@@ -92,6 +95,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                   <th>Имя</th>
                   <th>Контакты</th>
                   <th>Группы</th>
+                  <th>Видеовстреча</th>
                   <th>Статус</th>
                   <th>Логин</th>
                   <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -110,6 +114,15 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                     <div>{{ student.phone ?? '' }}</div>
                   </td>
                   <td>{{ groupNames(student.id) }}</td>
+                  <td>
+                    @if (student.status !== 'DEACTIVATED') {
+                      <tb-room-cell
+                        [room]="roomOf(student.id)"
+                        [name]="student.displayName"
+                        (edit)="openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })"
+                      />
+                    }
+                  </td>
                   <td>
                     <p-tag [value]="statusLabels[student.status]" [severity]="statusSeverities[student.status]" />
                     @if (student.pendingInvite; as invite) {
@@ -139,7 +152,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="6" class="tb-empty">
+                  <td colspan="7" class="tb-empty">
                     {{ students().length === 0 ? 'Пока нет ни одного ученика. Добавьте первого!' : 'Никого не найдено' }}
                   </td>
                 </tr>
@@ -162,6 +175,13 @@ function isStudentsTab(value: unknown): value is StudentsTab {
       (updated)="onUpdated($event)"
     />
     <tb-invite-link-dialog [(visible)]="inviteVisible" [invite]="invite()" [studentName]="inviteStudentName()" />
+    <tb-room-dialog
+      [(visible)]="roomVisible"
+      [owner]="roomOwner()"
+      [room]="ownerRoom()"
+      [canCreate]="canCreateRooms()"
+      (changed)="onRoomChanged($event)"
+    />
     <p-confirmdialog />
   `,
   styles: `
@@ -173,6 +193,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
 export class StudentsPage implements OnInit {
   private readonly api = inject(IdentityApi);
   private readonly router = inject(Router);
+  private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
@@ -189,6 +210,15 @@ export class StudentsPage implements OnInit {
 
   protected readonly students = signal<Student[]>([]);
   private readonly groups = signal<StudentGroup[]>([]);
+  protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
+  protected readonly canCreateRooms = signal(false);
+  protected readonly roomVisible = signal(false);
+  protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
+  protected readonly ownerRoom = computed(() => {
+    const owner = this.roomOwner();
+    return owner === null ? null : this.roomOf(owner.id);
+  });
+
   protected readonly loading = signal(true);
   protected readonly search = new FormControl('', { nonNullable: true });
   protected readonly showDeactivated = new FormControl(false, { nonNullable: true });
@@ -198,8 +228,9 @@ export class StudentsPage implements OnInit {
   protected readonly visibleStudents = computed(() => {
     const query = this.query().trim().toLocaleLowerCase('ru');
     const includeDeactivated = this.includeDeactivated();
-    // New rows when the groups arrive: the table re-renders the group column only for a new value.
+    // New rows when the groups or rooms arrive: the table re-renders the columns only for a new value.
     this.groups();
+    this.rooms();
     return this.students().filter(
       (student) =>
         (includeDeactivated || student.status !== 'DEACTIVATED') &&
@@ -224,6 +255,7 @@ export class StudentsPage implements OnInit {
       },
     });
     this.loadGroups();
+    this.loadRooms();
   }
 
   protected select(tab: string | number | undefined): void {
@@ -235,6 +267,40 @@ export class StudentsPage implements OnInit {
   protected loadGroups(): void {
     this.api.listGroups().subscribe((groups) => {
       this.groups.set(groups);
+    });
+  }
+
+  protected roomOf(ownerId: string): MeetingRoom | null {
+    return this.rooms().get(ownerId) ?? null;
+  }
+
+  protected openRoom(owner: RoomOwnerRef): void {
+    this.roomOwner.set(owner);
+    this.roomVisible.set(true);
+  }
+
+  protected onRoomChanged(room: MeetingRoom | null): void {
+    const owner = this.roomOwner();
+    if (owner === null) {
+      return;
+    }
+    this.rooms.update((rooms) => {
+      const next = new Map(rooms);
+      if (room === null) {
+        next.delete(owner.id);
+      } else {
+        next.set(owner.id, room);
+      }
+      return next;
+    });
+  }
+
+  private loadRooms(): void {
+    this.meetings.rooms().subscribe((rooms) => {
+      this.rooms.set(new Map(rooms.map((room) => [room.ownerId, room])));
+    });
+    this.meetings.yandexStatus().subscribe((status) => {
+      this.canCreateRooms.set(status.status === 'CONNECTED' || status.tokenFromEnvironment);
     });
   }
 

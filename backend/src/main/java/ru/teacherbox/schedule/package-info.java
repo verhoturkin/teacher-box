@@ -2,7 +2,7 @@
  * Schedule: lessons and weekly series, students' requests to move or cancel a lesson, reminders
  * and calendar feeds.
  */
-@ApplicationModule(displayName = "Schedule", allowedDependencies = {"shared", "identity :: api"})
+@ApplicationModule(displayName = "Schedule", allowedDependencies = {"shared", "identity :: api", "meetings :: api"})
 @NullMarked
 package ru.teacherbox.schedule;
 

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, sign
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, MyScheduleSummary, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith, requestKindLabel } from '../schedule-labels';
@@ -10,7 +11,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
 /** Student's home: the nearest lesson with the lesson link and a request to move or cancel it. */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [RouterLink, Button, Card, ChangeRequestDialog],
+  imports: [RouterLink, Button, Card, ChangeRequestDialog, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Ближайшее занятие">
@@ -27,11 +28,8 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
             <small class="tb-muted">{{ kind(request) }}: запрос отправлен, ждём ответа учителя.</small>
           }
           <div class="tb-actions">
-            @if (lesson.meetingUrl !== null) {
-              <a class="p-button tb-next__join" [href]="lesson.meetingUrl" target="_blank" rel="noopener">
-                <i class="pi pi-video" aria-hidden="true"></i>
-                <span>Войти в урок</span>
-              </a>
+            @if (lesson.joinUrl; as url) {
+              <tb-join-lesson-button [url]="url" />
             }
             @if (lesson.pendingRequests.length === 0) {
               <p-button label="Перенести" icon="pi pi-calendar" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />
@@ -71,12 +69,6 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
     .tb-next__time {
       font-size: 1.25rem;
       font-weight: 600;
-    }
-
-    .tb-next__join {
-      display: inline-flex;
-      gap: 0.5rem;
-      text-decoration: none;
     }
   `,
 })

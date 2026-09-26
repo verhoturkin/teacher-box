@@ -24,7 +24,7 @@ class IcsWriterTest {
                 Instant.parse("2026-10-03T15:00:00Z"), 60, null, null, NOW);
         cancelled.cancel(CancelledBy.TEACHER, "Болезнь", NOW);
 
-        String ics = IcsWriter.calendar("Занятия", List.of(lesson, cancelled), found -> "Урок: Иван", NOW)
+        String ics = IcsWriter.calendar("Занятия", List.of(lesson, cancelled), found -> "Урок: Иван", Lesson::meetingUrl, NOW)
                 .replace(FOLD, "");
 
         assertThat(ics).startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n").endsWith("END:VCALENDAR\r\n");
@@ -48,7 +48,7 @@ class IcsWriterTest {
         Lesson lesson = Lesson.plan(UUID.randomUUID(), UUID.randomUUID(), null, null, NOW.plus(Duration.ofDays(1)),
                 60, null, null, NOW);
 
-        assertThat(IcsWriter.calendar("Занятия", List.of(lesson), found -> "Занятие", NOW))
+        assertThat(IcsWriter.calendar("Занятия", List.of(lesson), found -> "Занятие", Lesson::meetingUrl, NOW))
                 .doesNotContain("DESCRIPTION").doesNotContain("URL:");
     }
 

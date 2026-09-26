@@ -46,7 +46,7 @@ describe('LessonDetailsDialog', () => {
     await open(
       scheduledLesson({
         topic: 'Дроби',
-        meetingUrl: 'https://zoom.us/j/1',
+        joinUrl: 'https://zoom.us/j/1',
         originalStartsAt: at(2026, 9, 30, 17),
         pendingRequests: [changeRequest({ comment: 'Можно позже?' })],
       }),
@@ -56,7 +56,7 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Иван Петров');
     expect(text).toContain('Запланировано');
     expect(text).toContain('Тема: Дроби');
-    expect(text).toContain('Ссылка на урок');
+    expect(text).toContain('Начать урок');
     expect(text).toContain('Перенесено с');
     expect(text).toContain('Запрос ученика: Перенос');
     expect(text).toContain('«Можно позже?»');
