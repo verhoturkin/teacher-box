@@ -15,6 +15,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { RowType } from '@shared/ui/row-type.directive';
 import { SettingsApi } from './data-access/settings-api';
+import { PortalSettingsCard } from './portal-settings-card';
 import {
   BackupInfo,
   FailedDelivery,
@@ -29,10 +30,11 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
   { type: 'MAX', name: 'MAX' },
 ];
 
-/** Teacher: integrations, delivery problems, backups and a link to the profile. */
+/** Teacher: the portal, integrations, delivery problems, backups and a link to the profile. */
 @Component({
   selector: 'tb-settings-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     DatePipe,
     RouterLink,
     Button,
@@ -43,6 +45,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     ConfirmDialog,
     GoogleCalendarPanel,
     MeetingsSettingsPanel,
+    PortalSettingsCard,
     TableModule,
     Tag,
     RowType,
@@ -55,6 +58,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       <tb-help-button topic="teacher/settings" />
     </div>
     <div class="tb-stack">
+      <tb-portal-settings-card />
       <p-card header="Интеграции">
         <ul class="tb-integrations">
           @for (messenger of messengers; track messenger.type) {

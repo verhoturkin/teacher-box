@@ -134,6 +134,19 @@ class MeetingsIntegrationTests {
     }
 
     @Test
+    void theRedirectAddressIsThePortalAddressOnceItIsSet() {
+        yandex.saveClient("id-1", "secret");
+        assertThat(put("/api/teacher/portal", "{\"address\":\"https://teacher.example.org\"}")).hasStatusOk();
+        try {
+            String state = authorize();
+            verify(telemost).authorizationUrl("id-1", "https://teacher.example.org/api/public/meetings/yandex/callback",
+                    state, "teacherbox-id1");
+        } finally {
+            assertThat(put("/api/teacher/portal", "{}")).hasStatusOk();
+        }
+    }
+
+    @Test
     void roomsAreCreatedThroughTheApi(AssertablePublishedEvents events) {
         UUID student = directory.addStudent("Анна");
         UUID other = directory.addStudent("Борис");

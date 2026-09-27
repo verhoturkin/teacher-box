@@ -16,6 +16,7 @@ import ru.teacherbox.meetings.domain.YandexConnection;
 import ru.teacherbox.meetings.domain.YandexStatus;
 import ru.teacherbox.meetings.persistence.YandexRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.security.SecretTokens;
 
 /**
@@ -61,12 +62,15 @@ public class YandexService {
     private final TelemostApi api;
     private final YandexRepository repository;
     private final MeetingsProperties properties;
+    private final Portal portal;
     private final Clock clock;
 
-    public YandexService(TelemostApi api, YandexRepository repository, MeetingsProperties properties, Clock clock) {
+    public YandexService(TelemostApi api, YandexRepository repository, MeetingsProperties properties, Portal portal,
+            Clock clock) {
         this.api = api;
         this.repository = repository;
         this.properties = properties;
+        this.portal = portal;
         this.clock = clock;
     }
 
@@ -110,13 +114,14 @@ public class YandexService {
 
     /**
      * Starts the authorization: the returned address opens Yandex's consent page, which then
-     * redirects to {@code origin + CALLBACK_PATH}.
+     * redirects to {@code CALLBACK_PATH} at the portal address.
      *
-     * @param origin address the teacher uses to open the portal, e.g. {@code https://school.example.com}
+     * @param origin address the teacher uses to open the portal, e.g. {@code https://school.example.com};
+     *               used while the portal address is not set
      */
     public String authorize(String origin) {
         TelemostApi.Client client = requireClient(connection());
-        String redirectUri = origin(origin) + CALLBACK_PATH;
+        String redirectUri = portal.link(CALLBACK_PATH).orElseGet(() -> origin(origin) + CALLBACK_PATH);
         String state = SecretTokens.generate();
         repository.addAuthorization(SecretTokens.hash(state), redirectUri, clock.instant().plus(AUTHORIZATION_TTL));
         return api.authorizationUrl(client.id(), redirectUri, state, deviceId(client));

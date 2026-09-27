@@ -5,6 +5,7 @@ import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Portal } from '@core/portal/portal';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
 
@@ -76,12 +77,13 @@ export class CalendarFeedPanel implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly messages = inject(MessageService);
   private readonly clipboard = inject(Clipboard);
+  private readonly portal = inject(Portal);
 
   protected readonly feed = signal<CalendarFeed | null>(null);
   protected readonly pending = signal(false);
   protected readonly url = computed(() => {
     const path = this.feed()?.path ?? null;
-    return path === null ? null : window.location.origin + path;
+    return path === null ? null : this.portal.link(path);
   });
   protected readonly webcal = computed(() => this.url()?.replace(/^https?:/, 'webcal:') ?? '');
 

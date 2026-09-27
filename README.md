@@ -52,7 +52,7 @@ cp .env.example .env
 
 ```ini
 TEACHERBOX_IDENTITY_TEACHER_PASSWORD=придумайте-надёжный-пароль
-TEACHERBOX_PUBLIC_URL=https://school.example.com   # адрес, по которому откроют портал
+TEACHERBOX_PUBLIC_URL=https://school.example.com   # адрес портала (можно задать и в «Настройках»)
 TEACHERBOX_TIMEZONE=Europe/Moscow
 ```
 
@@ -145,7 +145,8 @@ docker compose -f compose.single.yaml up -d --build
 1. Создайте бота на платформе MAX для партнёров ([dev.max.ru](https://dev.max.ru)).
 2. Токен бота — в мастер (или в `TEACHERBOX_NOTIFICATIONS_MAX_TOKEN`).
 
-Чтобы ссылки в сообщениях вели на портал, задайте `TEACHERBOX_PUBLIC_URL`.
+Чтобы ссылки в сообщениях вели на портал, задайте адрес портала: «Настройки» → «Портал» (или
+`TEACHERBOX_PUBLIC_URL`).
 
 **Действия через бота.** Кроме уведомлений, бот показывает меню кнопками: напишите ему `/menu`.
 `/cancel` отменяет начатое действие, `/help` — подсказка, `/stop` отключает уведомления. Если к

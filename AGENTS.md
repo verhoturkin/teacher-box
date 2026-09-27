@@ -55,8 +55,8 @@ teacher-box/
 ├── backend/                     # Spring Boot приложение (Maven)
 │   └── src/main/java/ru/teacherbox/
 │       ├── TeacherBoxApplication.java
-│       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки, HTTP-клиенты
-│       ├── platform/            # инфраструктура: security, ошибки HTTP, миграции, бэкапы, SPA
+│       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки, HTTP-клиенты, Portal
+│       ├── platform/            # инфраструктура: security, ошибки HTTP, миграции, бэкапы, SPA, настройки портала
 │       ├── identity/            # 1. аутентификация и группы учеников
 │       ├── billing/             # 2. оплата занятий
 │       ├── homework/            # 3. домашние задания
@@ -122,8 +122,8 @@ teacher-box/
 
    Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.
 3. **Данные:** у каждого модуля своя схема БД (`identity`, `billing`, `homework`,
-   `notifications`, `ai`, `schedule`, `meetings`, `boards`), свои Flyway-миграции в `db/migration/<module>/` и своя
-   таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
+   `notifications`, `ai`, `schedule`, `meetings`, `boards`; у `platform` — `platform` для настроек портала),
+   свои Flyway-миграции в `db/migration/<module>/` и своя таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
    схемами и JOIN между схемами. Между модулями передаются только идентификаторы (UUID).
 4. **Взаимодействие:**
    - синхронно — вызов фасада из `api` другого модуля (только чтение/проверки);
@@ -157,6 +157,9 @@ teacher-box/
   тексты. Действия администратора и изменения учителя через бота — через
   `shared.diagnostics.AuditLog`; проверки внешних сервисов модули отдают через SPI
   `shared.diagnostics.IntegrationCheck`.
+- Название и адрес портала — `shared.portal.Portal` ([ADR-0014](docs/adr/0014-portal-settings-reset-and-restore.md)):
+  абсолютные ссылки (сообщения, приглашения, календари, адреса возврата OAuth) строятся только от
+  `Portal.link(...)`, не от адреса запроса.
 - Действия ботов мессенджеров — SPI `shared.chat.ChatAction` ([ADR-0013](docs/adr/0013-bot-dialogs.md)):
   модуль объявляет бин, движок в `notifications` показывает его в меню. Действие проверяет права
   как REST-эндпоинт и меняет только данные своего модуля.

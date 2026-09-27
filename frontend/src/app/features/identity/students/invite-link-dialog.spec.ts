@@ -1,6 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
+import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { InviteLinkDialog } from './invite-link-dialog';
 
@@ -42,6 +43,14 @@ describe('InviteLinkDialog', () => {
 
     expect(clipboard.copy).toHaveBeenCalledWith(`${window.location.origin}/invite/secret-token`);
     expect(bodyText()).toContain('Скопировано');
+  });
+
+  it('starts the link with the portal address', async () => {
+    TestBed.inject(Portal).set({ name: 'Школа', address: 'https://school.example.com' });
+    await fixture.whenStable();
+
+    const input = requireElement(document.body, 'input[aria-label="Ссылка-приглашение"]', HTMLInputElement);
+    expect(input.value).toBe('https://school.example.com/invite/secret-token');
   });
 
   it('explains password reset links', async () => {

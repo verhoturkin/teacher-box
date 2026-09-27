@@ -12,6 +12,7 @@ import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { HelpButton } from '@features/help/parts';
+import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { YandexStatus } from '../data-access/meetings.models';
@@ -158,6 +159,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
 export class MeetingsSettingsPanel implements OnInit {
   private readonly api = inject(MeetingsApi);
   private readonly navigation = inject(ExternalNavigation);
+  private readonly portal = inject(Portal);
   private readonly clipboard = inject(Clipboard);
   private readonly messages = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
@@ -172,7 +174,7 @@ export class MeetingsSettingsPanel implements OnInit {
     return code === null ? null : (YANDEX_RESULTS[code] ?? null);
   });
   protected readonly redirectUri = computed(
-    () => this.navigation.origin() + (this.status()?.callbackPath ?? '/api/public/meetings/yandex/callback'),
+    () => this.portal.link(this.status()?.callbackPath ?? '/api/public/meetings/yandex/callback'),
   );
 
   readonly form = new FormGroup({

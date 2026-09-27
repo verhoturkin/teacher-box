@@ -1,8 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { systemStatus } from '@testing/admin-fixtures';
+import { portalSettings } from '@testing/portal-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { SystemStatus } from '../data-access/admin.models';
 import { StatusPage } from './status-page';
@@ -14,12 +16,13 @@ describe('StatusPage', () => {
   async function render(status: SystemStatus): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StatusPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StatusPage);
     fixture.detectChanges();
     backend.expectOne('/api/admin/status').flush(status);
+    backend.expectOne('/api/admin/portal').flush(portalSettings());
     fixture.detectChanges();
     await fixture.whenStable();
   }

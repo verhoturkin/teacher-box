@@ -6,6 +6,7 @@ import { Menu } from 'primeng/menu';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
 import { NotificationBell } from '@core/notifications/notification-bell';
+import { Portal } from '@core/portal/portal';
 
 /** Application frame: navigation bar with the user menu and routed content. */
 @Component({
@@ -17,7 +18,7 @@ import { NotificationBell } from '@core/notifications/notification-bell';
       <ng-template #start>
         <a class="tb-shell__brand" [routerLink]="homeLink()">
           <i class="pi pi-graduation-cap" aria-hidden="true"></i>
-          <span>Teacher Box</span>
+          <span>{{ portalName() }}</span>
         </a>
       </ng-template>
       <ng-template #end>
@@ -46,6 +47,8 @@ import { NotificationBell } from '@core/notifications/notification-bell';
 })
 export class Shell {
   private readonly auth = inject(AuthService);
+
+  protected readonly portalName = inject(Portal).name;
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();

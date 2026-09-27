@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.persistence.FeedRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
+import ru.teacherbox.shared.portal.Portal;
 
 /**
  * Secret links to subscribe to the schedule from Google, Apple or Yandex Calendar: the teacher's
@@ -31,14 +32,16 @@ public class FeedService {
     private final LessonRepository lessons;
     private final ScheduleDirectory directory;
     private final ScheduleProperties properties;
+    private final Portal portal;
     private final Clock clock;
 
     public FeedService(FeedRepository feeds, LessonRepository lessons, ScheduleDirectory directory,
-            ScheduleProperties properties, Clock clock) {
+            ScheduleProperties properties, Portal portal, Clock clock) {
         this.feeds = feeds;
         this.lessons = lessons;
         this.directory = directory;
         this.properties = properties;
+        this.portal = portal;
         this.clock = clock;
     }
 
@@ -82,7 +85,7 @@ public class FeedService {
         if (ownerId.equals(directory.teacherId())) {
             List<Lesson> all = lessons.findStartingBetween(from, to);
             ScheduleNames names = directory.namesOf(all);
-            return Optional.of(IcsWriter.calendar("Teacher Box — занятия", all,
+            return Optional.of(IcsWriter.calendar(portal.name() + " — занятия", all,
                     lesson -> "Урок: " + Objects.requireNonNullElse(names.title(lesson),
                             lesson.isGroup() ? "группа" : "ученик")
                             + (lesson.topic() == null ? "" : " — " + lesson.topic()),
@@ -93,7 +96,7 @@ public class FeedService {
         }
         List<Lesson> own = lessons.findStartingBetween(ownerId, from, to);
         ScheduleNames names = directory.namesOf(own);
-        return Optional.of(IcsWriter.calendar("Занятия — Teacher Box", own,
+        return Optional.of(IcsWriter.calendar("Занятия — " + portal.name(), own,
                 lesson -> (lesson.isGroup() ? "Занятие группы «" + names.group(lesson.groupId()) + "»" : "Занятие")
                         + (lesson.topic() == null ? "" : ": " + lesson.topic()),
                 names::joinUrl, now));

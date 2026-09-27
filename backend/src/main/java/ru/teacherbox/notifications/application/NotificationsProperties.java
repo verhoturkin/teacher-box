@@ -9,13 +9,11 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * Settings of the notifications module ({@code TEACHERBOX_NOTIFICATIONS_*}). A messenger is enabled
  * when its token is set.
  *
- * @param publicUrl   address of the portal for links in messenger messages ({@code TEACHERBOX_PUBLIC_URL})
  * @param maxAttempts delivery attempts before a message to a messenger is given up
  * @param linkCodeTtl lifetime of a code that connects a messenger account
  */
 @ConfigurationProperties("teacherbox.notifications")
 public record NotificationsProperties(
-        @Nullable String publicUrl,
         @DefaultValue("8") int maxAttempts,
         @DefaultValue("15m") Duration linkCodeTtl,
         @DefaultValue Telegram telegram,

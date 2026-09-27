@@ -104,6 +104,19 @@ class GoogleCalendarIntegrationTests {
     }
 
     @Test
+    void theRedirectAddressIsThePortalAddressOnceItIsSet() {
+        saveClient();
+        assertThat(put("/api/teacher/portal", "{\"address\":\"https://teacher.example.org\"}")).hasStatusOk();
+        try {
+            String state = authorize(false);
+            verify(google).authorizationUrl("id-1", "https://teacher.example.org/api/public/schedule/google/callback",
+                    List.of(GoogleApi.CALENDAR_SCOPE), state);
+        } finally {
+            assertThat(put("/api/teacher/portal", "{}")).hasStatusOk();
+        }
+    }
+
+    @Test
     void unknownDeniedAndFailedAuthorizations() {
         saveClient();
         assertThat(callback("")).hasHeader("Location", "/teacher/settings?google=expired");

@@ -8,6 +8,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { yandexStatus } from '@testing/meetings-fixtures';
+import { portalSettings } from '@testing/portal-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
 
@@ -62,6 +63,7 @@ describe('SettingsPage', () => {
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(SettingsPage);
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/portal').flush(portalSettings());
     backend.expectOne('/api/teacher/notifications/status').flush(status);
     backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     backend.expectOne('/api/teacher/backups').flush(backups);

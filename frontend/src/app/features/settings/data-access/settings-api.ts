@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { PortalSettings } from '@core/portal/portal';
 import { BackupInfo, NotificationsStatus } from './settings.models';
 
-/** Instance settings of the teacher: backups and integration status. */
+/** Instance settings of the teacher: the portal, backups and integration status. */
 @Injectable({ providedIn: 'root' })
 export class SettingsApi {
   private readonly http = inject(HttpClient);
@@ -22,6 +23,15 @@ export class SettingsApi {
 
   deleteBackup(name: string): Observable<unknown> {
     return this.http.delete<unknown>(`/api/teacher/backups/${encodeURIComponent(name)}`);
+  }
+
+  portal(): Observable<PortalSettings> {
+    return this.http.get<PortalSettings>('/api/teacher/portal');
+  }
+
+  /** Empty values mean the default name and no address. */
+  changePortal(name: string, address: string): Observable<PortalSettings> {
+    return this.http.put<PortalSettings>('/api/teacher/portal', { name, address });
   }
 
   notificationsStatus(): Observable<NotificationsStatus> {

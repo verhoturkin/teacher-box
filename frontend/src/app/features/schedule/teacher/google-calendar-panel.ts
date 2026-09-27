@@ -12,6 +12,7 @@ import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
+import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
@@ -47,7 +48,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
               <p-tag value="Подключён" severity="success" />
               <span class="tb-muted">с {{ status.connectedAt | date: 'dd.MM.yyyy HH:mm' }}</span>
             </div>
-            <p>Занятия попадают в календарь «Teacher Box» в вашем Google Календаре.</p>
+            <p>Занятия попадают в отдельный календарь портала в вашем Google Календаре.</p>
             @if (status.lastSyncAt !== null) {
               <small class="tb-muted">Последняя синхронизация: {{ status.lastSyncAt | date: 'dd.MM.yyyy HH:mm' }}</small>
             }
@@ -70,7 +71,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             }
             @if (status.clientConfigured && !editingClient()) {
               <p>
-                Портал создаст в вашем Google Календаре отдельный календарь «Teacher Box» и будет добавлять в него
+                Портал создаст в вашем Google Календаре отдельный календарь «{{ portalName() }}» и будет добавлять в него
                 занятия. Другие календари он не читает и не меняет.
               </p>
               <label class="tb-switch" for="google-busy">
@@ -161,6 +162,9 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
 export class GoogleCalendarPanel implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly navigation = inject(ExternalNavigation);
+  private readonly portal = inject(Portal);
+
+  protected readonly portalName = this.portal.name;
   private readonly clipboard = inject(Clipboard);
   private readonly messages = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
@@ -174,7 +178,7 @@ export class GoogleCalendarPanel implements OnInit {
     return code === null ? null : (AUTHORIZATION_RESULTS[code] ?? null);
   });
   protected readonly redirectUri = computed(
-    () => this.navigation.origin() + (this.status()?.callbackPath ?? '/api/public/schedule/google/callback'),
+    () => this.portal.link(this.status()?.callbackPath ?? '/api/public/schedule/google/callback'),
   );
 
   readonly form = new FormGroup({
