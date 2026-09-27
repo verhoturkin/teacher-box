@@ -5,6 +5,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board, BoardOwnerRef } from '../data-access/boards.models';
@@ -14,10 +15,11 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 /** Boards of a student or a group: add a link, rename, change or remove. */
 @Component({
   selector: 'tb-boards-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message],
+  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputText, Message],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '36rem' }" [draggable]="false">
+      <tb-help-button topic="teacher/boards" label="Подробнее" />
       @if (boards().length > 0) {
         <ul class="tb-boards">
           @for (board of boards(); track board.id) {

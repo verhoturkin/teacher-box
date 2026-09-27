@@ -3,6 +3,7 @@ import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { MyBoardsCard } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
@@ -30,10 +31,13 @@ export const UPCOMING_DAYS = 60;
  */
 @Component({
   selector: 'tb-my-schedule-page',
-  imports: [Button, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, JoinLessonButton, MyBoardsCard, ScheduleCalendar],
+  imports: [HelpButton, Button, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, JoinLessonButton, MyBoardsCard, ScheduleCalendar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Расписание</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Расписание</h1>
+      <tb-help-button topic="cabinet/schedule" />
+    </div>
     <div class="tb-schedule-layout">
       <div class="tb-stack">
         <p-card header="Ближайшие занятия">

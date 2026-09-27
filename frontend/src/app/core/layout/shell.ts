@@ -58,6 +58,7 @@ export class Shell {
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
+    { label: 'Справка', icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
     { label: 'Мой аккаунт', icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     {

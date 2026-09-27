@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { HelpButton } from '@features/help/parts';
 import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
 import { MyBoardsCard } from '@features/boards/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
@@ -11,7 +12,7 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
 /** Student personal area dashboard: collects the widgets of the modules. */
 @Component({
   selector: 'tb-student-home',
-  imports: [
+  imports: [HelpButton, 
     ConnectMessengerCard,
     LatestNotificationsWidget,
     MyBalanceWidget,
@@ -21,7 +22,10 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Личный кабинет</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Личный кабинет</h1>
+      <tb-help-button topic="cabinet/lesson" />
+    </div>
     <div class="tb-stack">
       <tb-connect-messenger-card />
       <div class="tb-home">

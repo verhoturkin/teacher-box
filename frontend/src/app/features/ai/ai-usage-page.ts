@@ -4,6 +4,7 @@ import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { AiApi } from './data-access/ai-api';
 import { AiFeature, AiRequestLog, AiRequestStatus, AiStatus, UsageReport } from './data-access/ai.models';
@@ -29,10 +30,13 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
 /** Teacher: whether the AI assistant is configured and how many tokens it used this month. */
 @Component({
   selector: 'tb-ai-usage-page',
-  imports: [DatePipe, DecimalPipe, Card, ProgressBar, TableModule, Tag, RowType],
+  imports: [HelpButton, DatePipe, DecimalPipe, Card, ProgressBar, TableModule, Tag, RowType],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">ИИ-помощник</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">ИИ-помощник</h1>
+      <tb-help-button topic="teacher/ai" />
+    </div>
     @if (status(); as status) {
       @if (!status.enabled) {
         <p-card>

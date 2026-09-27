@@ -11,6 +11,7 @@ import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
+import { HelpButton } from '@features/help/parts';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { YandexStatus } from '../data-access/meetings.models';
@@ -32,10 +33,11 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
  */
 @Component({
   selector: 'tb-meetings-settings-panel',
-  imports: [DatePipe, FormsModule, ReactiveFormsModule, Button, Card, InputText, Message, Password, Tag, ToggleSwitch],
+  imports: [HelpButton, DatePipe, FormsModule, ReactiveFormsModule, Button, Card, InputText, Message, Password, Tag, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Видеовстречи (Яндекс Телемост)" id="meetings">
+      <tb-help-button topic="teacher/meetings" label="Подробнее" />
       @if (result(); as result) {
         <p-message [severity]="result.severity" styleClass="tb-form-message">{{ result.text }}</p-message>
       }

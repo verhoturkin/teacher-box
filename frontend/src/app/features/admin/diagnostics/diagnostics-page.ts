@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { HelpButton } from '@features/help/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { AdminApi } from '../data-access/admin-api';
 
@@ -9,10 +10,13 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
 /** Administrator: the archive for the developer and what else to send. */
 @Component({
   selector: 'tb-diagnostics-page',
-  imports: [Button, Card],
+  imports: [HelpButton, Button, Card],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Диагностика</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Диагностика</h1>
+      <tb-help-button topic="admin/diagnostics" />
+    </div>
     <div class="tb-stack">
       <p-card header="Архив для разработчика">
         <p>

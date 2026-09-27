@@ -89,15 +89,17 @@ public class ChatEngine {
     private final ChatRepository chat;
     private final ChatActions actions;
     private final UserDirectory users;
+    private final NotificationsProperties properties;
     private final Clock clock;
 
     public ChatEngine(ChannelService channels, ChannelLinkRepository links, ChatRepository chat, ChatActions actions,
-            UserDirectory users, Clock clock) {
+            UserDirectory users, NotificationsProperties properties, Clock clock) {
         this.channels = channels;
         this.links = links;
         this.chat = chat;
         this.actions = actions;
         this.users = users;
+        this.properties = properties;
         this.clock = clock;
     }
 
@@ -286,6 +288,11 @@ public class ChatEngine {
             available.forEach(action -> text.append("\n• ").append(action.title()));
         }
         text.append("\n\n").append(HELP);
+        String portal = properties.publicUrl();
+        if (portal != null && !portal.isBlank()) {
+            text.append("\n\nСправка: ").append(portal.replaceAll("/+$", ""))
+                    .append(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot");
+        }
         return send(conversation, ChatReply.of(text.toString()), List.of(menuButton()), null, ChatState.EMPTY, now);
     }
 

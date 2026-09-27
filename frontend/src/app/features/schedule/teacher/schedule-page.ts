@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { IdentityApi } from '@features/identity/parts';
@@ -44,7 +45,7 @@ const CLICK_SELECTION_MINUTES = 30;
  */
 @Component({
   selector: 'tb-schedule-page',
-  imports: [
+  imports: [HelpButton, 
     Button,
     Card,
     ConfirmDialog,
@@ -60,7 +61,10 @@ const CLICK_SELECTION_MINUTES = 30;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
-      <h1 class="tb-page-title">Расписание</h1>
+      <div class="tb-page-heading">
+        <h1 class="tb-page-title">Расписание</h1>
+        <tb-help-button topic="teacher/schedule" />
+      </div>
       <div class="tb-actions">
         <p-button label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
         <p-button label="Регулярные занятия" icon="pi pi-replay" [outlined]="true" (onClick)="newSeries()" />

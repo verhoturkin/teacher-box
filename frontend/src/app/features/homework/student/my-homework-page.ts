@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
+import { HelpButton } from '@features/help/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
@@ -11,10 +12,13 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 /** Student: own tasks; the ones that need work come first. */
 @Component({
   selector: 'tb-my-homework-page',
-  imports: [DatePipe, RouterLink, Card, TableModule, RowType, TaskStatusTag],
+  imports: [HelpButton, DatePipe, RouterLink, Card, TableModule, RowType, TaskStatusTag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Домашние задания</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Домашние задания</h1>
+      <tb-help-button topic="cabinet/homework" />
+    </div>
     <p-card>
       <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" [loading]="loading()">
         <ng-template #header>

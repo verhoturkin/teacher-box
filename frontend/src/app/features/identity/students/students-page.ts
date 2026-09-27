@@ -15,6 +15,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
+import { HelpButton } from '@features/help/parts';
 import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
 import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -36,7 +37,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
   selector: 'tb-students-page',
-  imports: [
+  imports: [HelpButton, 
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -67,7 +68,10 @@ function isStudentsTab(value: unknown): value is StudentsTab {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
-      <h1 class="tb-page-title">Ученики</h1>
+      <div class="tb-page-heading">
+        <h1 class="tb-page-title">Ученики</h1>
+        <tb-help-button topic="teacher/students" />
+      </div>
       @if (activeTab() === 'students') {
         <p-button label="Добавить ученика" icon="pi pi-user-plus" (onClick)="openCreate()" />
       }

@@ -9,6 +9,7 @@ import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
+import { HelpButton } from '@features/help/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
 import { BillingApi } from '../data-access/billing-api';
@@ -20,7 +21,7 @@ import { PaymentDialog } from './payment-dialog';
 /** Teacher: balances of all students and quick recording of lessons and payments. */
 @Component({
   selector: 'tb-billing-overview-page',
-  imports: [
+  imports: [HelpButton, 
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -41,7 +42,10 @@ import { PaymentDialog } from './payment-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
-      <h1 class="tb-page-title">Оплаты</h1>
+      <div class="tb-page-heading">
+        <h1 class="tb-page-title">Оплаты</h1>
+        <tb-help-button topic="teacher/billing" />
+      </div>
       <div class="tb-actions">
         <p-button label="Занятие" icon="pi pi-plus" (onClick)="openLesson(null)" [disabled]="!overview()" />
         <p-button label="Оплата" icon="pi pi-wallet" severity="success" (onClick)="openPayment(null)" [disabled]="!overview()" />

@@ -8,6 +8,7 @@ import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
 import { LogEntry, LogLevelName, LogResult } from '../data-access/admin.models';
@@ -33,7 +34,7 @@ export const LOG_LIMIT = 200;
 /** Administrator: search in the server log; a request code from an error message finds its lines. */
 @Component({
   selector: 'tb-log-page',
-  imports: [
+  imports: [HelpButton, 
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -48,7 +49,10 @@ export const LOG_LIMIT = 200;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Журнал</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Журнал</h1>
+      <tb-help-button topic="admin/diagnostics" />
+    </div>
     <div class="tb-stack">
       <p-card>
         <form class="tb-log-filters" [formGroup]="form" (ngSubmit)="search()">
