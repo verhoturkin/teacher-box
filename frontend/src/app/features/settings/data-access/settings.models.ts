@@ -24,6 +24,14 @@ export interface RestoreRequested {
   readonly restarting: boolean;
 }
 
+/** Mirrors `ResetResult` of the backend. */
+export interface ResetResult {
+  /** The backup with the data before the reset. */
+  readonly backup: string;
+  /** What the teacher should do by hand. */
+  readonly hints: string[];
+}
+
 /** Mirrors `LastRestore` of the backend. */
 export interface LastRestore {
   readonly restored: boolean;

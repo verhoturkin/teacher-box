@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -196,6 +197,35 @@ public class GoogleCalendarService {
         accessToken = null;
         repository.forgetAll();
         repository.save(connection.disconnected(clock.instant()));
+    }
+
+    /**
+     * A full reset (ADR-0014): what deletes the portal's calendar in Google and revokes the access
+     * once the connection is deleted.
+     *
+     * @return {@code false} if the calendar stayed in Google
+     */
+    public BooleanSupplier removalForReset() {
+        GoogleConnection connection = connection();
+        GoogleApi.Client client = client(connection);
+        String refreshToken = connection.refreshToken();
+        String calendarId = connection.calendarId();
+        accessToken = null;
+        if (client == null || refreshToken == null) {
+            return () -> calendarId == null;
+        }
+        return () -> {
+            try {
+                if (calendarId != null) {
+                    api.deleteCalendar(api.refresh(client, refreshToken).accessToken(), calendarId);
+                }
+                api.revoke(refreshToken);
+                return true;
+            } catch (GoogleException e) {
+                log.warn("Could not remove the calendar of the portal from Google: {}", e.getMessage());
+                return calendarId == null;
+            }
+        };
     }
 
     /**

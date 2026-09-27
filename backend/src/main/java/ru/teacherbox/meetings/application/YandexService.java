@@ -166,6 +166,24 @@ public class YandexService {
         repository.save(connection.disconnected(clock.instant()));
     }
 
+    /** A full reset (ADR-0014): what revokes the current token once the connection is deleted. */
+    Runnable revocationForReset() {
+        YandexConnection connection = connection();
+        TelemostApi.Client client = client(connection);
+        String token = connection.accessToken();
+        if (client == null || token == null) {
+            return () -> {
+            };
+        }
+        return () -> {
+            try {
+                api.revoke(client, token);
+            } catch (TelemostException e) {
+                log.warn("Could not revoke the Yandex token: {}", e.getMessage());
+            }
+        };
+    }
+
     /**
      * A token for the Telemost API: the one from the environment, or the connection's (refreshed
      * shortly before it expires).

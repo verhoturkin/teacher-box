@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { PortalSettings } from '@core/portal/portal';
-import { NotificationsStatus } from './settings.models';
+import { NotificationsStatus, ResetResult } from './settings.models';
 
 /** Instance settings of the teacher: the portal and the integration status. */
 @Injectable({ providedIn: 'root' })
@@ -21,6 +22,15 @@ export class SettingsApi {
   /** The first setup is finished or skipped. */
   completeSetup(): Observable<PortalSettings> {
     return this.http.post<PortalSettings>('/api/teacher/portal/setup', null);
+  }
+
+  /** Deletes all data after a backup; a wrong password is shown in the dialog. */
+  reset(password: string): Observable<ResetResult> {
+    return this.http.post<ResetResult>(
+      '/api/teacher/reset',
+      { password },
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
+    );
   }
 
   notificationsStatus(): Observable<NotificationsStatus> {

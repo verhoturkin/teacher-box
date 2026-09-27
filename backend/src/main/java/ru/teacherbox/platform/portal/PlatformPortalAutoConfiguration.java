@@ -22,6 +22,11 @@ public class PlatformPortalAutoConfiguration {
     }
 
     @Bean
+    PortalDataReset portalDataReset(JdbcClient jdbc) {
+        return new PortalDataReset(jdbc);
+    }
+
+    @Bean
     PortalService portalService(JdbcClient jdbc, PortalProperties properties, Clock clock) {
         return new PortalService(new PortalSettingsRepository(jdbc), properties, clock);
     }

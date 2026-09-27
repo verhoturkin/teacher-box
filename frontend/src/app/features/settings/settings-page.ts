@@ -13,6 +13,7 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { BackupsCard } from './backups/backups-card';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
+import { ResetCard } from './reset-card';
 import {
   FailedDelivery,
   MessengerStatus,
@@ -41,6 +42,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     MeetingsSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
+    ResetCard,
     TableModule,
     Tag,
     RowType,
@@ -137,6 +139,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       </p-card>
 
       <tb-backups-card />
+      <tb-reset-card />
 
       <p-card header="Профиль">
         <a pButton routerLink="/teacher/account" [outlined]="true">

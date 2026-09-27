@@ -14,8 +14,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.PlatformTransactionManager;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
+import ru.teacherbox.shared.data.DataReset;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
@@ -46,6 +48,12 @@ public class PlatformBackupAutoConfiguration {
             Clock clock) {
         return new RestoreService(backups, platform.dataDir(), passwords, restarter, properties.restart(),
                 clock.instant());
+    }
+
+    @Bean
+    ResetService resetService(BackupService backups, RestoreService restores, ObjectProvider<DataReset> resets,
+            ObjectProvider<PlatformTransactionManager> transactions, JdbcClient jdbc, PlatformProperties platform) {
+        return new ResetService(backups, restores, resets, transactions, jdbc, platform.dataDir());
     }
 
     @Bean

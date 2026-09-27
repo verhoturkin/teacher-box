@@ -145,6 +145,23 @@ public class GoogleApi {
         }
     }
 
+    /** Deletes a calendar of the portal; one that is already gone is fine. */
+    public void deleteCalendar(String accessToken, String calendarId) {
+        try {
+            calendar.delete()
+                    .uri("/calendars/{id}", calendarId)
+                    .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException e) {
+            if (!isGone(e)) {
+                throw failure("delete calendar", e);
+            }
+        } catch (RestClientException e) {
+            throw new GoogleException("Google delete calendar: " + e.getMessage());
+        }
+    }
+
     /** Creates or replaces the event with the given id. */
     public void putEvent(String accessToken, String calendarId, String eventId, Map<String, Object> event) {
         try {

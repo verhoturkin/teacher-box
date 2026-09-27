@@ -181,6 +181,22 @@ class GoogleApiTest {
     }
 
     @Test
+    void deletesTheCalendarOfThePortal() {
+        calendar.expect(requestTo(CALENDAR + "/calendars/cal1")).andExpect(method(HttpMethod.DELETE))
+                .andRespond(withSuccess());
+        calendar.expect(requestTo(CALENDAR + "/calendars/cal2")).andRespond(withStatus(HttpStatus.NOT_FOUND));
+        calendar.expect(requestTo(CALENDAR + "/calendars/cal3")).andRespond(withStatus(HttpStatus.FORBIDDEN));
+        calendar.expect(requestTo(CALENDAR + "/calendars/cal4")).andRespond(request -> {
+            throw new IOException("reset");
+        });
+
+        api.deleteCalendar("access", "cal1");
+        api.deleteCalendar("access", "cal2");
+        assertThatThrownBy(() -> api.deleteCalendar("access", "cal3")).isInstanceOf(GoogleException.class);
+        assertThatThrownBy(() -> api.deleteCalendar("access", "cal4")).hasMessageContaining("reset");
+    }
+
+    @Test
     void readsBusyTimes() {
         calendar.expect(requestTo(CALENDAR + "/freeBusy"))
                 .andExpect(jsonPath("$.timeMin").value("2026-10-01T00:00:00Z"))
