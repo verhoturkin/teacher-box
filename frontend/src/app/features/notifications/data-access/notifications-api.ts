@@ -6,6 +6,7 @@ import {
   BotSettings,
   BroadcastItem,
   BroadcastRequest,
+  BotAbilities,
   ChannelSetup,
   ChannelState,
   ChannelType,
@@ -68,6 +69,16 @@ export class NotificationsApi {
 
   savePreferences(preferences: NotificationPreferences): Observable<NotificationPreferences> {
     return this.http.put<NotificationPreferences>('/api/me/notifications/preferences', preferences);
+  }
+
+  /** Teacher: what the bots can do. */
+  botAbilities(): Observable<BotAbilities> {
+    return this.http.get<BotAbilities>('/api/teacher/notifications/bot');
+  }
+
+  /** Teacher: manage the portal through the bot or not. */
+  setTeacherActions(teacherActions: boolean): Observable<BotAbilities> {
+    return this.http.put<BotAbilities>('/api/teacher/notifications/bot', { teacherActions });
   }
 
   /** Teacher: bots of the instance. */

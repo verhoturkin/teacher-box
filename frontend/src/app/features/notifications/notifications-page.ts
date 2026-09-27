@@ -7,6 +7,7 @@ import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { ChannelsPanel } from './channels/channels-panel';
 import { InboxPanel } from './inbox/inbox-panel';
 import { PreferencesPanel } from './preferences/preferences-panel';
+import { BotAbilitiesPanel } from './teacher/bot-abilities-panel';
 import { BotsPanel } from './teacher/bots-panel';
 import { BroadcastsPanel } from './teacher/broadcasts-panel';
 import { StudentMessengersPanel } from './teacher/student-messengers-panel';
@@ -29,6 +30,7 @@ function isTeacherTab(value: unknown): value is TeacherTab {
     TabPanel,
     TabPanels,
     Tabs,
+    BotAbilitiesPanel,
     BotsPanel,
     BroadcastsPanel,
     ChannelsPanel,
@@ -69,6 +71,7 @@ function isTeacherTab(value: unknown): value is TeacherTab {
               <div class="tb-stack">
                 <tb-bots-panel (changed)="reloadChannels()" />
                 <tb-channels-panel [teacher]="true" header="Мои мессенджеры" (changed)="reloadBots()" />
+                <tb-bot-abilities-panel />
               </div>
             </ng-template>
           </p-tabpanel>

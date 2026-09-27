@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -23,7 +25,7 @@ import ru.teacherbox.notifications.domain.ChannelType;
 
 class MessengerPollingTest {
 
-    private final ChannelService channelService = mock(ChannelService.class);
+    private final ChatEngine engine = mock(ChatEngine.class);
     private final MessengerHealth health = new MessengerHealth(
             Clock.fixed(Instant.parse("2026-09-26T10:00:00Z"), ZoneOffset.UTC));
 
@@ -32,8 +34,8 @@ class MessengerPollingTest {
         FakeMessengerChannel telegram = new FakeMessengerChannel(ChannelType.TELEGRAM);
         telegram.receive(new IncomingMessage("1", "@a", "/start ABCD2345"));
         telegram.receive(new IncomingMessage("2", null, "привет"));
-        when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
-        MessengerPolling polling = new MessengerPolling(channels(telegram), channelService, health);
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
+        MessengerPolling polling = new MessengerPolling(channels(telegram), engine, health);
 
         assertThat(polling.pollOnce(telegram)).isEqualTo(2);
 
@@ -43,13 +45,43 @@ class MessengerPollingTest {
     }
 
     @Test
+    void acknowledgesPressedButtons() {
+        FakeMessengerChannel telegram = new FakeMessengerChannel(ChannelType.TELEGRAM);
+        ButtonPress press = new ButtonPress("abcdefghijkl:0", "cb-1", "15", null);
+        telegram.receive(new IncomingMessage("1", null, "", press));
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
+
+        assertThat(new MessengerPolling(channels(telegram), engine, health).pollOnce(telegram)).isEqualTo(1);
+
+        assertThat(telegram.acknowledged()).containsExactly(press);
+        assertThat(telegram.sent()).containsExactly(new FakeMessengerChannel.Sent("1", "ответ"));
+    }
+
+    @Test
+    void failedAcknowledgementAndCommandsDoNotStopPolling() {
+        MessengerChannel stubborn = mock(MessengerChannel.class);
+        when(stubborn.type()).thenReturn(ChannelType.MAX);
+        ButtonPress press = new ButtonPress("abcdefghijkl:0", "cb-1", null, "Меню");
+        when(stubborn.poll()).thenReturn(List.of(new IncomingMessage("7", null, "", press)));
+        doThrow(new IllegalStateException("MAX /answers 500")).when(stubborn)
+                .acknowledge(any(), any());
+        doThrow(new IllegalStateException("no commands")).when(stubborn).publishCommands(any());
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
+
+        MessengerPolling.publishCommands(stubborn);
+        assertThat(new MessengerPolling(channels(stubborn), engine, health).pollOnce(stubborn)).isEqualTo(1);
+
+        verify(stubborn).send("7", OutgoingMessage.text("ответ"));
+    }
+
+    @Test
     void failedReplyDoesNotStopPolling() {
         FakeMessengerChannel telegram = new FakeMessengerChannel(ChannelType.TELEGRAM);
         telegram.receive(new IncomingMessage("1", null, "/stop"));
         telegram.failWith(new DeliveryException("blocked", true));
-        when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
 
-        assertThat(new MessengerPolling(channels(telegram), channelService, health).pollOnce(telegram)).isEqualTo(1);
+        assertThat(new MessengerPolling(channels(telegram), engine, health).pollOnce(telegram)).isEqualTo(1);
     }
 
     @Test
@@ -68,8 +100,8 @@ class MessengerPollingTest {
             }
 
             @Override
-            public void send(String externalId, String text) {
-                replies.send(externalId, text);
+            public void send(String externalId, OutgoingMessage message) {
+                replies.send(externalId, message);
             }
 
             @Override
@@ -93,8 +125,8 @@ class MessengerPollingTest {
                 return List.of();
             }
         };
-        when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
-        MessengerPolling polling = new MessengerPolling(channels(flaky), channelService, health);
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
+        MessengerPolling polling = new MessengerPolling(channels(flaky), engine, health);
 
         polling.start();
         try {
@@ -124,7 +156,7 @@ class MessengerPollingTest {
             }
 
             @Override
-            public void send(String externalId, String text) {
+            public void send(String externalId, OutgoingMessage message) {
                 throw new DeliveryException("unreachable", false);
             }
 
@@ -138,7 +170,7 @@ class MessengerPollingTest {
                 throw new IllegalStateException("Telegram getUpdates: Connection refused");
             }
         };
-        MessengerPolling polling = new MessengerPolling(channels(blocked), channelService, health);
+        MessengerPolling polling = new MessengerPolling(channels(blocked), engine, health);
 
         polling.start();
         try {
@@ -170,8 +202,8 @@ class MessengerPollingTest {
         MessengerChannels registry = channels();
         FakeMessengerChannel first = new FakeMessengerChannel(ChannelType.TELEGRAM);
         registry.put(first);
-        when(channelService.handleIncoming(any(), any())).thenReturn("ответ");
-        MessengerPolling polling = new MessengerPolling(registry, channelService, health);
+        when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
+        MessengerPolling polling = new MessengerPolling(registry, engine, health);
         polling.restart(ChannelType.TELEGRAM);
         assertThat(polling.isRunning()).as("restarting before start does nothing").isFalse();
 

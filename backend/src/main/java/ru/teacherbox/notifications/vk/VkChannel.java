@@ -2,30 +2,44 @@ package ru.teacherbox.notifications.vk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import ru.teacherbox.notifications.application.ButtonPress;
 import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.MessengerHttp;
+import ru.teacherbox.notifications.application.OutgoingButton;
+import ru.teacherbox.notifications.application.OutgoingMessage;
 import ru.teacherbox.notifications.domain.ChannelType;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Messages of a VK community: {@code messages.send} and the Bots Long Poll API. The community must
  * allow messages and have Long Poll with the {@code message_new} event enabled. VK has no start
- * parameters, so the user writes the code to the community.
+ * parameters, so the user writes the code to the community. Buttons are inline text buttons: a press
+ * arrives as a message with the button's {@code payload}; they need the community's bot features
+ * («Возможности ботов»), without them messages go without buttons.
  */
 public class VkChannel implements MessengerChannel {
 
     static final String VERSION = "5.199";
+    /** The keyboard is invalid, or the community has no bot features. */
+    static final Set<Integer> KEYBOARD_ERRORS = Set.of(911, 912);
+    private static final Logger log = LoggerFactory.getLogger(VkChannel.class);
+    private static final JsonMapper JSON = JsonMapper.builder().build();
     /** Errors after which retrying is pointless: access denied, user blocked messages, privacy settings. */
     private static final Set<Integer> PERMANENT_ERRORS = Set.of(5, 7, 15, 900, 901, 902);
 
@@ -35,6 +49,7 @@ public class VkChannel implements MessengerChannel {
     private @Nullable String server;
     private @Nullable String key;
     private @Nullable String ts;
+    private volatile boolean keyboards = true;
 
     /** @param http client with the API base URL ({@code https://api.vk.com}) */
     public VkChannel(RestClient http, String token, long groupId) {
@@ -54,23 +69,53 @@ public class VkChannel implements MessengerChannel {
     }
 
     @Override
-    public void send(String externalId, String text) {
+    public void send(String externalId, OutgoingMessage message) {
+        boolean withButtons = keyboards && !message.rows().isEmpty();
+        JsonNode error = messagesSend(externalId, message, withButtons);
+        if (withButtons && !error.isMissingNode() && KEYBOARD_ERRORS.contains(error.path("error_code").asInt())) {
+            log.warn("VK refused the buttons ({}); messages go without buttons. Turn on the community's bot features",
+                    error.path("error_msg").asString(""));
+            keyboards = false;
+            error = messagesSend(externalId, message, false);
+        }
+        if (!error.isMissingNode()) {
+            int code = error.path("error_code").asInt();
+            throw new DeliveryException("VK " + code + ": " + error.path("error_msg").asString(""),
+                    PERMANENT_ERRORS.contains(code));
+        }
+    }
+
+    /** @return the error of the call, a missing node if none */
+    private JsonNode messagesSend(String externalId, OutgoingMessage message, boolean withButtons) {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("user_id", externalId);
         form.add("random_id", Integer.toString(ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
-        form.add("message", text);
+        form.add("message", message.text());
+        if (withButtons) {
+            form.add("keyboard", keyboard(message.rows()));
+        }
         JsonNode response;
         try {
             response = method("messages.send", form);
         } catch (RestClientException e) {
             throw new DeliveryException("VK: " + MessengerHttp.redact(e.getMessage(), token), false);
         }
-        JsonNode error = response.path("error");
-        if (!error.isMissingNode()) {
-            int code = error.path("error_code").asInt();
-            throw new DeliveryException("VK " + code + ": " + error.path("error_msg").asString(""),
-                    PERMANENT_ERRORS.contains(code));
-        }
+        return response.path("error");
+    }
+
+    /** An inline keyboard: text buttons carry the data in the payload, links open in the browser. */
+    static String keyboard(List<List<OutgoingButton>> rows) {
+        List<List<Map<String, Object>>> buttons = rows.stream()
+                .map(row -> row.stream()
+                        .map(button -> button.data() != null
+                                ? Map.<String, Object>of("action", Map.of("type", "text", "label", button.label(),
+                                        "payload", JSON.writeValueAsString(Map.of("b", button.data()))),
+                                        "color", "secondary")
+                                : Map.<String, Object>of("action", Map.of("type", "open_link",
+                                        "link", String.valueOf(button.url()), "label", button.label())))
+                        .toList())
+                .toList();
+        return JSON.writeValueAsString(Map.of("inline", true, "buttons", buttons));
     }
 
     @Override
@@ -109,9 +154,23 @@ public class VkChannel implements MessengerChannel {
                     || message.path("peer_id").asLong() != from || text.isEmpty()) {
                 continue;
             }
-            messages.add(new IncomingMessage(Long.toString(from), "vk.com/id" + from, text));
+            messages.add(new IncomingMessage(Long.toString(from), "vk.com/id" + from, text,
+                    press(message.path("payload").asString(""))));
         }
         return messages;
+    }
+
+    /** The data of our button from the payload of the message; other payloads (e.g. «Начать») are ignored. */
+    private static @Nullable ButtonPress press(String payload) {
+        if (payload.isEmpty()) {
+            return null;
+        }
+        try {
+            String data = JSON.readTree(payload).path("b").asString("");
+            return data.isEmpty() ? null : new ButtonPress(data, null, null, null);
+        } catch (JacksonException e) {
+            return null;
+        }
     }
 
     /** Name of the community; also checks the token. */

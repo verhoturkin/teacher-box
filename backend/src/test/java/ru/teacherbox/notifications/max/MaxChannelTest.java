@@ -1,5 +1,9 @@
 package ru.teacherbox.notifications.max;
 
+import ru.teacherbox.notifications.application.OutgoingMessage;
+import ru.teacherbox.notifications.application.OutgoingButton;
+import ru.teacherbox.notifications.application.ButtonPress;
+import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -27,7 +31,7 @@ import ru.teacherbox.notifications.domain.ChannelType;
 class MaxChannelTest {
 
     private static final String API = "https://platform-api2.max.ru";
-    private static final String UPDATES = API + "/updates?timeout=25&types=message_created,bot_started";
+    private static final String UPDATES = API + "/updates?timeout=25&types=message_created,bot_started,message_callback";
 
     private final RestClient.Builder builder = RestClient.builder().baseUrl(API);
     private final MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
@@ -168,5 +172,68 @@ class MaxChannelTest {
 
     @EnableConfigurationProperties(NotificationsProperties.class)
     static class PropertiesConfiguration {
+    }
+
+    @Test
+    void sendsButtonsAndAnswersPresses() {
+        server.expect(requestTo(API + "/messages?user_id=77"))
+                .andExpect(jsonPath("$.text").value("Отправить?"))
+                .andExpect(jsonPath("$.attachments[0].type").value("inline_keyboard"))
+                .andExpect(jsonPath("$.attachments[0].payload.buttons[0][0].type").value("callback"))
+                .andExpect(jsonPath("$.attachments[0].payload.buttons[0][0].text").value("Да"))
+                .andExpect(jsonPath("$.attachments[0].payload.buttons[0][0].payload").value("abcdefghijkl:0"))
+                .andExpect(jsonPath("$.attachments[0].payload.buttons[1][0].type").value("link"))
+                .andExpect(jsonPath("$.attachments[0].payload.buttons[1][0].url").value("https://school.example.com"))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "/answers?callback_id=cb1"))
+                .andExpect(header("Authorization", "max-token"))
+                .andExpect(jsonPath("$.message.text").value("Отправить?"))
+                .andExpect(jsonPath("$.message.attachments").isEmpty())
+                .andRespond(withSuccess("{\"success\": true}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "/answers?callback_id=cb2"))
+                .andExpect(jsonPath("$.notification").value("Принято"))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"message\": \"callback expired\"}"));
+        server.expect(requestTo(API + "/answers?callback_id=cb3")).andRespond(request -> {
+            throw new IOException("Connection reset");
+        });
+
+        channel.send("77", new OutgoingMessage("Отправить?", List.of(
+                List.of(new OutgoingButton("Да", "abcdefghijkl:0", null)),
+                List.of(new OutgoingButton("Портал", null, "https://school.example.com")))));
+        channel.acknowledge("77", new ButtonPress("abcdefghijkl:0", "cb1", null, "Отправить?"));
+        assertThatThrownBy(() -> channel.acknowledge("77", new ButtonPress("abcdefghijkl:0", "cb2", null, null)))
+                .hasMessage("MAX /answers 400: callback expired");
+        assertThatThrownBy(() -> channel.acknowledge("77", new ButtonPress("abcdefghijkl:0", "cb3", null, null)))
+                .hasMessageContaining("Connection reset");
+        channel.acknowledge("77", new ButtonPress("abcdefghijkl:0", null, null, null));
+
+        server.verify();
+    }
+
+    @Test
+    void receivesPressedButtonsInDialogs() {
+        server.expect(requestTo(UPDATES))
+                .andRespond(withSuccess("""
+                        {"marker": 9, "updates": [
+                          {"update_type": "message_callback",
+                            "callback": {"callback_id": "cb1", "payload": "abcdefghijkl:0",
+                              "user": {"user_id": 77, "name": "Мария"}},
+                            "message": {"recipient": {"chat_type": "dialog"}, "body": {"text": "Отправить?"}}},
+                          {"update_type": "message_callback",
+                            "callback": {"callback_id": "cb2", "payload": "abcdefghijkl:1", "user": {"user_id": 78}}},
+                          {"update_type": "message_callback",
+                            "callback": {"callback_id": "cb3", "payload": "x", "user": {"user_id": 79}},
+                            "message": {"recipient": {"chat_type": "chat"}}},
+                          {"update_type": "message_callback",
+                            "callback": {"callback_id": "cb4", "user": {"user_id": 80}}},
+                          {"update_type": "message_callback", "callback": {"callback_id": "cb5", "payload": "y"}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+
+        assertThat(channel.poll()).containsExactly(
+                new IncomingMessage("77", "Мария", "", new ButtonPress("abcdefghijkl:0", "cb1", null, "Отправить?")),
+                new IncomingMessage("78", null, "", new ButtonPress("abcdefghijkl:1", "cb2", null, null)));
+        server.verify();
     }
 }

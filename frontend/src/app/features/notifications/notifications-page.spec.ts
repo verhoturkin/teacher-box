@@ -76,9 +76,13 @@ describe('NotificationsPage', () => {
     render('TEACHER', 'messengers');
     backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
     backend.expectOne('/api/me/channels').flush([]);
+    backend
+      .expectOne('/api/teacher/notifications/bot')
+      .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Мои мессенджеры');
+    expect(readableText(hostElement(fixture))).toContain('Что умеет бот');
     fixture.componentInstance.reloadChannels();
     backend.expectOne('/api/me/channels').flush([]);
     fixture.componentInstance.reloadBots();

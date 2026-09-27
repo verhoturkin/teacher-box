@@ -20,14 +20,33 @@ public interface MessengerChannel {
     Optional<String> chatLink(String code);
 
     /**
+     * Sends a message with its buttons.
+     *
+     * @throws DeliveryException if the messenger did not accept the message
+     */
+    void send(String externalId, OutgoingMessage message);
+
+    /**
      * Sends a text message.
      *
      * @throws DeliveryException if the messenger did not accept the message
      */
-    void send(String externalId, String text);
+    default void send(String externalId, String text) {
+        send(externalId, OutgoingMessage.text(text));
+    }
 
-    /** Waits for new messages to the bot (long polling) and returns them. */
+    /** Waits for new messages and pressed buttons (long polling) and returns them. */
     List<IncomingMessage> poll();
+
+    /** Tells the messenger the press was handled (stops the button's spinner); best effort. */
+    default void acknowledge(String externalId, ButtonPress press) {
+        // nothing to do in messengers where a button sends a message
+    }
+
+    /** Shows the bot's commands in the messenger's menu, if it has one; best effort. */
+    default void publishCommands(List<BotCommand> commands) {
+        // the messenger has no menu of commands
+    }
 
     /**
      * The bot's name in the messenger (e.g. {@code @school_bot}); asks the messenger, so it also

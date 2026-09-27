@@ -78,6 +78,16 @@ export interface MessengerStatus {
   readonly checkedAt: string | null;
 }
 
+/** What the bots can do (mirrors `BotView`). */
+export interface BotAbilities {
+  /** The teacher may manage the portal through the bot. */
+  readonly teacherActions: boolean;
+  /** The teacher's menu in the bot. */
+  readonly teacherMenu: string[];
+  /** A student's menu in the bot. */
+  readonly studentMenu: string[];
+}
+
 /** A messenger bot of the instance, as the teacher sees it (mirrors `ChannelSetup`). */
 export interface ChannelSetup {
   readonly channel: ChannelType;

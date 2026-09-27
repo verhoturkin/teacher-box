@@ -54,5 +54,20 @@ public @interface NotificationsIntegrationTest {
         FakeMessengerChannel telegram() {
             return new FakeMessengerChannel(ChannelType.TELEGRAM);
         }
+
+        @Bean
+        TestChatActions.Feedback feedbackAction() {
+            return new TestChatActions.Feedback();
+        }
+
+        @Bean
+        TestChatActions.TeacherOnly teacherOnlyAction() {
+            return new TestChatActions.TeacherOnly();
+        }
+
+        @Bean
+        TestChatActions.Broken brokenAction() {
+            return new TestChatActions.Broken();
+        }
     }
 }
