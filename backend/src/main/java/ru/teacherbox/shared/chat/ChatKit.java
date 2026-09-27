@@ -117,10 +117,24 @@ public final class ChatKit {
                 return Optional.empty();
             }
         }
-        return text(input).flatMap(text -> parseDate(text, today));
+        return text(input).flatMap(text -> parseDate(text, today, true));
     }
 
-    static Optional<LocalDate> parseDate(String text, LocalDate today) {
+    /**
+     * A past date (e.g. of a lesson that took place) from a date button or typed: a day and month
+     * without a year mean the latest such date up to {@code today}; «сегодня», «вчера».
+     */
+    public static Optional<LocalDate> pastDate(ChatInput input, LocalDate today) {
+        Optional<String> chosen = choice(input, DATE);
+        if (chosen.isPresent()) {
+            return date(input, today);
+        }
+        return text(input).flatMap(text -> text.strip().equalsIgnoreCase("вчера")
+                ? Optional.of(today.minusDays(1))
+                : parseDate(text, today, false));
+    }
+
+    static Optional<LocalDate> parseDate(String text, LocalDate today, boolean ahead) {
         String lower = text.strip().toLowerCase(RU);
         if (lower.equals("сегодня")) {
             return Optional.of(today);
@@ -141,7 +155,10 @@ public final class ChatKit {
                 return Optional.of(LocalDate.of(year.length() == 2 ? 2000 + full : full, month, day));
             }
             LocalDate date = LocalDate.of(today.getYear(), month, day);
-            return Optional.of(date.isBefore(today) ? date.plusYears(1) : date);
+            if (ahead) {
+                return Optional.of(date.isBefore(today) ? date.plusYears(1) : date);
+            }
+            return Optional.of(date.isAfter(today) ? date.minusYears(1) : date);
         } catch (DateTimeException e) {
             return Optional.empty();
         }

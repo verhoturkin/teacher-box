@@ -23,6 +23,7 @@ import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.api.SeriesScheduled;
 import ru.teacherbox.schedule.api.SeriesStopped;
+import ru.teacherbox.shared.chat.ChatSubject;
 
 /**
  * Schedule events → notifications: students learn about new, moved and cancelled lessons (all
@@ -132,7 +133,10 @@ class ScheduleNotifications {
         } else {
             title = student + " просит отменить занятие";
         }
-        notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_REQUEST, title, join(body), TEACHER_LINK);
+        ChatSubject subject = event.accepted() ? null
+                : new ChatSubject(LessonChangeRequested.CHAT_SUBJECT, event.requestId());
+        notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_REQUEST, title, join(body), TEACHER_LINK,
+                subject);
     }
 
     @ApplicationModuleListener

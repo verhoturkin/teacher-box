@@ -267,20 +267,26 @@ class ChatEngineIntegrationTests {
         notifications.notify(student, NotificationKind.MESSAGE, "Без кнопок", null, null, new ChatSubject("other", subject));
         dispatcher.dispatch();
 
-        List<FakeMessengerChannel.Sent> sent = telegram.sent();
+        List<FakeMessengerChannel.Sent> sent = telegram.sent().stream()
+                .filter(message -> message.externalId().equals("8701"))
+                .toList();
         assertThat(sent).hasSize(2);
-        assertThat(sent.getFirst().labels()).containsExactly("Принять", "Отклонить");
-        assertThat(sent.get(1).rows()).isEmpty();
-        OutgoingMessage accepted = pressData("8701", sent.getFirst().button("Принять"));
+        FakeMessengerChannel.Sent withButtons = sent.stream().filter(message -> message.text().startsWith("Запрос"))
+                .findFirst().orElseThrow();
+        assertThat(withButtons.labels()).containsExactly("Принять", "Отклонить");
+        assertThat(sent.stream().filter(message -> message.text().startsWith("Без кнопок"))).singleElement()
+                .satisfies(message -> assertThat(message.rows()).isEmpty());
+        OutgoingMessage accepted = pressData("8701", withButtons.button("Принять"));
         assertThat(accepted.text()).isEqualTo("Принято: " + subject);
-        assertThat(pressData("8701", sent.getFirst().button("Отклонить")).text()).startsWith("Эта кнопка уже не действует.");
+        assertThat(pressData("8701", withButtons.button("Отклонить")).text()).startsWith("Эта кнопка уже не действует.");
 
         connect(directory.teacherId(), "8702");
         settings.setTeacherActions(false);
         notifications.notify(directory.teacherId(), NotificationKind.MESSAGE, "Учителю", null, null,
                 new ChatSubject(TestChatActions.SUBJECT, subject));
         dispatcher.dispatch();
-        assertThat(telegram.lastSent().rows()).isEmpty();
+        assertThat(telegram.sent().stream().filter(message -> message.externalId().equals("8702"))).singleElement()
+                .satisfies(message -> assertThat(message.rows()).isEmpty());
         links.delete(directory.teacherId(), ChannelType.TELEGRAM);
     }
 

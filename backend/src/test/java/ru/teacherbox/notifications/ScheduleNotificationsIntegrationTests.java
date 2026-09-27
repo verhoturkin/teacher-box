@@ -16,6 +16,12 @@ import org.springframework.modulith.test.Scenario;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.InboxRepository;
+import ru.teacherbox.notifications.application.DeliveryDispatcher;
+import ru.teacherbox.notifications.domain.ChannelLink;
+import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.notifications.domain.Delivery;
+import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
+import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
@@ -47,6 +53,18 @@ class ScheduleNotificationsIntegrationTests {
 
     @Autowired
     FakeStudentGroups groups;
+
+    @Autowired
+    ChannelLinkRepository links;
+
+    @Autowired
+    DeliveryRepository deliveries;
+
+    @Autowired
+    DeliveryDispatcher dispatcher;
+
+    @Autowired
+    FakeMessengerChannel telegram;
 
     @Test
     void newLessonsAndSeries(Scenario scenario) {
@@ -261,6 +279,41 @@ class ScheduleNotificationsIntegrationTests {
     private List<InboxNotification> teacherNotifications(String title) {
         return inbox.findPage(directory.teacherId(), 0, 200).stream()
                 .filter(notification -> notification.title().equals(title))
+                .toList();
+    }
+
+    @Test
+    void theTeacherGetsButtonsUnderARequest(Scenario scenario) {
+        links.save(new ChannelLink(UUID.randomUUID(), directory.teacherId(), ChannelType.TELEGRAM, "8900", "@teacher",
+                true, Instant.now()));
+        try {
+            UUID asks = directory.addStudent("Кнопки");
+            UUID requestId = UUID.randomUUID();
+            scenario.publish(new LessonChangeRequested(requestId, UUID.randomUUID(), asks, null, ChangeKind.RESCHEDULE,
+                            START, LATER, null, false, false, Instant.now()))
+                    .andWaitForStateChange(() -> teacherDeliveries("Кнопки просит перенести занятие"),
+                            list -> !list.isEmpty())
+                    .andVerify(list -> assertThat(list.getFirst().keyboard()).contains("Принять", "Отклонить"));
+
+            UUID absent = directory.addStudent("Без кнопок");
+            UUID group = groups.addGroup("Кнопочная", absent);
+            scenario.publish(new LessonChangeRequested(UUID.randomUUID(), UUID.randomUUID(), absent, group,
+                            ChangeKind.CANCEL, START, null, null, false, true, Instant.now()))
+                    .andWaitForStateChange(() -> teacherDeliveries("Без кнопок не придёт на занятие группы"),
+                            list -> !list.isEmpty())
+                    .andVerify(list -> assertThat(list.getFirst().keyboard()).isNull());
+        } finally {
+            // Send what the link got, so that no delivery to it stays for the other tests.
+            telegram.reset();
+            dispatcher.dispatch();
+            telegram.reset();
+            links.delete(directory.teacherId(), ChannelType.TELEGRAM);
+        }
+    }
+
+    private List<Delivery> teacherDeliveries(String text) {
+        return deliveries.findByRecipient(directory.teacherId()).stream()
+                .filter(delivery -> delivery.text().startsWith(text))
                 .toList();
     }
 }

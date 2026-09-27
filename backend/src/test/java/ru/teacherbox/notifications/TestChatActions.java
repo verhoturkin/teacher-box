@@ -3,6 +3,7 @@ package ru.teacherbox.notifications;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
 import ru.teacherbox.shared.chat.ChatInput;
@@ -80,7 +81,7 @@ public final class TestChatActions {
 
         @Override
         public Optional<ChatOffer> offer(ChatUser user, ChatSubject subject) {
-            if (!SUBJECT.equals(subject.type())) {
+            if (!SUBJECT.equals(subject.type()) && !LessonChangeRequested.CHAT_SUBJECT.equals(subject.type())) {
                 return Optional.empty();
             }
             return Optional.of(new ChatOffer(List.of(List.of(ChatButton.choice("Принять", "accept"),

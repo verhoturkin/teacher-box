@@ -26,4 +26,7 @@ public record LessonChangeRequested(
         boolean late,
         boolean accepted,
         Instant occurredAt) {
+
+    /** The subject of the teacher's notification, for the buttons of the bot (ADR-0013). */
+    public static final String CHAT_SUBJECT = "change-request";
 }

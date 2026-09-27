@@ -77,6 +77,17 @@ class ChatKitTest {
     }
 
     @Test
+    void readsPastDates() {
+        assertThat(ChatKit.pastDate(new ChatInput.Text("вчера"), TODAY)).contains(TODAY.minusDays(1));
+        assertThat(ChatKit.pastDate(new ChatInput.Text("сегодня"), TODAY)).contains(TODAY);
+        assertThat(ChatKit.pastDate(new ChatInput.Text("25.09"), TODAY)).contains(LocalDate.of(2026, 9, 25));
+        assertThat(ChatKit.pastDate(new ChatInput.Text("30.09"), TODAY)).as("not yet this year")
+                .contains(LocalDate.of(2025, 9, 30));
+        assertThat(ChatKit.pastDate(new ChatInput.Choice("date:2026-09-27"), TODAY)).contains(LocalDate.of(2026, 9, 27));
+        assertThat(ChatKit.pastDate(new ChatInput.Text("давно"), TODAY)).isEmpty();
+    }
+
+    @Test
     void readsTimeAndAmounts() {
         assertThat(ChatKit.time("18:30")).contains(LocalTime.of(18, 30));
         assertThat(ChatKit.time(" 9.05 ")).contains(LocalTime.of(9, 5));
