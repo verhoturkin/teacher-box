@@ -9,7 +9,8 @@ import { HelpTopic, helpUrl } from './help-topics';
 
 /**
  * «?» (or «Подробнее») next to a heading: opens the help article in a side panel without leaving
- * the page.
+ * the page. The panel does not shade the page: the article can be read next to it, and leaving the
+ * page with the panel open leaves nothing behind (the shade of a modal drawer would stay).
  */
 @Component({
   selector: 'tb-help-button',
@@ -28,7 +29,14 @@ import { HelpTopic, helpUrl } from './help-topics';
         (onClick)="open()"
       />
     }
-    <p-drawer [(visible)]="visible" position="right" appendTo="body" [header]="article()?.title ?? 'Справка'" styleClass="tb-help-drawer">
+    <p-drawer
+      [(visible)]="visible"
+      position="right"
+      appendTo="body"
+      [modal]="false"
+      [header]="article()?.title ?? 'Справка'"
+      styleClass="tb-help-drawer"
+    >
       @if (article(); as current) {
         <tb-help-article [body]="current.body" (navigated)="visible.set(false)" />
         <p>
@@ -63,4 +71,5 @@ export class HelpButton {
     this.article.set(await this.library.article(this.topic()));
     this.visible.set(true);
   }
+
 }

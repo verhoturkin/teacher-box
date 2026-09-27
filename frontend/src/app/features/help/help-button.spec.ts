@@ -34,14 +34,30 @@ describe('HelpButton', () => {
     fixture.componentRef.setInput('label', 'Подробнее');
     await fixture.whenStable();
     expect(hostElement(fixture).textContent).toContain('Подробнее');
-    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     await fixture.componentInstance.open();
     await fixture.whenStable();
+    expect(document.body.querySelector('.p-drawer-mask')).toBeNull();
 
-    const link = document.body.querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]');
-    link?.click();
+    document.body.querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]')?.click();
     await fixture.whenStable();
 
     expect(fixture.componentInstance.visible()).toBe(false);
+    expect(navigate).toHaveBeenCalledWith('/teacher/help/bot');
+  });
+
+  it('closes when the whole help is opened', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    await fixture.componentInstance.open();
+    await fixture.whenStable();
+    const all = Array.from(document.body.querySelectorAll('a')).find((link) => link.textContent.includes('Вся справка'));
+    all?.addEventListener('click', (event) => {
+      event.preventDefault();
+    });
+
+    all?.click();
+
+    expect(fixture.componentInstance.visible()).toBe(false);
+    expect(navigate).toHaveBeenCalled();
   });
 });
