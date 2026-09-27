@@ -35,7 +35,7 @@ import ru.teacherbox.meetings.application.TelemostException;
 import ru.teacherbox.meetings.application.YandexService;
 import ru.teacherbox.meetings.domain.YandexConnection;
 import ru.teacherbox.meetings.persistence.YandexRepository;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;

@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 

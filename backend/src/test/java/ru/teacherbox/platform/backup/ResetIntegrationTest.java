@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.platform.core.PlatformProperties;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 import ru.teacherbox.testing.TestUsers;

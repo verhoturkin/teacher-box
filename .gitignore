@@ -21,8 +21,8 @@ frontend/dist/
 frontend/coverage/
 frontend/.angular/
 
-# Runtime data
-data/
+# Runtime data (only the directory at the root: packages named data are code)
+/data/
 *.log
 
 # Local preview configuration (machine-specific paths)

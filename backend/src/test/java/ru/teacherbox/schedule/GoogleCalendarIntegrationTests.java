@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.schedule.google.GoogleApi;
 import ru.teacherbox.schedule.google.GoogleAuthException;
 import ru.teacherbox.schedule.google.GoogleCalendarService;

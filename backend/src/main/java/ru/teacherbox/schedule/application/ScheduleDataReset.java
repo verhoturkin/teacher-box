@@ -6,7 +6,7 @@ import java.util.function.BooleanSupplier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): lessons, series, requests, calendar feeds and the Google Calendar

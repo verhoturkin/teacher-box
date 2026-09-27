@@ -3,7 +3,7 @@ package ru.teacherbox.identity.application;
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): students, their invitations and sessions, groups. The accounts of the

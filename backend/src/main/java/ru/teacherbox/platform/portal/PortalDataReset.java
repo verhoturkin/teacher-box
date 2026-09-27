@@ -2,7 +2,7 @@ package ru.teacherbox.platform.portal;
 
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): the name and the address of the portal go back to the defaults and the first

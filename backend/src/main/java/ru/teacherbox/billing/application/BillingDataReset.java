@@ -3,7 +3,7 @@ package ru.teacherbox.billing.application;
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import ru.teacherbox.shared.data.DataReset;
+import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): lessons, payments, prices; the default lesson price goes back to the
