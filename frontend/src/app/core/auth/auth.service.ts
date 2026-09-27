@@ -83,6 +83,14 @@ export class AuthService {
     return response.user;
   }
 
+  /** The user's name changed (the teacher renamed themselves); the next session carries it anyway. */
+  renamed(displayName: string): void {
+    const state = this.state();
+    if (state !== null) {
+      this.state.set({ ...state, user: { ...state.user, displayName } });
+    }
+  }
+
   /**
    * Exchanges the refresh cookie for a new access token. Concurrent callers share one request.
    * When the session cannot be renewed, the user is sent to the sign-in page.

@@ -12,8 +12,10 @@ public class PortalService implements Portal {
     /**
      * @param address                the address links are built from
      * @param addressFromEnvironment the address comes from {@code TEACHERBOX_PUBLIC_URL} and cannot be changed
+     * @param setupCompleted         the teacher finished or skipped the first setup
      */
-    public record View(String name, @Nullable String address, boolean addressFromEnvironment) {
+    public record View(String name, @Nullable String address, boolean addressFromEnvironment,
+            boolean setupCompleted) {
     }
 
     private final PortalSettingsRepository repository;
@@ -47,20 +49,31 @@ public class PortalService implements Portal {
      */
     public synchronized View change(@Nullable String name, @Nullable String address) {
         PortalSettings current = repository.load();
-        return view(repository.save(new PortalSettings(blankToNull(name), normalize(address), clock.instant(),
-                current.version())));
+        return view(repository.save(new PortalSettings(blankToNull(name), normalize(address),
+                current.setupCompletedAt(), clock.instant(), current.version())));
     }
 
     public synchronized View changeAddress(@Nullable String address) {
         PortalSettings current = repository.load();
-        return view(repository.save(new PortalSettings(current.name(), normalize(address), clock.instant(),
-                current.version())));
+        return view(repository.save(new PortalSettings(current.name(), normalize(address),
+                current.setupCompletedAt(), clock.instant(), current.version())));
+    }
+
+    /** The first setup is finished or skipped: the wizard does not open any more. */
+    public synchronized View completeSetup() {
+        PortalSettings current = repository.load();
+        if (current.setupCompletedAt() != null) {
+            return view(current);
+        }
+        return view(repository.save(new PortalSettings(current.name(), current.address(), clock.instant(),
+                clock.instant(), current.version())));
     }
 
     private View view(PortalSettings settings) {
         String fromEnvironment = properties.address();
         return new View(settings.name() == null ? DEFAULT_NAME : settings.name(),
-                fromEnvironment != null ? fromEnvironment : settings.address(), fromEnvironment != null);
+                fromEnvironment != null ? fromEnvironment : settings.address(), fromEnvironment != null,
+                settings.setupCompletedAt() != null);
     }
 
     private static @Nullable String normalize(@Nullable String address) {

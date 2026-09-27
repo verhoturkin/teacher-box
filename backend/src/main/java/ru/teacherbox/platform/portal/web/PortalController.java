@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,6 +53,12 @@ class PortalController {
     @PutMapping("/api/teacher/portal")
     View change(@Valid @RequestBody ChangeRequest request) {
         return portal.change(request.name(), request.address());
+    }
+
+    /** The teacher finished or skipped the first setup. */
+    @PostMapping("/api/teacher/portal/setup")
+    View completeSetup() {
+        return portal.completeSetup();
     }
 
     @GetMapping("/api/admin/portal")

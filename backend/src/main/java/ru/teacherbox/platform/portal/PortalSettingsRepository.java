@@ -16,7 +16,10 @@ public class PortalSettingsRepository {
     }
 
     public PortalSettings load() {
-        return jdbc.sql("select name, address, updated_at, version from platform.portal_settings where id = 1")
+        return jdbc.sql("""
+                select name, address, setup_completed_at, updated_at, version
+                from platform.portal_settings where id = 1
+                """)
                 .query(PortalSettingsRepository::map)
                 .single();
     }
@@ -28,22 +31,26 @@ public class PortalSettingsRepository {
     public PortalSettings save(PortalSettings settings) {
         int updated = jdbc.sql("""
                 update platform.portal_settings
-                set name = :name, address = :address, updated_at = :updatedAt, version = version + 1
+                set name = :name, address = :address, setup_completed_at = :setupCompletedAt,
+                    updated_at = :updatedAt, version = version + 1
                 where id = 1 and version = :version
                 """)
                 .param("name", settings.name())
                 .param("address", settings.address())
+                .param("setupCompletedAt", settings.setupCompletedAt())
                 .param("updatedAt", settings.updatedAt())
                 .param("version", settings.version())
                 .update();
         if (updated != 1) {
             throw new OptimisticLockingFailureException("Portal settings were modified");
         }
-        return new PortalSettings(settings.name(), settings.address(), settings.updatedAt(), settings.version() + 1);
+        return new PortalSettings(settings.name(), settings.address(), settings.setupCompletedAt(),
+                settings.updatedAt(), settings.version() + 1);
     }
 
     private static PortalSettings map(ResultSet rs, int row) throws SQLException {
         return new PortalSettings(rs.getString("name"), rs.getString("address"),
-                rs.getObject("updated_at", Instant.class), rs.getLong("version"));
+                rs.getObject("setup_completed_at", Instant.class), rs.getObject("updated_at", Instant.class),
+                rs.getLong("version"));
     }
 }

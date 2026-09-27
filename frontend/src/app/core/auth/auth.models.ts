@@ -6,6 +6,8 @@ export interface SessionUser {
   readonly id: string;
   readonly role: Role;
   readonly displayName: string;
+  /** The password was generated on the first start and must be replaced (first setup). */
+  readonly passwordChangeRequired: boolean;
 }
 
 /** Response of sign-in, refresh, invitation acceptance and password change. */

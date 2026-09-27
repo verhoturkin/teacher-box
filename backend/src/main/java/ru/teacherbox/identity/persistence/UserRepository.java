@@ -20,7 +20,7 @@ public class UserRepository {
 
     private static final String SELECT = """
             select id, role, login, password_hash, display_name, email, phone, note, status,
-                   failed_logins, locked_until, created_at, updated_at, version
+                   failed_logins, locked_until, password_change_required, created_at, updated_at, version
             from identity.users
             """;
 
@@ -33,9 +33,11 @@ public class UserRepository {
     public void insert(User user) {
         jdbc.sql("""
                 insert into identity.users (id, role, teacher_marker, login, password_hash, display_name, email,
-                    phone, note, status, failed_logins, locked_until, created_at, updated_at, version)
+                    phone, note, status, failed_logins, locked_until, password_change_required, created_at,
+                    updated_at, version)
                 values (:id, :role, :teacherMarker, :login, :passwordHash, :displayName, :email,
-                    :phone, :note, :status, :failedLogins, :lockedUntil, :createdAt, :updatedAt, :version)
+                    :phone, :note, :status, :failedLogins, :lockedUntil, :passwordChangeRequired, :createdAt,
+                    :updatedAt, :version)
                 """)
                 .param("id", user.id())
                 .param("role", user.role().name())
@@ -49,6 +51,7 @@ public class UserRepository {
                 .param("status", user.status().name())
                 .param("failedLogins", user.failedLogins())
                 .param("lockedUntil", user.lockedUntil())
+                .param("passwordChangeRequired", user.passwordChangeRequired())
                 .param("createdAt", user.createdAt())
                 .param("updatedAt", user.updatedAt())
                 .param("version", user.version())
@@ -65,7 +68,8 @@ public class UserRepository {
                 update identity.users
                 set login = :login, password_hash = :passwordHash, display_name = :displayName, email = :email,
                     phone = :phone, note = :note, status = :status, failed_logins = :failedLogins,
-                    locked_until = :lockedUntil, updated_at = :updatedAt, version = version + 1
+                    locked_until = :lockedUntil, password_change_required = :passwordChangeRequired,
+                    updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
                 .param("id", user.id())
@@ -79,6 +83,7 @@ public class UserRepository {
                 .param("status", user.status().name())
                 .param("failedLogins", user.failedLogins())
                 .param("lockedUntil", user.lockedUntil())
+                .param("passwordChangeRequired", user.passwordChangeRequired())
                 .param("updatedAt", user.updatedAt())
                 .update();
         if (updated != 1) {
@@ -147,6 +152,7 @@ public class UserRepository {
                 AccountStatus.valueOf(rs.getString("status")),
                 rs.getInt("failed_logins"),
                 rs.getObject("locked_until", Instant.class),
+                rs.getBoolean("password_change_required"),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

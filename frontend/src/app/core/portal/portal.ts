@@ -17,6 +17,8 @@ export interface PortalInfo {
 export interface PortalSettings extends PortalInfo {
   /** The address comes from `TEACHERBOX_PUBLIC_URL` on the server and cannot be changed here. */
   readonly addressFromEnvironment: boolean;
+  /** The teacher finished or skipped the first setup. */
+  readonly setupCompleted: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ export class Portal {
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
   private readonly info = signal<PortalInfo>({ name: DEFAULT_PORTAL_NAME, address: null });
+  private setupDone = false;
 
   readonly name = computed(() => this.info().name);
   /** The portal address or, until it is set, the address this page is opened at. */
@@ -48,6 +51,31 @@ export class Portal {
     } catch {
       // The defaults are good enough until the next start.
     }
+  }
+
+  /**
+   * Whether the teacher has finished (or skipped) the first setup. Asked once it is done; when the
+   * server does not answer, the wizard is not forced on the teacher.
+   */
+  async setupCompleted(): Promise<boolean> {
+    if (this.setupDone) {
+      return true;
+    }
+    try {
+      const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
+      const settings = await firstValueFrom(
+        this.injector.get(HttpClient).get<PortalSettings>('/api/teacher/portal', { context }),
+      );
+      this.setupDone = settings.setupCompleted;
+      return this.setupDone;
+    } catch {
+      return true;
+    }
+  }
+
+  /** The first setup is finished; `false` after a full reset brings it back. */
+  setSetupCompleted(completed: boolean): void {
+    this.setupDone = completed;
   }
 
   /** After the teacher or the administrator has changed them. */

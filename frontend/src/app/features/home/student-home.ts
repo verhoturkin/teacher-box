@@ -8,17 +8,20 @@ import type { MyHomeworkSummary } from '@features/homework/parts';
 import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
+import { StudentWelcomeCard } from './student-welcome-card';
 
 /** Student personal area dashboard: collects the widgets of the modules. */
 @Component({
   selector: 'tb-student-home',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     ConnectMessengerCard,
     LatestNotificationsWidget,
     MyBalanceWidget,
     MyBoardsCard,
     MyDeadlinesWidget,
     NextLessonWidget,
+    StudentWelcomeCard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -27,6 +30,7 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
       <tb-help-button topic="cabinet/lesson" />
     </div>
     <div class="tb-stack">
+      <tb-student-welcome-card />
       <tb-connect-messenger-card />
       <div class="tb-home">
         <div class="tb-stack">

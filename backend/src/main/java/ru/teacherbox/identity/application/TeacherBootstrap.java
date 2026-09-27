@@ -57,13 +57,16 @@ class TeacherBootstrap implements ApplicationRunner {
         Instant now = clock.instant();
         User teacher = User.newTeacher(Ids.newId(), config.login(), passwordEncoder.encode(password),
                 Profile.named(config.name()), now);
+        if (generated) {
+            teacher.requirePasswordChange();
+        }
         users.insert(teacher);
         if (generated) {
             log.warn("""
 
                     ============================================================
                     Teacher account created. Login: {}  Password: {}
-                    Change the password after the first sign-in.
+                    The portal asks to change it after the first sign-in.
                     ============================================================""",
                     teacher.login(), password);
         } else {

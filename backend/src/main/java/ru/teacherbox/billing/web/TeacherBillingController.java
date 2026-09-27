@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingService;
+import ru.teacherbox.billing.application.DefaultLessonPrice;
 import ru.teacherbox.billing.application.GroupPriceService;
 import ru.teacherbox.billing.application.GroupPriceService.GroupPrices;
 import ru.teacherbox.billing.application.GroupPriceService.GroupPriceView;
@@ -66,14 +67,20 @@ class TeacherBillingController {
     record PriceResponse(UUID studentId, long lessonPrice) {
     }
 
+    record DefaultPriceResponse(long lessonPrice) {
+    }
+
     private final BillingService billing;
     private final BillingQueryService queries;
     private final GroupPriceService groupPrices;
+    private final DefaultLessonPrice defaultLessonPrice;
 
-    TeacherBillingController(BillingService billing, BillingQueryService queries, GroupPriceService groupPrices) {
+    TeacherBillingController(BillingService billing, BillingQueryService queries, GroupPriceService groupPrices,
+            DefaultLessonPrice defaultLessonPrice) {
         this.billing = billing;
         this.queries = queries;
         this.groupPrices = groupPrices;
+        this.defaultLessonPrice = defaultLessonPrice;
     }
 
     @GetMapping("/overview")
@@ -89,6 +96,12 @@ class TeacherBillingController {
     @GetMapping("/students/{studentId}")
     StudentLedger ledger(@PathVariable UUID studentId) {
         return queries.ledger(studentId);
+    }
+
+    /** Price of students and groups added from now on. */
+    @PutMapping("/default-price")
+    DefaultPriceResponse changeDefaultPrice(@Valid @RequestBody PriceRequest request) {
+        return new DefaultPriceResponse(defaultLessonPrice.change(request.lessonPrice()));
     }
 
     @PutMapping("/students/{studentId}/price")

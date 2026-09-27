@@ -30,15 +30,15 @@ public class GroupPriceService {
 
     private final GroupPriceRepository prices;
     private final StudentGroups groups;
-    private final BillingProperties properties;
+    private final DefaultLessonPrice defaultLessonPrice;
     private final BillingCurrency currency;
     private final Clock clock;
 
-    public GroupPriceService(GroupPriceRepository prices, StudentGroups groups, BillingProperties properties,
+    public GroupPriceService(GroupPriceRepository prices, StudentGroups groups, DefaultLessonPrice defaultLessonPrice,
             BillingCurrency currency, Clock clock) {
         this.prices = prices;
         this.groups = groups;
-        this.properties = properties;
+        this.defaultLessonPrice = defaultLessonPrice;
         this.currency = currency;
         this.clock = clock;
     }
@@ -84,6 +84,6 @@ public class GroupPriceService {
     }
 
     private Money defaultPrice() {
-        return Money.ofDecimal(properties.defaultLessonPrice(), currency.currency());
+        return defaultLessonPrice.current();
     }
 }

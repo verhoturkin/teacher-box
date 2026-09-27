@@ -35,8 +35,25 @@ public final class MutableClock extends Clock {
         return ZoneOffset.UTC;
     }
 
+    /** The same moving time seen in another zone (e.g. the instance time zone for «today»). */
     @Override
     public Clock withZone(ZoneId zone) {
-        return this;
+        MutableClock owner = this;
+        return new Clock() {
+            @Override
+            public ZoneId getZone() {
+                return zone;
+            }
+
+            @Override
+            public Clock withZone(ZoneId other) {
+                return owner.withZone(other);
+            }
+
+            @Override
+            public Instant instant() {
+                return owner.instant();
+            }
+        };
     }
 }

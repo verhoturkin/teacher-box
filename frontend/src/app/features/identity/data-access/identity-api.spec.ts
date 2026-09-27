@@ -38,6 +38,14 @@ describe('IdentityApi', () => {
     backend.expectOne({ method: 'POST', url: '/api/teacher/students/id-1/reactivate' });
   });
 
+  it('renames the teacher', () => {
+    api.renameTeacher('Мария').subscribe();
+
+    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/profile' }).request.body).toEqual({
+      displayName: 'Мария',
+    });
+  });
+
   it('handles invitation errors on the page itself', () => {
     api.describeInvite('a/b').subscribe();
     api.acceptInvite('a/b', 'ivan', 'password').subscribe();

@@ -11,10 +11,19 @@ const USERS: Record<Role, { readonly id: string; readonly displayName: string }>
 };
 
 /** A backend session response for tests. */
-export function authResponse(role: Role, expiresIn = 900, accessToken = `token-${role}`): AuthResponse {
+export function authResponse(
+  role: Role,
+  expiresIn = 900,
+  accessToken = `token-${role}`,
+): AuthResponse {
   return {
     accessToken,
     expiresIn,
-    user: { id: USERS[role].id, role, displayName: USERS[role].displayName },
+    user: {
+      id: USERS[role].id,
+      role,
+      displayName: USERS[role].displayName,
+      passwordChangeRequired: false,
+    },
   };
 }

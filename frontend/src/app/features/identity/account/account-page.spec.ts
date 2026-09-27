@@ -7,7 +7,18 @@ import { providePrimeNG } from 'primeng/config';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
+import { Account } from '../data-access/identity.models';
 import { AccountPage } from './account-page';
+
+const ACCOUNT: Account = {
+  id: '1',
+  role: 'TEACHER',
+  displayName: 'Анна Сергеевна',
+  login: 'teacher',
+  email: 'anna@example.com',
+  phone: null,
+  passwordChangeRequired: false,
+};
 
 describe('AccountPage', () => {
   let fixture: ComponentFixture<AccountPage>;
@@ -30,14 +41,7 @@ describe('AccountPage', () => {
     vi.spyOn(messages, 'add');
     fixture = TestBed.createComponent(AccountPage);
     await fixture.whenStable();
-    backend.expectOne('/api/me').flush({
-      id: '1',
-      role: 'TEACHER',
-      displayName: 'Анна Сергеевна',
-      login: 'teacher',
-      email: 'anna@example.com',
-      phone: null,
-    });
+    backend.expectOne('/api/me').flush(ACCOUNT);
     await fixture.whenStable();
   });
 
@@ -57,16 +61,62 @@ describe('AccountPage', () => {
 
   it('shows the profile', () => {
     const text = hostElement(fixture).textContent;
-    expect(text).toContain('Анна Сергеевна');
+    expect(
+      requireElement(hostElement(fixture), 'input[aria-label="Имя"]', HTMLInputElement).value,
+    ).toBe('Анна Сергеевна');
     expect(text).toContain('anna@example.com');
     expect(text).toContain('teacher');
+  });
+
+  it('lets the teacher change their name', async () => {
+    const host = hostElement(fixture);
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    const save = buttonByText(host, 'Сохранить');
+    expect(save.disabled).toBe(true);
+
+    typeInto(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement), ' Мария Ивановна ');
+    await fixture.whenStable();
+    buttonByText(host, 'Сохранить').click();
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/profile' });
+    expect(request.request.body).toEqual({ displayName: 'Мария Ивановна' });
+    request.flush({ ...ACCOUNT, displayName: 'Мария Ивановна' });
+    await fixture.whenStable();
+
+    expect(TestBed.inject(AuthService).user()?.displayName).toBe('Мария Ивановна');
+    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Имя сохранено' }));
+  });
+
+  it('shows the name of a student as text', async () => {
+    fixture.componentInstance.ngOnInit();
+    backend.expectOne('/api/me').flush({ ...ACCOUNT, role: 'STUDENT', displayName: 'Иван Петров' });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).textContent).toContain('Иван Петров');
+    expect(hostElement(fixture).querySelector('input[aria-label="Имя"]')).toBeNull();
+  });
+
+  it('keeps the name when saving it fails', async () => {
+    const host = hostElement(fixture);
+    typeInto(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement), 'Мария');
+    await fixture.whenStable();
+    fixture.componentInstance.rename();
+    fixture.componentInstance.rename();
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/profile' })
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement).value).toBe('Мария');
   });
 
   it('changes the password and keeps the new session', async () => {
     await change('old-password', 'new-password');
 
     const request = backend.expectOne('/api/me/password');
-    expect(request.request.body).toEqual({ currentPassword: 'old-password', newPassword: 'new-password' });
+    expect(request.request.body).toEqual({
+      currentPassword: 'old-password',
+      newPassword: 'new-password',
+    });
     request.flush(authResponse('TEACHER', 900, 'after-change'));
     await fixture.whenStable();
 
@@ -80,7 +130,10 @@ describe('AccountPage', () => {
 
     backend
       .expectOne('/api/me/password')
-      .flush({ status: 422, code: 'password.wrong-current' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'password.wrong-current' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(hostElement(fixture).textContent).toContain('Текущий пароль указан неверно');

@@ -20,6 +20,13 @@ import {
 export class BillingApi {
   private readonly http = inject(HttpClient);
 
+  /** Price of students and groups added from now on (minor units). */
+  changeDefaultPrice(lessonPrice: number): Observable<number> {
+    return this.http
+      .put<{ lessonPrice: number }>('/api/teacher/billing/default-price', { lessonPrice })
+      .pipe(map((response) => response.lessonPrice));
+  }
+
   overview(): Observable<BillingOverview> {
     return this.http.get<BillingOverview>('/api/teacher/billing/overview');
   }

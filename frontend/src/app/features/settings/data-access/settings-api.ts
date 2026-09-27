@@ -34,6 +34,11 @@ export class SettingsApi {
     return this.http.put<PortalSettings>('/api/teacher/portal', { name, address });
   }
 
+  /** The first setup is finished or skipped. */
+  completeSetup(): Observable<PortalSettings> {
+    return this.http.post<PortalSettings>('/api/teacher/portal/setup', null);
+  }
+
   notificationsStatus(): Observable<NotificationsStatus> {
     return this.http.get<NotificationsStatus>('/api/teacher/notifications/status');
   }

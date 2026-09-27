@@ -36,7 +36,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   imports: [HelpButton, DatePipe, FormsModule, ReactiveFormsModule, Button, Card, Checkbox, InputText, Message, Password, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Google Календарь">
+    <p-card header="Google Календарь" id="google">
       <tb-help-button topic="teacher/calendars" label="Подробнее" />
       @if (result(); as result) {
         <p-message [severity]="result.severity" styleClass="tb-form-message">{{ result.text }}</p-message>

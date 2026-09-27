@@ -69,7 +69,8 @@ class SessionIssuer {
         refreshTokens.insert(refreshToken);
 
         Session session = new Session(accessToken, accessExpiresAt, rawRefreshToken, refreshToken.expiresAt(),
-                new Session.SessionUser(user.id(), user.role(), user.profile().displayName()));
+                new Session.SessionUser(user.id(), user.role(), user.profile().displayName(),
+                        user.passwordChangeRequired()));
         return new IssuedSession(session, refreshToken.id());
     }
 }

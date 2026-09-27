@@ -44,6 +44,7 @@ class TeacherBootstrapTest {
         assertThat(saved.getValue().isTeacher()).isTrue();
         assertThat(saved.getValue().profile().displayName()).isEqualTo("Анна");
         assertThat(saved.getValue().passwordHash()).startsWith("{bcrypt}");
+        assertThat(saved.getValue().passwordChangeRequired()).as("the password is in the server log").isTrue();
     }
 
     @Test
@@ -58,6 +59,7 @@ class TeacherBootstrapTest {
         String hash = saved.getValue().passwordHash();
         assertThat(hash).isNotNull();
         assertThat(encoder.matches("configured-pass", hash)).isTrue();
+        assertThat(saved.getValue().passwordChangeRequired()).isFalse();
     }
 
     @Test

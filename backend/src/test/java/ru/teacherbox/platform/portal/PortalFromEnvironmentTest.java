@@ -50,9 +50,9 @@ class PortalFromEnvironmentTest {
     void aConcurrentChangeIsNotLost() {
         withRepository(repository -> {
             PortalSettings loaded = repository.load();
-            repository.save(new PortalSettings("Первое", null, CLOCK.instant(), loaded.version()));
+            repository.save(new PortalSettings("Первое", null, null, CLOCK.instant(), loaded.version()));
 
-            assertThatThrownBy(() -> repository.save(new PortalSettings("Второе", null, CLOCK.instant(),
+            assertThatThrownBy(() -> repository.save(new PortalSettings("Второе", null, null, CLOCK.instant(),
                     loaded.version())))
                     .isInstanceOf(OptimisticLockingFailureException.class);
             assertThat(repository.load().name()).isEqualTo("Первое");
