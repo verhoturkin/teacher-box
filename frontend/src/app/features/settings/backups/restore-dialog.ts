@@ -45,7 +45,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
       [closable]="stage() !== 'restarting'"
       [style]="{ width: '34rem' }"
       [draggable]="false"
-      (onShow)="reset()"
+      (onHide)="reset()"
     >
       @if (backup(); as backup) {
         @switch (stage()) {
@@ -160,6 +160,7 @@ export class RestoreDialog {
     });
   }
 
+  /** After closing: the next backup starts from the warning with an empty password. */
   reset(): void {
     this.stage.set('confirm');
     this.error.set(null);

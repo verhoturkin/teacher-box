@@ -7,15 +7,17 @@ import { InputText } from 'primeng/inputtext';
 import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
 import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
+import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
 
 /** Teacher: the name of the portal and its address. */
 @Component({
   selector: 'tb-portal-settings-card',
-  imports: [ReactiveFormsModule, Button, Card, InputText, PortalAddressField],
+  imports: [ReactiveFormsModule, Button, Card, HelpButton, InputText, PortalAddressField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Портал" id="portal">
+      <tb-help-button topic="teacher/setup" label="Подробнее" />
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">

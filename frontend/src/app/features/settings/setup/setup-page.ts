@@ -19,7 +19,7 @@ import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal
 import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
 import { BillingApi } from '@features/billing/parts';
-import { helpUrl } from '@features/help/parts';
+import { HelpButton, helpUrl } from '@features/help/parts';
 import { ChangePasswordForm, IdentityApi } from '@features/identity/parts';
 import { ScheduleApi } from '@features/schedule/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
@@ -52,6 +52,7 @@ const STEPS: readonly Step[] = [
     Button,
     Card,
     ChangePasswordForm,
+    HelpButton,
     InputNumber,
     InputText,
     Message,
@@ -60,7 +61,10 @@ const STEPS: readonly Step[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-setup">
-      <h1 class="tb-page-title">Первоначальная настройка</h1>
+      <div class="tb-page-heading">
+        <h1 class="tb-page-title">Первоначальная настройка</h1>
+        <tb-help-button topic="teacher/setup" />
+      </div>
       <p class="tb-muted">
         Несколько коротких шагов — и портал готов к работе. Всё это можно поменять потом в
         «Настройках».

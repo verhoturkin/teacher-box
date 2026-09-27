@@ -6,15 +6,17 @@ import { Card } from 'primeng/card';
 import { Portal, PortalSettings } from '@core/portal/portal';
 import { portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
+import { HelpButton } from '@features/help/parts';
 import { AdminApi } from '../data-access/admin-api';
 
 /** Administrator: the address of the portal (a setting of the server); the name is the teacher's. */
 @Component({
   selector: 'tb-portal-address-card',
-  imports: [ReactiveFormsModule, Button, Card, PortalAddressField],
+  imports: [ReactiveFormsModule, Button, Card, HelpButton, PortalAddressField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Адрес портала">
+      <tb-help-button topic="admin/backups" label="Подробнее" />
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <tb-portal-address-field

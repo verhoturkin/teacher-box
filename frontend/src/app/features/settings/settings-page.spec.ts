@@ -50,10 +50,20 @@ describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
   let backend: HttpTestingController;
 
-  async function render(status = STATUS, backups: BackupInfo[] = [BACKUP], aiEnabled = true): Promise<void> {
+  async function render(
+    status = STATUS,
+    backups: BackupInfo[] = [BACKUP],
+    aiEnabled = true,
+  ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -99,8 +109,18 @@ describe('SettingsPage', () => {
   it('explains a messenger without connection', async () => {
     await render({
       channels: [
-        { channel: 'TELEGRAM', connection: 'ERROR', error: 'Telegram getUpdates: Connection timed out', checkedAt: null },
-        { channel: 'VK', connection: 'ERROR', error: 'VK: 5 User authorization failed', checkedAt: null },
+        {
+          channel: 'TELEGRAM',
+          connection: 'ERROR',
+          error: 'Telegram getUpdates: Connection timed out',
+          checkedAt: null,
+        },
+        {
+          channel: 'VK',
+          connection: 'ERROR',
+          error: 'VK: 5 User authorization failed',
+          checkedAt: null,
+        },
       ],
       failedDeliveries: [],
     });

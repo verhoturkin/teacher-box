@@ -16,6 +16,8 @@ import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
+import { HelpButton } from '@features/help/parts';
+import type { HelpTopic } from '@features/help/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
@@ -34,11 +36,22 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
  */
 @Component({
   selector: 'tb-backups-card',
-  imports: [DatePipe, Button, Card, ConfirmDialog, TableModule, Tag, RowType, RestoreDialog],
+  imports: [
+    DatePipe,
+    Button,
+    Card,
+    ConfirmDialog,
+    HelpButton,
+    TableModule,
+    Tag,
+    RowType,
+    RestoreDialog,
+  ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Резервные копии" id="backups">
+      <tb-help-button [topic]="helpTopic()" label="Подробнее" />
       <p class="tb-muted">
         Копия базы данных и файлов создаётся автоматически каждую ночь; хранятся последние копии.
         Копии, сделанные перед восстановлением и сбросом, остаются, пока их не удалит учитель.
@@ -127,6 +140,9 @@ export class BackupsCard implements OnInit {
   readonly area = input<BackupsArea>('teacher');
 
   protected readonly isAdmin = computed(() => this.area() === 'admin');
+  protected readonly helpTopic = computed<HelpTopic>(() =>
+    this.isAdmin() ? 'admin/backups' : 'teacher/backups',
+  );
   protected readonly backups = signal<BackupInfo[]>([]);
   protected readonly creating = signal(false);
   protected readonly selected = signal<BackupInfo | null>(null);

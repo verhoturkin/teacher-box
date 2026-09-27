@@ -9,6 +9,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { describeError } from '@core/http/error-messages';
+import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
 
@@ -18,10 +19,11 @@ export const RESET_WORD = 'СБРОСИТЬ';
 /** Teacher: deleting all data of the portal after a backup (ADR-0014). */
 @Component({
   selector: 'tb-reset-card',
-  imports: [ReactiveFormsModule, Button, Card, Dialog, InputText, Message, Password],
+  imports: [ReactiveFormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Password],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Полный сброс" id="reset">
+      <tb-help-button topic="teacher/backups" label="Подробнее" />
       <p>
         Удаляет все данные портала: учеников и группы, занятия и расписание, оплаты, задания и
         файлы, уведомления и подключения мессенджеров, комнаты видеовстреч, доски, историю ИИ,
