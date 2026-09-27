@@ -21,6 +21,7 @@
   6. `schedule` — расписание: занятия и еженедельные серии (с учеником или группой), посещаемость,
      запросы учеников на перенос/отмену, напоминания, подписка на календарь (ICS).
   7. `meetings` — видеовстречи: постоянные комнаты учеников и групп в Яндекс Телемосте.
+  8. `boards` — интерактивные доски (Холст) учеников и групп по ссылкам.
 
 Пошаговый план — [`docs/PLAN.md`](docs/PLAN.md). Архитектурные решения — [`docs/adr/`](docs/adr).
 
@@ -62,7 +63,8 @@ teacher-box/
 │       ├── notifications/       # 4. уведомления
 │       ├── ai/                  # 5. интеграция с ИИ
 │       ├── schedule/            # 6. расписание занятий
-│       └── meetings/            # 7. видеовстречи (Телемост)
+│       ├── meetings/            # 7. видеовстречи (Телемост)
+│       └── boards/              # 8. доски (Холст)
 ├── frontend/                    # Angular приложение
 │   └── src/app/
 │       ├── core/                # auth, interceptors, guards, layout, конфиг
@@ -116,10 +118,11 @@ teacher-box/
    | `ai` | `shared` |
    | `schedule` | `shared`, `identity::api`, `meetings::api` (ссылки комнат) |
    | `meetings` | `shared`, `identity::api` |
+   | `boards` | `shared`, `identity::api` |
 
    Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.
 3. **Данные:** у каждого модуля своя схема БД (`identity`, `billing`, `homework`,
-   `notifications`, `ai`, `schedule`, `meetings`), свои Flyway-миграции в `db/migration/<module>/` и своя
+   `notifications`, `ai`, `schedule`, `meetings`, `boards`), свои Flyway-миграции в `db/migration/<module>/` и своя
    таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
    схемами и JOIN между схемами. Между модулями передаются только идентификаторы (UUID).
 4. **Взаимодействие:**

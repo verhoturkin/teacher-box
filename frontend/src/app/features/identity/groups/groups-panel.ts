@@ -11,6 +11,7 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
+import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
 import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -32,6 +33,8 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
     Tooltip,
     MoneyPipe,
     RowType,
+    BoardCell,
+    BoardsDialog,
     GroupFormDialog,
     RoomCell,
     RoomDialog,
@@ -55,6 +58,7 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
             <th>Ученики</th>
             <th>Цена занятия</th>
             <th>Видеовстреча</th>
+            <th>Доски</th>
             <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
           </tr>
         </ng-template>
@@ -89,6 +93,15 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
                 />
               }
             </td>
+            <td>
+              @if (!group.archivedAt) {
+                <tb-board-cell
+                  [boards]="boards.of(group.id)"
+                  [name]="group.name"
+                  (edit)="boards.open({ type: 'GROUP', id: group.id, name: group.name })"
+                />
+              }
+            </td>
             <td class="tb-actions-column">
               <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" pTooltip="Изменить"
                 [ariaLabel]="'Изменить группу: ' + group.name" (onClick)="openEdit(group)" />
@@ -104,7 +117,7 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="5" class="tb-empty">
+            <td colspan="6" class="tb-empty">
               {{ groups().length === 0 ? 'Групп пока нет. Создайте группу, если занимаетесь с несколькими учениками сразу.' : 'Все группы в архиве' }}
             </td>
           </tr>
@@ -126,6 +139,13 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
       [room]="ownerRoom()"
       [canCreate]="canCreateRooms()"
       (changed)="onRoomChanged($event)"
+    />
+    <tb-boards-dialog
+      [(visible)]="boards.visible"
+      [owner]="boards.owner()"
+      [boards]="boards.ownerBoards()"
+      (saved)="boards.saved($event)"
+      (removed)="boards.removed($event)"
     />
     <p-confirmdialog key="groups" />
   `,
@@ -152,13 +172,15 @@ export class GroupsPanel implements OnInit {
   protected readonly showArchived = new FormControl(false, { nonNullable: true });
   private readonly includeArchived = toSignal(this.showArchived.valueChanges, { initialValue: false });
   protected readonly visibleGroups = computed(() => {
-    // New rows when the rooms arrive: the table re-renders the columns only for a new value.
+    // New rows when the rooms or boards arrive: the table re-renders the columns only for a new value.
     this.rooms();
+    this.boards.byOwner();
     return this.groups().filter((group) => this.includeArchived() || group.archivedAt === null);
   });
 
   protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
   protected readonly canCreateRooms = signal(false);
+  protected readonly boards = new OwnerBoards();
   protected readonly roomVisible = signal(false);
   protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
   protected readonly ownerRoom = computed(() => {
@@ -190,6 +212,7 @@ export class GroupsPanel implements OnInit {
       },
     });
     this.loadRooms();
+    this.boards.load();
   }
 
   protected roomOf(ownerId: string): MeetingRoom | null {

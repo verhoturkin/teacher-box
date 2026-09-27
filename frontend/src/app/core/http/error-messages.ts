@@ -128,6 +128,13 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'meetings.student-not-found': 'Ученик не найден или отключён',
   'meetings.group-not-found': 'Группа не найдена или в архиве',
   'meetings.owner-invalid': 'Выберите ученика или группу',
+  'boards.title-invalid': 'Название доски — от 1 до 200 символов',
+  'boards.link-invalid': 'Ссылка должна начинаться с http:// или https://',
+  'boards.too-many': 'У ученика или группы уже 20 досок — удалите ненужные',
+  'boards.student-not-found': 'Ученик не найден или отключён',
+  'boards.group-not-found': 'Группа не найдена или в архиве',
+  'boards.board-not-found': 'Такой доски уже нет',
+  'boards.owner-invalid': 'Выберите ученика или группу',
   // administrator
   'admin.logger-invalid': 'Некорректное имя раздела журнала',
   'admin.duration-invalid': 'Время — от 1 минуты до 24 часов',

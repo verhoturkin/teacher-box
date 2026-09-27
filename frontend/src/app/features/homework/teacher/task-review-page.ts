@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { AiApi } from '@features/ai/parts';
+import { ToBoardDialog } from '@features/boards/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -37,6 +38,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
     AttachmentList,
     SubmissionList,
     TaskStatusTag,
+    ToBoardDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -91,6 +93,13 @@ import { TaskStatusTag } from '../ui/task-status-tag';
                   <p-button label="Принять" icon="pi pi-check" severity="success" [loading]="pending()" [disabled]="form.invalid" (onClick)="review('ACCEPT')" />
                 }
                 <p-button label="Вернуть на доработку" icon="pi pi-replay" severity="warn" [outlined]="true" [loading]="pending()" [disabled]="form.invalid" (onClick)="review('RETURN')" />
+                <p-button
+                  label="На доску"
+                  icon="pi pi-th-large"
+                  [text]="true"
+                  [disabled]="commentValue().trim() === ''"
+                  (onClick)="boardVisible.set(true)"
+                />
               </div>
             </form>
           </p-card>
@@ -106,6 +115,12 @@ import { TaskStatusTag } from '../ui/task-status-tag';
           <tb-attachment-list [attachments]="task.assignment.attachments" (download)="download($event)" />
         </p-card>
       </div>
+      <tb-to-board-dialog
+        [(visible)]="boardVisible"
+        [title]="'Разбор: ' + task.assignment.title"
+        [markdown]="reviewText()"
+        [ownerIds]="[task.studentId]"
+      />
     }
   `,
 })
@@ -126,6 +141,17 @@ export class TaskReviewPage implements OnInit {
   readonly form = new FormGroup({
     grade: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20)] }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
+  });
+
+  protected readonly boardVisible = signal(false);
+  protected readonly commentValue = toSignal(this.form.controls.comment.valueChanges, { initialValue: '' });
+  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, { initialValue: '' });
+  /** The review for a board: the grade and the comment. */
+  protected readonly reviewText = computed(() => {
+    const grade = this.gradeValue().trim();
+    return grade === '' ? this.commentValue() : `**Оценка: ${grade}**
+
+${this.commentValue()}`;
   });
 
   ngOnInit(): void {

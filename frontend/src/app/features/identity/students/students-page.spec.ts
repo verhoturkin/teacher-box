@@ -8,7 +8,9 @@ import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
+import { Board, BoardsDialog } from '@features/boards/parts';
 import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
+import { aBoard } from '@testing/boards-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { StudentsPage } from './students-page';
 
@@ -62,11 +64,13 @@ describe('StudentsPage', () => {
     students: Student[],
     groups: StudentGroup[] = [],
     rooms: MeetingRoom[] = [],
+    boards: Board[] = [],
   ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
     backend.expectOne('/api/teacher/groups').flush(groups);
     backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush(boards);
     await fixture.whenStable();
   }
 
@@ -185,6 +189,7 @@ describe('StudentsPage', () => {
     backend.expectOne('/api/teacher/groups').flush([]);
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Пока нет ни одного ученика');
@@ -219,6 +224,7 @@ describe('StudentsPage', () => {
     backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Создать группу');
@@ -243,5 +249,25 @@ describe('StudentsPage', () => {
     dialog.changed.emit(aRoom({ ownerId: 'b', telemost: false, joinUrl: 'https://zoom.us/j/1' }));
     await fixture.whenStable();
     expect(rowsText()[1]).toContain('Ссылка');
+  });
+
+  it('shows the boards of a student and edits them', async () => {
+    await loadStudents([MARIA, BORIS], [], [], [aBoard({ ownerId: 'm' })]);
+
+    expect(rowsText()[0]).toContain('Алгебра');
+    buttonByText(host, 'Доски: Мария').click();
+    await fixture.whenStable();
+    const dialog = fixture.debugElement.query(By.directive(BoardsDialog)).injector.get(BoardsDialog);
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.owner()).toEqual({ type: 'STUDENT', id: 'm', name: 'Мария' });
+    expect(dialog.boards()).toEqual([aBoard({ ownerId: 'm' })]);
+
+    buttonByText(host, 'Добавить доску: Борис').click();
+    dialog.saved.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).toContain('Физика');
+    dialog.removed.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).not.toContain('Физика');
   });
 });

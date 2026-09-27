@@ -37,6 +37,10 @@ describe('SchedulePage', () => {
   });
 
   afterEach(() => {
+    // Boards of the lesson in its card (covered by the card's own tests).
+    for (const request of backend.match('/api/teacher/boards')) {
+      request.flush([]);
+    }
     backend.verify();
     fixture.destroy();
   });

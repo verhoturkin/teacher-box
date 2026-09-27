@@ -4,7 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
+import { aBoard } from '@testing/boards-fixtures';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import type { Board } from '@features/boards/parts';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { AttendanceDialog } from './attendance-dialog';
 import { LessonDetailsDialog } from './lesson-details-dialog';
@@ -33,12 +35,16 @@ describe('LessonDetailsDialog', () => {
     fixture.destroy();
   });
 
-  async function open(lesson: ScheduledLesson, now = new Date(2026, 8, 30, 12)): Promise<void> {
+  async function open(lesson: ScheduledLesson, now = new Date(2026, 8, 30, 12), boards: Board[] = []): Promise<void> {
     fixture.componentRef.setInput('visible', false);
     fixture.componentRef.setInput('lesson', lesson);
     fixture.componentRef.setInput('now', now);
     await fixture.whenStable();
     fixture.componentRef.setInput('visible', true);
+    await fixture.whenStable();
+    for (const request of backend.match('/api/teacher/boards')) {
+      request.flush(boards);
+    }
     await fixture.whenStable();
   }
 
@@ -178,5 +184,15 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
 
     expect(document.body.querySelector('#lesson-cancel-by-student')).toBeNull();
+  });
+
+  it('links the boards of the lesson', async () => {
+    await open(groupLesson(), new Date(2026, 8, 30, 12), [
+      aBoard({ ownerType: 'GROUP', ownerId: 'g-1', title: 'Доска группы' }),
+      aBoard({ id: 'board-2', ownerId: 's-1', title: 'Личная доска' }),
+    ]);
+
+    expect(bodyText()).toContain('Доска группы');
+    expect(bodyText()).not.toContain('Личная доска');
   });
 });

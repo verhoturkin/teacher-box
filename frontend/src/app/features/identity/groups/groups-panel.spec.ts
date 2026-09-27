@@ -8,7 +8,9 @@ import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { StudentGroup } from '../data-access/identity.models';
+import { BoardsDialog } from '@features/boards/parts';
 import { RoomDialog } from '@features/meetings/parts';
+import { aBoard } from '@testing/boards-fixtures';
 import { GroupFormDialog } from './group-form-dialog';
 import { GroupsPanel } from './groups-panel';
 
@@ -45,6 +47,7 @@ describe('GroupsPanel', () => {
     backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
     backend.expectOne('/api/teacher/meetings/rooms').flush([aRoom({ ownerId: 'g1', ownerType: 'GROUP', ownerName: 'ОГЭ 9 класс' })]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus({ status: 'CONNECTED' }));
+    backend.expectOne('/api/teacher/boards').flush([aBoard({ ownerType: 'GROUP', ownerId: 'g1', title: 'Общая доска' })]);
     await fixture.whenStable();
   }
 
@@ -141,6 +144,7 @@ describe('GroupsPanel', () => {
     backend.expectOne('/api/teacher/groups').flush(null, { status: 500, statusText: 'Error' });
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush([]);
     expect(students.cancelled && prices.cancelled).toBe(true);
     await fixture.whenStable();
 
@@ -159,5 +163,20 @@ describe('GroupsPanel', () => {
     dialog.changed.emit(null);
     await fixture.whenStable();
     expect(rows()[0]).not.toContain('Телемост');
+  });
+
+  it('sets up the boards of a group', async () => {
+    await load([CURRENT]);
+
+    expect(rows()[0]).toContain('Общая доска');
+    buttonByText(host, 'Доски: ОГЭ 9 класс').click();
+    await fixture.whenStable();
+    const dialog = fixture.debugElement.query(By.directive(BoardsDialog)).injector.get(BoardsDialog);
+    expect(dialog.owner()?.type).toBe('GROUP');
+    expect(dialog.boards()).toHaveLength(1);
+
+    dialog.saved.emit(aBoard({ id: 'board-2', ownerType: 'GROUP', ownerId: 'g1', title: 'Вторая' }));
+    await fixture.whenStable();
+    expect(rows()[0]).toContain('+1');
   });
 });

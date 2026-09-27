@@ -15,6 +15,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
+import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
 import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
@@ -54,6 +55,8 @@ function isStudentsTab(value: unknown): value is StudentsTab {
     ToggleSwitch,
     Tooltip,
     RowType,
+    BoardCell,
+    BoardsDialog,
     GroupsPanel,
     InviteLinkDialog,
     RoomCell,
@@ -96,6 +99,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                   <th>Контакты</th>
                   <th>Группы</th>
                   <th>Видеовстреча</th>
+                  <th>Доски</th>
                   <th>Статус</th>
                   <th>Логин</th>
                   <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -120,6 +124,15 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                         [room]="roomOf(student.id)"
                         [name]="student.displayName"
                         (edit)="openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })"
+                      />
+                    }
+                  </td>
+                  <td>
+                    @if (student.status !== 'DEACTIVATED') {
+                      <tb-board-cell
+                        [boards]="boards.of(student.id)"
+                        [name]="student.displayName"
+                        (edit)="boards.open({ type: 'STUDENT', id: student.id, name: student.displayName })"
                       />
                     }
                   </td>
@@ -152,7 +165,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="7" class="tb-empty">
+                  <td colspan="8" class="tb-empty">
                     {{ students().length === 0 ? 'Пока нет ни одного ученика. Добавьте первого!' : 'Никого не найдено' }}
                   </td>
                 </tr>
@@ -181,6 +194,13 @@ function isStudentsTab(value: unknown): value is StudentsTab {
       [room]="ownerRoom()"
       [canCreate]="canCreateRooms()"
       (changed)="onRoomChanged($event)"
+    />
+    <tb-boards-dialog
+      [(visible)]="boards.visible"
+      [owner]="boards.owner()"
+      [boards]="boards.ownerBoards()"
+      (saved)="boards.saved($event)"
+      (removed)="boards.removed($event)"
     />
     <p-confirmdialog />
   `,
@@ -212,6 +232,7 @@ export class StudentsPage implements OnInit {
   private readonly groups = signal<StudentGroup[]>([]);
   protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
   protected readonly canCreateRooms = signal(false);
+  protected readonly boards = new OwnerBoards();
   protected readonly roomVisible = signal(false);
   protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
   protected readonly ownerRoom = computed(() => {
@@ -228,9 +249,10 @@ export class StudentsPage implements OnInit {
   protected readonly visibleStudents = computed(() => {
     const query = this.query().trim().toLocaleLowerCase('ru');
     const includeDeactivated = this.includeDeactivated();
-    // New rows when the groups or rooms arrive: the table re-renders the columns only for a new value.
+    // New rows when the groups, rooms or boards arrive: the table re-renders the columns only for a new value.
     this.groups();
     this.rooms();
+    this.boards.byOwner();
     return this.students().filter(
       (student) =>
         (includeDeactivated || student.status !== 'DEACTIVATED') &&
@@ -256,6 +278,7 @@ export class StudentsPage implements OnInit {
     });
     this.loadGroups();
     this.loadRooms();
+    this.boards.load();
   }
 
   protected select(tab: string | number | undefined): void {

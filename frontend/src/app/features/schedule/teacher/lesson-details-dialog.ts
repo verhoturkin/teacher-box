@@ -5,6 +5,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
+import { OwnerBoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { Observable } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -26,7 +27,7 @@ import { AttendanceDialog } from './attendance-dialog';
  */
 @Component({
   selector: 'tb-lesson-details-dialog',
-  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog, JoinLessonButton],
+  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog, JoinLessonButton, OwnerBoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog header="Занятие" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
@@ -47,6 +48,9 @@ import { AttendanceDialog } from './attendance-dialog';
             <div>
               <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" />
             </div>
+          }
+          @if (visible()) {
+            <tb-owner-board-links [ownerIds]="[lesson.groupId ?? lesson.studentId]" />
           }
           @if (lesson.cancelReason !== null) {
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>

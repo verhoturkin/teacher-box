@@ -9,6 +9,7 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
+import { ToBoardDialog } from '@features/boards/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
@@ -42,6 +43,7 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
     TaskStatusTag,
     AssignmentDialog,
     GroupPicker,
+    ToBoardDialog,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +60,16 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
             {{ assignment.dueAt ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm') : 'Без срока' }}
           </span>
         </div>
-        <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" (onClick)="editVisible.set(true)" />
+        <div class="tb-actions">
+          <p-button
+            label="На доску"
+            icon="pi pi-th-large"
+            [outlined]="true"
+            [disabled]="!assignment.description"
+            (onClick)="boardVisible.set(true)"
+          />
+          <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" (onClick)="editVisible.set(true)" />
+        </div>
       </div>
 
       <div class="tb-stack">
@@ -129,6 +140,12 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
       </div>
 
       <tb-assignment-dialog [(visible)]="editVisible" [assignment]="assignment" (saved)="details.set($event)" />
+      <tb-to-board-dialog
+        [(visible)]="boardVisible"
+        [title]="assignment.title"
+        [markdown]="assignment.description ?? ''"
+        [ownerIds]="taskStudents(assignment)"
+      />
     }
     <p-confirmdialog />
   `,
@@ -145,6 +162,7 @@ export class AssignmentPage implements OnInit {
 
   protected readonly details = signal<AssignmentDetails | null>(null);
   protected readonly editVisible = signal(false);
+  protected readonly boardVisible = signal(false);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
@@ -166,6 +184,10 @@ export class AssignmentPage implements OnInit {
           .map((student) => ({ id: student.id, displayName: student.displayName })),
       );
     });
+  }
+
+  protected taskStudents(assignment: AssignmentDetails): string[] {
+    return assignment.tasks.map((task) => task.studentId);
   }
 
   protected download(file: Attachment): void {

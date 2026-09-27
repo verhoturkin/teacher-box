@@ -1,7 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
+import { ToBoardDialog } from '@features/boards/parts';
 import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails } from '@testing/homework-fixtures';
 import { aGroup } from '@testing/identity-fixtures';
@@ -160,5 +162,27 @@ describe('AssignmentDialog', () => {
     expect(dialog.form.controls.description.value).toBe('1. **Сложите** 1/2 и 1/3');
     expect(dialog.mode.value).toBe('preview');
     expect(document.body.querySelector('.tb-preview strong')?.textContent).toBe('Сложите');
+  });
+
+  it('puts the text on a board, the students of the assignment first', async () => {
+    const assignment = assignmentDetails();
+    const dialog = await open(assignment);
+    const toBoard = buttonByText(document.body, 'На доску');
+    dialog.form.patchValue({ title: 'Дроби', description: '' });
+    await fixture.whenStable();
+    expect(toBoard.disabled).toBe(true);
+
+    dialog.form.patchValue({ description: 'Решить **№1**', studentIds: ['s-2'] });
+    await fixture.whenStable();
+    toBoard.click();
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    const board = fixture.debugElement.query(By.directive(ToBoardDialog)).injector.get(ToBoardDialog);
+    expect(board.visible()).toBe(true);
+    expect(board.title()).toBe('Дроби');
+    expect(board.markdown()).toBe('Решить **№1**');
+    expect(board.ownerIds()).toEqual([...assignment.tasks.map((task) => task.studentId), 's-2']);
   });
 });
