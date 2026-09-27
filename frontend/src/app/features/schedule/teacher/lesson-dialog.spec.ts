@@ -46,9 +46,9 @@ describe('LessonDialog', () => {
     const dialog = await open(null, { start, durationMinutes: 90 });
     expect(bodyText()).toContain('Новое занятие');
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ studentId: null, startsAt: start, durationMinutes: 90 }),
+      expect.objectContaining({ owner: null, startsAt: start, durationMinutes: 90 }),
     );
-    dialog.form.patchValue({ studentId: 's-2', topic: '  Дроби ', meetingUrl: 'https://zoom.us/j/1' });
+    dialog.form.patchValue({ owner: 'student:s-2', topic: '  Дроби ', meetingUrl: 'https://zoom.us/j/1' });
     await fixture.whenStable();
 
     buttonByText(document.body, 'Сохранить').click();
@@ -56,6 +56,7 @@ describe('LessonDialog', () => {
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/lessons' });
     expect(request.request.body).toEqual({
       studentId: 's-2',
+      groupId: null,
       startsAt: start.toISOString(),
       durationMinutes: 90,
       topic: 'Дроби',
@@ -69,7 +70,7 @@ describe('LessonDialog', () => {
 
   it('offers to save an overlapping lesson anyway', async () => {
     const dialog = await open();
-    dialog.form.patchValue({ studentId: 's-1', startsAt: new Date(2026, 9, 1, 18) });
+    dialog.form.patchValue({ owner: 'group:g-1', startsAt: new Date(2026, 9, 1, 18) });
     expect(dialog.form.controls.durationMinutes.value).toBe(45);
 
     dialog.save();
@@ -81,14 +82,16 @@ describe('LessonDialog', () => {
 
     buttonByText(document.body, 'Всё равно сохранить').click();
     const retry = backend.expectOne('/api/teacher/schedule/lessons');
-    expect(retry.request.body).toEqual(expect.objectContaining({ allowOverlap: true, topic: null, meetingUrl: null }));
+    expect(retry.request.body).toEqual(
+      expect.objectContaining({ studentId: null, groupId: 'g-1', allowOverlap: true, topic: null, meetingUrl: null }),
+    );
     retry.flush(scheduledLesson());
     expect(saved).toHaveLength(1);
   });
 
   it('shows other errors and rejects bad links', async () => {
     const dialog = await open();
-    dialog.form.patchValue({ studentId: 's-1', startsAt: new Date(2026, 9, 1, 18), meetingUrl: 'zoom' });
+    dialog.form.patchValue({ owner: 'student:s-1', startsAt: new Date(2026, 9, 1, 18), meetingUrl: 'zoom' });
     await fixture.whenStable();
     expect(dialog.form.invalid).toBe(true);
     expect(bodyText()).toContain('Ссылка должна начинаться с http:// или https://');
@@ -107,20 +110,21 @@ describe('LessonDialog', () => {
 
   it('keeps what is typed when inputs change while it is open', async () => {
     const dialog = await open();
-    dialog.form.patchValue({ studentId: 's-1', topic: 'Дроби' });
+    dialog.form.patchValue({ owner: 'student:s-1', topic: 'Дроби' });
 
     fixture.componentRef.setInput('defaultDuration', 60);
     fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Иван' }]);
     await fixture.whenStable();
 
-    expect(dialog.form.getRawValue()).toEqual(expect.objectContaining({ studentId: 's-1', topic: 'Дроби' }));
+    expect(dialog.form.getRawValue()).toEqual(expect.objectContaining({ owner: 'student:s-1', topic: 'Дроби' }));
   });
 
   it('changes a planned lesson', async () => {
     const lesson = scheduledLesson({ topic: 'Степени', meetingUrl: 'https://zoom.us/j/2' });
     const dialog = await open(lesson);
     expect(bodyText()).toContain('Изменить занятие');
-    expect(dialog.form.controls.studentId.disabled).toBe(true);
+    expect(dialog.form.controls.owner.disabled).toBe(true);
+    expect(dialog.form.controls.owner.value).toBe('student:s-1');
     expect(dialog.form.controls.startsAt.value).toEqual(new Date(lesson.startsAt));
 
     dialog.form.patchValue({ durationMinutes: 30 });

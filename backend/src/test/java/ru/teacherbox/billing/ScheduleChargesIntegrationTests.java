@@ -10,11 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.Scenario;
 import ru.teacherbox.billing.application.BillingService;
+import ru.teacherbox.billing.application.GroupPriceService;
 import ru.teacherbox.billing.domain.Lesson;
 import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.billing.persistence.LessonRepository;
 import ru.teacherbox.schedule.api.LessonCompleted;
 import ru.teacherbox.schedule.api.LessonCompletionRevoked;
+import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 
 /** Outcomes marked in the schedule are charged once and revoked with their outcome. */
@@ -32,11 +34,17 @@ class ScheduleChargesIntegrationTests {
     @Autowired
     FakeUserDirectory directory;
 
+    @Autowired
+    FakeStudentGroups groups;
+
+    @Autowired
+    GroupPriceService groupPrices;
+
     @Test
     void chargesAMarkedLessonAtTheStudentsPrice(Scenario scenario) {
         UUID student = directory.addStudent("По расписанию");
         billing.openAccount(student);
-        LessonCompleted completed = new LessonCompleted(UUID.randomUUID(), UUID.randomUUID(), student, DAY, 45,
+        LessonCompleted completed = new LessonCompleted(UUID.randomUUID(), UUID.randomUUID(), student, null, DAY, 45,
                 "Дроби", false, Instant.now());
 
         scenario.publish(completed)
@@ -60,7 +68,7 @@ class ScheduleChargesIntegrationTests {
         billing.openAccount(student);
         UUID completion = UUID.randomUUID();
         UUID lessonId = UUID.randomUUID();
-        billing.recordScheduledLesson(new LessonCompleted(completion, lessonId, student, DAY, 60, null, true,
+        billing.recordScheduledLesson(new LessonCompleted(completion, lessonId, student, null, DAY, 60, null, true,
                 Instant.now()));
         assertThat(lessons.findByStudent(student).getFirst().status()).isEqualTo(LessonStatus.MISSED);
 
@@ -75,6 +83,19 @@ class ScheduleChargesIntegrationTests {
                 Instant.now()));
         assertThat(statuses(student)).as("revoking twice or an unknown outcome changes nothing")
                 .containsExactly(LessonStatus.CANCELLED);
+    }
+
+    @Test
+    void chargesAGroupLessonAtThePriceOfTheGroup() {
+        UUID student = directory.addStudent("В группе");
+        UUID group = groups.addGroup("ОГЭ", student);
+        groupPrices.change(group, 70_000);
+
+        billing.recordScheduledLesson(new LessonCompleted(UUID.randomUUID(), UUID.randomUUID(), student, group, DAY,
+                90, null, false, Instant.now()));
+
+        assertThat(lessons.findByStudent(student)).singleElement()
+                .extracting(lesson -> lesson.price().amountMinor()).isEqualTo(70_000L);
     }
 
     private List<LessonStatus> statuses(UUID student) {

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
@@ -13,10 +14,13 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 /** Teacher dashboard: collects the widgets of the modules. */
 @Component({
   selector: 'tb-teacher-home',
-  imports: [AttentionCard, FinanceWidget, FirstRunChecklist, LatestNotificationsWidget, TodayLessonsWidget],
+  imports: [HelpButton, AttentionCard, FinanceWidget, FirstRunChecklist, LatestNotificationsWidget, TodayLessonsWidget],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Главная</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Главная</h1>
+      <tb-help-button topic="teacher/first-steps" />
+    </div>
     <div class="tb-stack">
       <tb-first-run-checklist [progress]="progress()" />
       <div class="tb-home">

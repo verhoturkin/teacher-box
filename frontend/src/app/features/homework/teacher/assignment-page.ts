@@ -9,7 +9,8 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
-import { IdentityApi } from '@features/identity/parts';
+import { ToBoardDialog } from '@features/boards/parts';
+import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -41,6 +42,8 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
     FilePicker,
     TaskStatusTag,
     AssignmentDialog,
+    GroupPicker,
+    ToBoardDialog,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,7 +60,16 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
             {{ assignment.dueAt ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm') : 'Без срока' }}
           </span>
         </div>
-        <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" (onClick)="editVisible.set(true)" />
+        <div class="tb-actions">
+          <p-button
+            label="На доску"
+            icon="pi pi-th-large"
+            [outlined]="true"
+            [disabled]="!assignment.description"
+            (onClick)="boardVisible.set(true)"
+          />
+          <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" (onClick)="editVisible.set(true)" />
+        </div>
       </div>
 
       <div class="tb-stack">
@@ -121,12 +133,19 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
               ariaLabel="Выдать ещё ученикам"
               styleClass="tb-grow"
             />
+            <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button label="Выдать" [disabled]="selectedToAssign().length === 0" (onClick)="assign()" />
           </div>
         </p-card>
       </div>
 
       <tb-assignment-dialog [(visible)]="editVisible" [assignment]="assignment" (saved)="details.set($event)" />
+      <tb-to-board-dialog
+        [(visible)]="boardVisible"
+        [title]="assignment.title"
+        [markdown]="assignment.description ?? ''"
+        [ownerIds]="taskStudents(assignment)"
+      />
     }
     <p-confirmdialog />
   `,
@@ -143,6 +162,7 @@ export class AssignmentPage implements OnInit {
 
   protected readonly details = signal<AssignmentDetails | null>(null);
   protected readonly editVisible = signal(false);
+  protected readonly boardVisible = signal(false);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
@@ -164,6 +184,10 @@ export class AssignmentPage implements OnInit {
           .map((student) => ({ id: student.id, displayName: student.displayName })),
       );
     });
+  }
+
+  protected taskStudents(assignment: AssignmentDetails): string[] {
+    return assignment.tasks.map((task) => task.studentId);
   }
 
   protected download(file: Attachment): void {
@@ -211,6 +235,12 @@ export class AssignmentPage implements OnInit {
         });
       },
     });
+  }
+
+  /** Adds the students of a chosen group who do not have the assignment yet. */
+  protected addStudents(ids: readonly string[]): void {
+    const available = new Set(this.unassigned().map((student) => student.id));
+    this.toAssign.setValue([...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))])]);
   }
 
   protected assign(): void {

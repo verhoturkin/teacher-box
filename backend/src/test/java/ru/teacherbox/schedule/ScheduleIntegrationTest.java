@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.testing.FakeMeetingRooms;
+import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
@@ -37,6 +39,16 @@ public @interface ScheduleIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeMeetingRooms meetingRooms() {
+            return new FakeMeetingRooms();
+        }
+
+        @Bean
+        FakeStudentGroups studentGroups() {
+            return new FakeStudentGroups();
         }
 
         @Bean

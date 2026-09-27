@@ -85,6 +85,18 @@ export const routes: Routes = [
         loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
       },
       {
+        path: 'help',
+        title: 'Справка',
+        data: { area: 'teacher' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+      },
+      {
+        path: 'help/:topic',
+        title: 'Справка',
+        data: { area: 'teacher' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+      },
+      {
         path: 'account',
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
@@ -127,6 +139,18 @@ export const routes: Routes = [
         loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
       },
       {
+        path: 'help',
+        title: 'Справка',
+        data: { area: 'cabinet' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+      },
+      {
+        path: 'help/:topic',
+        title: 'Справка',
+        data: { area: 'cabinet' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+      },
+      {
         path: 'account',
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
@@ -163,6 +187,18 @@ export const routes: Routes = [
         path: 'diagnostics',
         title: 'Диагностика',
         loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),
+      },
+      {
+        path: 'help',
+        title: 'Справка',
+        data: { area: 'admin' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+      },
+      {
+        path: 'help/:topic',
+        title: 'Справка',
+        data: { area: 'admin' },
+        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'account',

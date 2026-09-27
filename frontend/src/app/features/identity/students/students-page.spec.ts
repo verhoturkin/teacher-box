@@ -1,10 +1,17 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
-import { Student } from '../data-access/identity.models';
+import { aGroup } from '@testing/identity-fixtures';
+import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
+import { Board, BoardsDialog } from '@features/boards/parts';
+import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
+import { aBoard } from '@testing/boards-fixtures';
+import { Student, StudentGroup } from '../data-access/identity.models';
 import { StudentsPage } from './students-page';
 
 function student(overrides: Partial<Student>): Student {
@@ -40,7 +47,7 @@ describe('StudentsPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [StudentsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentsPage);
@@ -53,8 +60,17 @@ describe('StudentsPage', () => {
     fixture.destroy();
   });
 
-  async function loadStudents(students: Student[]): Promise<void> {
+  async function loadStudents(
+    students: Student[],
+    groups: StudentGroup[] = [],
+    rooms: MeetingRoom[] = [],
+    boards: Board[] = [],
+  ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
+    backend.expectOne('/api/teacher/groups').flush(groups);
+    backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush(boards);
     await fixture.whenStable();
   }
 
@@ -170,8 +186,88 @@ describe('StudentsPage', () => {
 
   it('stops loading when the list cannot be loaded', async () => {
     backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
+    backend.expectOne('/api/teacher/groups').flush([]);
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Пока нет ни одного ученика');
+  });
+
+  it('shows the current groups of each student', async () => {
+    await loadStudents(
+      [MARIA],
+      [
+        aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+        aGroup({ id: 'g2', name: 'Английский', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+        aGroup({ id: 'g3', name: 'Прошлый год', archivedAt: '2026-06-01T10:00:00Z', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+      ],
+    );
+
+    expect(rowsText()[0]).toContain('ОГЭ, Английский');
+    expect(rowsText()[0]).not.toContain('Прошлый год');
+  });
+
+  it('switches to the groups tab through the address', async () => {
+    await loadStudents([MARIA]);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    Array.from(host.querySelectorAll('[role="tab"]')).find((tab) => tab.textContent.includes('Группы'))?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith([], { queryParams: { tab: 'groups' }, replaceUrl: true });
+
+    fixture.componentRef.setInput('tab', 'groups');
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    backend.expectOne('/api/teacher/students').flush([MARIA]);
+    backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    expect(host.textContent).toContain('Создать группу');
+    expect(host.textContent).not.toContain('Добавить ученика');
+  });
+
+  it('shows the video room of a student and edits it', async () => {
+    await loadStudents([MARIA, BORIS], [], [aRoom({ ownerId: 'm' })]);
+
+    expect(rowsText()[0]).toContain('Телемост');
+    expect(rowsText()[1]).toContain('Добавить');
+    buttonByText(host, 'Видеовстреча: Мария').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Видеовстреча: Мария');
+
+    const dialog = fixture.debugElement.query(By.directive(RoomDialog)).injector.get(RoomDialog);
+    dialog.changed.emit(null);
+    await fixture.whenStable();
+    expect(rowsText()[0]).not.toContain('Телемост');
+
+    buttonByText(host, 'Добавить видеовстречу: Борис').click();
+    dialog.changed.emit(aRoom({ ownerId: 'b', telemost: false, joinUrl: 'https://zoom.us/j/1' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).toContain('Ссылка');
+  });
+
+  it('shows the boards of a student and edits them', async () => {
+    await loadStudents([MARIA, BORIS], [], [], [aBoard({ ownerId: 'm' })]);
+
+    expect(rowsText()[0]).toContain('Алгебра');
+    buttonByText(host, 'Доски: Мария').click();
+    await fixture.whenStable();
+    const dialog = fixture.debugElement.query(By.directive(BoardsDialog)).injector.get(BoardsDialog);
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.owner()).toEqual({ type: 'STUDENT', id: 'm', name: 'Мария' });
+    expect(dialog.boards()).toEqual([aBoard({ ownerId: 'm' })]);
+
+    buttonByText(host, 'Добавить доску: Борис').click();
+    dialog.saved.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).toContain('Физика');
+    dialog.removed.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
+    await fixture.whenStable();
+    expect(rowsText()[1]).not.toContain('Физика');
   });
 });

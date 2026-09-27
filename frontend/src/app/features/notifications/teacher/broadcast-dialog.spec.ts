@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText } from '@testing/dom';
+import { aGroup } from '@testing/identity-fixtures';
 import { BroadcastDialog } from './broadcast-dialog';
 
 describe('BroadcastDialog', () => {
@@ -19,6 +20,15 @@ describe('BroadcastDialog', () => {
     fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Мария' }]);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([aGroup({ members: [{ id: 's-1', displayName: 'Мария', status: 'ACTIVE' }] })]);
+    await fixture.whenStable();
+  });
+
+  it('adds the students of a group', () => {
+    fixture.componentInstance.addStudents(['s-1', 'unknown']);
+    fixture.componentInstance.addStudents(['s-1']);
+
+    expect(fixture.componentInstance.form.controls.studentIds.value).toEqual(['s-1']);
   });
 
   afterEach(() => {

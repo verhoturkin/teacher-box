@@ -18,19 +18,40 @@ export function scheduledLesson(overrides: Partial<ScheduledLesson> = {}): Sched
     id: 'l-1',
     studentId: 's-1',
     studentName: 'Иван Петров',
+    groupId: null,
+    groupName: null,
+    participants: [{ studentId: 's-1', studentName: 'Иван Петров', attendance: 'EXPECTED' }],
     seriesId: null,
     startsAt: at(2026, 10, 1, 18),
     endsAt: at(2026, 10, 1, 19),
     durationMinutes: 60,
     topic: null,
     meetingUrl: null,
+    joinUrl: null,
     status: 'SCHEDULED',
     cancelledBy: null,
     cancelReason: null,
     originalStartsAt: null,
-    pendingRequest: null,
+    pendingRequests: [],
     ...overrides,
   };
+}
+
+/** A planned lesson of the group «ОГЭ» with two students. */
+export function groupLesson(overrides: Partial<ScheduledLesson> = {}): ScheduledLesson {
+  return scheduledLesson({
+    id: 'gl-1',
+    studentId: null,
+    studentName: null,
+    groupId: 'g-1',
+    groupName: 'ОГЭ',
+    participants: [
+      { studentId: 's-1', studentName: 'Иван Петров', attendance: 'EXPECTED' },
+      { studentId: 's-2', studentName: 'Мария', attendance: 'EXCUSED' },
+    ],
+    durationMinutes: 90,
+    ...overrides,
+  });
 }
 
 export function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeRequest {
@@ -39,6 +60,8 @@ export function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeReq
     lessonId: 'l-1',
     studentId: 's-1',
     studentName: 'Иван Петров',
+    groupId: null,
+    groupName: null,
     kind: 'RESCHEDULE',
     lessonStartsAt: at(2026, 10, 1, 18),
     proposedStartsAt: at(2026, 10, 2, 17),
@@ -57,6 +80,8 @@ export function lessonSeries(overrides: Partial<LessonSeries> = {}): LessonSerie
     id: 'sr-1',
     studentId: 's-1',
     studentName: 'Иван Петров',
+    groupId: null,
+    groupName: null,
     weekdays: ['TUESDAY', 'THURSDAY'],
     startTime: '18:00:00',
     durationMinutes: 60,

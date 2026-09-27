@@ -70,7 +70,7 @@ class RequestsIntegrationTests {
                 .bodyJson().extractingPath("$.startsAt").isEqualTo(proposed.toString());
 
         assertThat(events).contains(LessonRescheduled.class)
-                .matching(LessonRescheduled::byRequest, true)
+                .matching(LessonRescheduled::requestedBy, student)
                 .matching(LessonRescheduled::startsAt, proposed);
         assertThat(events).contains(LessonChangeResolved.class)
                 .matching(LessonChangeResolved::approved, true)
@@ -177,7 +177,7 @@ class RequestsIntegrationTests {
                 .bodyJson().extractingPath("$.code").isEqualTo("schedule.request-pending");
         assertThat(mvc.get().uri("/api/me/schedule/lessons/" + lessonId).with(TestUsers.student(student)))
                 .hasStatusOk()
-                .bodyJson().extractingPath("$.pendingRequest.id").isEqualTo(requestId);
+                .bodyJson().extractingPath("$.pendingRequests[0].id").isEqualTo(requestId);
         assertThat(mvc.delete().uri("/api/me/schedule/requests/" + requestId).with(TestUsers.student(student)))
                 .hasStatus(HttpStatus.NO_CONTENT);
         assertThat(request(student, lessonId, "{\"kind\":\"CANCEL\"}")).hasStatus(HttpStatus.CREATED);

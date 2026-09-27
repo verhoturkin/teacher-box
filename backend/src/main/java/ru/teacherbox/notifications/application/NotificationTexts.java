@@ -1,8 +1,5 @@
 package ru.teacherbox.notifications.application;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
@@ -14,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.money.Money;
+import ru.teacherbox.shared.money.MoneyFormat;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** Formatting of amounts and dates in Russian notification texts. */
@@ -38,15 +36,7 @@ public class NotificationTexts {
 
     /** "1 500 ₽", "99,50 ₽", "−200 ₽" (plain spaces, fraction only when not zero). */
     public String money(Money money) {
-        BigDecimal amount = money.toDecimal().abs();
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(RUSSIAN);
-        symbols.setGroupingSeparator(' ');
-        DecimalFormat format = new DecimalFormat("#,##0", symbols);
-        int fractionDigits = amount.stripTrailingZeros().scale() > 0 ? money.currency().getDefaultFractionDigits() : 0;
-        format.setMinimumFractionDigits(fractionDigits);
-        format.setMaximumFractionDigits(fractionDigits);
-        String sign = money.isNegative() ? "−" : "";
-        return sign + format.format(amount) + " " + money.currency().getSymbol(RUSSIAN);
+        return MoneyFormat.russian(money);
     }
 
     /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽". */

@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText } from '@testing/dom';
+import { aMyBoard } from '@testing/boards-fixtures';
 import { myBillingSummary } from '@testing/billing-fixtures';
 import { myHomeworkSummary, myTask } from '@testing/homework-fixtures';
 import { channel, notificationPage } from '@testing/notification-fixtures';
@@ -38,6 +39,7 @@ describe('StudentHome', () => {
     fixture.detectChanges();
     backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/me/boards').flush([aMyBoard({ title: 'Доска по алгебре' })]);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -46,6 +48,7 @@ describe('StudentHome', () => {
     expect(text).toContain('Дроби');
     expect(text).toContain('аванс 1 500 ₽');
     expect(text).toContain('Уведомлений пока нет');
+    expect(text).toContain('Доска по алгебре');
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/me/schedule/summary').flush(myScheduleSummary());

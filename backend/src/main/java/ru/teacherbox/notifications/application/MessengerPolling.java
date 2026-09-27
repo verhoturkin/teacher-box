@@ -25,14 +25,14 @@ public class MessengerPolling implements SmartLifecycle {
     private static final Logger log = LoggerFactory.getLogger(MessengerPolling.class);
 
     private final MessengerChannels channels;
-    private final ChannelService channelService;
+    private final ChatEngine engine;
     private final MessengerHealth health;
     private final Map<ChannelType, Thread> threads = new ConcurrentHashMap<>();
     private volatile boolean running;
 
-    public MessengerPolling(MessengerChannels channels, ChannelService channelService, MessengerHealth health) {
+    public MessengerPolling(MessengerChannels channels, ChatEngine engine, MessengerHealth health) {
         this.channels = channels;
-        this.channelService = channelService;
+        this.engine = engine;
         this.health = health;
     }
 
@@ -67,14 +67,18 @@ public class MessengerPolling implements SmartLifecycle {
     }
 
     /**
-     * Receives one batch of messages and answers them.
+     * Receives one batch of messages and pressed buttons and answers them.
      *
      * @return number of handled messages
      */
     int pollOnce(MessengerChannel channel) {
         List<IncomingMessage> messages = channel.poll();
         for (IncomingMessage message : messages) {
-            String reply = channelService.handleIncoming(channel.type(), message);
+            ButtonPress press = message.press();
+            if (press != null) {
+                acknowledge(channel, message.externalId(), press);
+            }
+            OutgoingMessage reply = engine.handle(channel.type(), message);
             try {
                 channel.send(message.externalId(), reply);
             } catch (DeliveryException e) {
@@ -84,11 +88,29 @@ public class MessengerPolling implements SmartLifecycle {
         return messages.size();
     }
 
+    private static void acknowledge(MessengerChannel channel, String externalId, ButtonPress press) {
+        try {
+            channel.acknowledge(externalId, press);
+        } catch (RuntimeException e) {
+            log.debug("Could not acknowledge a button in {}: {}", channel.type(), e.getMessage());
+        }
+    }
+
+    /** Shows the bot's commands in the messenger's menu. */
+    static void publishCommands(MessengerChannel channel) {
+        try {
+            channel.publishCommands(ChatEngine.COMMANDS);
+        } catch (RuntimeException e) {
+            log.warn("Could not publish the bot's commands to {}: {}", channel.type(), e.getMessage());
+        }
+    }
+
     private void startPolling(MessengerChannel channel) {
         threads.put(channel.type(), Thread.ofVirtual().name("messenger-" + channel.type()).start(() -> loop(channel)));
     }
 
     private void loop(MessengerChannel channel) {
+        publishCommands(channel);
         Duration backoff = MIN_BACKOFF;
         while (active()) {
             try {

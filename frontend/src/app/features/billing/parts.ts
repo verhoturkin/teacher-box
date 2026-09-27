@@ -3,6 +3,6 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { BillingApi } from './data-access/billing-api';
-export type { BillingSummary, MyBillingSummary } from './data-access/billing.models';
+export type { BillingSummary, GroupPrices, MyBillingSummary } from './data-access/billing.models';
 export { FinanceWidget } from './home/finance-widget';
 export { MyBalanceWidget } from './home/my-balance-widget';

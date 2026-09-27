@@ -75,4 +75,14 @@ describe('RequestAnswerDialog', () => {
     fixture.componentRef.setInput('request', null);
     fixture.componentInstance.approve();
   });
+
+  it('explains requests about group lessons', async () => {
+    await open(changeRequest({ kind: 'CANCEL', groupId: 'g-1', groupName: 'ОГЭ', proposedStartsAt: null, late: true }));
+    expect(bodyText()).toContain('не придёт на занятие группы «ОГЭ»');
+    fixture.componentRef.setInput('visible', false);
+    await fixture.whenStable();
+
+    await open(changeRequest({ id: 'r-2', groupId: 'g-1', groupName: 'ОГЭ' }));
+    expect(bodyText()).toContain('занятие перенесётся для всех');
+  });
 });

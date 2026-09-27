@@ -81,7 +81,7 @@ class SummaryIntegrationTests {
                 .hasStatusOk()
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.next.id").isEqualTo(next);
-                    assertThat(json).extractingPath("$.next.pendingRequest.kind").isEqualTo("CANCEL");
+                    assertThat(json).extractingPath("$.next.pendingRequests[0].kind").isEqualTo("CANCEL");
                     assertThat(json).extractingPath("$.weekLessons").isEqualTo(1);
                     assertThat(json).extractingPath("$.pendingRequests").isEqualTo(1);
                 });

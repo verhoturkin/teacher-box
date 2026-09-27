@@ -55,6 +55,7 @@ describe('BroadcastsPanel', () => {
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([]);
     expect(bodyText()).toContain('Сообщение ученикам');
 
     fixture.componentInstance.onBroadcast(1);

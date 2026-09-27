@@ -25,8 +25,10 @@ final class IcsWriter {
 
     /**
      * @param summary title of a lesson's event, e.g. the student's name for the teacher
+     * @param link    where a lesson takes place (its own link or the room)
      */
-    static String calendar(String name, List<Lesson> lessons, Function<Lesson, String> summary, Instant now) {
+    static String calendar(String name, List<Lesson> lessons, Function<Lesson, String> summary,
+            Function<Lesson, @Nullable String> link, Instant now) {
         StringBuilder ics = new StringBuilder();
         line(ics, "BEGIN:VCALENDAR");
         line(ics, "VERSION:2.0");
@@ -46,12 +48,13 @@ final class IcsWriter {
             line(ics, "DTSTART:" + UTC.format(lesson.startsAt()));
             line(ics, "DTEND:" + UTC.format(lesson.endsAt()));
             line(ics, "SUMMARY:" + text((cancelled ? "Отменено: " : "") + summary.apply(lesson)));
-            String description = description(lesson);
+            String url = link.apply(lesson);
+            String description = description(lesson, url);
             if (description != null) {
                 line(ics, "DESCRIPTION:" + text(description));
             }
-            if (lesson.meetingUrl() != null) {
-                line(ics, "URL:" + lesson.meetingUrl());
+            if (url != null) {
+                line(ics, "URL:" + url);
             }
             line(ics, "STATUS:" + (cancelled ? "CANCELLED" : "CONFIRMED"));
             line(ics, "TRANSP:OPAQUE");
@@ -61,13 +64,13 @@ final class IcsWriter {
         return ics.toString();
     }
 
-    private static @Nullable String description(Lesson lesson) {
+    private static @Nullable String description(Lesson lesson, @Nullable String url) {
         StringBuilder text = new StringBuilder();
         if (lesson.topic() != null) {
             text.append("Тема: ").append(lesson.topic());
         }
-        if (lesson.meetingUrl() != null) {
-            text.append(text.isEmpty() ? "" : "\n").append("Ссылка на урок: ").append(lesson.meetingUrl());
+        if (url != null) {
+            text.append(text.isEmpty() ? "" : "\n").append("Ссылка на урок: ").append(url);
         }
         if (lesson.cancelReason() != null) {
             text.append(text.isEmpty() ? "" : "\n").append("Причина отмены: ").append(lesson.cancelReason());

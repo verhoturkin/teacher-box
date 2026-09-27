@@ -27,10 +27,11 @@ public final class Delivery {
     private @Nullable String lastError;
     private final Instant createdAt;
     private @Nullable Instant sentAt;
+    private final @Nullable String keyboard;
 
     private Delivery(UUID id, UUID notificationId, UUID recipientId, ChannelType channel, String externalId,
             String text, DeliveryStatus status, int attempts, Instant nextAttemptAt, @Nullable String lastError,
-            Instant createdAt, @Nullable Instant sentAt) {
+            Instant createdAt, @Nullable Instant sentAt, @Nullable String keyboard) {
         this.id = id;
         this.notificationId = notificationId;
         this.recipientId = recipientId;
@@ -43,6 +44,7 @@ public final class Delivery {
         this.lastError = lastError;
         this.createdAt = createdAt;
         this.sentAt = sentAt;
+        this.keyboard = keyboard;
     }
 
     public static Delivery schedule(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,
@@ -54,14 +56,20 @@ public final class Delivery {
     public static Delivery schedule(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,
             String externalId, String text, Instant now, Instant notBefore) {
         return new Delivery(id, notificationId, recipientId, channel, externalId, text, DeliveryStatus.PENDING, 0,
-                notBefore.isAfter(now) ? notBefore : now, null, now, null);
+                notBefore.isAfter(now) ? notBefore : now, null, now, null, null);
     }
 
     public static Delivery restore(UUID id, UUID notificationId, UUID recipientId, ChannelType channel,
             String externalId, String text, DeliveryStatus status, int attempts, Instant nextAttemptAt,
-            @Nullable String lastError, Instant createdAt, @Nullable Instant sentAt) {
+            @Nullable String lastError, Instant createdAt, @Nullable Instant sentAt, @Nullable String keyboard) {
         return new Delivery(id, notificationId, recipientId, channel, externalId, text, status, attempts,
-                nextAttemptAt, lastError, createdAt, sentAt);
+                nextAttemptAt, lastError, createdAt, sentAt, keyboard);
+    }
+
+    /** This delivery with buttons under the message (JSON rows of buttons, ADR-0013). */
+    public Delivery withKeyboard(@Nullable String buttons) {
+        return new Delivery(id, notificationId, recipientId, channel, externalId, text, status, attempts,
+                nextAttemptAt, lastError, createdAt, sentAt, buttons);
     }
 
     public void markSent(Instant now) {
@@ -145,6 +153,10 @@ public final class Delivery {
 
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public @Nullable String keyboard() {
+        return keyboard;
     }
 
     public @Nullable Instant sentAt() {

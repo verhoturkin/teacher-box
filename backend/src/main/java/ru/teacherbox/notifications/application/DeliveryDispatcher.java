@@ -24,13 +24,15 @@ public class DeliveryDispatcher {
     private final DeliveryRepository deliveries;
     private final MessengerChannels channels;
     private final NotificationsProperties properties;
+    private final KeyboardCodec keyboards;
     private final Clock clock;
 
     public DeliveryDispatcher(DeliveryRepository deliveries, MessengerChannels channels,
-            NotificationsProperties properties, Clock clock) {
+            NotificationsProperties properties, KeyboardCodec keyboards, Clock clock) {
         this.deliveries = deliveries;
         this.channels = channels;
         this.properties = properties;
+        this.keyboards = keyboards;
         this.clock = clock;
     }
 
@@ -55,7 +57,8 @@ public class DeliveryDispatcher {
             return;
         }
         try {
-            channel.get().send(delivery.externalId(), delivery.text());
+            channel.get().send(delivery.externalId(),
+                    new OutgoingMessage(delivery.text(), keyboards.read(delivery.keyboard())));
             delivery.markSent(clock.instant());
         } catch (DeliveryException e) {
             log.warn("Delivery {} to {} failed: {}", delivery.id(), delivery.channel(), e.getMessage());

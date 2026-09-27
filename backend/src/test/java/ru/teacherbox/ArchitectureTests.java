@@ -19,7 +19,7 @@ class ArchitectureTests {
 
     private static final String ROOT = "ru.teacherbox";
     private static final List<String> BUSINESS_MODULES =
-            List.of("identity", "billing", "homework", "notifications", "ai");
+            List.of("identity", "billing", "homework", "notifications", "ai", "schedule", "meetings", "boards");
 
     private static final JavaClasses CLASSES = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)

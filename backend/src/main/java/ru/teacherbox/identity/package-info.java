@@ -1,5 +1,6 @@
 /**
- * Identity: authentication of the teacher and students, invitations, sessions (ADR-0003).
+ * Identity: authentication of the teacher and students, invitations, sessions (ADR-0003) and groups
+ * of students (ADR-0011).
  */
 @ApplicationModule(displayName = "Identity", allowedDependencies = "shared")
 @NullMarked

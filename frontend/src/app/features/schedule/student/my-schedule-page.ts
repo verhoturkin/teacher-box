@@ -1,17 +1,21 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
+import { MyBoardsCard } from '@features/boards/parts';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
 import {
-  KIND_LABELS,
   REQUEST_STATUS_LABELS,
   STATUS_LABELS,
   formatLessonStart,
   formatLessonTime,
+  lessonWith,
+  requestKindLabel,
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
@@ -27,10 +31,13 @@ export const UPCOMING_DAYS = 60;
  */
 @Component({
   selector: 'tb-my-schedule-page',
-  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, ScheduleCalendar],
+  imports: [HelpButton, Button, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, JoinLessonButton, MyBoardsCard, ScheduleCalendar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Расписание</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Расписание</h1>
+      <tb-help-button topic="cabinet/schedule" />
+    </div>
     <div class="tb-schedule-layout">
       <div class="tb-stack">
         <p-card header="Ближайшие занятия">
@@ -42,29 +49,38 @@ export const UPCOMING_DAYS = 60;
                 <li>
                   <div class="tb-schedule-list__main">
                     <strong>{{ time(lesson) }}</strong>
+                    @if (lesson.groupId !== null) {
+                      <span>{{ with(lesson) }}</span>
+                    }
                     @if (lesson.topic !== null) {
                       <span>{{ lesson.topic }}</span>
                     }
                     @if (lesson.status !== 'SCHEDULED') {
                       <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
                     }
-                    @if (lesson.pendingRequest; as request) {
+                    @if (excused(lesson)) {
+                      <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
+                    }
+                    @if (lesson.pendingRequests[0]; as request) {
                       <small class="tb-muted">
-                        Запрос «{{ kinds[request.kind] }}» ждёт ответа учителя
+                        Запрос «{{ kind(request) }}» ждёт ответа учителя
                         <p-button label="Отозвать" [link]="true" size="small" (onClick)="withdraw(request)" />
                       </small>
                     }
                   </div>
                   <div class="tb-actions">
-                    @if (lesson.meetingUrl !== null && lesson.status === 'SCHEDULED') {
-                      <a pButton [href]="lesson.meetingUrl" target="_blank" rel="noopener" size="small">
-                        <i pButtonIcon class="pi pi-video"></i>
-                        <span pButtonLabel>Подключиться</span>
-                      </a>
+                    @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
+                      <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" [small]="true" />
                     }
-                    @if (lesson.status === 'SCHEDULED' && lesson.pendingRequest === null) {
+                    @if (lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !excused(lesson)) {
                       <p-button label="Перенести" size="small" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />
-                      <p-button label="Отменить" size="small" severity="secondary" [text]="true" (onClick)="ask(lesson, 'CANCEL')" />
+                      <p-button
+                        [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
+                        size="small"
+                        severity="secondary"
+                        [text]="true"
+                        (onClick)="ask(lesson, 'CANCEL')"
+                      />
                     }
                   </div>
                 </li>
@@ -90,7 +106,12 @@ export const UPCOMING_DAYS = 60;
               @for (request of requests(); track request.id) {
                 <li>
                   <div class="tb-schedule-list__main">
-                    <span>{{ kinds[request.kind] }}: {{ start(request.lessonStartsAt) }}</span>
+                    <span>
+                      {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
+                      @if (request.groupName !== null) {
+                        · группа «{{ request.groupName }}»
+                      }
+                    </span>
                     @if (request.answer !== null) {
                       <small class="tb-muted">Учитель: {{ request.answer }}</small>
                     }
@@ -104,6 +125,7 @@ export const UPCOMING_DAYS = 60;
             </ul>
           </p-card>
         }
+        <tb-my-boards-card />
         <tb-calendar-feed-panel />
       </div>
     </div>
@@ -157,7 +179,8 @@ export class MySchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly messages = inject(MessageService);
 
-  protected readonly kinds = KIND_LABELS;
+  protected readonly kind = requestKindLabel;
+  protected readonly with = lessonWith;
   protected readonly statuses = STATUS_LABELS;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
   protected readonly settings = signal<ScheduleSettings | null>(null);
@@ -185,6 +208,11 @@ export class MySchedulePage implements OnInit {
   onRange(range: CalendarRange): void {
     this.range = range;
     this.loadCalendar();
+  }
+
+  /** The student said they would not come to this group lesson. */
+  protected excused(lesson: ScheduledLesson): boolean {
+    return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');
   }
 
   ask(lesson: ScheduledLesson, kind: ChangeKind): void {

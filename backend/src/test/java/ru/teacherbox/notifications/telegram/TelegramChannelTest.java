@@ -1,5 +1,10 @@
 package ru.teacherbox.notifications.telegram;
 
+import ru.teacherbox.notifications.application.OutgoingMessage;
+import ru.teacherbox.notifications.application.OutgoingButton;
+import ru.teacherbox.notifications.application.ButtonPress;
+import ru.teacherbox.notifications.application.BotCommand;
+import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
@@ -221,5 +226,61 @@ class TelegramChannelTest {
 
     @EnableConfigurationProperties(NotificationsProperties.class)
     static class PropertiesConfiguration {
+    }
+
+    @Test
+    void sendsButtonsAndReceivesPresses() {
+        server.expect(requestTo(API + "sendMessage"))
+                .andExpect(jsonPath("$.text").value("Отправить?"))
+                .andExpect(jsonPath("$.reply_markup.inline_keyboard[0][0].text").value("Да"))
+                .andExpect(jsonPath("$.reply_markup.inline_keyboard[0][0].callback_data").value("abcdefghijkl:0"))
+                .andExpect(jsonPath("$.reply_markup.inline_keyboard[1][0].url").value("https://school.example.com"))
+                .andRespond(withSuccess("{\"ok\":true,\"result\":{}}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "getUpdates"))
+                .andExpect(jsonPath("$.allowed_updates[1]").value("callback_query"))
+                .andRespond(withSuccess("""
+                        {"ok": true, "result": [
+                          {"update_id": 20, "callback_query": {"id": "cb1", "from": {"id": 42, "username": "maria"},
+                            "message": {"message_id": 15, "chat": {"id": 42, "type": "private"}},
+                            "data": "abcdefghijkl:0"}},
+                          {"update_id": 21, "callback_query": {"id": "cb2", "from": {"id": 42},
+                            "message": {"message_id": 16, "chat": {"id": -5, "type": "group"}}, "data": "x"}},
+                          {"update_id": 22, "callback_query": {"id": "cb3", "from": {"id": 43},
+                            "data": "abcdefghijkl:1"}},
+                          {"update_id": 23, "callback_query": {"id": "cb4", "from": {"id": 44}}},
+                          {"update_id": 24, "callback_query": {"id": "cb5", "data": "abcdefghijkl:2"}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+
+        channel.send("42", new OutgoingMessage("Отправить?", List.of(
+                List.of(new OutgoingButton("Да", "abcdefghijkl:0", null)),
+                List.of(new OutgoingButton("Портал", null, "https://school.example.com")))));
+
+        assertThat(channel.poll()).containsExactly(
+                new IncomingMessage("42", "@maria", "", new ButtonPress("abcdefghijkl:0", "cb1", "15", null)),
+                new IncomingMessage("43", null, "", new ButtonPress("abcdefghijkl:1", "cb3", null, null)));
+        server.verify();
+    }
+
+    @Test
+    void acknowledgesPressesAndPublishesCommands() {
+        server.expect(requestTo(API + "answerCallbackQuery"))
+                .andExpect(jsonPath("$.callback_query_id").value("cb1"))
+                .andRespond(withSuccess("{\"ok\":true,\"result\":true}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "editMessageReplyMarkup"))
+                .andExpect(jsonPath("$.chat_id").value("42"))
+                .andExpect(jsonPath("$.message_id").value("15"))
+                .andExpect(jsonPath("$.reply_markup.inline_keyboard").isEmpty())
+                .andRespond(withSuccess("{\"ok\":true,\"result\":true}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "setMyCommands"))
+                .andExpect(jsonPath("$.commands[0].command").value("menu"))
+                .andExpect(jsonPath("$.commands[0].description").value("Главное меню"))
+                .andRespond(withSuccess("{\"ok\":true,\"result\":true}", MediaType.APPLICATION_JSON));
+
+        channel.acknowledge("42", new ButtonPress("abcdefghijkl:0", "cb1", "15", null));
+        channel.acknowledge("42", new ButtonPress("abcdefghijkl:0", null, null, null));
+        channel.publishCommands(List.of(new BotCommand("menu", "Главное меню")));
+
+        server.verify();
     }
 }

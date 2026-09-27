@@ -18,7 +18,7 @@ public class DeliveryRepository {
 
     private static final String SELECT = """
             select id, notification_id, recipient_id, channel, external_id, text, status, attempts, next_attempt_at,
-                last_error, created_at, sent_at
+                last_error, created_at, sent_at, keyboard
             from notifications.deliveries
             """;
 
@@ -31,9 +31,9 @@ public class DeliveryRepository {
     public void insert(Delivery delivery) {
         jdbc.sql("""
                 insert into notifications.deliveries (id, notification_id, recipient_id, channel, external_id, text,
-                    status, attempts, next_attempt_at, last_error, created_at, sent_at)
+                    status, attempts, next_attempt_at, last_error, created_at, sent_at, keyboard)
                 values (:id, :notificationId, :recipientId, :channel, :externalId, :text, :status, :attempts,
-                    :nextAttemptAt, :lastError, :createdAt, :sentAt)
+                    :nextAttemptAt, :lastError, :createdAt, :sentAt, :keyboard)
                 """)
                 .param("id", delivery.id())
                 .param("notificationId", delivery.notificationId())
@@ -47,6 +47,7 @@ public class DeliveryRepository {
                 .param("lastError", delivery.lastError())
                 .param("createdAt", delivery.createdAt())
                 .param("sentAt", delivery.sentAt())
+                .param("keyboard", delivery.keyboard())
                 .update();
     }
 
@@ -144,6 +145,7 @@ public class DeliveryRepository {
                 rs.getObject("next_attempt_at", Instant.class),
                 rs.getString("last_error"),
                 rs.getObject("created_at", Instant.class),
-                rs.getObject("sent_at", Instant.class));
+                rs.getObject("sent_at", Instant.class),
+                rs.getString("keyboard"));
     }
 }

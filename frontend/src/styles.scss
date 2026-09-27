@@ -49,6 +49,22 @@ body {
   }
 }
 
+/* A page title with the «?» of the help next to it */
+.tb-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+
+  .tb-page-title {
+    margin: 0;
+  }
+}
+
+.tb-page-header .tb-page-heading {
+  margin-bottom: 0;
+}
+
 .tb-stack {
   display: flex;
   flex-direction: column;
@@ -391,7 +407,12 @@ a.p-button {
   --fc-classic-strong-border: var(--p-text-muted-color);
 }
 
-/* Lesson events by status */
+/* Lesson events by status; a planned group lesson has its own color */
+.tb-lesson--group.tb-lesson--scheduled {
+  --fc-classic-event: var(--p-teal-600);
+  --fc-classic-event-contrast: #fff;
+}
+
 .tb-lesson--conducted {
   --fc-classic-event: var(--p-green-600);
   --fc-classic-event-contrast: #fff;

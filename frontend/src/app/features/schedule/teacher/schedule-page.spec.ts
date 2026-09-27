@@ -5,9 +5,12 @@ import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { aGroup } from '@testing/identity-fixtures';
 import {
+  at,
   calendarFeed,
   changeRequest,
+  groupLesson,
   lessonSeries,
   scheduleSettings,
   scheduledLesson,
@@ -34,6 +37,10 @@ describe('SchedulePage', () => {
   });
 
   afterEach(() => {
+    // Boards of the lesson in its card (covered by the card's own tests).
+    for (const request of backend.match('/api/teacher/boards')) {
+      request.flush([]);
+    }
     backend.verify();
     fixture.destroy();
   });
@@ -61,6 +68,11 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/students').flush([
       { id: 's-1', displayName: 'Иван Петров', status: 'ACTIVE' },
       { id: 's-2', displayName: 'Ушедший', status: 'DEACTIVATED' },
+    ]);
+    backend.expectOne('/api/teacher/groups').flush([
+      aGroup({ id: 'g-1', name: 'ОГЭ' }),
+      aGroup({ id: 'g-2', name: 'Пустая', members: [] }),
+      aGroup({ id: 'g-3', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
     ]);
     flushSidePanels(unmarked);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
@@ -91,6 +103,20 @@ describe('SchedulePage', () => {
     expect(text).toContain('Регулярные занятия');
     expect(text).toContain('Вт, Чт в 18:00');
     expect(text).not.toContain('часовому поясу этого устройства');
+  });
+
+  it('offers groups with students and marks a group lesson in its card', async () => {
+    const text = await render(scheduleSettings(), [
+      groupLesson({ id: 'gl-9', startsAt: at(2026, 9, 1, 18), endsAt: at(2026, 9, 1, 19, 30) }),
+    ]);
+    const dialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+
+    expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ' }]);
+    expect(text).toContain('Группа «ОГЭ»');
+    buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Мария');
+    expect(bodyText()).toContain('Отметить посещаемость');
   });
 
   it('shows busy times from the teacher’s Google Calendar', async () => {

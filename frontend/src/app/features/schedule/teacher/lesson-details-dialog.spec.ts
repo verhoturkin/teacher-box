@@ -1,10 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { at, changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
+import { aBoard } from '@testing/boards-fixtures';
+import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import type { Board } from '@features/boards/parts';
 import { ScheduledLesson } from '../data-access/schedule.models';
+import { AttendanceDialog } from './attendance-dialog';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 
 describe('LessonDetailsDialog', () => {
@@ -31,12 +35,16 @@ describe('LessonDetailsDialog', () => {
     fixture.destroy();
   });
 
-  async function open(lesson: ScheduledLesson, now = new Date(2026, 8, 30, 12)): Promise<void> {
+  async function open(lesson: ScheduledLesson, now = new Date(2026, 8, 30, 12), boards: Board[] = []): Promise<void> {
     fixture.componentRef.setInput('visible', false);
     fixture.componentRef.setInput('lesson', lesson);
     fixture.componentRef.setInput('now', now);
     await fixture.whenStable();
     fixture.componentRef.setInput('visible', true);
+    await fixture.whenStable();
+    for (const request of backend.match('/api/teacher/boards')) {
+      request.flush(boards);
+    }
     await fixture.whenStable();
   }
 
@@ -44,9 +52,9 @@ describe('LessonDetailsDialog', () => {
     await open(
       scheduledLesson({
         topic: 'Дроби',
-        meetingUrl: 'https://zoom.us/j/1',
+        joinUrl: 'https://zoom.us/j/1',
         originalStartsAt: at(2026, 9, 30, 17),
-        pendingRequest: changeRequest({ comment: 'Можно позже?' }),
+        pendingRequests: [changeRequest({ comment: 'Можно позже?' })],
       }),
     );
 
@@ -54,7 +62,7 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Иван Петров');
     expect(text).toContain('Запланировано');
     expect(text).toContain('Тема: Дроби');
-    expect(text).toContain('Ссылка на урок');
+    expect(text).toContain('Начать урок');
     expect(text).toContain('Перенесено с');
     expect(text).toContain('Запрос ученика: Перенос');
     expect(text).toContain('«Можно позже?»');
@@ -142,5 +150,49 @@ describe('LessonDetailsDialog', () => {
     fixture.componentInstance.mark('CONDUCTED');
     fixture.componentInstance.editLesson();
     expect(edited).toHaveLength(1);
+  });
+
+  it('shows the students of a group lesson and opens their attendance', async () => {
+    await open(
+      groupLesson({
+        startsAt: at(2026, 9, 29, 18),
+        endsAt: at(2026, 9, 29, 19, 30),
+        pendingRequests: [changeRequest({ kind: 'CANCEL', groupId: 'g-1', studentName: 'Мария', comment: 'Болею' })],
+      }),
+    );
+
+    const text = bodyText();
+    expect(text).toContain('Группа «ОГЭ»');
+    expect(text).toContain('Мария');
+    expect(text).toContain('Предупредил');
+    expect(text).toContain('Мария: Не придёт');
+    expect(() => buttonByText(document.body, 'Проведено')).toThrow();
+
+    buttonByText(document.body, 'Отметить посещаемость').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Кто был на занятии');
+    fixture.debugElement.query(By.directive(AttendanceDialog)).injector.get(AttendanceDialog).saved
+      .emit(groupLesson({ status: 'CONDUCTED' }));
+    expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('cancels a group lesson only on behalf of the teacher', async () => {
+    await open(groupLesson());
+
+    buttonByText(document.body, 'Отменить').click();
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('#lesson-cancel-by-student')).toBeNull();
+  });
+
+  it('links the boards of the lesson', async () => {
+    await open(groupLesson(), new Date(2026, 8, 30, 12), [
+      aBoard({ ownerType: 'GROUP', ownerId: 'g-1', title: 'Доска группы' }),
+      aBoard({ id: 'board-2', ownerId: 's-1', title: 'Личная доска' }),
+    ]);
+
+    expect(bodyText()).toContain('Доска группы');
+    expect(bodyText()).not.toContain('Личная доска');
   });
 });

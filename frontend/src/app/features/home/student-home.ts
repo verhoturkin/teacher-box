@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { HelpButton } from '@features/help/parts';
 import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
+import { MyBoardsCard } from '@features/boards/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
 import { HomeworkApi, MyDeadlinesWidget } from '@features/homework/parts';
 import type { MyHomeworkSummary } from '@features/homework/parts';
@@ -10,10 +12,20 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
 /** Student personal area dashboard: collects the widgets of the modules. */
 @Component({
   selector: 'tb-student-home',
-  imports: [ConnectMessengerCard, LatestNotificationsWidget, MyBalanceWidget, MyDeadlinesWidget, NextLessonWidget],
+  imports: [HelpButton, 
+    ConnectMessengerCard,
+    LatestNotificationsWidget,
+    MyBalanceWidget,
+    MyBoardsCard,
+    MyDeadlinesWidget,
+    NextLessonWidget,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Личный кабинет</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Личный кабинет</h1>
+      <tb-help-button topic="cabinet/lesson" />
+    </div>
     <div class="tb-stack">
       <tb-connect-messenger-card />
       <div class="tb-home">
@@ -29,6 +41,7 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
           @if (billing(); as billing) {
             <tb-my-balance-widget [summary]="billing" />
           }
+          <tb-my-boards-card />
           <tb-latest-notifications-widget link="/cabinet/notifications" />
         </div>
       </div>

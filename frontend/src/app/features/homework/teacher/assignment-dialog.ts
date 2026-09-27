@@ -21,6 +21,8 @@ import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai/parts';
+import { ToBoardDialog } from '@features/boards/parts';
+import { GroupPicker } from '@features/identity/parts';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
@@ -44,7 +46,9 @@ export interface StudentOption {
     MultiSelect,
     SelectButton,
     Textarea,
+    GroupPicker,
     HomeworkDraftDialog,
+    ToBoardDialog,
     MarkdownView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,6 +66,14 @@ export interface StudentOption {
               @if (aiEnabled()) {
                 <p-button label="Сгенерировать с ИИ" icon="pi pi-sparkles" size="small" [text]="true" (onClick)="draftVisible.set(true)" />
               }
+              <p-button
+                label="На доску"
+                icon="pi pi-th-large"
+                size="small"
+                [text]="true"
+                [disabled]="descriptionValue().trim() === ''"
+                (onClick)="boardVisible.set(true)"
+              />
               <p-selectbutton [options]="modes" [formControl]="mode" optionLabel="label" optionValue="value" size="small" ariaLabel="Режим редактора" />
             </div>
           </div>
@@ -104,6 +116,9 @@ export interface StudentOption {
               appendTo="body"
               [fluid]="true"
             />
+            @if (visible()) {
+              <tb-group-picker inputId="assignment-group" (picked)="addStudents($event)" />
+            }
           </div>
         }
         @if (error(); as message) {
@@ -118,6 +133,12 @@ export interface StudentOption {
     @if (aiEnabled()) {
       <tb-homework-draft-dialog [(visible)]="draftVisible" [topic]="titleValue()" (generated)="applyDraft($event)" />
     }
+    <tb-to-board-dialog
+      [(visible)]="boardVisible"
+      [title]="titleValue()"
+      [markdown]="descriptionValue()"
+      [ownerIds]="boardOwners()"
+    />
   `,
 })
 export class AssignmentDialog {
@@ -148,6 +169,13 @@ export class AssignmentDialog {
   protected readonly descriptionValue = toSignal(this.form.controls.description.valueChanges, { initialValue: '' });
   protected readonly modeValue = toSignal(this.mode.valueChanges, { initialValue: this.mode.value });
   protected readonly titleValue = toSignal(this.form.controls.title.valueChanges, { initialValue: '' });
+  protected readonly boardVisible = signal(false);
+  private readonly chosenStudents = toSignal(this.form.controls.studentIds.valueChanges, { initialValue: [] });
+  /** Boards of the students of the assignment come first. */
+  protected readonly boardOwners = computed(() => [
+    ...(this.assignment()?.tasks.map((task) => task.studentId) ?? []),
+    ...this.chosenStudents(),
+  ]);
   protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
   protected readonly draftVisible = signal(false);
 
@@ -171,6 +199,13 @@ export class AssignmentDialog {
   applyDraft(draft: HomeworkDraft): void {
     this.form.patchValue({ title: draft.title, description: draft.description });
     this.mode.setValue('preview');
+  }
+
+  /** Adds the students of a chosen group who can get the assignment. */
+  addStudents(ids: readonly string[]): void {
+    const control = this.form.controls.studentIds;
+    const known = new Set(this.students().map((student) => student.id));
+    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
   }
 
   save(): void {

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Card } from 'primeng/card';
+import { HelpButton } from '@features/help/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
 import { StudentLedger } from '../data-access/billing.models';
@@ -9,10 +10,13 @@ import { LedgerTable } from '../ledger/ledger-table';
 /** Student: own balance and history of lessons and payments. */
 @Component({
   selector: 'tb-my-billing-page',
-  imports: [Card, MoneyPipe, BalanceAmount, LedgerTable],
+  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Оплаты</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Оплаты</h1>
+      <tb-help-button topic="cabinet/billing" />
+    </div>
     @if (ledger(); as ledger) {
       <div class="tb-stats">
         <p-card>

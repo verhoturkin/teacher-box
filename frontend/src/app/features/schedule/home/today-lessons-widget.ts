@@ -3,14 +3,16 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
-import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
+import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
+import { AttendanceDialog } from '../teacher/attendance-dialog';
 
-/** Teacher's home: today's lessons with a link to the lesson and quick marks. */
+/** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
-  imports: [RouterLink, Button, Card, Tag],
+  imports: [RouterLink, Button, Card, Tag, AttendanceDialog, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Сегодня">
@@ -23,7 +25,10 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
             <li class="tb-today__lesson" [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'">
               <span class="tb-today__time">{{ time(lesson) }}</span>
               <div class="tb-today__info">
-                <strong>{{ lesson.studentName ?? 'Ученик' }}</strong>
+                <strong>{{ with(lesson) }}</strong>
+                @if (lesson.groupId !== null) {
+                  <small class="tb-muted">Учеников: {{ lesson.participants.length }}</small>
+                }
                 @if (lesson.topic !== null) {
                   <small class="tb-muted">{{ lesson.topic }}</small>
                 }
@@ -31,13 +36,19 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
               @if (lesson.status !== 'SCHEDULED') {
                 <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
               } @else {
-                @if (lesson.meetingUrl !== null) {
-                  <a class="p-button p-button-sm p-button-outlined tb-today__join" [href]="lesson.meetingUrl" target="_blank" rel="noopener">
-                    <i class="pi pi-video" aria-hidden="true"></i>
-                    <span>Урок</span>
-                  </a>
+                @if (lesson.joinUrl; as url) {
+                  <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" [outlined]="true" />
                 }
-                @if (started(lesson)) {
+                @if (started(lesson) && lesson.groupId !== null) {
+                  <p-button
+                    label="Отметить"
+                    icon="pi pi-users"
+                    size="small"
+                    [text]="true"
+                    [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                    (onClick)="openAttendance(lesson)"
+                  />
+                } @else if (started(lesson)) {
                   <p-button
                     icon="pi pi-check"
                     size="small"
@@ -67,6 +78,8 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
         <a routerLink="/teacher/schedule">Расписание</a>
       </div>
     </p-card>
+
+    <tb-attendance-dialog [(visible)]="attendanceVisible" [lesson]="attendanceLesson()" (saved)="changed.emit()" />
   `,
   styles: `
     .tb-today {
@@ -102,12 +115,6 @@ import { STATUS_LABELS, formatClockRange } from '../schedule-labels';
       flex-direction: column;
       min-width: 8rem;
     }
-
-    .tb-today__join {
-      display: inline-flex;
-      gap: 0.5rem;
-      text-decoration: none;
-    }
   `,
 })
 export class TodayLessonsWidget {
@@ -121,6 +128,9 @@ export class TodayLessonsWidget {
 
   protected readonly statuses = STATUS_LABELS;
   protected readonly pending = signal<string | null>(null);
+  protected readonly with = lessonWith;
+  protected readonly attendanceVisible = signal(false);
+  protected readonly attendanceLesson = signal<ScheduledLesson | null>(null);
 
   protected time(lesson: ScheduledLesson): string {
     return formatClockRange(lesson.startsAt, lesson.endsAt);
@@ -128,6 +138,11 @@ export class TodayLessonsWidget {
 
   protected started(lesson: ScheduledLesson): boolean {
     return new Date(lesson.startsAt).getTime() <= this.now().getTime();
+  }
+
+  openAttendance(lesson: ScheduledLesson): void {
+    this.attendanceLesson.set(lesson);
+    this.attendanceVisible.set(true);
   }
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {

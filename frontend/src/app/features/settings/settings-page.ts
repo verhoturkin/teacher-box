@@ -7,7 +7,9 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { AiApi } from '@features/ai/parts';
+import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { GoogleCalendarPanel } from '@features/schedule/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
@@ -30,7 +32,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 /** Teacher: integrations, delivery problems, backups and a link to the profile. */
 @Component({
   selector: 'tb-settings-page',
-  imports: [
+  imports: [HelpButton, 
     DatePipe,
     RouterLink,
     Button,
@@ -40,6 +42,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     Card,
     ConfirmDialog,
     GoogleCalendarPanel,
+    MeetingsSettingsPanel,
     TableModule,
     Tag,
     RowType,
@@ -47,7 +50,10 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Настройки</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Настройки</h1>
+      <tb-help-button topic="teacher/settings" />
+    </div>
     <div class="tb-stack">
       <p-card header="Интеграции">
         <ul class="tb-integrations">
@@ -101,6 +107,8 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       </p-card>
 
       <tb-google-calendar-panel />
+
+      <tb-meetings-settings-panel />
 
       <p-card header="Неудачные доставки уведомлений">
         @if (failed().length === 0) {

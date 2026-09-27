@@ -21,13 +21,15 @@ import ru.teacherbox.schedule.persistence.LessonRepository;
 public class LessonReminders {
 
     private final LessonRepository lessons;
+    private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
     private final Clock clock;
 
-    public LessonReminders(LessonRepository lessons, ApplicationEventPublisher events, ScheduleProperties properties,
-            Clock clock) {
+    public LessonReminders(LessonRepository lessons, ScheduleDirectory directory, ApplicationEventPublisher events,
+            ScheduleProperties properties, Clock clock) {
         this.lessons = lessons;
+        this.directory = directory;
         this.events = events;
         this.properties = properties;
         this.clock = clock;
@@ -52,9 +54,10 @@ public class LessonReminders {
             List<Integer> already = lessons.remindersSent(lesson.id());
             int nearest = due.getFirst();
             if (!already.contains(nearest)) {
-                events.publishEvent(new LessonStartingSoon(lesson.id(), lesson.studentId(), lesson.startsAt(),
-                        lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), Duration.ofMinutes(nearest),
-                        nearest == advances.getFirst().toMinutes(), now));
+                events.publishEvent(new LessonStartingSoon(lesson.id(), lesson.groupId(), lesson.expectedIds(),
+                        lesson.startsAt(), lesson.durationMinutes(), lesson.topic(),
+                        directory.namesOf(List.of(lesson)).joinUrl(lesson),
+                        Duration.ofMinutes(nearest), nearest == advances.getFirst().toMinutes(), now));
                 sent++;
             }
             lessons.markRemindersSent(lesson.id(), due.stream().filter(minutes -> !already.contains(minutes)).toList(),

@@ -5,25 +5,36 @@ import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
+import { OwnerBoardLinks } from '@features/boards/parts';
+import { JoinLessonButton } from '@features/meetings/parts';
 import { Observable } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduledLesson } from '../data-access/schedule.models';
-import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from '../schedule-labels';
+import {
+  ATTENDANCE_LABELS,
+  STATUS_LABELS,
+  formatLessonStart,
+  formatLessonTime,
+  lessonWith,
+  requestKindLabel,
+} from '../schedule-labels';
+import { AttendanceDialog } from './attendance-dialog';
 
 /**
- * A lesson with the teacher's actions: change it, mark the outcome after it has started, withdraw
- * the outcome, or cancel it (also on the student's behalf, optionally charged as a missed lesson).
+ * A lesson with the teacher's actions: change it, mark the outcome (the attendance of a group) after
+ * it has started, withdraw the outcome, or cancel it (a lesson with one student also on the student's
+ * behalf, optionally charged as a missed lesson).
  */
 @Component({
   selector: 'tb-lesson-details-dialog',
-  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea],
+  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog, JoinLessonButton, OwnerBoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog header="Занятие" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
       @if (lesson(); as lesson) {
         <div class="tb-lesson-details">
           <div class="tb-lesson-details__head">
-            <strong>{{ lesson.studentName ?? 'Ученик' }}</strong>
+            <strong>{{ with(lesson) }}</strong>
             <p-tag [value]="statusLabel().label" [severity]="statusLabel().severity" />
           </div>
           <div>{{ time() }}</div>
@@ -33,15 +44,35 @@ import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from 
           @if (lesson.topic !== null) {
             <div>Тема: {{ lesson.topic }}</div>
           }
-          @if (lesson.meetingUrl !== null) {
-            <a [href]="lesson.meetingUrl" target="_blank" rel="noopener">Ссылка на урок</a>
+          @if (lesson.joinUrl; as url) {
+            <div>
+              <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" />
+            </div>
+          }
+          @if (visible()) {
+            <tb-owner-board-links [ownerIds]="[lesson.groupId ?? lesson.studentId]" />
           }
           @if (lesson.cancelReason !== null) {
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>
           }
-          @if (lesson.pendingRequest; as request) {
+          @if (lesson.groupId !== null) {
+            <ul class="tb-lesson-details__participants">
+              @for (participant of lesson.participants; track participant.studentId) {
+                <li>
+                  <span>{{ participant.studentName ?? 'Ученик' }}</span>
+                  @if (participant.attendance !== 'EXPECTED') {
+                    <p-tag
+                      [value]="attendance[participant.attendance].label"
+                      [severity]="attendance[participant.attendance].severity"
+                    />
+                  }
+                </li>
+              }
+            </ul>
+          }
+          @for (request of lesson.pendingRequests; track request.id) {
             <div class="tb-lesson-details__request">
-              Запрос ученика: {{ kinds[request.kind] }}
+              {{ lesson.groupId === null ? 'Запрос ученика' : (request.studentName ?? 'Ученик') }}: {{ kind(request) }}
               @if (request.proposedStartsAt !== null) {
                 на {{ start(request.proposedStartsAt) }}
               }
@@ -56,10 +87,12 @@ import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from 
           <div class="tb-form tb-lesson-details__cancel">
             <label for="lesson-cancel-reason">Причина</label>
             <textarea pTextarea id="lesson-cancel-reason" rows="2" [(ngModel)]="reason" maxlength="500"></textarea>
-            <label class="tb-switch" for="lesson-cancel-by-student">
-              <p-checkbox [(ngModel)]="byStudent" [binary]="true" inputId="lesson-cancel-by-student" />
-              <span>По просьбе ученика</span>
-            </label>
+            @if (lesson.groupId === null) {
+              <label class="tb-switch" for="lesson-cancel-by-student">
+                <p-checkbox [(ngModel)]="byStudent" [binary]="true" inputId="lesson-cancel-by-student" />
+                <span>По просьбе ученика</span>
+              </label>
+            }
             @if (byStudent()) {
               <label class="tb-switch" for="lesson-cancel-charge">
                 <p-checkbox [(ngModel)]="charge" [binary]="true" inputId="lesson-cancel-charge" />
@@ -82,7 +115,9 @@ import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from 
             @if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
               <p-button label="Снять отметку" severity="secondary" [text]="true" [loading]="pending()" (onClick)="reopen()" />
             }
-            @if (started() && lesson.status !== 'CANCELLED') {
+            @if (started() && lesson.status !== 'CANCELLED' && lesson.groupId !== null) {
+              <p-button label="Отметить посещаемость" icon="pi pi-users" (onClick)="attendanceVisible.set(true)" />
+            } @else if (started() && lesson.status !== 'CANCELLED') {
               @if (lesson.status !== 'MISSED') {
                 <p-button label="Пропуск" severity="warn" [outlined]="true" [loading]="pending()" (onClick)="mark('MISSED')" />
               }
@@ -94,6 +129,8 @@ import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from 
         }
       </ng-template>
     </p-dialog>
+
+    <tb-attendance-dialog [(visible)]="attendanceVisible" [lesson]="lesson()" (saved)="onMarked($event)" />
   `,
   styles: `
     .tb-lesson-details {
@@ -107,6 +144,22 @@ import { KIND_LABELS, STATUS_LABELS, formatLessonStart, formatLessonTime } from 
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+    }
+
+    .tb-lesson-details__participants {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
     }
 
     .tb-lesson-details__request {
@@ -130,7 +183,10 @@ export class LessonDetailsDialog {
   readonly changed = output<ScheduledLesson>();
   readonly edit = output<ScheduledLesson>();
 
-  protected readonly kinds = KIND_LABELS;
+  protected readonly kind = requestKindLabel;
+  protected readonly with = lessonWith;
+  protected readonly attendance = ATTENDANCE_LABELS;
+  protected readonly attendanceVisible = signal(false);
   protected readonly pending = signal(false);
   protected readonly cancelling = signal(false);
   protected readonly reason = signal('');
@@ -171,6 +227,11 @@ export class LessonDetailsDialog {
 
   mark(outcome: LessonOutcome): void {
     this.run((lesson) => this.api.setOutcome(lesson.id, outcome));
+  }
+
+  onMarked(lesson: ScheduledLesson): void {
+    this.visible.set(false);
+    this.changed.emit(lesson);
   }
 
   reopen(): void {

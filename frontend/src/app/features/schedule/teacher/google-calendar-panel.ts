@@ -11,6 +11,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
+import { HelpButton } from '@features/help/parts';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
@@ -31,10 +32,11 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
  */
 @Component({
   selector: 'tb-google-calendar-panel',
-  imports: [DatePipe, FormsModule, ReactiveFormsModule, Button, Card, Checkbox, InputText, Message, Password, Tag],
+  imports: [HelpButton, DatePipe, FormsModule, ReactiveFormsModule, Button, Card, Checkbox, InputText, Message, Password, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Google Календарь">
+      <tb-help-button topic="teacher/calendars" label="Подробнее" />
       @if (result(); as result) {
         <p-message [severity]="result.severity" styleClass="tb-form-message">{{ result.text }}</p-message>
       }

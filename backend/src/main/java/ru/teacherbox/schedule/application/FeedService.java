@@ -4,14 +4,11 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.teacherbox.identity.api.StudentSummary;
-import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.schedule.application.ScheduleViews.FeedView;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -32,11 +29,11 @@ public class FeedService {
 
     private final FeedRepository feeds;
     private final LessonRepository lessons;
-    private final UserDirectory directory;
+    private final ScheduleDirectory directory;
     private final ScheduleProperties properties;
     private final Clock clock;
 
-    public FeedService(FeedRepository feeds, LessonRepository lessons, UserDirectory directory,
+    public FeedService(FeedRepository feeds, LessonRepository lessons, ScheduleDirectory directory,
             ScheduleProperties properties, Clock clock) {
         this.feeds = feeds;
         this.lessons = lessons;
@@ -84,18 +81,21 @@ public class FeedService {
         UUID ownerId = owner.get();
         if (ownerId.equals(directory.teacherId())) {
             List<Lesson> all = lessons.findStartingBetween(from, to);
-            Map<UUID, String> names = directory.findStudents(all.stream().map(Lesson::studentId).distinct().toList())
-                    .stream()
-                    .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName));
+            ScheduleNames names = directory.namesOf(all);
             return Optional.of(IcsWriter.calendar("Teacher Box — занятия", all,
-                    lesson -> "Урок: " + names.getOrDefault(lesson.studentId(), "ученик")
+                    lesson -> "Урок: " + Objects.requireNonNullElse(names.title(lesson),
+                            lesson.isGroup() ? "группа" : "ученик")
                             + (lesson.topic() == null ? "" : " — " + lesson.topic()),
-                    now));
+                    names::joinUrl, now));
         }
         if (!directory.isCurrentStudent(ownerId)) {
             return Optional.empty();
         }
-        return Optional.of(IcsWriter.calendar("Занятия — Teacher Box", lessons.findStartingBetween(ownerId, from, to),
-                lesson -> lesson.topic() == null ? "Занятие" : "Занятие: " + lesson.topic(), now));
+        List<Lesson> own = lessons.findStartingBetween(ownerId, from, to);
+        ScheduleNames names = directory.namesOf(own);
+        return Optional.of(IcsWriter.calendar("Занятия — Teacher Box", own,
+                lesson -> (lesson.isGroup() ? "Занятие группы «" + names.group(lesson.groupId()) + "»" : "Занятие")
+                        + (lesson.topic() == null ? "" : ": " + lesson.topic()),
+                names::joinUrl, now));
     }
 }

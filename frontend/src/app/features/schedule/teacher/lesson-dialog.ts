@@ -23,6 +23,7 @@ import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { optionalText } from '../schedule-labels';
+import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 
 /** A student the teacher can plan a lesson with. */
 export interface LessonStudent {
@@ -39,8 +40,8 @@ export interface LessonSlot {
 export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
 
 /**
- * Plans a single lesson or changes a planned one (time, duration, topic, link to the online
- * lesson). An overlap with another lesson is shown with an option to save anyway.
+ * Plans a single lesson with a student or a group, or changes a planned one (time, duration,
+ * topic, link to the online lesson). An overlap with another lesson is shown with an option to save anyway.
  */
 @Component({
   selector: 'tb-lesson-dialog',
@@ -56,14 +57,17 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="schedule-lesson-student">Ученик</label>
+          <label for="schedule-lesson-student">С кем</label>
           <p-select
             inputId="schedule-lesson-student"
-            formControlName="studentId"
-            [options]="studentOptions()"
+            formControlName="owner"
+            [options]="ownerOptions()"
+            [group]="true"
+            optionGroupLabel="label"
+            optionGroupChildren="items"
             optionLabel="label"
             optionValue="value"
-            placeholder="Выберите ученика"
+            placeholder="Выберите ученика или группу"
             [filter]="true"
             appendTo="body"
             [fluid]="true"
@@ -137,6 +141,8 @@ export class LessonDialog {
 
   readonly visible = model(false);
   readonly students = input.required<readonly LessonStudent[]>();
+  /** Groups with students; empty when the teacher has none. */
+  readonly groups = input<readonly LessonGroup[]>([]);
   /** The lesson to change; `null` plans a new one. */
   readonly lesson = input<ScheduledLesson | null>(null);
   /** Time of a new lesson. */
@@ -144,15 +150,13 @@ export class LessonDialog {
   readonly defaultDuration = input(60);
   readonly saved = output<ScheduledLesson>();
 
-  protected readonly studentOptions = computed(() =>
-    this.students().map((student) => ({ label: student.displayName, value: student.id })),
-  );
+  protected readonly ownerOptions = computed(() => ownerOptions(this.students(), this.groups()));
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly overlap = signal(false);
 
   readonly form = new FormGroup({
-    studentId: new FormControl<string | null>(null, [Validators.required]),
+    owner: new FormControl<OwnerValue | null>(null, [Validators.required]),
     startsAt: new FormControl<Date | null>(null, [Validators.required]),
     durationMinutes: new FormControl<number | null>(60, [
       Validators.required,
@@ -181,7 +185,7 @@ export class LessonDialog {
 
   save(allowOverlap = false): void {
     const value = this.form.getRawValue();
-    if (this.form.invalid || this.pending() || value.studentId === null || value.startsAt === null) {
+    if (this.form.invalid || this.pending() || value.owner === null || value.startsAt === null) {
       return;
     }
     this.pending.set(true);
@@ -197,7 +201,7 @@ export class LessonDialog {
     const lesson = this.lesson();
     const request =
       lesson === null
-        ? this.api.plan({ studentId: value.studentId, ...details })
+        ? this.api.plan({ ...ownerIds(value.owner), ...details })
         : this.api.edit(lesson.id, details);
     request.subscribe({
       next: (saved) => {
@@ -222,16 +226,16 @@ export class LessonDialog {
     const lesson = this.lesson();
     const slot = this.slot();
     this.form.reset({
-      studentId: lesson?.studentId ?? null,
+      owner: lesson === null ? null : ownerValue(lesson),
       startsAt: lesson === null ? (slot?.start ?? null) : new Date(lesson.startsAt),
       durationMinutes: lesson?.durationMinutes ?? slot?.durationMinutes ?? this.defaultDuration(),
       topic: lesson?.topic ?? '',
       meetingUrl: lesson?.meetingUrl ?? '',
     });
     if (lesson === null) {
-      this.form.controls.studentId.enable();
+      this.form.controls.owner.enable();
     } else {
-      this.form.controls.studentId.disable();
+      this.form.controls.owner.disable();
     }
   }
 }

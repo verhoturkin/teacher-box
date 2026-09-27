@@ -8,6 +8,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingService;
+import ru.teacherbox.billing.application.GroupPriceService;
+import ru.teacherbox.billing.application.GroupPriceService.GroupPrices;
+import ru.teacherbox.billing.application.GroupPriceService.GroupPriceView;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.BillingSummary;
 import ru.teacherbox.billing.application.BillingViews.MonthlyReport;
@@ -64,10 +68,12 @@ class TeacherBillingController {
 
     private final BillingService billing;
     private final BillingQueryService queries;
+    private final GroupPriceService groupPrices;
 
-    TeacherBillingController(BillingService billing, BillingQueryService queries) {
+    TeacherBillingController(BillingService billing, BillingQueryService queries, GroupPriceService groupPrices) {
         this.billing = billing;
         this.queries = queries;
+        this.groupPrices = groupPrices;
     }
 
     @GetMapping("/overview")
@@ -88,6 +94,16 @@ class TeacherBillingController {
     @PutMapping("/students/{studentId}/price")
     PriceResponse changePrice(@PathVariable UUID studentId, @Valid @RequestBody PriceRequest request) {
         return new PriceResponse(studentId, billing.changeLessonPrice(studentId, request.lessonPrice()));
+    }
+
+    @GetMapping("/groups")
+    GroupPrices groupPrices() {
+        return groupPrices.list();
+    }
+
+    @PutMapping("/groups/{groupId}/price")
+    GroupPriceView changeGroupPrice(@PathVariable UUID groupId, @Valid @RequestBody PriceRequest request) {
+        return groupPrices.change(groupId, request.lessonPrice());
     }
 
     @PostMapping("/lessons")

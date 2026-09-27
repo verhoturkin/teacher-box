@@ -21,7 +21,7 @@ class SeriesTest {
     private static final LocalDate THURSDAY = LocalDate.of(2026, 10, 1);
 
     private static Series series(Set<DayOfWeek> days, int interval, @Nullable LocalDate endsOn) {
-        return Series.create(UUID.randomUUID(), UUID.randomUUID(), days, LocalTime.of(18, 0, 30), 60, interval,
+        return Series.create(UUID.randomUUID(), UUID.randomUUID(), null, days, LocalTime.of(18, 0, 30), 60, interval,
                 THURSDAY, endsOn, null, null, NOW);
     }
 
@@ -95,12 +95,19 @@ class SeriesTest {
 
     @Test
     void restoresAndTracksVersions() {
-        Series restored = Series.restore(UUID.randomUUID(), UUID.randomUUID(), Set.of(DayOfWeek.FRIDAY),
+        UUID group = UUID.randomUUID();
+        Series restored = Series.restore(UUID.randomUUID(), null, group, Set.of(DayOfWeek.FRIDAY),
                 LocalTime.of(9, 0), 45, 1, THURSDAY, null, "Английский", "https://zoom.us/j/1", THURSDAY, NOW, NOW, 2);
 
         restored.markSaved(3);
 
         assertThat(restored.version()).isEqualTo(3);
+        assertThat(restored.studentId()).isNull();
+        assertThat(restored.groupId()).isEqualTo(group);
+        assertThat(restored.sameOwner(null, group)).isTrue();
+        assertThat(restored.sameOwner(group, null)).isFalse();
+        assertThatThrownBy(() -> Series.create(UUID.randomUUID(), null, null, Set.of(DayOfWeek.MONDAY),
+                LocalTime.NOON, 60, 1, THURSDAY, null, null, null, NOW)).isInstanceOf(IllegalArgumentException.class);
         assertThat(restored.topic()).isEqualTo("Английский");
         assertThat(restored.meetingUrl()).isEqualTo("https://zoom.us/j/1");
         assertThat(restored.durationMinutes()).isEqualTo(45);

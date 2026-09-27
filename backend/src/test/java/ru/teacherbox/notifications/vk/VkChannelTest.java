@@ -1,5 +1,12 @@
 package ru.teacherbox.notifications.vk;
 
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import ru.teacherbox.notifications.application.OutgoingMessage;
+import ru.teacherbox.notifications.application.OutgoingButton;
+import ru.teacherbox.notifications.application.ButtonPress;
+import java.util.List;
+import static org.hamcrest.Matchers.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
@@ -191,5 +198,71 @@ class VkChannelTest {
 
     @EnableConfigurationProperties(NotificationsProperties.class)
     static class PropertiesConfiguration {
+    }
+
+    private static final OutgoingMessage WITH_BUTTONS = new OutgoingMessage("Отправить?", List.of(
+            List.of(new OutgoingButton("Да", "abcdefghijkl:0", null)),
+            List.of(new OutgoingButton("Портал", null, "https://school.example.com"))));
+
+    @Test
+    void sendsInlineButtonsWithPayload() {
+        JsonNode keyboard = JsonMapper.builder().build().readTree(VkChannel.keyboard(WITH_BUTTONS.rows()));
+
+        assertThat(keyboard.path("inline").asBoolean()).isTrue();
+        JsonNode yes = keyboard.path("buttons").path(0).path(0).path("action");
+        assertThat(yes.path("type").asString()).isEqualTo("text");
+        assertThat(yes.path("label").asString()).isEqualTo("Да");
+        assertThat(yes.path("payload").asString()).isEqualTo("{\"b\":\"abcdefghijkl:0\"}");
+        JsonNode link = keyboard.path("buttons").path(1).path(0).path("action");
+        assertThat(link.path("type").asString()).isEqualTo("open_link");
+        assertThat(link.path("link").asString()).isEqualTo("https://school.example.com");
+    }
+
+    @Test
+    void sendsWithoutButtonsWhenTheCommunityHasNoBotFeatures() {
+        server.expect(requestTo(SEND))
+                .andExpect(content().string(containsString("keyboard=")))
+                .andRespond(withSuccess("{\"response\": 17}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(SEND))
+                .andExpect(content().string(containsString("keyboard=")))
+                .andRespond(withSuccess("""
+                        {"error": {"error_code": 912, "error_msg": "This is a chat bot feature"}}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(SEND))
+                .andExpect(content().string(not(containsString("keyboard="))))
+                .andRespond(withSuccess("{\"response\": 18}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(SEND))
+                .andExpect(content().string(not(containsString("keyboard="))))
+                .andRespond(withSuccess("{\"response\": 19}", MediaType.APPLICATION_JSON));
+
+        channel.send("42", WITH_BUTTONS);
+        channel.send("42", WITH_BUTTONS);
+        channel.send("42", WITH_BUTTONS);
+
+        server.verify();
+    }
+
+    @Test
+    void receivesPressedButtonsAsMessagesWithPayload() {
+        server.expect(requestTo(LONG_POLL_SERVER)).andRespond(withSuccess("""
+                {"response": {"key": "KEY", "server": "https://lp.vk.com/wh123", "ts": "1"}}
+                """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://lp.vk.com/wh123?act=a_check&key=KEY&ts=1&wait=25"))
+                .andRespond(withSuccess("""
+                        {"ts": "2", "updates": [
+                          {"type": "message_new", "object": {"message": {"from_id": 5, "peer_id": 5, "text": "Да",
+                            "payload": "{\\"b\\":\\"abcdefghijkl:0\\"}"}}},
+                          {"type": "message_new", "object": {"message": {"from_id": 5, "peer_id": 5, "text": "Начать",
+                            "payload": "{\\"command\\":\\"start\\"}"}}},
+                          {"type": "message_new", "object": {"message": {"from_id": 5, "peer_id": 5, "text": "Странно",
+                            "payload": "not json"}}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+
+        assertThat(channel.poll()).containsExactly(
+                new IncomingMessage("5", "vk.com/id5", "Да", new ButtonPress("abcdefghijkl:0", null, null, null)),
+                new IncomingMessage("5", "vk.com/id5", "Начать"),
+                new IncomingMessage("5", "vk.com/id5", "Странно"));
+        server.verify();
     }
 }

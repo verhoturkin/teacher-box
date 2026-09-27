@@ -7,6 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 import { FileSaver } from '@shared/files/file-saver';
 import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { yandexStatus } from '@testing/meetings-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
 
@@ -75,6 +76,7 @@ describe('SettingsPage', () => {
       connectedAt: null,
       callbackPath: '/api/public/schedule/google/callback',
     });
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
   }
 

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
   ApproveRequest,
+  AttendanceMark,
   BusyTime,
   CalendarFeed,
   CancelLessonRequest,
@@ -53,6 +54,11 @@ export class ScheduleApi {
 
   setOutcome(lessonId: string, outcome: LessonOutcome): Observable<ScheduledLesson> {
     return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`, { outcome });
+  }
+
+  /** Attendance of every participant of a started lesson (a group lesson or a lesson with one student). */
+  markAttendance(lessonId: string, marks: Readonly<Record<string, AttendanceMark>>): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/attendance`, { marks });
   }
 
   reopen(lessonId: string): Observable<ScheduledLesson> {

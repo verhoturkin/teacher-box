@@ -35,6 +35,7 @@ export const KIND_ICONS: Record<NotificationKind, string> = {
   SCHEDULE_REQUEST: 'pi pi-question-circle',
   SCHEDULE_REQUEST_ANSWERED: 'pi pi-comments',
   SCHEDULE_CALENDAR: 'pi pi-google',
+  MEETING_LINK: 'pi pi-video',
   STUDENT_ACTIVATED: 'pi pi-user-plus',
   MESSAGE: 'pi pi-envelope',
 };

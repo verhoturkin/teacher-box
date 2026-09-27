@@ -1,0 +1,59 @@
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { BoardsApi } from '../data-access/boards-api';
+import { MyBoard } from '../data-access/boards.models';
+
+/** A student's boards (their own and their groups'); hidden while there are none. */
+@Component({
+  selector: 'tb-my-boards-card',
+  imports: [ButtonDirective, ButtonIcon, ButtonLabel, Card],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (boards().length > 0) {
+      <p-card header="Мои доски">
+        <ul class="tb-my-boards">
+          @for (board of boards(); track board.id) {
+            <li>
+              <a pButton [href]="board.url" target="_blank" rel="noopener" [outlined]="true" size="small">
+                <i pButtonIcon class="pi pi-th-large"></i>
+                <span pButtonLabel>{{ board.title }}</span>
+              </a>
+              @if (board.groupName !== null) {
+                <small class="tb-muted">группа «{{ board.groupName }}»</small>
+              }
+            </li>
+          }
+        </ul>
+      </p-card>
+    }
+  `,
+  styles: `
+    .tb-my-boards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  `,
+})
+export class MyBoardsCard implements OnInit {
+  private readonly api = inject(BoardsApi);
+
+  protected readonly boards = signal<MyBoard[]>([]);
+
+  ngOnInit(): void {
+    this.api.myBoards().subscribe((boards) => {
+      this.boards.set(boards);
+    });
+  }
+}

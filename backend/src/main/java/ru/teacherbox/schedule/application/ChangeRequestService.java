@@ -2,22 +2,16 @@ package ru.teacherbox.schedule.application;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.teacherbox.identity.api.StudentSummary;
-import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
-import ru.teacherbox.schedule.api.LessonCompleted;
-import ru.teacherbox.schedule.api.LessonRescheduled;
-import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.domain.ChangeRequest;
@@ -28,11 +22,11 @@ import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
-import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
  * Students ask to move or cancel their lessons; the teacher approves or declines. A student never
- * changes the schedule directly.
+ * changes the schedule directly. In a group lesson a cancellation is the student's own absence: a
+ * timely one is accepted at once, a late one waits for the teacher (ADR-0011).
  */
 @Service
 public class ChangeRequestService {
@@ -46,20 +40,23 @@ public class ChangeRequestService {
 
     private final ChangeRequestRepository requests;
     private final LessonRepository lessons;
-    private final UserDirectory directory;
+    private final ScheduleDirectory directory;
+    private final ScheduleQueries queries;
+    private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
-    private final ZoneId zone;
     private final Clock clock;
 
-    public ChangeRequestService(ChangeRequestRepository requests, LessonRepository lessons, UserDirectory directory,
-            ApplicationEventPublisher events, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
+    public ChangeRequestService(ChangeRequestRepository requests, LessonRepository lessons,
+            ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
+            ApplicationEventPublisher events, ScheduleProperties properties, Clock clock) {
         this.requests = requests;
         this.lessons = lessons;
         this.directory = directory;
+        this.queries = queries;
+        this.lessonEvents = lessonEvents;
         this.events = events;
         this.properties = properties;
-        this.zone = timeZone.zoneId();
         this.clock = clock;
     }
 
@@ -68,18 +65,29 @@ public class ChangeRequestService {
     public RequestView request(UUID studentId, UUID lessonId, ChangeKind kind, @Nullable Instant proposedStartsAt,
             @Nullable String comment) {
         Lesson lesson = lessons.findById(lessonId)
-                .filter(found -> found.studentId().equals(studentId))
+                .filter(found -> found.hasParticipant(studentId))
                 .orElseThrow(ChangeRequestService::lessonNotFound);
-        if (requests.findPendingForLesson(lessonId).isPresent()) {
+        if (lesson.isGroup() && !lesson.expectedIds().contains(studentId)) {
+            throw new BusinessRuleException("schedule.participant-not-expected",
+                    "The student has already said they would not come");
+        }
+        if (requests.findPendingForLesson(lessonId, studentId).isPresent()) {
             throw new ConflictException("schedule.request-pending", "The lesson already has an unanswered request");
         }
         Instant now = clock.instant();
-        ChangeRequest request = ChangeRequest.open(Ids.newId(), lesson, kind, proposedStartsAt, comment, now);
-        requests.insert(request);
+        ChangeRequest request = ChangeRequest.open(Ids.newId(), lesson, studentId, kind, proposedStartsAt, comment,
+                now);
         boolean late = ScheduleViews.isLate(kind, lesson.startsAt(), now, properties.lateCancellation());
-        events.publishEvent(new LessonChangeRequested(request.id(), lesson.id(), studentId, kind, lesson.startsAt(),
-                request.proposedStartsAt(), request.comment(), late, now));
-        return RequestView.of(request, lesson.startsAt(), name(studentId), properties.lateCancellation());
+        boolean accepted = lesson.isGroup() && kind == ChangeKind.CANCEL && !late;
+        if (accepted) {
+            lesson.excuse(studentId, null, now);
+            lessons.update(lesson);
+            request.approve(null, now);
+        }
+        requests.insert(request);
+        events.publishEvent(new LessonChangeRequested(request.id(), lesson.id(), studentId, lesson.groupId(), kind,
+                lesson.startsAt(), request.proposedStartsAt(), request.comment(), late, accepted, now));
+        return view(request, lesson);
     }
 
     /** The student takes back an unanswered request. */
@@ -107,29 +115,33 @@ public class ChangeRequestService {
             lesson.edit(requireTime(startsAt), lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), now);
             lessons.update(lesson);
             lessons.clearReminders(lesson.id());
-            events.publishEvent(new LessonRescheduled(lesson.id(), lesson.studentId(), previous, lesson.startsAt(),
-                    lesson.durationMinutes(), true, now));
+            outdateOthers(request, now);
+            lessonEvents.rescheduled(lesson, previous, request.studentId(), now);
+        } else if (lesson.isGroup()) {
+            UUID completionId = approval.charge() ? Ids.newId() : null;
+            lesson.excuse(request.studentId(), completionId, now);
+            lessons.update(lesson);
+            if (completionId != null) {
+                charged = true;
+                lessonEvents.completed(lesson, request.studentId(), completionId, true, now);
+            }
         } else if (approval.charge()) {
             UUID completionId = Ids.newId();
             lesson.chargeCancellation(CancelledBy.STUDENT, request.comment(), completionId, now);
             lessons.update(lesson);
             charged = true;
-            events.publishEvent(new ScheduledLessonCancelled(lesson.id(), lesson.studentId(), lesson.startsAt(),
-                    CancelledBy.STUDENT, lesson.cancelReason(), true, true, now));
-            events.publishEvent(new LessonCompleted(completionId, lesson.id(), lesson.studentId(),
-                    LocalDate.ofInstant(lesson.startsAt(), zone), lesson.durationMinutes(), lesson.topic(), true,
-                    now));
+            lessonEvents.cancelled(lesson, CancelledBy.STUDENT, true, true, now);
+            lessonEvents.completed(lesson, request.studentId(), completionId, true, now);
         } else {
             lesson.cancel(CancelledBy.STUDENT, request.comment(), now);
             lessons.update(lesson);
-            events.publishEvent(new ScheduledLessonCancelled(lesson.id(), lesson.studentId(), lesson.startsAt(),
-                    CancelledBy.STUDENT, lesson.cancelReason(), false, true, now));
+            lessonEvents.cancelled(lesson, CancelledBy.STUDENT, false, true, now);
         }
         request.approve(approval.answer(), now);
         requests.update(request);
-        events.publishEvent(new LessonChangeResolved(request.id(), lesson.id(), lesson.studentId(), request.kind(),
-                true, lesson.startsAt(), charged, request.resolutionComment(), now));
-        return LessonView.of(lesson, name(lesson.studentId()), null);
+        events.publishEvent(new LessonChangeResolved(request.id(), lesson.id(), request.studentId(), lesson.groupId(),
+                request.kind(), true, lesson.startsAt(), charged, request.resolutionComment(), now));
+        return queries.lesson(lesson.id());
     }
 
     @Transactional
@@ -139,9 +151,25 @@ public class ChangeRequestService {
         Instant now = clock.instant();
         request.decline(answer, now);
         requests.update(request);
-        events.publishEvent(new LessonChangeResolved(request.id(), lesson.id(), lesson.studentId(), request.kind(),
-                false, lesson.startsAt(), false, request.resolutionComment(), now));
-        return RequestView.of(request, lesson.startsAt(), name(lesson.studentId()), properties.lateCancellation());
+        events.publishEvent(new LessonChangeResolved(request.id(), lesson.id(), request.studentId(), lesson.groupId(),
+                request.kind(), false, lesson.startsAt(), false, request.resolutionComment(), now));
+        return view(request, lesson);
+    }
+
+    /** After a group lesson moved, the other participants' requests about the old time are outdated. */
+    private void outdateOthers(ChangeRequest approved, Instant now) {
+        requests.findPendingForLesson(approved.lessonId()).stream()
+                .filter(other -> !other.id().equals(approved.id()))
+                .forEach(other -> {
+                    other.outdate(now);
+                    requests.update(other);
+                });
+    }
+
+    private RequestView view(ChangeRequest request, Lesson lesson) {
+        ScheduleNames names = directory.names(List.of(request.studentId()),
+                lesson.groupId() == null ? List.of() : List.of(lesson.groupId()));
+        return RequestView.of(request, lesson, names, properties.lateCancellation());
     }
 
     private ChangeRequest findRequest(UUID requestId) {
@@ -153,10 +181,6 @@ public class ChangeRequestService {
             throw new BusinessRuleException("schedule.proposed-time-invalid", "The new time is missing");
         }
         return startsAt;
-    }
-
-    private @Nullable String name(UUID studentId) {
-        return directory.findStudent(studentId).map(StudentSummary::displayName).orElse(null);
     }
 
     private static NotFoundException lessonNotFound() {

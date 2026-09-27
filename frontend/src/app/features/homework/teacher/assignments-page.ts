@@ -5,6 +5,7 @@ import { Badge } from 'primeng/badge';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
+import { HelpButton } from '@features/help/parts';
 import { IdentityApi } from '@features/identity/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -14,11 +15,14 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
 /** Teacher: all assignments with progress. */
 @Component({
   selector: 'tb-assignments-page',
-  imports: [DatePipe, RouterLink, Badge, Button, ButtonDirective, ButtonLabel, Card, TableModule, RowType, AssignmentDialog],
+  imports: [HelpButton, DatePipe, RouterLink, Badge, Button, ButtonDirective, ButtonLabel, Card, TableModule, RowType, AssignmentDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
-      <h1 class="tb-page-title">Домашние задания</h1>
+      <div class="tb-page-heading">
+        <h1 class="tb-page-title">Домашние задания</h1>
+        <tb-help-button topic="teacher/homework" />
+      </div>
       <div class="tb-actions">
         <a pButton routerLink="review" [outlined]="true">
           <span pButtonLabel>На проверку</span>

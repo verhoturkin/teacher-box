@@ -19,6 +19,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Subscription, interval, switchMap } from 'rxjs';
+import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { isProblemDetail, problemCode } from '@core/http/problem-detail';
 import { LINK_POLL_INTERVAL_MS } from '../channels/channels-panel';
@@ -48,7 +49,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
 /** Teacher: connects a messenger bot step by step, without editing the server configuration. */
 @Component({
   selector: 'tb-bot-wizard-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputNumber, LinkCodeView, Message, Password],
+  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputNumber, LinkCodeView, Message, Password],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -59,6 +60,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       [breakpoints]="{ '640px': '95vw' }"
       [draggable]="false"
     >
+      <tb-help-button topic="teacher/notifications" label="Подробнее о ботах" />
       <ol class="tb-wizard">
         <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 1" [class.tb-wizard__step--done]="step() > 1">
           <button type="button" class="tb-wizard__header" (click)="go(1)">
@@ -85,6 +87,10 @@ function describeMessengerError(error: unknown, fallback: string): string {
                     <li>
                       «Работа с API» → «Long Poll API»: включите, версия API 5.199; в «Типах событий» отметьте «Входящее
                       сообщение».
+                    </li>
+                    <li>
+                      «Сообщения» → «Настройки для бота»: включите «Возможности ботов» — тогда под сообщениями будут
+                      кнопки меню.
                     </li>
                     <li>Номер сообщества — цифры из адреса вида <code>club123456</code>.</li>
                   </ol>

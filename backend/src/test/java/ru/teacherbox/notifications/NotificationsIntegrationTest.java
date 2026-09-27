@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
@@ -40,6 +41,11 @@ public @interface NotificationsIntegrationTest {
         }
 
         @Bean
+        FakeStudentGroups studentGroups() {
+            return new FakeStudentGroups();
+        }
+
+        @Bean
         MutableClock clock() {
             return MutableClock.startingNow();
         }
@@ -47,6 +53,21 @@ public @interface NotificationsIntegrationTest {
         @Bean
         FakeMessengerChannel telegram() {
             return new FakeMessengerChannel(ChannelType.TELEGRAM);
+        }
+
+        @Bean
+        TestChatActions.Feedback feedbackAction() {
+            return new TestChatActions.Feedback();
+        }
+
+        @Bean
+        TestChatActions.TeacherOnly teacherOnlyAction() {
+            return new TestChatActions.TeacherOnly();
+        }
+
+        @Bean
+        TestChatActions.Broken brokenAction() {
+            return new TestChatActions.Broken();
         }
     }
 }

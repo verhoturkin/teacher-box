@@ -4,6 +4,8 @@ import { Observable, map } from 'rxjs';
 import {
   BillingOverview,
   BillingSummary,
+  GroupPrice,
+  GroupPrices,
   Lesson,
   MonthlyReport,
   MyBillingSummary,
@@ -34,6 +36,17 @@ export class BillingApi {
   changeLessonPrice(studentId: string, lessonPrice: number): Observable<number> {
     return this.http
       .put<{ lessonPrice: number }>(`/api/teacher/billing/students/${studentId}/price`, { lessonPrice })
+      .pipe(map((response) => response.lessonPrice));
+  }
+
+  groupPrices(): Observable<GroupPrices> {
+    return this.http.get<GroupPrices>('/api/teacher/billing/groups');
+  }
+
+  /** @returns the saved price in minor units */
+  changeGroupPrice(groupId: string, lessonPrice: number): Observable<number> {
+    return this.http
+      .put<GroupPrice>(`/api/teacher/billing/groups/${groupId}/price`, { lessonPrice })
       .pipe(map((response) => response.lessonPrice));
   }
 

@@ -5,6 +5,8 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { ToBoardDialog } from '@features/boards/parts';
+import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
   assignmentDetails,
@@ -15,6 +17,7 @@ import {
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { aGroup } from '@testing/identity-fixtures';
 import { AssignmentDialog } from './assignment-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -98,6 +101,8 @@ describe('AssignmentPage', () => {
     context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
     context.backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
+    context.backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
@@ -157,6 +162,33 @@ describe('AssignmentPage', () => {
     expect(backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body).toEqual({
       studentIds: ['s-3'],
     });
+    fixture.destroy();
+  });
+  it('adds the students of a group who do not have the assignment yet', async () => {
+    const { fixture } = await render();
+
+    fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker).picked.emit(['s-1', 's-3', 's-9']);
+
+    expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
+    fixture.destroy();
+  });
+
+
+  it('puts the assignment on a board', async () => {
+    const { fixture, host, backend } = await render();
+
+    buttonByText(host, 'На доску').click();
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    // The page's own dialog: the editor of the assignment has another one.
+    const board = fixture.debugElement.queryAll(By.directive(ToBoardDialog)).at(-1)!.injector.get(ToBoardDialog);
+    const assignment = assignmentDetails();
+    expect(board.visible()).toBe(true);
+    expect(board.title()).toBe(assignment.title);
+    expect(board.markdown()).toBe(assignment.description);
+    expect(board.ownerIds()).toEqual(assignment.tasks.map((task) => task.studentId));
     fixture.destroy();
   });
 });
@@ -262,6 +294,29 @@ describe('TaskReviewPage', () => {
 
     expect(fixture.componentInstance.form.getRawValue()).toEqual({ grade: '4', comment: 'Почти верно, проверь №2' });
     expect(readableText(host)).toContain('ИИ предлагает вернуть работу на доработку');
+  });
+
+  it('puts the review on a board', async () => {
+    const details = taskDetails();
+    const { fixture, host, backend } = await render(details);
+    const toBoard = buttonByText(host, 'На доску');
+    expect(toBoard.disabled).toBe(true);
+
+    fixture.componentInstance.form.setValue({ grade: '', comment: 'Проверь №2' });
+    await fixture.whenStable();
+    const board = fixture.debugElement.query(By.directive(ToBoardDialog)).injector.get(ToBoardDialog);
+    expect(board.markdown()).toBe('Проверь №2');
+    fixture.componentInstance.form.setValue({ grade: '4', comment: 'Проверь №2' });
+    await fixture.whenStable();
+    toBoard.click();
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    expect(board.visible()).toBe(true);
+    expect(board.title()).toBe('Разбор: ' + details.assignment.title);
+    expect(board.markdown()).toBe('**Оценка: 4**\n\nПроверь №2');
+    expect(board.ownerIds()).toEqual([details.studentId]);
   });
 
   it('suggests accepting and tolerates a missing grade', async () => {

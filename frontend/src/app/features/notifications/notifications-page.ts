@@ -2,11 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, viewChild 
 import { Router } from '@angular/router';
 import { Badge } from 'primeng/badge';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { HelpButton } from '@features/help/parts';
 import { AuthService } from '@core/auth/auth.service';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { ChannelsPanel } from './channels/channels-panel';
 import { InboxPanel } from './inbox/inbox-panel';
 import { PreferencesPanel } from './preferences/preferences-panel';
+import { BotAbilitiesPanel } from './teacher/bot-abilities-panel';
 import { BotsPanel } from './teacher/bots-panel';
 import { BroadcastsPanel } from './teacher/broadcasts-panel';
 import { StudentMessengersPanel } from './teacher/student-messengers-panel';
@@ -22,13 +24,14 @@ function isTeacherTab(value: unknown): value is TeacherTab {
 /** Notifications of the current user; the teacher also manages bots, messages to students and their messengers. */
 @Component({
   selector: 'tb-notifications-page',
-  imports: [
+  imports: [HelpButton, 
     Badge,
     Tab,
     TabList,
     TabPanel,
     TabPanels,
     Tabs,
+    BotAbilitiesPanel,
     BotsPanel,
     BroadcastsPanel,
     ChannelsPanel,
@@ -38,7 +41,10 @@ function isTeacherTab(value: unknown): value is TeacherTab {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Уведомления</h1>
+    <div class="tb-page-heading">
+      <h1 class="tb-page-title">Уведомления</h1>
+      <tb-help-button [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
+    </div>
     @if (teacher) {
       <p-tabs [value]="activeTab()" (valueChange)="select($event)" [lazy]="true" [scrollable]="true">
         <p-tablist>
@@ -69,6 +75,7 @@ function isTeacherTab(value: unknown): value is TeacherTab {
               <div class="tb-stack">
                 <tb-bots-panel (changed)="reloadChannels()" />
                 <tb-channels-panel [teacher]="true" header="Мои мессенджеры" (changed)="reloadBots()" />
+                <tb-bot-abilities-panel />
               </div>
             </ng-template>
           </p-tabpanel>

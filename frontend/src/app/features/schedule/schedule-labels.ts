@@ -1,5 +1,13 @@
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
-import { ChangeKind, RequestStatus, ScheduleLessonStatus, Weekday } from './data-access/schedule.models';
+import {
+  Attendance,
+  ChangeKind,
+  ChangeRequest,
+  RequestStatus,
+  ScheduleLessonStatus,
+  ScheduledLesson,
+  Weekday,
+} from './data-access/schedule.models';
 
 export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 
@@ -13,6 +21,13 @@ export const STATUS_LABELS: Readonly<Record<ScheduleLessonStatus, { label: strin
 export const KIND_LABELS: Readonly<Record<ChangeKind, string>> = {
   RESCHEDULE: 'Перенос',
   CANCEL: 'Отмена',
+};
+
+export const ATTENDANCE_LABELS: Readonly<Record<Attendance, { label: string; severity: TagSeverity }>> = {
+  EXPECTED: { label: 'Ожидается', severity: 'info' },
+  ATTENDED: { label: 'Был', severity: 'success' },
+  MISSED: { label: 'Пропуск', severity: 'warn' },
+  EXCUSED: { label: 'Предупредил', severity: 'secondary' },
 };
 
 export const REQUEST_STATUS_LABELS: Readonly<Record<RequestStatus, { label: string; severity: TagSeverity }>> = {
@@ -91,4 +106,17 @@ export function widen(range: { readonly from: string; readonly to: string }): { 
   from.setDate(from.getDate() - 1);
   to.setDate(to.getDate() + 1);
   return { from: toIsoDate(from), to: toIsoDate(to) };
+}
+
+/** Who the lesson is with: «Группа «ОГЭ»» or the student's name. */
+export function lessonWith(lesson: Pick<ScheduledLesson, 'groupId' | 'groupName' | 'studentName'>): string {
+  if (lesson.groupId !== null) {
+    return `Группа «${lesson.groupName ?? 'без названия'}»`;
+  }
+  return lesson.studentName ?? 'Ученик';
+}
+
+/** What a request asks for; in a group lesson a cancellation means that the student will not come. */
+export function requestKindLabel(request: Pick<ChangeRequest, 'groupId' | 'kind'>): string {
+  return request.groupId !== null && request.kind === 'CANCEL' ? 'Не придёт' : KIND_LABELS[request.kind];
 }

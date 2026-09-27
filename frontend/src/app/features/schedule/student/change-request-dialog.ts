@@ -23,6 +23,16 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
       @if (lesson(); as lesson) {
         <div class="tb-form">
           <p>Занятие: {{ time() }}</p>
+          @if (lesson.groupId !== null) {
+            <p class="tb-muted">
+              @if (kind() === 'RESCHEDULE') {
+                Это занятие группы «{{ lesson.groupName }}»: если учитель согласится, его перенесут для всей группы.
+              } @else {
+                Занятие группы «{{ lesson.groupName }}» пройдёт без вас. Предупредите заранее — тогда учитель
+                сразу узнает, а пропуск не засчитается.
+              }
+            </p>
+          }
           @if (kind() === 'RESCHEDULE') {
             <div class="tb-field">
               <label for="request-start">Удобное время</label>
@@ -57,7 +67,7 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
       <ng-template #footer>
         <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
         <p-button
-          label="Отправить учителю"
+          [label]="absence() && !late() ? 'Предупредить учителя' : 'Отправить учителю'"
           [loading]="pending()"
           [disabled]="kind() === 'RESCHEDULE' && proposed() === null"
           (onClick)="send()"
@@ -82,7 +92,14 @@ export class ChangeRequestDialog {
   protected readonly comment = signal('');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly title = computed(() => (this.kind() === 'RESCHEDULE' ? 'Перенести занятие' : 'Отменить занятие'));
+  /** «I will not come» to a group lesson. */
+  protected readonly absence = computed(() => this.kind() === 'CANCEL' && (this.lesson()?.groupId ?? null) !== null);
+  protected readonly title = computed(() => {
+    if (this.kind() === 'RESCHEDULE') {
+      return 'Перенести занятие';
+    }
+    return this.absence() ? 'Не приду на занятие' : 'Отменить занятие';
+  });
   protected readonly time = computed(() => {
     const lesson = this.lesson();
     return lesson === null ? '' : formatLessonTime(lesson.startsAt, lesson.endsAt);

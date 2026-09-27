@@ -23,8 +23,16 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
       @if (request(); as request) {
         <div class="tb-form">
           <p>
-            <strong>{{ request.studentName ?? 'Ученик' }}</strong>: {{ kinds[request.kind].toLowerCase() }} занятия
-            {{ start(request.lessonStartsAt) }}
+            @if (request.groupId !== null && request.kind === 'CANCEL') {
+              <strong>{{ request.studentName ?? 'Ученик' }}</strong> не придёт на занятие группы
+              «{{ request.groupName }}» {{ start(request.lessonStartsAt) }}
+            } @else {
+              <strong>{{ request.studentName ?? 'Ученик' }}</strong>: {{ kinds[request.kind].toLowerCase() }} занятия
+              {{ start(request.lessonStartsAt) }}
+              @if (request.groupId !== null) {
+                (группа «{{ request.groupName }}» — занятие перенесётся для всех)
+              }
+            }
           </p>
           @if (request.comment !== null) {
             <p class="tb-muted">«{{ request.comment }}»</p>

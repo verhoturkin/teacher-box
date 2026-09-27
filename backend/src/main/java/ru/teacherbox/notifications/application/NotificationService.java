@@ -35,6 +35,7 @@ import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.InboxRepository;
 import ru.teacherbox.notifications.persistence.PreferencesRepository;
+import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
@@ -65,14 +66,16 @@ public class NotificationService {
     private final PreferencesRepository preferences;
     private final BroadcastRepository broadcasts;
     private final UserDirectory users;
+    private final ChatEngine chat;
+    private final KeyboardCodec keyboards;
     private final NotificationsProperties properties;
     private final ZoneId zone;
     private final Clock clock;
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
             MessengerChannels channels, MessengerHealth health, PreferencesRepository preferences,
-            BroadcastRepository broadcasts, UserDirectory users, NotificationsProperties properties,
-            InstanceTimeZone timeZone, Clock clock) {
+            BroadcastRepository broadcasts, UserDirectory users, ChatEngine chat, KeyboardCodec keyboards,
+            NotificationsProperties properties, InstanceTimeZone timeZone, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
@@ -82,6 +85,8 @@ public class NotificationService {
         this.broadcasts = broadcasts;
         this.zone = timeZone.zoneId();
         this.users = users;
+        this.chat = chat;
+        this.keyboards = keyboards;
         this.properties = properties;
         this.clock = clock;
     }
@@ -94,6 +99,18 @@ public class NotificationService {
     @Transactional
     public InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
             @Nullable String link) {
+        return notify(recipientId, kind, title, body, link, null);
+    }
+
+    /**
+     * Notifies a user; in messengers, an action of the bot may put its buttons under the message
+     * (e.g. «Принять» under a request, ADR-0013).
+     *
+     * @param subject what the notification is about, for the bot's actions
+     */
+    @Transactional
+    public InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
+            @Nullable String link, @Nullable ChatSubject subject) {
         Instant now = clock.instant();
         InboxNotification notification = InboxNotification.create(Ids.newId(), recipientId, kind, title, body, link,
                 now);
@@ -104,8 +121,11 @@ public class NotificationService {
             Instant notBefore = settings.deliverAt(now, zone);
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
                 if (channelLink.enabled() && channels.isAvailable(channelLink.channel())) {
+                    String keyboard = subject == null ? null : keyboards.write(chat.offer(recipientId,
+                            channelLink.channel(), channelLink.externalId(), subject));
                     deliveries.insert(Delivery.schedule(Ids.newId(), notification.id(), recipientId,
-                            channelLink.channel(), channelLink.externalId(), text, now, notBefore));
+                            channelLink.channel(), channelLink.externalId(), text, now, notBefore)
+                            .withKeyboard(keyboard));
                 }
             }
         }

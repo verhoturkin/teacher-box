@@ -1,6 +1,7 @@
 package ru.teacherbox.notifications.telegram;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,16 +10,21 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import ru.teacherbox.notifications.application.BotCommand;
+import ru.teacherbox.notifications.application.ButtonPress;
 import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.MessengerHttp;
+import ru.teacherbox.notifications.application.OutgoingButton;
+import ru.teacherbox.notifications.application.OutgoingMessage;
 import ru.teacherbox.notifications.domain.ChannelType;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Telegram Bot API: {@code sendMessage} and {@code getUpdates} long polling. The account is
- * connected by the deep link {@code t.me/<bot>?start=<code>} or by sending the code to the bot.
+ * Telegram Bot API: {@code sendMessage} with an inline keyboard and {@code getUpdates} long polling of
+ * messages and pressed buttons ({@code callback_query}). The account is connected by the deep link
+ * {@code t.me/<bot>?start=<code>} or by sending the code to the bot.
  */
 public class TelegramChannel implements MessengerChannel {
 
@@ -44,13 +50,19 @@ public class TelegramChannel implements MessengerChannel {
     }
 
     @Override
-    public void send(String externalId, String text) {
+    public void send(String externalId, OutgoingMessage message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("chat_id", externalId);
+        body.put("text", message.text());
+        body.put("link_preview_options", Map.of("is_disabled", true));
+        if (!message.rows().isEmpty()) {
+            body.put("reply_markup", Map.of("inline_keyboard", keyboard(message.rows())));
+        }
         try {
             http.post()
                     .uri(methodPath("sendMessage"))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("chat_id", externalId, "text", text,
-                            "link_preview_options", Map.of("is_disabled", true)))
+                    .body(body)
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientResponseException e) {
@@ -65,10 +77,14 @@ public class TelegramChannel implements MessengerChannel {
     @Override
     public List<IncomingMessage> poll() {
         JsonNode response = call("getUpdates", Map.of("offset", offset,
-                "timeout", MessengerHttp.POLL_TIMEOUT_SECONDS, "allowed_updates", List.of("message")));
+                "timeout", MessengerHttp.POLL_TIMEOUT_SECONDS, "allowed_updates", List.of("message", "callback_query")));
         List<IncomingMessage> messages = new ArrayList<>();
         for (JsonNode update : response.path("result")) {
             offset = Math.max(offset, update.path("update_id").asLong() + 1);
+            if (update.has("callback_query")) {
+                pressed(update.path("callback_query")).ifPresent(messages::add);
+                continue;
+            }
             JsonNode message = update.path("message");
             String text = message.path("text").asString("");
             if (!"private".equals(message.path("chat").path("type").asString("")) || text.isEmpty()) {
@@ -78,6 +94,49 @@ public class TelegramChannel implements MessengerChannel {
                     displayName(message.path("from")), text));
         }
         return messages;
+    }
+
+    /** A pressed button in a private chat with the bot. */
+    private static Optional<IncomingMessage> pressed(JsonNode callback) {
+        String data = callback.path("data").asString("");
+        JsonNode message = callback.path("message");
+        String chatType = message.path("chat").path("type").asString("private");
+        if (data.isEmpty() || !"private".equals(chatType) || !callback.path("from").has("id")) {
+            return Optional.empty();
+        }
+        String messageId = message.path("message_id").asString("");
+        return Optional.of(new IncomingMessage(callback.path("from").path("id").asString(),
+                displayName(callback.path("from")), "", new ButtonPress(data, callback.path("id").asString(),
+                        messageId.isEmpty() ? null : messageId, null)));
+    }
+
+    /** Stops the button's spinner and removes the used buttons from the message. */
+    @Override
+    public void acknowledge(String externalId, ButtonPress press) {
+        if (press.callbackId() != null) {
+            call("answerCallbackQuery", Map.of("callback_query_id", press.callbackId()));
+        }
+        if (press.messageId() != null) {
+            call("editMessageReplyMarkup", Map.of("chat_id", externalId, "message_id", press.messageId(),
+                    "reply_markup", Map.of("inline_keyboard", List.of())));
+        }
+    }
+
+    @Override
+    public void publishCommands(List<BotCommand> commands) {
+        call("setMyCommands", Map.of("commands", commands.stream()
+                .map(command -> Map.of("command", command.command(), "description", command.description()))
+                .toList()));
+    }
+
+    private static List<List<Map<String, String>>> keyboard(List<List<OutgoingButton>> rows) {
+        return rows.stream()
+                .map(row -> row.stream()
+                        .map(button -> button.data() != null
+                                ? Map.of("text", button.label(), "callback_data", button.data())
+                                : Map.of("text", button.label(), "url", String.valueOf(button.url())))
+                        .toList())
+                .toList();
     }
 
     @Override

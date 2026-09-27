@@ -12,13 +12,16 @@
 - **Ученики — много.** Учитель заводит ученика и выдаёт ему ссылку-приглашение; ученик сам
   задаёт логин и пароль и попадает в личный кабинет (ЛК).
 - Подсистемы бекенда (модули):
-  1. `identity` — аутентификация учителя и учеников (приглашения, логин, JWT, refresh-токены).
+  1. `identity` — аутентификация учителя и учеников (приглашения, логин, JWT, refresh-токены),
+     группы учеников.
   2. `billing` — учёт занятий и оплат, баланс ученика, отчёты.
   3. `homework` — домашние задания: выдача, сдача, проверка, вложения.
   4. `notifications` — уведомления: ЛК (inbox), Telegram-бот, ЛС мессенджеров (VK, MAX).
   5. `ai` — интеграция с LLM: генерация заданий, черновик проверки работы.
-  6. `schedule` — расписание: занятия и еженедельные серии, запросы учеников на перенос/отмену,
-     напоминания, подписка на календарь (ICS).
+  6. `schedule` — расписание: занятия и еженедельные серии (с учеником или группой), посещаемость,
+     запросы учеников на перенос/отмену, напоминания, подписка на календарь (ICS).
+  7. `meetings` — видеовстречи: постоянные комнаты учеников и групп в Яндекс Телемосте.
+  8. `boards` — интерактивные доски (Холст) учеников и групп по ссылкам.
 
 Пошаговый план — [`docs/PLAN.md`](docs/PLAN.md). Архитектурные решения — [`docs/adr/`](docs/adr).
 
@@ -54,12 +57,14 @@ teacher-box/
 │       ├── TeacherBoxApplication.java
 │       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки, HTTP-клиенты
 │       ├── platform/            # инфраструктура: security, ошибки HTTP, миграции, бэкапы, SPA
-│       ├── identity/            # 1. аутентификация
+│       ├── identity/            # 1. аутентификация и группы учеников
 │       ├── billing/             # 2. оплата занятий
 │       ├── homework/            # 3. домашние задания
 │       ├── notifications/       # 4. уведомления
 │       ├── ai/                  # 5. интеграция с ИИ
-│       └── schedule/            # 6. расписание занятий
+│       ├── schedule/            # 6. расписание занятий
+│       ├── meetings/            # 7. видеовстречи (Телемост)
+│       └── boards/              # 8. доски (Холст)
 ├── frontend/                    # Angular приложение
 │   └── src/app/
 │       ├── core/                # auth, interceptors, guards, layout, конфиг
@@ -109,13 +114,15 @@ teacher-box/
    | `identity` | `shared` |
    | `billing` | `shared`, `identity::api`, `schedule::api` (только события: итог занятия → начисление) |
    | `homework` | `shared`, `identity::api` |
-   | `notifications` | `shared`, `identity::api` (события и `UserDirectory`), `billing::api`, `homework::api`, `schedule::api` (только события) |
+   | `notifications` | `shared`, `identity::api` (события и фасады), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (только события) |
    | `ai` | `shared` |
-   | `schedule` | `shared`, `identity::api` |
+   | `schedule` | `shared`, `identity::api`, `meetings::api` (ссылки комнат) |
+   | `meetings` | `shared`, `identity::api` |
+   | `boards` | `shared`, `identity::api` |
 
    Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.
 3. **Данные:** у каждого модуля своя схема БД (`identity`, `billing`, `homework`,
-   `notifications`, `ai`, `schedule`), свои Flyway-миграции в `db/migration/<module>/` и своя
+   `notifications`, `ai`, `schedule`, `meetings`, `boards`), свои Flyway-миграции в `db/migration/<module>/` и своя
    таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
    схемами и JOIN между схемами. Между модулями передаются только идентификаторы (UUID).
 4. **Взаимодействие:**
@@ -147,8 +154,12 @@ teacher-box/
   данные модуля — `/api/admin/<module>/**` в самом модуле), `/api/me/**` (учитель и ученик: ЛК;
   администратору — только `/api/me` и `/api/me/password`), `/api/<module>/**` — по правилам модуля.
 - Журнал не должен содержать персональных данных: в сообщениях — идентификаторы, не имена и
-  тексты. Действия администратора — через `shared.diagnostics.AuditLog`; проверки внешних
-  сервисов модули отдают через SPI `shared.diagnostics.IntegrationCheck`.
+  тексты. Действия администратора и изменения учителя через бота — через
+  `shared.diagnostics.AuditLog`; проверки внешних сервисов модули отдают через SPI
+  `shared.diagnostics.IntegrationCheck`.
+- Действия ботов мессенджеров — SPI `shared.chat.ChatAction` ([ADR-0013](docs/adr/0013-bot-dialogs.md)):
+  модуль объявляет бин, движок в `notifications` показывает его в меню. Действие проверяет права
+  как REST-эндпоинт и меняет только данные своего модуля.
 
 ## 5. Команды
 

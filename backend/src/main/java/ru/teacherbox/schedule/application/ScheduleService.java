@@ -6,28 +6,25 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.teacherbox.identity.api.StudentSummary;
-import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.schedule.api.CancelledBy;
-import ru.teacherbox.schedule.api.LessonCompleted;
-import ru.teacherbox.schedule.api.LessonCompletionRevoked;
-import ru.teacherbox.schedule.api.LessonRescheduled;
-import ru.teacherbox.schedule.api.LessonScheduled;
-import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.api.SeriesScheduled;
 import ru.teacherbox.schedule.api.SeriesStopped;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
-import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesPlanned;
 import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
+import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
+import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.schedule.domain.Series;
 import ru.teacherbox.schedule.persistence.ChangeRequestRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
@@ -38,16 +35,22 @@ import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
-/** The teacher's changes of the schedule: lessons, series and outcomes. */
+/** The teacher's changes of the schedule: lessons and series with a student or a group, attendance. */
 @Service
 public class ScheduleService {
 
+    /** Reason of the lessons cancelled because their group was archived. */
+    static final String GROUP_ARCHIVED = "Группа в архиве";
+
     /**
+     * A lesson with a student or with a group (exactly one of the two).
+     *
      * @param durationMinutes defaults to the configured duration
      * @param allowOverlap    plan even if the time overlaps another lesson
      */
-    public record PlanLesson(UUID studentId, Instant startsAt, @Nullable Integer durationMinutes,
-            @Nullable String topic, @Nullable String meetingUrl, boolean allowOverlap) {
+    public record PlanLesson(@Nullable UUID studentId, @Nullable UUID groupId, Instant startsAt,
+            @Nullable Integer durationMinutes, @Nullable String topic, @Nullable String meetingUrl,
+            boolean allowOverlap) {
     }
 
     public record EditLesson(Instant startsAt, int durationMinutes, @Nullable String topic,
@@ -62,30 +65,36 @@ public class ScheduleService {
     }
 
     /**
+     * Regular lessons with a student or with a group (exactly one of the two).
+     *
      * @param startTime local time in the instance time zone
      * @param startsOn  first day of the series (for a change: the day the change applies from)
      */
-    public record PlanSeries(UUID studentId, Set<DayOfWeek> weekdays, LocalTime startTime,
-            @Nullable Integer durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
-            @Nullable String topic, @Nullable String meetingUrl, boolean allowOverlap) {
+    public record PlanSeries(@Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
+            LocalTime startTime, @Nullable Integer durationMinutes, int intervalWeeks, LocalDate startsOn,
+            @Nullable LocalDate endsOn, @Nullable String topic, @Nullable String meetingUrl, boolean allowOverlap) {
     }
 
     private final LessonRepository lessons;
     private final SeriesRepository series;
     private final ChangeRequestRepository requests;
-    private final UserDirectory directory;
+    private final ScheduleDirectory directory;
+    private final ScheduleQueries queries;
+    private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
     private final ZoneId zone;
     private final Clock clock;
 
     public ScheduleService(LessonRepository lessons, SeriesRepository series, ChangeRequestRepository requests,
-            UserDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
-            InstanceTimeZone timeZone, Clock clock) {
+            ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
+            ApplicationEventPublisher events, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
         this.series = series;
         this.requests = requests;
         this.directory = directory;
+        this.queries = queries;
+        this.lessonEvents = lessonEvents;
         this.events = events;
         this.properties = properties;
         this.zone = timeZone.zoneId();
@@ -94,16 +103,23 @@ public class ScheduleService {
 
     @Transactional
     public LessonView plan(PlanLesson command) {
-        StudentSummary student = currentStudent(command.studentId());
         int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
         Instant now = clock.instant();
-        Lesson lesson = Lesson.plan(Ids.newId(), student.id(), null, null, command.startsAt(), duration,
-                command.topic(), command.meetingUrl(), now);
+        UUID groupId = owner(command.studentId(), command.groupId());
+        Lesson lesson;
+        if (groupId != null) {
+            List<UUID> members = requireMembers(groupId);
+            lesson = Lesson.planForGroup(Ids.newId(), groupId, members, null, null, command.startsAt(), duration,
+                    command.topic(), command.meetingUrl(), now);
+        } else {
+            UUID studentId = directory.currentStudent(required(command.studentId())).id();
+            lesson = Lesson.plan(Ids.newId(), studentId, null, null, command.startsAt(), duration, command.topic(),
+                    command.meetingUrl(), now);
+        }
         requireFree(lesson.startsAt(), lesson.endsAt(), null, command.allowOverlap());
         lessons.insert(lesson);
-        events.publishEvent(new LessonScheduled(lesson.id(), lesson.studentId(), lesson.startsAt(),
-                lesson.durationMinutes(), lesson.topic(), now));
-        return LessonView.of(lesson, student.displayName(), null);
+        lessonEvents.scheduled(lesson, now);
+        return queries.lesson(lesson.id());
     }
 
     @Transactional
@@ -119,73 +135,85 @@ public class ScheduleService {
         lessons.update(lesson);
         if (moved) {
             lessons.clearReminders(lesson.id());
-            outdatePendingRequest(lesson.id(), now);
-            events.publishEvent(new LessonRescheduled(lesson.id(), lesson.studentId(), previousStart,
-                    lesson.startsAt(), lesson.durationMinutes(), false, now));
+            outdatePendingRequests(lesson.id(), now);
+            lessonEvents.rescheduled(lesson, previousStart, null, now);
         }
-        return view(lesson);
+        return queries.lesson(lesson.id());
     }
 
     @Transactional
     public LessonView cancel(UUID lessonId, CancelLesson command) {
-        if (command.charge() && !command.byStudent()) {
-            throw new BusinessRuleException("schedule.charge-invalid",
-                    "Only a cancellation by the student can be charged");
-        }
         Lesson lesson = find(lessonId);
+        if (command.charge() && (!command.byStudent() || lesson.isGroup())) {
+            throw new BusinessRuleException("schedule.charge-invalid",
+                    "Only a cancellation by the student of a lesson with one student can be charged");
+        }
+        if (command.byStudent() && lesson.isGroup()) {
+            throw new BusinessRuleException("schedule.lesson-group",
+                    "A student cancels only their own participation in a group lesson");
+        }
         Instant now = clock.instant();
         CancelledBy by = command.byStudent() ? CancelledBy.STUDENT : CancelledBy.TEACHER;
         UUID completionId = command.charge() ? Ids.newId() : null;
+        List<Participant> revoked = List.of();
         if (completionId != null) {
             lesson.chargeCancellation(by, command.reason(), completionId, now);
         } else {
-            lesson.cancel(by, command.reason(), now);
+            revoked = lesson.cancel(by, command.reason(), now);
         }
         lessons.update(lesson);
-        outdatePendingRequest(lesson.id(), now);
-        events.publishEvent(new ScheduledLessonCancelled(lesson.id(), lesson.studentId(), lesson.startsAt(), by,
-                lesson.cancelReason(), completionId != null, false, now));
+        outdatePendingRequests(lesson.id(), now);
+        lessonEvents.revoked(lesson, revoked, now);
+        lessonEvents.cancelled(lesson, by, completionId != null, false, now);
         if (completionId != null) {
-            publishCompleted(lesson, completionId, now);
+            lessonEvents.completed(lesson, lesson.studentId(), completionId, true, now);
         }
-        return view(lesson);
+        return queries.lesson(lesson.id());
     }
 
-    /** Marks the outcome of a lesson that has started, or corrects it. */
+    /** Marks the outcome of a started lesson with one student, or corrects it. */
     @Transactional
     public LessonView setOutcome(UUID lessonId, LessonStatus outcome) {
         Lesson lesson = find(lessonId);
         Instant now = clock.instant();
-        UUID completionId = Ids.newId();
-        UUID replaced = lesson.complete(outcome, completionId, now);
-        lessons.update(lesson);
-        outdatePendingRequest(lesson.id(), now);
-        if (replaced != null) {
-            events.publishEvent(new LessonCompletionRevoked(replaced, lesson.id(), lesson.studentId(), now));
-        }
-        publishCompleted(lesson, completionId, now);
-        return view(lesson);
+        List<Participant.Change> changes = lesson.complete(outcome, Ids::newId, now);
+        return saveMarks(lesson, changes, now);
     }
 
-    /** Withdraws the marked outcome: the lesson is planned again and its charge is revoked. */
+    /** Marks the attendance of every participant of a started lesson, or corrects it. */
+    @Transactional
+    public LessonView markAttendance(UUID lessonId, Map<UUID, Attendance> marks) {
+        Lesson lesson = find(lessonId);
+        Instant now = clock.instant();
+        List<Participant.Change> changes = lesson.markAttendance(marks, Ids::newId, now);
+        return saveMarks(lesson, changes, now);
+    }
+
+    /** Withdraws the marked outcome: the lesson is planned again and its charges are revoked. */
     @Transactional
     public LessonView reopen(UUID lessonId) {
         Lesson lesson = find(lessonId);
         Instant now = clock.instant();
-        UUID revoked = lesson.reopen(now);
+        List<Participant> revoked = lesson.reopen(now);
         lessons.update(lesson);
-        events.publishEvent(new LessonCompletionRevoked(revoked, lesson.id(), lesson.studentId(), now));
-        return view(lesson);
+        lessonEvents.revoked(lesson, revoked, now);
+        return queries.lesson(lesson.id());
     }
 
     @Transactional
     public SeriesPlanned planSeries(PlanSeries command) {
-        StudentSummary student = currentStudent(command.studentId());
         Instant now = clock.instant();
+        UUID groupId = owner(command.studentId(), command.groupId());
+        List<UUID> students;
+        if (groupId != null) {
+            students = requireMembers(groupId);
+        } else {
+            students = List.of(directory.currentStudent(required(command.studentId())).id());
+        }
         int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
-        Series created = Series.create(Ids.newId(), student.id(), command.weekdays(), command.startTime(), duration,
-                command.intervalWeeks(), command.startsOn(), command.endsOn(), command.topic(), command.meetingUrl(),
-                now);
+        Series created = Series.create(Ids.newId(), groupId == null ? students.getFirst() : null, groupId,
+                command.weekdays(), command.startTime(), duration, command.intervalWeeks(), command.startsOn(),
+                command.endsOn(), command.topic(), command.meetingUrl(), now);
         LocalDate today = LocalDate.ofInstant(now, zone);
         LocalDate from = created.startsOn().isBefore(today) ? today : created.startsOn();
         LocalDate until = today.plusDays(properties.horizonDays());
@@ -198,10 +226,10 @@ public class ScheduleService {
         series.insert(created);
         int generated = generate(created, from, until, now);
         series.update(created);
-        events.publishEvent(new SeriesScheduled(created.id(), created.studentId(), created.weekdays(),
+        events.publishEvent(new SeriesScheduled(created.id(), groupId, students, created.weekdays(),
                 created.startTime(), created.durationMinutes(), created.intervalWeeks(), created.startsOn(),
                 created.endsOn(), now));
-        return new SeriesPlanned(SeriesView.of(created, student.displayName()), generated);
+        return new SeriesPlanned(SeriesView.of(created, directory.namesOfSeries(List.of(created))), generated);
     }
 
     /**
@@ -212,8 +240,9 @@ public class ScheduleService {
     @Transactional
     public SeriesPlanned changeSeries(UUID seriesId, PlanSeries command) {
         Series current = findSeries(seriesId);
-        if (!current.studentId().equals(command.studentId())) {
-            throw new BusinessRuleException("schedule.series-student-fixed", "A series belongs to one student");
+        if (!current.sameOwner(command.studentId(), command.groupId())) {
+            throw new BusinessRuleException("schedule.series-student-fixed",
+                    "A series belongs to one student or group");
         }
         stop(current, command.startsOn(), true);
         return planSeries(command);
@@ -247,33 +276,79 @@ public class ScheduleService {
         return created;
     }
 
+    /** The members of a group changed: planned future lessons of the group follow (past ones stay). */
+    @Transactional
+    public void syncGroupMembers(UUID groupId, Collection<UUID> added, Collection<UUID> removed) {
+        Instant now = clock.instant();
+        for (Lesson lesson : lessons.findScheduledOfGroup(groupId, now)) {
+            boolean changed = false;
+            for (UUID studentId : removed) {
+                changed |= lesson.removeParticipant(studentId, now);
+            }
+            for (UUID studentId : added) {
+                changed |= lesson.addParticipant(studentId, now);
+            }
+            if (changed) {
+                lessons.update(lesson);
+            }
+        }
+    }
+
+    /** An archived group has no future lessons: its series stop and planned lessons are cancelled. */
+    @Transactional
+    public void stopGroup(UUID groupId) {
+        Instant now = clock.instant();
+        LocalDate tomorrow = LocalDate.ofInstant(now, zone).plusDays(1);
+        for (Series active : series.findActive(tomorrow)) {
+            if (groupId.equals(active.groupId())) {
+                stop(active, tomorrow, false);
+            }
+        }
+        for (Lesson lesson : lessons.findScheduledOfGroup(groupId, now)) {
+            List<Participant> revoked = lesson.cancel(CancelledBy.TEACHER, GROUP_ARCHIVED, now);
+            lessons.update(lesson);
+            outdatePendingRequests(lesson.id(), now);
+            lessonEvents.revoked(lesson, revoked, now);
+            lessonEvents.cancelled(lesson, CancelledBy.TEACHER, false, false, now);
+        }
+    }
+
+    private LessonView saveMarks(Lesson lesson, List<Participant.Change> changes, Instant now) {
+        lessons.update(lesson);
+        outdatePendingRequests(lesson.id(), now);
+        lessonEvents.charges(lesson, changes, now);
+        return queries.lesson(lesson.id());
+    }
+
     private void stop(Series stopped, LocalDate from, boolean replaced) {
         Instant now = clock.instant();
         if (stopped.endBefore(from, now)) {
             series.update(stopped);
         }
         lessons.deleteUntouchedOfSeries(stopped.id(), from);
-        events.publishEvent(new SeriesStopped(stopped.id(), stopped.studentId(), from, replaced, now));
+        UUID studentId = stopped.studentId();
+        List<UUID> students = studentId != null ? List.of(studentId) : directory.membersOf(required(stopped.groupId()));
+        events.publishEvent(new SeriesStopped(stopped.id(), stopped.groupId(), students, from, replaced, now));
     }
 
     private int generate(Series source, LocalDate from, LocalDate until, Instant now) {
+        UUID groupId = source.groupId();
+        List<UUID> members = groupId == null ? List.of() : directory.membersOf(groupId);
         int created = 0;
         for (LocalDate date : source.datesBetween(from, until)) {
-            if (!lessons.existsForSeriesDate(source.id(), date)) {
-                lessons.insert(Lesson.plan(Ids.newId(), source.studentId(), source.id(), date,
-                        source.startOn(date, zone), source.durationMinutes(), source.topic(), source.meetingUrl(),
-                        now));
-                created++;
+            if (lessons.existsForSeriesDate(source.id(), date)) {
+                continue;
             }
+            Instant start = source.startOn(date, zone);
+            lessons.insert(groupId == null
+                    ? Lesson.plan(Ids.newId(), required(source.studentId()), source.id(), date, start,
+                            source.durationMinutes(), source.topic(), source.meetingUrl(), now)
+                    : Lesson.planForGroup(Ids.newId(), groupId, members, source.id(), date, start,
+                            source.durationMinutes(), source.topic(), source.meetingUrl(), now));
+            created++;
         }
         source.generatedThrough(until, now);
         return created;
-    }
-
-    private void publishCompleted(Lesson lesson, UUID completionId, Instant now) {
-        events.publishEvent(new LessonCompleted(completionId, lesson.id(), lesson.studentId(),
-                LocalDate.ofInstant(lesson.startsAt(), zone), lesson.durationMinutes(), lesson.topic(),
-                lesson.status() == LessonStatus.MISSED, now));
     }
 
     private void requireFree(Instant from, Instant to, @Nullable UUID except, boolean allowOverlap) {
@@ -286,18 +361,39 @@ public class ScheduleService {
         }
     }
 
-    /** A request about a lesson the teacher changed directly is no longer relevant. */
-    private void outdatePendingRequest(UUID lessonId, Instant now) {
-        requests.findPendingForLesson(lessonId).ifPresent(request -> {
+    /** Requests about a lesson the teacher changed directly are no longer relevant. */
+    private void outdatePendingRequests(UUID lessonId, Instant now) {
+        requests.findPendingForLesson(lessonId).forEach(request -> {
             request.outdate(now);
             requests.update(request);
         });
     }
 
-    private StudentSummary currentStudent(UUID studentId) {
-        return directory.findStudent(studentId)
-                .filter(StudentSummary::isCurrent)
-                .orElseThrow(() -> new NotFoundException("schedule.student-not-found", "Student not found"));
+    /**
+     * Checks that exactly one owner is given.
+     *
+     * @return the group, or {@code null} for a lesson with one student
+     */
+    private static @Nullable UUID owner(@Nullable UUID studentId, @Nullable UUID groupId) {
+        if ((studentId == null) == (groupId == null)) {
+            throw new BusinessRuleException("schedule.owner-invalid", "Choose either a student or a group");
+        }
+        return groupId;
+    }
+
+    private List<UUID> requireMembers(UUID groupId) {
+        List<UUID> members = directory.currentGroup(groupId).memberIds();
+        if (members.isEmpty()) {
+            throw new BusinessRuleException("schedule.group-empty", "Add students to the group first");
+        }
+        return members;
+    }
+
+    private static UUID required(@Nullable UUID id) {
+        if (id == null) {
+            throw new IllegalStateException("Missing id");
+        }
+        return id;
     }
 
     private Lesson find(UUID lessonId) {
@@ -308,12 +404,5 @@ public class ScheduleService {
     private Series findSeries(UUID seriesId) {
         return series.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("schedule.series-not-found", "Series not found"));
-    }
-
-    private LessonView view(Lesson lesson) {
-        String name = directory.findStudent(lesson.studentId()).map(StudentSummary::displayName).orElse(null);
-        return LessonView.of(lesson, name, requests.findPendingForLesson(lesson.id())
-                .map(request -> RequestView.of(request, lesson.startsAt(), name, properties.lateCancellation()))
-                .orElse(null));
     }
 }

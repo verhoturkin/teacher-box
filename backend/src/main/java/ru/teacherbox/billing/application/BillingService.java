@@ -55,6 +55,7 @@ public class BillingService {
     private final LessonRepository lessons;
     private final PaymentRepository payments;
     private final BalanceQueries balances;
+    private final GroupPriceService groupPrices;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final BillingProperties properties;
@@ -62,12 +63,13 @@ public class BillingService {
     private final Clock clock;
 
     public BillingService(StudentAccountRepository accounts, LessonRepository lessons, PaymentRepository payments,
-            BalanceQueries balances, UserDirectory directory, ApplicationEventPublisher events,
-            BillingProperties properties, BillingCurrency currency, Clock clock) {
+            BalanceQueries balances, GroupPriceService groupPrices, UserDirectory directory,
+            ApplicationEventPublisher events, BillingProperties properties, BillingCurrency currency, Clock clock) {
         this.accounts = accounts;
         this.lessons = lessons;
         this.payments = payments;
         this.balances = balances;
+        this.groupPrices = groupPrices;
         this.directory = directory;
         this.events = events;
         this.properties = properties;
@@ -90,7 +92,8 @@ public class BillingService {
     }
 
     /**
-     * Charges a lesson whose outcome the teacher marked in the schedule, at the student's lesson price.
+     * Charges a lesson whose outcome the teacher marked in the schedule, at the student's lesson price
+     * (a group lesson at the price of the group).
      * An outcome that is already charged is skipped (events may be delivered again).
      */
     @Transactional
@@ -100,8 +103,10 @@ public class BillingService {
         }
         StudentAccount account = accountOf(completed.studentId());
         Instant now = clock.instant();
+        UUID groupId = completed.groupId();
+        Money price = groupId == null ? account.lessonPrice() : groupPrices.lessonPrice(groupId);
         Lesson lesson = Lesson.record(Ids.newId(), completed.studentId(), completed.date(),
-                completed.durationMinutes(), account.lessonPrice(), completed.topic(),
+                completed.durationMinutes(), price, completed.topic(),
                 completed.missed() ? LessonStatus.MISSED : LessonStatus.CONDUCTED, now);
         insert(lesson, completed.completionId(), now);
     }

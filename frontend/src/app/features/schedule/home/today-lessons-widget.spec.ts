@@ -1,11 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
-import { at, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
+import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { at, groupLesson, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { ScheduleSummary } from '../data-access/schedule.models';
+import { AttendanceDialog } from '../teacher/attendance-dialog';
 import { TodayLessonsWidget } from './today-lessons-widget';
 
 describe('TodayLessonsWidget', () => {
@@ -46,7 +48,7 @@ describe('TodayLessonsWidget', () => {
     await render(
       scheduleSummary({
         today: [
-          scheduledLesson({ topic: 'Дроби', meetingUrl: 'https://meet.example.com/1' }),
+          scheduledLesson({ topic: 'Дроби', joinUrl: 'https://meet.example.com/1' }),
           scheduledLesson({
             id: 'l-2',
             studentName: 'Мария',
@@ -60,11 +62,11 @@ describe('TodayLessonsWidget', () => {
     );
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('18:00–19:00 Иван Петров Дроби Урок');
+    expect(text).toContain('18:00–19:00 Иван Петров Дроби Начать урок');
     expect(text).toContain('20:00–21:00 Мария');
     expect(text).toContain('Ученик Отменено');
     expect(text).toContain('Олег Проведено');
-    const join = hostElement(fixture).querySelector('a.tb-today__join');
+    const join = hostElement(fixture).querySelector('tb-join-lesson-button a');
     expect(join?.getAttribute('href')).toBe('https://meet.example.com/1');
     expect(() => buttonByText(hostElement(fixture), 'Проведено: Мария')).toThrow();
   });
@@ -82,6 +84,20 @@ describe('TodayLessonsWidget', () => {
       .expectOne('/api/teacher/schedule/lessons/l-1/outcome')
       .flush(null, { status: 500, statusText: 'Error' });
 
+    expect(changes).toBe(1);
+  });
+
+  it('opens the attendance of a group lesson that has started', async () => {
+    await render(scheduleSummary({ today: [groupLesson()] }));
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Группа «ОГЭ» Учеников: 2');
+    buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Кто был на занятии');
+    const dialog = fixture.debugElement.query(By.directive(AttendanceDialog)).injector.get(AttendanceDialog);
+    dialog.saved.emit(groupLesson({ status: 'CONDUCTED' }));
     expect(changes).toBe(1);
   });
 });
