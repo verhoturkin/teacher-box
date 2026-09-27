@@ -6,6 +6,7 @@ import static ru.teacherbox.identity.IdentityTestSupport.login;
 import static ru.teacherbox.identity.IdentityTestSupport.signIn;
 import static ru.teacherbox.identity.IdentityTestSupport.tokens;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.UserRepository;
+import ru.teacherbox.shared.security.PasswordConfirmation;
 
 @IdentityIntegrationTest
 class AccountIntegrationTests {
@@ -35,6 +37,9 @@ class AccountIntegrationTests {
 
     @Autowired
     UserRepository users;
+
+    @Autowired
+    PasswordConfirmation passwords;
 
     @Test
     void studentSeesOwnAccountWithoutTeacherNote() {
@@ -69,6 +74,19 @@ class AccountIntegrationTests {
         assertThat(changePassword(tokens(changed), "temporary-secret-2", IdentityTestSupport.TEACHER_PASSWORD))
                 .hasStatusOk();
         assertThat(users.findTeacher().orElseThrow().passwordChangeRequired()).isFalse();
+    }
+
+    @Test
+    void thePasswordConfirmsDangerousActions() {
+        UUID teacher = users.findTeacher().orElseThrow().id();
+        ActiveStudent student = activeStudent(students, invites, "Подтверждает");
+
+        assertThat(passwords.matches(teacher, IdentityTestSupport.TEACHER_PASSWORD)).isTrue();
+        assertThat(passwords.matches(teacher, "wrong-password")).isFalse();
+        assertThat(passwords.matches(UUID.randomUUID(), IdentityTestSupport.TEACHER_PASSWORD)).isFalse();
+        assertThat(passwords.matches(student.id(), student.password())).isTrue();
+        students.deactivate(student.id());
+        assertThat(passwords.matches(student.id(), student.password())).as("not an active account").isFalse();
     }
 
     @Test

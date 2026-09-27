@@ -1,23 +1,19 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
 import { AiApi } from '@features/ai/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { GoogleCalendarPanel } from '@features/schedule/parts';
-import { FileSaver } from '@shared/files/file-saver';
-import { formatFileSize } from '@shared/files/file-size';
 import { RowType } from '@shared/ui/row-type.directive';
+import { BackupsCard } from './backups/backups-card';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import {
-  BackupInfo,
   FailedDelivery,
   MessengerStatus,
   MessengerType,
@@ -37,20 +33,18 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     HelpButton,
     DatePipe,
     RouterLink,
-    Button,
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
     Card,
-    ConfirmDialog,
     GoogleCalendarPanel,
     MeetingsSettingsPanel,
     PortalSettingsCard,
+    BackupsCard,
     TableModule,
     Tag,
     RowType,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-heading">
@@ -77,7 +71,9 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
                 }
                 @default {
                   <p-tag value="Не настроен" severity="secondary" />
-                  <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }">подключить</a>
+                  <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }"
+                    >подключить</a
+                  >
                 }
               }
             </li>
@@ -105,8 +101,9 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         </ul>
         <small class="tb-hint">
           Ботов мессенджеров можно подключить в разделе
-          <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }">«Уведомления» → «Мессенджеры»</a>. ИИ-помощник
-          настраивается переменными окружения сервера (см. .env.example).
+          <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }"
+            >«Уведомления» → «Мессенджеры»</a
+          >. ИИ-помощник настраивается переменными окружения сервера (см. .env.example).
         </small>
       </p-card>
 
@@ -139,49 +136,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         }
       </p-card>
 
-      <p-card header="Резервные копии">
-        <p class="tb-muted">
-          Копия базы данных и файлов создаётся автоматически каждую ночь; хранятся последние копии.
-          Чтобы восстановить копию, положите архив в папку данных <code>restore/</code> и перезапустите портал.
-        </p>
-        <div class="tb-actions">
-          <p-button label="Создать копию сейчас" icon="pi pi-database" [loading]="creating()" (onClick)="create()" />
-        </div>
-        @if (backups().length === 0) {
-          <p class="tb-muted">Копий пока нет.</p>
-        } @else {
-          <p-table [value]="backups()" styleClass="p-datatable-sm">
-            <ng-template #header>
-              <tr>
-                <th>Создана</th>
-                <th>Размер</th>
-                <th></th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-backup [tbRowType]="backups()">
-              <tr>
-                <td>{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                <td>{{ size(backup) }}</td>
-                <td class="tb-row-actions">
-                  <p-button
-                    icon="pi pi-download"
-                    [text]="true"
-                    [ariaLabel]="'Скачать ' + backup.name"
-                    (onClick)="download(backup)"
-                  />
-                  <p-button
-                    icon="pi pi-trash"
-                    [text]="true"
-                    severity="danger"
-                    [ariaLabel]="'Удалить ' + backup.name"
-                    (onClick)="confirmDelete(backup)"
-                  />
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        }
-      </p-card>
+      <tb-backups-card />
 
       <p-card header="Профиль">
         <a pButton routerLink="/teacher/account" [outlined]="true">
@@ -190,7 +145,6 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         </a>
       </p-card>
     </div>
-    <p-confirmdialog />
   `,
   styles: `
     .tb-integrations {
@@ -230,16 +184,11 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 export class SettingsPage implements OnInit {
   private readonly api = inject(SettingsApi);
   private readonly ai = inject(AiApi);
-  private readonly fileSaver = inject(FileSaver);
-  private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
 
   protected readonly messengers = MESSENGERS;
   protected readonly status = signal<NotificationsStatus | null>(null);
   protected readonly failed = signal<FailedDelivery[]>([]);
   protected readonly aiModel = signal<string | null>(null);
-  protected readonly backups = signal<BackupInfo[]>([]);
-  protected readonly creating = signal(false);
 
   ngOnInit(): void {
     this.api.notificationsStatus().subscribe((status) => {
@@ -249,7 +198,6 @@ export class SettingsPage implements OnInit {
     this.ai.status().subscribe((status) => {
       this.aiModel.set(status.enabled ? status.model : null);
     });
-    this.reloadBackups();
   }
 
   protected messengerStatus(type: MessengerType): MessengerStatus | null {
@@ -258,51 +206,5 @@ export class SettingsPage implements OnInit {
 
   protected messengerName(row: FailedDelivery): string {
     return MESSENGERS.find((messenger) => messenger.type === row.channel)?.name ?? row.channel;
-  }
-
-  protected size(backup: BackupInfo): string {
-    return formatFileSize(backup.size);
-  }
-
-  create(): void {
-    this.creating.set(true);
-    this.api.createBackup().subscribe({
-      next: (backup) => {
-        this.creating.set(false);
-        this.messages.add({ severity: 'success', summary: 'Готово', detail: `Копия ${backup.name} создана` });
-        this.reloadBackups();
-      },
-      error: () => {
-        this.creating.set(false);
-      },
-    });
-  }
-
-  download(backup: BackupInfo): void {
-    this.api.downloadBackup(backup.name).subscribe((blob) => {
-      this.fileSaver.save(blob, backup.name);
-    });
-  }
-
-  confirmDelete(backup: BackupInfo): void {
-    this.confirmation.confirm({
-      header: 'Удалить копию?',
-      message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
-      acceptLabel: 'Удалить',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.deleteBackup(backup.name).subscribe(() => {
-          this.reloadBackups();
-        });
-      },
-    });
-  }
-
-  private reloadBackups(): void {
-    this.api.backups().subscribe((backups) => {
-      this.backups.set(backups);
-    });
   }
 }

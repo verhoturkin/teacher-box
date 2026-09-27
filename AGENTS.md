@@ -157,6 +157,8 @@ teacher-box/
   тексты. Действия администратора и изменения учителя через бота — через
   `shared.diagnostics.AuditLog`; проверки внешних сервисов модули отдают через SPI
   `shared.diagnostics.IntegrationCheck`.
+- Опасные действия (восстановление копии, полный сброс) подтверждаются паролем пользователя
+  через `shared.security.PasswordConfirmation` (реализует `identity`, использует `platform`).
 - Название и адрес портала — `shared.portal.Portal` ([ADR-0014](docs/adr/0014-portal-settings-reset-and-restore.md)):
   абсолютные ссылки (сообщения, приглашения, календари, адреса возврата OAuth) строятся только от
   `Portal.link(...)`, не от адреса запроса.

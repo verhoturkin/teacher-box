@@ -18,14 +18,14 @@ class ScheduledBackupTest {
         PlatformBackupAutoConfiguration.ScheduledBackup job = new PlatformBackupAutoConfiguration.ScheduledBackup(backups);
 
         job.run();
-        verify(backups).create();
+        verify(backups).create(BackupKind.SCHEDULED);
 
-        when(backups.create()).thenThrow(new UncheckedIOException(new IOException("disk full")));
+        when(backups.create(BackupKind.SCHEDULED)).thenThrow(new UncheckedIOException(new IOException("disk full")));
         assertThatCode(job::run).doesNotThrowAnyException();
     }
 
     @Test
     void rejectsKeepingNoBackups() {
-        assertThatThrownBy(() -> new BackupProperties("-", 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new BackupProperties("-", 0, false)).isInstanceOf(IllegalArgumentException.class);
     }
 }

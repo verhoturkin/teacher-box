@@ -48,6 +48,7 @@ RUN addgroup -S -g 10001 teacherbox \
     && chown teacherbox:teacherbox /data
 WORKDIR /app
 ENV TEACHERBOX_DATA_DIR=/data \
+    TEACHERBOX_BACKUP_RESTART=true \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
 VOLUME ["/data"]
 EXPOSE 8080

@@ -1,11 +1,45 @@
 export type MessengerType = 'TELEGRAM' | 'VK' | 'MAX';
 
+/** Why a backup was made. */
+export type BackupKind = 'SCHEDULED' | 'MANUAL' | 'BEFORE_RESTORE' | 'BEFORE_RESET';
+
 /** Mirrors `BackupInfo` of the backend. */
 export interface BackupInfo {
   readonly name: string;
   /** Bytes. */
   readonly size: number;
   readonly createdAt: string;
+  /** `null` for backups made before version 1.3. */
+  readonly kind: BackupKind | null;
+  /** Version of the portal that made it. */
+  readonly version: string | null;
+}
+
+/** Mirrors `RestoreRequested` of the backend. */
+export interface RestoreRequested {
+  readonly archive: string;
+  /** The backup of the state before restoring. */
+  readonly safetyBackup: string;
+  /** The portal restarts by itself; otherwise it has to be restarted by hand. */
+  readonly restarting: boolean;
+}
+
+/** Mirrors `LastRestore` of the backend. */
+export interface LastRestore {
+  readonly restored: boolean;
+  readonly archive: string;
+  readonly at: string;
+  readonly error: string | null;
+}
+
+/** Mirrors `RestoreStatus` of the backend. */
+export interface RestoreStatus {
+  /** When the running portal started: a new value means it has restarted. */
+  readonly startedAt: string;
+  readonly restartEnabled: boolean;
+  /** An archive waiting for the next start. */
+  readonly pending: string | null;
+  readonly lastRestore: LastRestore | null;
 }
 
 export interface FailedDelivery {

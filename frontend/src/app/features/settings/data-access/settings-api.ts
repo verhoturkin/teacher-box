@@ -2,28 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PortalSettings } from '@core/portal/portal';
-import { BackupInfo, NotificationsStatus } from './settings.models';
+import { NotificationsStatus } from './settings.models';
 
-/** Instance settings of the teacher: the portal, backups and integration status. */
+/** Instance settings of the teacher: the portal and the integration status. */
 @Injectable({ providedIn: 'root' })
 export class SettingsApi {
   private readonly http = inject(HttpClient);
-
-  backups(): Observable<BackupInfo[]> {
-    return this.http.get<BackupInfo[]>('/api/teacher/backups');
-  }
-
-  createBackup(): Observable<BackupInfo> {
-    return this.http.post<BackupInfo>('/api/teacher/backups', null);
-  }
-
-  downloadBackup(name: string): Observable<Blob> {
-    return this.http.get(`/api/teacher/backups/${encodeURIComponent(name)}`, { responseType: 'blob' });
-  }
-
-  deleteBackup(name: string): Observable<unknown> {
-    return this.http.delete<unknown>(`/api/teacher/backups/${encodeURIComponent(name)}`);
-  }
 
   portal(): Observable<PortalSettings> {
     return this.http.get<PortalSettings>('/api/teacher/portal');

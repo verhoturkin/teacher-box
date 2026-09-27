@@ -2,11 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
-import { FileSaver } from '@shared/files/file-saver';
 import { aiStatus } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { hostElement, readableText } from '@testing/dom';
 import { yandexStatus } from '@testing/meetings-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
@@ -16,6 +15,8 @@ const BACKUP: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
   size: 2_621_440,
   createdAt: '2026-09-25T00:30:00Z',
+  kind: 'SCHEDULED',
+  version: '1.3.0',
 };
 
 const STATUS: NotificationsStatus = {
@@ -48,7 +49,6 @@ const STATUS: NotificationsStatus = {
 describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
   let backend: HttpTestingController;
-  let saved: string[];
 
   async function render(status = STATUS, backups: BackupInfo[] = [BACKUP], aiEnabled = true): Promise<void> {
     TestBed.configureTestingModule({
@@ -56,10 +56,6 @@ describe('SettingsPage', () => {
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
     });
     backend = TestBed.inject(HttpTestingController);
-    saved = [];
-    vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, name) => {
-      saved.push(name);
-    });
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(SettingsPage);
     fixture.detectChanges();
@@ -122,43 +118,5 @@ describe('SettingsPage', () => {
     expect(text).toContain('Все уведомления доставлены');
     expect(text).toContain('Копий пока нет');
     expect(text).toContain('ИИ-помощник Не настроен');
-  });
-
-  it('creates and downloads backups', async () => {
-    await render();
-    expect(readableText(hostElement(fixture))).toContain('2,5 МБ');
-
-    buttonByText(hostElement(fixture), 'Создать копию сейчас').click();
-    backend.expectOne({ method: 'POST', url: '/api/teacher/backups' }).flush(BACKUP);
-    backend.expectOne('/api/teacher/backups').flush([BACKUP]);
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
-
-    buttonByText(hostElement(fixture), `Скачать ${BACKUP.name}`).click();
-    backend.expectOne(`/api/teacher/backups/${BACKUP.name}`).flush(new Blob(['zip']));
-    expect(saved).toEqual([BACKUP.name]);
-  });
-
-  it('keeps working when creating a backup fails', async () => {
-    await render();
-
-    fixture.componentInstance.create();
-    backend.expectOne({ method: 'POST', url: '/api/teacher/backups' }).flush(null, { status: 500, statusText: 'Error' });
-
-    expect(buttonByText(hostElement(fixture), 'Создать копию сейчас').disabled).toBe(false);
-  });
-
-  it('deletes a backup after confirmation', async () => {
-    await render();
-    const confirm = vi.spyOn(fixture.debugElement.injector.get(ConfirmationService), 'confirm');
-
-    buttonByText(hostElement(fixture), `Удалить ${BACKUP.name}`).click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Удалить копию?');
-    confirm.mock.calls[0]?.[0].accept?.();
-
-    backend.expectOne({ method: 'DELETE', url: `/api/teacher/backups/${BACKUP.name}` }).flush(null);
-    backend.expectOne('/api/teacher/backups').flush([]);
-    await fixture.whenStable();
-    expect(readableText(hostElement(fixture))).toContain('Копий пока нет');
   });
 });

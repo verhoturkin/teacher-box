@@ -54,6 +54,7 @@ describe('app routes', { timeout: 20_000 }, () => {
       ['/admin/status', 'Состояние'],
       ['/admin/events', 'События'],
       ['/admin/integrations', 'Интеграции'],
+      ['/admin/backups', 'Резервные копии'],
       ['/admin/diagnostics', 'Диагностика'],
       ['/admin/account', 'Мой аккаунт'],
     ] as const) {
