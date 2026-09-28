@@ -1,9 +1,11 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { EnvironmentProviders, Provider } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { of } from 'rxjs';
 
 type TestProvider = Provider | EnvironmentProviders;
 
@@ -28,4 +30,12 @@ export function testProvidersWithRouter(
     MessageService,
     ...extra,
   ];
+}
+
+/** A phone's screen (`injectMobile()` is true): the bottom navigation, cards, the day list. */
+export function phoneScreen(): Provider {
+  return {
+    provide: BreakpointObserver,
+    useValue: { observe: () => of({ matches: true, breakpoints: {} }) },
+  };
 }

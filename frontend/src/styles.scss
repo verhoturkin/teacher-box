@@ -544,3 +544,22 @@ a.p-button:hover {
     }
   }
 }
+
+/* The week on a phone: the title fits in one line */
+.tb-calendar-title {
+  font-size: 1.125rem;
+}
+
+/* The main action of a page on a phone: a round button above the bottom navigation (ADR-0015). */
+.tb-fab {
+  position: fixed;
+  right: var(--tb-space-4);
+  bottom: calc(4.5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+  z-index: 900;
+
+  .p-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+  }
+}

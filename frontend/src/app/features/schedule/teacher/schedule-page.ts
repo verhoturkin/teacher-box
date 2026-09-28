@@ -13,6 +13,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
+import { injectMobile } from '@core/layout/mobile';
 import { problemCode } from '@core/http/problem-detail';
 import { IdentityApi } from '@features/identity/parts';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
@@ -54,6 +55,7 @@ const CLICK_SELECTION_MINUTES = 30;
 /**
  * The teacher's schedule: the calendar with lessons (select empty time to plan, drag to move),
  * students' requests, lessons waiting for an outcome, regular series and the calendar link.
+ * On a phone a new lesson is planned with the floating «+».
  */
 @Component({
   selector: 'tb-schedule-page',
@@ -79,7 +81,9 @@ const CLICK_SELECTION_MINUTES = 30;
         <tb-help-button topic="teacher/schedule" />
       </div>
       <div class="tb-actions">
-        <p-button label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
+        @if (!mobile()) {
+          <p-button label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
+        }
         <p-button
           label="Регулярные занятия"
           icon="pi pi-replay"
@@ -216,6 +220,17 @@ const CLICK_SELECTION_MINUTES = 30;
       </div>
     </div>
 
+    @if (mobile()) {
+      <p-button
+        class="tb-fab"
+        icon="pi pi-plus"
+        [rounded]="true"
+        size="large"
+        ariaLabel="Новое занятие"
+        (onClick)="newLesson()"
+      />
+    }
+
     <tb-lesson-dialog
       [(visible)]="lessonDialogVisible"
       [students]="students()"
@@ -286,6 +301,7 @@ export class SchedulePage implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
+  protected readonly mobile = injectMobile();
   protected readonly kind = requestKindLabel;
   protected readonly with = lessonWith;
   protected readonly settings = signal<ScheduleSettings | null>(null);

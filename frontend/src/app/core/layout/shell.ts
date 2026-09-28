@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { map } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
+import { injectMobile } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
@@ -19,8 +17,6 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
   { choice: 'system', label: 'Тема как в системе', icon: 'pi pi-desktop' },
 ];
 
-/** Phones and small tablets get the bottom navigation (ADR-0015). */
-export const MOBILE_QUERY = '(max-width: 768px)';
 /** Sections in the bottom navigation; the others are under «Ещё». */
 const NAV_ITEMS = 4;
 
@@ -107,12 +103,7 @@ export class Shell {
   private readonly theme = inject(ThemeMode);
 
   protected readonly portalName = inject(Portal).name;
-  protected readonly mobile = toSignal(
-    inject(BreakpointObserver)
-      .observe(MOBILE_QUERY)
-      .pipe(map((state) => state.matches)),
-    { initialValue: false },
-  );
+  protected readonly mobile = injectMobile();
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();

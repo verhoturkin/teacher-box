@@ -14,6 +14,7 @@ import listPlugin from '@fullcalendar/angular/list';
 import classicTheme from '@fullcalendar/angular/themes/classic';
 import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import ruLocale from 'fullcalendar/locales/ru';
+import { injectMobile } from '@core/layout/mobile';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { BusyTime, ScheduledLesson } from '../data-access/schedule.models';
 
@@ -36,11 +37,12 @@ export interface SlotSelection {
   readonly end: Date;
 }
 
-export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'listWeek';
+export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'listWeek' | 'timeGridDay';
 
 /**
  * Lessons in a week / month / list calendar (FullCalendar, MIT). In the editable mode (the teacher)
- * empty time can be selected and planned lessons dragged to another time.
+ * empty time can be selected and planned lessons dragged to another time. On a phone the lessons
+ * are a list by days, the toolbar is split between the top and the bottom (ADR-0015).
  */
 @Component({
   selector: 'tb-schedule-calendar',
@@ -64,22 +66,35 @@ export class ScheduleCalendar {
   readonly slotSelect = output<SlotSelection>();
   readonly lessonMove = output<LessonMove>();
 
+  private readonly mobile = injectMobile();
+
   private readonly byId = computed(
     () => new Map(this.lessons().map((lesson) => [lesson.id, lesson])),
   );
 
   protected readonly options = computed<CalendarOptions>(() => {
     const editable = this.editable();
+    const mobile = this.mobile();
     return {
       plugins: [classicTheme, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
       locale: ruLocale,
-      initialView: this.initialView(),
+      initialView: mobile ? 'listWeek' : this.initialView(),
       initialDate: this.initialDate() ?? undefined,
-      headerToolbar: {
-        start: 'prev,next today',
-        center: 'title',
-        end: 'timeGridWeek,dayGridMonth,listWeek',
-      },
+      ...(mobile
+        ? {
+            headerToolbar: { start: 'title', end: 'prev,next' },
+            toolbarTitleClass: 'tb-calendar-title',
+            footerToolbar: { start: 'today', end: 'listWeek,timeGridDay,dayGridMonth' },
+          }
+        : {
+            headerToolbar: {
+              start: 'prev,next today',
+              center: 'title',
+              end: 'timeGridWeek,dayGridMonth,listWeek',
+            },
+          }),
+      listText: 'Список',
+      noEventsText: 'Занятий нет',
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,

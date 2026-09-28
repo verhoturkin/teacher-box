@@ -1,11 +1,9 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MenuItem } from 'primeng/api';
-import { of } from 'rxjs';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { phoneScreen, testProviders } from '@testing/setup';
 import { Shell } from './shell';
 import { STUDENT_MENU } from './student-layout';
 import { TEACHER_MENU } from './teacher-layout';
@@ -16,10 +14,7 @@ describe('Shell on a phone', () => {
   async function render(items: MenuItem[]): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: testProviders({
-        provide: BreakpointObserver,
-        useValue: { observe: () => of({ matches: true, breakpoints: {} }) },
-      }),
+      providers: testProviders(phoneScreen()),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     fixture = TestBed.createComponent(Shell);
