@@ -10,9 +10,11 @@ import {
   scheduleSettings,
   scheduledLesson,
 } from '@testing/schedule-fixtures';
+import { ScheduleApi } from '../data-access/schedule-api';
 import { BusyTime, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { ScheduleCalendar } from '../ui/schedule-calendar';
-import { MySchedulePage } from './my-schedule-page';
+import { MySchedulePage, nextMonday } from './my-schedule-page';
+import { toIsoDate } from '@shared/dates/iso-date';
 import { testProviders } from '@testing/setup';
 
 describe('MySchedulePage', () => {
@@ -111,8 +113,18 @@ describe('MySchedulePage', () => {
     expect(text).not.toContain('Учитель занят');
   });
 
-  it('says when there are no lessons', async () => {
-    expect(await render([])).toContain('Запланированных занятий пока нет');
+  it('says when there are no more lessons this week', async () => {
+    expect(await render([])).toContain('На этой неделе занятий больше нет');
+  });
+
+  it('lists the lessons of this week only', async () => {
+    const lessons = vi.spyOn(TestBed.inject(ScheduleApi), 'myLessons');
+    await render([]);
+
+    expect(lessons.mock.calls[0]).toEqual([
+      toIsoDate(new Date()),
+      toIsoDate(nextMonday(new Date())),
+    ]);
   });
 
   it('asks the teacher to move a lesson', async () => {
@@ -191,5 +203,14 @@ describe('MySchedulePage', () => {
     buttonByText(hostElement(fixture), 'Не приду').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Не приду на занятие');
+  });
+});
+
+describe('nextMonday', () => {
+  it('finds the end of the week', () => {
+    // 2026-09-28 is a Monday.
+    expect(toIsoDate(nextMonday(new Date(2026, 8, 28, 10)))).toBe('2026-10-05');
+    expect(toIsoDate(nextMonday(new Date(2026, 9, 1, 23, 30)))).toBe('2026-10-05');
+    expect(toIsoDate(nextMonday(new Date(2026, 9, 4, 0, 5)))).toBe('2026-10-05');
   });
 });
