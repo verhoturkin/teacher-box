@@ -91,6 +91,22 @@ describe('BillingOverviewPage', () => {
     backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN]));
   });
 
+  it('opens the payment dialog from the home page', async () => {
+    const fromHome = TestBed.createComponent(BillingOverviewPage);
+    fromHome.componentRef.setInput('create', 'payment');
+    await fromHome.whenStable();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN]));
+    await fromHome.whenStable();
+
+    expect(
+      fromHome.debugElement
+        .query(By.directive(PaymentDialog))
+        .injector.get(PaymentDialog)
+        .visible(),
+    ).toBe(true);
+    fromHome.destroy();
+  });
+
   it('opens the payment dialog from the toolbar and for a student', async () => {
     buttonByText(host, 'Оплата').click();
     await fixture.whenStable();

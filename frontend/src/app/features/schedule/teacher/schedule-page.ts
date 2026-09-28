@@ -4,6 +4,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -332,6 +333,9 @@ export class SchedulePage implements OnInit {
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
 
+  /** `?create=...` from the quick actions of the home page: opens the form at once. */
+  readonly create = input<string>();
+
   private range: CalendarRange | null = null;
   private busyEnabled = false;
 
@@ -354,6 +358,9 @@ export class SchedulePage implements OnInit {
       );
     });
     this.loadSidePanels();
+    if (this.create() === 'lesson') {
+      this.newLesson();
+    }
     this.api.googleStatus().subscribe((status) => {
       this.busyEnabled = status.status === 'CONNECTED' && status.busyEnabled;
       this.loadBusy();

@@ -5,6 +5,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -225,9 +226,14 @@ export class BillingOverviewPage implements OnInit {
   protected readonly selectedStudent = signal<string | null>(null);
   protected readonly lessonVisible = signal(false);
   protected readonly paymentVisible = signal(false);
+  /** `?create=...` from the quick actions of the home page: opens the form at once. */
+  readonly create = input<string>();
 
   ngOnInit(): void {
     this.load();
+    if (this.create() === 'payment') {
+      this.openPayment(null);
+    }
   }
 
   protected openLesson(studentId: string | null): void {

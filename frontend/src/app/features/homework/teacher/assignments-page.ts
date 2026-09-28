@@ -5,6 +5,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -122,8 +123,13 @@ export class AssignmentsPage implements OnInit {
   );
   protected readonly students = signal<StudentOption[]>([]);
   protected readonly dialogVisible = signal(false);
+  /** `?create=...` from the quick actions of the home page: opens the form at once. */
+  readonly create = input<string>();
 
   ngOnInit(): void {
+    if (this.create() === 'assignment') {
+      this.openCreate();
+    }
     this.api.assignments().subscribe({
       next: (assignments) => {
         this.assignments.set(assignments);

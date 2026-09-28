@@ -111,6 +111,7 @@ export function calendarFeed(overrides: Partial<CalendarFeed> = {}): CalendarFee
 export function scheduleSummary(overrides: Partial<ScheduleSummary> = {}): ScheduleSummary {
   return {
     today: [],
+    next: null,
     weekLessons: 0,
     unmarked: 0,
     pendingRequests: 0,

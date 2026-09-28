@@ -159,6 +159,15 @@ describe('SchedulePage', () => {
     expect(dialog.form.controls.durationMinutes.value).toBe(90);
   });
 
+  it('opens a new lesson from the home page', async () => {
+    fixture.componentRef.setInput('create', 'lesson');
+    await render();
+
+    expect(
+      fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog).visible(),
+    ).toBe(true);
+  });
+
   it('opens a new lesson, a lesson card and the editor', async () => {
     await render();
     buttonByText(hostElement(fixture), 'Занятие').click();

@@ -56,6 +56,10 @@ class SummaryIntegrationTests {
         assertThat(JsonPath.<List<String>>read(after, "$.today[*].id")).contains(today).doesNotContain(future);
         assertThat(JsonPath.<List<String>>read(after,
                 "$.today[?(@.id == '" + today + "')].studentName")).containsExactly("Сводка");
+        Instant next = Instant.parse(JsonPath.read(after, "$.next.startsAt"));
+        assertThat(next).isBeforeOrEqualTo(now);
+        assertThat(Instant.parse(JsonPath.read(after, "$.next.endsAt"))).isAfter(clock.instant());
+        assertThat(JsonPath.<String>read(after, "$.next.status")).isEqualTo("SCHEDULED");
     }
 
     @Test

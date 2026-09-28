@@ -6,4 +6,5 @@ export { ScheduleApi } from './data-access/schedule-api';
 export type { MyScheduleSummary, ScheduleSummary } from './data-access/schedule.models';
 export { NextLessonWidget } from './home/next-lesson-widget';
 export { TodayLessonsWidget } from './home/today-lessons-widget';
+export { UpcomingLessonWidget } from './home/upcoming-lesson-widget';
 export { GoogleCalendarPanel } from './teacher/google-calendar-panel';

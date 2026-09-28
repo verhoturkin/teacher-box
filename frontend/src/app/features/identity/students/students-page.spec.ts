@@ -121,6 +121,19 @@ describe('StudentsPage', () => {
     ).toEqual(['Имя', 'Контакты', 'Группы', 'Видеовстреча', 'Доски', 'Статус', 'Логин']);
   });
 
+  it('opens the form of a new student from the home page', async () => {
+    const fromHome = TestBed.createComponent(StudentsPage);
+    fromHome.componentRef.setInput('create', 'student');
+    await fromHome.whenStable();
+    for (const request of backend.match(() => true)) {
+      request.flush(request.request.url.endsWith('/yandex') ? yandexStatus() : []);
+    }
+    await fromHome.whenStable();
+
+    expect(bodyText()).toContain('Новый ученик');
+    fromHome.destroy();
+  });
+
   it('invites the first student', async () => {
     await loadStudents([]);
     expect(host.textContent).toContain('Учеников пока нет');

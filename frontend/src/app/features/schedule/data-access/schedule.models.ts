@@ -192,6 +192,8 @@ export interface BusyTime {
 export interface ScheduleSummary {
   /** Lessons of today in the instance time zone, cancelled ones included. */
   readonly today: ScheduledLesson[];
+  /** The nearest scheduled lesson that has not ended, within the 7 days. */
+  readonly next: ScheduledLesson | null;
   /** Scheduled lessons that have not ended, from now to the end of the 7th day. */
   readonly weekLessons: number;
   /** Lessons that ended without an outcome. */

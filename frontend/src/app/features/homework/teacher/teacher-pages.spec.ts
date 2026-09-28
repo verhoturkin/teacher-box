@@ -100,6 +100,24 @@ describe('AssignmentsPage', () => {
 
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
+
+  it('opens the form of a new assignment from the home page', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    fixture.componentRef.setInput('create', 'assignment');
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    backend.expectOne('/api/teacher/homework/assignments').flush([]);
+    await fixture.whenStable();
+
+    expect(
+      fixture.debugElement
+        .query(By.directive(AssignmentDialog))
+        .injector.get(AssignmentDialog)
+        .visible(),
+    ).toBe(true);
+    fixture.destroy();
+  });
 });
 
 describe('AssignmentPage', () => {

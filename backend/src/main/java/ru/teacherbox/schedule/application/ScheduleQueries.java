@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -117,9 +118,14 @@ public class ScheduleQueries {
         LocalDate today = LocalDate.ofInstant(now, zone);
         List<LessonView> week = lessons(today, today.plusDays(WEEK_DAYS));
         Instant tomorrow = start(today.plusDays(1));
+        List<LessonView> upcoming = week.stream()
+                .filter(lesson -> upcoming(lesson.status(), lesson.endsAt(), now))
+                .sorted(Comparator.comparing(LessonView::startsAt))
+                .toList();
         return new ScheduleSummary(
                 week.stream().filter(lesson -> lesson.startsAt().isBefore(tomorrow)).toList(),
-                Math.toIntExact(week.stream().filter(lesson -> upcoming(lesson.status(), lesson.endsAt(), now)).count()),
+                upcoming.isEmpty() ? null : upcoming.getFirst(),
+                upcoming.size(),
                 lessons.findUnmarked(now).size(),
                 requests.findPending().size(),
                 lessons.exists());

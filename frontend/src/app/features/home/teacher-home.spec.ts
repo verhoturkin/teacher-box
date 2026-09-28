@@ -29,9 +29,14 @@ describe('TeacherHome', () => {
 
   it('collects the widgets of the modules', async () => {
     fixture.detectChanges();
-    backend
-      .expectOne('/api/teacher/schedule/summary')
-      .flush(scheduleSummary({ today: [scheduledLesson()], unmarked: 1, hasLessons: false }));
+    backend.expectOne('/api/teacher/schedule/summary').flush(
+      scheduleSummary({
+        today: [scheduledLesson()],
+        next: scheduledLesson({ topic: 'Степени' }),
+        unmarked: 1,
+        hasLessons: false,
+      }),
+    );
     backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary({ toReview: 2 }));
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary({ income: 300_000 }));
     backend
@@ -39,10 +44,14 @@ describe('TeacherHome', () => {
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
     backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const text = readableText(hostElement(fixture));
+    expect(text).toContain('Занятие Оплата Ученик Задание');
+    expect(text).toContain('Следующее занятие');
+    expect(text).toContain('Степени');
     expect(text).toContain('С чего начать');
     expect(text).toContain('Сделано 1 из 4');
     expect(text).toContain('Иван Петров');

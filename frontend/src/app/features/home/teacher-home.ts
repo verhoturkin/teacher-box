@@ -13,12 +13,13 @@ import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
 import { LatestNotificationsWidget, NotificationsApi } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
-import { ScheduleApi, TodayLessonsWidget } from '@features/schedule/parts';
+import { ScheduleApi, TodayLessonsWidget, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
 import { AttentionCard } from './attention-card';
 import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
+import { QuickActions } from './quick-actions';
 
-/** Teacher dashboard: collects the widgets of the modules. */
+/** Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules. */
 @Component({
   selector: 'tb-teacher-home',
   imports: [
@@ -27,7 +28,9 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
     FinanceWidget,
     FirstRunChecklist,
     LatestNotificationsWidget,
+    QuickActions,
     TodayLessonsWidget,
+    UpcomingLessonWidget,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -36,6 +39,10 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
       <tb-help-button topic="teacher/first-steps" />
     </div>
     <div class="tb-stack">
+      <tb-quick-actions />
+      @if (schedule()?.next; as next) {
+        <tb-upcoming-lesson-widget [lesson]="next" />
+      }
       <tb-first-run-checklist [progress]="progress()" />
       <div class="tb-home">
         <div class="tb-stack">

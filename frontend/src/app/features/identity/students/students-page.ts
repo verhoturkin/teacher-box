@@ -318,6 +318,8 @@ export class StudentsPage implements OnInit {
 
   /** The open section (query parameter). */
   readonly tab = input<string>();
+  /** `?create=...` from the quick actions of the home page: opens the form at once. */
+  readonly create = input<string>();
   protected readonly activeTab = computed<StudentsTab>(() => {
     const tab = this.tab();
     return isStudentsTab(tab) ? tab : 'students';
@@ -364,6 +366,9 @@ export class StudentsPage implements OnInit {
   protected readonly inviteStudentName = signal('');
 
   ngOnInit(): void {
+    if (this.create() === 'student') {
+      this.openCreate();
+    }
     this.api.listStudents().subscribe({
       next: (students) => {
         this.students.set(students);
