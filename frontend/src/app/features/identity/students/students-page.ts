@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -19,7 +18,6 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
@@ -46,14 +44,6 @@ import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { EmptyState } from '@shared/ui/empty-state';
 
-/** Sections of the students page (`?tab=`). */
-export const STUDENTS_TABS = ['students', 'groups'] as const;
-export type StudentsTab = (typeof STUDENTS_TABS)[number];
-
-function isStudentsTab(value: unknown): value is StudentsTab {
-  return STUDENTS_TABS.some((tab) => tab === value);
-}
-
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
   selector: 'tb-students-page',
@@ -69,11 +59,6 @@ function isStudentsTab(value: unknown): value is StudentsTab {
     InputIcon,
     InputText,
     TableModule,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
     Tag,
     ToggleSwitch,
     Tooltip,
@@ -94,183 +79,169 @@ function isStudentsTab(value: unknown): value is StudentsTab {
         <h1 class="tb-page-title">Ученики</h1>
         <tb-help-button topic="teacher/students" />
       </div>
-      @if (activeTab() === 'students') {
-        <p-button label="Добавить ученика" icon="pi pi-user-plus" (onClick)="openCreate()" />
-      }
+      <p-button label="Добавить ученика" icon="pi pi-user-plus" (onClick)="openCreate()" />
     </div>
 
-    <p-tabs [value]="activeTab()" (valueChange)="select($event)" [lazy]="true">
-      <p-tablist>
-        <p-tab value="students">Ученики</p-tab>
-        <p-tab value="groups">Группы</p-tab>
-      </p-tablist>
-      <p-tabpanels>
-        <p-tabpanel value="students">
-          <p-card>
-            <div class="tb-toolbar">
-              <p-iconfield>
-                <p-inputicon styleClass="pi pi-search" />
-                <input
-                  pInputText
-                  [formControl]="search"
-                  placeholder="Поиск по имени"
-                  aria-label="Поиск по имени"
-                />
-              </p-iconfield>
-              <label class="tb-switch" for="show-deactivated">
-                <p-toggleswitch inputId="show-deactivated" [formControl]="showDeactivated" />
-                Показывать отключённых
-              </label>
-            </div>
+    <div class="tb-stack">
+      <p-card>
+        <div class="tb-toolbar">
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              [formControl]="search"
+              placeholder="Поиск по имени"
+              aria-label="Поиск по имени"
+            />
+          </p-iconfield>
+          <label class="tb-switch" for="show-deactivated">
+            <p-toggleswitch inputId="show-deactivated" [formControl]="showDeactivated" />
+            Показывать отключённых
+          </label>
+        </div>
 
-            <p-table
-              [value]="visibleStudents()"
-              [loading]="loading()"
-              dataKey="id"
-              [rowHover]="true"
-              styleClass="tb-cards"
-            >
-              <ng-template #header>
-                <tr>
-                  <th>Имя</th>
-                  <th>Контакты</th>
-                  <th>Группы</th>
-                  <th>Видеовстреча</th>
-                  <th>Доски</th>
-                  <th>Статус</th>
-                  <th>Логин</th>
-                  <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-student [tbRowType]="visibleStudents()">
-                <tr>
-                  <td data-label="Имя">
-                    <div class="tb-strong">{{ student.displayName }}</div>
-                    @if (student.note) {
-                      <small class="tb-muted">{{ student.note }}</small>
-                    }
-                  </td>
-                  <td data-label="Контакты">
-                    <div>{{ student.email ?? '' }}</div>
-                    <div>{{ student.phone ?? '' }}</div>
-                  </td>
-                  <td data-label="Группы">{{ groupNames(student.id) }}</td>
-                  <td data-label="Видеовстреча">
-                    @if (student.status !== 'DEACTIVATED') {
-                      <tb-room-cell
-                        [room]="roomOf(student.id)"
-                        [name]="student.displayName"
-                        (edit)="
-                          openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
-                        "
-                      />
-                    }
-                  </td>
-                  <td data-label="Доски">
-                    @if (student.status !== 'DEACTIVATED') {
-                      <tb-board-cell
-                        [boards]="boards.of(student.id)"
-                        [name]="student.displayName"
-                        (edit)="
-                          boards.open({
-                            type: 'STUDENT',
-                            id: student.id,
-                            name: student.displayName,
-                          })
-                        "
-                      />
-                    }
-                  </td>
-                  <td data-label="Статус">
-                    <p-tag
-                      [value]="statusLabels[student.status]"
-                      [severity]="statusSeverities[student.status]"
-                    />
-                    @if (student.pendingInvite; as invite) {
-                      <div>
-                        <small class="tb-muted">
-                          {{ purposeLabels[invite.purpose] }} до
-                          {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
-                        </small>
-                      </div>
-                    }
-                  </td>
-                  <td data-label="Логин">{{ student.login ?? '—' }}</td>
-                  <td class="tb-actions-column">
-                    <p-button
-                      icon="pi pi-pencil"
-                      [text]="true"
-                      [rounded]="true"
-                      pTooltip="Редактировать"
-                      [ariaLabel]="'Редактировать: ' + student.displayName"
-                      (onClick)="openEdit(student)"
-                    />
-                    @if (student.status === 'DEACTIVATED') {
-                      <p-button
-                        icon="pi pi-replay"
-                        [text]="true"
-                        [rounded]="true"
-                        pTooltip="Вернуть доступ"
-                        [ariaLabel]="'Вернуть доступ: ' + student.displayName"
-                        (onClick)="reactivate(student)"
-                      />
-                    } @else {
-                      <p-button
-                        icon="pi pi-link"
-                        [text]="true"
-                        [rounded]="true"
-                        [pTooltip]="
-                          student.status === 'ACTIVE'
-                            ? 'Ссылка для сброса пароля'
-                            : 'Новая ссылка-приглашение'
-                        "
-                        [ariaLabel]="'Ссылка: ' + student.displayName"
-                        (onClick)="reissueInvite(student)"
-                      />
-                      <p-button
-                        icon="pi pi-ban"
-                        [text]="true"
-                        [rounded]="true"
-                        severity="danger"
-                        pTooltip="Отключить доступ"
-                        [ariaLabel]="'Отключить доступ: ' + student.displayName"
-                        (onClick)="confirmDeactivate(student)"
-                      />
-                    }
-                  </td>
-                </tr>
-              </ng-template>
-              <ng-template #emptymessage>
-                <tr>
-                  <td colspan="8">
-                    @if (students().length === 0) {
-                      <tb-empty-state
-                        icon="pi-user-plus"
-                        title="Учеников пока нет"
-                        hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
-                      >
-                        <p-button
-                          label="Добавить ученика"
-                          icon="pi pi-user-plus"
-                          (onClick)="openCreate()"
-                        />
-                      </tb-empty-state>
-                    } @else {
-                      <tb-empty-state icon="pi-search" title="Никого не найдено" />
-                    }
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </p-card>
-        </p-tabpanel>
-        <p-tabpanel value="groups">
-          <ng-template #content>
-            <tb-groups-panel (changed)="loadGroups()" />
+        <p-table
+          [value]="visibleStudents()"
+          [loading]="loading()"
+          dataKey="id"
+          [rowHover]="true"
+          styleClass="tb-cards"
+        >
+          <ng-template #header>
+            <tr>
+              <th>Имя</th>
+              <th>Контакты</th>
+              <th>Группы</th>
+              <th>Видеовстреча</th>
+              <th>Доски</th>
+              <th>Статус</th>
+              <th>Логин</th>
+              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+            </tr>
           </ng-template>
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
+          <ng-template #body let-student [tbRowType]="visibleStudents()">
+            <tr>
+              <td data-label="Имя">
+                <div class="tb-strong">{{ student.displayName }}</div>
+                @if (student.note) {
+                  <small class="tb-muted">{{ student.note }}</small>
+                }
+              </td>
+              <td data-label="Контакты">
+                <div>{{ student.email ?? '' }}</div>
+                <div>{{ student.phone ?? '' }}</div>
+              </td>
+              <td data-label="Группы">{{ groupNames(student.id) }}</td>
+              <td data-label="Видеовстреча">
+                @if (student.status !== 'DEACTIVATED') {
+                  <tb-room-cell
+                    [room]="roomOf(student.id)"
+                    [name]="student.displayName"
+                    (edit)="
+                      openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
+                    "
+                  />
+                }
+              </td>
+              <td data-label="Доски">
+                @if (student.status !== 'DEACTIVATED') {
+                  <tb-board-cell
+                    [boards]="boards.of(student.id)"
+                    [name]="student.displayName"
+                    (edit)="
+                      boards.open({
+                        type: 'STUDENT',
+                        id: student.id,
+                        name: student.displayName,
+                      })
+                    "
+                  />
+                }
+              </td>
+              <td data-label="Статус">
+                <p-tag
+                  [value]="statusLabels[student.status]"
+                  [severity]="statusSeverities[student.status]"
+                />
+                @if (student.pendingInvite; as invite) {
+                  <div>
+                    <small class="tb-muted">
+                      {{ purposeLabels[invite.purpose] }} до
+                      {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
+                    </small>
+                  </div>
+                }
+              </td>
+              <td data-label="Логин">{{ student.login ?? '—' }}</td>
+              <td class="tb-actions-column">
+                <p-button
+                  icon="pi pi-pencil"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Редактировать"
+                  [ariaLabel]="'Редактировать: ' + student.displayName"
+                  (onClick)="openEdit(student)"
+                />
+                @if (student.status === 'DEACTIVATED') {
+                  <p-button
+                    icon="pi pi-replay"
+                    [text]="true"
+                    [rounded]="true"
+                    pTooltip="Вернуть доступ"
+                    [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                    (onClick)="reactivate(student)"
+                  />
+                } @else {
+                  <p-button
+                    icon="pi pi-link"
+                    [text]="true"
+                    [rounded]="true"
+                    [pTooltip]="
+                      student.status === 'ACTIVE'
+                        ? 'Ссылка для сброса пароля'
+                        : 'Новая ссылка-приглашение'
+                    "
+                    [ariaLabel]="'Ссылка: ' + student.displayName"
+                    (onClick)="reissueInvite(student)"
+                  />
+                  <p-button
+                    icon="pi pi-ban"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="danger"
+                    pTooltip="Отключить доступ"
+                    [ariaLabel]="'Отключить доступ: ' + student.displayName"
+                    (onClick)="confirmDeactivate(student)"
+                  />
+                }
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="8">
+                @if (students().length === 0) {
+                  <tb-empty-state
+                    icon="pi-user-plus"
+                    title="Учеников пока нет"
+                    hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
+                  >
+                    <p-button
+                      label="Добавить ученика"
+                      icon="pi pi-user-plus"
+                      (onClick)="openCreate()"
+                    />
+                  </tb-empty-state>
+                } @else {
+                  <tb-empty-state icon="pi-search" title="Никого не найдено" />
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+      <tb-groups-panel [students]="students()" (changed)="loadGroups()" />
+    </div>
 
     <tb-student-form-dialog
       [(visible)]="formVisible"
@@ -302,7 +273,6 @@ function isStudentsTab(value: unknown): value is StudentsTab {
 })
 export class StudentsPage implements OnInit {
   private readonly api = inject(IdentityApi);
-  private readonly router = inject(Router);
   private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
@@ -311,14 +281,8 @@ export class StudentsPage implements OnInit {
   protected readonly statusSeverities = STATUS_SEVERITIES;
   protected readonly purposeLabels = INVITE_PURPOSE_LABELS;
 
-  /** The open section (query parameter). */
-  readonly tab = input<string>();
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();
-  protected readonly activeTab = computed<StudentsTab>(() => {
-    const tab = this.tab();
-    return isStudentsTab(tab) ? tab : 'students';
-  });
 
   protected readonly students = signal<Student[]>([]);
   private readonly groups = signal<StudentGroup[]>([]);
@@ -376,12 +340,6 @@ export class StudentsPage implements OnInit {
     this.loadGroups();
     this.loadRooms();
     this.boards.load();
-  }
-
-  protected select(tab: string | number | undefined): void {
-    if (isStudentsTab(tab) && tab !== this.activeTab()) {
-      void this.router.navigate([], { queryParams: { tab }, replaceUrl: true });
-    }
   }
 
   protected loadGroups(): void {

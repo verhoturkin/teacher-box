@@ -78,8 +78,8 @@ test('tabs lie on the page and the phone navigation has five even sections', asy
   browser,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto('/teacher/students');
-  await expect(page.getByRole('tab', { name: 'Группы' })).toBeVisible();
+  await page.goto('/teacher/notifications');
+  await expect(page.getByRole('tab', { name: 'Что присылать' })).toBeVisible();
   expect(
     await page
       .locator('.p-tabpanels')

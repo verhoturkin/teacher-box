@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
@@ -10,6 +10,7 @@ import { Board, BoardsDialog } from '@features/boards/parts';
 import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
 import { aBoard } from '@testing/boards-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
+import { GroupsPanel } from '../groups/groups-panel';
 import { StudentsPage } from './students-page';
 import { testProviders } from '@testing/setup';
 
@@ -72,15 +73,53 @@ describe('StudentsPage', () => {
     boards: Board[] = [],
   ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
-    backend.expectOne('/api/teacher/groups').flush(groups);
-    backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
-    backend.expectOne('/api/teacher/boards').flush(boards);
+    for (const request of backend.match('/api/teacher/groups')) {
+      request.flush(groups);
+    }
+    backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
+    for (const request of backend.match('/api/teacher/meetings/rooms')) {
+      request.flush(rooms);
+    }
+    for (const request of backend.match('/api/teacher/meetings/yandex')) {
+      request.flush(yandexStatus());
+    }
+    for (const request of backend.match('/api/teacher/boards')) {
+      request.flush(boards);
+    }
     await fixture.whenStable();
   }
 
+  /** A dialog of the page itself, not of the groups panel under the students. */
+  function own<T>(type: Type<T>): T {
+    const found = fixture.debugElement.children.find(
+      (child) => child.componentInstance instanceof type,
+    );
+    if (found === undefined) {
+      throw new Error(`No ${type.name} on the page`);
+    }
+    return found.injector.get(type);
+  }
+
+  /** Answers every waiting request with an empty result. */
+  function flushEverything(): void {
+    for (const request of backend.match(() => true)) {
+      const url = request.request.url;
+      request.flush(
+        url.endsWith('/yandex')
+          ? yandexStatus()
+          : url.endsWith('/billing/groups')
+            ? { currency: 'RUB', prices: [] }
+            : [],
+      );
+    }
+  }
+
+  function studentRows(): Element[] {
+    return Array.from(host.querySelectorAll('div.tb-stack > p-card tbody tr'));
+  }
+
   function rowsText(): string[] {
-    return Array.from(host.querySelectorAll('tbody tr')).map((row) => row.textContent);
+    return studentRows().map((row) => row.textContent);
   }
 
   it('lists current students with status and invitation', async () => {
@@ -115,7 +154,7 @@ describe('StudentsPage', () => {
 
     expect(host.querySelector('.p-datatable.tb-cards')).not.toBeNull();
     expect(
-      Array.from(host.querySelectorAll('tbody td[data-label]')).map((cell) =>
+      Array.from(host.querySelectorAll('div.tb-stack > p-card tbody td[data-label]')).map((cell) =>
         cell.getAttribute('data-label'),
       ),
     ).toEqual(['Имя', 'Контакты', 'Группы', 'Видеовстреча', 'Доски', 'Статус', 'Логин']);
@@ -125,9 +164,7 @@ describe('StudentsPage', () => {
     const fromHome = TestBed.createComponent(StudentsPage);
     fromHome.componentRef.setInput('create', 'student');
     await fromHome.whenStable();
-    for (const request of backend.match(() => true)) {
-      request.flush(request.request.url.endsWith('/yandex') ? yandexStatus() : []);
-    }
+    flushEverything();
     await fromHome.whenStable();
 
     expect(bodyText()).toContain('Новый ученик');
@@ -219,10 +256,7 @@ describe('StudentsPage', () => {
 
   it('stops loading when the list cannot be loaded', async () => {
     backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
-    backend.expectOne('/api/teacher/groups').flush([]);
-    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
-    backend.expectOne('/api/teacher/boards').flush([]);
+    flushEverything();
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Учеников пока нет');
@@ -251,28 +285,18 @@ describe('StudentsPage', () => {
     expect(rowsText()[0]).not.toContain('Прошлый год');
   });
 
-  it('switches to the groups tab through the address', async () => {
-    await loadStudents([MARIA]);
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+  it('shows the groups under the students and gives them the students to choose from', async () => {
+    await loadStudents([MARIA], [aGroup()]);
 
-    Array.from(host.querySelectorAll('[role="tab"]'))
-      .find((tab) => tab.textContent.includes('Группы'))
-      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    await fixture.whenStable();
-    expect(navigate).toHaveBeenCalledWith([], { queryParams: { tab: 'groups' }, replaceUrl: true });
-
-    fixture.componentRef.setInput('tab', 'groups');
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
-    backend.expectOne('/api/teacher/students').flush([MARIA]);
-    backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
-    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
-    backend.expectOne('/api/teacher/boards').flush([]);
-    await fixture.whenStable();
-
+    expect(host.querySelector('[role="tab"]')).toBeNull();
+    expect(host.textContent).toContain('Добавить ученика');
     expect(host.textContent).toContain('Создать группу');
-    expect(host.textContent).not.toContain('Добавить ученика');
+    const panel = fixture.debugElement.query(By.directive(GroupsPanel)).injector.get(GroupsPanel);
+    expect(panel.students()).toEqual([MARIA]);
+
+    panel.changed.emit();
+    backend.expectOne('/api/teacher/groups').flush([]);
+    await fixture.whenStable();
   });
 
   it('shows the video room of a student and edits it', async () => {
@@ -284,7 +308,7 @@ describe('StudentsPage', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Видеовстреча: Мария');
 
-    const dialog = fixture.debugElement.query(By.directive(RoomDialog)).injector.get(RoomDialog);
+    const dialog = own(RoomDialog);
     dialog.changed.emit(null);
     await fixture.whenStable();
     expect(rowsText()[0]).not.toContain('Телемост');
@@ -301,9 +325,7 @@ describe('StudentsPage', () => {
     expect(rowsText()[0]).toContain('Алгебра');
     buttonByText(host, 'Доски: Мария').click();
     await fixture.whenStable();
-    const dialog = fixture.debugElement
-      .query(By.directive(BoardsDialog))
-      .injector.get(BoardsDialog);
+    const dialog = own(BoardsDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.owner()).toEqual({ type: 'STUDENT', id: 'm', name: 'Мария' });
     expect(dialog.boards()).toEqual([aBoard({ ownerId: 'm' })]);

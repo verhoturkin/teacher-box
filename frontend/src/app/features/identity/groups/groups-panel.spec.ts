@@ -34,6 +34,7 @@ describe('GroupsPanel', () => {
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupsPanel);
+    fixture.componentRef.setInput('students', [aStudent({ id: 'student-1' })]);
     host = hostElement(fixture);
     changes = 0;
     fixture.componentInstance.changed.subscribe(() => changes++);
@@ -47,7 +48,6 @@ describe('GroupsPanel', () => {
 
   async function load(groups: StudentGroup[]): Promise<void> {
     backend.expectOne('/api/teacher/groups').flush(groups);
-    backend.expectOne('/api/teacher/students').flush([aStudent({ id: 'student-1' })]);
     backend
       .expectOne('/api/teacher/billing/groups')
       .flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
@@ -76,6 +76,7 @@ describe('GroupsPanel', () => {
   it('lists current groups with members and price', async () => {
     await load([CURRENT, ARCHIVED]);
 
+    expect(host.querySelector('.p-card-title')?.textContent).toContain('Группы');
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toContain('ОГЭ 9 класс');
     expect(rows()[0]).toContain('Мария, Борис');
@@ -111,6 +112,10 @@ describe('GroupsPanel', () => {
     buttonByText(host, 'Изменить группу: ОГЭ 9 класс').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Группа');
+    const form = fixture.debugElement
+      .query(By.directive(GroupFormDialog))
+      .injector.get(GroupFormDialog);
+    expect(form.students().map((student) => student.id)).toEqual(['student-1']);
     const price = requireElement(document.body, '#group-price', HTMLInputElement);
     expect(price.value).toMatch(/800/);
   });
@@ -153,13 +158,12 @@ describe('GroupsPanel', () => {
   });
 
   it('stops loading when the groups cannot be loaded', async () => {
-    const students = backend.expectOne('/api/teacher/students');
     const prices = backend.expectOne('/api/teacher/billing/groups');
     backend.expectOne('/api/teacher/groups').flush(null, { status: 500, statusText: 'Error' });
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     backend.expectOne('/api/teacher/boards').flush([]);
-    expect(students.cancelled && prices.cancelled).toBe(true);
+    expect(prices.cancelled).toBe(true);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Групп пока нет');
