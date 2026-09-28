@@ -39,7 +39,7 @@ public class PortalSettingsRepository {
                 """)
                 .param("name", settings.name())
                 .param("address", settings.address())
-                .param("accent", settings.accent() == null ? null : settings.accent().name())
+                .param("accent", settings.accent() == null ? null : settings.accent().value())
                 .param("logoKey", logo == null ? null : logo.key())
                 .param("logoType", logo == null ? null : logo.contentType())
                 .param("setupCompletedAt", settings.setupCompletedAt())

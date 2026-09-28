@@ -1,14 +1,33 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { ColorPicker } from 'primeng/colorpicker';
 import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
 import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
 import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
 import { PortalLogo } from '@core/portal/portal-logo';
-import { ACCENTS, DEFAULT_ACCENT } from '@core/theme/portal-accent';
+import {
+  ACCENTS,
+  DEFAULT_ACCENT,
+  DEFAULT_OWN_COLOR,
+  MIN_CONTRAST,
+  isOwnColor,
+  ownColorContrast,
+  ownShades,
+} from '@core/theme/portal-accent';
 import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
 
@@ -22,8 +41,10 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     ReactiveFormsModule,
     Button,
     Card,
+    ColorPicker,
     HelpButton,
     InputText,
+    Message,
     PortalAddressField,
     PortalLogo,
   ],
@@ -70,7 +91,47 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   }
                 </button>
               }
+              <button
+                type="button"
+                role="radio"
+                class="tb-accent tb-accent--own"
+                [attr.aria-checked]="own()"
+                aria-label="Свой цвет"
+                title="Свой цвет"
+                [style.background]="own() ? accent() : null"
+                (click)="chooseOwn()"
+              >
+                <i [class]="own() ? 'pi pi-check' : 'pi pi-palette'" aria-hidden="true"></i>
+              </button>
             </div>
+            @if (own()) {
+              <div class="tb-own-color">
+                <p-colorpicker [formControl]="ownColor" appendTo="body" />
+                <input
+                  pInputText
+                  id="portal-own-color"
+                  aria-label="Свой цвет в формате #rrggbb"
+                  [formControl]="ownColor"
+                  maxlength="7"
+                  placeholder="#0f766e"
+                />
+                <span
+                  class="tb-own-color__sample"
+                  [style.background]="shades()['500']"
+                  style="color: #ffffff"
+                  >Светлая тема</span
+                >
+                <span
+                  class="tb-own-color__sample"
+                  [style.background]="shades()['400']"
+                  style="color: #18181b"
+                  >Тёмная тема</span
+                >
+              </div>
+              @if (poorContrast(); as advice) {
+                <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
+              }
+            }
             <small class="tb-hint">Кнопки, ссылки и выделения портала — в этом цвете.</small>
           </div>
           <div class="tb-field">
@@ -147,6 +208,33 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       }
     }
 
+    .tb-accent--own {
+      border-color: var(--p-content-border-color);
+      background: var(--p-content-background);
+      color: var(--p-text-muted-color);
+
+      &[aria-checked='true'] {
+        color: #fff;
+      }
+    }
+
+    .tb-own-color {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+
+      input {
+        width: 7rem;
+      }
+    }
+
+    .tb-own-color__sample {
+      padding: var(--tb-space-2) var(--tb-space-3);
+      border-radius: var(--p-border-radius-md);
+      font-weight: 600;
+    }
+
     .tb-logo-row {
       display: flex;
       flex-wrap: wrap;
@@ -175,6 +263,49 @@ export class PortalSettingsCard implements OnInit {
     address: new FormControl('', { nonNullable: true, validators: [portalAddressValidator] }),
     accent: new FormControl<string>(DEFAULT_ACCENT, { nonNullable: true }),
   });
+  /** The own color being picked; it becomes the accent while it is a valid `#rrggbb`. */
+  readonly ownColor = new FormControl(DEFAULT_OWN_COLOR, { nonNullable: true });
+
+  protected readonly accent = toSignal(this.form.controls.accent.valueChanges, {
+    initialValue: this.form.controls.accent.value,
+  });
+  protected readonly own = computed(() => isOwnColor(this.accent()));
+  protected readonly shades = computed(() =>
+    ownShades(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
+  );
+  /** Advice when the text on buttons of the own color would be poorly readable. */
+  protected readonly poorContrast = computed(() => {
+    if (!this.own()) {
+      return null;
+    }
+    const { light, dark } = ownColorContrast(this.accent());
+    if (light < MIN_CONTRAST && dark < MIN_CONTRAST) {
+      return 'Текст на кнопках в этом цвете будет плохо читаться в обеих темах — выберите более насыщенный цвет.';
+    }
+    if (light < MIN_CONTRAST) {
+      return 'Текст на кнопках в этом цвете будет плохо читаться в светлой теме — выберите цвет темнее.';
+    }
+    if (dark < MIN_CONTRAST) {
+      return 'Текст на кнопках в этом цвете будет плохо читаться в тёмной теме — выберите цвет светлее.';
+    }
+    return null;
+  });
+
+  constructor() {
+    this.ownColor.valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe((color) => {
+      if (this.own() && isOwnColor(color)) {
+        // The palette and the text field share the control: the one not typed in follows.
+        this.ownColor.setValue(color, { emitEvent: false });
+        this.form.controls.accent.setValue(color.toLowerCase());
+      }
+    });
+  }
+
+  /** «Свой цвет»: the last own color, or a calm default. */
+  chooseOwn(): void {
+    const color = this.ownColor.value;
+    this.form.controls.accent.setValue(isOwnColor(color) ? color.toLowerCase() : DEFAULT_OWN_COLOR);
+  }
 
   ngOnInit(): void {
     this.api.portal().subscribe((settings) => {
@@ -237,6 +368,9 @@ export class PortalSettingsCard implements OnInit {
 
   private show(settings: PortalSettings): void {
     this.settings.set(settings);
+    if (isOwnColor(settings.accent)) {
+      this.ownColor.setValue(settings.accent, { emitEvent: false });
+    }
     this.form.reset({
       name: settings.name,
       address: settings.address ?? '',

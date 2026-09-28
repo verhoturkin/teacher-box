@@ -66,6 +66,26 @@ class PortalIntegrationTest {
     }
 
     @Test
+    void theTeacherChoosesTheirOwnColor() {
+        assertThat(put("/api/teacher/portal", "{\"accent\":\" #1A7F5A \"}", TestUsers.teacher(TEACHER)))
+                .hasStatusOk().bodyJson().extractingPath("$.accent").isEqualTo("#1a7f5a");
+        assertThat(mvc.get().uri("/api/public/portal")).bodyJson().extractingPath("$.accent").isEqualTo("#1a7f5a");
+        assertThat(settings.load().accent()).isEqualTo(new PortalAccent("#1a7f5a"));
+        assertThat(settings.load().accent().own()).isTrue();
+        for (String wrong : new String[] {"#1a7f5", "1a7f5a", "#1a7f5g", "rgb(1,2,3)"}) {
+            assertThat(put("/api/teacher/portal", "{\"accent\":\"" + wrong + "\"}", TestUsers.teacher(TEACHER)))
+                    .as(wrong).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        }
+    }
+
+    @Test
+    void readsTheColorsSavedByEarlierVersions(@Autowired JdbcClient jdbc) {
+        jdbc.sql("update platform.portal_settings set accent = 'EMERALD'").update();
+        assertThat(settings.load().accent()).isEqualTo(new PortalAccent("emerald"));
+        assertThat(settings.load().accent().own()).isFalse();
+    }
+
+    @Test
     void theTeacherUploadsAndRemovesTheLogo() {
         assertThat(mvc.get().uri("/api/public/portal/logo")).hasStatus(HttpStatus.NOT_FOUND);
 
