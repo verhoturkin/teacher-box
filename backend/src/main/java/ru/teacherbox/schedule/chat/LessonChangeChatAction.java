@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -136,7 +137,7 @@ abstract class LessonChangeChatAction implements ChatAction {
         String question = kind == ChangeKind.CANCEL
                 ? "Напишите причину — учитель её увидит. Или нажмите «Без комментария»."
                 : "Напишите комментарий для учителя или нажмите «Без комментария».";
-        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice("Без комментария", SKIP)),
+        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)),
                 state.withStep("comment"));
     }
 
@@ -149,7 +150,7 @@ abstract class LessonChangeChatAction implements ChatAction {
             }
             if (text.get().length() > MAX_COMMENT) {
                 return ChatStep.ask(ChatReply.of("Слишком длинно: не больше " + MAX_COMMENT + " символов.")
-                        .row(ChatButton.choice("Без комментария", SKIP)), state);
+                        .row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)), state);
             }
             next = state.with("comment", text.get());
         }

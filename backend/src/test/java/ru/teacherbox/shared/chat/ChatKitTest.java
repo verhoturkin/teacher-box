@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import ru.teacherbox.testing.ChatSteps;
 
 class ChatKitTest {
 
@@ -19,6 +20,7 @@ class ChatKitTest {
         assertThat(step).isInstanceOfSatisfying(ChatStep.Ask.class, ask -> {
             assertThat(ask.reply().text()).isEqualTo("Точно?");
             assertThat(labels(ask.reply().rows())).containsExactly("Да", "Нет");
+            assertThat(ask.reply().rows().getFirst()).extracting(ChatButton::label).containsExactly("✅ Да", "❌ Нет");
             assertThat(ask.state().get("id")).contains("1");
         });
         assertThat(ChatKit.confirmed(new ChatInput.Choice(ChatKit.YES))).isTrue();
@@ -114,7 +116,15 @@ class ChatKitTest {
         assertThat(ChatKit.dateLabel(TODAY)).isEqualTo("пн 28.09");
     }
 
+    @Test
+    void putsTheIconBeforeTheText() {
+        assertThat(ChatIcons.with(ChatIcons.MENU, "Меню")).isEqualTo("🏠 Меню");
+        assertThat(ChatIcons.with("", "Меню")).isEqualTo("Меню");
+        assertThat(ChatSteps.plain("✖️ Отмена")).isEqualTo("Отмена");
+        assertThat(ChatSteps.plain("‹ Назад")).isEqualTo("‹ Назад");
+    }
+
     static List<String> labels(List<List<ChatButton>> rows) {
-        return rows.stream().flatMap(List::stream).map(ChatButton::label).toList();
+        return rows.stream().flatMap(List::stream).map(ChatButton::label).map(ChatSteps::plain).toList();
     }
 }

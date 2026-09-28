@@ -94,6 +94,11 @@ class ScheduleChatIntegrationTests {
     }
 
     @Test
+    void everyActionHasAnIconInTheMenu() {
+        assertThat(actions).isNotEmpty().allSatisfy(action -> assertThat(action.icon()).as(action.id()).isNotEmpty());
+    }
+
+    @Test
     void asksTheTeacherToMoveALesson() {
         UUID boris = directory.addStudent("Борис");
         ChatUser user = new ChatUser(boris, Role.STUDENT);

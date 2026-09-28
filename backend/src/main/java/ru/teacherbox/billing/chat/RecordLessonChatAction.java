@@ -14,6 +14,7 @@ import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.identity.api.GroupSummary;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.shared.chat.ChatAction;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatPicker;
@@ -50,6 +51,11 @@ class RecordLessonChatAction implements ChatAction {
     @Override
     public String title() {
         return "Добавить занятие";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.ADD_LESSON;
     }
 
     @Override

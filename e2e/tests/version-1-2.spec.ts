@@ -124,11 +124,16 @@ async function waitFor(
   return found as SentMessage;
 }
 
+/** The label without the icon before it (since 1.5 the bot's buttons carry one): «✅ Да» → «Да». */
+function plain(text: string): string {
+  return text.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D]+ /u, '');
+}
+
 function button(message: SentMessage, label: string | RegExp): string {
   const found = message.buttons
     .flat()
     .find((candidate) =>
-      typeof label === 'string' ? candidate.text === label : label.test(candidate.text),
+      typeof label === 'string' ? plain(candidate.text) === label : label.test(candidate.text),
     );
   expect(found?.callback_data, `a button ${String(label)} in «${message.text}»`).toBeDefined();
   return found?.callback_data ?? '';

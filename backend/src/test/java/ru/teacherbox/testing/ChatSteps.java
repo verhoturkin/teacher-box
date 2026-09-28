@@ -28,15 +28,39 @@ public final class ChatSteps {
         return (ChatStep.Done) step;
     }
 
-    public static List<String> labels(ChatStep step) {
+    /** Labels of the buttons as they are, icons included. */
+    public static List<String> rawLabels(ChatStep step) {
         return step.reply().rows().stream().flatMap(List::stream).map(ChatButton::label).toList();
+    }
+
+    /** Labels of the buttons without their icons ({@link #plain}). */
+    public static List<String> labels(ChatStep step) {
+        return step.reply().rows().stream().flatMap(List::stream).map(ChatButton::label).map(ChatSteps::plain).toList();
+    }
+
+    /**
+     * The label without the icon before it: «✅ Да» → «Да». Only emoji are dropped, so «‹ Назад» stays
+     * as it is.
+     */
+    public static String plain(String label) {
+        int index = 0;
+        while (index < label.length()) {
+            int codePoint = label.codePointAt(index);
+            int type = Character.getType(codePoint);
+            if (type != Character.OTHER_SYMBOL && type != Character.NON_SPACING_MARK
+                    && type != Character.MATH_SYMBOL) {
+                break;
+            }
+            index += Character.charCount(codePoint);
+        }
+        return index > 0 && label.startsWith(" ", index) ? label.substring(index + 1) : label;
     }
 
     /** The value of the choice button with a label starting with the text. */
     public static String value(ChatStep step, String labelStart) {
         return step.reply().rows().stream()
                 .flatMap(List::stream)
-                .filter(button -> button.label().startsWith(labelStart) && button.value() != null)
+                .filter(button -> plain(button.label()).startsWith(labelStart) && button.value() != null)
                 .map(ChatButton::value)
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No button «" + labelStart + "» in " + step.reply()));
@@ -46,7 +70,7 @@ public final class ChatSteps {
     public static String url(ChatStep step, String label) {
         return step.reply().rows().stream()
                 .flatMap(List::stream)
-                .filter(button -> button.label().equals(label) && button.url() != null)
+                .filter(button -> plain(button.label()).equals(label) && button.url() != null)
                 .map(ChatButton::url)
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No link «" + label + "» in " + step.reply()));

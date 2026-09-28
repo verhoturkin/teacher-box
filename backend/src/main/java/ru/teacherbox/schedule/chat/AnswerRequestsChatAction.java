@@ -11,6 +11,7 @@ import ru.teacherbox.schedule.application.ChangeRequestService.Approval;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatOffer;
@@ -54,6 +55,11 @@ class AnswerRequestsChatAction implements ChatAction {
     @Override
     public String title() {
         return "Запросы";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.REQUESTS;
     }
 
     @Override
@@ -134,7 +140,7 @@ class AnswerRequestsChatAction implements ChatAction {
         }
         if (request.kind() == ChangeKind.CANCEL && request.late()) {
             return ChatStep.ask(ChatReply.of("Отмена поздняя. Засчитать занятие как пропуск (оно будет оплачено)?")
-                    .row(ChatButton.choice("Засчитать", CHARGE), ChatButton.choice("Не засчитывать", FREE)),
+                    .row(ChatButton.choice(ChatIcons.with(ChatIcons.CHARGE, "Засчитать"), CHARGE), ChatButton.choice(ChatIcons.with(ChatIcons.NO_CHARGE, "Не засчитывать"), FREE)),
                     state.withStep("charge"));
         }
         return ChatKit.confirm(acceptQuestion(request, false), state.withStep("confirm-accept"));
@@ -151,7 +157,7 @@ class AnswerRequestsChatAction implements ChatAction {
 
     private ChatStep askAnswer(ChatState state) {
         return ChatStep.ask(ChatReply.of("Напишите ответ ученику — например, предложите другое время. "
-                + "Или нажмите «Без ответа».").row(ChatButton.choice("Без ответа", SKIP)), state.withStep("answer"));
+                + "Или нажмите «Без ответа».").row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без ответа"), SKIP)), state.withStep("answer"));
     }
 
     private ChatStep answer(RequestView request, ChatState state, ChatInput input) {
@@ -163,7 +169,7 @@ class AnswerRequestsChatAction implements ChatAction {
             }
             if (text.get().length() > MAX_ANSWER) {
                 return ChatStep.ask(ChatReply.of("Слишком длинно: не больше " + MAX_ANSWER + " символов.")
-                        .row(ChatButton.choice("Без ответа", SKIP)), state);
+                        .row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без ответа"), SKIP)), state);
             }
             next = state.with("answer", text.get());
         }
@@ -255,6 +261,7 @@ class AnswerRequestsChatAction implements ChatAction {
     }
 
     private static List<ChatButton> decisionButtons() {
-        return List.of(ChatButton.choice("Принять", ACCEPT), ChatButton.choice("Отклонить", DECLINE));
+        return List.of(ChatButton.choice(ChatIcons.with(ChatIcons.ACCEPT, "Принять"), ACCEPT),
+                ChatButton.choice(ChatIcons.with(ChatIcons.DECLINE, "Отклонить"), DECLINE));
     }
 }

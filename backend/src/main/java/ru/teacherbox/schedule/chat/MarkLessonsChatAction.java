@@ -18,6 +18,7 @@ import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -114,7 +115,8 @@ abstract class MarkLessonsChatAction implements ChatAction {
         ChatState state = ChatState.of("lesson", lesson.get().id().toString());
         if (lesson.get().groupId() == null) {
             return ChatStep.ask(ChatReply.of(lessons.describe(lesson.get()) + "\nКак прошло занятие?")
-                    .row(ChatButton.choice("Проведено", "CONDUCTED"), ChatButton.choice("Пропуск", "MISSED")),
+                    .row(ChatButton.choice(ChatIcons.with(ChatIcons.CONDUCTED, "Проведено"), "CONDUCTED"),
+                            ChatButton.choice(ChatIcons.with(ChatIcons.MISSED, "Пропуск"), "MISSED")),
                     state.withStep("outcome"));
         }
         List<ParticipantView> participants = lesson.get().participants();
@@ -143,7 +145,7 @@ abstract class MarkLessonsChatAction implements ChatAction {
             boolean came = present.contains(participant.studentId().toString());
             rows.add(List.of(ChatButton.choice((came ? "✅ " : "⬜ ") + name, TOGGLE + participant.studentId())));
         }
-        rows.add(List.of(ChatButton.choice("Готово", READY)));
+        rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.DONE, "Готово"), READY)));
         return ChatStep.ask(new ChatReply(text.toString(), rows), state.withStep("attendance"));
     }
 
@@ -189,7 +191,8 @@ abstract class MarkLessonsChatAction implements ChatAction {
                 && (value.equals("CONDUCTED") || value.equals("MISSED")) ? Optional.of(value) : Optional.empty();
         if (outcome.isEmpty()) {
             return ChatStep.ask(ChatReply.of("Выберите: «Проведено» или «Пропуск».")
-                    .row(ChatButton.choice("Проведено", "CONDUCTED"), ChatButton.choice("Пропуск", "MISSED")), state);
+                    .row(ChatButton.choice(ChatIcons.with(ChatIcons.CONDUCTED, "Проведено"), "CONDUCTED"),
+                            ChatButton.choice(ChatIcons.with(ChatIcons.MISSED, "Пропуск"), "MISSED")), state);
         }
         String what = outcome.get().equals("CONDUCTED") ? "проведённое" : "пропуск";
         return ChatKit.confirm("Отметить занятие " + lessons.describe(lesson.get()) + " как " + what + "?",

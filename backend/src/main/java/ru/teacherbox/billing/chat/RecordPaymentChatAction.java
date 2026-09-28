@@ -12,6 +12,7 @@ import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatPicker;
@@ -46,6 +47,11 @@ class RecordPaymentChatAction implements ChatAction {
     @Override
     public String title() {
         return "Записать оплату";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.RECORD_PAYMENT;
     }
 
     @Override

@@ -11,6 +11,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -49,6 +50,11 @@ class MyRequestsChatAction implements ChatAction {
     }
 
     @Override
+    public String icon() {
+        return ChatIcons.REQUESTS;
+    }
+
+    @Override
     public int order() {
         return 40;
     }
@@ -80,7 +86,7 @@ class MyRequestsChatAction implements ChatAction {
         }
         ChatReply reply = ChatReply.of(text + "\n\nЗапрос без ответа можно отозвать.");
         for (RequestView request : pending) {
-            reply = reply.row(ChatButton.choice("Отозвать: " + ChatText.shortDayTime(request.lessonStartsAt(),
+            reply = reply.row(ChatButton.choice(ChatIcons.WITHDRAW + " Отозвать: " + ChatText.shortDayTime(request.lessonStartsAt(),
                     lessons.zone()), WITHDRAW + request.id()));
         }
         return ChatStep.ask(reply, ChatState.EMPTY.withStep("list"));

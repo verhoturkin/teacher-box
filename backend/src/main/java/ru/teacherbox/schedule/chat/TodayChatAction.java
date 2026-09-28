@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
+import ru.teacherbox.shared.chat.ChatIcons;
 
 /** The teacher: today's lessons; the ones that have started can be marked. */
 @Component
@@ -21,6 +22,11 @@ class TodayChatAction extends MarkLessonsChatAction {
     @Override
     public String title() {
         return "Сегодня";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.TODAY;
     }
 
     @Override

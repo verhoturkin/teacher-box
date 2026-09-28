@@ -35,7 +35,8 @@ public final class ChatKit {
 
     /** Asks to confirm a change with «Да» and «Нет»; the answer comes back with the same state. */
     public static ChatStep confirm(String question, ChatState state) {
-        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice("Да", YES), ChatButton.choice("Нет", NO)),
+        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.YES, "Да"), YES),
+                ChatButton.choice(ChatIcons.with(ChatIcons.NO, "Нет"), NO)),
                 state);
     }
 

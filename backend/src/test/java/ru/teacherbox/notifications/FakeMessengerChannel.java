@@ -13,6 +13,7 @@ import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.OutgoingButton;
 import ru.teacherbox.notifications.application.OutgoingMessage;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.testing.ChatSteps;
 
 /**
  * In-memory messenger: records sent messages with their buttons, acknowledged presses and published
@@ -30,7 +31,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
         public String button(String label) {
             return rows.stream()
                     .flatMap(List::stream)
-                    .filter(button -> button.label().equals(label))
+                    .filter(button -> ChatSteps.plain(button.label()).equals(label))
                     .map(OutgoingButton::data)
                     .filter(java.util.Objects::nonNull)
                     .findFirst()
@@ -38,7 +39,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
         }
 
         public List<String> labels() {
-            return rows.stream().flatMap(List::stream).map(OutgoingButton::label).toList();
+            return rows.stream().flatMap(List::stream).map(OutgoingButton::label).map(ChatSteps::plain).toList();
         }
     }
 
