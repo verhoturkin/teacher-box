@@ -96,15 +96,6 @@ export interface MonthlyReport {
   readonly payments: JournalPayment[];
 }
 
-export interface RecordLessonRequest {
-  readonly studentId: string;
-  readonly date: string;
-  readonly durationMinutes: number;
-  readonly price: number;
-  readonly topic: string | null;
-  readonly status: Exclude<LessonStatus, 'CANCELLED'>;
-}
-
 export interface RecordPaymentRequest {
   readonly studentId: string;
   readonly amount: number;

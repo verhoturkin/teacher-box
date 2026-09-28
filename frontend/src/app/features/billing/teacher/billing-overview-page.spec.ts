@@ -2,10 +2,9 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
-import { lesson, overview, payment, studentBalance } from '@testing/billing-fixtures';
+import { overview, payment, studentBalance } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { BillingOverviewPage } from './billing-overview-page';
-import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { testProviders } from '@testing/setup';
 
@@ -71,24 +70,12 @@ describe('BillingOverviewPage', () => {
     expect(rows()[0]).toContain('Иван');
   });
 
-  it('records a lesson for a student and reloads', async () => {
-    buttonByText(host, 'Занятие: Иван').click();
-    await fixture.whenStable();
-    const dialog = fixture.debugElement
-      .query(By.directive(LessonDialog))
-      .injector.get(LessonDialog);
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.form.controls.studentId.value).toBe('s-1');
-    expect(dialog.students().map((student) => student.studentId)).toEqual(['s-1', 's-2']);
-
-    dialog.save();
-    backend.expectOne('/api/teacher/billing/lessons').flush(lesson());
-    await fixture.whenStable();
-
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Занятие записано' }),
+  it('does not record lessons: they are charged when marked in the schedule', () => {
+    const buttons = Array.from(host.querySelectorAll('button')).map(
+      (button) => `${button.textContent} ${button.getAttribute('aria-label') ?? ''}`,
     );
-    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN]));
+
+    expect(buttons.filter((label) => label.includes('Занятие'))).toEqual([]);
   });
 
   it('opens the payment dialog from the home page', async () => {
@@ -125,20 +112,13 @@ describe('BillingOverviewPage', () => {
     dialog.form.patchValue({ amount: 100 });
     dialog.save();
     backend.expectOne('/api/teacher/billing/payments').flush(payment());
+    await fixture.whenStable();
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Оплата сохранена' }),
+    );
     backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
     await fixture.whenStable();
 
     expect(normalizedText()).toContain('Добавьте учеников');
-  });
-
-  it('opens the lesson dialog from the toolbar', async () => {
-    buttonByText(host, 'Занятие').click();
-    await fixture.whenStable();
-
-    const dialog = fixture.debugElement
-      .query(By.directive(LessonDialog))
-      .injector.get(LessonDialog);
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.form.controls.studentId.value).toBeNull();
   });
 });

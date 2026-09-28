@@ -31,27 +31,17 @@ describe('BillingApi', () => {
     backend.expectOne('/api/teacher/billing/reports/monthly?month=2026-09');
   });
 
-  it('records lessons and payments', () => {
-    const lessonRequest = {
-      studentId: 's-1',
-      date: '2026-09-01',
-      durationMinutes: 60,
-      price: 150_000,
-      topic: null,
-      status: 'CONDUCTED' as const,
-    };
+  it('records payments and cancels lessons', () => {
     const paymentRequest = {
       studentId: 's-1',
       amount: 100,
       paidOn: '2026-09-01',
       comment: null,
     };
-    api.recordLesson(lessonRequest).subscribe();
     api.recordPayment(paymentRequest).subscribe();
     api.cancelLesson('l-1', 'болел').subscribe();
     api.voidPayment('p-1', null).subscribe();
 
-    expect(backend.expectOne('/api/teacher/billing/lessons').request.body).toEqual(lessonRequest);
     expect(backend.expectOne('/api/teacher/billing/payments').request.body).toEqual(paymentRequest);
     expect(backend.expectOne('/api/teacher/billing/lessons/l-1/cancel').request.body).toEqual({
       reason: 'болел',

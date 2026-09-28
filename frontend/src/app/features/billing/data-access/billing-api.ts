@@ -10,7 +10,6 @@ import {
   MonthlyReport,
   MyBillingSummary,
   Payment,
-  RecordLessonRequest,
   RecordPaymentRequest,
   StudentLedger,
 } from './billing.models';
@@ -57,10 +56,6 @@ export class BillingApi {
     return this.http
       .put<GroupPrice>(`/api/teacher/billing/groups/${groupId}/price`, { lessonPrice })
       .pipe(map((response) => response.lessonPrice));
-  }
-
-  recordLesson(request: RecordLessonRequest): Observable<Lesson> {
-    return this.http.post<Lesson>('/api/teacher/billing/lessons', request);
   }
 
   cancelLesson(lessonId: string, reason: string | null): Observable<Lesson> {

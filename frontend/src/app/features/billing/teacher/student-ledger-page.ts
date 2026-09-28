@@ -21,7 +21,6 @@ import { BillingApi } from '../data-access/billing-api';
 import { BillingStudent, Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerTable } from '../ledger/ledger-table';
-import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
 
 /** Teacher: the history of one student, lesson price, corrections. */
@@ -40,7 +39,6 @@ import { PaymentDialog } from './payment-dialog';
     MoneyPipe,
     BalanceAmount,
     LedgerTable,
-    LessonDialog,
     PaymentDialog,
   ],
   providers: [ConfirmationService],
@@ -54,7 +52,6 @@ import { PaymentDialog } from './payment-dialog';
       <div class="tb-page-header">
         <h1 class="tb-page-title">{{ ledger.displayName }}</h1>
         <div class="tb-actions">
-          <p-button label="Занятие" icon="pi pi-plus" (onClick)="lessonVisible.set(true)" />
           <p-button
             label="Оплата"
             icon="pi pi-wallet"
@@ -118,13 +115,6 @@ import { PaymentDialog } from './payment-dialog';
         />
       </p-card>
 
-      <tb-lesson-dialog
-        [(visible)]="lessonVisible"
-        [students]="student()"
-        [studentId]="ledger.studentId"
-        [currency]="ledger.currency"
-        (saved)="reload()"
-      />
       <tb-payment-dialog
         [(visible)]="paymentVisible"
         [students]="student()"
@@ -149,7 +139,6 @@ export class StudentLedgerPage implements OnInit {
     const ledger = this.ledger();
     return ledger === null ? [] : [ledger];
   });
-  protected readonly lessonVisible = signal(false);
   protected readonly paymentVisible = signal(false);
   readonly price = new FormControl<number | null>(null, [Validators.required, Validators.min(0)]);
   private readonly priceValue = toSignal(this.price.valueChanges, { initialValue: null });
