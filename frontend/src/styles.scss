@@ -589,6 +589,71 @@ a.p-menu-item-link:hover {
   --fc-classic-strong-border: var(--p-md-outline);
 }
 
+/* Calendar buttons (M3): pill buttons; the views are a segmented button with the selected one tonal */
+.tb-fc-button.tb-fc-button,
+.tb-fc-segment.tb-fc-segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 var(--tb-space-4);
+  border: 1px solid var(--p-md-outline);
+  background: transparent;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-label-l);
+  cursor: pointer;
+  transition: background var(--tb-duration-short) var(--tb-motion-standard);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: default;
+  }
+}
+
+.tb-fc-button.tb-fc-button {
+  border-radius: var(--tb-shape-full);
+
+  & + .tb-fc-button {
+    margin-inline-start: var(--tb-space-1);
+  }
+}
+
+.tb-fc-segments.tb-fc-segments {
+  display: inline-flex;
+
+  .tb-fc-segment {
+    border-radius: 0;
+
+    & + .tb-fc-segment {
+      border-inline-start-width: 0;
+    }
+
+    &:first-child {
+      border-radius: var(--tb-shape-full) 0 0 var(--tb-shape-full);
+    }
+
+    &:last-child {
+      border-radius: 0 var(--tb-shape-full) var(--tb-shape-full) 0;
+    }
+
+    &[aria-selected='true'],
+    &[aria-pressed='true'] {
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+  }
+}
+
 /* Lesson events by status; a planned group lesson has the tertiary color */
 .tb-lesson--group.tb-lesson--scheduled {
   --fc-classic-event: var(--p-md-tertiary-container);
