@@ -1,5 +1,6 @@
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import {
@@ -10,6 +11,7 @@ import {
   scheduledLesson,
 } from '@testing/schedule-fixtures';
 import { BusyTime, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
+import { ScheduleCalendar } from '../ui/schedule-calendar';
 import { MySchedulePage } from './my-schedule-page';
 import { testProviders } from '@testing/setup';
 
@@ -90,11 +92,17 @@ describe('MySchedulePage', () => {
     expect(hostElement(fixture).querySelectorAll('.tb-schedule-list > li').length).toBe(2);
   });
 
-  it('shows when the teacher is busy, without whose lessons', async () => {
+  it('gives the calendar the teacher’s busy time, not in the list', async () => {
     const busy = future(30);
     const text = await render([], [], [{ start: busy.startsAt, end: busy.endsAt }]);
 
-    expect(text).toContain('Учитель занят');
+    expect(
+      fixture.debugElement
+        .query(By.directive(ScheduleCalendar))
+        .injector.get(ScheduleCalendar)
+        .busy(),
+    ).toEqual([{ start: busy.startsAt, end: busy.endsAt }]);
+    expect(text).not.toContain('Учитель занят');
   });
 
   it('says when there are no lessons', async () => {

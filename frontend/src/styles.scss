@@ -464,7 +464,7 @@ a.p-button:hover {
   outline-offset: 1px;
 }
 
-/* Busy time from the teacher's Google Calendar */
+/* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
   --fc-classic-background-event: var(--p-surface-500);
 }
