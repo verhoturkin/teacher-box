@@ -50,8 +50,6 @@ public final class SettingsCatalog {
 
         b.group("Оплаты")
                 .add("TEACHERBOX_BILLING_CURRENCY", "Валюта", CURRENCY, "Код ISO 4217, например RUB.")
-                .add("TEACHERBOX_BILLING_DEFAULT_LESSON_PRICE", "Цена занятия нового ученика", NUMBER,
-                        "Только начальное значение: учитель меняет цену в «Оплатах».")
                 .add("TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION", "Длительность занятия, минут", NUMBER, "");
 
         b.group("Домашние задания")

@@ -58,13 +58,11 @@ export class ScheduleCalendar {
   readonly initialView = input<CalendarView>('timeGridWeek');
   /** Day to show first (`yyyy-MM-dd`); today by default. */
   readonly initialDate = input<string | null>(null);
-  /** Busy times of the teacher's own calendars, shown in the background. */
-  readonly busy = input<readonly BusyTime[]>([]);
   /**
-   * Shows the busy times as events with this title (the student's calendar: they are also seen in the
-   * list, where background events are not).
+   * When the teacher is busy (their Google Calendar; for a student also other lessons): a grey
+   * background in the week, day and month; the list shows lessons only.
    */
-  readonly busyLabel = input<string | null>(null);
+  readonly busy = input<readonly BusyTime[]>([]);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -159,14 +157,12 @@ export class ScheduleCalendar {
   }
 
   private toBusy(busy: BusyTime, index: number): EventInput {
-    const label = this.busyLabel();
     return {
       id: `busy-${String(index)}`,
       start: busy.start,
       end: busy.end,
-      ...(label === null
-        ? { display: 'background', className: 'tb-busy' }
-        : { title: label, className: 'tb-busy-slot', editable: false }),
+      display: 'background',
+      className: 'tb-busy',
     };
   }
 
