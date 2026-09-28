@@ -102,6 +102,12 @@ describe('MySchedulePage', () => {
         .injector.get(ScheduleCalendar)
         .busy(),
     ).toEqual([{ start: busy.startsAt, end: busy.endsAt }]);
+    expect(
+      fixture.debugElement
+        .query(By.directive(ScheduleCalendar))
+        .injector.get(ScheduleCalendar)
+        .busyTitle(),
+    ).toBe('Занято');
     expect(text).not.toContain('Учитель занят');
   });
 

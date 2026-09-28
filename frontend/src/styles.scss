@@ -473,6 +473,8 @@ a.p-menu-item-link:hover {
 /* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
   --fc-classic-background-event: var(--p-surface-500);
+  /* The «Занято» caption of the student's calendar stays readable on the grey */
+  --fc-classic-background-event-foreground-opacity: 80%;
 }
 
 /*

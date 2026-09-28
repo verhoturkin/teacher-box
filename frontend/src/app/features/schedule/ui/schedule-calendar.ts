@@ -63,6 +63,8 @@ export class ScheduleCalendar {
    * background in the week, day and month; the list shows lessons only.
    */
   readonly busy = input<readonly BusyTime[]>([]);
+  /** Caption on the busy times (the student's calendar: «Занято»); none by default. */
+  readonly busyTitle = input<string | null>(null);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -157,12 +159,14 @@ export class ScheduleCalendar {
   }
 
   private toBusy(busy: BusyTime, index: number): EventInput {
+    const title = this.busyTitle();
     return {
       id: `busy-${String(index)}`,
       start: busy.start,
       end: busy.end,
       display: 'background',
       className: 'tb-busy',
+      ...(title === null ? {} : { title }),
     };
   }
 
