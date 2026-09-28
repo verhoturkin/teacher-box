@@ -3,6 +3,7 @@ import {
   ChangeRequest,
   LessonSeries,
   MyScheduleSummary,
+  OffTime,
   ScheduleSettings,
   ScheduleSummary,
   ScheduledLesson,
@@ -90,6 +91,40 @@ export function lessonSeries(overrides: Partial<LessonSeries> = {}): LessonSerie
     endsOn: null,
     topic: null,
     meetingUrl: null,
+    ...overrides,
+  };
+}
+
+/** Weekly off time: a lunch on Mondays and Wednesdays. */
+export function weeklyOffTime(overrides: Partial<OffTime> = {}): OffTime {
+  return {
+    id: 'off-1',
+    kind: 'WEEKLY',
+    startsAt: null,
+    endsAt: null,
+    weekdays: ['MONDAY', 'WEDNESDAY'],
+    startTime: '13:00:00',
+    endTime: '14:00:00',
+    startsOn: '2026-09-01',
+    endsOn: null,
+    note: 'Обед',
+    ...overrides,
+  };
+}
+
+/** Off time once: a holiday. */
+export function onceOffTime(overrides: Partial<OffTime> = {}): OffTime {
+  return {
+    id: 'off-2',
+    kind: 'ONCE',
+    startsAt: at(2026, 10, 5, 0),
+    endsAt: at(2026, 10, 10, 0),
+    weekdays: [],
+    startTime: null,
+    endTime: null,
+    startsOn: null,
+    endsOn: null,
+    note: null,
     ...overrides,
   };
 }

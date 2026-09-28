@@ -184,6 +184,48 @@ export interface GoogleCalendarStatus {
   readonly callbackPath: string;
 }
 
+export type OffTimeKind = 'ONCE' | 'WEEKLY';
+
+/**
+ * Mirrors `OffTimeView`: time the teacher does not work — once (`startsAt`–`endsAt`) or weekly
+ * (the other fields; an end not after the start is on the next day).
+ */
+export interface OffTime {
+  readonly id: string;
+  readonly kind: OffTimeKind;
+  readonly startsAt: string | null;
+  readonly endsAt: string | null;
+  readonly weekdays: Weekday[];
+  /** Local time in the instance time zone, `HH:mm:ss`. */
+  readonly startTime: string | null;
+  readonly endTime: string | null;
+  readonly startsOn: string | null;
+  readonly endsOn: string | null;
+  /** What the time is, for the teacher only (e.g. «Обед»). */
+  readonly note: string | null;
+}
+
+/** Off time once (`startsAt`, `endsAt`) or weekly (`HH:mm` times in the instance time zone). */
+export interface OffTimeRequest {
+  readonly kind: OffTimeKind;
+  readonly startsAt: string | null;
+  readonly endsAt: string | null;
+  readonly weekdays: Weekday[];
+  readonly startTime: string | null;
+  readonly endTime: string | null;
+  readonly startsOn: string | null;
+  readonly endsOn: string | null;
+  readonly note: string | null;
+}
+
+/** Mirrors `OffTimePeriod`: one period of off time in the teacher's calendar. */
+export interface OffTimePeriod {
+  readonly offTimeId: string;
+  readonly start: string;
+  readonly end: string;
+  readonly note: string | null;
+}
+
 /** A time when the teacher is busy: their Google calendar, or (for a student) other lessons. */
 export interface BusyTime {
   readonly start: string;

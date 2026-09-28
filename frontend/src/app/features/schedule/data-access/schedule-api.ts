@@ -15,6 +15,9 @@ import {
   LessonOutcome,
   LessonSeries,
   MyScheduleSummary,
+  OffTime,
+  OffTimePeriod,
+  OffTimeRequest,
   PlanLessonRequest,
   ScheduleSettings,
   ScheduleSummary,
@@ -202,6 +205,32 @@ export class ScheduleApi {
   /** Busy times of the teacher's own calendars in `[from, to)` (ISO instants). */
   googleBusy(from: string, to: string): Observable<BusyTime[]> {
     return this.http.get<BusyTime[]>('/api/teacher/schedule/google/busy', {
+      params: new HttpParams().set('from', from).set('to', to),
+    });
+  }
+
+  /** The teacher's off time that is not over: weekly first, then once by its start. */
+  offTimes(): Observable<OffTime[]> {
+    return this.http.get<OffTime[]>('/api/teacher/schedule/off-times');
+  }
+
+  createOffTime(request: OffTimeRequest): Observable<OffTime> {
+    return this.http.post<OffTime>('/api/teacher/schedule/off-times', request, QUIET);
+  }
+
+  changeOffTime(offTimeId: string, request: OffTimeRequest): Observable<OffTime> {
+    return this.http.put<OffTime>(`/api/teacher/schedule/off-times/${offTimeId}`, request, QUIET);
+  }
+
+  deleteOffTime(offTimeId: string): Observable<void> {
+    return this.http
+      .delete(`/api/teacher/schedule/off-times/${offTimeId}`)
+      .pipe(map(() => undefined));
+  }
+
+  /** Periods of the teacher's off time in `[from, to)` (ISO instants). */
+  offTimePeriods(from: string, to: string): Observable<OffTimePeriod[]> {
+    return this.http.get<OffTimePeriod[]>('/api/teacher/schedule/off-times/periods', {
       params: new HttpParams().set('from', from).set('to', to),
     });
   }

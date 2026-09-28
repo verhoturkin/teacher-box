@@ -17,8 +17,9 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 
 /**
- * When the teacher is busy: lessons that are not cancelled and, if the teacher allowed reading it,
- * the busy time of their Google Calendar. Students see only the periods, never whose lessons they are.
+ * When the teacher is busy: lessons that are not cancelled, the time the teacher does not work and, if
+ * the teacher allowed reading it, the busy time of their Google Calendar. Students see only the
+ * periods, never whose lessons they are.
  */
 @Service
 public class TeacherAvailability {
@@ -37,10 +38,13 @@ public class TeacherAvailability {
     }
 
     private final LessonRepository lessons;
+    private final OffTimeService offTime;
     private final ObjectProvider<ExternalBusyTimes> external;
 
-    public TeacherAvailability(LessonRepository lessons, ObjectProvider<ExternalBusyTimes> external) {
+    public TeacherAvailability(LessonRepository lessons, OffTimeService offTime,
+            ObjectProvider<ExternalBusyTimes> external) {
         this.lessons = lessons;
+        this.offTime = offTime;
         this.external = external;
     }
 
@@ -59,8 +63,8 @@ public class TeacherAvailability {
     /**
      * Checks that the teacher is free in {@code [from, to)}, not counting the lesson being moved.
      *
-     * @throws ConflictException {@code schedule.slot-busy} if another lesson or the teacher's calendar
-     *                           takes the time
+     * @throws ConflictException {@code schedule.slot-busy} if another lesson, the off time or the
+     *                           teacher's calendar takes the time
      */
     @Transactional(readOnly = true)
     public void requireFree(Instant from, Instant to, UUID movedLesson) {
@@ -82,6 +86,7 @@ public class TeacherAvailability {
                 busy.add(new BusyTime(lesson.startsAt(), lesson.endsAt()));
             }
         }
+        busy.addAll(offTime.busy(from, to));
         ExternalBusyTimes calendar = external.getIfAvailable();
         if (calendar != null) {
             calendar.busy(from, to).stream()

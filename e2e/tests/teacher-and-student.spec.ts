@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { laterThisWeek } from './this-week';
 
 /**
  * The main scenario of the portal, from the teacher's first sign-in to the student's inbox:
@@ -143,7 +144,9 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
 
 test('the student moves a lesson when the teacher agrees', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await planLesson(page, 3, 15, 'Проценты');
+  // The student's list of upcoming lessons shows this week only.
+  const lesson = laterThisWeek(15);
+  await planLesson(page, lesson.days, lesson.hours, 'Проценты');
 
   const student = await studentPage(browser);
   await student.getByRole('menuitem', { name: 'Расписание' }).click();

@@ -67,6 +67,25 @@ describe('ScheduleCalendar', () => {
     expect(busy()[0]?.textContent.trim()).toBe('Занято');
   });
 
+  it('hatches the teacher’s off time with its caption', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('offTime', [
+      { offTimeId: 'o-1', start: '2026-10-01T09:00:00Z', end: '2026-10-01T10:00:00Z', note: null },
+      {
+        offTimeId: 'o-2',
+        start: '2026-10-01T12:00:00Z',
+        end: '2026-10-01T13:00:00Z',
+        note: 'Обед',
+      },
+    ]);
+
+    await render([]);
+    const offTime = Array.from(hostElement(fixture).querySelectorAll('.tb-off-time')).map((event) =>
+      event.textContent.trim(),
+    );
+    expect(offTime).toEqual(['Нерабочее время', 'Обед']);
+  });
+
   it('opens a clicked lesson', async () => {
     const clicked: ScheduledLesson[] = [];
     fixture.componentInstance.lessonClick.subscribe((lesson) => clicked.push(lesson));

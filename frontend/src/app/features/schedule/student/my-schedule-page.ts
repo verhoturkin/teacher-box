@@ -36,11 +36,15 @@ import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 
-/** How far ahead the list of upcoming lessons looks. */
-export const UPCOMING_DAYS = 60;
+/** The day after the end of the week of `date` (Monday; the week starts on Monday). */
+export function nextMonday(date: Date): Date {
+  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  monday.setDate(monday.getDate() + 7 - ((monday.getDay() + 6) % 7));
+  return monday;
+}
 
 /**
- * The student's schedule: upcoming lessons with the link to the online lesson and requests to
+ * The student's schedule: upcoming lessons of this week with the link to the online lesson and requests to
  * move or cancel them, the calendar, the student's requests and the calendar link.
  */
 @Component({
@@ -67,7 +71,11 @@ export const UPCOMING_DAYS = 60;
       <div class="tb-stack">
         <p-card header="Ближайшие занятия">
           @if (upcoming().length === 0) {
-            <tb-empty-state icon="pi-calendar" title="Запланированных занятий пока нет" />
+            <tb-empty-state
+              icon="pi-calendar"
+              title="На этой неделе занятий больше нет"
+              hint="Следующие занятия — в календаре"
+            />
           } @else {
             <ul class="tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {
@@ -297,9 +305,7 @@ export class MySchedulePage implements OnInit {
   private reload(): void {
     this.now.set(new Date());
     const today = this.now();
-    const until = new Date(today);
-    until.setDate(until.getDate() + UPCOMING_DAYS);
-    this.api.myLessons(toIsoDate(today), toIsoDate(until)).subscribe((lessons) => {
+    this.api.myLessons(toIsoDate(today), toIsoDate(nextMonday(today))).subscribe((lessons) => {
       this.upcomingLessons.set(lessons);
     });
     this.api.myRequests().subscribe((requests) => {

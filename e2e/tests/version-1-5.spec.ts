@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { laterThisWeek } from './this-week';
 
 /**
  * Version 1.5: tabs on the page and five sections in the phone navigation, payments without a
@@ -78,8 +79,8 @@ test('tabs lie on the page and the phone navigation has five even sections', asy
   browser,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto('/teacher/students');
-  await expect(page.getByRole('tab', { name: 'Группы' })).toBeVisible();
+  await page.goto('/teacher/notifications');
+  await expect(page.getByRole('tab', { name: 'Что присылать' })).toBeVisible();
   expect(
     await page
       .locator('.p-tabpanels')
@@ -157,7 +158,9 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   browser,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await planLesson(page, STUDENT, 5, 12, 'Своё');
+  // The student's list of upcoming lessons shows this week only.
+  const own = laterThisWeek(12);
+  await planLesson(page, STUDENT, own.days, own.hours, 'Своё');
   await planLesson(page, OTHER, 6, 12, 'Чужое');
 
   const student = await studentPage(browser);

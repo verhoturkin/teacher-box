@@ -4,6 +4,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   output,
   signal,
 } from '@angular/core';
@@ -34,7 +35,7 @@ import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 
-/** Teacher: groups of students taught together, their members and lesson prices. */
+/** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
   selector: 'tb-groups-panel',
   imports: [
@@ -58,7 +59,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card>
+    <p-card header="Группы">
       <div class="tb-toolbar">
         <p-button label="Создать группу" icon="pi pi-users" (onClick)="openCreate()" />
         <label class="tb-switch" for="show-archived">
@@ -211,11 +212,12 @@ export class GroupsPanel implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly meetings = inject(MeetingsApi);
 
+  /** Students of the teacher: the members to choose from. */
+  readonly students = input<readonly Student[]>([]);
   /** A group was created, changed or archived. */
   readonly changed = output();
 
   protected readonly groups = signal<StudentGroup[]>([]);
-  protected readonly students = signal<Student[]>([]);
   private readonly prices = signal<ReadonlyMap<string, number>>(new Map());
   protected readonly currency = signal('RUB');
   protected readonly loading = signal(true);
@@ -249,12 +251,10 @@ export class GroupsPanel implements OnInit {
   ngOnInit(): void {
     forkJoin({
       groups: this.api.listGroups(),
-      students: this.api.listStudents(),
       prices: this.billing.groupPrices(),
     }).subscribe({
-      next: ({ groups, students, prices }) => {
+      next: ({ groups, prices }) => {
         this.groups.set(groups);
-        this.students.set(students);
         this.currency.set(prices.currency);
         this.prices.set(new Map(prices.prices.map((price) => [price.groupId, price.lessonPrice])));
         this.loading.set(false);

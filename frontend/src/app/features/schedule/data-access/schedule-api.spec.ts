@@ -165,6 +165,45 @@ describe('ScheduleApi', () => {
     ).toBe('GET');
   });
 
+  it('calls the off time endpoints', () => {
+    const offTime = {
+      kind: 'ONCE' as const,
+      startsAt: '2026-10-05T00:00:00Z',
+      endsAt: '2026-10-10T00:00:00Z',
+      weekdays: [],
+      startTime: null,
+      endTime: null,
+      startsOn: null,
+      endsOn: null,
+      note: 'Отпуск',
+    };
+    api.offTimes().subscribe();
+    api.createOffTime(offTime).subscribe();
+    api.changeOffTime('o-1', offTime).subscribe();
+    let deleted = false;
+    api.deleteOffTime('o-1').subscribe(() => (deleted = true));
+    api.offTimePeriods('2026-10-01T00:00:00Z', '2026-10-08T00:00:00Z').subscribe();
+
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/off-times' }),
+    ).toBeTruthy();
+    const create = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/off-times' });
+    expect(create.request.body).toEqual(offTime);
+    expect(create.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    expect(
+      backend
+        .expectOne({ method: 'PUT', url: '/api/teacher/schedule/off-times/o-1' })
+        .request.context.get(SKIP_ERROR_TOAST),
+    ).toBe(true);
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/off-times/o-1' }).flush(null);
+    expect(deleted).toBe(true);
+    expect(
+      backend.expectOne(
+        '/api/teacher/schedule/off-times/periods?from=2026-10-01T00:00:00Z&to=2026-10-08T00:00:00Z',
+      ).request.method,
+    ).toBe('GET');
+  });
+
   it('loads the summaries of the home pages', () => {
     api.summary().subscribe();
     api.mySummary().subscribe();

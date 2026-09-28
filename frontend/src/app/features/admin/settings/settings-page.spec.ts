@@ -1,6 +1,8 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { adminSettings } from '@testing/admin-fixtures';
+import { By } from '@angular/platform-browser';
+import { Select } from 'primeng/select';
+import { adminSetting, adminSettings } from '@testing/admin-fixtures';
 import {
   bodyText,
   buttonByText,
@@ -69,6 +71,32 @@ describe('SettingsPage', () => {
       '14',
     );
     expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(true);
+  });
+
+  it('chooses the time zone from the list', async () => {
+    const zone = adminSetting({
+      name: 'TEACHERBOX_TIMEZONE',
+      group: 'Портал',
+      title: 'Часовой пояс учителя',
+      kind: 'TIME_ZONE',
+      source: 'ENVIRONMENT',
+      value: 'Etc/GMT-3',
+      set: true,
+    });
+    await render(adminSettings({ settings: [zone] }));
+
+    const select = fixture.debugElement.query(By.directive(Select)).injector.get(Select);
+    const options = select.options ?? [];
+    expect(options[0]).toEqual({ label: 'не задано', value: '' });
+    expect(options).toContainEqual({ label: 'Etc/GMT-3', value: 'Etc/GMT-3' });
+    expect(options).toContainEqual({ label: 'Europe/Moscow (UTC+03:00)', value: 'Europe/Moscow' });
+    expect(select.filter).toBe(true);
+    expect(readableText(host)).toContain('Etc/GMT-3');
+
+    fixture.componentInstance.change(zone, 'Europe/Moscow');
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('изменено');
+    expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(false);
   });
 
   it('saves the changes with the password and waits for the restart', async () => {
