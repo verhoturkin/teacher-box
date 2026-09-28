@@ -10,6 +10,7 @@ import { routes } from './app.routes';
 import { AuthService } from '@core/auth/auth.service';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
+import { portalSettings } from '@testing/portal-fixtures';
 
 // The first navigation loads lazy chunks cold, which can be slow under a parallel coverage run.
 describe('app routes', { timeout: 20_000 }, () => {
@@ -53,6 +54,7 @@ describe('app routes', { timeout: 20_000 }, () => {
       ['/admin/status', 'Состояние'],
       ['/admin/events', 'События'],
       ['/admin/integrations', 'Интеграции'],
+      ['/admin/backups', 'Резервные копии'],
       ['/admin/diagnostics', 'Диагностика'],
       ['/admin/account', 'Мой аккаунт'],
     ] as const) {
@@ -76,12 +78,44 @@ describe('app routes', { timeout: 20_000 }, () => {
   it('leads the teacher to the teacher area', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
-    await harness.navigateByUrl('/');
+    const navigation = harness.navigateByUrl('/');
+    await vi.waitFor(() => {
+      TestBed.inject(HttpTestingController)
+        .expectOne('/api/teacher/portal')
+        .flush(portalSettings({ setupCompleted: true }));
+    });
+    await navigation;
 
     expect(TestBed.inject(Router).url).toBe('/teacher');
     expect(text()).toContain('Кабинет учителя');
     expect(text()).toContain('Главная');
     expect(title()).toBe('Главная — Teacher Box');
+  });
+
+  it('opens the first setup until it is done', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    const navigation = harness.navigateByUrl('/teacher');
+    await vi.waitFor(() => {
+      backend.expectOne('/api/teacher/portal').flush(portalSettings({ setupCompleted: false }));
+    });
+    await navigation;
+
+    expect(TestBed.inject(Router).url).toBe('/teacher/setup');
+    expect(title()).toBe('Первоначальная настройка — Teacher Box');
+    backend.match(() => true);
+  });
+
+  it('asks for a new password before anything else', async () => {
+    const response = authResponse('TEACHER');
+    auth.acceptSession({ ...response, user: { ...response.user, passwordChangeRequired: true } });
+
+    await harness.navigateByUrl('/teacher/students');
+
+    expect(TestBed.inject(Router).url).toBe('/teacher/setup');
+    expect(text()).toContain('Придумайте свой пароль');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it('opens the students page for the teacher', async () => {

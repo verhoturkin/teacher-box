@@ -9,7 +9,12 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  TitleStrategy,
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+} from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
@@ -18,6 +23,7 @@ import { ReportingErrorHandler } from '@core/errors/reporting-error-handler';
 import { AuthService } from '@core/auth/auth.service';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
+import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
 
@@ -27,10 +33,15 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     { provide: ErrorHandler, useClass: ReportingErrorHandler },
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withInMemoryScrolling({ anchorScrolling: 'enabled' }),
+    ),
     // Order matters: the error toast sees the final result after the auth retry.
     provideHttpClient(withInterceptors([apiErrorInterceptor, authInterceptor])),
     provideAppInitializer(() => inject(AuthService).restore()),
+    provideAppInitializer(() => inject(Portal).load()),
     providePrimeNG({
       theme: { preset: TeacherBoxPreset, options: { darkModeSelector: 'system' } },
       translation: PRIMENG_RU,

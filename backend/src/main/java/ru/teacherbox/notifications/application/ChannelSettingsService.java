@@ -135,6 +135,17 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
         polling.ifAvailable(running -> running.restart(type));
     }
 
+    /** A full reset (ADR-0014): the bots configured in the settings stop; their settings are gone. */
+    public void stopConfigured() {
+        for (MessengerChannelFactory factory : factories.values()) {
+            if (factory.fromEnvironment() == null) {
+                channels.remove(factory.type());
+                health.reset(factory.type());
+                polling.ifAvailable(running -> running.restart(factory.type()));
+            }
+        }
+    }
+
     /** Sends a test message to the user's own account in the messenger. */
     public void test(ChannelType type, UUID recipientId) {
         MessengerChannel channel = channels.find(type)

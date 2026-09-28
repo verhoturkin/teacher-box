@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.domain.PasswordPolicy;
+import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.RefreshTokenRepository;
 import ru.teacherbox.identity.persistence.UserRepository;
@@ -19,9 +20,13 @@ import ru.teacherbox.shared.security.Role;
 @Service
 public class AccountService {
 
-    /** Own account data. The teacher's private note about a student is never included. */
+    /**
+     * Own account data. The teacher's private note about a student is never included.
+     *
+     * @param passwordChangeRequired the password was generated on the first start and must be replaced
+     */
     public record AccountView(UUID id, Role role, String displayName, @Nullable String login,
-            @Nullable String email, @Nullable String phone) {
+            @Nullable String email, @Nullable String phone, boolean passwordChangeRequired) {
     }
 
     private final UserRepository users;
@@ -41,9 +46,17 @@ public class AccountService {
 
     @Transactional(readOnly = true)
     public AccountView get(UUID userId) {
+        return view(load(userId));
+    }
+
+    /** The teacher's name as the students see it. */
+    @Transactional
+    public AccountView rename(UUID userId, String displayName) {
         User user = load(userId);
-        return new AccountView(user.id(), user.role(), user.profile().displayName(), user.login(),
-                user.profile().email(), user.profile().phone());
+        Profile profile = user.profile();
+        user.updateProfile(new Profile(displayName, profile.email(), profile.phone(), profile.note()), clock.instant());
+        users.update(user);
+        return view(user);
     }
 
     /**
@@ -63,6 +76,11 @@ public class AccountService {
         users.update(user);
         refreshTokens.revokeAllOfUser(userId, now);
         return sessionIssuer.startSession(user);
+    }
+
+    private static AccountView view(User user) {
+        return new AccountView(user.id(), user.role(), user.profile().displayName(), user.login(),
+                user.profile().email(), user.profile().phone(), user.passwordChangeRequired());
     }
 
     private User load(UUID userId) {

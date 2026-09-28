@@ -40,14 +40,14 @@ public record InboxNotification(
         return readAt != null;
     }
 
-    /** Plain text for messengers: title, body and an absolute link when the public URL is known. */
-    public String messengerText(@Nullable String publicUrl) {
+    /** Plain text for messengers: title, body and an absolute link when the portal address is known. */
+    public String messengerText(@Nullable String portalAddress) {
         StringBuilder text = new StringBuilder(title);
         if (body != null) {
             text.append("\n").append(body);
         }
-        if (publicUrl != null && !publicUrl.isBlank() && link != null) {
-            text.append("\n").append(publicUrl.replaceAll("/+$", "")).append(link);
+        if (portalAddress != null && !portalAddress.isBlank() && link != null) {
+            text.append("\n").append(portalAddress.replaceAll("/+$", "")).append(link);
         }
         return text.toString();
     }

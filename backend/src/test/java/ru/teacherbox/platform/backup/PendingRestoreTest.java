@@ -1,7 +1,6 @@
 package ru.teacherbox.platform.backup;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +60,8 @@ class PendingRestoreTest {
         Path previous = dataDir.resolve("restore/previous-2026-09-25T10-00-00Z");
         assertThat(previous.resolve("files/old/stale.txt")).hasContent("old");
         assertThat(previous.resolve("db")).isDirectory();
+        assertThat(dataDir.resolve("restore").resolve(PendingRestore.RESULT)).content()
+                .contains("status=RESTORED").contains("archive=teacherbox-20260925-033000-000.zip");
     }
 
     @Test
@@ -70,11 +71,12 @@ class PendingRestoreTest {
         execute("CREATE TABLE KEEP_ME(ID INT)");
         Path archive = archive("broken.zip", Map.of("files/x.txt", "x"));
 
-        assertThatThrownBy(() -> PendingRestore.restore(dataDir, url(), "sa", "", NOW))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("broken.zip");
+        assertThat(PendingRestore.restore(dataDir, url(), "sa", "", NOW)).as("the portal starts as before").isEmpty();
 
-        assertThat(archive).exists();
+        assertThat(archive).doesNotExist();
+        assertThat(dataDir.resolve("restore/failed/broken.zip")).exists();
+        assertThat(dataDir.resolve("restore").resolve(PendingRestore.RESULT)).content()
+                .contains("status=FAILED").contains("archive=broken.zip").contains("error=The archive has no");
         assertThat(dataDir.resolve("files/keep.txt")).hasContent("keep");
         assertThat(dataDir.resolve("files/x.txt")).doesNotExist();
         assertThat(query("select count(*) from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'KEEP_ME'"))
@@ -85,9 +87,9 @@ class PendingRestoreTest {
     void rejectsEntriesOutsideTheDataDirectory() throws Exception {
         archive("evil.zip", Map.of(BackupArchive.DATABASE, SCRIPT, "files/../../evil.txt", "x"));
 
-        assertThatThrownBy(() -> PendingRestore.restore(dataDir, url(), "sa", "", NOW))
-                .isInstanceOf(IllegalStateException.class);
+        assertThat(PendingRestore.restore(dataDir, url(), "sa", "", NOW)).isEmpty();
         assertThat(dataDir.getParent().resolve("evil.txt")).doesNotExist();
+        assertThat(dataDir.resolve("restore/failed/evil.zip")).exists();
     }
 
     @Test

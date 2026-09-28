@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.schedule.google.GoogleApi;
 import ru.teacherbox.schedule.google.GoogleAuthException;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
@@ -61,6 +62,9 @@ class GoogleCalendarIntegrationTests {
 
     @Autowired
     GoogleCalendarService calendar;
+
+    @Autowired
+    List<DataReset> resets;
 
     @BeforeEach
     void startDisconnected() {
@@ -101,6 +105,19 @@ class GoogleCalendarIntegrationTests {
         });
         assertThat(callback("?state=" + state + "&code=code-1"))
                 .hasHeader("Location", "/teacher/settings?google=expired");
+    }
+
+    @Test
+    void theRedirectAddressIsThePortalAddressOnceItIsSet() {
+        saveClient();
+        assertThat(put("/api/teacher/portal", "{\"address\":\"https://teacher.example.org\"}")).hasStatusOk();
+        try {
+            String state = authorize(false);
+            verify(google).authorizationUrl("id-1", "https://teacher.example.org/api/public/schedule/google/callback",
+                    List.of(GoogleApi.CALENDAR_SCOPE), state);
+        } finally {
+            assertThat(put("/api/teacher/portal", "{}")).hasStatusOk();
+        }
     }
 
     @Test
@@ -279,6 +296,27 @@ class GoogleCalendarIntegrationTests {
 
     private MvcTestResult check() {
         return mvc.post().uri("/api/admin/integrations/check").with(TestUsers.admin(UUID.randomUUID())).exchange();
+    }
+
+    @Test
+    void theFullResetDeletesTheCalendarOfThePortal() {
+        connect();
+        when(google.refresh(any(), eq("refresh-1"))).thenReturn(new GoogleApi.Tokens("access-2", 3600, null));
+
+        assertThat(calendar.removalForReset().getAsBoolean()).isTrue();
+        verify(google).deleteCalendar("access-2", CALENDAR);
+        verify(google).revoke("refresh-1");
+
+        doThrow(new GoogleException("offline")).when(google).deleteCalendar("access-2", CALENDAR);
+        assertThat(calendar.removalForReset().getAsBoolean()).as("the calendar stayed").isFalse();
+
+        DataReset reset = resets.stream().filter(module -> module.tables().contains("schedule.lessons")).findFirst()
+                .orElseThrow();
+        reset.erase();
+        assertThat(reset.afterErase()).get().asString().contains("удалите его там вручную");
+        assertThat(get("/api/teacher/schedule/google")).bodyJson().extractingPath("$.status")
+                .isEqualTo("NOT_CONNECTED");
+        assertThat(reset.afterErase()).isEmpty();
     }
 
     @Test

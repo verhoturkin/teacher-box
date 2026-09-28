@@ -27,6 +27,11 @@ public final class AuditLog {
         log.info("Administrator {}: {} ({})", actorId, action, details);
     }
 
+    /** A dangerous action of the teacher in the portal (restoring a backup, a full reset). */
+    public static void teacher(UUID actorId, String action, String details) {
+        log.info("Teacher {}: {} ({})", actorId, action, details);
+    }
+
     /**
      * A change the teacher made through a messenger bot.
      *

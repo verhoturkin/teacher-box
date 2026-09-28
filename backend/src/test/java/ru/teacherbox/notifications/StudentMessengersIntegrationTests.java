@@ -57,7 +57,7 @@ class StudentMessengersIntegrationTests {
     @Test
     void listsStudentsWithTheirMessengersAndProblems() {
         UUID connected = directory.addStudent("Аня с Telegram");
-        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "8001", "@anya", true,
+        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "6001", "@anya", true,
                 clock.instant()));
         UUID silent = directory.addStudent("Боря без мессенджеров");
         UUID gone = directory.addStudent("Ушедший", StudentStatus.DEACTIVATED);
@@ -83,7 +83,7 @@ class StudentMessengersIntegrationTests {
     void summarizesMessengersForTheHomePage() throws UnsupportedEncodingException {
         String before = summary();
         UUID connected = directory.addStudent("Сводка с ботом");
-        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "8003", null, true, clock.instant()));
+        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "6003", null, true, clock.instant()));
         directory.addStudent("Сводка без бота");
         telegram.failWith(new DeliveryException("Forbidden: bot was blocked by the user", true));
         notifications.notify(connected, NotificationKind.MESSAGE, "Не дойдёт", null, null);
@@ -103,7 +103,7 @@ class StudentMessengersIntegrationTests {
     @Test
     void remindsStudentsWithoutMessengers() {
         UUID connected = directory.addStudent("Уже подключён");
-        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "8002", null, true, clock.instant()));
+        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "6002", null, true, clock.instant()));
         UUID silent = directory.addStudent("Забыл подключить");
 
         assertThat(mvc.post().uri("/api/teacher/notifications/remind-connect").with(teacher())

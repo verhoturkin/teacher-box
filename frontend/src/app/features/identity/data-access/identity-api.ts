@@ -82,6 +82,11 @@ export class IdentityApi {
     return this.http.get<Account>('/api/me');
   }
 
+  /** The teacher's name as the students see it. */
+  renameTeacher(displayName: string): Observable<Account> {
+    return this.http.put<Account>('/api/teacher/profile', { displayName });
+  }
+
   changePassword(currentPassword: string, newPassword: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       '/api/me/password',

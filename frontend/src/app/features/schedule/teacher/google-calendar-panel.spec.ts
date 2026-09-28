@@ -6,6 +6,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { GoogleCalendarPanel } from './google-calendar-panel';
@@ -47,6 +48,7 @@ describe('GoogleCalendarPanel', () => {
     backend = TestBed.inject(HttpTestingController);
     navigation = TestBed.inject(ExternalNavigation);
     vi.spyOn(navigation, 'origin').mockReturnValue('https://school.example.com');
+    TestBed.inject(Portal).set({ name: 'Уроки Марии', address: 'https://school.example.com' });
     vi.spyOn(navigation, 'go').mockImplementation(() => undefined);
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(GoogleCalendarPanel);
@@ -96,6 +98,7 @@ describe('GoogleCalendarPanel', () => {
   it('opens Google’s consent page', async () => {
     setUp();
     const host = await render(googleStatus({ clientConfigured: true, clientId: 'id-1' }));
+    expect(readableText(host)).toContain('отдельный календарь «Уроки Марии»');
     requireElement(host, '#google-busy', HTMLInputElement).click();
     await fixture.whenStable();
 

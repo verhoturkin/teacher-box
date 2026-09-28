@@ -69,6 +69,9 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'notification.quiet-hours-invalid': 'Укажите начало и конец тихих часов, они не должны совпадать',
   // platform
   'backup.not-found': 'Резервная копия не найдена',
+  'backup.damaged': 'Копия повреждена: её нельзя восстановить',
+  'backup.newer-version': 'Копия сделана более новой версией портала. Сначала обновите портал',
+  'portal.address-invalid': 'Нужен адрес вида https://school.example.com — без пути после адреса',
   'auth.rate-limited': 'Слишком много попыток входа. Подождите минуту и попробуйте снова',
   // ai
   'ai.disabled': 'ИИ-помощник не настроен на сервере',

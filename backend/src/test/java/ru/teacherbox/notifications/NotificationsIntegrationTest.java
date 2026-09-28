@@ -26,7 +26,7 @@ import ru.teacherbox.testing.MutableClock;
 @AutoConfigureMockMvc
 @Import(NotificationsIntegrationTest.Beans.class)
 @TestPropertySource(properties = {
-        "teacherbox.notifications.public-url=https://school.example.com/",
+        "teacherbox.portal.address=https://school.example.com/",
         "teacherbox.notifications.max-attempts=3",
         "teacherbox.timezone=Europe/Moscow"
 })

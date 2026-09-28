@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +32,7 @@ import ru.teacherbox.schedule.persistence.GoogleRepository;
 import ru.teacherbox.schedule.persistence.GoogleRepository.PendingAuthorization;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
@@ -44,7 +46,6 @@ public class GoogleCalendarService {
 
     /** Path of the OAuth redirect; the teacher registers it in Google Cloud. */
     public static final String CALLBACK_PATH = "/api/public/schedule/google/callback";
-    static final String CALENDAR_NAME = "Teacher Box";
     static final Duration AUTHORIZATION_TTL = Duration.ofMinutes(10);
     static final Duration SYNC_PAST = Duration.ofDays(7);
     static final int SYNC_BATCH = 100;
@@ -86,19 +87,21 @@ public class GoogleCalendarService {
     private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
+    private final Portal portal;
     private final ZoneId zone;
     private final Clock clock;
     private volatile @Nullable AccessToken accessToken;
 
     public GoogleCalendarService(GoogleApi api, GoogleRepository repository, LessonRepository lessons,
             ScheduleDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
-            InstanceTimeZone timeZone, Clock clock) {
+            Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.api = api;
         this.repository = repository;
         this.lessons = lessons;
         this.directory = directory;
         this.events = events;
         this.properties = properties;
+        this.portal = portal;
         this.zone = timeZone.zoneId();
         this.clock = clock;
     }
@@ -127,14 +130,15 @@ public class GoogleCalendarService {
 
     /**
      * Starts the authorization: the returned address opens Google's consent page, which then
-     * redirects to {@code origin + CALLBACK_PATH}.
+     * redirects to {@code CALLBACK_PATH} at the portal address.
      *
-     * @param origin address the teacher uses to open the portal, e.g. {@code https://school.example.com}
+     * @param origin address the teacher uses to open the portal, e.g. {@code https://school.example.com};
+     *               used while the portal address is not set
      * @param busy   also ask for the busy times of the teacher's calendars
      */
     public String authorize(String origin, boolean busy) {
         GoogleApi.Client client = requireClient(connection());
-        String redirectUri = origin(origin) + CALLBACK_PATH;
+        String redirectUri = portal.link(CALLBACK_PATH).orElseGet(() -> origin(origin) + CALLBACK_PATH);
         String state = FeedTokens.generate();
         repository.addAuthorization(FeedTokens.hash(state), redirectUri, busy, clock.instant().plus(AUTHORIZATION_TTL));
         List<String> scopes = busy ? List.of(GoogleApi.CALENDAR_SCOPE, GoogleApi.FREEBUSY_SCOPE)
@@ -165,7 +169,7 @@ public class GoogleCalendarService {
             String calendarId = connection.calendarId() != null
                     && api.calendarExists(tokens.accessToken(), connection.calendarId())
                     ? connection.calendarId()
-                    : api.createCalendar(tokens.accessToken(), CALENDAR_NAME, zone.getId());
+                    : api.createCalendar(tokens.accessToken(), portal.name(), zone.getId());
             Instant now = clock.instant();
             repository.forgetAll();
             repository.save(connection.connected(tokens.refreshToken(), calendarId, pending.busy(), now));
@@ -193,6 +197,35 @@ public class GoogleCalendarService {
         accessToken = null;
         repository.forgetAll();
         repository.save(connection.disconnected(clock.instant()));
+    }
+
+    /**
+     * A full reset (ADR-0014): what deletes the portal's calendar in Google and revokes the access
+     * once the connection is deleted.
+     *
+     * @return {@code false} if the calendar stayed in Google
+     */
+    public BooleanSupplier removalForReset() {
+        GoogleConnection connection = connection();
+        GoogleApi.Client client = client(connection);
+        String refreshToken = connection.refreshToken();
+        String calendarId = connection.calendarId();
+        accessToken = null;
+        if (client == null || refreshToken == null) {
+            return () -> calendarId == null;
+        }
+        return () -> {
+            try {
+                if (calendarId != null) {
+                    api.deleteCalendar(api.refresh(client, refreshToken).accessToken(), calendarId);
+                }
+                api.revoke(refreshToken);
+                return true;
+            } catch (GoogleException e) {
+                log.warn("Could not remove the calendar of the portal from Google: {}", e.getMessage());
+                return calendarId == null;
+            }
+        };
     }
 
     /**

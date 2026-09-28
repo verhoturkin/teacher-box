@@ -35,6 +35,7 @@ import ru.teacherbox.meetings.application.TelemostException;
 import ru.teacherbox.meetings.application.YandexService;
 import ru.teacherbox.meetings.domain.YandexConnection;
 import ru.teacherbox.meetings.persistence.YandexRepository;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -70,6 +71,9 @@ class MeetingsIntegrationTests {
 
     @Autowired
     List<IntegrationCheck> checks;
+
+    @Autowired
+    List<DataReset> resets;
 
     private int meetings;
 
@@ -131,6 +135,19 @@ class MeetingsIntegrationTests {
         assertThat(post("/api/teacher/meetings/yandex/authorize", "{\"origin\":\"ftp://x\"}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("meetings.origin-invalid");
+    }
+
+    @Test
+    void theRedirectAddressIsThePortalAddressOnceItIsSet() {
+        yandex.saveClient("id-1", "secret");
+        assertThat(put("/api/teacher/portal", "{\"address\":\"https://teacher.example.org\"}")).hasStatusOk();
+        try {
+            String state = authorize();
+            verify(telemost).authorizationUrl("id-1", "https://teacher.example.org/api/public/meetings/yandex/callback",
+                    state, "teacherbox-id1");
+        } finally {
+            assertThat(put("/api/teacher/portal", "{}")).hasStatusOk();
+        }
     }
 
     @Test
@@ -254,6 +271,25 @@ class MeetingsIntegrationTests {
         org.assertj.core.api.Assertions.assertThatThrownBy(yandex::accessToken)
                 .isInstanceOf(TelemostAuthException.class);
         assertThat(yandex.status().status().name()).isEqualTo("NEEDS_RECONNECT");
+    }
+
+    @Test
+    void theFullResetForgetsTheRoomsAndRevokesTheToken() {
+        DataReset reset = resets.stream().filter(module -> module.tables().contains("meetings.rooms")).findFirst()
+                .orElseThrow();
+        reset.erase();
+        assertThat(reset.afterErase()).as("nothing to revoke").isEmpty();
+        connect();
+
+        reset.erase();
+        verify(telemost, never()).revoke(any(), anyString());
+        assertThat(yandex.canCreateMeetings()).isFalse();
+        doThrow(new TelemostException("offline")).when(telemost).revoke(any(), eq("access-1"));
+        assertThat(reset.afterErase()).isEmpty();
+
+        verify(telemost).revoke(new TelemostApi.Client("id-1", "secret"), "access-1");
+        assertThat(reset.afterErase()).isEmpty();
+        verify(telemost).revoke(any(), anyString());
     }
 
     @Test

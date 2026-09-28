@@ -34,6 +34,7 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.diagnostics.AuditLog;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.security.Role;
 
 /**
@@ -89,17 +90,17 @@ public class ChatEngine {
     private final ChatRepository chat;
     private final ChatActions actions;
     private final UserDirectory users;
-    private final NotificationsProperties properties;
+    private final Portal portal;
     private final Clock clock;
 
     public ChatEngine(ChannelService channels, ChannelLinkRepository links, ChatRepository chat, ChatActions actions,
-            UserDirectory users, NotificationsProperties properties, Clock clock) {
+            UserDirectory users, Portal portal, Clock clock) {
         this.channels = channels;
         this.links = links;
         this.chat = chat;
         this.actions = actions;
         this.users = users;
-        this.properties = properties;
+        this.portal = portal;
         this.clock = clock;
     }
 
@@ -288,11 +289,8 @@ public class ChatEngine {
             available.forEach(action -> text.append("\n• ").append(action.title()));
         }
         text.append("\n\n").append(HELP);
-        String portal = properties.publicUrl();
-        if (portal != null && !portal.isBlank()) {
-            text.append("\n\nСправка: ").append(portal.replaceAll("/+$", ""))
-                    .append(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot");
-        }
+        portal.link(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot")
+                .ifPresent(help -> text.append("\n\nСправка: ").append(help));
         return send(conversation, ChatReply.of(text.toString()), List.of(menuButton()), null, ChatState.EMPTY, now);
     }
 

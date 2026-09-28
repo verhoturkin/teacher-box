@@ -70,6 +70,19 @@ describe('BillingApi', () => {
     expect(saved).toBe(200_000);
   });
 
+  it('changes the price of new students', () => {
+    let saved = 0;
+    api.changeDefaultPrice(180_000).subscribe((price) => {
+      saved = price;
+    });
+
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/default-price' });
+    expect(request.request.body).toEqual({ lessonPrice: 180_000 });
+    request.flush({ lessonPrice: 180_000 });
+
+    expect(saved).toBe(180_000);
+  });
+
   it('loads the summaries of the home pages', () => {
     api.summary().subscribe();
     api.mySummary().subscribe();

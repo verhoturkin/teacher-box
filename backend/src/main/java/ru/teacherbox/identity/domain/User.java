@@ -26,13 +26,14 @@ public final class User {
     private AccountStatus status;
     private int failedLogins;
     private @Nullable Instant lockedUntil;
+    private boolean passwordChangeRequired;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
     private User(UUID id, Role role, @Nullable String login, @Nullable String passwordHash, Profile profile,
-            AccountStatus status, int failedLogins, @Nullable Instant lockedUntil, Instant createdAt,
-            Instant updatedAt, long version) {
+            AccountStatus status, int failedLogins, @Nullable Instant lockedUntil, boolean passwordChangeRequired,
+            Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.role = Objects.requireNonNull(role);
         this.login = login;
@@ -41,6 +42,7 @@ public final class User {
         this.status = Objects.requireNonNull(status);
         this.failedLogins = failedLogins;
         this.lockedUntil = lockedUntil;
+        this.passwordChangeRequired = passwordChangeRequired;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt);
         this.version = version;
@@ -48,25 +50,25 @@ public final class User {
 
     public static User newTeacher(UUID id, String login, String passwordHash, Profile profile, Instant now) {
         return new User(id, Role.TEACHER, Logins.normalize(login), passwordHash, profile, AccountStatus.ACTIVE,
-                0, null, now, now, 0);
+                0, null, false, now, now, 0);
     }
 
     /** The administrator account (ADR-0010). */
     public static User newAdministrator(UUID id, String login, String passwordHash, Instant now) {
         return new User(id, Role.ADMIN, Logins.normalize(login), passwordHash, Profile.named(ADMINISTRATOR_NAME),
-                AccountStatus.ACTIVE, 0, null, now, now, 0);
+                AccountStatus.ACTIVE, 0, null, false, now, now, 0);
     }
 
     public static User newStudent(UUID id, Profile profile, Instant now) {
-        return new User(id, Role.STUDENT, null, null, profile, AccountStatus.INVITED, 0, null, now, now, 0);
+        return new User(id, Role.STUDENT, null, null, profile, AccountStatus.INVITED, 0, null, false, now, now, 0);
     }
 
     /** Restores a persisted user. */
     public static User restore(UUID id, Role role, @Nullable String login, @Nullable String passwordHash,
             Profile profile, AccountStatus status, int failedLogins, @Nullable Instant lockedUntil,
-            Instant createdAt, Instant updatedAt, long version) {
-        return new User(id, role, login, passwordHash, profile, status, failedLogins, lockedUntil, createdAt,
-                updatedAt, version);
+            boolean passwordChangeRequired, Instant createdAt, Instant updatedAt, long version) {
+        return new User(id, role, login, passwordHash, profile, status, failedLogins, lockedUntil,
+                passwordChangeRequired, createdAt, updatedAt, version);
     }
 
     /** Student accepted the invitation: sets credentials. */
@@ -88,8 +90,14 @@ public final class User {
             throw new BusinessRuleException("account.not-active", "Account is not active");
         }
         this.passwordHash = newPasswordHash;
+        this.passwordChangeRequired = false;
         resetFailures();
         touch(now);
+    }
+
+    /** The password was generated and written to the server log: it has to be replaced after signing in. */
+    public void requirePasswordChange() {
+        this.passwordChangeRequired = true;
     }
 
     public void updateProfile(Profile newProfile, Instant now) {
@@ -197,6 +205,10 @@ public final class User {
 
     public @Nullable String passwordHash() {
         return passwordHash;
+    }
+
+    public boolean passwordChangeRequired() {
+        return passwordChangeRequired;
     }
 
     public Profile profile() {

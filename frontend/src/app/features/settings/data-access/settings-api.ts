@@ -1,27 +1,36 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { BackupInfo, NotificationsStatus } from './settings.models';
+import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { PortalSettings } from '@core/portal/portal';
+import { NotificationsStatus, ResetResult } from './settings.models';
 
-/** Instance settings of the teacher: backups and integration status. */
+/** Instance settings of the teacher: the portal and the integration status. */
 @Injectable({ providedIn: 'root' })
 export class SettingsApi {
   private readonly http = inject(HttpClient);
 
-  backups(): Observable<BackupInfo[]> {
-    return this.http.get<BackupInfo[]>('/api/teacher/backups');
+  portal(): Observable<PortalSettings> {
+    return this.http.get<PortalSettings>('/api/teacher/portal');
   }
 
-  createBackup(): Observable<BackupInfo> {
-    return this.http.post<BackupInfo>('/api/teacher/backups', null);
+  /** Empty values mean the default name and no address. */
+  changePortal(name: string, address: string): Observable<PortalSettings> {
+    return this.http.put<PortalSettings>('/api/teacher/portal', { name, address });
   }
 
-  downloadBackup(name: string): Observable<Blob> {
-    return this.http.get(`/api/teacher/backups/${encodeURIComponent(name)}`, { responseType: 'blob' });
+  /** The first setup is finished or skipped. */
+  completeSetup(): Observable<PortalSettings> {
+    return this.http.post<PortalSettings>('/api/teacher/portal/setup', null);
   }
 
-  deleteBackup(name: string): Observable<unknown> {
-    return this.http.delete<unknown>(`/api/teacher/backups/${encodeURIComponent(name)}`);
+  /** Deletes all data after a backup; a wrong password is shown in the dialog. */
+  reset(password: string): Observable<ResetResult> {
+    return this.http.post<ResetResult>(
+      '/api/teacher/reset',
+      { password },
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
+    );
   }
 
   notificationsStatus(): Observable<NotificationsStatus> {

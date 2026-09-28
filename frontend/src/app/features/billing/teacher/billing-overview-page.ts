@@ -15,13 +15,15 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingOverview, StudentBalance } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
+import { DefaultPriceCard } from './default-price-card';
 import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
 
 /** Teacher: balances of all students and quick recording of lessons and payments. */
 @Component({
   selector: 'tb-billing-overview-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -36,6 +38,7 @@ import { PaymentDialog } from './payment-dialog';
     MoneyPipe,
     RowType,
     BalanceAmount,
+    DefaultPriceCard,
     LessonDialog,
     PaymentDialog,
   ],
@@ -76,6 +79,11 @@ import { PaymentDialog } from './payment-dialog';
             <span class="tb-stat__value">{{ debtorsCount() }}</span>
           </div>
         </p-card>
+        <tb-default-price-card
+          [price]="overview.defaultLessonPrice"
+          [currency]="overview.currency"
+          (changed)="defaultPriceChanged($event)"
+        />
       </div>
 
       <p-card>
@@ -184,6 +192,13 @@ export class BillingOverviewPage implements OnInit {
   protected onSaved(message: string): void {
     this.messages.add({ severity: 'success', summary: 'Готово', detail: message });
     this.load();
+  }
+
+  protected defaultPriceChanged(price: number): void {
+    const overview = this.overview();
+    if (overview !== null) {
+      this.overview.set({ ...overview, defaultLessonPrice: price });
+    }
   }
 
   private load(): void {

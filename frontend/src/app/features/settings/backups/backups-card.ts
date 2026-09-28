@@ -1,0 +1,213 @@
+import { DatePipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { FileSaver } from '@shared/files/file-saver';
+import { formatFileSize } from '@shared/files/file-size';
+import { HelpButton } from '@features/help/parts';
+import type { HelpTopic } from '@features/help/parts';
+import { RowType } from '@shared/ui/row-type.directive';
+import { BackupInfo, BackupKind } from '../data-access/settings.models';
+import { BackupsApi, BackupsArea } from './backups-api';
+import { RestoreDialog } from './restore-dialog';
+
+const KINDS: Readonly<Record<BackupKind, string>> = {
+  SCHEDULED: 'по расписанию',
+  MANUAL: 'вручную',
+  BEFORE_RESTORE: 'перед восстановлением',
+  BEFORE_RESET: 'перед сбросом',
+};
+
+/**
+ * Backups of the portal (ADR-0014): the teacher creates, downloads, restores and deletes them; the
+ * administrator creates and restores them (the backups hold the students' data).
+ */
+@Component({
+  selector: 'tb-backups-card',
+  imports: [
+    DatePipe,
+    Button,
+    Card,
+    ConfirmDialog,
+    HelpButton,
+    TableModule,
+    Tag,
+    RowType,
+    RestoreDialog,
+  ],
+  providers: [ConfirmationService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <p-card header="Резервные копии" id="backups">
+      <tb-help-button [topic]="helpTopic()" label="Подробнее" />
+      <p class="tb-muted">
+        Копия базы данных и файлов создаётся автоматически каждую ночь; хранятся последние копии.
+        Копии, сделанные перед восстановлением и сбросом, остаются, пока их не удалит учитель.
+        @if (isAdmin()) {
+          Скачать копию может только учитель: в копиях данные учеников.
+        }
+      </p>
+      <div class="tb-actions">
+        <p-button
+          label="Создать копию сейчас"
+          icon="pi pi-database"
+          [loading]="creating()"
+          (onClick)="create()"
+        />
+      </div>
+      @if (backups().length === 0) {
+        <p class="tb-muted">Копий пока нет.</p>
+      } @else {
+        <p-table [value]="backups()" styleClass="p-datatable-sm">
+          <ng-template #header>
+            <tr>
+              <th>Создана</th>
+              <th>Как</th>
+              <th>Размер</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-backup [tbRowType]="backups()">
+            <tr>
+              <td>{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+              <td>
+                @if (kind(backup); as label) {
+                  <p-tag
+                    [value]="label"
+                    [severity]="
+                      backup.kind === 'SCHEDULED' || backup.kind === 'MANUAL' ? 'secondary' : 'warn'
+                    "
+                  />
+                }
+              </td>
+              <td>{{ size(backup) }}</td>
+              <td class="tb-row-actions">
+                <p-button
+                  icon="pi pi-history"
+                  [text]="true"
+                  [ariaLabel]="'Восстановить ' + backup.name"
+                  (onClick)="openRestore(backup)"
+                />
+                @if (!isAdmin()) {
+                  <p-button
+                    icon="pi pi-download"
+                    [text]="true"
+                    [ariaLabel]="'Скачать ' + backup.name"
+                    (onClick)="download(backup)"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    severity="danger"
+                    [ariaLabel]="'Удалить ' + backup.name"
+                    (onClick)="confirmDelete(backup)"
+                  />
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-card>
+    <tb-restore-dialog [(visible)]="restoring" [backup]="selected()" [area]="area()" />
+    <p-confirmdialog />
+  `,
+  styles: `
+    .tb-row-actions {
+      text-align: right;
+      white-space: nowrap;
+    }
+  `,
+})
+export class BackupsCard implements OnInit {
+  private readonly api = inject(BackupsApi);
+  private readonly fileSaver = inject(FileSaver);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly messages = inject(MessageService);
+
+  readonly area = input<BackupsArea>('teacher');
+
+  protected readonly isAdmin = computed(() => this.area() === 'admin');
+  protected readonly helpTopic = computed<HelpTopic>(() =>
+    this.isAdmin() ? 'admin/backups' : 'teacher/backups',
+  );
+  protected readonly backups = signal<BackupInfo[]>([]);
+  protected readonly creating = signal(false);
+  protected readonly selected = signal<BackupInfo | null>(null);
+  protected readonly restoring = signal(false);
+
+  ngOnInit(): void {
+    this.reload();
+  }
+
+  protected size(backup: BackupInfo): string {
+    return formatFileSize(backup.size);
+  }
+
+  protected kind(backup: BackupInfo): string | null {
+    return backup.kind === null ? null : KINDS[backup.kind];
+  }
+
+  create(): void {
+    this.creating.set(true);
+    this.api.create(this.area()).subscribe({
+      next: (backup) => {
+        this.creating.set(false);
+        this.messages.add({
+          severity: 'success',
+          summary: 'Готово',
+          detail: `Копия ${backup.name} создана`,
+        });
+        this.reload();
+      },
+      error: () => {
+        this.creating.set(false);
+      },
+    });
+  }
+
+  openRestore(backup: BackupInfo): void {
+    this.selected.set(backup);
+    this.restoring.set(true);
+  }
+
+  download(backup: BackupInfo): void {
+    this.api.download(backup.name).subscribe((blob) => {
+      this.fileSaver.save(blob, backup.name);
+    });
+  }
+
+  confirmDelete(backup: BackupInfo): void {
+    this.confirmation.confirm({
+      header: 'Удалить копию?',
+      message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
+      acceptLabel: 'Удалить',
+      rejectLabel: 'Отмена',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () => {
+        this.api.delete(backup.name).subscribe(() => {
+          this.reload();
+        });
+      },
+    });
+  }
+
+  private reload(): void {
+    this.api.list(this.area()).subscribe((backups) => {
+      this.backups.set(backups);
+    });
+  }
+}

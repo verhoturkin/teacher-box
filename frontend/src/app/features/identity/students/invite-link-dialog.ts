@@ -1,9 +1,10 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { DOCUMENT, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
+import { Portal } from '@core/portal/portal';
 import { IssuedInvite } from '../data-access/identity.models';
 
 /** Shows an invitation link for the teacher to send to a student. */
@@ -43,7 +44,7 @@ import { IssuedInvite } from '../data-access/identity.models';
 })
 export class InviteLinkDialog {
   private readonly clipboard = inject(Clipboard);
-  private readonly origin = inject(DOCUMENT).location.origin;
+  private readonly portal = inject(Portal);
 
   readonly visible = model(false);
   readonly invite = input<IssuedInvite | null>(null);
@@ -53,7 +54,7 @@ export class InviteLinkDialog {
   protected readonly header = computed(() => `Ссылка для ученика: ${this.studentName()}`);
   protected readonly link = computed(() => {
     const invite = this.invite();
-    return invite === null ? '' : `${this.origin}/invite/${invite.token}`;
+    return invite === null ? '' : this.portal.link(`/invite/${invite.token}`);
   });
 
   protected copy(): void {

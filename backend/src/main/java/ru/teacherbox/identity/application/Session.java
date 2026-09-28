@@ -19,6 +19,7 @@ public record Session(
         Instant refreshTokenExpiresAt,
         SessionUser user) {
 
-    public record SessionUser(UUID id, Role role, String displayName) {
+    /** @param passwordChangeRequired the password was generated on the first start and must be replaced */
+    public record SessionUser(UUID id, Role role, String displayName, boolean passwordChangeRequired) {
     }
 }

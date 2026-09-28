@@ -39,6 +39,7 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
@@ -68,14 +69,14 @@ public class NotificationService {
     private final UserDirectory users;
     private final ChatEngine chat;
     private final KeyboardCodec keyboards;
-    private final NotificationsProperties properties;
+    private final Portal portal;
     private final ZoneId zone;
     private final Clock clock;
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
             MessengerChannels channels, MessengerHealth health, PreferencesRepository preferences,
             BroadcastRepository broadcasts, UserDirectory users, ChatEngine chat, KeyboardCodec keyboards,
-            NotificationsProperties properties, InstanceTimeZone timeZone, Clock clock) {
+            Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
@@ -87,7 +88,7 @@ public class NotificationService {
         this.users = users;
         this.chat = chat;
         this.keyboards = keyboards;
-        this.properties = properties;
+        this.portal = portal;
         this.clock = clock;
     }
 
@@ -117,7 +118,7 @@ public class NotificationService {
         inbox.insert(notification);
         Preferences settings = preferences.find(recipientId).orElse(Preferences.DEFAULT);
         if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {
-            String text = truncate(notification.messengerText(properties.publicUrl()));
+            String text = truncate(notification.messengerText(portal.address().orElse(null)));
             Instant notBefore = settings.deliverAt(now, zone);
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
                 if (channelLink.enabled() && channels.isAvailable(channelLink.channel())) {

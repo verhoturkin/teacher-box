@@ -9,6 +9,7 @@ const channel = process.env['E2E_BROWSER_CHANNEL'];
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './global-setup.ts',
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,

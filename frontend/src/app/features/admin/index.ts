@@ -1,4 +1,5 @@
 /** Public API of the administrator feature (pages are lazy-loaded by the application routes). */
+export { BackupsPage } from './backups/backups-page';
 export { DiagnosticsPage } from './diagnostics/diagnostics-page';
 export { EventsPage } from './events/events-page';
 export { IntegrationsPage } from './integrations/integrations-page';

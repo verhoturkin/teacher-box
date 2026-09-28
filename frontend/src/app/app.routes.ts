@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
+import { setupGuard } from '@core/portal/setup.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: redirectToHome },
@@ -17,8 +18,14 @@ export const routes: Routes = [
   {
     path: 'teacher',
     canActivate: [roleGuard('TEACHER')],
+    canActivateChild: [setupGuard],
     loadComponent: () => import('@core/layout/teacher-layout').then((m) => m.TeacherLayout),
     children: [
+      {
+        path: 'setup',
+        title: 'Первоначальная настройка',
+        loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
+      },
       {
         path: '',
         title: 'Главная',
@@ -182,6 +189,11 @@ export const routes: Routes = [
         path: 'integrations',
         title: 'Интеграции',
         loadComponent: () => import('@features/admin').then((m) => m.IntegrationsPage),
+      },
+      {
+        path: 'backups',
+        title: 'Резервные копии',
+        loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
         path: 'diagnostics',

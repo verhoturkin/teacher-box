@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -64,14 +65,19 @@ class BackupIntegrationTest {
 
         assertThat(mvc.get().uri("/api/teacher/backups").with(TestUsers.teacher(TEACHER)))
                 .hasStatusOk()
-                .bodyJson().extractingPath("$[0].name").isEqualTo(name);
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$[0].name").isEqualTo(name);
+                    assertThat(json).extractingPath("$[0].kind").isEqualTo("MANUAL");
+                    assertThat(json).extractingPath("$[0].version").isNotNull();
+                });
         MvcTestResult download = mvc.get().uri("/api/teacher/backups/" + name).with(TestUsers.teacher(TEACHER))
                 .exchange();
         assertThat(download).hasStatusOk().hasContentType("application/zip")
                 .hasHeader("Cache-Control", "no-store");
 
         Map<String, String> entries = unzip(download.getResponse().getContentAsByteArray());
-        assertThat(entries.get(BackupArchive.MANIFEST)).contains("format=1");
+        assertThat(entries.get(BackupArchive.MANIFEST)).contains("format=1").contains("kind=MANUAL")
+                .contains("version=");
         assertThat(entries.get(BackupArchive.DATABASE))
                 .contains("CREATE SCHEMA IF NOT EXISTS \"IDENTITY\"")
                 .contains("\"flyway_schema_history\"");
@@ -86,6 +92,29 @@ class BackupIntegrationTest {
 
         assertThat(backups.list()).extracting(BackupService.BackupInfo::name).containsExactly(third, second);
         assertThat(first).isLessThan(second);
+    }
+
+    @Test
+    void backupsBeforeARestoreOrAResetAreNotRotated() throws IOException {
+        String beforeReset = backups.create(BackupKind.BEFORE_RESET).name();
+        String beforeRestore = backups.create(BackupKind.BEFORE_RESTORE).name();
+        backups.create(BackupKind.SCHEDULED);
+        backups.create();
+        String newest = backups.create(BackupKind.SCHEDULED).name();
+        Path old = platform.dataDir().resolve("backups/teacherbox-20200101-000000-000.zip");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(old))) {
+            zip.putNextEntry(new ZipEntry(BackupArchive.MANIFEST));
+            zip.write("format=1\nkind=SOMETHING\n".getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+        }
+
+        assertThat(backups.list()).extracting(BackupService.BackupInfo::kind)
+                .containsExactly(BackupKind.SCHEDULED, BackupKind.MANUAL, BackupKind.BEFORE_RESTORE,
+                        BackupKind.BEFORE_RESET, null);
+        assertThat(backups.info(newest).kind()).isEqualTo(BackupKind.SCHEDULED);
+        backups.create(BackupKind.SCHEDULED);
+        assertThat(backups.list()).extracting(BackupService.BackupInfo::name)
+                .contains(beforeReset, beforeRestore).doesNotContain(old.getFileName().toString()).hasSize(4);
     }
 
     @Test

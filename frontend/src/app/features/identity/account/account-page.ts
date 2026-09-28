@@ -1,20 +1,25 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormGroupDirective, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Message } from 'primeng/message';
-import { Password } from 'primeng/password';
+import { InputText } from 'primeng/inputtext';
 import { AuthService } from '@core/auth/auth.service';
-import { describeError } from '@core/http/error-messages';
-import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
+import { ChangePasswordForm } from './change-password-form';
 
 /** Own account of the teacher or a student: profile data and password change. */
 @Component({
   selector: 'tb-account-page',
-  imports: [ReactiveFormsModule, Button, Card, Message, Password],
+  imports: [ReactiveFormsModule, Button, Card, InputText, ChangePasswordForm],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="tb-page-title">Мой аккаунт</h1>
@@ -23,7 +28,32 @@ import { Account } from '../data-access/identity.models';
         <p-card header="Профиль">
           <dl class="tb-details">
             <dt>Имя</dt>
-            <dd>{{ account.displayName }}</dd>
+            <dd>
+              @if (isTeacher()) {
+                <form class="tb-copy-row" [formGroup]="nameForm" (ngSubmit)="rename()">
+                  <input
+                    pInputText
+                    formControlName="name"
+                    aria-label="Имя"
+                    maxlength="100"
+                    class="tb-grow"
+                  />
+                  <p-button
+                    type="submit"
+                    label="Сохранить"
+                    [outlined]="true"
+                    [disabled]="
+                      nameForm.invalid ||
+                      nameForm.controls.name.value.trim() === account.displayName
+                    "
+                    [loading]="renaming()"
+                  />
+                </form>
+                <small class="tb-hint">Так вас видят ученики в портале и в сообщениях бота.</small>
+              } @else {
+                {{ account.displayName }}
+              }
+            </dd>
             <dt>Логин</dt>
             <dd>{{ account.login ?? '—' }}</dd>
             <dt>E-mail</dt>
@@ -34,29 +64,7 @@ import { Account } from '../data-access/identity.models';
         </p-card>
       }
       <p-card header="Смена пароля">
-        <form class="tb-form tb-form--narrow" [formGroup]="form" (ngSubmit)="submit(formDirective)" #formDirective="ngForm">
-          <div class="tb-field">
-            <label for="current">Текущий пароль</label>
-            <p-password inputId="current" formControlName="current" autocomplete="current-password" [feedback]="false" [toggleMask]="true" [fluid]="true" />
-          </div>
-          <div class="tb-field">
-            <label for="next">Новый пароль</label>
-            <p-password inputId="next" formControlName="next" autocomplete="new-password" [feedback]="false" [toggleMask]="true" [fluid]="true" />
-            <small class="tb-hint">Не короче 8 символов</small>
-          </div>
-          <div class="tb-field">
-            <label for="confirm">Повторите новый пароль</label>
-            <p-password inputId="confirm" formControlName="confirm" autocomplete="new-password" [feedback]="false" [toggleMask]="true" [fluid]="true" />
-            @if (form.hasError('fieldsMismatch') && form.controls.confirm.dirty) {
-              <small class="tb-error">Пароли не совпадают</small>
-            }
-          </div>
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-          }
-          <p-button type="submit" label="Сменить пароль" [loading]="pending()" [disabled]="form.invalid" />
-          <small class="tb-hint">После смены пароля все остальные устройства выйдут из аккаунта.</small>
-        </form>
+        <tb-change-password-form (changed)="passwordChanged()" />
       </p-card>
     </div>
   `,
@@ -67,42 +75,46 @@ export class AccountPage implements OnInit {
   private readonly messages = inject(MessageService);
 
   protected readonly account = signal<Account | null>(null);
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
+  protected readonly renaming = signal(false);
 
-  protected readonly form = inject(NonNullableFormBuilder).group(
-    {
-      current: ['', [Validators.required]],
-      next: ['', [Validators.required, Validators.minLength(PASSWORD_MIN_LENGTH), Validators.maxLength(128)]],
-      confirm: ['', [Validators.required]],
-    },
-    { validators: [fieldsMatch('next', 'confirm')] },
-  );
+  readonly nameForm = new FormGroup({
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)],
+    }),
+  });
 
   ngOnInit(): void {
     this.api.account().subscribe((account) => {
-      this.account.set(account);
+      this.show(account);
     });
   }
 
-  protected submit(formDirective: FormGroupDirective): void {
-    if (this.form.invalid || this.pending()) {
+  rename(): void {
+    if (this.nameForm.invalid || this.renaming()) {
       return;
     }
-    const { current, next } = this.form.getRawValue();
-    this.pending.set(true);
-    this.error.set(null);
-    this.api.changePassword(current, next).subscribe({
-      next: (response) => {
-        this.auth.acceptSession(response);
-        this.pending.set(false);
-        formDirective.resetForm();
-        this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Пароль изменён' });
+    this.renaming.set(true);
+    this.api.renameTeacher(this.nameForm.controls.name.value.trim()).subscribe({
+      next: (account) => {
+        this.renaming.set(false);
+        this.show(account);
+        this.auth.renamed(account.displayName);
+        this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Имя сохранено' });
       },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сменить пароль. Попробуйте позже'));
+      error: () => {
+        this.renaming.set(false);
       },
     });
+  }
+
+  protected passwordChanged(): void {
+    this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Пароль изменён' });
+  }
+
+  private show(account: Account): void {
+    this.account.set(account);
+    this.nameForm.setValue({ name: account.displayName });
   }
 }

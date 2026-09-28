@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { AuthService } from '@core/auth/auth.service';
+import { Portal } from '@core/portal/portal';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
 import { Shell } from './shell';
@@ -28,6 +29,13 @@ describe('Shell', () => {
 
   afterEach(() => {
     fixture.destroy();
+  });
+
+  it('shows the name of the portal', async () => {
+    TestBed.inject(Portal).set({ name: 'Английский с Марией', address: null });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('.tb-shell__brand')?.textContent).toContain('Английский с Марией');
   });
 
   it('shows navigation, area and the user', () => {

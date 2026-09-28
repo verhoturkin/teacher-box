@@ -7,11 +7,12 @@ import { formatFileSize } from '@shared/files/file-size';
 import { AdminApi } from '../data-access/admin-api';
 import { SystemStatus } from '../data-access/admin.models';
 import { formatUptime } from '../admin-labels';
+import { PortalAddressCard } from './portal-address-card';
 
-/** Administrator: version, uptime, memory, disk, database and health of the instance. */
+/** Administrator: version, uptime, memory, disk, database and health of the instance, the portal address. */
 @Component({
   selector: 'tb-status-page',
-  imports: [DatePipe, KeyValuePipe, Button, Card, Tag],
+  imports: [DatePipe, KeyValuePipe, Button, Card, Tag, PortalAddressCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
@@ -74,6 +75,7 @@ import { formatUptime } from '../admin-labels';
       </div>
       <p class="tb-muted">Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}</p>
     }
+    <tb-portal-address-card />
   `,
   styles: `
     .tb-component {

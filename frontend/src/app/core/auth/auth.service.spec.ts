@@ -52,6 +52,17 @@ describe('AuthService', () => {
     expect(auth.homeUrl()).toBe('/teacher');
   });
 
+  it('follows a renamed user until the next session', () => {
+    auth.renamed('Никто');
+    expect(auth.user()).toBeNull();
+
+    auth.acceptSession(authResponse('TEACHER'));
+    auth.renamed('Мария Ивановна');
+
+    expect(auth.user()?.displayName).toBe('Мария Ивановна');
+    expect(auth.accessToken()).toBe('token-TEACHER');
+  });
+
   it('keeps the user anonymous when sign-in fails', () => {
     let failed = false;
     auth.login('teacher', 'wrong').subscribe({

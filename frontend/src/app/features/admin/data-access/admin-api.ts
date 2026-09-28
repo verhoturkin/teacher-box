@@ -2,6 +2,7 @@ import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { PortalSettings } from '@core/portal/portal';
 import {
   AiStatus,
   AiUsage,
@@ -48,6 +49,15 @@ export class AdminApi {
 
   revertLevel(name: string): Observable<LoggerLevel> {
     return this.http.delete<LoggerLevel>(`${ADMIN}/loggers/${encodeURIComponent(name)}`);
+  }
+
+  portal(): Observable<PortalSettings> {
+    return this.http.get<PortalSettings>(`${ADMIN}/portal`);
+  }
+
+  /** Empty: no address. */
+  changePortalAddress(address: string): Observable<PortalSettings> {
+    return this.http.put<PortalSettings>(`${ADMIN}/portal`, { address });
   }
 
   status(): Observable<SystemStatus> {

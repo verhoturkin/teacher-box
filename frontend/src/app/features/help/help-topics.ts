@@ -2,9 +2,33 @@
  * Topics of the help (ADR: none — a part of the interface). Links to the help are typed with
  * {@link HelpTopic}, so a link to a missing article does not compile.
  */
-export const TEACHER_TOPICS = ['first-steps', 'students', 'groups', 'schedule', 'meetings', 'boards', 'homework', 'ai', 'billing', 'notifications', 'bot', 'calendars', 'settings', 'faq'] as const;
-export const STUDENT_TOPICS = ['login', 'schedule', 'lesson', 'homework', 'billing', 'bot'] as const;
-export const ADMIN_TOPICS = ['diagnostics'] as const;
+export const TEACHER_TOPICS = [
+  'first-steps',
+  'setup',
+  'students',
+  'groups',
+  'schedule',
+  'meetings',
+  'boards',
+  'homework',
+  'ai',
+  'billing',
+  'notifications',
+  'bot',
+  'calendars',
+  'settings',
+  'backups',
+  'faq',
+] as const;
+export const STUDENT_TOPICS = [
+  'login',
+  'schedule',
+  'lesson',
+  'homework',
+  'billing',
+  'bot',
+] as const;
+export const ADMIN_TOPICS = ['diagnostics', 'backups'] as const;
 
 export type TeacherTopic = (typeof TEACHER_TOPICS)[number];
 export type StudentTopic = (typeof STUDENT_TOPICS)[number];
@@ -14,7 +38,8 @@ export type AdminTopic = (typeof ADMIN_TOPICS)[number];
 export type HelpArea = 'teacher' | 'cabinet' | 'admin';
 
 /** An article: its area and topic, e.g. `teacher/schedule`. */
-export type HelpTopic = `teacher/${TeacherTopic}` | `cabinet/${StudentTopic}` | `admin/${AdminTopic}`;
+export type HelpTopic =
+  `teacher/${TeacherTopic}` | `cabinet/${StudentTopic}` | `admin/${AdminTopic}`;
 
 /** The topics of an area in the order of the contents. */
 export const HELP_TOPICS: Readonly<Record<HelpArea, readonly string[]>> = {

@@ -19,6 +19,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
+import { Portal } from '@core/portal/portal';
 import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { InviteInfo } from '../data-access/identity.models';
@@ -51,7 +52,7 @@ type InviteState =
             <p-card [header]="'Здравствуйте, ' + invite.displayName + '!'" styleClass="tb-auth-card">
               <p class="tb-muted">
                 @if (isActivation()) {
-                  Придумайте логин и пароль для входа в личный кабинет.
+                  Придумайте логин и пароль для входа в «{{ portalName() }}».
                 } @else {
                   Задайте новый пароль для логина <strong>{{ invite.login }}</strong>.
                 }
@@ -113,6 +114,8 @@ export class InvitePage implements OnInit {
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  protected readonly portalName = inject(Portal).name;
 
   /** Route parameter. */
   readonly token = input.required<string>();

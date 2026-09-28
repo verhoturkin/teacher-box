@@ -83,6 +83,18 @@ class UserTest {
     }
 
     @Test
+    void aNewPasswordEndsTheRequiredChange() {
+        User teacher = User.newTeacher(UUID.randomUUID(), "teacher", "hash", Profile.named("T"), NOW);
+        assertThat(teacher.passwordChangeRequired()).isFalse();
+
+        teacher.requirePasswordChange();
+        assertThat(teacher.passwordChangeRequired()).isTrue();
+        teacher.changePassword("new-hash", NOW);
+
+        assertThat(teacher.passwordChangeRequired()).isFalse();
+    }
+
+    @Test
     void locksAfterTooManyFailedLogins() {
         User user = activeStudent();
 
@@ -150,11 +162,12 @@ class UserTest {
     void restoreKeepsAllFields() {
         UUID id = UUID.randomUUID();
         User user = User.restore(id, Role.STUDENT, "login", "hash", Profile.named("N"), AccountStatus.ACTIVE, 2,
-                NOW, NOW.minusSeconds(60), NOW, 7);
+                NOW, true, NOW.minusSeconds(60), NOW, 7);
 
         assertThat(user.id()).isEqualTo(id);
         assertThat(user.failedLogins()).isEqualTo(2);
         assertThat(user.lockedUntil()).isEqualTo(NOW);
+        assertThat(user.passwordChangeRequired()).isTrue();
         assertThat(user.createdAt()).isEqualTo(NOW.minusSeconds(60));
         assertThat(user.version()).isEqualTo(7);
     }

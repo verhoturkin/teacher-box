@@ -54,6 +54,8 @@ export interface Account {
   readonly login: string | null;
   readonly email: string | null;
   readonly phone: string | null;
+  /** The password was generated on the first start and must be replaced. */
+  readonly passwordChangeRequired: boolean;
 }
 
 /** Mirrors `GroupView` of the backend. */

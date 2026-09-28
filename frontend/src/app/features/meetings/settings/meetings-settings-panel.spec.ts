@@ -5,6 +5,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { yandexStatus } from '@testing/meetings-fixtures';
@@ -34,6 +35,7 @@ describe('MeetingsSettingsPanel', () => {
       ],
     });
     backend = TestBed.inject(HttpTestingController);
+    TestBed.inject(Portal).set({ name: 'Teacher Box', address: 'https://school.example.com' });
     fixture = TestBed.createComponent(MeetingsSettingsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/meetings/yandex').flush(status);

@@ -59,12 +59,14 @@ public class BillingService {
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final BillingProperties properties;
+    private final DefaultLessonPrice defaultLessonPrice;
     private final BillingCurrency currency;
     private final Clock clock;
 
     public BillingService(StudentAccountRepository accounts, LessonRepository lessons, PaymentRepository payments,
             BalanceQueries balances, GroupPriceService groupPrices, UserDirectory directory,
-            ApplicationEventPublisher events, BillingProperties properties, BillingCurrency currency, Clock clock) {
+            ApplicationEventPublisher events, BillingProperties properties, DefaultLessonPrice defaultLessonPrice,
+            BillingCurrency currency, Clock clock) {
         this.accounts = accounts;
         this.lessons = lessons;
         this.payments = payments;
@@ -73,6 +75,7 @@ public class BillingService {
         this.directory = directory;
         this.events = events;
         this.properties = properties;
+        this.defaultLessonPrice = defaultLessonPrice;
         this.currency = currency;
         this.clock = clock;
     }
@@ -180,7 +183,7 @@ public class BillingService {
     }
 
     Money defaultPrice() {
-        return Money.ofDecimal(properties.defaultLessonPrice(), currency.currency());
+        return defaultLessonPrice.current();
     }
 
     /** The student's account; created on the fly for students registered before billing existed. */

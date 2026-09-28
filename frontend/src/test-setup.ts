@@ -46,3 +46,7 @@ class StaticResizeObserver implements ResizeObserver {
 if (typeof window.ResizeObserver !== 'function') {
   Object.defineProperty(window, 'ResizeObserver', { writable: true, value: StaticResizeObserver });
 }
+
+// Under a parallel run with coverage (the pre-commit hook on a busy machine) the first test of a
+// spec file can take several seconds: it compiles its components. 5 s by default is too tight.
+vi.setConfig({ testTimeout: 20_000 });

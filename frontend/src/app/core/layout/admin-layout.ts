@@ -7,6 +7,7 @@ export const ADMIN_MENU: MenuItem[] = [
   { label: 'Состояние', icon: 'pi pi-server', routerLink: '/admin/status' },
   { label: 'События', icon: 'pi pi-sync', routerLink: '/admin/events' },
   { label: 'Интеграции', icon: 'pi pi-link', routerLink: '/admin/integrations' },
+  { label: 'Копии', icon: 'pi pi-database', routerLink: '/admin/backups' },
   { label: 'Диагностика', icon: 'pi pi-download', routerLink: '/admin/diagnostics' },
 ];
 

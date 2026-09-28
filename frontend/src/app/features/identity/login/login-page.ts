@@ -9,6 +9,7 @@ import { Password } from 'primeng/password';
 import { AuthService } from '@core/auth/auth.service';
 import { safeReturnUrl } from '@core/auth/return-url';
 import { describeError } from '@core/http/error-messages';
+import { Portal } from '@core/portal/portal';
 
 @Component({
   selector: 'tb-login-page',
@@ -16,7 +17,7 @@ import { describeError } from '@core/http/error-messages';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
-      <p-card header="Вход в Teacher Box" styleClass="tb-auth-card">
+      <p-card [header]="'Вход в ' + portalName()" styleClass="tb-auth-card">
         @if (sessionExpired()) {
           <p-message severity="info" styleClass="tb-form-message">Сессия истекла. Войдите снова.</p-message>
         }
@@ -49,6 +50,8 @@ import { describeError } from '@core/http/error-messages';
 export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  protected readonly portalName = inject(Portal).name;
 
   /** Query parameters (bound by the router). */
   readonly returnUrl = input<string>();

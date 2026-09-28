@@ -1,0 +1,82 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
+import { providePrimeNG } from 'primeng/config';
+import { hostElement, readableText } from '@testing/dom';
+import { DefaultPriceCard } from './default-price-card';
+
+describe('DefaultPriceCard', () => {
+  let fixture: ComponentFixture<DefaultPriceCard>;
+  let backend: HttpTestingController;
+  let changed: number[];
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [DefaultPriceCard],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(DefaultPriceCard);
+    fixture.componentRef.setInput('price', 150_000);
+    fixture.componentRef.setInput('currency', 'RUB');
+    changed = [];
+    fixture.componentInstance.changed.subscribe((price) => changed.push(price));
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    backend.verify();
+    fixture.destroy();
+  });
+
+  function button(label: string): HTMLButtonElement {
+    const found = hostElement(fixture).querySelector<HTMLButtonElement>(
+      `button[aria-label="${label}"]`,
+    );
+    if (found === null) {
+      throw new Error(`No button ${label}`);
+    }
+    return found;
+  }
+
+  it('changes the price of new students in place', async () => {
+    expect(readableText(hostElement(fixture))).toContain('1 500 ₽');
+
+    button('Изменить цену для новых учеников').click();
+    await fixture.whenStable();
+    fixture.componentInstance.form.setValue({ price: 1800 });
+    button('Сохранить цену').click();
+
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/default-price' });
+    expect(request.request.body).toEqual({ lessonPrice: 180_000 });
+    request.flush({ lessonPrice: 180_000 });
+    await fixture.whenStable();
+
+    expect(changed).toEqual([180_000]);
+    expect(hostElement(fixture).querySelector('button[aria-label="Сохранить цену"]')).toBeNull();
+  });
+
+  it('keeps the editor open when saving fails and can be cancelled', async () => {
+    fixture.componentInstance.edit();
+    await fixture.whenStable();
+    fixture.componentInstance.form.setValue({ price: null });
+    fixture.componentInstance.save();
+    fixture.componentInstance.form.setValue({ price: 900 });
+    fixture.componentInstance.save();
+    backend
+      .expectOne('/api/teacher/billing/default-price')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(changed).toEqual([]);
+    button('Отменить').click();
+    await fixture.whenStable();
+    expect(button('Изменить цену для новых учеников')).toBeTruthy();
+  });
+});
