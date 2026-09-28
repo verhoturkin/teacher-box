@@ -563,3 +563,46 @@ a.p-button:hover {
     box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
   }
 }
+
+/*
+ * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
+ * bottom, fields are full width. Confirmations stay small.
+ */
+@media (max-width: 768px) {
+  .p-dialog:not(.p-confirmdialog) {
+    width: 100vw !important;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+
+    .p-dialog-content {
+      flex: 1;
+    }
+
+    .p-dialog-footer {
+      padding-bottom: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--p-content-border-color);
+      padding-top: var(--tb-space-4);
+
+      > p-button,
+      > .p-button {
+        flex: 1;
+      }
+
+      p-button .p-button {
+        width: 100%;
+      }
+    }
+
+    .tb-field > *,
+    .p-select,
+    .p-datepicker,
+    .p-inputnumber,
+    .p-multiselect,
+    .p-autocomplete {
+      width: 100%;
+    }
+  }
+}

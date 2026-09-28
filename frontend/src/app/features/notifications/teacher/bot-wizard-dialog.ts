@@ -69,7 +69,6 @@ function describeMessengerError(error: unknown, fallback: string): string {
       [(visible)]="visible"
       [modal]="true"
       [style]="{ width: '40rem' }"
-      [breakpoints]="{ '640px': '95vw' }"
       [draggable]="false"
     >
       <tb-help-button topic="teacher/notifications" label="Подробнее о ботах" />
