@@ -117,14 +117,14 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 />
                 <span
                   class="tb-own-color__sample"
-                  [style.background]="shades()['500']"
+                  [style.background]="shades()['600']"
                   style="color: #ffffff"
                   >Светлая тема</span
                 >
                 <span
                   class="tb-own-color__sample"
-                  [style.background]="shades()['400']"
-                  style="color: #18181b"
+                  [style.background]="shades()['200']"
+                  [style.color]="shades()['900']"
                   >Тёмная тема</span
                 >
               </div>
@@ -279,14 +279,11 @@ export class PortalSettingsCard implements OnInit {
       return null;
     }
     const { light, dark } = ownColorContrast(this.accent());
-    if (light < MIN_CONTRAST && dark < MIN_CONTRAST) {
-      return 'Текст на кнопках в этом цвете будет плохо читаться в обеих темах — выберите более насыщенный цвет.';
-    }
-    if (light < MIN_CONTRAST) {
-      return 'Текст на кнопках в этом цвете будет плохо читаться в светлой теме — выберите цвет темнее.';
-    }
-    if (dark < MIN_CONTRAST) {
-      return 'Текст на кнопках в этом цвете будет плохо читаться в тёмной теме — выберите цвет светлее.';
+    const poor = [light < MIN_CONTRAST && 'светлой', dark < MIN_CONTRAST && 'тёмной'].filter(
+      (theme) => theme !== false,
+    );
+    if (poor.length > 0) {
+      return `Текст на кнопках в этом цвете будет плохо читаться в ${poor.join(' и ')} теме — выберите цвет насыщеннее или темнее.`;
     }
     return null;
   });

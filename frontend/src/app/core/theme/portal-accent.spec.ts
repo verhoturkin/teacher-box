@@ -32,12 +32,14 @@ describe('portal accent', () => {
     expect(ownShades('#0f766e')['50']).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it('measures the contrast of the text on buttons', () => {
+  it('measures the contrast of the text on filled buttons (M3 roles)', () => {
     expect(contrast('#ffffff', '#000000')).toBeCloseTo(21, 0);
     expect(contrast('#777777', '#777777')).toBe(1);
-    const light = ownColorContrast('#fde68a');
-    expect(light.light).toBeLessThan(3);
-    expect(ownColorContrast('#1e1b4b').dark).toBeLessThan(3);
+    // light: white on the shade 600 — a pale color is poorly readable
+    expect(ownColorContrast('#fde68a').light).toBeLessThan(3);
     expect(ownColorContrast('#0f766e').light).toBeGreaterThan(3);
+    // dark: the shade 900 on the shade 200 — readable even for a very dark or a pale color
+    expect(ownColorContrast('#1e1b4b').dark).toBeGreaterThan(3);
+    expect(ownColorContrast('#fde68a').dark).toBeGreaterThan(3);
   });
 });

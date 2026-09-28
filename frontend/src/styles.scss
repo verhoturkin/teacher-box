@@ -76,8 +76,9 @@ body {
   padding: 0;
 }
 
+/* The page is a container; cards lie on it (ADR-0017) */
 body {
-  background: var(--p-surface-50);
+  background: var(--p-md-surface-container);
   color: var(--p-text-color);
 }
 
@@ -85,8 +86,15 @@ body {
   color-scheme: dark;
 
   body {
-    background: var(--p-surface-950);
+    background: var(--p-md-surface);
   }
+}
+
+/* Buttons: Label Large (M3), 40 px high; PrimeNG's styles come later, hence the :not */
+.p-button:not(.p-button-sm, .p-button-lg) {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.00625rem;
 }
 
 /* Less motion when the system asks for it */
@@ -193,7 +201,7 @@ body {
 }
 
 .tb-error {
-  color: var(--p-red-500);
+  color: var(--p-md-error);
 }
 
 .tb-strong {
@@ -310,11 +318,15 @@ a.p-menu-item-link:hover {
 }
 
 .tb-negative {
-  color: var(--p-red-500);
+  color: var(--p-md-error);
 }
 
 .tb-positive {
-  color: var(--p-green-600);
+  color: var(--p-green-700);
+
+  :root.tb-dark & {
+    color: var(--p-green-300);
+  }
 }
 
 .tb-inactive td {
@@ -425,8 +437,8 @@ a.p-menu-item-link:hover {
   pre {
     overflow-x: auto;
     padding: var(--tb-space-3);
-    background: var(--p-surface-100);
-    border-radius: var(--tb-radius);
+    background: var(--p-md-surface-container);
+    border-radius: var(--tb-shape-sm);
   }
 }
 
@@ -460,41 +472,45 @@ a.p-menu-item-link:hover {
   white-space: nowrap;
 }
 
-/* Calendar (FullCalendar, classic theme) in the colors of the PrimeNG theme */
+/* Calendar (FullCalendar, classic theme) in the M3 roles of the theme (ADR-0017) */
 :root {
-  --fc-classic-button: var(--p-primary-color);
-  --fc-classic-button-border: var(--p-primary-color);
-  --fc-classic-button-strong: var(--p-primary-active-color);
-  --fc-classic-button-strong-border: var(--p-primary-active-color);
-  --fc-classic-button-outline: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
-  --fc-classic-button-foreground: var(--p-primary-contrast-color);
-  --fc-classic-primary: var(--p-primary-color);
-  --fc-classic-primary-foreground: var(--p-primary-contrast-color);
-  --fc-classic-event: var(--p-primary-color);
-  --fc-classic-event-contrast: var(--p-primary-contrast-color);
+  --fc-classic-button: var(--p-md-secondary-container);
+  --fc-classic-button-border: var(--p-md-secondary-container);
+  --fc-classic-button-strong: color-mix(
+    in srgb,
+    var(--p-md-on-secondary-container) 18%,
+    var(--p-md-secondary-container)
+  );
+  --fc-classic-button-strong-border: var(--fc-classic-button-strong);
+  --fc-classic-button-outline: color-mix(in srgb, var(--p-md-primary) 40%, transparent);
+  --fc-classic-button-foreground: var(--p-md-on-secondary-container);
+  --fc-classic-primary: var(--p-md-primary);
+  --fc-classic-primary-foreground: var(--p-md-on-primary);
+  --fc-classic-event: var(--p-md-primary-container);
+  --fc-classic-event-contrast: var(--p-md-on-primary-container);
   --fc-classic-background-event: var(--p-green-500);
   --fc-classic-background-event-opacity: 15%;
   --fc-classic-background-event-foreground-opacity: 50%;
-  --fc-classic-highlight: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
-  --fc-classic-today: color-mix(in srgb, var(--p-yellow-400) 15%, transparent);
-  --fc-classic-now: var(--p-red-500);
+  --fc-classic-highlight: color-mix(in srgb, var(--p-md-primary) 12%, transparent);
+  --fc-classic-today: color-mix(in srgb, var(--p-md-primary) 6%, transparent);
+  --fc-classic-now: var(--p-md-error);
   --fc-classic-small-dot-width: 8px;
   --fc-classic-large-dot-width: 10px;
   --fc-classic-background: var(--p-content-background);
-  --fc-classic-faint: color-mix(in srgb, var(--p-text-color) 4%, transparent);
-  --fc-classic-muted: color-mix(in srgb, var(--p-text-color) 8%, transparent);
-  --fc-classic-strong: color-mix(in srgb, var(--p-text-color) 14%, transparent);
-  --fc-classic-foreground: var(--p-text-color);
-  --fc-classic-faint-foreground: var(--p-text-muted-color);
-  --fc-classic-muted-foreground: var(--p-text-muted-color);
-  --fc-classic-border: var(--p-content-border-color);
-  --fc-classic-strong-border: var(--p-text-muted-color);
+  --fc-classic-faint: color-mix(in srgb, var(--p-md-on-surface) 4%, transparent);
+  --fc-classic-muted: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+  --fc-classic-strong: color-mix(in srgb, var(--p-md-on-surface) 14%, transparent);
+  --fc-classic-foreground: var(--p-md-on-surface);
+  --fc-classic-faint-foreground: var(--p-md-on-surface-variant);
+  --fc-classic-muted-foreground: var(--p-md-on-surface-variant);
+  --fc-classic-border: var(--p-md-outline-variant);
+  --fc-classic-strong-border: var(--p-md-outline);
 }
 
-/* Lesson events by status; a planned group lesson has its own color */
+/* Lesson events by status; a planned group lesson has the tertiary color */
 .tb-lesson--group.tb-lesson--scheduled {
-  --fc-classic-event: var(--p-teal-600);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-tertiary-container);
+  --fc-classic-event-contrast: var(--p-md-on-tertiary-container);
 }
 
 .tb-lesson--conducted {
@@ -508,8 +524,8 @@ a.p-menu-item-link:hover {
 }
 
 .tb-lesson--cancelled {
-  --fc-classic-event: var(--p-surface-400);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-surface-container-highest);
+  --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
   opacity: 0.7;
 }
