@@ -6,7 +6,7 @@ import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom'
 import { BackupInfo } from '../data-access/settings.models';
 import { BackupsArea } from './backups-api';
 import { BackupsCard } from './backups-card';
-import { RESTART_POLL_MS } from './restore-dialog';
+import { RESTART_POLL_MS } from '@shared/restart/restart-wait';
 import { testProviders } from '@testing/setup';
 
 const SCHEDULED: BackupInfo = {

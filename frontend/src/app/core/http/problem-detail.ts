@@ -33,6 +33,17 @@ export function problemCode(error: unknown): string | null {
   return null;
 }
 
+/** The explanation of a failed HTTP call, if the server gave one (e.g. which setting is wrong and why). */
+export function problemDetailText(error: unknown): string | null {
+  if (error instanceof HttpErrorResponse) {
+    const body: unknown = error.error;
+    if (isProblemDetail(body) && body.detail !== undefined && body.detail !== '') {
+      return body.detail;
+    }
+  }
+  return null;
+}
+
 /** Header with the code of the request in the server log. */
 export const REQUEST_ID_HEADER = 'X-Request-Id';
 

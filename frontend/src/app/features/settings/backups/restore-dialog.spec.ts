@@ -5,7 +5,8 @@ import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, readableText, requireElement, typeInto } from '@testing/dom';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
-import { RESTART_POLL_MS, RestoreDialog } from './restore-dialog';
+import { RESTART_POLL_MS } from '@shared/restart/restart-wait';
+import { RestoreDialog } from './restore-dialog';
 import { testProviders } from '@testing/setup';
 
 const BACKUP: BackupInfo = {

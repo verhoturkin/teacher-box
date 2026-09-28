@@ -1,2 +1,4 @@
 # Restores a backup dropped into <data-dir>/restore/ before the database is opened.
-org.springframework.context.ApplicationListener=ru.teacherbox.platform.backup.PendingRestore
+# Puts the settings the administrator saved before the environment (ADR-0016).
+org.springframework.context.ApplicationListener=ru.teacherbox.platform.backup.PendingRestore,\
+  ru.teacherbox.platform.settings.AdminSettingsLoader

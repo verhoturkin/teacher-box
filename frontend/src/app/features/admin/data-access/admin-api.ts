@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { PortalSettings } from '@core/portal/portal';
 import {
+  AdminSettings,
   AiStatus,
   AiUsage,
   EventPublication,
@@ -13,6 +14,7 @@ import {
   LogQuery,
   LogResult,
   LoggerLevel,
+  SettingsChanged,
   SystemStatus,
 } from './admin.models';
 
@@ -106,5 +108,26 @@ export class AdminApi {
 
   diagnostics(): Observable<Blob> {
     return this.http.get(`${ADMIN}/diagnostics`, { responseType: 'blob' });
+  }
+
+  /** Every setting of the portal with its value and where it comes from (ADR-0016). */
+  settings(): Observable<AdminSettings> {
+    return this.http.get<AdminSettings>(`${ADMIN}/settings`);
+  }
+
+  /**
+   * Saves settings; the portal restarts to apply them.
+   *
+   * @param values new values by variable name; `null`: back to `.env`
+   */
+  changeSettings(
+    password: string,
+    values: Readonly<Record<string, string | null>>,
+  ): Observable<SettingsChanged> {
+    return this.http.put<SettingsChanged>(
+      `${ADMIN}/settings`,
+      { password, values },
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
+    );
   }
 }
