@@ -76,7 +76,13 @@ const STEPS: readonly Step[] = [
             [class.tb-setup-steps__done]="index < currentIndex()"
             [attr.aria-current]="step.id === current() ? 'step' : null"
           >
-            <span class="tb-setup-steps__number">{{ index + 1 }}</span>
+            <span class="tb-setup-steps__number">
+              @if (index < currentIndex()) {
+                <i class="pi pi-check" aria-hidden="true"></i>
+              } @else {
+                {{ index + 1 }}
+              }
+            </span>
             {{ step.title }}
           </li>
         }
@@ -251,11 +257,12 @@ const STEPS: readonly Step[] = [
     .tb-setup-steps {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--tb-space-2) var(--tb-space-5);
+      gap: var(--tb-space-3) var(--tb-space-6);
       margin: 0;
       padding: 0;
       list-style: none;
-      color: var(--p-text-muted-color);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-l);
 
       li {
         display: flex;
@@ -267,32 +274,36 @@ const STEPS: readonly Step[] = [
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 1.6rem;
-        height: 1.6rem;
-        border: 1px solid var(--p-content-border-color);
-        border-radius: 50%;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: var(--tb-shape-full);
+        background: var(--p-md-surface-container-highest);
+        color: var(--p-md-on-surface-variant);
+        font: var(--tb-type-label-m);
+
+        .pi {
+          font-size: 0.75rem;
+        }
       }
 
       .tb-setup-steps__current {
-        color: var(--p-text-color);
-        font-weight: 600;
+        color: var(--p-md-on-surface);
 
         .tb-setup-steps__number {
-          border-color: var(--p-primary-color);
-          background: var(--p-primary-color);
-          color: var(--p-primary-contrast-color);
+          background: var(--p-md-primary);
+          color: var(--p-md-on-primary);
         }
       }
 
       .tb-setup-steps__done .tb-setup-steps__number {
-        border-color: var(--p-green-500);
-        color: var(--p-green-500);
+        background: var(--p-md-primary-container);
+        color: var(--p-md-on-primary-container);
       }
     }
 
     .tb-setup-title {
       margin-top: 0;
-      font-size: 1.25rem;
+      font: var(--tb-type-title-l);
     }
 
     .tb-setup-later {

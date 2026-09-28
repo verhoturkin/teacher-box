@@ -168,7 +168,32 @@ body {
 
 .tb-auth-card {
   width: 100%;
-  max-width: 26rem;
+  max-width: 28rem;
+
+  &.p-card {
+    border-radius: var(--tb-shape-xl);
+  }
+
+  .p-card-body {
+    gap: var(--tb-space-4);
+    padding: var(--tb-space-8) var(--tb-space-8) var(--tb-space-7);
+
+    @media (max-width: 480px) {
+      padding: var(--tb-space-6) var(--tb-space-5);
+    }
+  }
+
+  .p-card-title {
+    font: var(--tb-type-headline-s);
+  }
+
+  .tb-form {
+    gap: var(--tb-space-5);
+  }
+
+  p {
+    margin: 0;
+  }
 }
 
 /* Forms */
