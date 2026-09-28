@@ -160,6 +160,11 @@ textarea.p-textarea {
   gap: var(--tb-space-4);
 }
 
+/* Forms and settings: a readable column (ADR-0015) */
+.tb-stack--narrow {
+  max-width: var(--tb-content-narrow);
+}
+
 /* Sign-in and invitation pages */
 .tb-auth-page {
   display: flex;
@@ -491,6 +496,22 @@ a.p-menu-item-link:hover {
 
 .tb-markdown {
   overflow-wrap: anywhere;
+
+  h1,
+  h2 {
+    margin: var(--tb-space-6) 0 var(--tb-space-3);
+    font: var(--tb-type-title-l);
+  }
+
+  h3,
+  h4 {
+    margin: var(--tb-space-5) 0 var(--tb-space-2);
+    font: var(--tb-type-title-m);
+  }
+
+  strong {
+    font-weight: 500;
+  }
 
   :first-child {
     margin-top: 0;

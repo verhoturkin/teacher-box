@@ -93,26 +93,43 @@ import { HelpArea } from './help-topics';
       }
     }
 
+    /* M3 list: the current article on the secondary container */
     .tb-help__list {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: var(--tb-space-4) 0 0;
+      gap: 2px;
+      margin: var(--tb-space-3) calc(-1 * var(--tb-space-3)) 0;
       padding: 0;
       list-style: none;
 
       li {
         display: flex;
         flex-direction: column;
+        gap: 2px;
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border-radius: var(--tb-shape-md);
+
+        &:has(.tb-help__current) {
+          background: var(--p-md-secondary-container);
+        }
+
+        a {
+          font: var(--tb-type-title-s);
+        }
+
+        small {
+          font: var(--tb-type-body-s);
+        }
       }
     }
 
     .tb-help__current {
-      font-weight: 600;
+      color: var(--p-md-on-secondary-container);
     }
 
     .tb-help__title {
       margin-top: 0;
+      font: var(--tb-type-headline-s);
     }
   `,
 })
