@@ -4,12 +4,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.billing.application.DefaultLessonPrice;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -25,7 +27,6 @@ import ru.teacherbox.testing.MutableClock;
 @AutoConfigureMockMvc
 @Import(BillingIntegrationTest.Beans.class)
 @TestPropertySource(properties = {
-        "teacherbox.billing.default-lesson-price=1500",
         "teacherbox.billing.default-lesson-duration=60"
 })
 public @interface BillingIntegrationTest {
@@ -46,6 +47,12 @@ public @interface BillingIntegrationTest {
         @Bean
         MutableClock clock() {
             return MutableClock.startingNow();
+        }
+
+        /** The teacher has set the price of new students in «Оплаты»: 1 500 ₽. */
+        @Bean
+        ApplicationRunner teacherSetsTheLessonPrice(DefaultLessonPrice price) {
+            return arguments -> price.change(150_000);
         }
     }
 }

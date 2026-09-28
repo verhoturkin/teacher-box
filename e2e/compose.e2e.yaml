@@ -12,7 +12,6 @@ services:
       TEACHERBOX_MEETINGS_TELEMOST_TOKEN: e2e-telemost-token
       TEACHERBOX_PUBLIC_URL: ${E2E_BASE_URL:-http://localhost:8091}
       TEACHERBOX_BACKUP_CRON: "-"
-      TEACHERBOX_BILLING_DEFAULT_LESSON_PRICE: "1500"
       # Every test signs in again; the default limit (30 a minute) is for real clients.
       TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS: "1000"
     ports: !override

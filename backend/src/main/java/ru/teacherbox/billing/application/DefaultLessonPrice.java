@@ -9,20 +9,17 @@ import ru.teacherbox.shared.money.Money;
 
 /**
  * Lesson price of new students and groups: the teacher sets it (first setup, «Оплаты»); until then
- * {@code TEACHERBOX_BILLING_DEFAULT_LESSON_PRICE}. Prices already given to students do not change.
+ * zero. Prices already given to students do not change.
  */
 @Service
 public class DefaultLessonPrice {
 
     private final BillingSettingsRepository settings;
-    private final BillingProperties properties;
     private final BillingCurrency currency;
     private final Clock clock;
 
-    public DefaultLessonPrice(BillingSettingsRepository settings, BillingProperties properties,
-            BillingCurrency currency, Clock clock) {
+    public DefaultLessonPrice(BillingSettingsRepository settings, BillingCurrency currency, Clock clock) {
         this.settings = settings;
-        this.properties = properties;
         this.currency = currency;
         this.clock = clock;
     }
@@ -30,7 +27,7 @@ public class DefaultLessonPrice {
     public Money current() {
         return settings.defaultLessonPrice()
                 .map(currency::of)
-                .orElseGet(() -> Money.ofDecimal(properties.defaultLessonPrice(), currency.currency()));
+                .orElseGet(() -> Money.zero(currency.currency()));
     }
 
     /** @param price minor units */
