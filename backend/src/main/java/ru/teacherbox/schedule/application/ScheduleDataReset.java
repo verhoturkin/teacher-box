@@ -9,7 +9,7 @@ import ru.teacherbox.schedule.google.GoogleCalendarService;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
- * Full reset (ADR-0014): lessons, series, requests, calendar feeds and the Google Calendar
+ * Full reset (ADR-0014): lessons, series, requests, off time, calendar feeds and the Google Calendar
  * connection; the portal's calendar in Google is deleted.
  */
 @Component
@@ -17,7 +17,7 @@ class ScheduleDataReset implements DataReset {
 
     private static final List<String> TABLES = List.of("schedule.lesson_participants", "schedule.reminders_sent",
             "schedule.change_requests", "schedule.google_events", "schedule.lessons", "schedule.series",
-            "schedule.feeds", "schedule.google_connection", "schedule.google_oauth_states");
+            "schedule.feeds", "schedule.google_connection", "schedule.google_oauth_states", "schedule.off_times");
 
     private final JdbcClient jdbc;
     private final GoogleCalendarService google;

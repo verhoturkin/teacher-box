@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
+import ru.teacherbox.schedule.domain.OffTime;
 import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.schedule.domain.Series;
@@ -185,5 +186,36 @@ public final class ScheduleViews {
      * @param pendingRequests the student's unanswered requests
      */
     public record MyScheduleSummary(@Nullable LessonView next, int weekLessons, int pendingRequests) {
+    }
+
+    /**
+     * Time the teacher does not work: once ({@code startsAt}–{@code endsAt}) or weekly (the other
+     * fields; local times of the instance time zone, an end not after the start is on the next day).
+     */
+    public record OffTimeView(
+            UUID id,
+            OffTime.Kind kind,
+            @Nullable Instant startsAt,
+            @Nullable Instant endsAt,
+            List<DayOfWeek> weekdays,
+            @Nullable LocalTime startTime,
+            @Nullable LocalTime endTime,
+            @Nullable LocalDate startsOn,
+            @Nullable LocalDate endsOn,
+            @Nullable String note) {
+
+        static OffTimeView of(OffTime offTime) {
+            return switch (offTime.period()) {
+                case OffTime.Once once -> new OffTimeView(offTime.id(), OffTime.Kind.ONCE, once.startsAt(),
+                        once.endsAt(), List.of(), null, null, null, null, offTime.note());
+                case OffTime.Weekly weekly -> new OffTimeView(offTime.id(), OffTime.Kind.WEEKLY, null, null,
+                        weekly.orderedWeekdays(), weekly.startTime(), weekly.endTime(), weekly.startsOn(),
+                        weekly.endsOn(), offTime.note());
+            };
+        }
+    }
+
+    /** One period of off time in the teacher's calendar. */
+    public record OffTimePeriod(UUID offTimeId, Instant start, Instant end, @Nullable String note) {
     }
 }

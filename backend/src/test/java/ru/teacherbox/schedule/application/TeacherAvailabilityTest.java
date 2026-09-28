@@ -27,14 +27,20 @@ class TeacherAvailabilityTest {
     }
 
     private static TeacherAvailability availability(@Nullable ExternalBusyTimes calendar) {
+        return availability(calendar, List.of());
+    }
+
+    private static TeacherAvailability availability(@Nullable ExternalBusyTimes calendar, List<BusyTime> offTime) {
         LessonRepository lessons = mock(LessonRepository.class);
         when(lessons.findOverlapping(any(), any())).thenReturn(List.of());
+        OffTimeService offTimes = mock(OffTimeService.class);
+        when(offTimes.busy(any(), any())).thenReturn(offTime);
         StaticListableBeanFactory beans = new StaticListableBeanFactory();
         if (calendar != null) {
             beans.addBean("calendar", calendar);
         }
         ObjectProvider<ExternalBusyTimes> provider = beans.getBeanProvider(ExternalBusyTimes.class);
-        return new TeacherAvailability(lessons, provider);
+        return new TeacherAvailability(lessons, offTimes, provider);
     }
 
     @Test
@@ -60,6 +66,15 @@ class TeacherAvailabilityTest {
         assertThatThrownBy(() -> availability.requireFree(at(11), at(12), UUID.randomUUID()))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("busy");
+    }
+
+    @Test
+    void countsTheTimeTheTeacherDoesNotWork() {
+        TeacherAvailability availability = availability(null, List.of(new BusyTime(at(13), at(14))));
+
+        assertThat(availability.forStudent(UUID.randomUUID(), at(9), at(18)))
+                .containsExactly(new BusyTime(at(13), at(14)));
+        assertThat(availability.isFree(at(13), at(14), null)).isFalse();
     }
 
     @Test
