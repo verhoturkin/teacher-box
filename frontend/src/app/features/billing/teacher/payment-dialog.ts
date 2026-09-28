@@ -27,10 +27,25 @@ import { BillingStudent, Payment, PaymentMethod } from '../data-access/billing.m
 /** Registers a payment from a student. */
 @Component({
   selector: 'tb-payment-dialog',
-  imports: [ReactiveFormsModule, Button, DatePicker, Dialog, InputNumber, InputText, Message, Select],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    DatePicker,
+    Dialog,
+    InputNumber,
+    InputText,
+    Message,
+    Select,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Оплата" [(visible)]="visible" [modal]="true" [style]="{ width: '30rem' }" [draggable]="false">
+    <p-dialog
+      header="Оплата"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '30rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="payment-student">Ученик</label>
@@ -49,11 +64,27 @@ import { BillingStudent, Payment, PaymentMethod } from '../data-access/billing.m
         <div class="tb-row">
           <div class="tb-field">
             <label for="payment-amount">Сумма</label>
-            <p-inputnumber inputId="payment-amount" formControlName="amount" mode="currency" [currency]="currency()" locale="ru-RU" [min]="0" [fluid]="true" />
+            <p-inputnumber
+              inputId="payment-amount"
+              formControlName="amount"
+              mode="currency"
+              [currency]="currency()"
+              locale="ru-RU"
+              [min]="0"
+              [fluid]="true"
+            />
           </div>
           <div class="tb-field">
             <label for="payment-date">Дата оплаты</label>
-            <p-datepicker inputId="payment-date" formControlName="paidOn" dateFormat="dd.mm.yy" [showIcon]="true" [showOnFocus]="false" appendTo="body" [fluid]="true" />
+            <p-datepicker
+              inputId="payment-date"
+              formControlName="paidOn"
+              dateFormat="dd.mm.yy"
+              [showIcon]="true"
+              [showOnFocus]="false"
+              appendTo="body"
+              [fluid]="true"
+            />
           </div>
         </div>
         <div class="tb-field">
@@ -77,8 +108,18 @@ import { BillingStudent, Payment, PaymentMethod } from '../data-access/billing.m
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -102,7 +143,10 @@ export class PaymentDialog {
   readonly form = new FormGroup({
     studentId: new FormControl<string | null>(null, [Validators.required]),
     amount: new FormControl<number | null>(null, [Validators.required, Validators.min(0.01)]),
-    paidOn: new FormControl<Date>(new Date(), { nonNullable: true, validators: [Validators.required] }),
+    paidOn: new FormControl<Date>(new Date(), {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     method: new FormControl<PaymentMethod>('TRANSFER', { nonNullable: true }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
   });

@@ -11,7 +11,9 @@ describe('AiApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(AiApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -33,7 +35,9 @@ describe('AiApi', () => {
 
   it('treats a failed status request as disabled', async () => {
     const enabled = firstValueFrom(api.enabled$);
-    backend.expectOne('/api/teacher/ai/status').flush(null, { status: 403, statusText: 'Forbidden' });
+    backend
+      .expectOne('/api/teacher/ai/status')
+      .flush(null, { status: 403, statusText: 'Forbidden' });
 
     expect(await enabled).toBe(false);
   });

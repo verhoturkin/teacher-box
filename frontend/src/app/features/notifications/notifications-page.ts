@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Badge } from 'primeng/badge';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
@@ -24,7 +31,8 @@ function isTeacherTab(value: unknown): value is TeacherTab {
 /** Notifications of the current user; the teacher also manages bots, messages to students and their messengers. */
 @Component({
   selector: 'tb-notifications-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     Badge,
     Tab,
     TabList,
@@ -46,7 +54,12 @@ function isTeacherTab(value: unknown): value is TeacherTab {
       <tb-help-button [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
     </div>
     @if (teacher) {
-      <p-tabs [value]="activeTab()" (valueChange)="select($event)" [lazy]="true" [scrollable]="true">
+      <p-tabs
+        [value]="activeTab()"
+        (valueChange)="select($event)"
+        [lazy]="true"
+        [scrollable]="true"
+      >
         <p-tablist>
           <p-tab value="inbox">
             Входящие
@@ -74,7 +87,11 @@ function isTeacherTab(value: unknown): value is TeacherTab {
             <ng-template #content>
               <div class="tb-stack">
                 <tb-bots-panel (changed)="reloadChannels()" />
-                <tb-channels-panel [teacher]="true" header="Мои мессенджеры" (changed)="reloadBots()" />
+                <tb-channels-panel
+                  [teacher]="true"
+                  header="Мои мессенджеры"
+                  (changed)="reloadBots()"
+                />
                 <tb-bot-abilities-panel />
               </div>
             </ng-template>

@@ -27,7 +27,9 @@ interface AttentionItem {
           @for (item of items(); track item.text) {
             <li>
               <i [class]="item.icon" aria-hidden="true"></i>
-              <a [routerLink]="item.link" [queryParams]="item.query" class="tb-link">{{ item.text }}</a>
+              <a [routerLink]="item.link" [queryParams]="item.query" class="tb-link">{{
+                item.text
+              }}</a>
               <span class="tb-attention__count">{{ item.count }}</span>
             </li>
           }
@@ -92,8 +94,18 @@ export class AttentionCard {
         count: schedule?.pendingRequests ?? 0,
         link: '/teacher/schedule',
       },
-      { icon: 'pi pi-inbox', text: 'Работы на проверку', count: homework?.toReview ?? 0, link: '/teacher/homework/review' },
-      { icon: 'pi pi-clock', text: 'Просроченные задания', count: homework?.overdue ?? 0, link: '/teacher/homework' },
+      {
+        icon: 'pi pi-inbox',
+        text: 'Работы на проверку',
+        count: homework?.toReview ?? 0,
+        link: '/teacher/homework/review',
+      },
+      {
+        icon: 'pi pi-clock',
+        text: 'Просроченные задания',
+        count: homework?.overdue ?? 0,
+        link: '/teacher/homework',
+      },
       {
         icon: 'pi pi-exclamation-triangle',
         text: 'Недоставленные уведомления',

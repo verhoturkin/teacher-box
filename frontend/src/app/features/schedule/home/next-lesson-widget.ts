@@ -1,10 +1,23 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
-import { ChangeKind, MyScheduleSummary, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  ChangeKind,
+  MyScheduleSummary,
+  ScheduleSettings,
+  ScheduledLesson,
+} from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith, requestKindLabel } from '../schedule-labels';
 import { ChangeRequestDialog } from '../student/change-request-dialog';
 
@@ -25,14 +38,21 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
             <span>{{ lesson.topic }}</span>
           }
           @if (lesson.pendingRequests[0]; as request) {
-            <small class="tb-muted">{{ kind(request) }}: запрос отправлен, ждём ответа учителя.</small>
+            <small class="tb-muted"
+              >{{ kind(request) }}: запрос отправлен, ждём ответа учителя.</small
+            >
           }
           <div class="tb-actions">
             @if (lesson.joinUrl; as url) {
               <tb-join-lesson-button [url]="url" />
             }
             @if (lesson.pendingRequests.length === 0) {
-              <p-button label="Перенести" icon="pi pi-calendar" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />
+              <p-button
+                label="Перенести"
+                icon="pi pi-calendar"
+                [outlined]="true"
+                (onClick)="ask(lesson, 'RESCHEDULE')"
+              />
               <p-button
                 [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
                 severity="secondary"

@@ -8,8 +8,9 @@
         "watch": "ng build --watch --configuration development",
         "test": "ng test --watch=false --coverage",
         "test:watch": "ng test",
-        "lint": "ng lint",
-        "format": "prettier --write \"src/**/*.{ts,html,scss}\""
+        "lint": "ng lint && npm run format:check",
+        "format": "prettier --write \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\"",
+        "format:check": "prettier --check \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\""
     },
     "private": true,
     "packageManager": "npm@11.20.0",

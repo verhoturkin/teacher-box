@@ -1,5 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { MeetingPreferences, OPEN_IN_APP_KEY, isTelemostLink, isWindows, telemostAppLink } from './telemost';
+import {
+  MeetingPreferences,
+  OPEN_IN_APP_KEY,
+  isTelemostLink,
+  isWindows,
+  telemostAppLink,
+} from './telemost';
 
 describe('telemost', () => {
   afterEach(() => {
@@ -14,7 +20,9 @@ describe('telemost', () => {
   });
 
   it('opens a meeting in the desktop application like the web client of Telemost', () => {
-    expect(telemostAppLink('https://telemost.yandex.ru/j/123')).toBe('telemost://https://telemost.yandex.ru/j/123');
+    expect(telemostAppLink('https://telemost.yandex.ru/j/123')).toBe(
+      'telemost://https://telemost.yandex.ru/j/123',
+    );
   });
 
   it('detects Windows', () => {

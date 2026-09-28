@@ -16,7 +16,12 @@ describe('MonthlyReportPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [MonthlyReportPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(MonthlyReportPage);

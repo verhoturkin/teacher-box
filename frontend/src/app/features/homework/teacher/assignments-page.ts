@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
@@ -15,7 +22,19 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
 /** Teacher: all assignments with progress. */
 @Component({
   selector: 'tb-assignments-page',
-  imports: [HelpButton, DatePipe, RouterLink, Badge, Button, ButtonDirective, ButtonLabel, Card, TableModule, RowType, AssignmentDialog],
+  imports: [
+    HelpButton,
+    DatePipe,
+    RouterLink,
+    Badge,
+    Button,
+    ButtonDirective,
+    ButtonLabel,
+    Card,
+    TableModule,
+    RowType,
+    AssignmentDialog,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
@@ -47,7 +66,9 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
         </ng-template>
         <ng-template #body let-row [tbRowType]="assignments()">
           <tr>
-            <td><a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a></td>
+            <td>
+              <a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a>
+            </td>
             <td>{{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}</td>
             <td>{{ row.totalTasks }}</td>
             <td [class.tb-strong]="row.submitted > 0">{{ row.submitted }}</td>
@@ -55,12 +76,18 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
           </tr>
         </ng-template>
         <ng-template #emptymessage>
-          <tr><td colspan="5" class="tb-empty">Заданий пока нет. Создайте первое!</td></tr>
+          <tr>
+            <td colspan="5" class="tb-empty">Заданий пока нет. Создайте первое!</td>
+          </tr>
         </ng-template>
       </p-table>
     </p-card>
 
-    <tb-assignment-dialog [(visible)]="dialogVisible" [students]="students()" (saved)="onCreated($event)" />
+    <tb-assignment-dialog
+      [(visible)]="dialogVisible"
+      [students]="students()"
+      (saved)="onCreated($event)"
+    />
   `,
 })
 export class AssignmentsPage implements OnInit {

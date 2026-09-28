@@ -17,7 +17,12 @@ describe('InvitePage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [InvitePage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);
@@ -40,7 +45,11 @@ describe('InvitePage', () => {
     await fixture.whenStable();
   }
 
-  async function fill(values: { login?: string; password: string; confirm: string }): Promise<void> {
+  async function fill(values: {
+    login?: string;
+    password: string;
+    confirm: string;
+  }): Promise<void> {
     const host = hostElement(fixture);
     if (values.login !== undefined) {
       typeInto(requireElement(host, '#login', HTMLInputElement), values.login);
@@ -118,7 +127,12 @@ describe('InvitePage', () => {
   });
 
   it('resets the password without asking for a login', async () => {
-    await load({ purpose: 'PASSWORD_RESET', displayName: 'Борис', login: 'boris', expiresAt: '2026-10-01T10:00:00Z' });
+    await load({
+      purpose: 'PASSWORD_RESET',
+      displayName: 'Борис',
+      login: 'boris',
+      expiresAt: '2026-10-01T10:00:00Z',
+    });
     expect(text()).toContain('Задайте новый пароль для логина boris');
     expect(hostElement(fixture).querySelector('#login')).toBeNull();
 

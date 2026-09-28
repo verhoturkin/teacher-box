@@ -15,7 +15,12 @@ describe('ConnectMessengerCard', () => {
   function create(): void {
     TestBed.configureTestingModule({
       imports: [ConnectMessengerCard],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ConnectMessengerCard);

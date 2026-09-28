@@ -13,7 +13,13 @@ import { MyTaskPage } from './my-task-page';
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([]),
+      providePrimeNG(),
+      MessageService,
+    ],
   });
   const saved: string[] = [];
   vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {
@@ -29,13 +35,32 @@ describe('MyHomeworkPage', () => {
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend.expectOne('/api/me/homework').flush([
-      myTask({ taskId: 't-1', title: 'Принятое', status: 'ACCEPTED', grade: '5', assignedAt: '2026-09-05T10:00:00Z' }),
-      myTask({ taskId: 't-2', title: 'Старое открытое', assignedAt: '2026-09-01T10:00:00Z', overdue: true }),
-      myTask({ taskId: 't-3', title: 'Новое открытое', status: 'RETURNED', dueAt: null, assignedAt: '2026-09-03T10:00:00Z' }),
+      myTask({
+        taskId: 't-1',
+        title: 'Принятое',
+        status: 'ACCEPTED',
+        grade: '5',
+        assignedAt: '2026-09-05T10:00:00Z',
+      }),
+      myTask({
+        taskId: 't-2',
+        title: 'Старое открытое',
+        assignedAt: '2026-09-01T10:00:00Z',
+        overdue: true,
+      }),
+      myTask({
+        taskId: 't-3',
+        title: 'Новое открытое',
+        status: 'RETURNED',
+        dueAt: null,
+        assignedAt: '2026-09-03T10:00:00Z',
+      }),
     ]);
     await fixture.whenStable();
 
-    const rows = Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) => readableText(row));
+    const rows = Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) =>
+      readableText(row),
+    );
     expect(rows[0]).toContain('Новое открытое без срока На доработке');
     expect(rows[1]).toContain('Старое открытое');
     expect(rows[1]).toContain('Просрочено');
@@ -66,7 +91,9 @@ describe('MyTaskPage', () => {
   }
 
   it('hands in an answer with files', async () => {
-    const { fixture, host, backend } = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
     expect(readableText(host)).toContain('Сдать до 10.09.2026');
     expect(readableText(host)).toContain('Ваш ответ');
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
@@ -90,7 +117,9 @@ describe('MyTaskPage', () => {
   });
 
   it('requires text or files', async () => {
-    const { fixture, host, backend } = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
 
     buttonByText(host, 'Отправить на проверку').click();
     await fixture.whenStable();
@@ -100,20 +129,27 @@ describe('MyTaskPage', () => {
   });
 
   it('shows backend errors', async () => {
-    const { fixture, host, backend } = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
     fixture.componentInstance.files.set([new File(['x'], 'virus.exe')]);
 
     fixture.componentInstance.submit();
     backend
       .expectOne('/api/me/homework/tasks/t-1/submissions')
-      .flush({ status: 422, code: 'file.type-not-allowed' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'file.type-not-allowed' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('Такой тип файла загружать нельзя');
   });
 
   it('shows the teacher feedback on returned tasks', async () => {
-    const { host } = await render(taskDetails({ status: 'RETURNED', teacherComment: 'Исправь №3', overdue: true }));
+    const { host } = await render(
+      taskDetails({ status: 'RETURNED', teacherComment: 'Исправь №3', overdue: true }),
+    );
 
     expect(readableText(host)).toContain('Нужно доработать Исправь №3');
     expect(readableText(host)).toContain('Новый ответ');
@@ -121,7 +157,12 @@ describe('MyTaskPage', () => {
 
   it('hides the form for accepted tasks and downloads files', async () => {
     const { host, backend, saved } = await render(
-      taskDetails({ status: 'ACCEPTED', grade: '5', teacherComment: 'Отлично', assignment: { ...taskDetails().assignment, dueAt: null } }),
+      taskDetails({
+        status: 'ACCEPTED',
+        grade: '5',
+        teacherComment: 'Отлично',
+        assignment: { ...taskDetails().assignment, dueAt: null },
+      }),
     );
 
     expect(readableText(host)).toContain('Работа принята Отлично');

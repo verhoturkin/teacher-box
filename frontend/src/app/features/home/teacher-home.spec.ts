@@ -17,7 +17,12 @@ describe('TeacherHome', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TeacherHome],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TeacherHome);

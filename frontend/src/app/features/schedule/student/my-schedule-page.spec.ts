@@ -1,10 +1,20 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
-import { calendarFeed, changeRequest, groupLesson, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
+import {
+  calendarFeed,
+  changeRequest,
+  groupLesson,
+  scheduleSettings,
+  scheduledLesson,
+} from '@testing/schedule-fixtures';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { MySchedulePage } from './my-schedule-page';
 
@@ -14,13 +24,21 @@ describe('MySchedulePage', () => {
 
   const future = (hours: number): { startsAt: string; endsAt: string } => {
     const start = new Date(Date.now() + hours * 3_600_000);
-    return { startsAt: start.toISOString(), endsAt: new Date(start.getTime() + 3_600_000).toISOString() };
+    return {
+      startsAt: start.toISOString(),
+      endsAt: new Date(start.getTime() + 3_600_000).toISOString(),
+    };
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [MySchedulePage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -36,7 +54,10 @@ describe('MySchedulePage', () => {
     return backend.match((request) => request.url === '/api/me/schedule/lessons');
   }
 
-  async function render(lessons: ScheduledLesson[], requests: ChangeRequest[] = []): Promise<string> {
+  async function render(
+    lessons: ScheduledLesson[],
+    requests: ChangeRequest[] = [],
+  ): Promise<string> {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush(requests);
@@ -61,7 +82,9 @@ describe('MySchedulePage', () => {
     expect(text).toContain('Дроби');
     expect(text).toContain('Подключиться');
     expect(text).toContain('Отменено');
-    expect(requireElement(hostElement(fixture), 'a[href="https://zoom.us/j/1"]', HTMLAnchorElement)).toBeTruthy();
+    expect(
+      requireElement(hostElement(fixture), 'a[href="https://zoom.us/j/1"]', HTMLAnchorElement),
+    ).toBeTruthy();
     expect(hostElement(fixture).querySelectorAll('.tb-schedule-list > li').length).toBe(2);
   });
 
@@ -117,10 +140,25 @@ describe('MySchedulePage', () => {
   it('shows group lessons and a notice that the student will not come', async () => {
     const text = await render(
       [
-        groupLesson({ ...future(72), participants: [{ studentId: 's-1', studentName: null, attendance: 'EXCUSED' }] }),
-        groupLesson({ id: 'gl-2', ...future(96), participants: [{ studentId: 's-1', studentName: null, attendance: 'EXPECTED' }] }),
+        groupLesson({
+          ...future(72),
+          participants: [{ studentId: 's-1', studentName: null, attendance: 'EXCUSED' }],
+        }),
+        groupLesson({
+          id: 'gl-2',
+          ...future(96),
+          participants: [{ studentId: 's-1', studentName: null, attendance: 'EXPECTED' }],
+        }),
       ],
-      [changeRequest({ id: 'r-3', kind: 'CANCEL', groupId: 'g-1', groupName: 'ОГЭ', status: 'APPROVED' })],
+      [
+        changeRequest({
+          id: 'r-3',
+          kind: 'CANCEL',
+          groupId: 'g-1',
+          groupName: 'ОГЭ',
+          status: 'APPROVED',
+        }),
+      ],
     );
 
     expect(text).toContain('Группа «ОГЭ»');

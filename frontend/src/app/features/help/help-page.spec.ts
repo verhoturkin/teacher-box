@@ -8,8 +8,14 @@ import { HelpPage } from './help-page';
 describe('HelpPage', () => {
   let fixture: ComponentFixture<HelpPage>;
 
-  async function render(area: 'teacher' | 'cabinet' | 'admin', topic?: string): Promise<HTMLElement> {
-    TestBed.configureTestingModule({ imports: [HelpPage], providers: [provideRouter([]), providePrimeNG()] });
+  async function render(
+    area: 'teacher' | 'cabinet' | 'admin',
+    topic?: string,
+  ): Promise<HTMLElement> {
+    TestBed.configureTestingModule({
+      imports: [HelpPage],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(HelpPage);
     fixture.componentRef.setInput('area', area);
     if (topic !== undefined) {
@@ -52,7 +58,9 @@ describe('HelpPage', () => {
 
     typeInto(requireElement(host, 'input', HTMLInputElement), 'телемост');
     await fixture.whenStable();
-    expect(Array.from(host.querySelectorAll('nav a')).map((link) => link.textContent.trim())).toContain('Видеовстречи');
+    expect(
+      Array.from(host.querySelectorAll('nav a')).map((link) => link.textContent.trim()),
+    ).toContain('Видеовстречи');
 
     typeInto(requireElement(host, 'input', HTMLInputElement), 'абракадабра');
     await fixture.whenStable();

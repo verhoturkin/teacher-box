@@ -42,7 +42,13 @@ const STUDENTS = [
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([]),
+      providePrimeNG(),
+      MessageService,
+    ],
   });
   const saved: string[] = [];
   vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {
@@ -60,7 +66,10 @@ describe('AssignmentsPage', () => {
     await fixture.whenStable();
     backend
       .expectOne('/api/teacher/homework/assignments')
-      .flush([assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Без срока', dueAt: null, submitted: 2 })]);
+      .flush([
+        assignmentSummary(),
+        assignmentSummary({ id: 'a-2', title: 'Без срока', dueAt: null, submitted: 2 }),
+      ]);
     await fixture.whenStable();
     const host = hostElement(fixture);
 
@@ -72,9 +81,15 @@ describe('AssignmentsPage', () => {
     buttonByText(host, 'Новое задание').click();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(AssignmentDialog)).injector.get(AssignmentDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(AssignmentDialog))
+      .injector.get(AssignmentDialog);
     expect(dialog.visible()).toBe(true);
-    expect(dialog.students().map((student) => student.displayName)).toEqual(['Анна', 'Борис', 'Вера']);
+    expect(dialog.students().map((student) => student.displayName)).toEqual([
+      'Анна',
+      'Борис',
+      'Вера',
+    ]);
 
     dialog.saved.emit(assignmentDetails({ id: 'a-9' }));
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
@@ -85,7 +100,9 @@ describe('AssignmentsPage', () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/homework/assignments').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/teacher/homework/assignments')
+      .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
@@ -115,7 +132,9 @@ describe('AssignmentPage', () => {
     expect(readableText(host)).toContain('Борис Выдано Просрочено');
     const reviewLink = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
     expect(reviewLink?.textContent.trim()).toBe('Проверить');
-    expect(host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.textContent.trim()).toBe('Открыть');
+    expect(host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.textContent.trim()).toBe(
+      'Открыть',
+    );
 
     buttonByText(host, 'условие.pdf').click();
     backend.expectOne('/api/teacher/homework/attachments/f-1').flush(new Blob(['pdf']));
@@ -135,7 +154,10 @@ describe('AssignmentPage', () => {
     if (!(picker instanceof HTMLInputElement)) {
       throw new Error('file input missing');
     }
-    Object.defineProperty(picker, 'files', { value: [new File(['x'], 'схема.png')], configurable: true });
+    Object.defineProperty(picker, 'files', {
+      value: [new File(['x'], 'схема.png')],
+      configurable: true,
+    });
     picker.dispatchEvent(new Event('change'));
     await fixture.whenStable();
     buttonByText(host, 'Загрузить').click();
@@ -146,7 +168,9 @@ describe('AssignmentPage', () => {
     expect(readableText(host)).toContain('схема.png');
 
     buttonByText(host, 'Удалить файл условие.pdf').click();
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' }).flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' })
+      .flush(null);
     await fixture.whenStable();
     expect(readableText(host)).not.toContain('условие.pdf');
     fixture.destroy();
@@ -159,7 +183,9 @@ describe('AssignmentPage', () => {
     await fixture.whenStable();
     buttonByText(host, 'Выдать').click();
 
-    expect(backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body).toEqual({
+    expect(
+      backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body,
+    ).toEqual({
       studentIds: ['s-3'],
     });
     fixture.destroy();
@@ -167,12 +193,14 @@ describe('AssignmentPage', () => {
   it('adds the students of a group who do not have the assignment yet', async () => {
     const { fixture } = await render();
 
-    fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker).picked.emit(['s-1', 's-3', 's-9']);
+    fixture.debugElement
+      .query(By.directive(GroupPicker))
+      .injector.get(GroupPicker)
+      .picked.emit(['s-1', 's-3', 's-9']);
 
     expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
     fixture.destroy();
   });
-
 
   it('puts the assignment on a board', async () => {
     const { fixture, host, backend } = await render();
@@ -183,7 +211,10 @@ describe('AssignmentPage', () => {
     await fixture.whenStable();
 
     // The page's own dialog: the editor of the assignment has another one.
-    const board = fixture.debugElement.queryAll(By.directive(ToBoardDialog)).at(-1)!.injector.get(ToBoardDialog);
+    const board = fixture.debugElement
+      .queryAll(By.directive(ToBoardDialog))
+      .at(-1)!
+      .injector.get(ToBoardDialog);
     const assignment = assignmentDetails();
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe(assignment.title);
@@ -200,18 +231,25 @@ describe('ReviewQueuePage', () => {
     await fixture.whenStable();
     backend
       .expectOne('/api/teacher/homework/review-queue')
-      .flush([reviewQueueItem(), reviewQueueItem({ taskId: 't-2', submittedAt: null, dueAt: '2026-09-10T15:00:00Z' })]);
+      .flush([
+        reviewQueueItem(),
+        reviewQueueItem({ taskId: 't-2', submittedAt: null, dueAt: '2026-09-10T15:00:00Z' }),
+      ]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Анна Дроби 05.09.2026');
-    expect(hostElement(fixture).querySelectorAll('a[href="/teacher/homework/tasks/t-1"]')).toHaveLength(1);
+    expect(
+      hostElement(fixture).querySelectorAll('a[href="/teacher/homework/tasks/t-1"]'),
+    ).toHaveLength(1);
   });
 
   it('shows that everything is reviewed', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(ReviewQueuePage);
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/homework/review-queue').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/teacher/homework/review-queue')
+      .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Всё проверено');
@@ -244,7 +282,9 @@ describe('TaskReviewPage', () => {
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('Оценка: 5');
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Работа принята' }));
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Работа принята' }),
+    );
     expect(host.textContent).not.toContain('Принять');
   });
 
@@ -260,7 +300,11 @@ describe('TaskReviewPage', () => {
 
   it('shows the own comment on returned tasks and downloads files', async () => {
     const { host, backend, saved } = await render(
-      taskDetails({ status: 'RETURNED', teacherComment: 'Исправь №3', reviewedAt: '2026-09-06T10:00:00Z' }),
+      taskDetails({
+        status: 'RETURNED',
+        teacherComment: 'Исправь №3',
+        reviewedAt: '2026-09-06T10:00:00Z',
+      }),
     );
 
     expect(readableText(host)).toContain('Ваш комментарий Исправь №3');
@@ -273,7 +317,9 @@ describe('TaskReviewPage', () => {
     const { host, backend } = await render();
 
     buttonByText(host, 'Принять').click();
-    backend.expectOne('/api/teacher/homework/tasks/t-1/review').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush(null, { status: 500, statusText: 'Error' });
 
     expect(buttonByText(host, 'Принять')).toBeDefined();
   });
@@ -292,7 +338,10 @@ describe('TaskReviewPage', () => {
     request.flush({ comment: 'Почти верно, проверь №2', grade: '4', accept: false });
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.form.getRawValue()).toEqual({ grade: '4', comment: 'Почти верно, проверь №2' });
+    expect(fixture.componentInstance.form.getRawValue()).toEqual({
+      grade: '4',
+      comment: 'Почти верно, проверь №2',
+    });
     expect(readableText(host)).toContain('ИИ предлагает вернуть работу на доработку');
   });
 
@@ -304,7 +353,9 @@ describe('TaskReviewPage', () => {
 
     fixture.componentInstance.form.setValue({ grade: '', comment: 'Проверь №2' });
     await fixture.whenStable();
-    const board = fixture.debugElement.query(By.directive(ToBoardDialog)).injector.get(ToBoardDialog);
+    const board = fixture.debugElement
+      .query(By.directive(ToBoardDialog))
+      .injector.get(ToBoardDialog);
     expect(board.markdown()).toBe('Проверь №2');
     fixture.componentInstance.form.setValue({ grade: '4', comment: 'Проверь №2' });
     await fixture.whenStable();
@@ -323,7 +374,9 @@ describe('TaskReviewPage', () => {
     const { fixture, host, backend } = await render(taskDetails(), true);
 
     buttonByText(host, 'Черновик проверки').click();
-    backend.expectOne('/api/teacher/ai/review-draft').flush({ comment: 'Отлично', grade: null, accept: true });
+    backend
+      .expectOne('/api/teacher/ai/review-draft')
+      .flush({ comment: 'Отлично', grade: null, accept: true });
     await fixture.whenStable();
 
     expect(fixture.componentInstance.form.controls.grade.value).toBe('');
@@ -334,7 +387,9 @@ describe('TaskReviewPage', () => {
     const { fixture, host, backend } = await render(taskDetails(), true);
 
     buttonByText(host, 'Черновик проверки').click();
-    backend.expectOne('/api/teacher/ai/review-draft').flush(null, { status: 422, statusText: 'Unprocessable' });
+    backend
+      .expectOne('/api/teacher/ai/review-draft')
+      .flush(null, { status: 422, statusText: 'Unprocessable' });
     await fixture.whenStable();
 
     expect(fixture.componentInstance.form.controls.comment.value).toBe('');
@@ -343,7 +398,10 @@ describe('TaskReviewPage', () => {
 
   it('offers no AI draft without a text answer or when AI is off', async () => {
     const withoutText = taskDetails();
-    const filesOnly = { ...withoutText, submissions: withoutText.submissions.map((s) => ({ ...s, text: null })) };
+    const filesOnly = {
+      ...withoutText,
+      submissions: withoutText.submissions.map((s) => ({ ...s, text: null })),
+    };
     const { host } = await render(filesOnly, true);
     expect(bodyText()).not.toContain('Черновик проверки');
     expect(host.textContent).toContain('Принять');

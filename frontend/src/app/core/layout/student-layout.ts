@@ -3,7 +3,12 @@ import { MenuItem } from 'primeng/api';
 import { Shell } from './shell';
 
 export const STUDENT_MENU: MenuItem[] = [
-  { label: 'Главная', icon: 'pi pi-home', routerLink: '/cabinet', routerLinkActiveOptions: { exact: true } },
+  {
+    label: 'Главная',
+    icon: 'pi pi-home',
+    routerLink: '/cabinet',
+    routerLinkActiveOptions: { exact: true },
+  },
   { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/cabinet/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },

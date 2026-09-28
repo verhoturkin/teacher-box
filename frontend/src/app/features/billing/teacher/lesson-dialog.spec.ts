@@ -44,7 +44,12 @@ describe('LessonDialog', () => {
 
     expect(bodyText()).toContain('Занятие');
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ studentId: 's-2', price: 2000.5, durationMinutes: 45, status: 'CONDUCTED' }),
+      expect.objectContaining({
+        studentId: 's-2',
+        price: 2000.5,
+        durationMinutes: 45,
+        status: 'CONDUCTED',
+      }),
     );
   });
 
@@ -93,8 +98,13 @@ describe('LessonDialog', () => {
     buttonByText(document.body, 'Записать').click();
 
     const request = backend.expectOne('/api/teacher/billing/lessons');
-    expect(request.request.body).toEqual(expect.objectContaining({ topic: null, durationMinutes: 45 }));
-    request.flush({ status: 404, code: 'student.not-found' }, { status: 404, statusText: 'Not Found' });
+    expect(request.request.body).toEqual(
+      expect.objectContaining({ topic: null, durationMinutes: 45 }),
+    );
+    request.flush(
+      { status: 404, code: 'student.not-found' },
+      { status: 404, statusText: 'Not Found' },
+    );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Ученик не найден');

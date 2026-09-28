@@ -61,7 +61,9 @@ describe('StudentLedgerPage', () => {
   });
 
   it('changes the lesson price', async () => {
-    expect(requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' ')).toContain('1 500');
+    expect(
+      requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' '),
+    ).toContain('1 500');
     expect(buttonByText(host, 'Сохранить цену').disabled).toBe(true);
 
     fixture.componentInstance.price.setValue(2000);
@@ -83,7 +85,9 @@ describe('StudentLedgerPage', () => {
     const request = backend.expectOne('/api/teacher/billing/lessons/l-1/cancel');
     expect(request.request.body).toEqual({ reason: null });
     request.flush(lesson({ status: 'CANCELLED' }));
-    backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger({ lessons: [lesson({ status: 'CANCELLED' })] }));
+    backend
+      .expectOne('/api/teacher/billing/students/s-1')
+      .flush(ledger({ lessons: [lesson({ status: 'CANCELLED' })] }));
     await fixture.whenStable();
 
     expect(host.querySelectorAll('tbody tr.tb-inactive')).toHaveLength(1);
@@ -92,10 +96,14 @@ describe('StudentLedgerPage', () => {
   it('voids a payment after confirmation and reloads', async () => {
     buttonByText(host, 'Аннулировать оплату').click();
 
-    backend.expectOne('/api/teacher/billing/payments/p-1/void').flush(payment({ voidedAt: '2026-09-04T00:00:00Z' }));
+    backend
+      .expectOne('/api/teacher/billing/payments/p-1/void')
+      .flush(payment({ voidedAt: '2026-09-04T00:00:00Z' }));
     backend
       .expectOne('/api/teacher/billing/students/s-1')
-      .flush(ledger({ balance: -150_000, payments: [payment({ voidedAt: '2026-09-04T00:00:00Z' })] }));
+      .flush(
+        ledger({ balance: -150_000, payments: [payment({ voidedAt: '2026-09-04T00:00:00Z' })] }),
+      );
     await fixture.whenStable();
 
     expect(text()).toContain('долг 1 500 ₽');
@@ -104,7 +112,9 @@ describe('StudentLedgerPage', () => {
   it('records lessons and payments for this student', async () => {
     buttonByText(host, 'Занятие').click();
     await fixture.whenStable();
-    const lessonDialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+    const lessonDialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
     expect(lessonDialog.form.controls.studentId.value).toBe('s-1');
     expect(lessonDialog.form.controls.price.value).toBe(1500);
     lessonDialog.save();
@@ -113,7 +123,9 @@ describe('StudentLedgerPage', () => {
 
     buttonByText(host, 'Оплата').click();
     await fixture.whenStable();
-    const paymentDialog = fixture.debugElement.query(By.directive(PaymentDialog)).injector.get(PaymentDialog);
+    const paymentDialog = fixture.debugElement
+      .query(By.directive(PaymentDialog))
+      .injector.get(PaymentDialog);
     expect(paymentDialog.visible()).toBe(true);
     expect(paymentDialog.form.controls.studentId.value).toBe('s-1');
   });

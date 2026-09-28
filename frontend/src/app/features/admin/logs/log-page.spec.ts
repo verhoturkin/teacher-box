@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
@@ -20,7 +24,12 @@ describe('LogPage', () => {
   async function render(result: LogResult, requestId?: string): Promise<TestRequest> {
     TestBed.configureTestingModule({
       imports: [LogPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LogPage);
@@ -44,7 +53,10 @@ describe('LogPage', () => {
 
   it('shows the last day of the log', async () => {
     const request = await render(
-      logResult([logEntry(), logEntry({ level: 'INFO', message: 'Started', requestId: null, error: null })]),
+      logResult([
+        logEntry(),
+        logEntry({ level: 'INFO', message: 'Started', requestId: null, error: null }),
+      ]),
     );
 
     expect(request.request.params.get('from')).toBe('2026-09-25T12:00:00.000Z');

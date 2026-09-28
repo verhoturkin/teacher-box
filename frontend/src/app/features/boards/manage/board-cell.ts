@@ -14,10 +14,24 @@ import { Board } from '../data-access/boards.models';
         @if (boards().length > 1) {
           <span class="tb-muted">+{{ boards().length - 1 }}</span>
         }
-        <p-button icon="pi pi-cog" [text]="true" [rounded]="true" size="small" [ariaLabel]="'Доски: ' + name()" (onClick)="edit.emit()" />
+        <p-button
+          icon="pi pi-cog"
+          [text]="true"
+          [rounded]="true"
+          size="small"
+          [ariaLabel]="'Доски: ' + name()"
+          (onClick)="edit.emit()"
+        />
       </span>
     } @else {
-      <p-button label="Добавить" icon="pi pi-th-large" [text]="true" size="small" [ariaLabel]="'Добавить доску: ' + name()" (onClick)="edit.emit()" />
+      <p-button
+        label="Добавить"
+        icon="pi pi-th-large"
+        [text]="true"
+        size="small"
+        [ariaLabel]="'Добавить доску: ' + name()"
+        (onClick)="edit.emit()"
+      />
     }
   `,
   styles: `

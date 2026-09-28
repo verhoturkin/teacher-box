@@ -24,7 +24,12 @@ export const LATEST_COUNT = 5;
             @for (item of items; track item.id) {
               <li [class.tb-latest--unread]="!item.read">
                 <i [class]="icons[item.kind]" aria-hidden="true"></i>
-                <button type="button" class="tb-latest__title" [disabled]="item.link === null" (click)="open(item)">
+                <button
+                  type="button"
+                  class="tb-latest__title"
+                  [disabled]="item.link === null"
+                  (click)="open(item)"
+                >
                   {{ item.title }}
                 </button>
                 <small class="tb-muted">{{ item.createdAt | date: 'dd.MM HH:mm' }}</small>

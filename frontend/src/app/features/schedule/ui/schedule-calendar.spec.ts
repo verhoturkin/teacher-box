@@ -41,7 +41,10 @@ describe('ScheduleCalendar', () => {
   });
 
   it('shows the student the topics', async () => {
-    const text = await render([scheduledLesson({ topic: 'Степени' }), scheduledLesson({ id: 'l-2' })], false);
+    const text = await render(
+      [scheduledLesson({ topic: 'Степени' }), scheduledLesson({ id: 'l-2' })],
+      false,
+    );
 
     expect(text).toContain('Степени');
     expect(text).toContain('Занятие');
@@ -78,8 +81,15 @@ describe('ScheduleCalendar', () => {
 
 describe('lessonClasses', () => {
   it('marks lessons by status and open requests', () => {
-    expect(lessonClasses(scheduledLesson({ status: 'CANCELLED' }))).toEqual(['tb-lesson', 'tb-lesson--cancelled']);
-    expect(lessonClasses(groupLesson())).toEqual(['tb-lesson', 'tb-lesson--scheduled', 'tb-lesson--group']);
+    expect(lessonClasses(scheduledLesson({ status: 'CANCELLED' }))).toEqual([
+      'tb-lesson',
+      'tb-lesson--cancelled',
+    ]);
+    expect(lessonClasses(groupLesson())).toEqual([
+      'tb-lesson',
+      'tb-lesson--scheduled',
+      'tb-lesson--group',
+    ]);
     expect(lessonClasses(scheduledLesson({ pendingRequests: [changeRequest()] }))).toEqual([
       'tb-lesson',
       'tb-lesson--scheduled',

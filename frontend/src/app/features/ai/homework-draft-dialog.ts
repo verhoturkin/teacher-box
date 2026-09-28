@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -16,32 +25,75 @@ import { HomeworkDraft } from './data-access/ai.models';
   imports: [ReactiveFormsModule, Button, Dialog, InputNumber, InputText, Message, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Черновик задания с ИИ" [(visible)]="visible" [modal]="true" [style]="{ width: '34rem' }" [draggable]="false">
+    <p-dialog
+      header="Черновик задания с ИИ"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '34rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="generate()">
         <div class="tb-field">
           <label for="ai-topic">Тема</label>
-          <input pInputText id="ai-topic" formControlName="topic" autocomplete="off" placeholder="например, сложение дробей" />
+          <input
+            pInputText
+            id="ai-topic"
+            formControlName="topic"
+            autocomplete="off"
+            placeholder="например, сложение дробей"
+          />
         </div>
         <div class="tb-field">
           <label for="ai-level">Уровень ученика</label>
-          <input pInputText id="ai-level" formControlName="level" autocomplete="off" placeholder="например, 6 класс, базовый" />
+          <input
+            pInputText
+            id="ai-level"
+            formControlName="level"
+            autocomplete="off"
+            placeholder="например, 6 класс, базовый"
+          />
         </div>
         <div class="tb-field">
           <label for="ai-count">Количество задач</label>
-          <p-inputnumber inputId="ai-count" formControlName="taskCount" [min]="1" [max]="20" [showButtons]="true" />
+          <p-inputnumber
+            inputId="ai-count"
+            formControlName="taskCount"
+            [min]="1"
+            [max]="20"
+            [showButtons]="true"
+          />
         </div>
         <div class="tb-field">
           <label for="ai-wishes">Пожелания</label>
-          <textarea pTextarea id="ai-wishes" formControlName="wishes" rows="3" placeholder="формат, типы задач, на что обратить внимание"></textarea>
+          <textarea
+            pTextarea
+            id="ai-wishes"
+            formControlName="wishes"
+            rows="3"
+            placeholder="формат, типы задач, на что обратить внимание"
+          ></textarea>
         </div>
-        <small class="tb-hint">Черновик заменит название и текст задания — вы сможете их отредактировать.</small>
+        <small class="tb-hint"
+          >Черновик заменит название и текст задания — вы сможете их отредактировать.</small
+        >
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сгенерировать" icon="pi pi-sparkles" [loading]="pending()" [disabled]="form.invalid" (onClick)="generate()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сгенерировать"
+          icon="pi pi-sparkles"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="generate()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -58,9 +110,16 @@ export class HomeworkDraftDialog {
   protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    topic: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(300)] }),
+    topic: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(300)],
+    }),
     level: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(100)] }),
-    taskCount: new FormControl<number | null>(5, [Validators.required, Validators.min(1), Validators.max(20)]),
+    taskCount: new FormControl<number | null>(5, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(20),
+    ]),
     wishes: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(2000)] }),
   });
 

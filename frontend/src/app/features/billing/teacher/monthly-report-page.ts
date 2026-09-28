@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -56,7 +63,9 @@ import { MonthlyReport } from '../data-access/billing.models';
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Поступления</span>
-            <span class="tb-stat__value tb-positive">{{ report.income | money: report.currency }}</span>
+            <span class="tb-stat__value tb-positive">{{
+              report.income | money: report.currency
+            }}</span>
           </div>
         </p-card>
         <p-card>
@@ -69,7 +78,9 @@ import { MonthlyReport } from '../data-access/billing.models';
           <div class="tb-stat">
             <span class="tb-muted">Занятия</span>
             <span class="tb-stat__value">{{ report.conductedLessons }}</span>
-            <small class="tb-muted">пропусков: {{ report.missedLessons }}, отменено: {{ report.cancelledLessons }}</small>
+            <small class="tb-muted"
+              >пропусков: {{ report.missedLessons }}, отменено: {{ report.cancelledLessons }}</small
+            >
           </div>
         </p-card>
       </div>
@@ -88,7 +99,9 @@ import { MonthlyReport } from '../data-access/billing.models';
             <ng-template #body let-row [tbRowType]="report.students">
               <tr>
                 <td>
-                  <a [routerLink]="['/teacher/billing/students', row.studentId]" class="tb-link">{{ row.displayName }}</a>
+                  <a [routerLink]="['/teacher/billing/students', row.studentId]" class="tb-link">{{
+                    row.displayName
+                  }}</a>
                 </td>
                 <td>{{ row.chargedLessons }}</td>
                 <td class="tb-amount">{{ row.charged | money: report.currency }}</td>
@@ -96,7 +109,9 @@ import { MonthlyReport } from '../data-access/billing.models';
               </tr>
             </ng-template>
             <ng-template #emptymessage>
-              <tr><td colspan="4" class="tb-empty">В этом месяце не было ни занятий, ни оплат</td></tr>
+              <tr>
+                <td colspan="4" class="tb-empty">В этом месяце не было ни занятий, ни оплат</td>
+              </tr>
             </ng-template>
           </p-table>
         </p-card>
@@ -120,14 +135,22 @@ import { MonthlyReport } from '../data-access/billing.models';
                 <td>
                   <p-tag
                     [value]="lessonStatusLabels[entry.lesson.status]"
-                    [severity]="entry.lesson.status === 'CONDUCTED' ? 'success' : entry.lesson.status === 'MISSED' ? 'warn' : 'secondary'"
+                    [severity]="
+                      entry.lesson.status === 'CONDUCTED'
+                        ? 'success'
+                        : entry.lesson.status === 'MISSED'
+                          ? 'warn'
+                          : 'secondary'
+                    "
                   />
                 </td>
                 <td class="tb-amount">{{ entry.lesson.price | money: report.currency }}</td>
               </tr>
             </ng-template>
             <ng-template #emptymessage>
-              <tr><td colspan="5" class="tb-empty">Занятий нет</td></tr>
+              <tr>
+                <td colspan="5" class="tb-empty">Занятий нет</td>
+              </tr>
             </ng-template>
           </p-table>
         </p-card>
@@ -153,7 +176,9 @@ import { MonthlyReport } from '../data-access/billing.models';
               </tr>
             </ng-template>
             <ng-template #emptymessage>
-              <tr><td colspan="5" class="tb-empty">Оплат нет</td></tr>
+              <tr>
+                <td colspan="5" class="tb-empty">Оплат нет</td>
+              </tr>
             </ng-template>
           </p-table>
         </p-card>

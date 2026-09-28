@@ -16,13 +16,20 @@ describe('LatestNotificationsWidget', () => {
   async function render(items: NotificationItem[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [LatestNotificationsWidget],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LatestNotificationsWidget);
     fixture.componentRef.setInput('link', '/cabinet/notifications');
     fixture.detectChanges();
-    backend.expectOne(`/api/me/notifications?page=0&size=${String(LATEST_COUNT)}`).flush(notificationPage(items));
+    backend
+      .expectOne(`/api/me/notifications?page=0&size=${String(LATEST_COUNT)}`)
+      .flush(notificationPage(items));
     fixture.detectChanges();
     await fixture.whenStable();
   }
@@ -36,11 +43,16 @@ describe('LatestNotificationsWidget', () => {
     await render([]);
 
     expect(readableText(hostElement(fixture))).toContain('Уведомлений пока нет');
-    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe('/cabinet/notifications');
+    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(
+      '/cabinet/notifications',
+    );
   });
 
   it('opens an unread notification and marks it read', async () => {
-    await render([notification(), notification({ id: 'n-2', title: 'Без ссылки', link: null, read: true })]);
+    await render([
+      notification(),
+      notification({ id: 'n-2', title: 'Без ссылки', link: null, read: true }),
+    ]);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     expect(readableText(hostElement(fixture))).toContain('Непрочитанных: 1');
     expect(buttonByText(hostElement(fixture), 'Без ссылки').disabled).toBe(true);

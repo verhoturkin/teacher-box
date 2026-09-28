@@ -1,4 +1,9 @@
-import { ChannelType, MessengerConnection, NotificationKind, NotificationTopic } from './data-access/notifications.models';
+import {
+  ChannelType,
+  MessengerConnection,
+  NotificationKind,
+  NotificationTopic,
+} from './data-access/notifications.models';
 
 export const CHANNEL_NAMES: Record<ChannelType, string> = {
   TELEGRAM: 'Telegram',
@@ -53,8 +58,18 @@ export const MUTABLE_TOPICS: readonly {
     hint: 'новые, перенесённые и отменённые занятия, запросы на перенос',
     teacherOnly: false,
   },
-  { topic: 'REMINDERS', label: 'Напоминания', hint: 'о скором занятии и сроке сдачи задания', teacherOnly: false },
-  { topic: 'HOMEWORK', label: 'Домашние задания', hint: 'выдача, сдача и проверка работ', teacherOnly: false },
+  {
+    topic: 'REMINDERS',
+    label: 'Напоминания',
+    hint: 'о скором занятии и сроке сдачи задания',
+    teacherOnly: false,
+  },
+  {
+    topic: 'HOMEWORK',
+    label: 'Домашние задания',
+    hint: 'выдача, сдача и проверка работ',
+    teacherOnly: false,
+  },
   { topic: 'BILLING', label: 'Оплаты', hint: 'проведённые занятия и оплаты', teacherOnly: false },
   {
     topic: 'ACCOUNT',

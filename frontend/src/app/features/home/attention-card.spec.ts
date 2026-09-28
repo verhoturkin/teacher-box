@@ -11,7 +11,10 @@ describe('AttentionCard', () => {
   let fixture: ComponentFixture<AttentionCard>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [AttentionCard], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [AttentionCard],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(AttentionCard);
   });
 
@@ -29,7 +32,10 @@ describe('AttentionCard', () => {
   it('lists what is waiting with links', async () => {
     fixture.componentRef.setInput('schedule', scheduleSummary({ unmarked: 2, pendingRequests: 1 }));
     fixture.componentRef.setInput('homework', homeworkSummary({ toReview: 3, overdue: 4 }));
-    fixture.componentRef.setInput('notifications', teacherNotificationsSummary({ failedDeliveries: 5 }));
+    fixture.componentRef.setInput(
+      'notifications',
+      teacherNotificationsSummary({ failedDeliveries: 5 }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -39,7 +45,9 @@ describe('AttentionCard', () => {
     expect(text).toContain('Работы на проверку 3');
     expect(text).toContain('Просроченные задания 4');
     expect(text).toContain('Недоставленные уведомления 5');
-    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
+      a.getAttribute('href'),
+    );
     expect(links).toEqual([
       '/teacher/schedule',
       '/teacher/schedule',

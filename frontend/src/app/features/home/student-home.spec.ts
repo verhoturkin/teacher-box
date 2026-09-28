@@ -18,7 +18,12 @@ describe('StudentHome', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [StudentHome],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentHome);
@@ -33,8 +38,12 @@ describe('StudentHome', () => {
   it('collects the widgets of the modules', async () => {
     fixture.detectChanges();
     backend.expectOne('/api/me/channels').flush([channel()]);
-    backend.expectOne('/api/me/schedule/summary').flush(myScheduleSummary({ next: scheduledLesson({ topic: 'Дроби' }) }));
-    backend.expectOne('/api/me/homework/summary').flush(myHomeworkSummary({ open: 1, upcoming: [myTask()] }));
+    backend
+      .expectOne('/api/me/schedule/summary')
+      .flush(myScheduleSummary({ next: scheduledLesson({ topic: 'Дроби' }) }));
+    backend
+      .expectOne('/api/me/homework/summary')
+      .flush(myHomeworkSummary({ open: 1, upcoming: [myTask()] }));
     backend.expectOne('/api/me/billing/summary').flush(myBillingSummary({ balance: 150_000 }));
     fixture.detectChanges();
     backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));

@@ -22,7 +22,10 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
       } @else {
         <ul class="tb-today">
           @for (lesson of lessons; track lesson.id) {
-            <li class="tb-today__lesson" [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'">
+            <li
+              class="tb-today__lesson"
+              [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'"
+            >
               <span class="tb-today__time">{{ time(lesson) }}</span>
               <div class="tb-today__info">
                 <strong>{{ with(lesson) }}</strong>
@@ -34,10 +37,19 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                 }
               </div>
               @if (lesson.status !== 'SCHEDULED') {
-                <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
+                <p-tag
+                  [value]="statuses[lesson.status].label"
+                  [severity]="statuses[lesson.status].severity"
+                />
               } @else {
                 @if (lesson.joinUrl; as url) {
-                  <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" [outlined]="true" />
+                  <tb-join-lesson-button
+                    [url]="url"
+                    label="Начать урок"
+                    [teacher]="true"
+                    [small]="true"
+                    [outlined]="true"
+                  />
                 }
                 @if (started(lesson) && lesson.groupId !== null) {
                   <p-button
@@ -79,7 +91,11 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
       </div>
     </p-card>
 
-    <tb-attendance-dialog [(visible)]="attendanceVisible" [lesson]="attendanceLesson()" (saved)="changed.emit()" />
+    <tb-attendance-dialog
+      [(visible)]="attendanceVisible"
+      [lesson]="attendanceLesson()"
+      (saved)="changed.emit()"
+    />
   `,
   styles: `
     .tb-today {

@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
@@ -19,15 +28,23 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
   imports: [FormsModule, Button, Checkbox, DatePicker, Dialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Запрос ученика" [(visible)]="visible" [modal]="true" [style]="{ width: '30rem' }" [draggable]="false">
+    <p-dialog
+      header="Запрос ученика"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '30rem' }"
+      [draggable]="false"
+    >
       @if (request(); as request) {
         <div class="tb-form">
           <p>
             @if (request.groupId !== null && request.kind === 'CANCEL') {
-              <strong>{{ request.studentName ?? 'Ученик' }}</strong> не придёт на занятие группы
-              «{{ request.groupName }}» {{ start(request.lessonStartsAt) }}
+              <strong>{{ request.studentName ?? 'Ученик' }}</strong> не придёт на занятие группы «{{
+                request.groupName
+              }}» {{ start(request.lessonStartsAt) }}
             } @else {
-              <strong>{{ request.studentName ?? 'Ученик' }}</strong>: {{ kinds[request.kind].toLowerCase() }} занятия
+              <strong>{{ request.studentName ?? 'Ученик' }}</strong
+              >: {{ kinds[request.kind].toLowerCase() }} занятия
               {{ start(request.lessonStartsAt) }}
               @if (request.groupId !== null) {
                 (группа «{{ request.groupName }}» — занятие перенесётся для всех)
@@ -64,12 +81,24 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
           }
           <div class="tb-field">
             <label for="answer-comment">Комментарий ученику</label>
-            <textarea pTextarea id="answer-comment" rows="2" [(ngModel)]="answer" maxlength="500"></textarea>
+            <textarea
+              pTextarea
+              id="answer-comment"
+              rows="2"
+              [(ngModel)]="answer"
+              maxlength="500"
+            ></textarea>
           </div>
         </div>
       }
       <ng-template #footer>
-        <p-button label="Отклонить" severity="danger" [text]="true" [loading]="pending()" (onClick)="decline()" />
+        <p-button
+          label="Отклонить"
+          severity="danger"
+          [text]="true"
+          [loading]="pending()"
+          (onClick)="decline()"
+        />
         <p-button label="Согласовать" [loading]="pending()" (onClick)="approve()" />
       </ng-template>
     </p-dialog>
@@ -92,7 +121,9 @@ export class RequestAnswerDialog {
     effect(() => {
       const request = this.request();
       if (this.visible() && request !== null) {
-        this.startsAt.set(request.proposedStartsAt === null ? null : new Date(request.proposedStartsAt));
+        this.startsAt.set(
+          request.proposedStartsAt === null ? null : new Date(request.proposedStartsAt),
+        );
         this.charge.set(request.late);
         this.answer.set('');
       }

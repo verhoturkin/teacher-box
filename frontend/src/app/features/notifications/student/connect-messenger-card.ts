@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -34,8 +41,8 @@ function writeDismissed(): void {
     @if (visible()) {
       <p-card header="Получайте уведомления в мессенджере" styleClass="tb-connect-card">
         <p>
-          Подключите {{ names() }} — напоминания о занятиях, новые задания и сообщения учителя будут приходить сразу, без
-          захода в личный кабинет.
+          Подключите {{ names() }} — напоминания о занятиях, новые задания и сообщения учителя будут
+          приходить сразу, без захода в личный кабинет.
         </p>
         <div class="tb-actions">
           <a pButton routerLink="/cabinet/notifications">
@@ -55,11 +62,16 @@ export class ConnectMessengerCard implements OnInit {
   private readonly dismissed = signal(readDismissed());
 
   protected readonly visible = computed(
-    () => !this.dismissed() && this.channels().length > 0 && this.channels().every((channel) => !channel.linked),
+    () =>
+      !this.dismissed() &&
+      this.channels().length > 0 &&
+      this.channels().every((channel) => !channel.linked),
   );
   protected readonly names = computed(() => {
     const names = this.channels().map((channel) => CHANNEL_NAMES[channel.channel]);
-    return names.length > 1 ? `${names.slice(0, -1).join(', ')} или ${names[names.length - 1] ?? ''}` : (names[0] ?? '');
+    return names.length > 1
+      ? `${names.slice(0, -1).join(', ')} или ${names[names.length - 1] ?? ''}`
+      : (names[0] ?? '');
   });
 
   ngOnInit(): void {

@@ -22,7 +22,9 @@ import { LedgerTable } from '../ledger/ledger-table';
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Баланс</span>
-            <span class="tb-stat__value"><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency" /></span>
+            <span class="tb-stat__value"
+              ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
+            /></span>
             <small class="tb-muted">
               @if (ledger.balance < 0) {
                 Столько нужно оплатить за прошедшие занятия.

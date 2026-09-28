@@ -10,7 +10,9 @@ import { authResponse } from '@testing/auth';
 
 describe('appConfig', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [...appConfig.providers, provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [...appConfig.providers, provideHttpClientTesting()],
+    });
   });
 
   it('uses the Russian locale', () => {
@@ -23,7 +25,9 @@ describe('appConfig', () => {
   });
 
   it('restores the session on start', () => {
-    TestBed.inject(HttpTestingController).expectOne('/api/auth/refresh').flush(authResponse('TEACHER'));
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/auth/refresh')
+      .flush(authResponse('TEACHER'));
 
     expect(TestBed.inject(AuthService).role()).toBe('TEACHER');
   });

@@ -8,7 +8,9 @@ describe('BillingApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(BillingApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -52,8 +54,12 @@ describe('BillingApi', () => {
 
     expect(backend.expectOne('/api/teacher/billing/lessons').request.body).toEqual(lessonRequest);
     expect(backend.expectOne('/api/teacher/billing/payments').request.body).toEqual(paymentRequest);
-    expect(backend.expectOne('/api/teacher/billing/lessons/l-1/cancel').request.body).toEqual({ reason: 'болел' });
-    expect(backend.expectOne('/api/teacher/billing/payments/p-1/void').request.body).toEqual({ reason: null });
+    expect(backend.expectOne('/api/teacher/billing/lessons/l-1/cancel').request.body).toEqual({
+      reason: 'болел',
+    });
+    expect(backend.expectOne('/api/teacher/billing/payments/p-1/void').request.body).toEqual({
+      reason: null,
+    });
   });
 
   it('changes the lesson price', () => {

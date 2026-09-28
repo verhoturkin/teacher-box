@@ -24,7 +24,10 @@ describe('BoardCell', () => {
   });
 
   it('opens the first board and counts the others', async () => {
-    fixture.componentRef.setInput('boards', [aBoard(), aBoard({ id: 'board-2', title: 'Геометрия' })]);
+    fixture.componentRef.setInput('boards', [
+      aBoard(),
+      aBoard({ id: 'board-2', title: 'Геометрия' }),
+    ]);
     await fixture.whenStable();
 
     const link = hostElement(fixture).querySelector('a');

@@ -17,7 +17,10 @@ test('the administrator searches the log and checks the instance', async ({ page
 
   await page.getByLabel('Текст').fill('role=ADMIN');
   await page.getByRole('button', { name: 'Найти' }).click();
-  const signIn = page.getByRole('row').filter({ hasText: /Sign-in succeeded: .*role=ADMIN/ }).first();
+  const signIn = page
+    .getByRole('row')
+    .filter({ hasText: /Sign-in succeeded: .*role=ADMIN/ })
+    .first();
   await expect(signIn).toBeVisible();
 
   // The request code of the line finds every line of that request.

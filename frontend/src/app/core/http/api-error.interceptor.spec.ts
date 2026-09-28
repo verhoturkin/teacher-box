@@ -44,7 +44,10 @@ describe('apiErrorInterceptor', () => {
 
     backend
       .expectOne('/api/test')
-      .flush({ status: 409, code: 'concurrent.modification' }, { status: 409, statusText: 'Conflict' });
+      .flush(
+        { status: 409, code: 'concurrent.modification' },
+        { status: 409, statusText: 'Conflict' },
+      );
 
     expect(shown).toEqual([
       {

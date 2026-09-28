@@ -39,18 +39,27 @@ describe('RequestAnswerDialog', () => {
     await open(request);
     expect(bodyText()).toContain('Иван Петров: перенос занятия');
     expect(bodyText()).toContain('«Можно в пятницу?»');
-    typeInto(requireElement(document.body, '#answer-comment', HTMLTextAreaElement), ' Договорились ');
+    typeInto(
+      requireElement(document.body, '#answer-comment', HTMLTextAreaElement),
+      ' Договорились ',
+    );
 
     buttonByText(document.body, 'Согласовать').click();
 
     const call = backend.expectOne('/api/teacher/schedule/requests/r-1/approve');
-    expect(call.request.body).toEqual({ startsAt: request.proposedStartsAt, charge: false, answer: 'Договорились' });
+    expect(call.request.body).toEqual({
+      startsAt: request.proposedStartsAt,
+      charge: false,
+      answer: 'Договорились',
+    });
     call.flush(scheduledLesson());
     expect(answered).toEqual([request]);
   });
 
   it('suggests charging a late cancellation', async () => {
-    await open(changeRequest({ kind: 'CANCEL', proposedStartsAt: null, late: true, studentName: null }));
+    await open(
+      changeRequest({ kind: 'CANCEL', proposedStartsAt: null, late: true, studentName: null }),
+    );
     expect(bodyText()).toContain('Ученик: отмена занятия');
     expect(bodyText()).toContain('Отмена поздняя');
 
@@ -77,7 +86,15 @@ describe('RequestAnswerDialog', () => {
   });
 
   it('explains requests about group lessons', async () => {
-    await open(changeRequest({ kind: 'CANCEL', groupId: 'g-1', groupName: 'ОГЭ', proposedStartsAt: null, late: true }));
+    await open(
+      changeRequest({
+        kind: 'CANCEL',
+        groupId: 'g-1',
+        groupName: 'ОГЭ',
+        proposedStartsAt: null,
+        late: true,
+      }),
+    );
     expect(bodyText()).toContain('не придёт на занятие группы «ОГЭ»');
     fixture.componentRef.setInput('visible', false);
     await fixture.whenStable();

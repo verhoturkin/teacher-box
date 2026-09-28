@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -22,10 +29,13 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
         } @else {
           <div class="tb-students-summary">
             <span>
-              Подключили мессенджер: <strong>{{ connectedCount() }}</strong> из {{ students.length }}
+              Подключили мессенджер: <strong>{{ connectedCount() }}</strong> из
+              {{ students.length }}
             </span>
             <p-button
-              [label]="selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'"
+              [label]="
+                selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
+              "
               icon="pi pi-bell"
               size="small"
               [outlined]="true"
@@ -79,9 +89,9 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
             </ng-template>
           </p-table>
           <small class="tb-hint">
-            Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у которых мессенджер уже
-            подключён, его не получат. «Не доставлено» — сообщения за 30 дней, которые мессенджер не принял (например,
-            ученик заблокировал бота).
+            Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у
+            которых мессенджер уже подключён, его не получат. «Не доставлено» — сообщения за 30
+            дней, которые мессенджер не принял (например, ученик заблокировал бота).
           </small>
         }
       }

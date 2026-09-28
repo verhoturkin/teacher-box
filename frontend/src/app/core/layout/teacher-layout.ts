@@ -3,7 +3,12 @@ import { MenuItem } from 'primeng/api';
 import { Shell } from './shell';
 
 export const TEACHER_MENU: MenuItem[] = [
-  { label: 'Главная', icon: 'pi pi-home', routerLink: '/teacher', routerLinkActiveOptions: { exact: true } },
+  {
+    label: 'Главная',
+    icon: 'pi pi-home',
+    routerLink: '/teacher',
+    routerLinkActiveOptions: { exact: true },
+  },
   { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/teacher/schedule' },
   { label: 'Ученики', icon: 'pi pi-users', routerLink: '/teacher/students' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/teacher/homework' },
@@ -22,7 +27,12 @@ export const TEACHER_USER_LINKS: MenuItem[] = [
   selector: 'tb-teacher-layout',
   imports: [Shell],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-shell [items]="menu" [userLinks]="userLinks" homeLink="/teacher" areaTitle="Кабинет учителя" />`,
+  template: `<tb-shell
+    [items]="menu"
+    [userLinks]="userLinks"
+    homeLink="/teacher"
+    areaTitle="Кабинет учителя"
+  />`,
 })
 export class TeacherLayout {
   protected readonly menu = TEACHER_MENU;

@@ -27,7 +27,13 @@ export function logResult(entries: LogEntry[], overrides: Partial<LogResult> = {
 }
 
 export function loggerLevel(overrides: Partial<LoggerLevel> = {}): LoggerLevel {
-  return { name: 'ru.teacherbox', configuredLevel: null, effectiveLevel: 'INFO', revertAt: null, ...overrides };
+  return {
+    name: 'ru.teacherbox',
+    configuredLevel: null,
+    effectiveLevel: 'INFO',
+    revertAt: null,
+    ...overrides,
+  };
 }
 
 export function systemStatus(overrides: Partial<SystemStatus> = {}): SystemStatus {

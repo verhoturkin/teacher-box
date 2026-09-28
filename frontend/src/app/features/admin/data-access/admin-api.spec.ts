@@ -9,7 +9,9 @@ describe('AdminApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(AdminApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -19,7 +21,15 @@ describe('AdminApi', () => {
   });
 
   it('searches the log with the filled filters only', () => {
-    api.logs({ from: '2026-09-26T00:00:00Z', level: 'WARN', logger: ' ', text: ' boom ', requestId: null, limit: 50 })
+    api
+      .logs({
+        from: '2026-09-26T00:00:00Z',
+        level: 'WARN',
+        logger: ' ',
+        text: ' boom ',
+        requestId: null,
+        limit: 50,
+      })
       .subscribe();
 
     const request = backend.expectOne((candidate) => candidate.url === '/api/admin/logs');
@@ -58,7 +68,9 @@ describe('AdminApi', () => {
     expect(resubmit.request.body).toEqual({ ids: ['e-1'] });
     resubmit.flush({ resubmitted: 1 });
     backend.expectOne({ method: 'GET', url: '/api/admin/notifications/deliveries' });
-    backend.expectOne({ method: 'POST', url: '/api/admin/notifications/deliveries/retry' }).flush({ retried: 4 });
+    backend
+      .expectOne({ method: 'POST', url: '/api/admin/notifications/deliveries/retry' })
+      .flush({ retried: 4 });
     const check = backend.expectOne({ method: 'POST', url: '/api/admin/integrations/check' });
     expect(check.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     backend.expectOne({ method: 'GET', url: '/api/admin/ai/status' });

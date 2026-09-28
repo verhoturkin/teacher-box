@@ -30,7 +30,11 @@ describe('MeetingsSettingsPanel', () => {
         { provide: ExternalNavigation, useValue: navigation },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(result === null ? {} : { yandex: result }) } },
+          useValue: {
+            snapshot: {
+              queryParamMap: convertToParamMap(result === null ? {} : { yandex: result }),
+            },
+          },
         },
       ],
     });
@@ -55,7 +59,9 @@ describe('MeetingsSettingsPanel', () => {
     expect(text).toContain('oauth.yandex.ru');
     expect(text).toContain('https://school.example.com/api/public/meetings/yandex/callback');
     buttonByText(hostElement(fixture), 'Копировать адрес').click();
-    expect(copy).toHaveBeenCalledWith('https://school.example.com/api/public/meetings/yandex/callback');
+    expect(copy).toHaveBeenCalledWith(
+      'https://school.example.com/api/public/meetings/yandex/callback',
+    );
 
     fixture.componentInstance.form.setValue({ clientId: ' id ', clientSecret: ' secret ' });
     fixture.componentInstance.saveClient();
@@ -65,12 +71,17 @@ describe('MeetingsSettingsPanel', () => {
     await fixture.whenStable();
 
     buttonByText(hostElement(fixture), 'Подключить Яндекс').click();
-    backend.expectOne('/api/teacher/meetings/yandex/authorize').flush({ url: 'https://oauth.yandex.ru/authorize?x' });
+    backend
+      .expectOne('/api/teacher/meetings/yandex/authorize')
+      .flush({ url: 'https://oauth.yandex.ru/authorize?x' });
     expect(navigation.go).toHaveBeenCalledWith('https://oauth.yandex.ru/authorize?x');
   });
 
   it('shows the connection and disconnects', async () => {
-    const text = await render(yandexStatus({ status: 'CONNECTED', connectedAt: '2026-09-27T10:00:00Z' }), 'connected');
+    const text = await render(
+      yandexStatus({ status: 'CONNECTED', connectedAt: '2026-09-27T10:00:00Z' }),
+      'connected',
+    );
 
     expect(text).toContain('Яндекс подключён: комнаты можно создавать кнопкой');
     expect(text).toContain('Яндекс подключён с 27.09.2026');
@@ -84,7 +95,11 @@ describe('MeetingsSettingsPanel', () => {
 
   it('asks to reconnect and keeps the chosen options', async () => {
     const text = await render(
-      yandexStatus({ status: 'NEEDS_RECONNECT', clientConfigured: true, lastError: 'invalid_grant' }),
+      yandexStatus({
+        status: 'NEEDS_RECONNECT',
+        clientConfigured: true,
+        lastError: 'invalid_grant',
+      }),
       'expired',
     );
 
@@ -96,22 +111,33 @@ describe('MeetingsSettingsPanel', () => {
     buttonByText(hostElement(fixture), 'Отмена').click();
 
     fixture.componentInstance.setWaitingRoom(true);
-    backend.expectOne('/api/teacher/meetings/yandex/waiting-room').flush(yandexStatus({ waitingRoom: true }));
+    backend
+      .expectOne('/api/teacher/meetings/yandex/waiting-room')
+      .flush(yandexStatus({ waitingRoom: true }));
     fixture.componentInstance.setOpenInApp(false);
     expect(TestBed.inject(MeetingPreferences).openInApp()).toBe(false);
     await fixture.whenStable();
-    expect(requireElement(hostElement(fixture), '#meetings-waiting-room', HTMLInputElement).checked).toBe(true);
+    expect(
+      requireElement(hostElement(fixture), '#meetings-waiting-room', HTMLInputElement).checked,
+    ).toBe(true);
   });
 
   it('shows a token from the environment and failed connections', async () => {
-    const text = await render(yandexStatus({ tokenFromEnvironment: true, status: 'CONNECTED' }), 'unknown');
+    const text = await render(
+      yandexStatus({ tokenFromEnvironment: true, status: 'CONNECTED' }),
+      'unknown',
+    );
     expect(text).toContain('токеном из переменных окружения сервера');
 
     fixture.componentInstance.connect();
-    backend.expectOne('/api/teacher/meetings/yandex/authorize').flush(null, { status: 422, statusText: 'x' });
+    backend
+      .expectOne('/api/teacher/meetings/yandex/authorize')
+      .flush(null, { status: 422, statusText: 'x' });
     fixture.componentInstance.form.setValue({ clientId: 'a', clientSecret: 'b' });
     fixture.componentInstance.saveClient();
-    backend.expectOne('/api/teacher/meetings/yandex/client').flush(null, { status: 500, statusText: 'x' });
+    backend
+      .expectOne('/api/teacher/meetings/yandex/client')
+      .flush(null, { status: 500, statusText: 'x' });
     fixture.componentInstance.form.setValue({ clientId: '', clientSecret: '' });
     fixture.componentInstance.saveClient();
     backend.expectNone('/api/teacher/meetings/yandex/client');

@@ -82,7 +82,9 @@ describe('BillingOverviewPage', () => {
   it('records a lesson for a student and reloads', async () => {
     buttonByText(host, 'Занятие: Иван').click();
     await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.controls.studentId.value).toBe('s-1');
     expect(dialog.students().map((student) => student.studentId)).toEqual(['s-1', 's-2']);
@@ -100,7 +102,9 @@ describe('BillingOverviewPage', () => {
   it('opens the payment dialog from the toolbar and for a student', async () => {
     buttonByText(host, 'Оплата').click();
     await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(PaymentDialog)).injector.get(PaymentDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(PaymentDialog))
+      .injector.get(PaymentDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.controls.studentId.value).toBeNull();
 
@@ -123,7 +127,9 @@ describe('BillingOverviewPage', () => {
     buttonByText(host, 'Занятие').click();
     await fixture.whenStable();
 
-    const dialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.controls.studentId.value).toBeNull();
   });

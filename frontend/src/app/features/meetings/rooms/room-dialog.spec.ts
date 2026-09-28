@@ -18,7 +18,12 @@ describe('RoomDialog', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [RoomDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     add = vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -67,7 +72,9 @@ describe('RoomDialog', () => {
 
     dialog.link.setValue(' https://zoom.us/j/1 ');
     dialog.save();
-    backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/rooms' }).flush(aRoom({ telemost: false }));
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/meetings/rooms' })
+      .flush(aRoom({ telemost: false }));
     expect(changes).toHaveLength(1);
   });
 
@@ -97,7 +104,10 @@ describe('RoomDialog', () => {
     buttonByText(document.body, 'Новая встреча в Телемосте').click();
     backend
       .expectOne('/api/teacher/meetings/rooms')
-      .flush({ status: 422, code: 'meetings.reconnect' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'meetings.reconnect' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Яндекс больше не принимает доступ портала');

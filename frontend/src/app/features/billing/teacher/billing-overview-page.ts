@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -50,8 +57,19 @@ import { PaymentDialog } from './payment-dialog';
         <tb-help-button topic="teacher/billing" />
       </div>
       <div class="tb-actions">
-        <p-button label="Занятие" icon="pi pi-plus" (onClick)="openLesson(null)" [disabled]="!overview()" />
-        <p-button label="Оплата" icon="pi pi-wallet" severity="success" (onClick)="openPayment(null)" [disabled]="!overview()" />
+        <p-button
+          label="Занятие"
+          icon="pi pi-plus"
+          (onClick)="openLesson(null)"
+          [disabled]="!overview()"
+        />
+        <p-button
+          label="Оплата"
+          icon="pi pi-wallet"
+          severity="success"
+          (onClick)="openPayment(null)"
+          [disabled]="!overview()"
+        />
         <a pButton routerLink="report" [outlined]="true">
           <i pButtonIcon class="pi pi-chart-bar"></i>
           <span pButtonLabel>Отчёт за месяц</span>
@@ -64,13 +82,17 @@ import { PaymentDialog } from './payment-dialog';
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Долг учеников</span>
-            <span class="tb-stat__value" [class.tb-negative]="overview.totalDebt > 0">{{ overview.totalDebt | money: overview.currency }}</span>
+            <span class="tb-stat__value" [class.tb-negative]="overview.totalDebt > 0">{{
+              overview.totalDebt | money: overview.currency
+            }}</span>
           </div>
         </p-card>
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Авансы</span>
-            <span class="tb-stat__value" [class.tb-positive]="overview.totalPrepaid > 0">{{ overview.totalPrepaid | money: overview.currency }}</span>
+            <span class="tb-stat__value" [class.tb-positive]="overview.totalPrepaid > 0">{{
+              overview.totalPrepaid | money: overview.currency
+            }}</span>
           </div>
         </p-card>
         <p-card>
@@ -107,7 +129,9 @@ import { PaymentDialog } from './payment-dialog';
           <ng-template #body let-row [tbRowType]="rows()">
             <tr>
               <td>
-                <a [routerLink]="['students', row.studentId]" class="tb-link">{{ row.displayName }}</a>
+                <a [routerLink]="['students', row.studentId]" class="tb-link">{{
+                  row.displayName
+                }}</a>
                 @if (row.status === 'DEACTIVATED') {
                   <small class="tb-muted"> (отключён)</small>
                 }
@@ -117,17 +141,34 @@ import { PaymentDialog } from './payment-dialog';
               <td>{{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}</td>
               <td><tb-balance-amount [balance]="row.balance" [currency]="overview.currency" /></td>
               <td class="tb-actions-column">
-                <p-button icon="pi pi-plus" [text]="true" [rounded]="true" pTooltip="Записать занятие"
-                  [ariaLabel]="'Занятие: ' + row.displayName" (onClick)="openLesson(row.studentId)" />
-                <p-button icon="pi pi-wallet" [text]="true" [rounded]="true" severity="success" pTooltip="Принять оплату"
-                  [ariaLabel]="'Оплата: ' + row.displayName" (onClick)="openPayment(row.studentId)" />
+                <p-button
+                  icon="pi pi-plus"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Записать занятие"
+                  [ariaLabel]="'Занятие: ' + row.displayName"
+                  (onClick)="openLesson(row.studentId)"
+                />
+                <p-button
+                  icon="pi pi-wallet"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="success"
+                  pTooltip="Принять оплату"
+                  [ariaLabel]="'Оплата: ' + row.displayName"
+                  (onClick)="openPayment(row.studentId)"
+                />
               </td>
             </tr>
           </ng-template>
           <ng-template #emptymessage>
             <tr>
               <td colspan="6" class="tb-empty">
-                {{ overview.students.length === 0 ? 'Добавьте учеников в разделе «Ученики»' : 'Должников нет' }}
+                {{
+                  overview.students.length === 0
+                    ? 'Добавьте учеников в разделе «Ученики»'
+                    : 'Должников нет'
+                }}
               </td>
             </tr>
           </ng-template>

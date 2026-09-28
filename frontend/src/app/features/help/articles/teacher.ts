@@ -29,7 +29,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Что ещё почитать: [Ученики и приглашения](/teacher/help/students), [Расписание и запросы](/teacher/help/schedule), [Оплаты](/teacher/help/billing).
 `,
   },
-  'setup': {
+  setup: {
     title: 'Первоначальная настройка',
     summary: 'Мастер после первого входа: пароль, имя, название и адрес портала, цена занятия',
     body: `
@@ -58,7 +58,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Если адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL), в портале он только показывается.
 `,
   },
-  'students': {
+  students: {
     title: 'Ученики и приглашения',
     summary: 'Как добавить ученика, выдать доступ и отключить его',
     body: `
@@ -85,7 +85,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 - **Доски** — доски Холста ученика ([Доски](/teacher/help/boards)).
 `,
   },
-  'groups': {
+  groups: {
     title: 'Группы',
     summary: 'Занятия с несколькими учениками сразу',
     body: `
@@ -109,7 +109,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Группу, с которой больше не занимаетесь, уберите в архив: будущие занятия отменятся, история останется.
 `,
   },
-  'schedule': {
+  schedule: {
     title: 'Расписание и запросы',
     summary: 'Занятия, регулярные уроки, отметки и запросы учеников',
     body: `
@@ -139,7 +139,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Если ученик группы заранее написал «Не приду», запрос принимается сам — отвечать не нужно.
 `,
   },
-  'meetings': {
+  meetings: {
     title: 'Видеовстречи',
     summary: 'Постоянная ссылка на урок в Яндекс Телемосте',
     body: `
@@ -161,7 +161,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Для одного занятия можно указать другую ссылку — в окне занятия.
 `,
   },
-  'boards': {
+  boards: {
     title: 'Доски',
     summary: 'Доски Холста у учеников и групп',
     body: `
@@ -187,7 +187,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Картинкой можно копировать, только когда портал открыт по защищённому адресу (https).
 `,
   },
-  'homework': {
+  homework: {
     title: 'Домашние задания',
     summary: 'Как выдать задание, проверить и вернуть работу',
     body: `
@@ -210,7 +210,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Если включён ИИ-помощник, кнопка «Черновик проверки» предложит комментарий и оценку — проверьте их перед отправкой ([ИИ-помощник](/teacher/help/ai)).
 `,
   },
-  'ai': {
+  ai: {
     title: 'ИИ-помощник',
     summary: 'Черновики заданий и проверок',
     body: `
@@ -228,7 +228,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Подключается ИИ-помощник при установке портала (это делает тот, кто настраивал сервер). Если кнопок ИИ нет — он не подключён.
 `,
   },
-  'billing': {
+  billing: {
     title: 'Оплаты',
     summary: 'Баланс учеников, оплаты, отчёт за месяц',
     body: `
@@ -258,7 +258,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Записать оплату и занятие можно и через бота ([Что умеет бот](/teacher/help/bot)).
 `,
   },
-  'notifications': {
+  notifications: {
     title: 'Уведомления и боты',
     summary: 'Колокольчик, мессенджеры и сообщения ученикам',
     body: `
@@ -285,7 +285,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Бот умеет не только присылать уведомления — [Что умеет бот](/teacher/help/bot).
 `,
   },
-  'bot': {
+  bot: {
     title: 'Что умеет бот',
     summary: 'Действия с порталом прямо из мессенджера',
     body: `
@@ -317,7 +317,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Во ВКонтакте для кнопок нужно включить «Возможности ботов» в настройках сообщества.
 `,
   },
-  'calendars': {
+  calendars: {
     title: 'Календари',
     summary: 'Расписание в Google Календаре и других календарях',
     body: `
@@ -337,7 +337,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 - в расписании портала будет видно, когда вы заняты по Google Календарю, — удобно, чтобы не назначить урок на занятое время.
 `,
   },
-  'settings': {
+  settings: {
     title: 'Настройки',
     summary: 'Портал, интеграции, резервные копии, полный сброс',
     body: `
@@ -354,7 +354,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Пароль и имя меняются в «Мой аккаунт» (меню с вашим именем).
 `,
   },
-  'backups': {
+  backups: {
     title: 'Резервные копии и полный сброс',
     summary: 'Как сделать копию, восстановить её и начать всё заново',
     body: `
@@ -388,7 +388,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
 Если после сброса портал попросит удалить календарь в Google, откройте Google Календарь и удалите календарь портала вручную.
 `,
   },
-  'faq': {
+  faq: {
     title: 'Частые вопросы',
     summary: 'Ответы на вопросы, которые возникают чаще всего',
     body: `

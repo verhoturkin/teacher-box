@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -43,7 +51,12 @@ import { TaskStatusTag } from '../ui/task-status-tag';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <a pButton [routerLink]="['/teacher/homework', task.assignment.id]" [text]="true" class="tb-back">
+      <a
+        pButton
+        [routerLink]="['/teacher/homework', task.assignment.id]"
+        [text]="true"
+        class="tb-back"
+      >
         <i pButtonIcon class="pi pi-arrow-left"></i>
         <span pButtonLabel>{{ task.assignment.title }}</span>
       </a>
@@ -76,23 +89,50 @@ import { TaskStatusTag } from '../ui/task-status-tag';
               }
               @if (suggestion(); as decision) {
                 <p-message severity="info" styleClass="tb-form-message">
-                  ИИ предлагает {{ decision === 'ACCEPT' ? 'принять работу' : 'вернуть работу на доработку' }}.
+                  ИИ предлагает
+                  {{ decision === 'ACCEPT' ? 'принять работу' : 'вернуть работу на доработку' }}.
                   Проверьте черновик перед отправкой.
                 </p-message>
               }
               <div class="tb-field">
                 <label for="review-grade">Оценка</label>
-                <input pInputText id="review-grade" formControlName="grade" autocomplete="off" placeholder="например, 5" />
+                <input
+                  pInputText
+                  id="review-grade"
+                  formControlName="grade"
+                  autocomplete="off"
+                  placeholder="например, 5"
+                />
               </div>
               <div class="tb-field">
                 <label for="review-comment">Комментарий</label>
-                <textarea pTextarea id="review-comment" formControlName="comment" rows="4"></textarea>
+                <textarea
+                  pTextarea
+                  id="review-comment"
+                  formControlName="comment"
+                  rows="4"
+                ></textarea>
               </div>
               <div class="tb-actions">
                 @if (task.status === 'SUBMITTED') {
-                  <p-button label="Принять" icon="pi pi-check" severity="success" [loading]="pending()" [disabled]="form.invalid" (onClick)="review('ACCEPT')" />
+                  <p-button
+                    label="Принять"
+                    icon="pi pi-check"
+                    severity="success"
+                    [loading]="pending()"
+                    [disabled]="form.invalid"
+                    (onClick)="review('ACCEPT')"
+                  />
                 }
-                <p-button label="Вернуть на доработку" icon="pi pi-replay" severity="warn" [outlined]="true" [loading]="pending()" [disabled]="form.invalid" (onClick)="review('RETURN')" />
+                <p-button
+                  label="Вернуть на доработку"
+                  icon="pi pi-replay"
+                  severity="warn"
+                  [outlined]="true"
+                  [loading]="pending()"
+                  [disabled]="form.invalid"
+                  (onClick)="review('RETURN')"
+                />
                 <p-button
                   label="На доску"
                   icon="pi pi-th-large"
@@ -112,7 +152,10 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 
         <p-card [header]="'Задание: ' + task.assignment.title">
           <tb-markdown [text]="task.assignment.description" />
-          <tb-attachment-list [attachments]="task.assignment.attachments" (download)="download($event)" />
+          <tb-attachment-list
+            [attachments]="task.assignment.attachments"
+            (download)="download($event)"
+          />
         </p-card>
       </div>
       <tb-to-board-dialog
@@ -144,12 +187,18 @@ export class TaskReviewPage implements OnInit {
   });
 
   protected readonly boardVisible = signal(false);
-  protected readonly commentValue = toSignal(this.form.controls.comment.valueChanges, { initialValue: '' });
-  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, { initialValue: '' });
+  protected readonly commentValue = toSignal(this.form.controls.comment.valueChanges, {
+    initialValue: '',
+  });
+  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, {
+    initialValue: '',
+  });
   /** The review for a board: the grade and the comment. */
   protected readonly reviewText = computed(() => {
     const grade = this.gradeValue().trim();
-    return grade === '' ? this.commentValue() : `**Оценка: ${grade}**
+    return grade === ''
+      ? this.commentValue()
+      : `**Оценка: ${grade}**
 
 ${this.commentValue()}`;
   });
@@ -168,7 +217,12 @@ ${this.commentValue()}`;
     const { grade, comment } = this.form.getRawValue();
     this.pending.set(true);
     this.api
-      .review(task.taskId, decision, grade.trim() === '' ? null : grade.trim(), comment.trim() === '' ? null : comment)
+      .review(
+        task.taskId,
+        decision,
+        grade.trim() === '' ? null : grade.trim(),
+        comment.trim() === '' ? null : comment,
+      )
       .subscribe({
         next: (reviewed) => {
           this.pending.set(false);
@@ -198,7 +252,11 @@ ${this.commentValue()}`;
     }
     this.drafting.set(true);
     this.ai
-      .reviewDraft({ title: task.assignment.title, description: task.assignment.description, answer })
+      .reviewDraft({
+        title: task.assignment.title,
+        description: task.assignment.description,
+        answer,
+      })
       .subscribe({
         next: (draft) => {
           this.drafting.set(false);

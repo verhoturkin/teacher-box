@@ -28,7 +28,11 @@ describe('InviteLinkDialog', () => {
   });
 
   it('shows the invitation link', () => {
-    const input = requireElement(document.body, 'input[aria-label="Ссылка-приглашение"]', HTMLInputElement);
+    const input = requireElement(
+      document.body,
+      'input[aria-label="Ссылка-приглашение"]',
+      HTMLInputElement,
+    );
 
     expect(input.value).toBe(`${window.location.origin}/invite/secret-token`);
     expect(bodyText()).toContain('Ссылка для ученика: Мария');
@@ -49,7 +53,11 @@ describe('InviteLinkDialog', () => {
     TestBed.inject(Portal).set({ name: 'Школа', address: 'https://school.example.com' });
     await fixture.whenStable();
 
-    const input = requireElement(document.body, 'input[aria-label="Ссылка-приглашение"]', HTMLInputElement);
+    const input = requireElement(
+      document.body,
+      'input[aria-label="Ссылка-приглашение"]',
+      HTMLInputElement,
+    );
     expect(input.value).toBe('https://school.example.com/invite/secret-token');
   });
 

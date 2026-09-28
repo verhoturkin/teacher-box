@@ -54,7 +54,12 @@ describe('BoardsDialog', () => {
     dialog.form.setValue({ title: ' ', url: ' https://app.holst.so/board/1 ' });
     dialog.save();
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/boards' });
-    expect(request.request.body).toEqual({ studentId: 's-1', groupId: null, title: null, url: 'https://app.holst.so/board/1' });
+    expect(request.request.body).toEqual({
+      studentId: 's-1',
+      groupId: null,
+      title: null,
+      url: 'https://app.holst.so/board/1',
+    });
     request.flush(aBoard());
 
     expect(saved).toEqual([aBoard()]);
@@ -68,12 +73,19 @@ describe('BoardsDialog', () => {
 
     buttonByText(document.body, 'Изменить доску: Алгебра').click();
     await fixture.whenStable();
-    expect(dialog.form.getRawValue()).toEqual({ title: 'Алгебра', url: 'https://app.holst.so/board/1' });
+    expect(dialog.form.getRawValue()).toEqual({
+      title: 'Алгебра',
+      url: 'https://app.holst.so/board/1',
+    });
     expect(bodyText()).toContain('Сохранить');
     dialog.form.setValue({ title: '', url: 'https://app.holst.so/board/2' });
     dialog.save();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/boards/board-1' });
-    expect(change.request.body).toEqual({ title: 'Алгебра', url: 'https://app.holst.so/board/2', version: 1 });
+    expect(change.request.body).toEqual({
+      title: 'Алгебра',
+      url: 'https://app.holst.so/board/2',
+      version: 1,
+    });
     change.flush(aBoard({ version: 2 }));
     expect(saved).toHaveLength(1);
 
@@ -83,7 +95,9 @@ describe('BoardsDialog', () => {
     expect(dialog.form.getRawValue()).toEqual({ title: '', url: '' });
 
     buttonByText(document.body, 'Удалить доску: Алгебра').click();
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1' }).flush(null, { status: 204, statusText: 'No Content' });
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1' })
+      .flush(null, { status: 204, statusText: 'No Content' });
     expect(removed).toEqual([board]);
   });
 
@@ -93,7 +107,10 @@ describe('BoardsDialog', () => {
     dialog.save();
     backend
       .expectOne('/api/teacher/boards')
-      .flush({ status: 422, code: 'boards.too-many' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'boards.too-many' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('уже 20 досок');

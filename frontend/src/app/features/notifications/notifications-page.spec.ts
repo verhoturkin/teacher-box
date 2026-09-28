@@ -8,7 +8,12 @@ import { AuthService } from '@core/auth/auth.service';
 import { Role } from '@core/auth/auth.models';
 import { authResponse } from '@testing/auth';
 import { hostElement, readableText } from '@testing/dom';
-import { channelSetup, notification, notificationPage, preferences } from '@testing/notification-fixtures';
+import {
+  channelSetup,
+  notification,
+  notificationPage,
+  preferences,
+} from '@testing/notification-fixtures';
 import { PAGE_SIZE } from './inbox/inbox-panel';
 import { NotificationsPage } from './notifications-page';
 
@@ -100,6 +105,9 @@ describe('NotificationsPage', () => {
     fixture.componentInstance.select(7);
 
     expect(navigate).toHaveBeenCalledOnce();
-    expect(navigate).toHaveBeenCalledWith([], { queryParams: { tab: 'students' }, replaceUrl: true });
+    expect(navigate).toHaveBeenCalledWith([], {
+      queryParams: { tab: 'students' },
+      replaceUrl: true,
+    });
   });
 });

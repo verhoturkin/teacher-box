@@ -4,7 +4,9 @@ import { Observable, map } from 'rxjs';
 import { MeetingRoom, MyRoom, RoomOwnerRef, YandexStatus } from './meetings.models';
 
 function ownerIds(owner: RoomOwnerRef): { studentId: string | null; groupId: string | null } {
-  return owner.type === 'GROUP' ? { studentId: null, groupId: owner.id } : { studentId: owner.id, groupId: null };
+  return owner.type === 'GROUP'
+    ? { studentId: null, groupId: owner.id }
+    : { studentId: owner.id, groupId: null };
 }
 
 /** HTTP client of the meetings module. */
@@ -17,7 +19,10 @@ export class MeetingsApi {
   }
 
   saveClient(clientId: string, clientSecret: string): Observable<YandexStatus> {
-    return this.http.put<YandexStatus>('/api/teacher/meetings/yandex/client', { clientId, clientSecret });
+    return this.http.put<YandexStatus>('/api/teacher/meetings/yandex/client', {
+      clientId,
+      clientSecret,
+    });
   }
 
   setWaitingRoom(enabled: boolean): Observable<YandexStatus> {
@@ -45,7 +50,10 @@ export class MeetingsApi {
   }
 
   enterLink(owner: RoomOwnerRef, joinUrl: string): Observable<MeetingRoom> {
-    return this.http.put<MeetingRoom>('/api/teacher/meetings/rooms', { ...ownerIds(owner), joinUrl });
+    return this.http.put<MeetingRoom>('/api/teacher/meetings/rooms', {
+      ...ownerIds(owner),
+      joinUrl,
+    });
   }
 
   removeRoom(ownerId: string): Observable<void> {

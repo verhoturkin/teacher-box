@@ -9,7 +9,9 @@ describe('MeetingsApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(MeetingsApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -27,12 +29,18 @@ describe('MeetingsApi', () => {
     api.disconnect().subscribe();
 
     backend.expectOne({ method: 'GET', url: '/api/teacher/meetings/yandex' }).flush(yandexStatus());
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/yandex/client' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/yandex/client' }).request.body,
+    ).toEqual({
       clientId: 'id',
       clientSecret: 'secret',
     });
-    expect(backend.expectOne('/api/teacher/meetings/yandex/waiting-room').request.body).toEqual({ enabled: true });
-    backend.expectOne('/api/teacher/meetings/yandex/authorize').flush({ url: 'https://oauth.yandex.ru/authorize' });
+    expect(backend.expectOne('/api/teacher/meetings/yandex/waiting-room').request.body).toEqual({
+      enabled: true,
+    });
+    backend
+      .expectOne('/api/teacher/meetings/yandex/authorize')
+      .flush({ url: 'https://oauth.yandex.ru/authorize' });
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/meetings/yandex' }).flush(null);
 
     expect(results).toEqual([yandexStatus(), 'https://oauth.yandex.ru/authorize']);
@@ -48,11 +56,15 @@ describe('MeetingsApi', () => {
     api.myRooms().subscribe();
 
     backend.expectOne({ method: 'GET', url: '/api/teacher/meetings/rooms' }).flush([aRoom()]);
-    expect(backend.expectOne({ method: 'POST', url: '/api/teacher/meetings/rooms' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/meetings/rooms' }).request.body,
+    ).toEqual({
       studentId: null,
       groupId: 'g-1',
     });
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/rooms' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/rooms' }).request.body,
+    ).toEqual({
       studentId: 's-1',
       groupId: null,
       joinUrl: 'https://zoom.us/j/1',

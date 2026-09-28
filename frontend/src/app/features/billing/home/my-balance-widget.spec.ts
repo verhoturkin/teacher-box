@@ -10,7 +10,10 @@ describe('MyBalanceWidget', () => {
   let fixture: ComponentFixture<MyBalanceWidget>;
 
   async function render(summary: MyBillingSummary): Promise<void> {
-    TestBed.configureTestingModule({ imports: [MyBalanceWidget], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [MyBalanceWidget],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(MyBalanceWidget);
     fixture.componentRef.setInput('summary', summary);
     fixture.detectChanges();

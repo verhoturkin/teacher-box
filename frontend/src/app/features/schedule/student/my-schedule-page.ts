@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -8,7 +15,12 @@ import { MyBoardsCard } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
-import { ChangeKind, ChangeRequest, ScheduleSettings, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  ChangeKind,
+  ChangeRequest,
+  ScheduleSettings,
+  ScheduledLesson,
+} from '../data-access/schedule.models';
 import {
   REQUEST_STATUS_LABELS,
   STATUS_LABELS,
@@ -31,7 +43,17 @@ export const UPCOMING_DAYS = 60;
  */
 @Component({
   selector: 'tb-my-schedule-page',
-  imports: [HelpButton, Button, Card, Tag, CalendarFeedPanel, ChangeRequestDialog, JoinLessonButton, MyBoardsCard, ScheduleCalendar],
+  imports: [
+    HelpButton,
+    Button,
+    Card,
+    Tag,
+    CalendarFeedPanel,
+    ChangeRequestDialog,
+    JoinLessonButton,
+    MyBoardsCard,
+    ScheduleCalendar,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-heading">
@@ -56,7 +78,10 @@ export const UPCOMING_DAYS = 60;
                       <span>{{ lesson.topic }}</span>
                     }
                     @if (lesson.status !== 'SCHEDULED') {
-                      <p-tag [value]="statuses[lesson.status].label" [severity]="statuses[lesson.status].severity" />
+                      <p-tag
+                        [value]="statuses[lesson.status].label"
+                        [severity]="statuses[lesson.status].severity"
+                      />
                     }
                     @if (excused(lesson)) {
                       <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
@@ -64,16 +89,34 @@ export const UPCOMING_DAYS = 60;
                     @if (lesson.pendingRequests[0]; as request) {
                       <small class="tb-muted">
                         Запрос «{{ kind(request) }}» ждёт ответа учителя
-                        <p-button label="Отозвать" [link]="true" size="small" (onClick)="withdraw(request)" />
+                        <p-button
+                          label="Отозвать"
+                          [link]="true"
+                          size="small"
+                          (onClick)="withdraw(request)"
+                        />
                       </small>
                     }
                   </div>
                   <div class="tb-actions">
                     @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
-                      <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" [small]="true" />
+                      <tb-join-lesson-button
+                        [url]="lesson.joinUrl"
+                        label="Подключиться"
+                        [small]="true"
+                      />
                     }
-                    @if (lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !excused(lesson)) {
-                      <p-button label="Перенести" size="small" [outlined]="true" (onClick)="ask(lesson, 'RESCHEDULE')" />
+                    @if (
+                      lesson.status === 'SCHEDULED' &&
+                      lesson.pendingRequests.length === 0 &&
+                      !excused(lesson)
+                    ) {
+                      <p-button
+                        label="Перенести"
+                        size="small"
+                        [outlined]="true"
+                        (onClick)="ask(lesson, 'RESCHEDULE')"
+                      />
                       <p-button
                         [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
                         size="small"
@@ -223,7 +266,11 @@ export class MySchedulePage implements OnInit {
   }
 
   onSent(): void {
-    this.messages.add({ severity: 'success', summary: 'Отправлено', detail: 'Учитель получит ваш запрос' });
+    this.messages.add({
+      severity: 'success',
+      summary: 'Отправлено',
+      detail: 'Учитель получит ваш запрос',
+    });
     this.reload();
   }
 

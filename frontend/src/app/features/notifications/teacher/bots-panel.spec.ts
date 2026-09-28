@@ -17,7 +17,12 @@ describe('BotsPanel', () => {
   async function render(bots: ChannelSetup[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BotsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -41,7 +46,12 @@ describe('BotsPanel', () => {
         configured: true,
         botName: '@school_bot',
         teacherLinked: true,
-        connection: { channel: 'TELEGRAM', connection: 'ERROR', error: 'Connection timed out', checkedAt: null },
+        connection: {
+          channel: 'TELEGRAM',
+          connection: 'ERROR',
+          error: 'Connection timed out',
+          checkedAt: null,
+        },
       }),
       channelSetup({
         channel: 'VK',
@@ -71,7 +81,9 @@ describe('BotsPanel', () => {
     await fixture.whenStable();
     expect(readableText(document.body)).toContain('Подключение MAX');
 
-    fixture.componentInstance.onChanged(channelSetup({ channel: 'MAX', configured: true, botName: '@max_bot' }));
+    fixture.componentInstance.onChanged(
+      channelSetup({ channel: 'MAX', configured: true, botName: '@max_bot' }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -79,9 +91,14 @@ describe('BotsPanel', () => {
     expect(changes).toBe(1);
 
     fixture.componentInstance.onWizardVisibleChange(false);
-    backend
-      .expectOne('/api/teacher/notifications/channels')
-      .flush([channelSetup({ channel: 'MAX', configured: true, botName: '@max_bot', teacherLinked: true })]);
+    backend.expectOne('/api/teacher/notifications/channels').flush([
+      channelSetup({
+        channel: 'MAX',
+        configured: true,
+        botName: '@max_bot',
+        teacherLinked: true,
+      }),
+    ]);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Проверить');
@@ -95,11 +112,15 @@ describe('BotsPanel', () => {
     buttonByText(hostElement(fixture), 'Отключить бота Telegram').click();
     const options = confirm.mock.calls[0]?.[0];
     options?.accept?.();
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/notifications/channels/TELEGRAM' }).flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/notifications/channels/TELEGRAM' })
+      .flush(null);
     backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
     await fixture.whenStable();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Бот Telegram отключён' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Бот Telegram отключён' }),
+    );
     expect(readableText(hostElement(fixture))).toContain('Telegram не подключён');
     expect(changes).toBe(1);
   });

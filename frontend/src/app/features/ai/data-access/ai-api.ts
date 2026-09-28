@@ -2,7 +2,14 @@ import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
-import { AiStatus, HomeworkBrief, HomeworkDraft, ReviewBrief, ReviewDraft, UsageReport } from './ai.models';
+import {
+  AiStatus,
+  HomeworkBrief,
+  HomeworkDraft,
+  ReviewBrief,
+  ReviewDraft,
+  UsageReport,
+} from './ai.models';
 
 /** HTTP client of the AI module (teacher only). */
 @Injectable({ providedIn: 'root' })
@@ -14,7 +21,9 @@ export class AiApi {
    * the server and does not change while the app is open. Errors hide the buttons quietly.
    */
   readonly enabled$: Observable<boolean> = this.http
-    .get<AiStatus>('/api/teacher/ai/status', { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
+    .get<AiStatus>('/api/teacher/ai/status', {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    })
     .pipe(
       map((status) => status.enabled),
       catchError(() => of(false)),

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 
@@ -11,7 +19,9 @@ import { Board } from '../data-access/boards.models';
       <div class="tb-owner-boards">
         <span class="tb-muted">Доски:</span>
         @for (board of boards(); track board.id) {
-          <a [href]="board.url" target="_blank" rel="noopener"><i class="pi pi-th-large"></i> {{ board.title }}</a>
+          <a [href]="board.url" target="_blank" rel="noopener"
+            ><i class="pi pi-th-large"></i> {{ board.title }}</a
+          >
         }
       </div>
     }

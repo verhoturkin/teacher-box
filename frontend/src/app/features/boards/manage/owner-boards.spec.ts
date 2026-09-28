@@ -9,7 +9,9 @@ describe('OwnerBoards', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     backend = TestBed.inject(HttpTestingController);
     boards = TestBed.runInInjectionContext(() => new OwnerBoards());
   });

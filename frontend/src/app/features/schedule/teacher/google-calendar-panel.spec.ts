@@ -41,7 +41,11 @@ describe('GoogleCalendarPanel', () => {
         MessageService,
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(result === null ? {} : { google: result }) } },
+          useValue: {
+            snapshot: {
+              queryParamMap: convertToParamMap(result === null ? {} : { google: result }),
+            },
+          },
         },
       ],
     });
@@ -77,7 +81,10 @@ describe('GoogleCalendarPanel', () => {
     await fixture.whenStable();
     buttonByText(host, 'Сохранить').click();
 
-    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/google/client' });
+    const request = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/schedule/google/client',
+    });
     expect(request.request.body).toEqual({ clientId: 'id-1', clientSecret: 'secret' });
     request.flush(googleStatus({ clientConfigured: true, clientId: 'id-1' }));
     await fixture.whenStable();
@@ -91,7 +98,9 @@ describe('GoogleCalendarPanel', () => {
 
     buttonByText(host, 'Копировать адрес').click();
 
-    expect(copy).toHaveBeenCalledWith('https://school.example.com/api/public/schedule/google/callback');
+    expect(copy).toHaveBeenCalledWith(
+      'https://school.example.com/api/public/schedule/google/callback',
+    );
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
 
@@ -107,12 +116,16 @@ describe('GoogleCalendarPanel', () => {
     const request = backend.expectOne('/api/teacher/schedule/google/authorize');
     expect(request.request.body).toEqual({ origin: 'https://school.example.com', busy: true });
     request.flush({ url: 'https://accounts.google.com/o/oauth2/v2/auth?state=s' });
-    expect(navigation.go).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/v2/auth?state=s');
+    expect(navigation.go).toHaveBeenCalledWith(
+      'https://accounts.google.com/o/oauth2/v2/auth?state=s',
+    );
   });
 
   it('lets the teacher change the client unless it comes from the environment', async () => {
     setUp();
-    const host = await render(googleStatus({ clientConfigured: true, lastError: 'Google token 400' }));
+    const host = await render(
+      googleStatus({ clientConfigured: true, lastError: 'Google token 400' }),
+    );
     expect(readableText(host)).toContain('Google token 400');
 
     buttonByText(host, 'Изменить OAuth-клиент').click();
@@ -144,7 +157,9 @@ describe('GoogleCalendarPanel', () => {
     expect(text).toContain('Google update event 429');
 
     buttonByText(host, 'Синхронизировать сейчас').click();
-    backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/google/sync' }).flush({ changed: 3 });
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/schedule/google/sync' })
+      .flush({ changed: 3 });
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ detail: 'Изменено событий: 3' }),
     );
@@ -153,7 +168,9 @@ describe('GoogleCalendarPanel', () => {
 
     buttonByText(host, 'Отключить').click();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/google' }).flush(null);
-    backend.expectOne('/api/teacher/schedule/google').flush(googleStatus({ clientConfigured: true, clientFromEnvironment: true }));
+    backend
+      .expectOne('/api/teacher/schedule/google')
+      .flush(googleStatus({ clientConfigured: true, clientFromEnvironment: true }));
     await fixture.whenStable();
     expect(readableText(host)).not.toContain('Изменить OAuth-клиент');
     expect(readableText(host)).not.toContain('Google Календарь подключён.');
@@ -173,7 +190,9 @@ describe('GoogleCalendarPanel', () => {
     expect(readableText(host)).not.toContain('Доступ');
 
     buttonByText(host, 'Подключить Google').click();
-    backend.expectOne('/api/teacher/schedule/google/authorize').flush(null, { status: 422, statusText: 'Unprocessable' });
+    backend
+      .expectOne('/api/teacher/schedule/google/authorize')
+      .flush(null, { status: 422, statusText: 'Unprocessable' });
     fixture.componentInstance.saveClient();
     buttonByText(host, 'Изменить OAuth-клиент').click();
     await fixture.whenStable();
@@ -190,7 +209,9 @@ describe('GoogleCalendarPanel', () => {
     const host = await render(googleStatus({ clientConfigured: true, status: 'CONNECTED' }));
 
     buttonByText(host, 'Синхронизировать сейчас').click();
-    backend.expectOne('/api/teacher/schedule/google/sync').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/teacher/schedule/google/sync')
+      .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
     expect(buttonByText(host, 'Синхронизировать сейчас').disabled).toBe(false);

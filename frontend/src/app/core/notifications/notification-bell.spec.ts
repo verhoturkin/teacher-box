@@ -46,7 +46,9 @@ describe('NotificationBell', () => {
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 3 });
     await tick(0);
 
-    expect(buttonByText(hostElement(fixture), 'Уведомления, непрочитанных: 3').textContent).toContain('3');
+    expect(
+      buttonByText(hostElement(fixture), 'Уведомления, непрочитанных: 3').textContent,
+    ).toContain('3');
 
     await tick(UNREAD_POLL_INTERVAL_MS);
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 150 });

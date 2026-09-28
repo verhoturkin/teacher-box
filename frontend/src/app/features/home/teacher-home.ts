@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
@@ -14,7 +21,14 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 /** Teacher dashboard: collects the widgets of the modules. */
 @Component({
   selector: 'tb-teacher-home',
-  imports: [HelpButton, AttentionCard, FinanceWidget, FirstRunChecklist, LatestNotificationsWidget, TodayLessonsWidget],
+  imports: [
+    HelpButton,
+    AttentionCard,
+    FinanceWidget,
+    FirstRunChecklist,
+    LatestNotificationsWidget,
+    TodayLessonsWidget,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-heading">
@@ -32,7 +46,11 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
         </div>
         <div class="tb-stack">
           @if (schedule() !== null && homework() !== null && notifications() !== null) {
-            <tb-attention-card [schedule]="schedule()" [homework]="homework()" [notifications]="notifications()" />
+            <tb-attention-card
+              [schedule]="schedule()"
+              [homework]="homework()"
+              [notifications]="notifications()"
+            />
           }
           @if (billing(); as billing) {
             <tb-finance-widget [summary]="billing" />

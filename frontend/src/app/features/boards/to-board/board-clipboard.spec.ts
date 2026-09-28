@@ -1,6 +1,13 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { TestBed } from '@angular/core/testing';
-import { BoardClipboard, PICTURE_SCALE, PICTURE_WIDTH, PictureContext, materialHtml, materialText } from './board-clipboard';
+import {
+  BoardClipboard,
+  PICTURE_SCALE,
+  PICTURE_WIDTH,
+  PictureContext,
+  materialHtml,
+  materialText,
+} from './board-clipboard';
 
 class FakeClipboardItem {
   constructor(readonly items: Record<string, Blob | Promise<Blob>>) {}
@@ -54,7 +61,10 @@ describe('BoardClipboard', () => {
   });
 
   it('copies plain text where the browser has no rich clipboard', async () => {
-    const copy = vi.spyOn(TestBed.inject(Clipboard), 'copy').mockReturnValueOnce(true).mockReturnValueOnce(false);
+    const copy = vi
+      .spyOn(TestBed.inject(Clipboard), 'copy')
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
     expect(clipboard.canWriteRich()).toBe(false);
 
     await clipboard.copyText('Дроби', 'Решите');
@@ -78,7 +88,10 @@ describe('BoardClipboard', () => {
     let context: PictureContext & { drawn: HTMLImageElement[] };
 
     beforeEach(() => {
-      Object.defineProperty(HTMLImageElement.prototype, 'decode', { configurable: true, value: () => Promise.resolve() });
+      Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+        configurable: true,
+        value: () => Promise.resolve(),
+      });
       context = {
         drawn: [],
         fillStyle: '',
@@ -97,9 +110,11 @@ describe('BoardClipboard', () => {
     it('draws the material through an SVG image', async () => {
       vi.spyOn(clipboard, 'context').mockReturnValue(context);
       const png = new Blob(['png'], { type: 'image/png' });
-      const toBlob = vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => {
-        callback(png);
-      });
+      const toBlob = vi
+        .spyOn(HTMLCanvasElement.prototype, 'toBlob')
+        .mockImplementation((callback) => {
+          callback(png);
+        });
 
       await expect(clipboard.picture('<h2>Дроби</h2>')).resolves.toBe(png);
 

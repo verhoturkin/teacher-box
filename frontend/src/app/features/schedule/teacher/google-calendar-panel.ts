@@ -1,7 +1,20 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -20,12 +33,19 @@ import { GoogleCalendarStatus } from '../data-access/schedule.models';
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
 /** Messages for the result Google's redirect brings back (`?google=...`). */
-export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity; text: string }>> = {
-  connected: { severity: 'success', text: 'Google Календарь подключён. Занятия появятся в нём в течение минуты.' },
-  denied: { severity: 'warn', text: 'Доступ к календарю не предоставлен.' },
-  expired: { severity: 'warn', text: 'Ссылка подключения устарела — нажмите «Подключить Google» ещё раз.' },
-  failed: { severity: 'error', text: 'Не удалось подключить Google Календарь.' },
-};
+export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity; text: string }>> =
+  {
+    connected: {
+      severity: 'success',
+      text: 'Google Календарь подключён. Занятия появятся в нём в течение минуты.',
+    },
+    denied: { severity: 'warn', text: 'Доступ к календарю не предоставлен.' },
+    expired: {
+      severity: 'warn',
+      text: 'Ссылка подключения устарела — нажмите «Подключить Google» ещё раз.',
+    },
+    failed: { severity: 'error', text: 'Не удалось подключить Google Календарь.' },
+  };
 
 /**
  * The teacher's Google Calendar: step-by-step setup of an OAuth client in Google Cloud, connecting
@@ -33,13 +53,27 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
  */
 @Component({
   selector: 'tb-google-calendar-panel',
-  imports: [HelpButton, DatePipe, FormsModule, ReactiveFormsModule, Button, Card, Checkbox, InputText, Message, Password, Tag],
+  imports: [
+    HelpButton,
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    Button,
+    Card,
+    Checkbox,
+    InputText,
+    Message,
+    Password,
+    Tag,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Google Календарь" id="google">
       <tb-help-button topic="teacher/calendars" label="Подробнее" />
       @if (result(); as result) {
-        <p-message [severity]="result.severity" styleClass="tb-form-message">{{ result.text }}</p-message>
+        <p-message [severity]="result.severity" styleClass="tb-form-message">{{
+          result.text
+        }}</p-message>
       }
       @if (status(); as status) {
         @switch (status.status) {
@@ -50,17 +84,32 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             </div>
             <p>Занятия попадают в отдельный календарь портала в вашем Google Календаре.</p>
             @if (status.lastSyncAt !== null) {
-              <small class="tb-muted">Последняя синхронизация: {{ status.lastSyncAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+              <small class="tb-muted"
+                >Последняя синхронизация: {{ status.lastSyncAt | date: 'dd.MM.yyyy HH:mm' }}</small
+              >
             }
             @if (status.busyEnabled) {
-              <p class="tb-muted">Занятость из вашего основного календаря показывается в расписании.</p>
+              <p class="tb-muted">
+                Занятость из вашего основного календаря показывается в расписании.
+              </p>
             }
             @if (status.lastError !== null) {
               <p class="tb-error">{{ status.lastError }}</p>
             }
             <div class="tb-actions">
-              <p-button label="Синхронизировать сейчас" icon="pi pi-refresh" [outlined]="true" [loading]="pending()" (onClick)="sync()" />
-              <p-button label="Отключить" severity="secondary" [text]="true" (onClick)="disconnect()" />
+              <p-button
+                label="Синхронизировать сейчас"
+                icon="pi pi-refresh"
+                [outlined]="true"
+                [loading]="pending()"
+                (onClick)="sync()"
+              />
+              <p-button
+                label="Отключить"
+                severity="secondary"
+                [text]="true"
+                (onClick)="disconnect()"
+              />
             </div>
           }
           @default {
@@ -71,8 +120,8 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             }
             @if (status.clientConfigured && !editingClient()) {
               <p>
-                Портал создаст в вашем Google Календаре отдельный календарь «{{ portalName() }}» и будет добавлять в него
-                занятия. Другие календари он не читает и не меняет.
+                Портал создаст в вашем Google Календаре отдельный календарь «{{ portalName() }}» и
+                будет добавлять в него занятия. Другие календари он не читает и не меняет.
               </p>
               <label class="tb-switch" for="google-busy">
                 <p-checkbox [(ngModel)]="busy" [binary]="true" inputId="google-busy" />
@@ -82,43 +131,93 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 <p class="tb-error">{{ status.lastError }}</p>
               }
               <div class="tb-actions">
-                <p-button label="Подключить Google" icon="pi pi-google" [loading]="pending()" (onClick)="connect()" />
+                <p-button
+                  label="Подключить Google"
+                  icon="pi pi-google"
+                  [loading]="pending()"
+                  (onClick)="connect()"
+                />
                 @if (!status.clientFromEnvironment) {
-                  <p-button label="Изменить OAuth-клиент" severity="secondary" [text]="true" (onClick)="editingClient.set(true)" />
+                  <p-button
+                    label="Изменить OAuth-клиент"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="editingClient.set(true)"
+                  />
                 }
               </div>
             } @else {
               <ol class="tb-google-steps">
-                <li>Откройте <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> и создайте проект.</li>
-                <li>«APIs &amp; Services» → «Library»: включите <strong>Google Calendar API</strong>.</li>
                 <li>
-                  «Google Auth Platform»: тип аудитории <strong>External</strong>, добавьте свой адрес в тестовые
-                  пользователи, затем нажмите <strong>Publish app</strong> — иначе Google отзывает доступ через 7 дней.
-                  Предупреждение «приложение не проверено» для личного использования можно пропустить.
+                  Откройте
+                  <a href="https://console.cloud.google.com/" target="_blank" rel="noopener"
+                    >Google Cloud Console</a
+                  >
+                  и создайте проект.
                 </li>
                 <li>
-                  «Clients» → «Create client» → <strong>Web application</strong>. В «Authorized redirect URIs» добавьте:
+                  «APIs &amp; Services» → «Library»: включите <strong>Google Calendar API</strong>.
+                </li>
+                <li>
+                  «Google Auth Platform»: тип аудитории <strong>External</strong>, добавьте свой
+                  адрес в тестовые пользователи, затем нажмите <strong>Publish app</strong> — иначе
+                  Google отзывает доступ через 7 дней. Предупреждение «приложение не проверено» для
+                  личного использования можно пропустить.
+                </li>
+                <li>
+                  «Clients» → «Create client» → <strong>Web application</strong>. В «Authorized
+                  redirect URIs» добавьте:
                   <div class="tb-google-uri">
                     <code>{{ redirectUri() }}</code>
-                    <p-button icon="pi pi-copy" [text]="true" size="small" ariaLabel="Копировать адрес" (onClick)="copy(redirectUri())" />
+                    <p-button
+                      icon="pi pi-copy"
+                      [text]="true"
+                      size="small"
+                      ariaLabel="Копировать адрес"
+                      (onClick)="copy(redirectUri())"
+                    />
                   </div>
-                  <small class="tb-muted">Нужен HTTPS-адрес портала. Без него подключите календарь один раз, открыв портал по http://localhost (например, через SSH-туннель).</small>
+                  <small class="tb-muted"
+                    >Нужен HTTPS-адрес портала. Без него подключите календарь один раз, открыв
+                    портал по http://localhost (например, через SSH-туннель).</small
+                  >
                 </li>
                 <li>Скопируйте Client ID и Client secret сюда.</li>
               </ol>
               <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
                 <div class="tb-field">
                   <label for="google-client-id">Client ID</label>
-                  <input pInputText id="google-client-id" formControlName="clientId" autocomplete="off" />
+                  <input
+                    pInputText
+                    id="google-client-id"
+                    formControlName="clientId"
+                    autocomplete="off"
+                  />
                 </div>
                 <div class="tb-field">
                   <label for="google-client-secret">Client secret</label>
-                  <p-password inputId="google-client-secret" formControlName="clientSecret" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+                  <p-password
+                    inputId="google-client-secret"
+                    formControlName="clientSecret"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    [fluid]="true"
+                  />
                 </div>
                 <div class="tb-actions">
-                  <p-button type="submit" label="Сохранить" [disabled]="form.invalid" [loading]="pending()" />
+                  <p-button
+                    type="submit"
+                    label="Сохранить"
+                    [disabled]="form.invalid"
+                    [loading]="pending()"
+                  />
                   @if (status.clientConfigured) {
-                    <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="editingClient.set(false)" />
+                    <p-button
+                      label="Отмена"
+                      severity="secondary"
+                      [text]="true"
+                      (onClick)="editingClient.set(false)"
+                    />
                   }
                 </div>
               </form>
@@ -177,12 +276,15 @@ export class GoogleCalendarPanel implements OnInit {
     const code = this.resultCode();
     return code === null ? null : (AUTHORIZATION_RESULTS[code] ?? null);
   });
-  protected readonly redirectUri = computed(
-    () => this.portal.link(this.status()?.callbackPath ?? '/api/public/schedule/google/callback'),
+  protected readonly redirectUri = computed(() =>
+    this.portal.link(this.status()?.callbackPath ?? '/api/public/schedule/google/callback'),
   );
 
   readonly form = new FormGroup({
-    clientId: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(300)] }),
+    clientId: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(300)],
+    }),
     clientSecret: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(300)],
@@ -254,7 +356,11 @@ export class GoogleCalendarPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({ severity: 'success', summary: 'Скопировано', detail: 'Адрес в буфере обмена' });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Скопировано',
+        detail: 'Адрес в буфере обмена',
+      });
     }
   }
 

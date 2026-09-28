@@ -48,7 +48,11 @@ import { TaskStatusTag } from '../ui/task-status-tag';
         <div>
           <h1 class="tb-page-title">{{ task.assignment.title }}</h1>
           <span class="tb-muted" [class.tb-negative]="task.overdue">
-            {{ task.assignment.dueAt ? 'Сдать до ' + (task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') : 'Без срока' }}
+            {{
+              task.assignment.dueAt
+                ? 'Сдать до ' + (task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
+                : 'Без срока'
+            }}
           </span>
         </div>
         <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
@@ -56,9 +60,14 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 
       <div class="tb-stack">
         @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {
-          <p-message [severity]="task.status === 'ACCEPTED' ? 'success' : 'warn'" styleClass="tb-form-message">
+          <p-message
+            [severity]="task.status === 'ACCEPTED' ? 'success' : 'warn'"
+            styleClass="tb-form-message"
+          >
             <div>
-              <div class="tb-strong">{{ task.status === 'ACCEPTED' ? 'Работа принята' : 'Нужно доработать' }}</div>
+              <div class="tb-strong">
+                {{ task.status === 'ACCEPTED' ? 'Работа принята' : 'Нужно доработать' }}
+              </div>
               <p class="tb-pre">{{ task.teacherComment }}</p>
             </div>
           </p-message>
@@ -66,7 +75,10 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 
         <p-card header="Задание">
           <tb-markdown [text]="task.assignment.description" />
-          <tb-attachment-list [attachments]="task.assignment.attachments" (download)="download($event)" />
+          <tb-attachment-list
+            [attachments]="task.assignment.attachments"
+            (download)="download($event)"
+          />
         </p-card>
 
         @if (task.status !== 'ACCEPTED') {
@@ -81,7 +93,12 @@ import { TaskStatusTag } from '../ui/task-status-tag';
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
               <div>
-                <p-button label="Отправить на проверку" icon="pi pi-send" [loading]="pending()" (onClick)="submit()" />
+                <p-button
+                  label="Отправить на проверку"
+                  icon="pi pi-send"
+                  [loading]="pending()"
+                  (onClick)="submit()"
+                />
               </div>
             </div>
           </p-card>
@@ -103,7 +120,10 @@ export class MyTaskPage implements OnInit {
   readonly taskId = input.required<string>();
 
   protected readonly task = signal<TaskDetails | null>(null);
-  readonly text = new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20_000)] });
+  readonly text = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.maxLength(20_000)],
+  });
   readonly files = signal<File[]>([]);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -131,7 +151,11 @@ export class MyTaskPage implements OnInit {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
-        this.messages.add({ severity: 'success', summary: 'Отправлено', detail: 'Ответ отправлен учителю' });
+        this.messages.add({
+          severity: 'success',
+          summary: 'Отправлено',
+          detail: 'Ответ отправлен учителю',
+        });
       },
       error: (error: unknown) => {
         this.pending.set(false);

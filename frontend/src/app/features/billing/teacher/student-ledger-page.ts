@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -47,7 +55,12 @@ import { PaymentDialog } from './payment-dialog';
         <h1 class="tb-page-title">{{ ledger.displayName }}</h1>
         <div class="tb-actions">
           <p-button label="Занятие" icon="pi pi-plus" (onClick)="lessonVisible.set(true)" />
-          <p-button label="Оплата" icon="pi pi-wallet" severity="success" (onClick)="paymentVisible.set(true)" />
+          <p-button
+            label="Оплата"
+            icon="pi pi-wallet"
+            severity="success"
+            (onClick)="paymentVisible.set(true)"
+          />
         </div>
       </div>
 
@@ -55,7 +68,9 @@ import { PaymentDialog } from './payment-dialog';
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Баланс</span>
-            <span class="tb-stat__value"><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency" /></span>
+            <span class="tb-stat__value"
+              ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
+            /></span>
           </div>
         </p-card>
         <p-card>
@@ -83,7 +98,12 @@ import { PaymentDialog } from './payment-dialog';
                 [min]="0"
                 styleClass="tb-grow"
               />
-              <p-button icon="pi pi-check" ariaLabel="Сохранить цену" [disabled]="price.invalid || !priceChanged()" (onClick)="savePrice()" />
+              <p-button
+                icon="pi pi-check"
+                ariaLabel="Сохранить цену"
+                [disabled]="price.invalid || !priceChanged()"
+                (onClick)="savePrice()"
+              />
             </div>
           </div>
         </p-card>
@@ -98,8 +118,20 @@ import { PaymentDialog } from './payment-dialog';
         />
       </p-card>
 
-      <tb-lesson-dialog [(visible)]="lessonVisible" [students]="student()" [studentId]="ledger.studentId" [currency]="ledger.currency" (saved)="reload()" />
-      <tb-payment-dialog [(visible)]="paymentVisible" [students]="student()" [studentId]="ledger.studentId" [currency]="ledger.currency" (saved)="reload()" />
+      <tb-lesson-dialog
+        [(visible)]="lessonVisible"
+        [students]="student()"
+        [studentId]="ledger.studentId"
+        [currency]="ledger.currency"
+        (saved)="reload()"
+      />
+      <tb-payment-dialog
+        [(visible)]="paymentVisible"
+        [students]="student()"
+        [studentId]="ledger.studentId"
+        [currency]="ledger.currency"
+        (saved)="reload()"
+      />
     }
     <p-confirmdialog />
   `,
@@ -124,7 +156,11 @@ export class StudentLedgerPage implements OnInit {
   protected readonly priceChanged = computed(() => {
     const ledger = this.ledger();
     const value = this.priceValue();
-    return ledger !== null && value !== null && toMinorUnits(value, ledger.currency) !== ledger.lessonPrice;
+    return (
+      ledger !== null &&
+      value !== null &&
+      toMinorUnits(value, ledger.currency) !== ledger.lessonPrice
+    );
   });
 
   ngOnInit(): void {
@@ -144,10 +180,16 @@ export class StudentLedgerPage implements OnInit {
     if (ledger === null || value === null) {
       return;
     }
-    this.api.changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency)).subscribe((saved) => {
-      this.ledger.set({ ...ledger, lessonPrice: saved });
-      this.messages.add({ severity: 'success', summary: 'Сохранено', detail: 'Цена занятия изменена' });
-    });
+    this.api
+      .changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency))
+      .subscribe((saved) => {
+        this.ledger.set({ ...ledger, lessonPrice: saved });
+        this.messages.add({
+          severity: 'success',
+          summary: 'Сохранено',
+          detail: 'Цена занятия изменена',
+        });
+      });
   }
 
   protected confirmCancel(lesson: Lesson): void {

@@ -30,7 +30,13 @@ export function ownerOptions(
     return [{ label: 'Ученики', items: studentItems }];
   }
   return [
-    { label: 'Группы', items: groups.map((group): OwnerOption => ({ label: group.name, value: `group:${group.id}` })) },
+    {
+      label: 'Группы',
+      items: groups.map((group): OwnerOption => ({
+        label: group.name,
+        value: `group:${group.id}`,
+      })),
+    },
     { label: 'Ученики', items: studentItems },
   ];
 }
@@ -43,7 +49,10 @@ export function ownerIds(value: OwnerValue): { studentId: string | null; groupId
 }
 
 /** The select value of an existing lesson or series. */
-export function ownerValue(item: { readonly studentId: string | null; readonly groupId: string | null }): OwnerValue | null {
+export function ownerValue(item: {
+  readonly studentId: string | null;
+  readonly groupId: string | null;
+}): OwnerValue | null {
   if (item.groupId !== null) {
     return `group:${item.groupId}`;
   }

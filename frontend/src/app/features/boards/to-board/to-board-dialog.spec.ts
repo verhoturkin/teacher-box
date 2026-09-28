@@ -42,11 +42,19 @@ describe('ToBoardDialog', () => {
 
   it('copies the material as text and opens the board', async () => {
     const dialog = await show();
-    const mine = aBoard({ id: 'board-2', ownerId: 'student-2', ownerName: 'Иван', title: 'Физика', url: 'https://app.holst.so/board/2' });
+    const mine = aBoard({
+      id: 'board-2',
+      ownerId: 'student-2',
+      ownerName: 'Иван',
+      title: 'Физика',
+      url: 'https://app.holst.so/board/2',
+    });
     backend.expectOne('/api/teacher/boards').flush([aBoard(), mine]);
     await fixture.whenStable();
 
-    const labels = Array.from(document.body.querySelectorAll('.tb-to-board label')).map((label) => label.textContent);
+    const labels = Array.from(document.body.querySelectorAll('.tb-to-board label')).map(
+      (label) => label.textContent,
+    );
     expect(labels[0]).toContain('Физика');
     expect(labels[1]).toContain('Алгебра');
     expect(dialog.chosen()).toBe('board-2');
@@ -63,7 +71,9 @@ describe('ToBoardDialog', () => {
 
   it('copies a picture to the chosen board', async () => {
     const dialog = await show();
-    backend.expectOne('/api/teacher/boards').flush([aBoard(), aBoard({ id: 'board-2', title: 'Физика' })]);
+    backend
+      .expectOne('/api/teacher/boards')
+      .flush([aBoard(), aBoard({ id: 'board-2', title: 'Физика' })]);
     await fixture.whenStable();
     const copyImage = vi.spyOn(clipboard, 'copyImage').mockResolvedValue();
 

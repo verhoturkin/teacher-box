@@ -30,7 +30,13 @@ function student(overrides: Partial<Student>): Student {
   };
 }
 
-const MARIA = student({ id: 'm', displayName: 'Мария', status: 'ACTIVE', login: 'maria', note: '5 класс' });
+const MARIA = student({
+  id: 'm',
+  displayName: 'Мария',
+  status: 'ACTIVE',
+  login: 'maria',
+  note: '5 класс',
+});
 const BORIS = student({
   id: 'b',
   displayName: 'Борис',
@@ -47,7 +53,13 @@ describe('StudentsPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [StudentsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentsPage);
@@ -140,7 +152,9 @@ describe('StudentsPage', () => {
     typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Мария Иванова');
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
-    backend.expectOne('/api/teacher/students/m').flush({ ...MARIA, displayName: 'Мария Иванова', version: 1 });
+    backend
+      .expectOne('/api/teacher/students/m')
+      .flush({ ...MARIA, displayName: 'Мария Иванова', version: 1 });
     await fixture.whenStable();
 
     expect(rowsText()[0]).toContain('Мария Иванова');
@@ -170,7 +184,9 @@ describe('StudentsPage', () => {
     });
 
     buttonByText(host, 'Отключить доступ: Мария').click();
-    backend.expectOne('/api/teacher/students/m/deactivate').flush({ ...MARIA, status: 'DEACTIVATED' });
+    backend
+      .expectOne('/api/teacher/students/m/deactivate')
+      .flush({ ...MARIA, status: 'DEACTIVATED' });
     await fixture.whenStable();
     expect(rowsText()).toHaveLength(1);
     expect(host.textContent).toContain('Никого не найдено');
@@ -200,8 +216,17 @@ describe('StudentsPage', () => {
       [MARIA],
       [
         aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
-        aGroup({ id: 'g2', name: 'Английский', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
-        aGroup({ id: 'g3', name: 'Прошлый год', archivedAt: '2026-06-01T10:00:00Z', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
+        aGroup({
+          id: 'g2',
+          name: 'Английский',
+          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
+        }),
+        aGroup({
+          id: 'g3',
+          name: 'Прошлый год',
+          archivedAt: '2026-06-01T10:00:00Z',
+          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
+        }),
       ],
     );
 
@@ -213,7 +238,9 @@ describe('StudentsPage', () => {
     await loadStudents([MARIA]);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    Array.from(host.querySelectorAll('[role="tab"]')).find((tab) => tab.textContent.includes('Группы'))?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    Array.from(host.querySelectorAll('[role="tab"]'))
+      .find((tab) => tab.textContent.includes('Группы'))
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await fixture.whenStable();
     expect(navigate).toHaveBeenCalledWith([], { queryParams: { tab: 'groups' }, replaceUrl: true });
 
@@ -257,7 +284,9 @@ describe('StudentsPage', () => {
     expect(rowsText()[0]).toContain('Алгебра');
     buttonByText(host, 'Доски: Мария').click();
     await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(BoardsDialog)).injector.get(BoardsDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(BoardsDialog))
+      .injector.get(BoardsDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.owner()).toEqual({ type: 'STUDENT', id: 'm', name: 'Мария' });
     expect(dialog.boards()).toEqual([aBoard({ ownerId: 'm' })]);

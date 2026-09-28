@@ -18,7 +18,13 @@ import { HelpTopic, helpUrl } from './help-topics';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (label(); as text) {
-      <p-button [label]="text" icon="pi pi-question-circle" [link]="true" size="small" (onClick)="open()" />
+      <p-button
+        [label]="text"
+        icon="pi pi-question-circle"
+        [link]="true"
+        size="small"
+        (onClick)="open()"
+      />
     } @else {
       <p-button
         icon="pi pi-question-circle"
@@ -71,5 +77,4 @@ export class HelpButton {
     this.article.set(await this.library.article(this.topic()));
     this.visible.set(true);
   }
-
 }

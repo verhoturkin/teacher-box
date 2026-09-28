@@ -33,7 +33,12 @@ function dateTime(daysFromToday: number, hours: number): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:00`;
 }
 
-async function planLesson(page: Page, daysFromToday: number, hours: number, topic: string): Promise<void> {
+async function planLesson(
+  page: Page,
+  daysFromToday: number,
+  hours: number,
+  topic: string,
+): Promise<void> {
   await page.getByRole('menuitem', { name: 'Расписание' }).click();
   // The accessible name starts with the icon glyph.
   await page.getByRole('button', { name: /Занятие$/ }).click();

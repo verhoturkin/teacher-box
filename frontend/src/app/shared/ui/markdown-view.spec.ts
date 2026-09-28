@@ -10,7 +10,10 @@ describe('MarkdownView', () => {
   it('shows sanitized html', async () => {
     TestBed.configureTestingModule({ imports: [MarkdownView] });
     const fixture = TestBed.createComponent(MarkdownView);
-    fixture.componentRef.setInput('text', '# Заголовок\n\n<script>alert(1)</script><a href="javascript:alert(1)">x</a>');
+    fixture.componentRef.setInput(
+      'text',
+      '# Заголовок\n\n<script>alert(1)</script><a href="javascript:alert(1)">x</a>',
+    );
     await fixture.whenStable();
 
     const host = hostElement(fixture);

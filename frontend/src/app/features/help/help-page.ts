@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,7 +22,15 @@ import { HelpArea } from './help-topics';
 /** The help of an area: contents, search and the chosen article (`/<area>/help/<topic>`). */
 @Component({
   selector: 'tb-help-page',
-  imports: [ReactiveFormsModule, RouterLink, Card, IconField, InputIcon, InputText, HelpArticleView],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    Card,
+    IconField,
+    InputIcon,
+    InputText,
+    HelpArticleView,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="tb-page-title">Справка</h1>
@@ -22,13 +38,21 @@ import { HelpArea } from './help-topics';
       <p-card styleClass="tb-help__contents">
         <p-iconfield>
           <p-inputicon styleClass="pi pi-search" />
-          <input pInputText [formControl]="search" placeholder="Поиск по справке" aria-label="Поиск по справке" />
+          <input
+            pInputText
+            [formControl]="search"
+            placeholder="Поиск по справке"
+            aria-label="Поиск по справке"
+          />
         </p-iconfield>
         <nav aria-label="Статьи справки">
           <ul class="tb-help__list">
             @for (article of found(); track article.id) {
               <li>
-                <a [routerLink]="['/', area(), 'help', article.id]" [class.tb-help__current]="article.id === current()?.id">
+                <a
+                  [routerLink]="['/', area(), 'help', article.id]"
+                  [class.tb-help__current]="article.id === current()?.id"
+                >
                   {{ article.title }}
                 </a>
                 <small class="tb-muted">{{ article.summary }}</small>
@@ -107,7 +131,11 @@ export class HelpPage {
   });
   protected readonly missing = computed(() => {
     const topic = this.topic();
-    return this.loaded() && topic !== undefined && this.articles().every((article) => article.id !== topic);
+    return (
+      this.loaded() &&
+      topic !== undefined &&
+      this.articles().every((article) => article.id !== topic)
+    );
   });
 
   constructor() {

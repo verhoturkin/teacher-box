@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,10 +25,21 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
-import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
+import {
+  MeetingRoom,
+  MeetingsApi,
+  RoomCell,
+  RoomDialog,
+  RoomOwnerRef,
+} from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
-import { CreatedStudent, IssuedInvite, Student, StudentGroup } from '../data-access/identity.models';
+import {
+  CreatedStudent,
+  IssuedInvite,
+  Student,
+  StudentGroup,
+} from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
@@ -37,7 +56,8 @@ function isStudentsTab(value: unknown): value is StudentsTab {
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
   selector: 'tb-students-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -88,7 +108,12 @@ function isStudentsTab(value: unknown): value is StudentsTab {
             <div class="tb-toolbar">
               <p-iconfield>
                 <p-inputicon styleClass="pi pi-search" />
-                <input pInputText [formControl]="search" placeholder="Поиск по имени" aria-label="Поиск по имени" />
+                <input
+                  pInputText
+                  [formControl]="search"
+                  placeholder="Поиск по имени"
+                  aria-label="Поиск по имени"
+                />
               </p-iconfield>
               <label class="tb-switch" for="show-deactivated">
                 <p-toggleswitch inputId="show-deactivated" [formControl]="showDeactivated" />
@@ -96,7 +121,12 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               </label>
             </div>
 
-            <p-table [value]="visibleStudents()" [loading]="loading()" dataKey="id" [rowHover]="true">
+            <p-table
+              [value]="visibleStudents()"
+              [loading]="loading()"
+              dataKey="id"
+              [rowHover]="true"
+            >
               <ng-template #header>
                 <tr>
                   <th>Имя</th>
@@ -127,7 +157,9 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                       <tb-room-cell
                         [room]="roomOf(student.id)"
                         [name]="student.displayName"
-                        (edit)="openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })"
+                        (edit)="
+                          openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
+                        "
                       />
                     }
                   </td>
@@ -136,33 +168,71 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                       <tb-board-cell
                         [boards]="boards.of(student.id)"
                         [name]="student.displayName"
-                        (edit)="boards.open({ type: 'STUDENT', id: student.id, name: student.displayName })"
+                        (edit)="
+                          boards.open({
+                            type: 'STUDENT',
+                            id: student.id,
+                            name: student.displayName,
+                          })
+                        "
                       />
                     }
                   </td>
                   <td>
-                    <p-tag [value]="statusLabels[student.status]" [severity]="statusSeverities[student.status]" />
+                    <p-tag
+                      [value]="statusLabels[student.status]"
+                      [severity]="statusSeverities[student.status]"
+                    />
                     @if (student.pendingInvite; as invite) {
                       <div>
                         <small class="tb-muted">
-                          {{ purposeLabels[invite.purpose] }} до {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
+                          {{ purposeLabels[invite.purpose] }} до
+                          {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
                         </small>
                       </div>
                     }
                   </td>
                   <td>{{ student.login ?? '—' }}</td>
                   <td class="tb-actions-column">
-                    <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" pTooltip="Редактировать"
-                      [ariaLabel]="'Редактировать: ' + student.displayName" (onClick)="openEdit(student)" />
+                    <p-button
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      [rounded]="true"
+                      pTooltip="Редактировать"
+                      [ariaLabel]="'Редактировать: ' + student.displayName"
+                      (onClick)="openEdit(student)"
+                    />
                     @if (student.status === 'DEACTIVATED') {
-                      <p-button icon="pi pi-replay" [text]="true" [rounded]="true" pTooltip="Вернуть доступ"
-                        [ariaLabel]="'Вернуть доступ: ' + student.displayName" (onClick)="reactivate(student)" />
+                      <p-button
+                        icon="pi pi-replay"
+                        [text]="true"
+                        [rounded]="true"
+                        pTooltip="Вернуть доступ"
+                        [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                        (onClick)="reactivate(student)"
+                      />
                     } @else {
-                      <p-button icon="pi pi-link" [text]="true" [rounded]="true"
-                        [pTooltip]="student.status === 'ACTIVE' ? 'Ссылка для сброса пароля' : 'Новая ссылка-приглашение'"
-                        [ariaLabel]="'Ссылка: ' + student.displayName" (onClick)="reissueInvite(student)" />
-                      <p-button icon="pi pi-ban" [text]="true" [rounded]="true" severity="danger" pTooltip="Отключить доступ"
-                        [ariaLabel]="'Отключить доступ: ' + student.displayName" (onClick)="confirmDeactivate(student)" />
+                      <p-button
+                        icon="pi pi-link"
+                        [text]="true"
+                        [rounded]="true"
+                        [pTooltip]="
+                          student.status === 'ACTIVE'
+                            ? 'Ссылка для сброса пароля'
+                            : 'Новая ссылка-приглашение'
+                        "
+                        [ariaLabel]="'Ссылка: ' + student.displayName"
+                        (onClick)="reissueInvite(student)"
+                      />
+                      <p-button
+                        icon="pi pi-ban"
+                        [text]="true"
+                        [rounded]="true"
+                        severity="danger"
+                        pTooltip="Отключить доступ"
+                        [ariaLabel]="'Отключить доступ: ' + student.displayName"
+                        (onClick)="confirmDeactivate(student)"
+                      />
                     }
                   </td>
                 </tr>
@@ -170,7 +240,11 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               <ng-template #emptymessage>
                 <tr>
                   <td colspan="8" class="tb-empty">
-                    {{ students().length === 0 ? 'Пока нет ни одного ученика. Добавьте первого!' : 'Никого не найдено' }}
+                    {{
+                      students().length === 0
+                        ? 'Пока нет ни одного ученика. Добавьте первого!'
+                        : 'Никого не найдено'
+                    }}
                   </td>
                 </tr>
               </ng-template>
@@ -191,7 +265,11 @@ function isStudentsTab(value: unknown): value is StudentsTab {
       (created)="onCreated($event)"
       (updated)="onUpdated($event)"
     />
-    <tb-invite-link-dialog [(visible)]="inviteVisible" [invite]="invite()" [studentName]="inviteStudentName()" />
+    <tb-invite-link-dialog
+      [(visible)]="inviteVisible"
+      [invite]="invite()"
+      [studentName]="inviteStudentName()"
+    />
     <tb-room-dialog
       [(visible)]="roomVisible"
       [owner]="roomOwner()"
@@ -248,7 +326,9 @@ export class StudentsPage implements OnInit {
   protected readonly search = new FormControl('', { nonNullable: true });
   protected readonly showDeactivated = new FormControl(false, { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
-  private readonly includeDeactivated = toSignal(this.showDeactivated.valueChanges, { initialValue: false });
+  private readonly includeDeactivated = toSignal(this.showDeactivated.valueChanges, {
+    initialValue: false,
+  });
 
   protected readonly visibleStudents = computed(() => {
     const query = this.query().trim().toLocaleLowerCase('ru');
@@ -334,7 +414,10 @@ export class StudentsPage implements OnInit {
   /** Current groups of the student. */
   protected groupNames(studentId: string): string {
     return this.groups()
-      .filter((group) => group.archivedAt === null && group.members.some((member) => member.id === studentId))
+      .filter(
+        (group) =>
+          group.archivedAt === null && group.members.some((member) => member.id === studentId),
+      )
       .map((group) => group.name)
       .join(', ');
   }
@@ -361,7 +444,10 @@ export class StudentsPage implements OnInit {
 
   protected reissueInvite(student: Student): void {
     this.api.reissueInvite(student.id).subscribe((invite) => {
-      this.replace({ ...student, pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt } });
+      this.replace({
+        ...student,
+        pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt },
+      });
       this.showInvite(student, invite);
     });
   }

@@ -16,7 +16,12 @@ describe('InboxPanel', () => {
   async function render(page: NotificationPage): Promise<void> {
     TestBed.configureTestingModule({
       imports: [InboxPanel],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(InboxPanel);
@@ -34,7 +39,14 @@ describe('InboxPanel', () => {
     await render(
       notificationPage([
         notification(),
-        notification({ id: 'n-2', kind: 'MESSAGE', title: 'Перенос', body: null, link: null, read: true }),
+        notification({
+          id: 'n-2',
+          kind: 'MESSAGE',
+          title: 'Перенос',
+          body: null,
+          link: null,
+          read: true,
+        }),
       ]),
     );
 
@@ -94,7 +106,9 @@ describe('InboxPanel', () => {
     buttonByText(hostElement(fixture), 'Показать ещё').click();
     backend
       .expectOne(`/api/me/notifications?page=1&size=${String(PAGE_SIZE)}`)
-      .flush(notificationPage([notification({ id: 'n-last', title: 'Самое старое' })], PAGE_SIZE + 1));
+      .flush(
+        notificationPage([notification({ id: 'n-last', title: 'Самое старое' })], PAGE_SIZE + 1),
+      );
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Самое старое');

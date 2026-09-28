@@ -1,5 +1,12 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { TableModule } from 'primeng/table';
@@ -7,7 +14,13 @@ import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { AiApi } from './data-access/ai-api';
-import { AiFeature, AiRequestLog, AiRequestStatus, AiStatus, UsageReport } from './data-access/ai.models';
+import {
+  AiFeature,
+  AiRequestLog,
+  AiRequestStatus,
+  AiStatus,
+  UsageReport,
+} from './data-access/ai.models';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = {
   HOMEWORK_DRAFT: 'Черновики заданий',
@@ -21,7 +34,10 @@ export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
   'openai-compatible': 'OpenAI-совместимый API',
 };
 
-const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success' | 'danger' | 'warn' }> = {
+const STATUS_LABELS: Record<
+  AiRequestStatus,
+  { label: string; severity: 'success' | 'danger' | 'warn' }
+> = {
   SUCCEEDED: { label: 'Готово', severity: 'success' },
   FAILED: { label: 'Ошибка', severity: 'danger' },
   REFUSED: { label: 'Отказ модели', severity: 'warn' },
@@ -43,8 +59,9 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
           <p>ИИ-помощник не настроен.</p>
           <p class="tb-muted">
             Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера:
-            TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY и при
-            необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и перезапустите портал.
+            TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY
+            и при необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и
+            перезапустите портал.
           </p>
         </p-card>
       } @else {
@@ -71,8 +88,10 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
               }
               <ul class="tb-usage-features">
                 @for (feature of report.features; track feature.feature) {
-                  <li>{{ featureLabels[feature.feature] }}: {{ feature.requests }} запр.,
-                    {{ feature.inputTokens + feature.outputTokens | number }} токенов</li>
+                  <li>
+                    {{ featureLabels[feature.feature] }}: {{ feature.requests }} запр.,
+                    {{ feature.inputTokens + feature.outputTokens | number }} токенов
+                  </li>
                 }
               </ul>
             </p-card>
@@ -95,7 +114,10 @@ const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: 'success
                       <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
                       <td>{{ featureLabels[row.feature] }}</td>
                       <td>
-                        <p-tag [value]="statusLabel(row).label" [severity]="statusLabel(row).severity" />
+                        <p-tag
+                          [value]="statusLabel(row).label"
+                          [severity]="statusLabel(row).severity"
+                        />
                         @if (row.error) {
                           <small class="tb-muted tb-usage-error">{{ row.error }}</small>
                         }
@@ -154,7 +176,10 @@ export class AiUsagePage implements OnInit {
     return provider === null ? '' : (PROVIDER_NAMES[provider] ?? provider);
   }
 
-  protected statusLabel(row: AiRequestLog): { label: string; severity: 'success' | 'danger' | 'warn' } {
+  protected statusLabel(row: AiRequestLog): {
+    label: string;
+    severity: 'success' | 'danger' | 'warn';
+  } {
     return STATUS_LABELS[row.status];
   }
 }

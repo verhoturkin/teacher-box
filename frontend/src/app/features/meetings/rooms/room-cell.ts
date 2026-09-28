@@ -14,10 +14,24 @@ import { MeetingRoom } from '../data-access/meetings.models';
         <a [href]="room.joinUrl" target="_blank" rel="noopener" [pTooltip]="room.joinUrl">
           {{ room.telemost ? 'Телемост' : 'Ссылка' }}
         </a>
-        <p-button icon="pi pi-cog" [text]="true" [rounded]="true" size="small" [ariaLabel]="'Видеовстреча: ' + name()" (onClick)="edit.emit()" />
+        <p-button
+          icon="pi pi-cog"
+          [text]="true"
+          [rounded]="true"
+          size="small"
+          [ariaLabel]="'Видеовстреча: ' + name()"
+          (onClick)="edit.emit()"
+        />
       </span>
     } @else {
-      <p-button label="Добавить" icon="pi pi-video" [text]="true" size="small" [ariaLabel]="'Добавить видеовстречу: ' + name()" (onClick)="edit.emit()" />
+      <p-button
+        label="Добавить"
+        icon="pi pi-video"
+        [text]="true"
+        size="small"
+        [ariaLabel]="'Добавить видеовстречу: ' + name()"
+        (onClick)="edit.emit()"
+      />
     }
   `,
   styles: `

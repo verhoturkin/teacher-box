@@ -37,7 +37,12 @@ describe('PaymentDialog', () => {
     expect(bodyText()).toContain('Оплата');
     expect(dialog.form.controls.method.value).toBe('TRANSFER');
 
-    dialog.form.patchValue({ amount: 5000, paidOn: new Date(2026, 8, 3), method: 'CASH', comment: ' наличными ' });
+    dialog.form.patchValue({
+      amount: 5000,
+      paidOn: new Date(2026, 8, 3),
+      method: 'CASH',
+      comment: ' наличными ',
+    });
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
 

@@ -53,7 +53,13 @@ export interface StudentOption {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '44rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '44rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="assignment-title">Название</label>
@@ -64,7 +70,13 @@ export interface StudentOption {
             <label for="assignment-description">Задание</label>
             <div class="tb-actions">
               @if (aiEnabled()) {
-                <p-button label="Сгенерировать с ИИ" icon="pi pi-sparkles" size="small" [text]="true" (onClick)="draftVisible.set(true)" />
+                <p-button
+                  label="Сгенерировать с ИИ"
+                  icon="pi pi-sparkles"
+                  size="small"
+                  [text]="true"
+                  (onClick)="draftVisible.set(true)"
+                />
               }
               <p-button
                 label="На доску"
@@ -74,12 +86,26 @@ export interface StudentOption {
                 [disabled]="descriptionValue().trim() === ''"
                 (onClick)="boardVisible.set(true)"
               />
-              <p-selectbutton [options]="modes" [formControl]="mode" optionLabel="label" optionValue="value" size="small" ariaLabel="Режим редактора" />
+              <p-selectbutton
+                [options]="modes"
+                [formControl]="mode"
+                optionLabel="label"
+                optionValue="value"
+                size="small"
+                ariaLabel="Режим редактора"
+              />
             </div>
           </div>
           @if (modeValue() === 'edit') {
-            <textarea pTextarea id="assignment-description" formControlName="description" rows="10"></textarea>
-            <small class="tb-hint">Поддерживается Markdown: **жирный**, *курсив*, списки, ссылки.</small>
+            <textarea
+              pTextarea
+              id="assignment-description"
+              formControlName="description"
+              rows="10"
+            ></textarea>
+            <small class="tb-hint"
+              >Поддерживается Markdown: **жирный**, *курсив*, списки, ссылки.</small
+            >
           } @else {
             <div class="tb-preview">
               <tb-markdown [text]="descriptionValue()" />
@@ -126,12 +152,26 @@ export interface StudentOption {
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button [label]="assignment() === null ? 'Выдать' : 'Сохранить'" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          [label]="assignment() === null ? 'Выдать' : 'Сохранить'"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
     @if (aiEnabled()) {
-      <tb-homework-draft-dialog [(visible)]="draftVisible" [topic]="titleValue()" (generated)="applyDraft($event)" />
+      <tb-homework-draft-dialog
+        [(visible)]="draftVisible"
+        [topic]="titleValue()"
+        (generated)="applyDraft($event)"
+      />
     }
     <tb-to-board-dialog
       [(visible)]="boardVisible"
@@ -151,7 +191,9 @@ export class AssignmentDialog {
   readonly students = input<StudentOption[]>([]);
   readonly saved = output<AssignmentDetails>();
 
-  protected readonly title = computed(() => (this.assignment() === null ? 'Новое задание' : 'Редактирование задания'));
+  protected readonly title = computed(() =>
+    this.assignment() === null ? 'Новое задание' : 'Редактирование задания',
+  );
   protected readonly modes = [
     { label: 'Текст', value: 'edit' },
     { label: 'Просмотр', value: 'preview' },
@@ -161,16 +203,30 @@ export class AssignmentDialog {
   protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(200)] }),
-    description: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20_000)] }),
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(200)],
+    }),
+    description: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(20_000)],
+    }),
     dueAt: new FormControl<Date | null>(null),
     studentIds: new FormControl<string[]>([], { nonNullable: true }),
   });
-  protected readonly descriptionValue = toSignal(this.form.controls.description.valueChanges, { initialValue: '' });
-  protected readonly modeValue = toSignal(this.mode.valueChanges, { initialValue: this.mode.value });
-  protected readonly titleValue = toSignal(this.form.controls.title.valueChanges, { initialValue: '' });
+  protected readonly descriptionValue = toSignal(this.form.controls.description.valueChanges, {
+    initialValue: '',
+  });
+  protected readonly modeValue = toSignal(this.mode.valueChanges, {
+    initialValue: this.mode.value,
+  });
+  protected readonly titleValue = toSignal(this.form.controls.title.valueChanges, {
+    initialValue: '',
+  });
   protected readonly boardVisible = signal(false);
-  private readonly chosenStudents = toSignal(this.form.controls.studentIds.valueChanges, { initialValue: [] });
+  private readonly chosenStudents = toSignal(this.form.controls.studentIds.valueChanges, {
+    initialValue: [],
+  });
   /** Boards of the students of the assignment come first. */
   protected readonly boardOwners = computed(() => [
     ...(this.assignment()?.tasks.map((task) => task.studentId) ?? []),

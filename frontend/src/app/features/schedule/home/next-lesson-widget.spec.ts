@@ -21,7 +21,12 @@ describe('NextLessonWidget', () => {
   async function render(summary: MyScheduleSummary): Promise<void> {
     TestBed.configureTestingModule({
       imports: [NextLessonWidget],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(NextLessonWidget);
@@ -54,9 +59,9 @@ describe('NextLessonWidget', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('18:00–19:00 Дроби');
     expect(text).toContain('Войти в урок');
-    expect(hostElement(fixture).querySelector('tb-join-lesson-button a')?.getAttribute('href')).toBe(
-      'https://meet.example.com/1',
-    );
+    expect(
+      hostElement(fixture).querySelector('tb-join-lesson-button a')?.getAttribute('href'),
+    ).toBe('https://meet.example.com/1');
 
     buttonByText(hostElement(fixture), 'Перенести').click();
     fixture.detectChanges();
@@ -78,7 +83,9 @@ describe('NextLessonWidget', () => {
     const lesson = scheduledLesson({ pendingRequests: [changeRequest({ kind: 'CANCEL' })] });
     await render(myScheduleSummary({ next: lesson, pendingRequests: 1 }));
 
-    expect(readableText(hostElement(fixture))).toContain('Отмена: запрос отправлен, ждём ответа учителя');
+    expect(readableText(hostElement(fixture))).toContain(
+      'Отмена: запрос отправлен, ждём ответа учителя',
+    );
     expect(() => buttonByText(hostElement(fixture), 'Перенести')).toThrow();
     fixture.componentInstance.ask(lesson, 'RESCHEDULE');
     fixture.detectChanges();

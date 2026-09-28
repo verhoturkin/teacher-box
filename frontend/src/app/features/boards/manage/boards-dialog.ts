@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { Button } from 'primeng/button';
@@ -18,7 +28,13 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
   imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputText, Message],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '36rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '36rem' }"
+      [draggable]="false"
+    >
       <tb-help-button topic="teacher/boards" label="Подробнее" />
       @if (boards().length > 0) {
         <ul class="tb-boards">
@@ -26,26 +42,51 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             <li>
               <a [href]="board.url" target="_blank" rel="noopener">{{ board.title }}</a>
               <span class="tb-actions">
-                <p-button icon="pi pi-pencil" [text]="true" size="small" [ariaLabel]="'Изменить доску: ' + board.title" (onClick)="edit(board)" />
-                <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small" [ariaLabel]="'Удалить доску: ' + board.title" (onClick)="remove(board)" />
+                <p-button
+                  icon="pi pi-pencil"
+                  [text]="true"
+                  size="small"
+                  [ariaLabel]="'Изменить доску: ' + board.title"
+                  (onClick)="edit(board)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  size="small"
+                  [ariaLabel]="'Удалить доску: ' + board.title"
+                  (onClick)="remove(board)"
+                />
               </span>
             </li>
           }
         </ul>
       } @else {
         <p class="tb-muted">
-          Создайте доску в Холсте (app.holst.so), откройте к ней доступ по ссылке и вставьте ссылку сюда — ученик
-          увидит доску в своём кабинете.
+          Создайте доску в Холсте (app.holst.so), откройте к ней доступ по ссылке и вставьте ссылку
+          сюда — ученик увидит доску в своём кабинете.
         </p>
       }
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="board-title">Название</label>
-          <input pInputText id="board-title" formControlName="title" placeholder="Например, Алгебра" autocomplete="off" />
+          <input
+            pInputText
+            id="board-title"
+            formControlName="title"
+            placeholder="Например, Алгебра"
+            autocomplete="off"
+          />
         </div>
         <div class="tb-field">
           <label for="board-url">Ссылка на доску</label>
-          <input pInputText id="board-url" formControlName="url" placeholder="https://app.holst.so/..." autocomplete="off" />
+          <input
+            pInputText
+            id="board-url"
+            formControlName="url"
+            placeholder="https://app.holst.so/..."
+            autocomplete="off"
+          />
           @if (form.controls.url.invalid && form.controls.url.value !== '') {
             <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
           }
@@ -54,7 +95,12 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
         <div class="tb-actions">
-          <p-button type="submit" [label]="editing() === null ? 'Добавить доску' : 'Сохранить'" [disabled]="form.invalid" [loading]="pending()" />
+          <p-button
+            type="submit"
+            [label]="editing() === null ? 'Добавить доску' : 'Сохранить'"
+            [disabled]="form.invalid"
+            [loading]="pending()"
+          />
           @if (editing() !== null) {
             <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
           }
@@ -99,7 +145,11 @@ export class BoardsDialog {
     title: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
     url: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(1000), Validators.pattern(BOARD_LINK_PATTERN)],
+      validators: [
+        Validators.required,
+        Validators.maxLength(1000),
+        Validators.pattern(BOARD_LINK_PATTERN),
+      ],
     }),
   });
 

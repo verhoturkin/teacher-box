@@ -19,7 +19,9 @@ import { MyHomeworkSummary } from '../data-access/homework.models';
         <ul class="tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
             <li>
-              <a [routerLink]="['/cabinet/homework', task.taskId]" class="tb-link">{{ task.title }}</a>
+              <a [routerLink]="['/cabinet/homework', task.taskId]" class="tb-link">{{
+                task.title
+              }}</a>
               @if (task.overdue) {
                 <p-tag value="Просрочено" severity="danger" />
               } @else if (task.status === 'RETURNED') {

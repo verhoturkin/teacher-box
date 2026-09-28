@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
@@ -19,17 +29,24 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
   imports: [FormsModule, Button, DatePicker, Dialog, Message, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '30rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '30rem' }"
+      [draggable]="false"
+    >
       @if (lesson(); as lesson) {
         <div class="tb-form">
           <p>Занятие: {{ time() }}</p>
           @if (lesson.groupId !== null) {
             <p class="tb-muted">
               @if (kind() === 'RESCHEDULE') {
-                Это занятие группы «{{ lesson.groupName }}»: если учитель согласится, его перенесут для всей группы.
+                Это занятие группы «{{ lesson.groupName }}»: если учитель согласится, его перенесут
+                для всей группы.
               } @else {
-                Занятие группы «{{ lesson.groupName }}» пройдёт без вас. Предупредите заранее — тогда учитель
-                сразу узнает, а пропуск не засчитается.
+                Занятие группы «{{ lesson.groupName }}» пройдёт без вас. Предупредите заранее —
+                тогда учитель сразу узнает, а пропуск не засчитается.
               }
             </p>
           }
@@ -57,7 +74,13 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
           }
           <div class="tb-field">
             <label for="request-comment">Комментарий учителю</label>
-            <textarea pTextarea id="request-comment" rows="2" [(ngModel)]="comment" maxlength="500"></textarea>
+            <textarea
+              pTextarea
+              id="request-comment"
+              rows="2"
+              [(ngModel)]="comment"
+              maxlength="500"
+            ></textarea>
           </div>
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
@@ -65,7 +88,12 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
         </div>
       }
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
         <p-button
           [label]="absence() && !late() ? 'Предупредить учителя' : 'Отправить учителю'"
           [loading]="pending()"
@@ -93,7 +121,9 @@ export class ChangeRequestDialog {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   /** «I will not come» to a group lesson. */
-  protected readonly absence = computed(() => this.kind() === 'CANCEL' && (this.lesson()?.groupId ?? null) !== null);
+  protected readonly absence = computed(
+    () => this.kind() === 'CANCEL' && (this.lesson()?.groupId ?? null) !== null,
+  );
   protected readonly title = computed(() => {
     if (this.kind() === 'RESCHEDULE') {
       return 'Перенести занятие';
@@ -108,7 +138,8 @@ export class ChangeRequestDialog {
     const lesson = this.lesson();
     return (
       lesson !== null &&
-      new Date(lesson.startsAt).getTime() - this.now().getTime() < this.lateCancellationMinutes() * 60_000
+      new Date(lesson.startsAt).getTime() - this.now().getTime() <
+        this.lateCancellationMinutes() * 60_000
     );
   });
 

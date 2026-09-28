@@ -16,7 +16,13 @@ import { ledgerEntries } from './ledger-entries';
   imports: [DatePipe, Button, TableModule, Tag, Tooltip, MoneyPipe, RowType],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-table [value]="entries()" dataKey="id" [rowHover]="true" [paginator]="entries().length > 20" [rows]="20">
+    <p-table
+      [value]="entries()"
+      dataKey="id"
+      [rowHover]="true"
+      [paginator]="entries().length > 20"
+      [rows]="20"
+    >
       <ng-template #header>
         <tr>
           <th>Дата</th>
@@ -48,12 +54,21 @@ import { ledgerEntries } from './ledger-entries';
                   <small class="tb-muted">({{ entry.lesson.cancelReason }})</small>
                 }
               </td>
-              <td class="tb-amount tb-negative">−{{ entry.lesson.price | money: ledger().currency }}</td>
+              <td class="tb-amount tb-negative">
+                −{{ entry.lesson.price | money: ledger().currency }}
+              </td>
               @if (editable()) {
                 <td class="tb-actions-column">
                   @if (entry.lesson.status !== 'CANCELLED') {
-                    <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" pTooltip="Отменить занятие"
-                      ariaLabel="Отменить занятие" (onClick)="cancelLesson.emit(entry.lesson)" />
+                    <p-button
+                      icon="pi pi-times"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="danger"
+                      pTooltip="Отменить занятие"
+                      ariaLabel="Отменить занятие"
+                      (onClick)="cancelLesson.emit(entry.lesson)"
+                    />
                   }
                 </td>
               }
@@ -71,12 +86,21 @@ import { ledgerEntries } from './ledger-entries';
                   <small class="tb-muted">({{ entry.payment.voidReason }})</small>
                 }
               </td>
-              <td class="tb-amount tb-positive">+{{ entry.payment.amount | money: ledger().currency }}</td>
+              <td class="tb-amount tb-positive">
+                +{{ entry.payment.amount | money: ledger().currency }}
+              </td>
               @if (editable()) {
                 <td class="tb-actions-column">
                   @if (!entry.payment.voidedAt) {
-                    <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" pTooltip="Аннулировать оплату"
-                      ariaLabel="Аннулировать оплату" (onClick)="voidPayment.emit(entry.payment)" />
+                    <p-button
+                      icon="pi pi-times"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="danger"
+                      pTooltip="Аннулировать оплату"
+                      ariaLabel="Аннулировать оплату"
+                      (onClick)="voidPayment.emit(entry.payment)"
+                    />
                   }
                 </td>
               }
@@ -86,7 +110,9 @@ import { ledgerEntries } from './ledger-entries';
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td [attr.colspan]="editable() ? 5 : 4" class="tb-empty">Пока нет ни занятий, ни оплат</td>
+          <td [attr.colspan]="editable() ? 5 : 4" class="tb-empty">
+            Пока нет ни занятий, ни оплат
+          </td>
         </tr>
       </ng-template>
     </p-table>

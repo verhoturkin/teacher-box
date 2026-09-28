@@ -6,7 +6,11 @@ import { authResponse } from '@testing/auth';
 import { guestGuard, redirectToHome, roleGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 
-@Component({ selector: 'tb-page', template: 'page', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({
+  selector: 'tb-page',
+  template: 'page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
 class Page {}
 
 describe('auth guards', () => {

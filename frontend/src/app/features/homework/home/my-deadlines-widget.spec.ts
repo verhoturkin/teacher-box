@@ -10,7 +10,10 @@ describe('MyDeadlinesWidget', () => {
   let fixture: ComponentFixture<MyDeadlinesWidget>;
 
   async function render(summary: MyHomeworkSummary): Promise<void> {
-    TestBed.configureTestingModule({ imports: [MyDeadlinesWidget], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [MyDeadlinesWidget],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(MyDeadlinesWidget);
     fixture.componentRef.setInput('summary', summary);
     fixture.detectChanges();
@@ -47,6 +50,8 @@ describe('MyDeadlinesWidget', () => {
     expect(text).toContain('Доработать На доработку до');
     expect(text).toContain('Когда-нибудь без срока');
     expect(text).toContain('Открыто: 3, просрочено: 1');
-    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe('/cabinet/homework/t-1');
+    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(
+      '/cabinet/homework/t-1',
+    );
   });
 });

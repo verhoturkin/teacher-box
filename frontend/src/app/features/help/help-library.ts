@@ -36,7 +36,10 @@ export class HelpLibrary {
 
 /** Articles whose title, summary or text contains every word of the query. */
 export function searchArticles(articles: readonly HelpArticle[], query: string): HelpArticle[] {
-  const words = query.toLocaleLowerCase('ru').split(/\s+/).filter((word) => word !== '');
+  const words = query
+    .toLocaleLowerCase('ru')
+    .split(/\s+/)
+    .filter((word) => word !== '');
   if (words.length === 0) {
     return [...articles];
   }

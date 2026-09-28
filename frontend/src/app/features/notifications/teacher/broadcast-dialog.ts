@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -19,10 +28,25 @@ export interface Recipient {
 /** The teacher writes a message to chosen students or to everybody. */
 @Component({
   selector: 'tb-broadcast-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, GroupPicker, InputText, Message, MultiSelect, Textarea],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    GroupPicker,
+    InputText,
+    Message,
+    MultiSelect,
+    Textarea,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Сообщение ученикам" [(visible)]="visible" [modal]="true" [style]="{ width: '36rem' }" [draggable]="false">
+    <p-dialog
+      header="Сообщение ученикам"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '36rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="send()">
         <div class="tb-field">
           <label for="broadcast-students">Кому</label>
@@ -56,8 +80,19 @@ export interface Recipient {
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Отправить" icon="pi pi-send" [loading]="pending()" [disabled]="form.invalid" (onClick)="send()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Отправить"
+          icon="pi pi-send"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="send()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -75,7 +110,10 @@ export class BroadcastDialog {
 
   readonly form = new FormGroup({
     studentIds: new FormControl<string[]>([], { nonNullable: true }),
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(300)] }),
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(300)],
+    }),
     body: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(4000)] }),
   });
 

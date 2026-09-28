@@ -15,11 +15,16 @@ import { BalanceAmount } from '../ledger/balance-amount';
     @let billing = summary();
     <p-card header="Баланс">
       <div class="tb-stat">
-        <span class="tb-stat__value"><tb-balance-amount [balance]="billing.balance" [currency]="billing.currency" /></span>
-        <small class="tb-muted">Занятие стоит {{ billing.lessonPrice | money: billing.currency }}</small>
+        <span class="tb-stat__value"
+          ><tb-balance-amount [balance]="billing.balance" [currency]="billing.currency"
+        /></span>
+        <small class="tb-muted"
+          >Занятие стоит {{ billing.lessonPrice | money: billing.currency }}</small
+        >
         @if (billing.lastPayment; as payment) {
           <small class="tb-muted">
-            Последняя оплата: {{ payment.amount | money: billing.currency }}, {{ payment.paidOn | date: 'dd.MM.yyyy' }}
+            Последняя оплата: {{ payment.amount | money: billing.currency }},
+            {{ payment.paidOn | date: 'dd.MM.yyyy' }}
           </small>
         }
       </div>

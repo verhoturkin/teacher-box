@@ -24,7 +24,14 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
         <a class="tb-join__browser" [href]="url()" target="_blank" rel="noopener">в браузере</a>
       </span>
     } @else {
-      <a pButton [href]="url()" target="_blank" rel="noopener" [size]="small() ? 'small' : undefined" [outlined]="outlined()">
+      <a
+        pButton
+        [href]="url()"
+        target="_blank"
+        rel="noopener"
+        [size]="small() ? 'small' : undefined"
+        [outlined]="outlined()"
+      >
         <i pButtonIcon class="pi pi-video"></i>
         <span pButtonLabel>{{ label() }}</span>
       </a>

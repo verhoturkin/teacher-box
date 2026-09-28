@@ -21,7 +21,12 @@ describe('IntegrationsPage', () => {
     fixture.detectChanges();
     backend.expectOne('/api/admin/integrations/check').flush([
       { name: 'Telegram', state: 'OK', detail: 'Бот @school_bot отвечает', millis: 120 },
-      { name: 'ИИ (anthropic)', state: 'FAILED', detail: 'Anthropic API 401: invalid x-api-key', millis: 300 },
+      {
+        name: 'ИИ (anthropic)',
+        state: 'FAILED',
+        detail: 'Anthropic API 401: invalid x-api-key',
+        millis: 300,
+      },
       { name: 'MAX', state: 'NOT_CONFIGURED', detail: 'Бот не подключён', millis: 0 },
     ]);
     backend.expectOne('/api/admin/ai/status').flush(status);
@@ -53,7 +58,9 @@ describe('IntegrationsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('В этом месяце запросов не было');
 
     buttonByText(hostElement(fixture), 'Проверить').click();
-    backend.expectOne('/api/admin/integrations/check').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/admin/integrations/check')
+      .flush(null, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
     await fixture.whenStable();
 

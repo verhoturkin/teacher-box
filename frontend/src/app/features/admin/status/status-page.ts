@@ -1,5 +1,12 @@
 import { DatePipe, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
@@ -25,7 +32,10 @@ import { PortalAddressCard } from './portal-address-card';
           <div class="tb-stat">
             <span class="tb-muted">Проверки</span>
             <span class="tb-stat__value">
-              <p-tag [value]="status.health" [severity]="status.health === 'UP' ? 'success' : 'danger'" />
+              <p-tag
+                [value]="status.health"
+                [severity]="status.health === 'UP' ? 'success' : 'danger'"
+              />
             </span>
             <small class="tb-muted">
               @for (component of status.components | keyvalue; track component.key) {
@@ -61,7 +71,9 @@ import { PortalAddressCard } from './portal-address-card';
         <p-card>
           <div class="tb-stat">
             <span class="tb-muted">Свободно на диске</span>
-            <span class="tb-stat__value" [class.tb-negative]="lowDisk()">{{ size(status.diskFree) }}</span>
+            <span class="tb-stat__value" [class.tb-negative]="lowDisk()">{{
+              size(status.diskFree)
+            }}</span>
             <small class="tb-muted">из {{ size(status.diskTotal) }}</small>
           </div>
         </p-card>

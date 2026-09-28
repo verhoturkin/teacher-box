@@ -22,7 +22,10 @@ export const PERIODS: readonly { readonly label: string; readonly minutes: numbe
   { label: 'Всё время', minutes: null },
 ];
 
-export const MIN_LEVELS: readonly { readonly label: string; readonly level: LogLevelName | null }[] = [
+export const MIN_LEVELS: readonly {
+  readonly label: string;
+  readonly level: LogLevelName | null;
+}[] = [
   { label: 'Все уровни', level: null },
   { label: 'INFO и важнее', level: 'INFO' },
   { label: 'WARN и ERROR', level: 'WARN' },
@@ -34,7 +37,8 @@ export const LOG_LIMIT = 200;
 /** Administrator: search in the server log; a request code from an error message finds its lines. */
 @Component({
   selector: 'tb-log-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -63,10 +67,26 @@ export const LOG_LIMIT = 200;
             optionValue="minutes"
             ariaLabel="Период"
           />
-          <p-select formControlName="level" [options]="levels" optionLabel="label" optionValue="level" ariaLabel="Уровень" />
-          <input pInputText formControlName="requestId" placeholder="Код ошибки" aria-label="Код ошибки" />
+          <p-select
+            formControlName="level"
+            [options]="levels"
+            optionLabel="label"
+            optionValue="level"
+            ariaLabel="Уровень"
+          />
+          <input
+            pInputText
+            formControlName="requestId"
+            placeholder="Код ошибки"
+            aria-label="Код ошибки"
+          />
           <input pInputText formControlName="text" placeholder="Текст" aria-label="Текст" />
-          <input pInputText formControlName="logger" placeholder="Раздел (логгер)" aria-label="Раздел" />
+          <input
+            pInputText
+            formControlName="logger"
+            placeholder="Раздел (логгер)"
+            aria-label="Раздел"
+          />
           <p-button type="submit" label="Найти" icon="pi pi-search" [loading]="loading()" />
         </form>
       </p-card>
@@ -81,7 +101,9 @@ export const LOG_LIMIT = 200;
             <p class="tb-muted">Ничего не найдено.</p>
           } @else {
             @if (result.truncated) {
-              <p class="tb-muted">Показаны последние {{ result.entries.length }} записей — уточните поиск.</p>
+              <p class="tb-muted">
+                Показаны последние {{ result.entries.length }} записей — уточните поиск.
+              </p>
             }
             <p-table [value]="result.entries" styleClass="p-datatable-sm tb-log-table">
               <ng-template #header>
@@ -204,7 +226,13 @@ export class LogPage implements OnInit {
   }
 
   findRequest(entry: LogEntry): void {
-    this.form.patchValue({ requestId: entry.requestId ?? '', minutes: null, level: null, text: '', logger: '' });
+    this.form.patchValue({
+      requestId: entry.requestId ?? '',
+      minutes: null,
+      level: null,
+      text: '',
+      logger: '',
+    });
     this.search();
   }
 

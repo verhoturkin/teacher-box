@@ -19,7 +19,9 @@ import { Portal } from '@core/portal/portal';
     <main class="tb-auth-page">
       <p-card [header]="'Вход в ' + portalName()" styleClass="tb-auth-card">
         @if (sessionExpired()) {
-          <p-message severity="info" styleClass="tb-form-message">Сессия истекла. Войдите снова.</p-message>
+          <p-message severity="info" styleClass="tb-form-message"
+            >Сессия истекла. Войдите снова.</p-message
+          >
         }
         <form class="tb-form" [formGroup]="form" (ngSubmit)="submit()">
           <div class="tb-field">
@@ -41,7 +43,13 @@ import { Portal } from '@core/portal/portal';
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
           <!-- Never disabled: Enter must always submit (also right after password manager autofill). -->
-          <p-button type="submit" label="Войти" icon="pi pi-sign-in" [loading]="pending()" [fluid]="true" />
+          <p-button
+            type="submit"
+            label="Войти"
+            icon="pi pi-sign-in"
+            [loading]="pending()"
+            [fluid]="true"
+          />
         </form>
       </p-card>
     </main>

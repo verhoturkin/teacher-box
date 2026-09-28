@@ -27,8 +27,8 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
   template: `
     <p-card header="Подробный журнал">
       <p class="tb-muted">
-        Уровень DEBUG записывает больше подробностей для выбранного раздела. Через заданное время уровень вернётся
-        сам.
+        Уровень DEBUG записывает больше подробностей для выбранного раздела. Через заданное время
+        уровень вернётся сам.
       </p>
       <form class="tb-levels-form" [formGroup]="form" (ngSubmit)="apply()">
         <p-select
@@ -64,11 +64,18 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
         <ng-template #body let-logger [tbRowType]="loggers()">
           <tr>
             <td class="tb-logger-name">{{ logger.name }}</td>
-            <td><p-tag [value]="logger.effectiveLevel" [severity]="severity(logger.effectiveLevel)" /></td>
+            <td>
+              <p-tag [value]="logger.effectiveLevel" [severity]="severity(logger.effectiveLevel)" />
+            </td>
             <td>{{ logger.revertAt === null ? '—' : (logger.revertAt | date: 'dd.MM HH:mm') }}</td>
             <td class="tb-row-actions">
               @if (logger.revertAt !== null) {
-                <p-button label="Вернуть" size="small" [text]="true" (onClick)="revert(logger.name)" />
+                <p-button
+                  label="Вернуть"
+                  size="small"
+                  [text]="true"
+                  (onClick)="revert(logger.name)"
+                />
               }
             </td>
           </tr>
@@ -110,7 +117,10 @@ export class LoggerLevelsPanel implements OnInit {
   protected readonly pending = signal(false);
 
   readonly form = new FormGroup({
-    name: new FormControl('ru.teacherbox', { nonNullable: true, validators: [Validators.required] }),
+    name: new FormControl('ru.teacherbox', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     level: new FormControl<LogLevelName>('DEBUG', { nonNullable: true }),
     minutes: new FormControl(30, { nonNullable: true }),
   });

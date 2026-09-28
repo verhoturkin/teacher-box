@@ -1,5 +1,15 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -23,13 +33,25 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
   imports: [ReactiveFormsModule, Button, Dialog, InputText, Message],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '34rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '34rem' }"
+      [draggable]="false"
+    >
       @if (owner(); as owner) {
         <div class="tb-form">
           @if (room(); as room) {
             <div class="tb-room-link">
               <a [href]="room.joinUrl" target="_blank" rel="noopener">{{ room.joinUrl }}</a>
-              <p-button icon="pi pi-copy" [text]="true" size="small" ariaLabel="Копировать ссылку" (onClick)="copy(room.joinUrl)" />
+              <p-button
+                icon="pi pi-copy"
+                [text]="true"
+                size="small"
+                ariaLabel="Копировать ссылку"
+                (onClick)="copy(room.joinUrl)"
+              />
             </div>
             <div class="tb-actions">
               <p-button
@@ -39,17 +61,27 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
                 [loading]="pending()"
                 (onClick)="share(room)"
               />
-              <p-button label="Удалить" icon="pi pi-trash" severity="danger" [text]="true" [loading]="pending()" (onClick)="remove(room)" />
+              <p-button
+                label="Удалить"
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [loading]="pending()"
+                (onClick)="remove(room)"
+              />
             </div>
           } @else {
             <p class="tb-muted">
-              Постоянная ссылка на видеовстречу: по ней {{ owner.type === 'GROUP' ? 'группа приходит' : 'ученик приходит' }}
+              Постоянная ссылка на видеовстречу: по ней
+              {{ owner.type === 'GROUP' ? 'группа приходит' : 'ученик приходит' }}
               на все уроки. Ссылка попадёт в напоминания, календарь и кнопку «Войти в урок».
             </p>
           }
           @if (canCreate()) {
             <p-button
-              [label]="room() === null ? 'Создать встречу в Телемосте' : 'Новая встреча в Телемосте'"
+              [label]="
+                room() === null ? 'Создать встречу в Телемосте' : 'Новая встреча в Телемосте'
+              "
               icon="pi pi-video"
               [loading]="pending()"
               (onClick)="create()"
@@ -59,8 +91,20 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           <div class="tb-field">
             <label for="room-link">Ссылка на встречу</label>
             <div class="tb-inline">
-              <input pInputText id="room-link" [formControl]="link" placeholder="https://telemost.yandex.ru/j/..." autocomplete="off" class="tb-grow" />
-              <p-button label="Сохранить" [disabled]="link.invalid || link.value.trim() === ''" [loading]="pending()" (onClick)="save()" />
+              <input
+                pInputText
+                id="room-link"
+                [formControl]="link"
+                placeholder="https://telemost.yandex.ru/j/..."
+                autocomplete="off"
+                class="tb-grow"
+              />
+              <p-button
+                label="Сохранить"
+                [disabled]="link.invalid || link.value.trim() === ''"
+                [loading]="pending()"
+                (onClick)="save()"
+              />
             </div>
             @if (link.invalid) {
               <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
@@ -101,7 +145,10 @@ export class RoomDialog {
   protected readonly title = computed(() => `Видеовстреча: ${this.owner()?.name ?? ''}`);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
-  readonly link = new FormControl('', { nonNullable: true, validators: [Validators.pattern(ROOM_LINK_PATTERN)] });
+  readonly link = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.pattern(ROOM_LINK_PATTERN)],
+  });
 
   constructor() {
     effect(() => {
@@ -141,7 +188,11 @@ export class RoomDialog {
     this.run(
       this.api.share(room.ownerId),
       (recipients) => {
-        this.messages.add({ severity: 'success', summary: 'Ссылка отправлена', detail: `Получателей: ${String(recipients)}` });
+        this.messages.add({
+          severity: 'success',
+          summary: 'Ссылка отправлена',
+          detail: `Получателей: ${String(recipients)}`,
+        });
       },
       false,
     );
@@ -149,7 +200,11 @@ export class RoomDialog {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({ severity: 'success', summary: 'Скопировано', detail: 'Ссылка в буфере обмена' });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Скопировано',
+        detail: 'Ссылка в буфере обмена',
+      });
     }
   }
 

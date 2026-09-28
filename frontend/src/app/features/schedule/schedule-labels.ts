@@ -11,7 +11,9 @@ import {
 
 export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 
-export const STATUS_LABELS: Readonly<Record<ScheduleLessonStatus, { label: string; severity: TagSeverity }>> = {
+export const STATUS_LABELS: Readonly<
+  Record<ScheduleLessonStatus, { label: string; severity: TagSeverity }>
+> = {
   SCHEDULED: { label: 'Запланировано', severity: 'info' },
   CONDUCTED: { label: 'Проведено', severity: 'success' },
   MISSED: { label: 'Пропуск', severity: 'warn' },
@@ -23,14 +25,18 @@ export const KIND_LABELS: Readonly<Record<ChangeKind, string>> = {
   CANCEL: 'Отмена',
 };
 
-export const ATTENDANCE_LABELS: Readonly<Record<Attendance, { label: string; severity: TagSeverity }>> = {
+export const ATTENDANCE_LABELS: Readonly<
+  Record<Attendance, { label: string; severity: TagSeverity }>
+> = {
   EXPECTED: { label: 'Ожидается', severity: 'info' },
   ATTENDED: { label: 'Был', severity: 'success' },
   MISSED: { label: 'Пропуск', severity: 'warn' },
   EXCUSED: { label: 'Предупредил', severity: 'secondary' },
 };
 
-export const REQUEST_STATUS_LABELS: Readonly<Record<RequestStatus, { label: string; severity: TagSeverity }>> = {
+export const REQUEST_STATUS_LABELS: Readonly<
+  Record<RequestStatus, { label: string; severity: TagSeverity }>
+> = {
   PENDING: { label: 'Ждёт ответа', severity: 'info' },
   APPROVED: { label: 'Согласовано', severity: 'success' },
   DECLINED: { label: 'Отклонено', severity: 'danger' },
@@ -100,7 +106,10 @@ export function optionalText(value: string): string | null {
  * The calendar's days with one more day on each side: the backend counts days in the portal's
  * time zone, which may differ from the browser's.
  */
-export function widen(range: { readonly from: string; readonly to: string }): { from: string; to: string } {
+export function widen(range: { readonly from: string; readonly to: string }): {
+  from: string;
+  to: string;
+} {
   const from = fromIsoDate(range.from);
   const to = fromIsoDate(range.to);
   from.setDate(from.getDate() - 1);
@@ -109,7 +118,9 @@ export function widen(range: { readonly from: string; readonly to: string }): { 
 }
 
 /** Who the lesson is with: «Группа «ОГЭ»» or the student's name. */
-export function lessonWith(lesson: Pick<ScheduledLesson, 'groupId' | 'groupName' | 'studentName'>): string {
+export function lessonWith(
+  lesson: Pick<ScheduledLesson, 'groupId' | 'groupName' | 'studentName'>,
+): string {
   if (lesson.groupId !== null) {
     return `Группа «${lesson.groupName ?? 'без названия'}»`;
   }
@@ -118,5 +129,7 @@ export function lessonWith(lesson: Pick<ScheduledLesson, 'groupId' | 'groupName'
 
 /** What a request asks for; in a group lesson a cancellation means that the student will not come. */
 export function requestKindLabel(request: Pick<ChangeRequest, 'groupId' | 'kind'>): string {
-  return request.groupId !== null && request.kind === 'CANCEL' ? 'Не придёт' : KIND_LABELS[request.kind];
+  return request.groupId !== null && request.kind === 'CANCEL'
+    ? 'Не придёт'
+    : KIND_LABELS[request.kind];
 }

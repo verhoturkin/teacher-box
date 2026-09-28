@@ -19,14 +19,20 @@ import { shortLogger } from '../admin-labels';
     <div class="tb-stack">
       <p-card header="Необработанные события">
         <p class="tb-muted">
-          Действия, которые портал ещё не довёл до конца: например, уведомление не создано из-за сбоя. Обычно они
-          повторяются сами после перезапуска; здесь их можно отправить повторно сразу.
+          Действия, которые портал ещё не довёл до конца: например, уведомление не создано из-за
+          сбоя. Обычно они повторяются сами после перезапуска; здесь их можно отправить повторно
+          сразу.
         </p>
         @if (events().length === 0) {
           <p class="tb-muted">Всё обработано.</p>
         } @else {
           <div class="tb-actions">
-            <p-button label="Повторить все" icon="pi pi-replay" [outlined]="true" (onClick)="resubmit([])" />
+            <p-button
+              label="Повторить все"
+              icon="pi pi-replay"
+              [outlined]="true"
+              (onClick)="resubmit([])"
+            />
           </div>
           <p-table [value]="events()" styleClass="p-datatable-sm">
             <ng-template #header>
@@ -45,7 +51,12 @@ import { shortLogger } from '../admin-labels';
                 <td class="tb-mono" [title]="event.listener">{{ short(event.listener) }}</td>
                 <td>{{ event.attempts }}</td>
                 <td class="tb-row-actions">
-                  <p-button label="Повторить" size="small" [text]="true" (onClick)="resubmit([event.id])" />
+                  <p-button
+                    label="Повторить"
+                    size="small"
+                    [text]="true"
+                    (onClick)="resubmit([event.id])"
+                  />
                 </td>
               </tr>
             </ng-template>
@@ -58,7 +69,12 @@ import { shortLogger } from '../admin-labels';
           <p class="tb-muted">Все сообщения доставлены.</p>
         } @else {
           <div class="tb-actions">
-            <p-button label="Отправить все повторно" icon="pi pi-replay" [outlined]="true" (onClick)="retry([])" />
+            <p-button
+              label="Отправить все повторно"
+              icon="pi pi-replay"
+              [outlined]="true"
+              (onClick)="retry([])"
+            />
           </div>
           <p-table [value]="deliveries()" styleClass="p-datatable-sm">
             <ng-template #header>
@@ -77,7 +93,12 @@ import { shortLogger } from '../admin-labels';
                 <td class="tb-mono">{{ delivery.recipientId }}</td>
                 <td class="tb-error-cell">{{ delivery.error ?? '—' }}</td>
                 <td class="tb-row-actions">
-                  <p-button label="Повторить" size="small" [text]="true" (onClick)="retry([delivery.id])" />
+                  <p-button
+                    label="Повторить"
+                    size="small"
+                    [text]="true"
+                    (onClick)="retry([delivery.id])"
+                  />
                 </td>
               </tr>
             </ng-template>
@@ -120,14 +141,22 @@ export class EventsPage implements OnInit {
 
   resubmit(ids: string[]): void {
     this.api.resubmitEvents(ids).subscribe((count) => {
-      this.messages.add({ severity: 'success', summary: 'Отправлено повторно', detail: `Событий: ${String(count)}` });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Отправлено повторно',
+        detail: `Событий: ${String(count)}`,
+      });
       this.loadEvents();
     });
   }
 
   retry(ids: string[]): void {
     this.api.retryDeliveries(ids).subscribe((count) => {
-      this.messages.add({ severity: 'success', summary: 'Отправлено повторно', detail: `Сообщений: ${String(count)}` });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Отправлено повторно',
+        detail: `Сообщений: ${String(count)}`,
+      });
       this.loadDeliveries();
     });
   }

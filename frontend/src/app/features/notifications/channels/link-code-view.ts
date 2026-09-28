@@ -30,7 +30,9 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
         </p>
       }
       <div class="tb-link-code__value">{{ link.code }}</div>
-      <small class="tb-muted">Код действует до {{ link.expiresAt | date: 'HH:mm' }}. Ждём подключения…</small>
+      <small class="tb-muted"
+        >Код действует до {{ link.expiresAt | date: 'HH:mm' }}. Ждём подключения…</small
+      >
     </div>
   `,
   styles: `

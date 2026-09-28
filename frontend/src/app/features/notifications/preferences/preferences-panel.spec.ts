@@ -24,7 +24,12 @@ describe('PreferencesPanel', () => {
   async function render(saved: NotificationPreferences, teacher = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [PreferencesPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -66,15 +71,23 @@ describe('PreferencesPanel', () => {
     checkbox('quiet-enabled').click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(readableText(hostElement(fixture))).toContain('придут в мессенджер, когда тихие часы закончатся');
+    expect(readableText(hostElement(fixture))).toContain(
+      'придут в мессенджер, когда тихие часы закончатся',
+    );
     fixture.componentInstance.form.controls.quietFrom.setValue('23:00');
     fixture.detectChanges();
 
     buttonByText(hostElement(fixture), 'Сохранить').click();
     const request = backend.expectOne('/api/me/notifications/preferences');
     expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual({ mutedTopics: ['BILLING'], quietFrom: '23:00', quietTo: '08:00' });
-    request.flush(preferences({ mutedTopics: ['BILLING'], quietFrom: '23:00:00', quietTo: '08:00:00' }));
+    expect(request.request.body).toEqual({
+      mutedTopics: ['BILLING'],
+      quietFrom: '23:00',
+      quietTo: '08:00',
+    });
+    request.flush(
+      preferences({ mutedTopics: ['BILLING'], quietFrom: '23:00:00', quietTo: '08:00:00' }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -84,7 +97,9 @@ describe('PreferencesPanel', () => {
   });
 
   it('shows saved quiet hours and turns them off', async () => {
-    await render(preferences({ mutedTopics: ['HOMEWORK'], quietFrom: '21:30:00', quietTo: '07:00:00' }));
+    await render(
+      preferences({ mutedTopics: ['HOMEWORK'], quietFrom: '21:30:00', quietTo: '07:00:00' }),
+    );
 
     expect(checkbox('topic-HOMEWORK').checked).toBe(false);
     expect(fixture.componentInstance.form.getRawValue()).toEqual(
@@ -96,7 +111,11 @@ describe('PreferencesPanel', () => {
     fixture.componentInstance.save();
     fixture.componentInstance.save();
     const request = backend.expectOne('/api/me/notifications/preferences');
-    expect(request.request.body).toEqual({ mutedTopics: ['HOMEWORK'], quietFrom: null, quietTo: null });
+    expect(request.request.body).toEqual({
+      mutedTopics: ['HOMEWORK'],
+      quietFrom: null,
+      quietTo: null,
+    });
     request.flush(preferences({ mutedTopics: ['HOMEWORK'] }));
   });
 

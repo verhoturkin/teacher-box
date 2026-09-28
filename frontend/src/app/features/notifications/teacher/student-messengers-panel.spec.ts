@@ -25,7 +25,12 @@ describe('StudentMessengersPanel', () => {
   async function render(students: StudentMessengers[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StudentMessengersPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -66,7 +71,9 @@ describe('StudentMessengersPanel', () => {
     request.flush({ recipients: 1 });
     await fixture.whenStable();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Получили учеников: 1' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Получили учеников: 1' }),
+    );
   });
 
   it('reminds the selected students', async () => {

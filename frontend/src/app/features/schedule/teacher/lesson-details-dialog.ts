@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
@@ -27,10 +37,26 @@ import { AttendanceDialog } from './attendance-dialog';
  */
 @Component({
   selector: 'tb-lesson-details-dialog',
-  imports: [FormsModule, Button, Checkbox, Dialog, Tag, Textarea, AttendanceDialog, JoinLessonButton, OwnerBoardLinks],
+  imports: [
+    FormsModule,
+    Button,
+    Checkbox,
+    Dialog,
+    Tag,
+    Textarea,
+    AttendanceDialog,
+    JoinLessonButton,
+    OwnerBoardLinks,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Занятие" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
+    <p-dialog
+      header="Занятие"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '32rem' }"
+      [draggable]="false"
+    >
       @if (lesson(); as lesson) {
         <div class="tb-lesson-details">
           <div class="tb-lesson-details__head">
@@ -46,7 +72,12 @@ import { AttendanceDialog } from './attendance-dialog';
           }
           @if (lesson.joinUrl; as url) {
             <div>
-              <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" [small]="true" />
+              <tb-join-lesson-button
+                [url]="url"
+                label="Начать урок"
+                [teacher]="true"
+                [small]="true"
+              />
             </div>
           }
           @if (visible()) {
@@ -72,7 +103,8 @@ import { AttendanceDialog } from './attendance-dialog';
           }
           @for (request of lesson.pendingRequests; track request.id) {
             <div class="tb-lesson-details__request">
-              {{ lesson.groupId === null ? 'Запрос ученика' : (request.studentName ?? 'Ученик') }}: {{ kind(request) }}
+              {{ lesson.groupId === null ? 'Запрос ученика' : (request.studentName ?? 'Ученик') }}:
+              {{ kind(request) }}
               @if (request.proposedStartsAt !== null) {
                 на {{ start(request.proposedStartsAt) }}
               }
@@ -86,10 +118,20 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (cancelling()) {
           <div class="tb-form tb-lesson-details__cancel">
             <label for="lesson-cancel-reason">Причина</label>
-            <textarea pTextarea id="lesson-cancel-reason" rows="2" [(ngModel)]="reason" maxlength="500"></textarea>
+            <textarea
+              pTextarea
+              id="lesson-cancel-reason"
+              rows="2"
+              [(ngModel)]="reason"
+              maxlength="500"
+            ></textarea>
             @if (lesson.groupId === null) {
               <label class="tb-switch" for="lesson-cancel-by-student">
-                <p-checkbox [(ngModel)]="byStudent" [binary]="true" inputId="lesson-cancel-by-student" />
+                <p-checkbox
+                  [(ngModel)]="byStudent"
+                  [binary]="true"
+                  inputId="lesson-cancel-by-student"
+                />
                 <span>По просьбе ученика</span>
               </label>
             }
@@ -105,24 +147,65 @@ import { AttendanceDialog } from './attendance-dialog';
       <ng-template #footer>
         @if (lesson(); as lesson) {
           @if (cancelling()) {
-            <p-button label="Назад" severity="secondary" [text]="true" (onClick)="cancelling.set(false)" />
-            <p-button label="Отменить занятие" severity="danger" [loading]="pending()" (onClick)="cancel()" />
+            <p-button
+              label="Назад"
+              severity="secondary"
+              [text]="true"
+              (onClick)="cancelling.set(false)"
+            />
+            <p-button
+              label="Отменить занятие"
+              severity="danger"
+              [loading]="pending()"
+              (onClick)="cancel()"
+            />
           } @else {
             @if (lesson.status === 'SCHEDULED') {
-              <p-button label="Отменить" severity="danger" [text]="true" (onClick)="cancelling.set(true)" />
-              <p-button label="Изменить" severity="secondary" [outlined]="true" (onClick)="editLesson()" />
+              <p-button
+                label="Отменить"
+                severity="danger"
+                [text]="true"
+                (onClick)="cancelling.set(true)"
+              />
+              <p-button
+                label="Изменить"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="editLesson()"
+              />
             }
             @if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
-              <p-button label="Снять отметку" severity="secondary" [text]="true" [loading]="pending()" (onClick)="reopen()" />
+              <p-button
+                label="Снять отметку"
+                severity="secondary"
+                [text]="true"
+                [loading]="pending()"
+                (onClick)="reopen()"
+              />
             }
             @if (started() && lesson.status !== 'CANCELLED' && lesson.groupId !== null) {
-              <p-button label="Отметить посещаемость" icon="pi pi-users" (onClick)="attendanceVisible.set(true)" />
+              <p-button
+                label="Отметить посещаемость"
+                icon="pi pi-users"
+                (onClick)="attendanceVisible.set(true)"
+              />
             } @else if (started() && lesson.status !== 'CANCELLED') {
               @if (lesson.status !== 'MISSED') {
-                <p-button label="Пропуск" severity="warn" [outlined]="true" [loading]="pending()" (onClick)="mark('MISSED')" />
+                <p-button
+                  label="Пропуск"
+                  severity="warn"
+                  [outlined]="true"
+                  [loading]="pending()"
+                  (onClick)="mark('MISSED')"
+                />
               }
               @if (lesson.status !== 'CONDUCTED') {
-                <p-button label="Проведено" severity="success" [loading]="pending()" (onClick)="mark('CONDUCTED')" />
+                <p-button
+                  label="Проведено"
+                  severity="success"
+                  [loading]="pending()"
+                  (onClick)="mark('CONDUCTED')"
+                />
               }
             }
           }
@@ -130,7 +213,11 @@ import { AttendanceDialog } from './attendance-dialog';
       </ng-template>
     </p-dialog>
 
-    <tb-attendance-dialog [(visible)]="attendanceVisible" [lesson]="lesson()" (saved)="onMarked($event)" />
+    <tb-attendance-dialog
+      [(visible)]="attendanceVisible"
+      [lesson]="lesson()"
+      (saved)="onMarked($event)"
+    />
   `,
   styles: `
     .tb-lesson-details {
@@ -192,7 +279,9 @@ export class LessonDetailsDialog {
   protected readonly reason = signal('');
   protected readonly byStudent = signal(false);
   protected readonly charge = signal(false);
-  protected readonly statusLabel = computed(() => STATUS_LABELS[this.lesson()?.status ?? 'SCHEDULED']);
+  protected readonly statusLabel = computed(
+    () => STATUS_LABELS[this.lesson()?.status ?? 'SCHEDULED'],
+  );
   protected readonly time = computed(() => {
     const lesson = this.lesson();
     return lesson === null ? '' : formatLessonTime(lesson.startsAt, lesson.endsAt);

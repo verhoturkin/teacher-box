@@ -13,12 +13,19 @@ export class BoardsApi {
   }
 
   add(owner: BoardOwnerRef, title: string | null, url: string): Observable<Board> {
-    const ids = owner.type === 'GROUP' ? { studentId: null, groupId: owner.id } : { studentId: owner.id, groupId: null };
+    const ids =
+      owner.type === 'GROUP'
+        ? { studentId: null, groupId: owner.id }
+        : { studentId: owner.id, groupId: null };
     return this.http.post<Board>('/api/teacher/boards', { ...ids, title, url });
   }
 
   change(board: Board, title: string, url: string): Observable<Board> {
-    return this.http.put<Board>(`/api/teacher/boards/${board.id}`, { title, url, version: board.version });
+    return this.http.put<Board>(`/api/teacher/boards/${board.id}`, {
+      title,
+      url,
+      version: board.version,
+    });
   }
 
   remove(boardId: string): Observable<void> {

@@ -35,11 +35,23 @@ export interface SavedGroup {
   imports: [ReactiveFormsModule, Button, Dialog, InputNumber, InputText, Message, MultiSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '34rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '34rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="group-name">Название</label>
-          <input pInputText id="group-name" formControlName="name" autocomplete="off" placeholder="Например, ОГЭ 9 класс" />
+          <input
+            pInputText
+            id="group-name"
+            formControlName="name"
+            autocomplete="off"
+            placeholder="Например, ОГЭ 9 класс"
+          />
         </div>
         <div class="tb-field">
           <label for="group-members">Ученики</label>
@@ -67,15 +79,27 @@ export interface SavedGroup {
             [min]="0"
             [fluid]="true"
           />
-          <small class="tb-hint">Спишется с каждого, кто был на занятии или пропустил его без предупреждения.</small>
+          <small class="tb-hint"
+            >Спишется с каждого, кто был на занятии или пропустил его без предупреждения.</small
+          >
         </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -100,7 +124,9 @@ export class GroupFormDialog {
   readonly memberOptions = computed(() => {
     const members = this.group()?.members ?? [];
     const current = this.students().filter((student) => student.status !== 'DEACTIVATED');
-    const missing = members.filter((member) => !current.some((student) => student.id === member.id));
+    const missing = members.filter(
+      (member) => !current.some((student) => student.id === member.id),
+    );
     return [...current, ...missing];
   });
 
@@ -134,7 +160,9 @@ export class GroupFormDialog {
     const input = { name: value.name, memberIds: value.memberIds };
     const group = this.group();
     const request =
-      group === null ? this.api.createGroup(input) : this.api.updateGroup(group.id, input, group.version);
+      group === null
+        ? this.api.createGroup(input)
+        : this.api.updateGroup(group.id, input, group.version);
     this.pending.set(true);
     this.error.set(null);
     request.pipe(switchMap((saved) => this.savePrice(saved, value.price))).subscribe({
@@ -155,6 +183,8 @@ export class GroupFormDialog {
     if (minor === null || minor === this.lessonPrice()) {
       return of({ group, lessonPrice: this.lessonPrice() });
     }
-    return this.billing.changeGroupPrice(group.id, minor).pipe(map((lessonPrice) => ({ group, lessonPrice })));
+    return this.billing
+      .changeGroupPrice(group.id, minor)
+      .pipe(map((lessonPrice) => ({ group, lessonPrice })));
   }
 }

@@ -9,7 +9,9 @@ describe('NotificationsApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(NotificationsApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -57,11 +59,19 @@ describe('NotificationsApi', () => {
 
   it('calls the preference endpoints', () => {
     api.preferences().subscribe();
-    api.savePreferences({ mutedTopics: ['BILLING'], quietFrom: '22:00', quietTo: '08:00' }).subscribe();
+    api
+      .savePreferences({ mutedTopics: ['BILLING'], quietFrom: '22:00', quietTo: '08:00' })
+      .subscribe();
 
-    expect(backend.expectOne({ method: 'GET', url: '/api/me/notifications/preferences' })).toBeTruthy();
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/me/notifications/preferences' }),
+    ).toBeTruthy();
     const save = backend.expectOne({ method: 'PUT', url: '/api/me/notifications/preferences' });
-    expect(save.request.body).toEqual({ mutedTopics: ['BILLING'], quietFrom: '22:00', quietTo: '08:00' });
+    expect(save.request.body).toEqual({
+      mutedTopics: ['BILLING'],
+      quietFrom: '22:00',
+      quietTo: '08:00',
+    });
   });
 
   it('calls the teacher endpoints of bots, students and messages', () => {
@@ -75,17 +85,28 @@ describe('NotificationsApi', () => {
     api.broadcasts().subscribe();
     api.remindToConnect(['s-1']).subscribe((count) => (recipients = count));
 
-    expect(backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/channels' })).toBeTruthy();
-    const save = backend.expectOne({ method: 'PUT', url: '/api/teacher/notifications/channels/VK' });
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/channels' }),
+    ).toBeTruthy();
+    const save = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/notifications/channels/VK',
+    });
     expect(save.request.body).toEqual({ token: 't', groupId: 7 });
     expect(save.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/notifications/channels/MAX' });
-    const test = backend.expectOne({ method: 'POST', url: '/api/teacher/notifications/channels/TELEGRAM/test' });
+    const test = backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/notifications/channels/TELEGRAM/test',
+    });
     expect(test.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/students' });
     backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/summary' });
     backend.expectOne({ method: 'GET', url: '/api/teacher/notifications/broadcasts' });
-    const remind = backend.expectOne({ method: 'POST', url: '/api/teacher/notifications/remind-connect' });
+    const remind = backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/notifications/remind-connect',
+    });
     expect(remind.request.body).toEqual({ studentIds: ['s-1'] });
     remind.flush({ recipients: 4 });
     expect(recipients).toBe(4);

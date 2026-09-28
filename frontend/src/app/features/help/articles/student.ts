@@ -3,7 +3,7 @@ import { StudentTopic } from '../help-topics';
 
 /** Help articles: plain words, steps to click and short answers. */
 export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> = {
-  'login': {
+  login: {
     title: 'Вход и пароль',
     summary: 'Как войти в кабинет и сменить пароль',
     body: `
@@ -22,7 +22,7 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 Если ссылка не открывается или устарела, попросите учителя прислать новую.
 `,
   },
-  'schedule': {
+  schedule: {
     title: 'Расписание и перенос',
     summary: 'Ваши занятия, отмена и перенос',
     body: `
@@ -47,7 +47,7 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 То же самое можно сделать через бота в мессенджере ([Бот](/cabinet/help/bot)).
 `,
   },
-  'lesson': {
+  lesson: {
     title: 'Урок и доска',
     summary: 'Как войти в видеовстречу и открыть доску',
     body: `
@@ -64,7 +64,7 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 Ссылки на урок и доски можно получить и в боте: «Войти на урок» и «Мои доски».
 `,
   },
-  'homework': {
+  homework: {
     title: 'Задания',
     summary: 'Как посмотреть и сдать домашнее задание',
     body: `
@@ -81,7 +81,7 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 Учитель проверит работу: примет её с оценкой или вернёт на доработку с комментарием. Если вернул — исправьте и сдайте снова.
 `,
   },
-  'billing': {
+  billing: {
     title: 'Оплаты',
     summary: 'Баланс, цена занятия и история',
     body: `
@@ -96,7 +96,7 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 Если что-то не сходится — напишите учителю.
 `,
   },
-  'bot': {
+  bot: {
     title: 'Бот в мессенджере',
     summary: 'Уведомления и действия в Telegram, ВКонтакте или MAX',
     body: `

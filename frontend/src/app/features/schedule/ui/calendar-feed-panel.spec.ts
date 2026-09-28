@@ -15,7 +15,12 @@ describe('CalendarFeedPanel', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [CalendarFeedPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -38,14 +43,20 @@ describe('CalendarFeedPanel', () => {
     expect(readableText(host)).toContain('Занятия могут появляться в календаре на телефоне');
 
     buttonByText(host, 'Получить ссылку').click();
-    backend
-      .expectOne({ method: 'POST', url: '/api/me/schedule/feed' })
-      .flush(calendarFeed({ enabled: true, createdAt: '2026-10-01T10:00:00Z', path: '/api/public/schedule/abc.ics' }));
+    backend.expectOne({ method: 'POST', url: '/api/me/schedule/feed' }).flush(
+      calendarFeed({
+        enabled: true,
+        createdAt: '2026-10-01T10:00:00Z',
+        path: '/api/public/schedule/abc.ics',
+      }),
+    );
     await fixture.whenStable();
 
     const link = requireElement(host, 'input[aria-label="Ссылка на календарь"]', HTMLInputElement);
     expect(link.value).toBe(`${window.location.origin}/api/public/schedule/abc.ics`);
-    expect(requireElement(host, 'a', HTMLAnchorElement).getAttribute('href')).toMatch(/^webcal:\/\//);
+    expect(requireElement(host, 'a', HTMLAnchorElement).getAttribute('href')).toMatch(
+      /^webcal:\/\//,
+    );
     expect(readableText(host)).toContain('Google Календарь');
   });
 

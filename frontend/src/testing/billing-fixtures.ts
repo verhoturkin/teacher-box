@@ -90,7 +90,15 @@ export function monthlyReport(overrides: Partial<MonthlyReport> = {}): MonthlyRe
     conductedLessons: 1,
     missedLessons: 1,
     cancelledLessons: 1,
-    students: [{ studentId: 's-1', displayName: 'Иван Петров', chargedLessons: 2, charged: 300_000, paid: 500_000 }],
+    students: [
+      {
+        studentId: 's-1',
+        displayName: 'Иван Петров',
+        chargedLessons: 2,
+        charged: 300_000,
+        paid: 500_000,
+      },
+    ],
     lessons: [
       { studentName: 'Иван Петров', lesson: lesson({ id: 'l-1', status: 'CONDUCTED' }) },
       { studentName: 'Иван Петров', lesson: lesson({ id: 'l-2', status: 'MISSED', topic: null }) },

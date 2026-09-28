@@ -15,7 +15,12 @@ describe('LoginPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), providePrimeNG()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);

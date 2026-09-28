@@ -14,7 +14,10 @@ describe('HelpArticleView', () => {
     fixture = TestBed.createComponent(HelpArticleView);
     followed = [];
     fixture.componentInstance.navigated.subscribe((href) => followed.push(href));
-    fixture.componentRef.setInput('body', '**Шаг** [Группы](/teacher/help/groups) и [Холст](https://app.holst.so)');
+    fixture.componentRef.setInput(
+      'body',
+      '**Шаг** [Группы](/teacher/help/groups) и [Холст](https://app.holst.so)',
+    );
     await fixture.whenStable();
   });
 
@@ -31,9 +34,13 @@ describe('HelpArticleView', () => {
   it('leaves other links and clicks alone', () => {
     const host = hostElement(fixture);
     const external = new MouseEvent('click', { bubbles: true, cancelable: true });
-    requireElement(host, 'a[href="https://app.holst.so"]', HTMLAnchorElement).dispatchEvent(external);
+    requireElement(host, 'a[href="https://app.holst.so"]', HTMLAnchorElement).dispatchEvent(
+      external,
+    );
     const withCtrl = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
-    requireElement(host, 'a[href="/teacher/help/groups"]', HTMLAnchorElement).dispatchEvent(withCtrl);
+    requireElement(host, 'a[href="/teacher/help/groups"]', HTMLAnchorElement).dispatchEvent(
+      withCtrl,
+    );
     requireElement(host, 'strong', HTMLElement).click();
 
     expect(external.defaultPrevented).toBe(false);

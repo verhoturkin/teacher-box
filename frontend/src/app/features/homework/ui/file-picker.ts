@@ -21,7 +21,13 @@ export const ACCEPTED_FILES =
       [attr.aria-label]="label()"
       (change)="onSelected(input)"
     />
-    <p-button [label]="label()" icon="pi pi-paperclip" [outlined]="true" size="small" (onClick)="input.click()" />
+    <p-button
+      [label]="label()"
+      icon="pi pi-paperclip"
+      [outlined]="true"
+      size="small"
+      (onClick)="input.click()"
+    />
     @if (files().length > 0) {
       <ul class="tb-files">
         @for (file of files(); track $index) {

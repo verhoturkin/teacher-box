@@ -17,8 +17,8 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
     <p-card>
       <div class="tb-broadcasts-header">
         <p class="tb-muted">
-          Сообщение придёт ученикам в личный кабинет и в подключённые мессенджеры — например, о каникулах или смене
-          ссылки на урок.
+          Сообщение придёт ученикам в личный кабинет и в подключённые мессенджеры — например, о
+          каникулах или смене ссылки на урок.
         </p>
         <p-button label="Написать ученикам" icon="pi pi-send" (onClick)="openBroadcast()" />
       </div>
@@ -32,7 +32,8 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
                 <div class="tb-broadcast__title">
                   <strong>{{ item.title }}</strong>
                   <small class="tb-muted">
-                    {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }} · получателей: {{ item.recipients }}
+                    {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }} · получателей:
+                    {{ item.recipients }}
                   </small>
                 </div>
                 @if (item.body !== null) {
@@ -45,7 +46,11 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
       }
     </p-card>
 
-    <tb-broadcast-dialog [(visible)]="broadcastVisible" [students]="students()" (sent)="onBroadcast($event)" />
+    <tb-broadcast-dialog
+      [(visible)]="broadcastVisible"
+      [students]="students()"
+      (sent)="onBroadcast($event)"
+    />
   `,
   styles: `
     .tb-broadcasts-header {
@@ -117,7 +122,11 @@ export class BroadcastsPanel implements OnInit {
   }
 
   onBroadcast(recipients: number): void {
-    this.messages.add({ severity: 'success', summary: 'Отправлено', detail: `Получателей: ${String(recipients)}` });
+    this.messages.add({
+      severity: 'success',
+      summary: 'Отправлено',
+      detail: `Получателей: ${String(recipients)}`,
+    });
     this.reload();
   }
 

@@ -15,7 +15,10 @@ describe('ledgerEntries', () => {
   it('merges lessons and payments newest first', () => {
     const entries = ledgerEntries(
       ledger({
-        lessons: [lesson({ id: 'old', date: '2026-09-01' }), lesson({ id: 'late', date: '2026-09-05', status: 'CANCELLED' })],
+        lessons: [
+          lesson({ id: 'old', date: '2026-09-01' }),
+          lesson({ id: 'late', date: '2026-09-05', status: 'CANCELLED' }),
+        ],
         payments: [payment({ id: 'pay', paidOn: '2026-09-03', voidedAt: '2026-09-04T00:00:00Z' })],
       }),
     );
@@ -28,7 +31,9 @@ describe('ledgerEntries', () => {
     const entries = ledgerEntries(
       ledger({
         lessons: [lesson({ id: 'first', createdAt: '2026-09-01T10:00:00Z' })],
-        payments: [payment({ id: 'second', paidOn: '2026-09-01', createdAt: '2026-09-01T12:00:00Z' })],
+        payments: [
+          payment({ id: 'second', paidOn: '2026-09-01', createdAt: '2026-09-01T12:00:00Z' }),
+        ],
       }),
     );
 
@@ -45,7 +50,9 @@ describe('LedgerTable', () => {
   });
 
   function rows(): string[] {
-    return Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) => normalize(row.textContent));
+    return Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) =>
+      normalize(row.textContent),
+    );
   }
 
   it('shows charges and payments read-only', async () => {
@@ -57,7 +64,9 @@ describe('LedgerTable', () => {
           lesson({ id: 'l2', date: '2026-09-02', status: 'MISSED', topic: null }),
           lesson({ id: 'l3', date: '2026-09-04', status: 'CANCELLED', cancelReason: 'болел' }),
         ],
-        payments: [payment({ paidOn: '2026-09-03', voidedAt: '2026-09-03T12:00:00Z', voidReason: 'ошибка' })],
+        payments: [
+          payment({ paidOn: '2026-09-03', voidedAt: '2026-09-03T12:00:00Z', voidReason: 'ошибка' }),
+        ],
       }),
     );
     await fixture.whenStable();

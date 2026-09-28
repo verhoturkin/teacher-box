@@ -45,7 +45,9 @@ describe('DiagnosticsPage', () => {
 
   it('survives a failed download', () => {
     fixture.componentInstance.download();
-    backend.expectOne('/api/admin/diagnostics').flush(new Blob(), { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/admin/diagnostics')
+      .flush(new Blob(), { status: 500, statusText: 'Error' });
 
     expect(save).not.toHaveBeenCalled();
   });

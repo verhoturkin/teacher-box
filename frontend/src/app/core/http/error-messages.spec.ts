@@ -3,7 +3,10 @@ import { describeError, errorMessage, messageForCode } from './error-messages';
 
 describe('describeError', () => {
   it('uses the message of a known code or the fallback', () => {
-    const known = new HttpErrorResponse({ status: 409, error: { status: 409, code: 'login.taken' } });
+    const known = new HttpErrorResponse({
+      status: 409,
+      error: { status: 409, code: 'login.taken' },
+    });
     const unknown = new HttpErrorResponse({ status: 409, error: { status: 409, code: 'x.y' } });
 
     expect(describeError(known, 'fallback')).toBe('Этот логин уже занят');
@@ -57,10 +60,12 @@ describe('request codes in messages', () => {
     expect(errorMessage(httpError(503, { status: 503, requestId: 'q1' }))).toBe(
       'Произошла ошибка. Попробуйте позже. Код ошибки: q1',
     );
-    expect(describeError(failure, 'Не удалось сохранить')).toBe('Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c');
-    expect(describeError(httpError(502, { status: 502, requestId: 'g1' }), 'Не удалось сохранить')).toBe(
-      'Не удалось сохранить. Код ошибки: g1',
+    expect(describeError(failure, 'Не удалось сохранить')).toBe(
+      'Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c',
     );
+    expect(
+      describeError(httpError(502, { status: 502, requestId: 'g1' }), 'Не удалось сохранить'),
+    ).toBe('Не удалось сохранить. Код ошибки: g1');
   });
 
   it('keeps other messages short', () => {

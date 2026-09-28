@@ -29,10 +29,12 @@ describe('GroupPicker', () => {
   });
 
   it('is hidden without current groups that have students', async () => {
-    backend.expectOne('/api/teacher/groups').flush([
-      aGroup({ id: 'empty', members: [] }),
-      aGroup({ id: 'old', archivedAt: '2026-09-01T10:00:00Z' }),
-    ]);
+    backend
+      .expectOne('/api/teacher/groups')
+      .flush([
+        aGroup({ id: 'empty', members: [] }),
+        aGroup({ id: 'old', archivedAt: '2026-09-01T10:00:00Z' }),
+      ]);
     await fixture.whenStable();
 
     expect(hostElement(fixture).querySelector('p-select')).toBeNull();

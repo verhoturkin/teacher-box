@@ -15,7 +15,12 @@ import { GroupFormDialog } from './group-form-dialog';
 import { GroupsPanel } from './groups-panel';
 
 const CURRENT = aGroup({ id: 'g1', name: 'ОГЭ 9 класс' });
-const ARCHIVED = aGroup({ id: 'g2', name: 'Летняя школа', archivedAt: '2026-09-02T10:00:00Z', members: [] });
+const ARCHIVED = aGroup({
+  id: 'g2',
+  name: 'Летняя школа',
+  archivedAt: '2026-09-02T10:00:00Z',
+  members: [],
+});
 
 describe('GroupsPanel', () => {
   let fixture: ComponentFixture<GroupsPanel>;
@@ -26,7 +31,12 @@ describe('GroupsPanel', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [GroupsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupsPanel);
@@ -44,10 +54,16 @@ describe('GroupsPanel', () => {
   async function load(groups: StudentGroup[]): Promise<void> {
     backend.expectOne('/api/teacher/groups').flush(groups);
     backend.expectOne('/api/teacher/students').flush([aStudent({ id: 'student-1' })]);
-    backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
-    backend.expectOne('/api/teacher/meetings/rooms').flush([aRoom({ ownerId: 'g1', ownerType: 'GROUP', ownerName: 'ОГЭ 9 класс' })]);
+    backend
+      .expectOne('/api/teacher/billing/groups')
+      .flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
+    backend
+      .expectOne('/api/teacher/meetings/rooms')
+      .flush([aRoom({ ownerId: 'g1', ownerType: 'GROUP', ownerName: 'ОГЭ 9 класс' })]);
     backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus({ status: 'CONNECTED' }));
-    backend.expectOne('/api/teacher/boards').flush([aBoard({ ownerType: 'GROUP', ownerId: 'g1', title: 'Общая доска' })]);
+    backend
+      .expectOne('/api/teacher/boards')
+      .flush([aBoard({ ownerType: 'GROUP', ownerId: 'g1', title: 'Общая доска' })]);
     await fixture.whenStable();
   }
 
@@ -110,7 +126,9 @@ describe('GroupsPanel', () => {
     buttonByText(host, 'Создать группу').click();
     await fixture.whenStable();
 
-    const dialog = fixture.debugElement.query(By.directive(GroupFormDialog)).injector.get(GroupFormDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(GroupFormDialog))
+      .injector.get(GroupFormDialog);
     dialog.saved.emit({ group: aGroup({ id: 'g3', name: 'Английский' }), lessonPrice: 50000 });
     await fixture.whenStable();
 
@@ -124,7 +142,9 @@ describe('GroupsPanel', () => {
     confirmNext();
 
     buttonByText(host, 'В архив: ОГЭ 9 класс').click();
-    backend.expectOne('/api/teacher/groups/g1/archive').flush({ ...CURRENT, archivedAt: '2026-09-03T10:00:00Z' });
+    backend
+      .expectOne('/api/teacher/groups/g1/archive')
+      .flush({ ...CURRENT, archivedAt: '2026-09-03T10:00:00Z' });
     await fixture.whenStable();
     expect(host.textContent).toContain('Все группы в архиве');
     expect(changes).toBe(1);
@@ -171,11 +191,15 @@ describe('GroupsPanel', () => {
     expect(rows()[0]).toContain('Общая доска');
     buttonByText(host, 'Доски: ОГЭ 9 класс').click();
     await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(BoardsDialog)).injector.get(BoardsDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(BoardsDialog))
+      .injector.get(BoardsDialog);
     expect(dialog.owner()?.type).toBe('GROUP');
     expect(dialog.boards()).toHaveLength(1);
 
-    dialog.saved.emit(aBoard({ id: 'board-2', ownerType: 'GROUP', ownerId: 'g1', title: 'Вторая' }));
+    dialog.saved.emit(
+      aBoard({ id: 'board-2', ownerType: 'GROUP', ownerId: 'g1', title: 'Вторая' }),
+    );
     await fixture.whenStable();
     expect(rows()[0]).toContain('+1');
   });

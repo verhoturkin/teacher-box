@@ -21,11 +21,16 @@ import { INTEGRATION_TAGS } from '../admin-labels';
     <div class="tb-stack">
       <p-card header="Проверка связи">
         <p class="tb-muted">
-          Портал обращается к каждому сервису так же, как при работе (через настроенный прокси). ИИ проверяется без
-          расхода токенов.
+          Портал обращается к каждому сервису так же, как при работе (через настроенный прокси). ИИ
+          проверяется без расхода токенов.
         </p>
         <div class="tb-actions">
-          <p-button label="Проверить" icon="pi pi-refresh" [loading]="checking()" (onClick)="check()" />
+          <p-button
+            label="Проверить"
+            icon="pi pi-refresh"
+            [loading]="checking()"
+            (onClick)="check()"
+          />
         </div>
         @if (error(); as message) {
           <p-message severity="error">{{ message }}</p-message>
@@ -50,7 +55,8 @@ import { INTEGRATION_TAGS } from '../admin-labels';
         @if (ai(); as ai) {
           @if (ai.enabled) {
             <p>
-              {{ ai.provider }} · {{ ai.model }} · в этом месяце {{ ai.usedThisMonth | number }} токенов
+              {{ ai.provider }} · {{ ai.model }} · в этом месяце
+              {{ ai.usedThisMonth | number }} токенов
               @if (ai.monthlyTokenLimit > 0) {
                 из {{ ai.monthlyTokenLimit | number }}
               }

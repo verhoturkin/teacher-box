@@ -18,7 +18,12 @@ describe('TodayLessonsWidget', () => {
   async function render(summary: ScheduleSummary): Promise<void> {
     TestBed.configureTestingModule({
       imports: [TodayLessonsWidget],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TodayLessonsWidget);
@@ -96,7 +101,9 @@ describe('TodayLessonsWidget', () => {
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Кто был на занятии');
-    const dialog = fixture.debugElement.query(By.directive(AttendanceDialog)).injector.get(AttendanceDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(AttendanceDialog))
+      .injector.get(AttendanceDialog);
     dialog.saved.emit(groupLesson({ status: 'CONDUCTED' }));
     expect(changes).toBe(1);
   });

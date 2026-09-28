@@ -16,7 +16,12 @@ describe('ChannelsPanel', () => {
   async function render(channels: ChannelState[], teacher = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [ChannelsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -48,7 +53,12 @@ describe('ChannelsPanel', () => {
 
   it('shows connected and available messengers', async () => {
     await render([
-      channel({ linked: true, enabled: true, displayName: '@maria', linkedAt: '2026-09-20T10:00:00Z' }),
+      channel({
+        linked: true,
+        enabled: true,
+        displayName: '@maria',
+        linkedAt: '2026-09-20T10:00:00Z',
+      }),
       channel({ channel: 'VK' }),
     ]);
 
@@ -70,16 +80,22 @@ describe('ChannelsPanel', () => {
 
     expect(bodyText()).toContain('ABCD-2345');
     expect(bodyText()).toContain('Открыть Telegram');
-    const open = Array.from(document.body.querySelectorAll('a')).find((a) => a.textContent.includes('Открыть'));
+    const open = Array.from(document.body.querySelectorAll('a')).find((a) =>
+      a.textContent.includes('Открыть'),
+    );
     expect(open?.getAttribute('href')).toBe('https://t.me/teacher_bot?start=ABCD2345');
 
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectOne('/api/me/channels').flush([channel()]);
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
-    backend.expectOne('/api/me/channels').flush([channel({ linked: true, enabled: true, displayName: '@maria' })]);
+    backend
+      .expectOne('/api/me/channels')
+      .flush([channel({ linked: true, enabled: true, displayName: '@maria' })]);
     fixture.detectChanges();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Telegram подключён' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Telegram подключён' }),
+    );
     expect(changes).toBe(1);
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectNone('/api/me/channels');
@@ -110,7 +126,9 @@ describe('ChannelsPanel', () => {
     await render([channel({ channel: 'MAX' })]);
 
     fixture.componentInstance.connect('MAX');
-    backend.expectOne('/api/me/channels/MAX/link-code').flush(linkCode({ channel: 'MAX', url: null }));
+    backend
+      .expectOne('/api/me/channels/MAX/link-code')
+      .flush(linkCode({ channel: 'MAX', url: null }));
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -124,7 +142,10 @@ describe('ChannelsPanel', () => {
   });
 
   it('pauses and disconnects a messenger', async () => {
-    await render([channel({ linked: true, enabled: true, displayName: '@maria' }), channel({ channel: 'MAX' })]);
+    await render([
+      channel({ linked: true, enabled: true, displayName: '@maria' }),
+      channel({ channel: 'MAX' }),
+    ]);
     let changes = 0;
     fixture.componentInstance.changed.subscribe(() => changes++);
 
@@ -139,7 +160,9 @@ describe('ChannelsPanel', () => {
     backend.expectOne('/api/me/channels').flush([channel(), channel({ channel: 'MAX' })]);
     await fixture.whenStable();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Telegram отключён' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Telegram отключён' }),
+    );
     expect(changes).toBe(1);
     expect(readableText(hostElement(fixture))).toContain('Telegram не подключён');
   });

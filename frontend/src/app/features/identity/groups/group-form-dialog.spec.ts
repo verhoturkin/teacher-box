@@ -60,12 +60,20 @@ describe('GroupFormDialog', () => {
     fixture.componentRef.setInput('group', group);
     fixture.componentRef.setInput('lessonPrice', 90000);
     const dialog = await open();
-    expect(dialog.form.getRawValue()).toEqual({ name: 'ОГЭ 9 класс', memberIds: ['student-1', 'student-2'], price: 900 });
+    expect(dialog.form.getRawValue()).toEqual({
+      name: 'ОГЭ 9 класс',
+      memberIds: ['student-1', 'student-2'],
+      price: 900,
+    });
     dialog.form.patchValue({ name: 'ОГЭ 9Б' });
 
     dialog.save();
     const update = backend.expectOne({ method: 'PUT', url: '/api/teacher/groups/g' });
-    expect(update.request.body).toEqual({ name: 'ОГЭ 9Б', memberIds: ['student-1', 'student-2'], version: 3 });
+    expect(update.request.body).toEqual({
+      name: 'ОГЭ 9Б',
+      memberIds: ['student-1', 'student-2'],
+      version: 3,
+    });
     update.flush({ ...group, name: 'ОГЭ 9Б', version: 4 });
 
     expect(saved[0]?.lessonPrice).toBe(90000);
@@ -84,11 +92,20 @@ describe('GroupFormDialog', () => {
   it('offers current students and keeps members who left', async () => {
     fixture.componentRef.setInput(
       'group',
-      aGroup({ members: [{ id: 'o', displayName: 'Олег', status: 'DEACTIVATED' }, { id: 'x', displayName: 'Ксения', status: 'DEACTIVATED' }] }),
+      aGroup({
+        members: [
+          { id: 'o', displayName: 'Олег', status: 'DEACTIVATED' },
+          { id: 'x', displayName: 'Ксения', status: 'DEACTIVATED' },
+        ],
+      }),
     );
     await open();
 
-    expect(fixture.componentInstance.memberOptions().map((option) => option.id)).toEqual(['a', 'o', 'x']);
+    expect(fixture.componentInstance.memberOptions().map((option) => option.id)).toEqual([
+      'a',
+      'o',
+      'x',
+    ]);
   });
 
   it('shows why the group was not saved', async () => {
@@ -98,7 +115,10 @@ describe('GroupFormDialog', () => {
     dialog.save();
     backend
       .expectOne('/api/teacher/groups')
-      .flush({ status: 422, code: 'group.member-invalid' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'group.member-invalid' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('В группу можно добавить только учеников с доступом к порталу');

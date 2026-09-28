@@ -36,8 +36,8 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
         @if (channels.length === 0) {
           <p class="tb-muted">
             @if (teacher()) {
-              Боты мессенджеров ещё не подключены. Подключите бота выше — и сможете получать уведомления сами и
-              присылать их ученикам.
+              Боты мессенджеров ещё не подключены. Подключите бота выше — и сможете получать
+              уведомления сами и присылать их ученикам.
             } @else {
               Уведомления приходят в личный кабинет. Мессенджеры пока не подключены учителем.
             }
@@ -52,7 +52,8 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                   <strong>{{ names[channel.channel] }}</strong>
                   @if (channel.linked) {
                     <small class="tb-muted">
-                      {{ channel.displayName ?? 'подключён' }}, с {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
+                      {{ channel.displayName ?? 'подключён' }}, с
+                      {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
                     </small>
                   } @else {
                     <small class="tb-muted">не подключён</small>
@@ -72,7 +73,13 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                     (onClick)="unlink(channel.channel)"
                   />
                 } @else {
-                  <p-button label="Подключить" icon="pi pi-link" size="small" [outlined]="true" (onClick)="connect(channel.channel)" />
+                  <p-button
+                    label="Подключить"
+                    icon="pi pi-link"
+                    size="small"
+                    [outlined]="true"
+                    (onClick)="connect(channel.channel)"
+                  />
                 }
               </li>
             }
@@ -123,7 +130,6 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       flex: 1;
       flex-direction: column;
     }
-
   `,
 })
 export class ChannelsPanel implements OnInit {
@@ -183,7 +189,11 @@ export class ChannelsPanel implements OnInit {
 
   unlink(channel: ChannelType): void {
     this.api.unlink(channel).subscribe(() => {
-      this.messages.add({ severity: 'info', summary: 'Отключено', detail: `${CHANNEL_NAMES[channel]} отключён` });
+      this.messages.add({
+        severity: 'info',
+        summary: 'Отключено',
+        detail: `${CHANNEL_NAMES[channel]} отключён`,
+      });
       this.reload();
       this.changed.emit();
     });
@@ -205,7 +215,11 @@ export class ChannelsPanel implements OnInit {
         this.channels.set(channels);
         if (channels.some((state) => state.channel === channel && state.linked)) {
           this.closeLink();
-          this.messages.add({ severity: 'success', summary: 'Готово', detail: `${CHANNEL_NAMES[channel]} подключён` });
+          this.messages.add({
+            severity: 'success',
+            summary: 'Готово',
+            detail: `${CHANNEL_NAMES[channel]} подключён`,
+          });
           this.changed.emit();
         }
       });
@@ -218,7 +232,9 @@ export class ChannelsPanel implements OnInit {
 
   private replace(saved: ChannelState): void {
     this.channels.update((channels) =>
-      channels === null ? channels : channels.map((state) => (state.channel === saved.channel ? saved : state)),
+      channels === null
+        ? channels
+        : channels.map((state) => (state.channel === saved.channel ? saved : state)),
     );
   }
 }

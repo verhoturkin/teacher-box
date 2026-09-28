@@ -18,7 +18,11 @@ export function materialText(title: string, markdown: string): string {
 }
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /** What the picture needs from a 2D canvas context. */
@@ -63,7 +67,9 @@ export class BoardClipboard {
     if (!this.canWriteRich()) {
       throw new Error('Pictures need the asynchronous clipboard');
     }
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': this.picture(materialHtml(title, markdown)) })]);
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': this.picture(materialHtml(title, markdown)) }),
+    ]);
   }
 
   /** Draws the HTML on a canvas through an SVG image (no libraries, works with the portal's CSP). */

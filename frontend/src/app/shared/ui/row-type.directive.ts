@@ -18,7 +18,10 @@ export class RowType<T> {
   /** The table data; used only to infer the row type. */
   readonly tbRowType = input.required<readonly T[]>();
 
-  static ngTemplateContextGuard<T>(_directive: RowType<T>, context: unknown): context is RowContext<T> {
+  static ngTemplateContextGuard<T>(
+    _directive: RowType<T>,
+    context: unknown,
+  ): context is RowContext<T> {
     return context !== null;
   }
 }

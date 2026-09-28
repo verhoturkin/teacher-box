@@ -36,7 +36,10 @@ describe('AssignmentDialog', () => {
     fixture.destroy();
   });
 
-  async function open(assignment: AssignmentDetails | null, aiEnabled = false): Promise<AssignmentDialog> {
+  async function open(
+    assignment: AssignmentDetails | null,
+    aiEnabled = false,
+  ): Promise<AssignmentDialog> {
     backend.match('/api/teacher/ai/status').forEach((request) => {
       request.flush(aiStatus({ enabled: aiEnabled }));
     });
@@ -106,7 +109,12 @@ describe('AssignmentDialog', () => {
     dialog.save();
 
     const request = backend.expectOne('/api/teacher/homework/assignments/a-1');
-    expect(request.request.body).toEqual({ title: 'Дроби', description: null, dueAt: null, version: 3 });
+    expect(request.request.body).toEqual({
+      title: 'Дроби',
+      description: null,
+      dueAt: null,
+      version: 3,
+    });
     request.flush(assignmentDetails());
   });
 
@@ -123,7 +131,10 @@ describe('AssignmentDialog', () => {
 
     backend
       .expectOne('/api/teacher/homework/assignments')
-      .flush({ status: 422, code: 'student.deactivated' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'student.deactivated' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Нельзя выдать задание ученику с отключённым доступом');
@@ -179,7 +190,9 @@ describe('AssignmentDialog', () => {
     backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
-    const board = fixture.debugElement.query(By.directive(ToBoardDialog)).injector.get(ToBoardDialog);
+    const board = fixture.debugElement
+      .query(By.directive(ToBoardDialog))
+      .injector.get(ToBoardDialog);
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe('Дроби');
     expect(board.markdown()).toBe('Решить **№1**');

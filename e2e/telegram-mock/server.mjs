@@ -22,7 +22,10 @@ let conferences = 0;
 
 function json(response, status, body) {
   const data = JSON.stringify(body);
-  response.writeHead(status, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) });
+  response.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(data),
+  });
   response.end(data);
 }
 
@@ -52,7 +55,11 @@ async function updates(response) {
 
 /** Chat 777 is the teacher (@e2e_teacher), others are students. */
 function user(chatId) {
-  return { id: chatId, first_name: 'E2E', username: chatId === 777 ? 'e2e_teacher' : `e2e_${String(chatId)}` };
+  return {
+    id: chatId,
+    first_name: 'E2E',
+    username: chatId === 777 ? 'e2e_teacher' : `e2e_${String(chatId)}`,
+  };
 }
 
 function telemost(request, response, path) {

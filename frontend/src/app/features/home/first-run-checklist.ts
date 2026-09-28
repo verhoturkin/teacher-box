@@ -54,7 +54,9 @@ function writeDismissed(): void {
                 @if (step.done) {
                   <span>{{ step.title }}</span>
                 } @else {
-                  <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{ step.title }}</a>
+                  <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
+                    step.title
+                  }}</a>
                 }
                 <small class="tb-muted">{{ step.hint }}</small>
               </div>
@@ -63,7 +65,13 @@ function writeDismissed(): void {
         </ol>
         <div class="tb-widget-footer">
           <span class="tb-muted">Сделано {{ doneCount() }} из {{ steps().length }}</span>
-          <p-button label="Скрыть" severity="secondary" size="small" [text]="true" (onClick)="dismiss()" />
+          <p-button
+            label="Скрыть"
+            severity="secondary"
+            size="small"
+            [text]="true"
+            (onClick)="dismiss()"
+          />
         </div>
       </p-card>
     }

@@ -49,6 +49,8 @@ export class OwnerBoards {
   }
 
   private update(ownerId: string, change: (boards: readonly Board[]) => readonly Board[]): void {
-    this.byOwner.update((byOwner) => new Map(byOwner).set(ownerId, change(byOwner.get(ownerId) ?? [])));
+    this.byOwner.update((byOwner) =>
+      new Map(byOwner).set(ownerId, change(byOwner.get(ownerId) ?? [])),
+    );
   }
 }

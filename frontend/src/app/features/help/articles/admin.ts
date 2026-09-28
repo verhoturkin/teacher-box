@@ -3,7 +3,7 @@ import { AdminTopic } from '../help-topics';
 
 /** Help articles: plain words, steps to click and short answers. */
 export const ADMIN_ARTICLES: Readonly<Record<AdminTopic, HelpArticleText>> = {
-  'diagnostics': {
+  diagnostics: {
     title: 'Журнал и диагностика',
     summary: 'Что может администратор и как помочь с сервером',
     body: `
@@ -25,7 +25,7 @@ export const ADMIN_ARTICLES: Readonly<Record<AdminTopic, HelpArticleText>> = {
 3. Скачайте архив в «Диагностике» и отправьте разработчику.
 `,
   },
-  'backups': {
+  backups: {
     title: 'Резервные копии и адрес портала',
     summary: 'Как администратор делает и восстанавливает копии и меняет адрес портала',
     body: `

@@ -9,7 +9,9 @@ describe('IdentityApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(IdentityApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -28,8 +30,12 @@ describe('IdentityApi', () => {
     api.reactivate('id-1').subscribe();
 
     expect(backend.expectOne({ method: 'GET', url: '/api/teacher/students' })).toBeTruthy();
-    expect(backend.expectOne({ method: 'POST', url: '/api/teacher/students' }).request.body).toEqual(profile);
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/students/id-1' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/students' }).request.body,
+    ).toEqual(profile);
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/students/id-1' }).request.body,
+    ).toEqual({
       ...profile,
       version: 3,
     });

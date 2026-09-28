@@ -11,7 +11,16 @@ import { ReviewQueueItem } from '../data-access/homework.models';
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
   selector: 'tb-review-queue-page',
-  imports: [DatePipe, RouterLink, ButtonDirective, ButtonIcon, ButtonLabel, Card, TableModule, RowType],
+  imports: [
+    DatePipe,
+    RouterLink,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
+    Card,
+    TableModule,
+    RowType,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/teacher/homework" [text]="true" class="tb-back">
@@ -44,7 +53,9 @@ import { ReviewQueueItem } from '../data-access/homework.models';
           </tr>
         </ng-template>
         <ng-template #emptymessage>
-          <tr><td colspan="5" class="tb-empty">Всё проверено</td></tr>
+          <tr>
+            <td colspan="5" class="tb-empty">Всё проверено</td>
+          </tr>
         </ng-template>
       </p-table>
     </p-card>

@@ -7,7 +7,12 @@ import { BotAbilities } from '../data-access/notifications.models';
 import { BotAbilitiesPanel } from './bot-abilities-panel';
 
 function abilities(overrides: Partial<BotAbilities> = {}): BotAbilities {
-  return { teacherActions: true, teacherMenu: ['Сегодня'], studentMenu: ['Расписание', 'Оплаты'], ...overrides };
+  return {
+    teacherActions: true,
+    teacherMenu: ['Сегодня'],
+    studentMenu: ['Расписание', 'Оплаты'],
+    ...overrides,
+  };
 }
 
 describe('BotAbilitiesPanel', () => {
@@ -35,11 +40,15 @@ describe('BotAbilitiesPanel', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Ученикам Расписание Оплаты');
     expect(text).toContain('Вам Сегодня');
-    expect(requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked).toBe(true);
+    expect(
+      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
+    ).toBe(true);
   });
 
   it('says when the bot only notifies', async () => {
-    backend.expectOne('/api/teacher/notifications/bot').flush(abilities({ teacherMenu: [], studentMenu: [] }));
+    backend
+      .expectOne('/api/teacher/notifications/bot')
+      .flush(abilities({ teacherMenu: [], studentMenu: [] }));
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Ученикам Пока только уведомления.');
@@ -54,7 +63,9 @@ describe('BotAbilitiesPanel', () => {
     expect(request.request.body).toEqual({ teacherActions: false });
     request.flush(abilities({ teacherActions: false }));
     await fixture.whenStable();
-    expect(requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked).toBe(false);
+    expect(
+      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
+    ).toBe(false);
 
     fixture.componentInstance.setTeacherActions(true);
     backend.expectOne({ method: 'PUT', url: '/api/teacher/notifications/bot' }).flush(null, {
@@ -62,6 +73,8 @@ describe('BotAbilitiesPanel', () => {
       statusText: 'Error',
     });
     await fixture.whenStable();
-    expect(requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked).toBe(false);
+    expect(
+      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
+    ).toBe(false);
   });
 });

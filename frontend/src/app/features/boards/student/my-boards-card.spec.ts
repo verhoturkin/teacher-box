@@ -27,7 +27,10 @@ describe('MyBoardsCard', () => {
   it('opens the boards of the student and of their groups', async () => {
     backend
       .expectOne('/api/me/boards')
-      .flush([aMyBoard(), aMyBoard({ id: 'board-2', ownerType: 'GROUP', groupName: 'ОГЭ', title: 'Общая' })]);
+      .flush([
+        aMyBoard(),
+        aMyBoard({ id: 'board-2', ownerType: 'GROUP', groupName: 'ОГЭ', title: 'Общая' }),
+      ]);
     await fixture.whenStable();
 
     const text = hostElement(fixture).textContent;

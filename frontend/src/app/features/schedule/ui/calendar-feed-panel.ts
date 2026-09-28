@@ -1,6 +1,13 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -24,7 +31,12 @@ import { CalendarFeed } from '../data-access/schedule.models';
           <p>Скопируйте ссылку и добавьте её в календарь. Больше она показана не будет.</p>
           <div class="tb-feed-link">
             <input pInputText [value]="link" readonly aria-label="Ссылка на календарь" />
-            <p-button icon="pi pi-copy" [text]="true" ariaLabel="Копировать ссылку" (onClick)="copy(link)" />
+            <p-button
+              icon="pi pi-copy"
+              [text]="true"
+              ariaLabel="Копировать ссылку"
+              (onClick)="copy(link)"
+            />
           </div>
           <ul class="tb-muted tb-feed-help">
             <li>Google Календарь: «Другие календари» → «+» → «Добавить по URL».</li>
@@ -114,7 +126,11 @@ export class CalendarFeedPanel implements OnInit {
 
   copy(link: string): void {
     if (this.clipboard.copy(link)) {
-      this.messages.add({ severity: 'success', summary: 'Скопировано', detail: 'Ссылка в буфере обмена' });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Скопировано',
+        detail: 'Ссылка в буфере обмена',
+      });
     }
   }
 }

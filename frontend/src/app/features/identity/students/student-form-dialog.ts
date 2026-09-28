@@ -25,7 +25,13 @@ import { CreatedStudent, Student, StudentProfileInput } from '../data-access/ide
   imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog [header]="title()" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
+    <p-dialog
+      [header]="title()"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '32rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="displayName">Имя и фамилия</label>
@@ -48,8 +54,18 @@ import { CreatedStudent, Student, StudentProfileInput } from '../data-access/ide
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -63,7 +79,9 @@ export class StudentFormDialog {
   readonly created = output<CreatedStudent>();
   readonly updated = output<Student>();
 
-  protected readonly title = computed(() => (this.student() === null ? 'Новый ученик' : 'Редактирование'));
+  protected readonly title = computed(() =>
+    this.student() === null ? 'Новый ученик' : 'Редактирование',
+  );
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 

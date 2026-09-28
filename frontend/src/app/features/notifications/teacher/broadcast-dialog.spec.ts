@@ -20,7 +20,9 @@ describe('BroadcastDialog', () => {
     fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Мария' }]);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/groups').flush([aGroup({ members: [{ id: 's-1', displayName: 'Мария', status: 'ACTIVE' }] })]);
+    backend
+      .expectOne('/api/teacher/groups')
+      .flush([aGroup({ members: [{ id: 's-1', displayName: 'Мария', status: 'ACTIVE' }] })]);
     await fixture.whenStable();
   });
 
@@ -39,12 +41,20 @@ describe('BroadcastDialog', () => {
   it('sends a message to chosen students', async () => {
     const sent: number[] = [];
     fixture.componentInstance.sent.subscribe((value) => sent.push(value));
-    fixture.componentInstance.form.patchValue({ studentIds: ['s-1'], title: ' Перенос ', body: ' В четверг ' });
+    fixture.componentInstance.form.patchValue({
+      studentIds: ['s-1'],
+      title: ' Перенос ',
+      body: ' В четверг ',
+    });
     await fixture.whenStable();
 
     buttonByText(document.body, 'Отправить').click();
     const request = backend.expectOne('/api/teacher/notifications/broadcast');
-    expect(request.request.body).toEqual({ title: 'Перенос', body: 'В четверг', studentIds: ['s-1'] });
+    expect(request.request.body).toEqual({
+      title: 'Перенос',
+      body: 'В четверг',
+      studentIds: ['s-1'],
+    });
     request.flush({ recipients: 1 });
     await fixture.whenStable();
 
@@ -73,7 +83,9 @@ describe('BroadcastDialog', () => {
   it('shows errors and closes on cancel', async () => {
     fixture.componentInstance.form.patchValue({ title: 'Ошибка' });
     fixture.componentInstance.send();
-    backend.expectOne('/api/teacher/notifications/broadcast').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/teacher/notifications/broadcast')
+      .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Не удалось отправить сообщение');

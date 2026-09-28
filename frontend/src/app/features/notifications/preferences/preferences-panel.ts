@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -33,14 +41,21 @@ function shortTime(time: string | null, fallback: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Что присылать в мессенджеры">
-      <p class="tb-muted">В личном кабинете видны все уведомления. Здесь можно выбрать, какие из них дублировать в мессенджеры.</p>
+      <p class="tb-muted">
+        В личном кабинете видны все уведомления. Здесь можно выбрать, какие из них дублировать в
+        мессенджеры.
+      </p>
       @if (loaded()) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <fieldset class="tb-topics">
             <legend class="tb-sr-only">Темы уведомлений</legend>
             @for (topic of topics(); track topic.topic; let index = $index) {
               <div class="tb-topic">
-                <p-checkbox [formControl]="topicControl(index)" [binary]="true" [inputId]="'topic-' + topic.topic" />
+                <p-checkbox
+                  [formControl]="topicControl(index)"
+                  [binary]="true"
+                  [inputId]="'topic-' + topic.topic"
+                />
                 <label [for]="'topic-' + topic.topic">
                   <strong>{{ topic.label }}</strong>
                   <small class="tb-muted">{{ topic.hint }}</small>
@@ -64,11 +79,23 @@ function shortTime(time: string | null, fallback: string): string {
             @if (form.controls.quiet.value) {
               <div class="tb-quiet__times">
                 <label for="quiet-from">с</label>
-                <p-select inputId="quiet-from" formControlName="quietFrom" [options]="times" appendTo="body" />
+                <p-select
+                  inputId="quiet-from"
+                  formControlName="quietFrom"
+                  [options]="times"
+                  appendTo="body"
+                />
                 <label for="quiet-to">до</label>
-                <p-select inputId="quiet-to" formControlName="quietTo" [options]="times" appendTo="body" />
+                <p-select
+                  inputId="quiet-to"
+                  formControlName="quietTo"
+                  [options]="times"
+                  appendTo="body"
+                />
               </div>
-              <small class="tb-hint">Уведомления за это время придут в мессенджер, когда тихие часы закончатся.</small>
+              <small class="tb-hint"
+                >Уведомления за это время придут в мессенджер, когда тихие часы закончатся.</small
+              >
             }
           </div>
 
@@ -76,7 +103,13 @@ function shortTime(time: string | null, fallback: string): string {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
           <div class="tb-actions">
-            <p-button type="submit" label="Сохранить" icon="pi pi-check" [loading]="pending()" [disabled]="form.pristine" />
+            <p-button
+              type="submit"
+              label="Сохранить"
+              icon="pi pi-check"
+              [loading]="pending()"
+              [disabled]="form.pristine"
+            />
           </div>
         </form>
       }
@@ -124,14 +157,19 @@ export class PreferencesPanel implements OnInit {
   /** The teacher also gets notifications about students and the calendar. */
   readonly teacher = input(false);
 
-  protected readonly topics = computed(() => MUTABLE_TOPICS.filter((topic) => this.teacher() || !topic.teacherOnly));
+  protected readonly topics = computed(() =>
+    MUTABLE_TOPICS.filter((topic) => this.teacher() || !topic.teacherOnly),
+  );
   protected readonly times = [...QUIET_TIMES];
   protected readonly loaded = signal(false);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
   /** Messages from the teacher cannot be muted. */
-  protected readonly alwaysOn = new FormControl({ value: true, disabled: true }, { nonNullable: true });
+  protected readonly alwaysOn = new FormControl(
+    { value: true, disabled: true },
+    { nonNullable: true },
+  );
 
   readonly form = new FormGroup({
     topics: new FormArray<FormControl<boolean>>([]),
@@ -171,7 +209,11 @@ export class PreferencesPanel implements OnInit {
         next: (saved) => {
           this.pending.set(false);
           this.fill(saved);
-          this.messages.add({ severity: 'success', summary: 'Сохранено', detail: 'Настройки уведомлений сохранены' });
+          this.messages.add({
+            severity: 'success',
+            summary: 'Сохранено',
+            detail: 'Настройки уведомлений сохранены',
+          });
         },
         error: (error: unknown) => {
           this.pending.set(false);

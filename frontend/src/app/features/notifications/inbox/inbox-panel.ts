@@ -69,7 +69,12 @@ export const PAGE_SIZE = 20;
             }
           </ul>
           @if (items.length < total()) {
-            <p-button label="Показать ещё" [text]="true" [loading]="loading()" (onClick)="loadMore()" />
+            <p-button
+              label="Показать ещё"
+              [text]="true"
+              [loading]="loading()"
+              (onClick)="loadMore()"
+            />
           }
         }
       }
@@ -164,7 +169,10 @@ export class InboxPanel implements OnInit {
 
   markRead(item: NotificationItem): void {
     this.api.markRead(item.id).subscribe(() => {
-      this.items.update((items) => items?.map((other) => (other.id === item.id ? { ...other, read: true } : other)) ?? null);
+      this.items.update(
+        (items) =>
+          items?.map((other) => (other.id === item.id ? { ...other, read: true } : other)) ?? null,
+      );
       this.unreadCounter.set(this.unread() - 1);
     });
   }

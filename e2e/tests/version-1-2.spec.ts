@@ -64,8 +64,13 @@ async function token(request: APIRequestContext, login: string, password: string
   return accessToken;
 }
 
-async function api<T>(request: APIRequestContext, bearer: string, method: 'GET' | 'POST' | 'PUT', path: string,
-  data?: unknown): Promise<T> {
+async function api<T>(
+  request: APIRequestContext,
+  bearer: string,
+  method: 'GET' | 'POST' | 'PUT',
+  path: string,
+  data?: unknown,
+): Promise<T> {
   const response = await request.fetch(path, {
     method,
     headers: { Authorization: `Bearer ${bearer}` },
@@ -79,7 +84,11 @@ async function api<T>(request: APIRequestContext, bearer: string, method: 'GET' 
 /** `dd.MM` of a day relative to today in Moscow, the time zone of the instance. */
 function dayMonth(daysFromToday: number): string {
   const date = new Date(Date.now() + daysFromToday * 86_400_000);
-  return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit' }).format(date);
+  return new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow',
+    day: '2-digit',
+    month: '2-digit',
+  }).format(date);
 }
 
 /** An instant at the given Moscow hour of a day relative to today (Moscow is always UTC+3). */
@@ -95,63 +104,111 @@ async function sentTo(request: APIRequestContext, chat: number): Promise<SentMes
 }
 
 /** Waits for the bot's message to the chat that contains the text; returns the latest such message. */
-async function waitFor(request: APIRequestContext, chat: number, text: string, after = 0): Promise<SentMessage> {
+async function waitFor(
+  request: APIRequestContext,
+  chat: number,
+  text: string,
+  after = 0,
+): Promise<SentMessage> {
   let found: SentMessage | undefined;
   await expect
-    .poll(async () => {
-      const messages = (await sentTo(request, chat)).slice(after);
-      found = messages.filter((message) => message.text.includes(text)).at(-1);
-      return found !== undefined;
-    }, { timeout: 45_000, message: `the bot writes «${text}» to ${String(chat)}` })
+    .poll(
+      async () => {
+        const messages = (await sentTo(request, chat)).slice(after);
+        found = messages.filter((message) => message.text.includes(text)).at(-1);
+        return found !== undefined;
+      },
+      { timeout: 45_000, message: `the bot writes «${text}» to ${String(chat)}` },
+    )
     .toBe(true);
   return found as SentMessage;
 }
 
 function button(message: SentMessage, label: string | RegExp): string {
-  const found = message.buttons.flat().find((candidate) =>
-    typeof label === 'string' ? candidate.text === label : label.test(candidate.text));
+  const found = message.buttons
+    .flat()
+    .find((candidate) =>
+      typeof label === 'string' ? candidate.text === label : label.test(candidate.text),
+    );
   expect(found?.callback_data, `a button ${String(label)} in «${message.text}»`).toBeDefined();
   return found?.callback_data ?? '';
 }
 
 async function say(request: APIRequestContext, chat: number, text: string): Promise<number> {
   const before = (await sentTo(request, chat)).length;
-  expect((await request.post(`${TELEGRAM}/inject`, { data: { text, chatId: chat } })).ok()).toBe(true);
+  expect((await request.post(`${TELEGRAM}/inject`, { data: { text, chatId: chat } })).ok()).toBe(
+    true,
+  );
   return before;
 }
 
 async function press(request: APIRequestContext, chat: number, data: string): Promise<number> {
   const before = (await sentTo(request, chat)).length;
-  expect((await request.post(`${TELEGRAM}/press`, { data: { data, chatId: chat } })).ok()).toBe(true);
+  expect((await request.post(`${TELEGRAM}/press`, { data: { data, chatId: chat } })).ok()).toBe(
+    true,
+  );
   return before;
 }
 
 test('a group lesson is charged at the price of the group', async ({ page, request }) => {
   const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
-  const anna = await api<Created>(request, teacher, 'POST', '/api/teacher/students', { displayName: ANNA });
-  const boris = await api<Created>(request, teacher, 'POST', '/api/teacher/students', { displayName: BORIS });
+  const anna = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: ANNA,
+  });
+  const boris = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: BORIS,
+  });
   annaId = anna.student.id;
   borisId = boris.student.id;
-  await api(request, teacher, 'POST', `/api/auth/invites/${anna.invite.token}/accept`,
-    { login: ANNA_LOGIN, password: ANNA_PASSWORD });
-  groupId = (await api<{ id: string }>(request, teacher, 'POST', '/api/teacher/groups',
-    { name: GROUP, memberIds: [annaId, borisId] })).id;
-  await api(request, teacher, 'PUT', `/api/teacher/billing/groups/${groupId}/price`, { lessonPrice: 80_000 });
-  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons',
-    { groupId, startsAt: moscow(-1, 9), durationMinutes: 60, allowOverlap: true });
+  await api(request, teacher, 'POST', `/api/auth/invites/${anna.invite.token}/accept`, {
+    login: ANNA_LOGIN,
+    password: ANNA_PASSWORD,
+  });
+  groupId = (
+    await api<{ id: string }>(request, teacher, 'POST', '/api/teacher/groups', {
+      name: GROUP,
+      memberIds: [annaId, borisId],
+    })
+  ).id;
+  await api(request, teacher, 'PUT', `/api/teacher/billing/groups/${groupId}/price`, {
+    lessonPrice: 80_000,
+  });
+  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
+    groupId,
+    startsAt: moscow(-1, 9),
+    durationMinutes: 60,
+    allowOverlap: true,
+  });
   await api(request, teacher, 'POST', '/api/teacher/schedule/series', {
-    groupId, weekdays: ['MONDAY', 'THURSDAY'], startTime: '19:00', durationMinutes: 90,
-    startsOn: moscow(1, 12).slice(0, 10), allowOverlap: true,
+    groupId,
+    weekdays: ['MONDAY', 'THURSDAY'],
+    startTime: '19:00',
+    durationMinutes: 90,
+    startsOn: moscow(1, 12).slice(0, 10),
+    allowOverlap: true,
   });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.getByRole('menuitem', { name: 'Расписание' }).click();
-  await expect(page.locator('p-card').filter({ hasText: 'Регулярные занятия' })).toContainText(GROUP);
+  await expect(page.locator('p-card').filter({ hasText: 'Регулярные занятия' })).toContainText(
+    GROUP,
+  );
   await page.getByRole('button', { name: new RegExp(`Отметить посещаемость: .*${GROUP}`) }).click();
-  await page.getByRole('dialog', { name: 'Занятие' }).getByRole('button', { name: /Отметить посещаемость/ }).click();
+  await page
+    .getByRole('dialog', { name: 'Занятие' })
+    .getByRole('button', { name: /Отметить посещаемость/ })
+    .click();
   const attendance = page.getByRole('dialog', { name: 'Кто был на занятии' });
-  await attendance.locator('li').filter({ hasText: ANNA }).getByText('Был', { exact: true }).click();
-  await attendance.locator('li').filter({ hasText: BORIS }).getByText('Пропуск', { exact: true }).click();
+  await attendance
+    .locator('li')
+    .filter({ hasText: ANNA })
+    .getByText('Был', { exact: true })
+    .click();
+  await attendance
+    .locator('li')
+    .filter({ hasText: BORIS })
+    .getByText('Пропуск', { exact: true })
+    .click();
   await attendance.getByRole('button', { name: 'Сохранить' }).click();
   await expect(attendance).toBeHidden();
 
@@ -162,8 +219,13 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
 
 test('a Telemost room and a board reach the student', async ({ page, browser, request }) => {
   const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
-  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons',
-    { studentId: annaId, startsAt: moscow(1, 15), durationMinutes: 60, topic: 'Проценты', allowOverlap: true });
+  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
+    studentId: annaId,
+    startsAt: moscow(1, 15),
+    durationMinutes: 60,
+    topic: 'Проценты',
+    allowOverlap: true,
+  });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.getByRole('menuitem', { name: 'Ученики' }).click();
@@ -179,62 +241,132 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await boards.getByRole('button', { name: 'Добавить доску', exact: true }).click();
   await expect(boards.getByRole('link', { name: 'Алгебра' })).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(row.getByRole('link', { name: 'Алгебра' })).toHaveAttribute('href', 'https://app.holst.so/board/e2e');
+  await expect(row.getByRole('link', { name: 'Алгебра' })).toHaveAttribute(
+    'href',
+    'https://app.holst.so/board/e2e',
+  );
 
   const student = await (await browser.newContext()).newPage();
   await signIn(student, ANNA_LOGIN, ANNA_PASSWORD);
   await expect(student).toHaveURL(/\/cabinet$/);
-  await expect(student.locator('tb-my-boards-card').getByRole('link', { name: /Алгебра/ }))
-    .toHaveAttribute('href', 'https://app.holst.so/board/e2e');
+  await expect(
+    student.locator('tb-my-boards-card').getByRole('link', { name: /Алгебра/ }),
+  ).toHaveAttribute('href', 'https://app.holst.so/board/e2e');
   await student.getByRole('menuitem', { name: 'Расписание' }).click();
-  await expect(student.getByRole('link', { name: /Войти в урок/ }).first())
-    .toHaveAttribute('href', /^https:\/\/telemost\.yandex\.ru\/j\/\d+/);
+  await expect(student.getByRole('link', { name: /Войти в урок/ }).first()).toHaveAttribute(
+    'href',
+    /^https:\/\/telemost\.yandex\.ru\/j\/\d+/,
+  );
 });
 
-test('the student asks to move a lesson in Telegram and the teacher accepts it with a button', async ({ request }) => {
+test('the student asks to move a lesson in Telegram and the teacher accepts it with a button', async ({
+  request,
+}) => {
   test.setTimeout(240_000);
   const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
   const student = await token(request, ANNA_LOGIN, ANNA_PASSWORD);
 
-  const bots = await api<{ channel: string; configured: boolean; teacherLinked: boolean }[]>(request, teacher, 'GET',
-    '/api/teacher/notifications/channels');
+  const bots = await api<{ channel: string; configured: boolean; teacherLinked: boolean }[]>(
+    request,
+    teacher,
+    'GET',
+    '/api/teacher/notifications/channels',
+  );
   const telegram = bots.find((bot) => bot.channel === 'TELEGRAM');
   if (telegram?.configured !== true) {
-    await api(request, teacher, 'PUT', '/api/teacher/notifications/channels/TELEGRAM', { token: BOT_TOKEN });
+    await api(request, teacher, 'PUT', '/api/teacher/notifications/channels/TELEGRAM', {
+      token: BOT_TOKEN,
+    });
   }
   if (telegram?.teacherLinked !== true) {
-    const { code } = await api<{ code: string }>(request, teacher, 'POST', '/api/me/channels/TELEGRAM/link-code');
+    const { code } = await api<{ code: string }>(
+      request,
+      teacher,
+      'POST',
+      '/api/me/channels/TELEGRAM/link-code',
+    );
     const before = await say(request, TEACHER_CHAT, code);
     await waitFor(request, TEACHER_CHAT, 'Готово!', before);
   }
-  const { code } = await api<{ code: string }>(request, student, 'POST', '/api/me/channels/TELEGRAM/link-code');
+  const { code } = await api<{ code: string }>(
+    request,
+    student,
+    'POST',
+    '/api/me/channels/TELEGRAM/link-code',
+  );
   await waitFor(request, STUDENT_CHAT, 'Готово!', await say(request, STUDENT_CHAT, code));
 
-  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons',
-    { studentId: annaId, startsAt: moscow(3, 12), durationMinutes: 60, allowOverlap: true });
+  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
+    studentId: annaId,
+    startsAt: moscow(3, 12),
+    durationMinutes: 60,
+    allowOverlap: true,
+  });
 
-  const menu = await waitFor(request, STUDENT_CHAT, 'Что вы хотите сделать?', await say(request, STUDENT_CHAT, '/menu'));
-  const which = await waitFor(request, STUDENT_CHAT, 'Какое занятие перенести?',
-    await press(request, STUDENT_CHAT, button(menu, 'Перенести занятие')));
-  const day = await waitFor(request, STUDENT_CHAT, 'На какой день перенести?',
-    await press(request, STUDENT_CHAT, button(which, new RegExp(`${dayMonth(3)} 12:00`))));
-  await waitFor(request, STUDENT_CHAT, 'Во сколько?',
-    await press(request, STUDENT_CHAT, button(day, new RegExp(dayMonth(4)))));
-  const comment = await waitFor(request, STUDENT_CHAT, 'комментарий', await say(request, STUDENT_CHAT, '16:30'));
-  const confirm = await waitFor(request, STUDENT_CHAT, 'Попросить учителя перенести занятие',
-    await press(request, STUDENT_CHAT, button(comment, 'Без комментария')));
+  const menu = await waitFor(
+    request,
+    STUDENT_CHAT,
+    'Что вы хотите сделать?',
+    await say(request, STUDENT_CHAT, '/menu'),
+  );
+  const which = await waitFor(
+    request,
+    STUDENT_CHAT,
+    'Какое занятие перенести?',
+    await press(request, STUDENT_CHAT, button(menu, 'Перенести занятие')),
+  );
+  const day = await waitFor(
+    request,
+    STUDENT_CHAT,
+    'На какой день перенести?',
+    await press(request, STUDENT_CHAT, button(which, new RegExp(`${dayMonth(3)} 12:00`))),
+  );
+  await waitFor(
+    request,
+    STUDENT_CHAT,
+    'Во сколько?',
+    await press(request, STUDENT_CHAT, button(day, new RegExp(dayMonth(4)))),
+  );
+  const comment = await waitFor(
+    request,
+    STUDENT_CHAT,
+    'комментарий',
+    await say(request, STUDENT_CHAT, '16:30'),
+  );
+  const confirm = await waitFor(
+    request,
+    STUDENT_CHAT,
+    'Попросить учителя перенести занятие',
+    await press(request, STUDENT_CHAT, button(comment, 'Без комментария')),
+  );
   expect(confirm.text).toContain(`${dayMonth(4)}, 16:30`);
-  await waitFor(request, STUDENT_CHAT, 'Запрос отправлен учителю',
-    await press(request, STUDENT_CHAT, button(confirm, 'Да')));
+  await waitFor(
+    request,
+    STUDENT_CHAT,
+    'Запрос отправлен учителю',
+    await press(request, STUDENT_CHAT, button(confirm, 'Да')),
+  );
 
   const notification = await waitFor(request, TEACHER_CHAT, `${ANNA} просит перенести занятие`);
-  const accept = await waitFor(request, TEACHER_CHAT, 'Перенести занятие (',
-    await press(request, TEACHER_CHAT, button(notification, 'Принять')));
-  await waitFor(request, TEACHER_CHAT, 'Занятие перенесено',
-    await press(request, TEACHER_CHAT, button(accept, 'Да')));
+  const accept = await waitFor(
+    request,
+    TEACHER_CHAT,
+    'Перенести занятие (',
+    await press(request, TEACHER_CHAT, button(notification, 'Принять')),
+  );
+  await waitFor(
+    request,
+    TEACHER_CHAT,
+    'Занятие перенесено',
+    await press(request, TEACHER_CHAT, button(accept, 'Да')),
+  );
 
-  const requests = await api<{ status: string; proposedStartsAt: string }[]>(request, student, 'GET',
-    '/api/me/schedule/requests');
+  const requests = await api<{ status: string; proposedStartsAt: string }[]>(
+    request,
+    student,
+    'GET',
+    '/api/me/schedule/requests',
+  );
   expect(requests[0]?.status).toBe('APPROVED');
   expect(requests[0]?.proposedStartsAt).toBe(moscow(4, 16).replace(':00:00.000Z', ':30:00Z'));
 });

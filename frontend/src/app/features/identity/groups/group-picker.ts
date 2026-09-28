@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
@@ -40,11 +49,17 @@ export class GroupPicker implements OnInit {
 
   ngOnInit(): void {
     this.api.listGroups().subscribe((groups) => {
-      this.groups.set(groups.filter((group) => group.archivedAt === null && group.members.length > 0));
+      this.groups.set(
+        groups.filter((group) => group.archivedAt === null && group.members.length > 0),
+      );
     });
     this.choice.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((group) => {
       if (group !== null) {
-        this.picked.emit(group.members.filter((member) => member.status !== 'DEACTIVATED').map((member) => member.id));
+        this.picked.emit(
+          group.members
+            .filter((member) => member.status !== 'DEACTIVATED')
+            .map((member) => member.id),
+        );
         this.choice.setValue(null, { emitEvent: false });
       }
     });

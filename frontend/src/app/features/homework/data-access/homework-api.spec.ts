@@ -8,7 +8,9 @@ describe('HomeworkApi', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(HomeworkApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -32,18 +34,28 @@ describe('HomeworkApi', () => {
 
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments' });
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments/a-1' });
-    expect(backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body,
+    ).toEqual({
       ...input,
       studentIds: ['s-1'],
     });
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' }).request
+        .body,
+    ).toEqual({
       ...input,
       version: 2,
     });
-    expect(backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body).toEqual({
+    expect(
+      backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body,
+    ).toEqual({
       studentIds: ['s-2'],
     });
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' });
+    backend.expectOne({
+      method: 'DELETE',
+      url: '/api/teacher/homework/assignments/a-1/attachments/f-1',
+    });
     backend.expectOne('/api/teacher/homework/review-queue');
     backend.expectOne('/api/teacher/homework/tasks/t-1');
     expect(backend.expectOne('/api/teacher/homework/tasks/t-1/review').request.body).toEqual({
@@ -51,7 +63,9 @@ describe('HomeworkApi', () => {
       grade: '5',
       comment: null,
     });
-    expect(backend.expectOne('/api/teacher/homework/attachments/f-1').request.responseType).toBe('blob');
+    expect(backend.expectOne('/api/teacher/homework/attachments/f-1').request.responseType).toBe(
+      'blob',
+    );
   });
 
   it('sends files as multipart form data', () => {
@@ -60,7 +74,8 @@ describe('HomeworkApi', () => {
     api.submit('t-1', 'ответ', [file]).subscribe();
     api.submit('t-1', null, []).subscribe();
 
-    const upload: unknown = backend.expectOne('/api/teacher/homework/assignments/a-1/attachments').request.body;
+    const upload: unknown = backend.expectOne('/api/teacher/homework/assignments/a-1/attachments')
+      .request.body;
     expect(upload instanceof FormData ? upload.getAll('files') : []).toHaveLength(1);
     const requests = backend.match('/api/me/homework/tasks/t-1/submissions');
     const withText: unknown = requests[0]?.request.body;

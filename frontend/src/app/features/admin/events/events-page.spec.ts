@@ -16,7 +16,12 @@ describe('EventsPage', () => {
   async function render(events: EventPublication[], deliveries: FailedDelivery[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [EventsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -52,7 +57,9 @@ describe('EventsPage', () => {
 
   it('resubmits events', async () => {
     await render([eventPublication()], []);
-    expect(readableText(hostElement(fixture))).toContain('HomeworkSubmitted HomeworkNotifications.on 3');
+    expect(readableText(hostElement(fixture))).toContain(
+      'HomeworkSubmitted HomeworkNotifications.on 3',
+    );
 
     rowButton().click();
     const one = backend.expectOne('/api/admin/events/resubmit');

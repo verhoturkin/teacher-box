@@ -8,7 +8,9 @@ describe('lesson owner', () => {
       { label: 'Группы', items: [{ label: 'ОГЭ', value: 'group:g-1' }] },
       { label: 'Ученики', items: [{ label: 'Иван', value: 'student:s-1' }] },
     ]);
-    expect(ownerOptions(students, [])).toEqual([{ label: 'Ученики', items: [{ label: 'Иван', value: 'student:s-1' }] }]);
+    expect(ownerOptions(students, [])).toEqual([
+      { label: 'Ученики', items: [{ label: 'Иван', value: 'student:s-1' }] },
+    ]);
   });
 
   it('turns a choice into the ids of a request and back', () => {

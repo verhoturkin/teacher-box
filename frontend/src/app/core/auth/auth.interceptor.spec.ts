@@ -49,7 +49,9 @@ describe('authInterceptor', () => {
 
     http.get('/api/me').subscribe();
 
-    expect(backend.expectOne('/api/me').request.headers.get('Authorization')).toBe('Bearer token-TEACHER');
+    expect(backend.expectOne('/api/me').request.headers.get('Authorization')).toBe(
+      'Bearer token-TEACHER',
+    );
   });
 
   it('refreshes an expiring token before the call', () => {

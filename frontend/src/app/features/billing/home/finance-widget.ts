@@ -33,7 +33,9 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
         <ul class="tb-debtors">
           @for (debtor of finance.topDebtors; track debtor.studentId) {
             <li>
-              <a [routerLink]="['/teacher/billing/students', debtor.studentId]" class="tb-link">{{ debtor.displayName }}</a>
+              <a [routerLink]="['/teacher/billing/students', debtor.studentId]" class="tb-link">{{
+                debtor.displayName
+              }}</a>
               <span class="tb-negative">{{ -debtor.balance | money: finance.currency }}</span>
             </li>
           }
@@ -72,5 +74,7 @@ export class FinanceWidget {
   readonly summary = input.required<BillingSummary>();
 
   /** Name of the month, e.g. «сентябрь». */
-  protected readonly monthName = computed(() => MONTH.format(new Date(`${this.summary().month}-01T00:00:00Z`)));
+  protected readonly monthName = computed(() =>
+    MONTH.format(new Date(`${this.summary().month}-01T00:00:00Z`)),
+  );
 }

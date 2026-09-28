@@ -13,7 +13,10 @@ describe('BotWizardDialog', () => {
   let backend: HttpTestingController;
   let changed: ChannelSetup[];
 
-  async function open(setup: ChannelSetup | null, channel: ChannelType = setup?.channel ?? 'TELEGRAM'): Promise<void> {
+  async function open(
+    setup: ChannelSetup | null,
+    channel: ChannelType = setup?.channel ?? 'TELEGRAM',
+  ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BotWizardDialog],
       providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
@@ -74,7 +77,9 @@ describe('BotWizardDialog', () => {
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectOne('/api/teacher/notifications/channels').flush([configured]);
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
-    backend.expectOne('/api/teacher/notifications/channels').flush([{ ...configured, teacherLinked: true }]);
+    backend
+      .expectOne('/api/teacher/notifications/channels')
+      .flush([{ ...configured, teacherLinked: true }]);
     fixture.detectChanges();
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectNone('/api/teacher/notifications/channels');
@@ -100,15 +105,19 @@ describe('BotWizardDialog', () => {
     fixture.componentInstance.form.setValue({ token: 'wrong', groupId: null });
     fixture.componentInstance.saveToken();
     fixture.componentInstance.saveToken();
-    backend
-      .expectOne('/api/teacher/notifications/channels/TELEGRAM')
-      .flush(
-        { status: 422, code: 'notifications.channel-check-failed', detail: 'Telegram 401: Unauthorized' },
-        { status: 422, statusText: 'Unprocessable Content' },
-      );
+    backend.expectOne('/api/teacher/notifications/channels/TELEGRAM').flush(
+      {
+        status: 422,
+        code: 'notifications.channel-check-failed',
+        detail: 'Telegram 401: Unauthorized',
+      },
+      { status: 422, statusText: 'Unprocessable Content' },
+    );
     await settle();
 
-    expect(text()).toContain('Мессенджер не принял токен. Проверьте его и попробуйте снова. Ответ мессенджера: Telegram 401: Unauthorized');
+    expect(text()).toContain(
+      'Мессенджер не принял токен. Проверьте его и попробуйте снова. Ответ мессенджера: Telegram 401: Unauthorized',
+    );
     fixture.componentInstance.go(3);
     await settle();
     expect(text()).toContain('Проверить и сохранить');
@@ -127,7 +136,9 @@ describe('BotWizardDialog', () => {
     fixture.componentInstance.saveToken();
     const save = backend.expectOne('/api/teacher/notifications/channels/VK');
     expect(save.request.body).toEqual({ token: 'vk-key', groupId: 42 });
-    save.flush(channelSetup({ channel: 'VK', configured: true, botName: 'Школа', teacherLinked: true }));
+    save.flush(
+      channelSetup({ channel: 'VK', configured: true, botName: 'Школа', teacherLinked: true }),
+    );
     await settle();
 
     expect(text()).toContain('Отправим вам тестовое сообщение');
@@ -174,7 +185,9 @@ describe('BotWizardDialog', () => {
     await open(channelSetup({ configured: true }));
 
     fixture.componentInstance.connect();
-    backend.expectOne('/api/me/channels/TELEGRAM/link-code').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/me/channels/TELEGRAM/link-code')
+      .flush(null, { status: 500, statusText: 'Error' });
     await settle();
 
     expect(text()).toContain('Подключить мой аккаунт');
@@ -191,27 +204,33 @@ describe('BotWizardDialog', () => {
 
     fixture.componentInstance.sendTest();
     fixture.componentInstance.sendTest();
-    backend
-      .expectOne('/api/teacher/notifications/channels/TELEGRAM/test')
-      .flush(
-        { status: 422, code: 'notifications.test-failed', detail: 'Forbidden: bot was blocked by the user' },
-        { status: 422, statusText: 'Unprocessable Content' },
-      );
+    backend.expectOne('/api/teacher/notifications/channels/TELEGRAM/test').flush(
+      {
+        status: 422,
+        code: 'notifications.test-failed',
+        detail: 'Forbidden: bot was blocked by the user',
+      },
+      { status: 422, statusText: 'Unprocessable Content' },
+    );
     await settle();
 
-    expect(text()).toContain('Не удалось отправить тестовое сообщение. Ответ мессенджера: Forbidden: bot was blocked');
+    expect(text()).toContain(
+      'Не удалось отправить тестовое сообщение. Ответ мессенджера: Forbidden: bot was blocked',
+    );
   });
 
   it('does not repeat other errors details', async () => {
     await open(channelSetup({ configured: true, teacherLinked: true }));
 
     fixture.componentInstance.sendTest();
-    backend
-      .expectOne('/api/teacher/notifications/channels/TELEGRAM/test')
-      .flush(
-        { status: 404, code: 'notifications.channel-not-linked', detail: 'Messenger TELEGRAM is not connected' },
-        { status: 404, statusText: 'Not Found' },
-      );
+    backend.expectOne('/api/teacher/notifications/channels/TELEGRAM/test').flush(
+      {
+        status: 404,
+        code: 'notifications.channel-not-linked',
+        detail: 'Messenger TELEGRAM is not connected',
+      },
+      { status: 404, statusText: 'Not Found' },
+    );
     await settle();
 
     expect(text()).toContain('Мессенджер не подключён');

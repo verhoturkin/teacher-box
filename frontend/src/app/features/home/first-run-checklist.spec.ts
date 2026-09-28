@@ -7,10 +7,18 @@ import { CHECKLIST_DISMISSED_KEY, FirstRunChecklist, SetupProgress } from './fir
 describe('FirstRunChecklist', () => {
   let fixture: ComponentFixture<FirstRunChecklist>;
 
-  const fresh: SetupProgress = { hasStudents: true, priceSet: true, messengerConfigured: false, hasLessons: false };
+  const fresh: SetupProgress = {
+    hasStudents: true,
+    priceSet: true,
+    messengerConfigured: false,
+    hasLessons: false,
+  };
 
   async function render(progress: SetupProgress): Promise<void> {
-    TestBed.configureTestingModule({ imports: [FirstRunChecklist], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [FirstRunChecklist],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(FirstRunChecklist);
     fixture.componentRef.setInput('progress', progress);
     fixture.detectChanges();
@@ -32,7 +40,9 @@ describe('FirstRunChecklist', () => {
 
     expect(text()).toContain('С чего начать');
     expect(text()).toContain('Сделано 2 из 4');
-    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
+      a.getAttribute('href'),
+    );
     expect(links).toEqual(['/teacher/notifications?tab=messengers', '/teacher/schedule']);
   });
 

@@ -15,7 +15,12 @@ describe('BroadcastsPanel', () => {
   async function render(history: BroadcastItem[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BroadcastsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BroadcastsPanel);
@@ -36,7 +41,10 @@ describe('BroadcastsPanel', () => {
   });
 
   it('shows the history of messages', async () => {
-    await render([broadcastItem(), broadcastItem({ id: 'b-2', title: 'Без текста', body: null, recipients: 1 })]);
+    await render([
+      broadcastItem(),
+      broadcastItem({ id: 'b-2', title: 'Без текста', body: null, recipients: 1 }),
+    ]);
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Каникулы 24.09.2026');

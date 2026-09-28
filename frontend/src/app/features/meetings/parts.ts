@@ -3,7 +3,12 @@
  * cell and dialog, and the settings panel. The feature has no pages of its own.
  */
 export { MeetingsApi } from './data-access/meetings-api';
-export type { MeetingRoom, MyRoom, RoomOwnerRef, YandexStatus } from './data-access/meetings.models';
+export type {
+  MeetingRoom,
+  MyRoom,
+  RoomOwnerRef,
+  YandexStatus,
+} from './data-access/meetings.models';
 export { RoomCell } from './rooms/room-cell';
 export { RoomDialog } from './rooms/room-dialog';
 export { MeetingsSettingsPanel } from './settings/meetings-settings-panel';

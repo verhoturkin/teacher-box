@@ -5,7 +5,9 @@ import { request } from '@playwright/test';
  * as done before them; the wizard itself is covered by the version 1.3 scenario after a full reset.
  */
 export default async function globalSetup(): Promise<void> {
-  const api = await request.newContext({ baseURL: process.env['E2E_BASE_URL'] ?? 'http://localhost:8091' });
+  const api = await request.newContext({
+    baseURL: process.env['E2E_BASE_URL'] ?? 'http://localhost:8091',
+  });
   const password = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
   const signedIn = await api.post('/api/auth/login', { data: { login: 'teacher', password } });
   if (!signedIn.ok()) {

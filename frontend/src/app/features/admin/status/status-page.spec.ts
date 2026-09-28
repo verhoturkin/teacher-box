@@ -16,7 +16,12 @@ describe('StatusPage', () => {
   async function render(status: SystemStatus): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StatusPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StatusPage);
@@ -47,7 +52,9 @@ describe('StatusPage', () => {
   });
 
   it('warns about a full disk and a failed check, and refreshes', async () => {
-    await render(systemStatus({ version: null, builtAt: null, health: 'DOWN', diskFree: 1024 * 1024 * 1024 }));
+    await render(
+      systemStatus({ version: null, builtAt: null, health: 'DOWN', diskFree: 1024 * 1024 * 1024 }),
+    );
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Проверки DOWN');

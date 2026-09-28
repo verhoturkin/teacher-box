@@ -6,8 +6,10 @@
 const LOCALE = 'ru-RU';
 
 function fractionDigits(currency: string): number {
-  return new Intl.NumberFormat(LOCALE, { style: 'currency', currency }).resolvedOptions()
-    .maximumFractionDigits ?? 2;
+  return (
+    new Intl.NumberFormat(LOCALE, { style: 'currency', currency }).resolvedOptions()
+      .maximumFractionDigits ?? 2
+  );
 }
 
 /** 150000 RUB → 1500 */

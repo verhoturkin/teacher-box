@@ -3,7 +3,10 @@ import { REQUEST_ID_HEADER, isProblemDetail, problemCode, requestCode } from './
 
 describe('problemCode', () => {
   it('extracts the code of a problem response', () => {
-    const error = new HttpErrorResponse({ status: 409, error: { status: 409, code: 'login.taken' } });
+    const error = new HttpErrorResponse({
+      status: 409,
+      error: { status: 409, code: 'login.taken' },
+    });
 
     expect(problemCode(error)).toBe('login.taken');
   });
@@ -30,9 +33,11 @@ describe('isProblemDetail', () => {
 
 describe('requestCode', () => {
   it('takes the code from the problem or the response header', () => {
-    expect(requestCode(new HttpErrorResponse({ status: 500, error: { status: 500, requestId: 'abc123' } }))).toBe(
-      'abc123',
-    );
+    expect(
+      requestCode(
+        new HttpErrorResponse({ status: 500, error: { status: 500, requestId: 'abc123' } }),
+      ),
+    ).toBe('abc123');
     expect(
       requestCode(
         new HttpErrorResponse({
@@ -46,7 +51,9 @@ describe('requestCode', () => {
 
   it('is empty without a response', () => {
     expect(requestCode(new HttpErrorResponse({ status: 0 }))).toBeNull();
-    expect(requestCode(new HttpErrorResponse({ status: 500, error: { status: 500, requestId: '' } }))).toBeNull();
+    expect(
+      requestCode(new HttpErrorResponse({ status: 500, error: { status: 500, requestId: '' } })),
+    ).toBeNull();
     expect(requestCode(new Error('x'))).toBeNull();
   });
 });

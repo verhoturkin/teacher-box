@@ -1,6 +1,14 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
@@ -31,7 +39,13 @@ import { IssuedInvite } from '../data-access/identity.models';
           Ссылка одноразовая и действует до {{ invite.expiresAt | date: 'dd.MM.yyyy HH:mm' }}.
         </p>
         <div class="tb-copy-row">
-          <input pInputText readonly [value]="link()" aria-label="Ссылка-приглашение" class="tb-grow" />
+          <input
+            pInputText
+            readonly
+            [value]="link()"
+            aria-label="Ссылка-приглашение"
+            class="tb-grow"
+          />
           <p-button
             [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
             [label]="copied() ? 'Скопировано' : 'Копировать'"

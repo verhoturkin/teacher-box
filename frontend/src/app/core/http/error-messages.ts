@@ -15,7 +15,8 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'auth.locked': 'Слишком много неудачных попыток. Попробуйте через 15 минут',
   'auth.deactivated': 'Доступ отключён учителем',
   'auth.refresh-invalid': 'Сессия истекла. Войдите снова',
-  'invite.invalid': 'Ссылка-приглашение недействительна или устарела. Попросите учителя прислать новую',
+  'invite.invalid':
+    'Ссылка-приглашение недействительна или устарела. Попросите учителя прислать новую',
   'login.taken': 'Этот логин уже занят',
   'login.invalid': 'Логин: 3–50 символов — латинские буквы, цифры, точка, дефис, подчёркивание',
   'login.required': 'Укажите логин',
@@ -63,8 +64,10 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
   'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
   'notifications.channel-not-linked': 'Мессенджер не подключён',
-  'notifications.channel-from-environment': 'Этот бот задан в переменных окружения сервера — измените его там',
-  'notifications.channel-check-failed': 'Мессенджер не принял токен. Проверьте его и попробуйте снова',
+  'notifications.channel-from-environment':
+    'Этот бот задан в переменных окружения сервера — измените его там',
+  'notifications.channel-check-failed':
+    'Мессенджер не принял токен. Проверьте его и попробуйте снова',
   'notifications.test-failed': 'Не удалось отправить тестовое сообщение',
   'notification.quiet-hours-invalid': 'Укажите начало и конец тихих часов, они не должны совпадать',
   // platform
@@ -117,14 +120,19 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.request-resolved': 'На запрос уже ответили',
   'schedule.students-only': 'Раздел доступен только ученикам',
   'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
-  'schedule.google-client-from-environment': 'OAuth-клиент Google задан в переменных окружения сервера',
+  'schedule.google-client-from-environment':
+    'OAuth-клиент Google задан в переменных окружения сервера',
   'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
   'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
-  'meetings.not-connected': 'Сначала подключите Яндекс в «Настройках» или вставьте ссылку на встречу сами',
-  'meetings.reconnect': 'Яндекс больше не принимает доступ портала: подключите аккаунт заново в «Настройках»',
-  'meetings.telemost-failed': 'Телемост не создал встречу. Попробуйте позже или вставьте ссылку сами',
+  'meetings.not-connected':
+    'Сначала подключите Яндекс в «Настройках» или вставьте ссылку на встречу сами',
+  'meetings.reconnect':
+    'Яндекс больше не принимает доступ портала: подключите аккаунт заново в «Настройках»',
+  'meetings.telemost-failed':
+    'Телемост не создал встречу. Попробуйте позже или вставьте ссылку сами',
   'meetings.room-not-found': 'Такой комнаты уже нет',
-  'meetings.no-recipients': 'Ссылку некому отправить: у ученика нет доступа или в группе никого нет',
+  'meetings.no-recipients':
+    'Ссылку некому отправить: у ученика нет доступа или в группе никого нет',
   'meetings.client-missing': 'Сначала укажите ClientID и Client secret приложения',
   'meetings.client-from-environment': 'Приложение Яндекса задано в переменных окружения сервера',
   'meetings.origin-invalid': 'Не удалось определить адрес портала',

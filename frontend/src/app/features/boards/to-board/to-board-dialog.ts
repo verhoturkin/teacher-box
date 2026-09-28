@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -26,20 +35,34 @@ export interface Copied {
   imports: [FormsModule, Button, Dialog, Message, RadioButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="На доску" [(visible)]="visible" [modal]="true" [style]="{ width: '32rem' }" [draggable]="false">
+    <p-dialog
+      header="На доску"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '32rem' }"
+      [draggable]="false"
+    >
       @if (loaded() && boards().length === 0) {
         <p class="tb-muted">
-          Досок пока нет. Добавьте ссылку на доску ученика или группы в разделе «Ученики» (колонка «Доски»).
+          Досок пока нет. Добавьте ссылку на доску ученика или группы в разделе «Ученики» (колонка
+          «Доски»).
         </p>
       } @else {
-        <p class="tb-muted">Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V.</p>
+        <p class="tb-muted">
+          Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V.
+        </p>
         @if (!richClipboard) {
           <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
         }
         <ul class="tb-to-board">
           @for (board of sorted(); track board.id) {
             <li>
-              <p-radiobutton [inputId]="'to-board-' + board.id" name="board" [value]="board.id" [(ngModel)]="chosen" />
+              <p-radiobutton
+                [inputId]="'to-board-' + board.id"
+                name="board"
+                [value]="board.id"
+                [(ngModel)]="chosen"
+              />
               <label [for]="'to-board-' + board.id">
                 {{ board.title }}
                 <span class="tb-muted">— {{ board.ownerName ?? '' }}</span>
@@ -50,15 +73,23 @@ export interface Copied {
       }
       @if (done(); as copied) {
         <p-message severity="success" styleClass="tb-form-message">
-          {{ copied.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите Ctrl+V.
-          <a [href]="copied.board.url" target="_blank" rel="noopener">Открыть доску «{{ copied.board.title }}»</a>
+          {{ copied.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
+          Ctrl+V.
+          <a [href]="copied.board.url" target="_blank" rel="noopener"
+            >Открыть доску «{{ copied.board.title }}»</a
+          >
         </p-message>
       }
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
       <ng-template #footer>
-        <p-button label="Закрыть" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
+        <p-button
+          label="Закрыть"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
         <p-button
           label="Картинкой"
           icon="pi pi-image"
@@ -67,7 +98,13 @@ export interface Copied {
           [loading]="copying()"
           (onClick)="copy('image')"
         />
-        <p-button label="Текстом" icon="pi pi-copy" [disabled]="chosenBoard() === null" [loading]="copying()" (onClick)="copy('text')" />
+        <p-button
+          label="Текстом"
+          icon="pi pi-copy"
+          [disabled]="chosenBoard() === null"
+          [loading]="copying()"
+          (onClick)="copy('text')"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -112,7 +149,9 @@ export class ToBoardDialog {
       (a, b) => Number(preferred.has(b.ownerId)) - Number(preferred.has(a.ownerId)),
     );
   });
-  protected readonly chosenBoard = computed(() => this.boards().find((board) => board.id === this.chosen()) ?? null);
+  protected readonly chosenBoard = computed(
+    () => this.boards().find((board) => board.id === this.chosen()) ?? null,
+  );
 
   constructor() {
     effect(() => {
@@ -147,7 +186,9 @@ export class ToBoardDialog {
       // Still within the click's activation; if the browser blocks the tab, the message has a link.
       window.open(board.url, '_blank', 'noopener');
     } catch {
-      this.error.set('Браузер не дал скопировать материал. Попробуйте ещё раз или скопируйте текст вручную.');
+      this.error.set(
+        'Браузер не дал скопировать материал. Попробуйте ещё раз или скопируйте текст вручную.',
+      );
     } finally {
       this.copying.set(false);
     }

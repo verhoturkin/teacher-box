@@ -28,7 +28,13 @@ export class HelpArticleView {
     const target = event.target;
     const link = target instanceof Element ? target.closest('a') : null;
     const href = link?.getAttribute('href') ?? null;
-    if (href === null || !href.startsWith('/') || event.ctrlKey || event.metaKey || event.shiftKey) {
+    if (
+      href === null ||
+      !href.startsWith('/') ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
       return;
     }
     event.preventDefault();

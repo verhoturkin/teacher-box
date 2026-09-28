@@ -41,7 +41,17 @@ export const INTERVAL_OPTIONS = [
  */
 @Component({
   selector: 'tb-series-dialog',
-  imports: [ReactiveFormsModule, Button, DatePicker, Dialog, InputNumber, InputText, Message, Select, SelectButton],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    DatePicker,
+    Dialog,
+    InputNumber,
+    InputText,
+    Message,
+    Select,
+    SelectButton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -123,7 +133,9 @@ export const INTERVAL_OPTIONS = [
         </div>
         <div class="tb-row">
           <div class="tb-field">
-            <label for="series-starts">{{ series() === null ? 'С даты' : 'Изменить с даты' }}</label>
+            <label for="series-starts">{{
+              series() === null ? 'С даты' : 'Изменить с даты'
+            }}</label>
             <p-datepicker
               inputId="series-starts"
               formControlName="startsOn"
@@ -162,7 +174,12 @@ export const INTERVAL_OPTIONS = [
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             Некоторые занятия пересекаются с уже запланированными.
-            <p-button label="Всё равно сохранить" [link]="true" size="small" (onClick)="save(true)" />
+            <p-button
+              label="Всё равно сохранить"
+              [link]="true"
+              size="small"
+              (onClick)="save(true)"
+            />
           </p-message>
         }
         @if (error(); as message) {
@@ -170,8 +187,18 @@ export const INTERVAL_OPTIONS = [
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -203,7 +230,10 @@ export class SeriesDialog {
 
   readonly form = new FormGroup({
     owner: new FormControl<OwnerValue | null>(null, [Validators.required]),
-    weekdays: new FormControl<Weekday[]>([], { nonNullable: true, validators: [Validators.required] }),
+    weekdays: new FormControl<Weekday[]>([], {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     startTime: new FormControl<Date | null>(null, [Validators.required]),
     durationMinutes: new FormControl<number | null>(60, [
       Validators.required,
@@ -259,7 +289,8 @@ export class SeriesDialog {
       allowOverlap,
     };
     const series = this.series();
-    const call = series === null ? this.api.planSeries(request) : this.api.changeSeries(series.id, request);
+    const call =
+      series === null ? this.api.planSeries(request) : this.api.changeSeries(series.id, request);
     call.subscribe({
       next: (planned) => {
         this.pending.set(false);

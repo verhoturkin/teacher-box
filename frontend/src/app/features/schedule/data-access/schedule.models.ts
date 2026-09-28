@@ -3,7 +3,8 @@ export type LessonOutcome = Extract<ScheduleLessonStatus, 'CONDUCTED' | 'MISSED'
 export type CancelledBy = 'TEACHER' | 'STUDENT';
 export type ChangeKind = 'RESCHEDULE' | 'CANCEL';
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'WITHDRAWN' | 'OUTDATED';
-export type Weekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type Weekday =
+  'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 /** Attendance of a participant: EXPECTED until the lesson is marked. */
 export type Attendance = 'EXPECTED' | 'ATTENDED' | 'MISSED' | 'EXCUSED';
 export type AttendanceMark = Exclude<Attendance, 'EXPECTED'>;

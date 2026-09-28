@@ -42,7 +42,9 @@ export class BillingApi {
   /** @returns the saved price in minor units */
   changeLessonPrice(studentId: string, lessonPrice: number): Observable<number> {
     return this.http
-      .put<{ lessonPrice: number }>(`/api/teacher/billing/students/${studentId}/price`, { lessonPrice })
+      .put<{ lessonPrice: number }>(`/api/teacher/billing/students/${studentId}/price`, {
+        lessonPrice,
+      })
       .pipe(map((response) => response.lessonPrice));
   }
 

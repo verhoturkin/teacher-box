@@ -15,7 +15,12 @@ describe('Shell', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+      ],
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
@@ -23,7 +28,9 @@ describe('Shell', () => {
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
     fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
-    fixture.componentRef.setInput('userLinks', [{ label: 'Настройки', routerLink: '/teacher/settings' }]);
+    fixture.componentRef.setInput('userLinks', [
+      { label: 'Настройки', routerLink: '/teacher/settings' },
+    ]);
     await fixture.whenStable();
   });
 
@@ -35,7 +42,9 @@ describe('Shell', () => {
     TestBed.inject(Portal).set({ name: 'Английский с Марией', address: null });
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelector('.tb-shell__brand')?.textContent).toContain('Английский с Марией');
+    expect(hostElement(fixture).querySelector('.tb-shell__brand')?.textContent).toContain(
+      'Английский с Марией',
+    );
   });
 
   it('shows navigation, area and the user', () => {

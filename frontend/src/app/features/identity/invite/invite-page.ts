@@ -32,7 +32,16 @@ type InviteState =
 /** `/invite/:token`: the student sets up credentials (first sign-up) or a new password (reset). */
 @Component({
   selector: 'tb-invite-page',
-  imports: [ReactiveFormsModule, DatePipe, Button, Card, InputText, Message, Password, ProgressSpinner],
+  imports: [
+    ReactiveFormsModule,
+    DatePipe,
+    Button,
+    Card,
+    InputText,
+    Message,
+    Password,
+    ProgressSpinner,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
@@ -43,18 +52,23 @@ type InviteState =
         @case ('invalid') {
           <p-card header="Приглашение недействительно" styleClass="tb-auth-card">
             <p>
-              Ссылка устарела или уже была использована. Попросите учителя прислать новое приглашение.
+              Ссылка устарела или уже была использована. Попросите учителя прислать новое
+              приглашение.
             </p>
           </p-card>
         }
         @case ('ready') {
           @if (invite(); as invite) {
-            <p-card [header]="'Здравствуйте, ' + invite.displayName + '!'" styleClass="tb-auth-card">
+            <p-card
+              [header]="'Здравствуйте, ' + invite.displayName + '!'"
+              styleClass="tb-auth-card"
+            >
               <p class="tb-muted">
                 @if (isActivation()) {
                   Придумайте логин и пароль для входа в «{{ portalName() }}».
                 } @else {
-                  Задайте новый пароль для логина <strong>{{ invite.login }}</strong>.
+                  Задайте новый пароль для логина <strong>{{ invite.login }}</strong
+                  >.
                 }
                 Ссылка действует до {{ invite.expiresAt | date: 'dd.MM.yyyy HH:mm' }}.
               </p>
@@ -63,7 +77,9 @@ type InviteState =
                   <div class="tb-field">
                     <label for="login">Логин</label>
                     <input pInputText id="login" formControlName="login" autocomplete="username" />
-                    <small class="tb-hint">Латинские буквы, цифры, «.», «-», «_» — от 3 до 50 символов</small>
+                    <small class="tb-hint"
+                      >Латинские буквы, цифры, «.», «-», «_» — от 3 до 50 символов</small
+                    >
                   </div>
                 }
                 <div class="tb-field">
@@ -132,7 +148,10 @@ export class InvitePage implements OnInit {
   protected readonly form = inject(NonNullableFormBuilder).group(
     {
       login: ['', [Validators.maxLength(50)]],
-      password: ['', [Validators.required, Validators.minLength(PASSWORD_MIN_LENGTH), Validators.maxLength(128)]],
+      password: [
+        '',
+        [Validators.required, Validators.minLength(PASSWORD_MIN_LENGTH), Validators.maxLength(128)],
+      ],
       confirm: ['', [Validators.required]],
     },
     { validators: [fieldsMatch('password', 'confirm')] },

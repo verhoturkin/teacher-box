@@ -38,7 +38,12 @@ describe('HomeworkDraftDialog', () => {
 
     buttonByText(document.body, 'Сгенерировать').click();
     const request = backend.expectOne('/api/teacher/ai/homework-draft');
-    expect(request.request.body).toEqual({ topic: 'Дроби', level: '6 класс', taskCount: 4, wishes: 'без картинок' });
+    expect(request.request.body).toEqual({
+      topic: 'Дроби',
+      level: '6 класс',
+      taskCount: 4,
+      wishes: 'без картинок',
+    });
     request.flush({ title: 'Сложение дробей', description: '1. ...' });
     await fixture.whenStable();
 
@@ -70,7 +75,10 @@ describe('HomeworkDraftDialog', () => {
     fixture.componentInstance.generate();
     backend
       .expectOne('/api/teacher/ai/homework-draft')
-      .flush({ status: 422, code: 'ai.limit-exceeded' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'ai.limit-exceeded' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Исчерпан месячный лимит токенов ИИ');

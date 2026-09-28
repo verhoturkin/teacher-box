@@ -45,7 +45,16 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
  */
 @Component({
   selector: 'tb-lesson-dialog',
-  imports: [ReactiveFormsModule, Button, DatePicker, Dialog, InputNumber, InputText, Message, Select],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    DatePicker,
+    Dialog,
+    InputNumber,
+    InputText,
+    Message,
+    Select,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -122,7 +131,12 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             Время пересекается с другим занятием.
-            <p-button label="Всё равно сохранить" [link]="true" size="small" (onClick)="save(true)" />
+            <p-button
+              label="Всё равно сохранить"
+              [link]="true"
+              size="small"
+              (onClick)="save(true)"
+            />
           </p-message>
         }
         @if (error(); as message) {
@@ -130,8 +144,18 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,

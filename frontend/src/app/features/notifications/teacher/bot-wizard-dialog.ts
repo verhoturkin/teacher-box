@@ -32,7 +32,10 @@ import { CHANNEL_NAMES } from '../notification-labels';
 export type WizardStep = 1 | 2 | 3 | 4;
 
 /** Errors whose detail is the messenger's own answer, worth showing to the teacher. */
-const MESSENGER_ERRORS = new Set(['notifications.channel-check-failed', 'notifications.test-failed']);
+const MESSENGER_ERRORS = new Set([
+  'notifications.channel-check-failed',
+  'notifications.test-failed',
+]);
 
 function describeMessengerError(error: unknown, fallback: string): string {
   const message = describeError(error, fallback);
@@ -49,7 +52,16 @@ function describeMessengerError(error: unknown, fallback: string): string {
 /** Teacher: connects a messenger bot step by step, without editing the server configuration. */
 @Component({
   selector: 'tb-bot-wizard-dialog',
-  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputNumber, LinkCodeView, Message, Password],
+  imports: [
+    HelpButton,
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputNumber,
+    LinkCodeView,
+    Message,
+    Password,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -62,7 +74,11 @@ function describeMessengerError(error: unknown, fallback: string): string {
     >
       <tb-help-button topic="teacher/notifications" label="Подробнее о ботах" />
       <ol class="tb-wizard">
-        <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 1" [class.tb-wizard__step--done]="step() > 1">
+        <li
+          class="tb-wizard__step"
+          [class.tb-wizard__step--active]="step() === 1"
+          [class.tb-wizard__step--done]="step() > 1"
+        >
           <button type="button" class="tb-wizard__header" (click)="go(1)">
             <span class="tb-wizard__number">1</span>
             <span>Создайте бота</span>
@@ -73,24 +89,38 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 @case ('TELEGRAM') {
                   <ol class="tb-wizard__howto">
                     <li>
-                      Откройте <a href="https://t.me/BotFather" target="_blank" rel="noopener">&#64;BotFather</a> в Telegram и
-                      отправьте команду <code>/newbot</code>.
+                      Откройте
+                      <a href="https://t.me/BotFather" target="_blank" rel="noopener"
+                        >&#64;BotFather</a
+                      >
+                      в Telegram и отправьте команду <code>/newbot</code>.
                     </li>
-                    <li>Придумайте имя бота и его адрес — адрес должен заканчиваться на <code>bot</code>.</li>
-                    <li>BotFather пришлёт токен вида <code>123456789:AAF…</code> — скопируйте его.</li>
+                    <li>
+                      Придумайте имя бота и его адрес — адрес должен заканчиваться на
+                      <code>bot</code>.
+                    </li>
+                    <li>
+                      BotFather пришлёт токен вида <code>123456789:AAF…</code> — скопируйте его.
+                    </li>
                   </ol>
                 }
                 @case ('VK') {
                   <ol class="tb-wizard__howto">
-                    <li>Создайте сообщество ВКонтакте (можно закрытое). «Управление» → «Сообщения»: включите.</li>
-                    <li>«Работа с API» → «Ключи доступа»: создайте ключ с правом «Сообщения сообщества» и скопируйте его.</li>
                     <li>
-                      «Работа с API» → «Long Poll API»: включите, версия API 5.199; в «Типах событий» отметьте «Входящее
-                      сообщение».
+                      Создайте сообщество ВКонтакте (можно закрытое). «Управление» → «Сообщения»:
+                      включите.
                     </li>
                     <li>
-                      «Сообщения» → «Настройки для бота»: включите «Возможности ботов» — тогда под сообщениями будут
-                      кнопки меню.
+                      «Работа с API» → «Ключи доступа»: создайте ключ с правом «Сообщения
+                      сообщества» и скопируйте его.
+                    </li>
+                    <li>
+                      «Работа с API» → «Long Poll API»: включите, версия API 5.199; в «Типах
+                      событий» отметьте «Входящее сообщение».
+                    </li>
+                    <li>
+                      «Сообщения» → «Настройки для бота»: включите «Возможности ботов» — тогда под
+                      сообщениями будут кнопки меню.
                     </li>
                     <li>Номер сообщества — цифры из адреса вида <code>club123456</code>.</li>
                   </ol>
@@ -98,21 +128,34 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 @case ('MAX') {
                   <ol class="tb-wizard__howto">
                     <li>
-                      Создайте бота на платформе MAX для партнёров
-                      (<a href="https://dev.max.ru" target="_blank" rel="noopener">dev.max.ru</a>).
+                      Создайте бота на платформе MAX для партнёров (<a
+                        href="https://dev.max.ru"
+                        target="_blank"
+                        rel="noopener"
+                        >dev.max.ru</a
+                      >).
                     </li>
                     <li>Скопируйте токен бота.</li>
                   </ol>
                 }
               }
               <div class="tb-actions">
-                <p-button label="Бот создан, дальше" icon="pi pi-arrow-right" iconPos="right" (onClick)="go(2)" />
+                <p-button
+                  label="Бот создан, дальше"
+                  icon="pi pi-arrow-right"
+                  iconPos="right"
+                  (onClick)="go(2)"
+                />
               </div>
             </div>
           }
         </li>
 
-        <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 2" [class.tb-wizard__step--done]="step() > 2">
+        <li
+          class="tb-wizard__step"
+          [class.tb-wizard__step--active]="step() === 2"
+          [class.tb-wizard__step--done]="step() > 2"
+        >
           <button type="button" class="tb-wizard__header" (click)="go(2)">
             <span class="tb-wizard__number">2</span>
             <span>Вставьте токен</span>
@@ -120,7 +163,8 @@ function describeMessengerError(error: unknown, fallback: string): string {
           @if (step() === 2 && bot()?.fromEnvironment === true) {
             <div class="tb-wizard__body">
               <p class="tb-muted">
-                Этот бот задан в переменных окружения сервера (TEACHERBOX_NOTIFICATIONS_*), токен меняется там.
+                Этот бот задан в переменных окружения сервера (TEACHERBOX_NOTIFICATIONS_*), токен
+                меняется там.
               </p>
             </div>
           } @else if (step() === 2) {
@@ -128,12 +172,15 @@ function describeMessengerError(error: unknown, fallback: string): string {
               @if (bot(); as current) {
                 @if (current.configured) {
                   <p class="tb-muted">
-                    Бот {{ current.botName ?? '' }} уже подключён. Чтобы заменить его, вставьте токен другого бота.
+                    Бот {{ current.botName ?? '' }} уже подключён. Чтобы заменить его, вставьте
+                    токен другого бота.
                   </p>
                 }
               }
               <div class="tb-field">
-                <label for="bot-token">{{ channel() === 'VK' ? 'Ключ доступа сообщества' : 'Токен бота' }}</label>
+                <label for="bot-token">{{
+                  channel() === 'VK' ? 'Ключ доступа сообщества' : 'Токен бота'
+                }}</label>
                 <p-password
                   inputId="bot-token"
                   formControlName="token"
@@ -146,7 +193,13 @@ function describeMessengerError(error: unknown, fallback: string): string {
               @if (channel() === 'VK') {
                 <div class="tb-field">
                   <label for="bot-group">Номер сообщества</label>
-                  <p-inputnumber inputId="bot-group" formControlName="groupId" [useGrouping]="false" [min]="1" [fluid]="true" />
+                  <p-inputnumber
+                    inputId="bot-group"
+                    formControlName="groupId"
+                    [useGrouping]="false"
+                    [min]="1"
+                    [fluid]="true"
+                  />
                 </div>
               }
               @if (error(); as message) {
@@ -165,28 +218,54 @@ function describeMessengerError(error: unknown, fallback: string): string {
           }
         </li>
 
-        <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 3" [class.tb-wizard__step--done]="step() > 3">
-          <button type="button" class="tb-wizard__header" [disabled]="!configured()" (click)="go(3)">
+        <li
+          class="tb-wizard__step"
+          [class.tb-wizard__step--active]="step() === 3"
+          [class.tb-wizard__step--done]="step() > 3"
+        >
+          <button
+            type="button"
+            class="tb-wizard__header"
+            [disabled]="!configured()"
+            (click)="go(3)"
+          >
             <span class="tb-wizard__number">3</span>
             <span>Подключите свой аккаунт</span>
           </button>
           @if (step() === 3) {
             <div class="tb-wizard__body">
               @if (bot()?.botName; as botName) {
-                <p-message severity="success" styleClass="tb-form-message">Бот {{ botName }} работает.</p-message>
+                <p-message severity="success" styleClass="tb-form-message"
+                  >Бот {{ botName }} работает.</p-message
+                >
               }
               @if (teacherLinked()) {
                 <p>Ваш аккаунт {{ name() }} уже подключён — уведомления будут приходить и вам.</p>
                 <div class="tb-actions">
-                  <p-button label="Дальше" icon="pi pi-arrow-right" iconPos="right" (onClick)="go(4)" />
+                  <p-button
+                    label="Дальше"
+                    icon="pi pi-arrow-right"
+                    iconPos="right"
+                    (onClick)="go(4)"
+                  />
                 </div>
               } @else if (linkCode(); as code) {
                 <tb-link-code-view [code]="code" />
               } @else {
                 <p>Чтобы уведомления приходили и вам, подключите свой аккаунт к боту.</p>
                 <div class="tb-actions">
-                  <p-button label="Подключить мой аккаунт" icon="pi pi-link" [loading]="pending()" (onClick)="connect()" />
-                  <p-button label="Пропустить" severity="secondary" [text]="true" (onClick)="close()" />
+                  <p-button
+                    label="Подключить мой аккаунт"
+                    icon="pi pi-link"
+                    [loading]="pending()"
+                    (onClick)="connect()"
+                  />
+                  <p-button
+                    label="Пропустить"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="close()"
+                  />
                 </div>
               }
             </div>
@@ -194,7 +273,12 @@ function describeMessengerError(error: unknown, fallback: string): string {
         </li>
 
         <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 4">
-          <button type="button" class="tb-wizard__header" [disabled]="!teacherLinked()" (click)="go(4)">
+          <button
+            type="button"
+            class="tb-wizard__header"
+            [disabled]="!teacherLinked()"
+            (click)="go(4)"
+          >
             <span class="tb-wizard__number">4</span>
             <span>Проверьте связь</span>
           </button>
@@ -327,7 +411,10 @@ export class BotWizardDialog {
   protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    token: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(500)] }),
+    token: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(500)],
+    }),
     groupId: new FormControl<number | null>(null),
   });
 
@@ -364,7 +451,10 @@ export class BotWizardDialog {
     this.pending.set(true);
     this.error.set(null);
     this.api
-      .saveBot(this.channel(), { token: value.token.trim(), groupId: this.channel() === 'VK' ? value.groupId : null })
+      .saveBot(this.channel(), {
+        token: value.token.trim(),
+        groupId: this.channel() === 'VK' ? value.groupId : null,
+      })
       .subscribe({
         next: (saved) => {
           this.pending.set(false);
@@ -423,7 +513,9 @@ export class BotWizardDialog {
     this.error.set(null);
     this.pending.set(false);
     this.form.reset({ token: '', groupId: setup?.groupId ?? null });
-    this.form.controls.groupId.setValidators(this.channel() === 'VK' ? [Validators.required, Validators.min(1)] : []);
+    this.form.controls.groupId.setValidators(
+      this.channel() === 'VK' ? [Validators.required, Validators.min(1)] : [],
+    );
     this.form.controls.groupId.updateValueAndValidity();
     if (setup?.configured !== true) {
       this.step.set(1);

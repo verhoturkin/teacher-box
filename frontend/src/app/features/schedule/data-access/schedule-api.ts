@@ -37,7 +37,9 @@ export class ScheduleApi {
 
   /** Lessons that start on days `[from, to)` (`yyyy-MM-dd`). */
   lessons(from: string, to: string): Observable<ScheduledLesson[]> {
-    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', { params: range(from, to) });
+    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', {
+      params: range(from, to),
+    });
   }
 
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {
@@ -45,20 +47,34 @@ export class ScheduleApi {
   }
 
   edit(lessonId: string, request: EditLessonRequest): Observable<ScheduledLesson> {
-    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}`, request, QUIET);
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}`,
+      request,
+      QUIET,
+    );
   }
 
   cancel(lessonId: string, request: CancelLessonRequest): Observable<ScheduledLesson> {
-    return this.http.post<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/cancel`, request);
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/cancel`,
+      request,
+    );
   }
 
   setOutcome(lessonId: string, outcome: LessonOutcome): Observable<ScheduledLesson> {
-    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`, { outcome });
+    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`, {
+      outcome,
+    });
   }
 
   /** Attendance of every participant of a started lesson (a group lesson or a lesson with one student). */
-  markAttendance(lessonId: string, marks: Readonly<Record<string, AttendanceMark>>): Observable<ScheduledLesson> {
-    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/attendance`, { marks });
+  markAttendance(
+    lessonId: string,
+    marks: Readonly<Record<string, AttendanceMark>>,
+  ): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/attendance`, {
+      marks,
+    });
   }
 
   reopen(lessonId: string): Observable<ScheduledLesson> {
@@ -92,19 +108,30 @@ export class ScheduleApi {
   }
 
   approve(requestId: string, request: ApproveRequest): Observable<ScheduledLesson> {
-    return this.http.post<ScheduledLesson>(`/api/teacher/schedule/requests/${requestId}/approve`, request);
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/requests/${requestId}/approve`,
+      request,
+    );
   }
 
   decline(requestId: string, answer: string | null): Observable<ChangeRequest> {
-    return this.http.post<ChangeRequest>(`/api/teacher/schedule/requests/${requestId}/decline`, { answer });
+    return this.http.post<ChangeRequest>(`/api/teacher/schedule/requests/${requestId}/decline`, {
+      answer,
+    });
   }
 
   myLessons(from: string, to: string): Observable<ScheduledLesson[]> {
-    return this.http.get<ScheduledLesson[]>('/api/me/schedule/lessons', { params: range(from, to) });
+    return this.http.get<ScheduledLesson[]>('/api/me/schedule/lessons', {
+      params: range(from, to),
+    });
   }
 
   requestChange(lessonId: string, body: ChangeRequestBody): Observable<ChangeRequest> {
-    return this.http.post<ChangeRequest>(`/api/me/schedule/lessons/${lessonId}/requests`, body, QUIET);
+    return this.http.post<ChangeRequest>(
+      `/api/me/schedule/lessons/${lessonId}/requests`,
+      body,
+      QUIET,
+    );
   }
 
   myRequests(): Observable<ChangeRequest[]> {
@@ -133,12 +160,18 @@ export class ScheduleApi {
   }
 
   saveGoogleClient(clientId: string, clientSecret: string): Observable<GoogleCalendarStatus> {
-    return this.http.put<GoogleCalendarStatus>('/api/teacher/schedule/google/client', { clientId, clientSecret });
+    return this.http.put<GoogleCalendarStatus>('/api/teacher/schedule/google/client', {
+      clientId,
+      clientSecret,
+    });
   }
 
   /** @returns the address of Google's consent page */
   authorizeGoogle(origin: string, busy: boolean): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>('/api/teacher/schedule/google/authorize', { origin, busy });
+    return this.http.post<{ url: string }>('/api/teacher/schedule/google/authorize', {
+      origin,
+      busy,
+    });
   }
 
   syncGoogle(): Observable<{ changed: number }> {

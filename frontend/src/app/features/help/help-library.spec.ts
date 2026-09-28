@@ -64,7 +64,9 @@ describe('HelpLibrary', () => {
 
     expect(searchArticles(articles, '  ')).toHaveLength(articles.length);
     expect(searchArticles(articles, 'ТЕЛЕМОСТ').map((article) => article.id)).toContain('meetings');
-    expect(searchArticles(articles, 'группа цена').map((article) => article.id)).toContain('groups');
+    expect(searchArticles(articles, 'группа цена').map((article) => article.id)).toContain(
+      'groups',
+    );
     expect(searchArticles(articles, 'абракадабра')).toEqual([]);
   });
 });

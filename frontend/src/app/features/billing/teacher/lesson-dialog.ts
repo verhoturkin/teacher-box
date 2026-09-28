@@ -45,7 +45,13 @@ type ChargedStatus = Exclude<LessonStatus, 'CANCELLED'>;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Занятие" [(visible)]="visible" [modal]="true" [style]="{ width: '30rem' }" [draggable]="false">
+    <p-dialog
+      header="Занятие"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '30rem' }"
+      [draggable]="false"
+    >
       <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="lesson-student">Ученик</label>
@@ -63,7 +69,15 @@ type ChargedStatus = Exclude<LessonStatus, 'CANCELLED'>;
         </div>
         <div class="tb-field">
           <label for="lesson-date">Дата</label>
-          <p-datepicker inputId="lesson-date" formControlName="date" dateFormat="dd.mm.yy" [showIcon]="true" [showOnFocus]="false" appendTo="body" [fluid]="true" />
+          <p-datepicker
+            inputId="lesson-date"
+            formControlName="date"
+            dateFormat="dd.mm.yy"
+            [showIcon]="true"
+            [showOnFocus]="false"
+            appendTo="body"
+            [fluid]="true"
+          />
         </div>
         <div class="tb-field">
           <span id="lesson-status-label">Итог</span>
@@ -78,11 +92,27 @@ type ChargedStatus = Exclude<LessonStatus, 'CANCELLED'>;
         <div class="tb-row">
           <div class="tb-field">
             <label for="lesson-duration">Длительность, мин</label>
-            <p-inputnumber inputId="lesson-duration" formControlName="durationMinutes" [min]="1" [max]="600" [showButtons]="true" [step]="15" [fluid]="true" />
+            <p-inputnumber
+              inputId="lesson-duration"
+              formControlName="durationMinutes"
+              [min]="1"
+              [max]="600"
+              [showButtons]="true"
+              [step]="15"
+              [fluid]="true"
+            />
           </div>
           <div class="tb-field">
             <label for="lesson-price">Стоимость</label>
-            <p-inputnumber inputId="lesson-price" formControlName="price" mode="currency" [currency]="currency()" locale="ru-RU" [min]="0" [fluid]="true" />
+            <p-inputnumber
+              inputId="lesson-price"
+              formControlName="price"
+              mode="currency"
+              [currency]="currency()"
+              locale="ru-RU"
+              [min]="0"
+              [fluid]="true"
+            />
           </div>
         </div>
         <div class="tb-field">
@@ -94,8 +124,18 @@ type ChargedStatus = Exclude<LessonStatus, 'CANCELLED'>;
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Записать" [loading]="pending()" [disabled]="form.invalid" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Записать"
+          [loading]="pending()"
+          [disabled]="form.invalid"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -120,7 +160,10 @@ export class LessonDialog {
 
   readonly form = new FormGroup({
     studentId: new FormControl<string | null>(null, [Validators.required]),
-    date: new FormControl<Date>(new Date(), { nonNullable: true, validators: [Validators.required] }),
+    date: new FormControl<Date>(new Date(), {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     status: new FormControl<ChargedStatus>('CONDUCTED', { nonNullable: true }),
     durationMinutes: new FormControl<number | null>(60, [
       Validators.required,
@@ -146,9 +189,11 @@ export class LessonDialog {
       }
     });
     // The price follows the selected student.
-    this.form.controls.studentId.valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe((id) => {
-      this.form.controls.price.setValue(this.priceOf(id));
-    });
+    this.form.controls.studentId.valueChanges
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe((id) => {
+        this.form.controls.price.setValue(this.priceOf(id));
+      });
   }
 
   save(): void {

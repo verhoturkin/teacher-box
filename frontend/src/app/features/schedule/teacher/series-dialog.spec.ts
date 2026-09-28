@@ -29,7 +29,10 @@ describe('SeriesDialog', () => {
     fixture.destroy();
   });
 
-  async function open(series: LessonSeries | null = null, timeZone: string | null = null): Promise<SeriesDialog> {
+  async function open(
+    series: LessonSeries | null = null,
+    timeZone: string | null = null,
+  ): Promise<SeriesDialog> {
     fixture.componentRef.setInput('series', series);
     fixture.componentRef.setInput('timeZone', timeZone);
     fixture.componentRef.setInput('visible', true);
@@ -90,7 +93,10 @@ describe('SeriesDialog', () => {
     buttonByText(document.body, 'Всё равно сохранить').click();
     backend
       .expectOne('/api/teacher/schedule/series')
-      .flush({ status: 422, code: 'schedule.series-dates-invalid' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'schedule.series-dates-invalid' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Дата окончания раньше даты начала');
@@ -99,7 +105,12 @@ describe('SeriesDialog', () => {
 
   it('changes a series from a day on and explains the time zone', async () => {
     const dialog = await open(
-      lessonSeries({ startsOn: '2020-01-01', endsOn: '2030-06-30', topic: 'Дроби', meetingUrl: 'https://zoom.us/j/1' }),
+      lessonSeries({
+        startsOn: '2020-01-01',
+        endsOn: '2030-06-30',
+        topic: 'Дроби',
+        meetingUrl: 'https://zoom.us/j/1',
+      }),
       'Pacific/Chatham',
     );
 

@@ -25,7 +25,11 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
   await page.getByRole('tab', { name: 'Мессенджеры' }).click();
   await expect(page).toHaveURL(/tab=messengers/);
   const bots = page.locator('tb-bots-panel');
-  await bots.getByRole('listitem').filter({ hasText: 'Telegram' }).getByRole('button', { name: 'Подключить' }).click();
+  await bots
+    .getByRole('listitem')
+    .filter({ hasText: 'Telegram' })
+    .getByRole('button', { name: 'Подключить' })
+    .click();
 
   const wizard = page.getByRole('dialog', { name: 'Подключение Telegram' });
   await expect(wizard.getByText('/newbot')).toBeVisible();
@@ -46,16 +50,24 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
   expect(href).toMatch(/^https:\/\/t\.me\/teacherbox_e2e_bot\?start=/);
 
   // The teacher presses «Start» in Telegram: the bot receives «/start <code>».
-  expect((await request.post(`${TELEGRAM}/inject`, { data: { text: `/start ${code}` } })).ok()).toBe(true);
-  await expect(wizard.getByText('Отправим вам тестовое сообщение через бота.')).toBeVisible({ timeout: 30_000 });
+  expect(
+    (await request.post(`${TELEGRAM}/inject`, { data: { text: `/start ${code}` } })).ok(),
+  ).toBe(true);
+  await expect(wizard.getByText('Отправим вам тестовое сообщение через бота.')).toBeVisible({
+    timeout: 30_000,
+  });
 
   await wizard.getByRole('button', { name: 'Отправить тестовое сообщение' }).click();
   await expect(wizard.getByText('Тестовое сообщение отправлено')).toBeVisible();
   const sent = (await (await request.get(`${TELEGRAM}/sent`)).json()) as SentMessage[];
-  expect(sent.map((message) => message.text)).toContainEqual(expect.stringContaining('Проверка связи'));
+  expect(sent.map((message) => message.text)).toContainEqual(
+    expect.stringContaining('Проверка связи'),
+  );
 
   await wizard.getByRole('button', { name: 'Готово' }).click();
   await expect(wizard).toBeHidden();
-  await expect(bots.locator('li.tb-bot').filter({ hasText: 'Telegram' })).toContainText('@teacherbox_e2e_bot');
+  await expect(bots.locator('li.tb-bot').filter({ hasText: 'Telegram' })).toContainText(
+    '@teacherbox_e2e_bot',
+  );
   await expect(page.locator('tb-channels-panel').getByText('@e2e_teacher')).toBeVisible();
 });

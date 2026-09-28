@@ -59,7 +59,12 @@ describe('StudentFormDialog', () => {
     buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
-    expect(request.request.body).toEqual({ displayName: 'Пётр', email: null, phone: '+7 900', note: null });
+    expect(request.request.body).toEqual({
+      displayName: 'Пётр',
+      email: null,
+      phone: '+7 900',
+      note: null,
+    });
     const response: CreatedStudent = {
       student: { ...STUDENT, id: 's-2', displayName: 'Пётр', status: 'INVITED' },
       invite: { token: 't', purpose: 'ACTIVATION', expiresAt: '2026-10-01T10:00:00Z' },
@@ -105,7 +110,10 @@ describe('StudentFormDialog', () => {
 
     backend
       .expectOne('/api/teacher/students')
-      .flush({ status: 422, code: 'profile.email-invalid' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'profile.email-invalid' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Некорректный адрес электронной почты');

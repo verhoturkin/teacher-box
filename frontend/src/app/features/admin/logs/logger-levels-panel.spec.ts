@@ -15,7 +15,12 @@ describe('LoggerLevelsPanel', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [LoggerLevelsPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -49,7 +54,11 @@ describe('LoggerLevelsPanel', () => {
   });
 
   it('switches a part of the log to DEBUG for a while', async () => {
-    fixture.componentInstance.form.patchValue({ name: ' ru.teacherbox.ai ', level: 'DEBUG', minutes: 60 });
+    fixture.componentInstance.form.patchValue({
+      name: ' ru.teacherbox.ai ',
+      level: 'DEBUG',
+      minutes: 60,
+    });
     buttonByText(hostElement(fixture), 'Применить').click();
 
     const change = backend.expectOne({ method: 'PUT', url: '/api/admin/loggers/ru.teacherbox.ai' });
@@ -58,17 +67,24 @@ describe('LoggerLevelsPanel', () => {
     backend.expectOne('/api/admin/loggers').flush([]);
     await fixture.whenStable();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'ru.teacherbox.ai: DEBUG' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'ru.teacherbox.ai: DEBUG' }),
+    );
   });
 
   it('keeps the form after a failed change and reverts levels', () => {
     fixture.componentInstance.apply();
     backend
       .expectOne({ method: 'PUT', url: '/api/admin/loggers/ru.teacherbox' })
-      .flush({ status: 422, code: 'admin.logger-invalid' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'admin.logger-invalid' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
 
     buttonByText(hostElement(fixture), 'Вернуть').click();
-    backend.expectOne({ method: 'DELETE', url: '/api/admin/loggers/ru.teacherbox.notifications' }).flush(loggerLevel());
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/admin/loggers/ru.teacherbox.notifications' })
+      .flush(loggerLevel());
     backend.expectOne('/api/admin/loggers').flush([loggerLevel()]);
 
     fixture.componentInstance.form.controls.name.setValue('');

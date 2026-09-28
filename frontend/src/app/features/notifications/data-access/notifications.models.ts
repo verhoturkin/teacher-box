@@ -21,7 +21,8 @@ export type NotificationKind =
 export type ChannelType = 'TELEGRAM' | 'VK' | 'MAX';
 
 /** Groups of notifications a user can stop receiving in messengers (`MESSAGES` is always sent). */
-export type NotificationTopic = 'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'MESSAGES';
+export type NotificationTopic =
+  'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'MESSAGES';
 
 /** Mirrors `NotificationView` of the backend. */
 export interface NotificationItem {

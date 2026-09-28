@@ -40,13 +40,15 @@ describe('AiUsagePage', () => {
   });
 
   it('names Gemini', async () => {
-    expect(await render(aiStatus({ provider: 'gemini', model: 'gemini-3.8-flash' }), usageReport())).toContain(
-      'Модель gemini-3.8-flash Google Gemini',
-    );
+    expect(
+      await render(aiStatus({ provider: 'gemini', model: 'gemini-3.8-flash' }), usageReport()),
+    ).toContain('Модель gemini-3.8-flash Google Gemini');
   });
 
   it('keeps an unknown provider id as is', async () => {
-    expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain('Модель m custom');
+    expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain(
+      'Модель m custom',
+    );
   });
 
   it('shows the model, the monthly usage and recent requests', async () => {
@@ -63,7 +65,10 @@ describe('AiUsagePage', () => {
   });
 
   it('shows unlimited usage and an empty month', async () => {
-    const text = await render(aiStatus({ monthlyTokenLimit: 0 }), usageReport({ monthlyTokenLimit: 0, recent: [] }));
+    const text = await render(
+      aiStatus({ monthlyTokenLimit: 0 }),
+      usageReport({ monthlyTokenLimit: 0, recent: [] }),
+    );
 
     expect(text).toContain('(без лимита)');
     expect(text).toContain('Запросов в этом месяце не было');

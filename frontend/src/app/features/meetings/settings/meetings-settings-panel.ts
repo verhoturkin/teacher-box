@@ -1,7 +1,20 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -24,7 +37,10 @@ type Severity = 'success' | 'info' | 'warn' | 'error';
 export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text: string }>> = {
   connected: { severity: 'success', text: 'Яндекс подключён: комнаты можно создавать кнопкой.' },
   denied: { severity: 'warn', text: 'Доступ к Телемосту не предоставлен.' },
-  expired: { severity: 'warn', text: 'Ссылка подключения устарела — нажмите «Подключить Яндекс» ещё раз.' },
+  expired: {
+    severity: 'warn',
+    text: 'Ссылка подключения устарела — нажмите «Подключить Яндекс» ещё раз.',
+  },
   failed: { severity: 'error', text: 'Не удалось подключить Яндекс.' },
 };
 
@@ -34,18 +50,32 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
  */
 @Component({
   selector: 'tb-meetings-settings-panel',
-  imports: [HelpButton, DatePipe, FormsModule, ReactiveFormsModule, Button, Card, InputText, Message, Password, Tag, ToggleSwitch],
+  imports: [
+    HelpButton,
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    Button,
+    Card,
+    InputText,
+    Message,
+    Password,
+    Tag,
+    ToggleSwitch,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Видеовстречи (Яндекс Телемост)" id="meetings">
       <tb-help-button topic="teacher/meetings" label="Подробнее" />
       @if (result(); as result) {
-        <p-message [severity]="result.severity" styleClass="tb-form-message">{{ result.text }}</p-message>
+        <p-message [severity]="result.severity" styleClass="tb-form-message">{{
+          result.text
+        }}</p-message>
       }
       <p>
-        У каждого ученика и у каждой группы — постоянная ссылка на встречу: её задают в разделе «Ученики»
-        (колонка «Видеовстреча»). Можно создать встречу в Телемосте самим и вставить ссылку, а можно подключить
-        Яндекс — тогда встречи создаются кнопкой.
+        У каждого ученика и у каждой группы — постоянная ссылка на встречу: её задают в разделе
+        «Ученики» (колонка «Видеовстреча»). Можно создать встречу в Телемосте самим и вставить
+        ссылку, а можно подключить Яндекс — тогда встречи создаются кнопкой.
       </p>
       @if (status(); as status) {
         @if (status.tokenFromEnvironment) {
@@ -70,23 +100,43 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
           }
           @if (status.clientConfigured && !editingClient()) {
             <div class="tb-actions">
-              <p-button label="Подключить Яндекс" icon="pi pi-video" [loading]="pending()" (onClick)="connect()" />
+              <p-button
+                label="Подключить Яндекс"
+                icon="pi pi-video"
+                [loading]="pending()"
+                (onClick)="connect()"
+              />
               @if (!status.clientFromEnvironment) {
-                <p-button label="Изменить приложение" severity="secondary" [text]="true" (onClick)="editingClient.set(true)" />
+                <p-button
+                  label="Изменить приложение"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="editingClient.set(true)"
+                />
               }
             </div>
           } @else {
             <ol class="tb-meetings-steps">
               <li>
-                Откройте <a href="https://oauth.yandex.ru/client/new" target="_blank" rel="noopener">oauth.yandex.ru</a>
-                под аккаунтом, в котором вы проводите встречи, и создайте приложение для веб-сервисов.
+                Откройте
+                <a href="https://oauth.yandex.ru/client/new" target="_blank" rel="noopener"
+                  >oauth.yandex.ru</a
+                >
+                под аккаунтом, в котором вы проводите встречи, и создайте приложение для
+                веб-сервисов.
               </li>
               <li>В доступах выберите Телемост: создание, просмотр и изменение встреч.</li>
               <li>
                 В поле Redirect URI укажите:
                 <div class="tb-meetings-uri">
                   <code>{{ redirectUri() }}</code>
-                  <p-button icon="pi pi-copy" [text]="true" size="small" ariaLabel="Копировать адрес" (onClick)="copy(redirectUri())" />
+                  <p-button
+                    icon="pi pi-copy"
+                    [text]="true"
+                    size="small"
+                    ariaLabel="Копировать адрес"
+                    (onClick)="copy(redirectUri())"
+                  />
                 </div>
               </li>
               <li>Скопируйте сюда ClientID и Client secret приложения.</li>
@@ -94,16 +144,37 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
             <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
               <div class="tb-field">
                 <label for="yandex-client-id">ClientID</label>
-                <input pInputText id="yandex-client-id" formControlName="clientId" autocomplete="off" />
+                <input
+                  pInputText
+                  id="yandex-client-id"
+                  formControlName="clientId"
+                  autocomplete="off"
+                />
               </div>
               <div class="tb-field">
                 <label for="yandex-client-secret">Client secret</label>
-                <p-password inputId="yandex-client-secret" formControlName="clientSecret" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+                <p-password
+                  inputId="yandex-client-secret"
+                  formControlName="clientSecret"
+                  [feedback]="false"
+                  [toggleMask]="true"
+                  [fluid]="true"
+                />
               </div>
               <div class="tb-actions">
-                <p-button type="submit" label="Сохранить" [disabled]="form.invalid" [loading]="pending()" />
+                <p-button
+                  type="submit"
+                  label="Сохранить"
+                  [disabled]="form.invalid"
+                  [loading]="pending()"
+                />
                 @if (status.clientConfigured) {
-                  <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="editingClient.set(false)" />
+                  <p-button
+                    label="Отмена"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="editingClient.set(false)"
+                  />
                 }
               </div>
             </form>
@@ -111,11 +182,19 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
         }
         <div class="tb-meetings-options">
           <label class="tb-switch" for="meetings-waiting-room">
-            <p-toggleswitch inputId="meetings-waiting-room" [ngModel]="status.waitingRoom" (ngModelChange)="setWaitingRoom($event)" />
+            <p-toggleswitch
+              inputId="meetings-waiting-room"
+              [ngModel]="status.waitingRoom"
+              (ngModelChange)="setWaitingRoom($event)"
+            />
             Зал ожидания: ученики ждут, пока вы их впустите (для новых встреч)
           </label>
           <label class="tb-switch" for="meetings-open-in-app">
-            <p-toggleswitch inputId="meetings-open-in-app" [ngModel]="openInApp()" (ngModelChange)="setOpenInApp($event)" />
+            <p-toggleswitch
+              inputId="meetings-open-in-app"
+              [ngModel]="openInApp()"
+              (ngModelChange)="setOpenInApp($event)"
+            />
             Открывать встречи Телемоста в приложении на этом компьютере
           </label>
         </div>
@@ -173,12 +252,15 @@ export class MeetingsSettingsPanel implements OnInit {
     const code = this.resultCode();
     return code === null ? null : (YANDEX_RESULTS[code] ?? null);
   });
-  protected readonly redirectUri = computed(
-    () => this.portal.link(this.status()?.callbackPath ?? '/api/public/meetings/yandex/callback'),
+  protected readonly redirectUri = computed(() =>
+    this.portal.link(this.status()?.callbackPath ?? '/api/public/meetings/yandex/callback'),
   );
 
   readonly form = new FormGroup({
-    clientId: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(300)] }),
+    clientId: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(300)],
+    }),
     clientSecret: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(300)],
@@ -242,7 +324,11 @@ export class MeetingsSettingsPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({ severity: 'success', summary: 'Скопировано', detail: 'Адрес в буфере обмена' });
+      this.messages.add({
+        severity: 'success',
+        summary: 'Скопировано',
+        detail: 'Адрес в буфере обмена',
+      });
     }
   }
 

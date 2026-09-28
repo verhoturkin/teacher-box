@@ -18,8 +18,8 @@ import { BotWizardDialog } from './bot-wizard-dialog';
   template: `
     <p-card header="Боты мессенджеров">
       <p class="tb-muted">
-        Через ботов уведомления приходят вам и ученикам в Telegram, ВКонтакте или MAX. Достаточно одного мессенджера —
-        того, которым пользуются ваши ученики.
+        Через ботов уведомления приходят вам и ученикам в Telegram, ВКонтакте или MAX. Достаточно
+        одного мессенджера — того, которым пользуются ваши ученики.
       </p>
       <ul class="tb-bots">
         @for (bot of bots(); track bot.channel) {
@@ -38,7 +38,8 @@ import { BotWizardDialog } from './bot-wizard-dialog';
                   <small class="tb-bot__error">
                     {{ bot.connection.error }}
                     @if (bot.channel === 'TELEGRAM') {
-                      Если Telegram заблокирован в сети сервера, укажите прокси в TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
+                      Если Telegram заблокирован в сети сервера, укажите прокси в
+                      TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
                     }
                   </small>
                 }
@@ -166,7 +167,11 @@ export class BotsPanel implements OnInit {
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () => {
         this.api.removeBot(channel).subscribe(() => {
-          this.messages.add({ severity: 'info', summary: 'Отключено', detail: `Бот ${CHANNEL_NAMES[channel]} отключён` });
+          this.messages.add({
+            severity: 'info',
+            summary: 'Отключено',
+            detail: `Бот ${CHANNEL_NAMES[channel]} отключён`,
+          });
           this.reload();
           this.changed.emit();
         });

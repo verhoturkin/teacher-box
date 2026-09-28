@@ -18,7 +18,9 @@ export function levelSeverity(level: string): TagSeverity {
   }
 }
 
-export const INTEGRATION_TAGS: Readonly<Record<IntegrationState, { label: string; severity: TagSeverity }>> = {
+export const INTEGRATION_TAGS: Readonly<
+  Record<IntegrationState, { label: string; severity: TagSeverity }>
+> = {
   OK: { label: 'Работает', severity: 'success' },
   FAILED: { label: 'Ошибка', severity: 'danger' },
   NOT_CONFIGURED: { label: 'Не подключено', severity: 'secondary' },

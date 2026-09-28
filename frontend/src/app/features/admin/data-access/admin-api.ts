@@ -44,7 +44,10 @@ export class AdminApi {
   }
 
   changeLevel(name: string, level: LogLevelName, minutes: number): Observable<LoggerLevel> {
-    return this.http.put<LoggerLevel>(`${ADMIN}/loggers/${encodeURIComponent(name)}`, { level, minutes });
+    return this.http.put<LoggerLevel>(`${ADMIN}/loggers/${encodeURIComponent(name)}`, {
+      level,
+      minutes,
+    });
   }
 
   revertLevel(name: string): Observable<LoggerLevel> {

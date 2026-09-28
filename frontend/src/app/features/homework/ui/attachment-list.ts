@@ -14,7 +14,9 @@ import { formatFileSize } from '../homework-labels';
         @for (file of attachments(); track file.id) {
           <li class="tb-files__item">
             <i class="pi pi-file" aria-hidden="true"></i>
-            <button type="button" class="tb-link-button" (click)="download.emit(file)">{{ file.filename }}</button>
+            <button type="button" class="tb-link-button" (click)="download.emit(file)">
+              {{ file.filename }}
+            </button>
             <small class="tb-muted">{{ size(file.size) }}</small>
             @if (removable()) {
               <p-button

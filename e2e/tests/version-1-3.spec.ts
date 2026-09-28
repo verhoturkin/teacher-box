@@ -43,7 +43,9 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await page.getByRole('button', { name: 'Добавить ученика' }).click();
   await page.getByLabel('Имя и фамилия').fill(STUDENT);
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByLabel('Ссылка-приглашение')).toHaveValue(new RegExp(`^${BASE_URL}/invite/`));
+  await expect(page.getByLabel('Ссылка-приглашение')).toHaveValue(
+    new RegExp(`^${BASE_URL}/invite/`),
+  );
 });
 
 test('the administrator makes a backup', async ({ page }) => {
@@ -54,7 +56,9 @@ test('the administrator makes a backup', async ({ page }) => {
   const row = page.getByRole('row').filter({ hasText: 'вручную' }).first();
   await expect(row).toBeVisible();
   await expect(row.getByRole('button', { name: /^Скачать/ })).toHaveCount(0);
-  const label = await row.getByRole('button', { name: /^Восстановить / }).getAttribute('aria-label');
+  const label = await row
+    .getByRole('button', { name: /^Восстановить / })
+    .getAttribute('aria-label');
   backupRow = label ?? '';
   expect(backupRow).toMatch(/^Восстановить teacherbox-/);
 });

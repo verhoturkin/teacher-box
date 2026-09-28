@@ -40,7 +40,9 @@ describe('JoinLessonButton', () => {
 
   it('gives a plain link to other services', async () => {
     await render('https://zoom.us/j/1', true, true);
-    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe('https://zoom.us/j/1');
+    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(
+      'https://zoom.us/j/1',
+    );
   });
 
   it('gives students a plain link', async () => {

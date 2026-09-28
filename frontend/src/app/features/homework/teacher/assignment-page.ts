@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -57,7 +65,11 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
         <div>
           <h1 class="tb-page-title">{{ assignment.title }}</h1>
           <span class="tb-muted">
-            {{ assignment.dueAt ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm') : 'Без срока' }}
+            {{
+              assignment.dueAt
+                ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
+                : 'Без срока'
+            }}
           </span>
         </div>
         <div class="tb-actions">
@@ -68,7 +80,12 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
             [disabled]="!assignment.description"
             (onClick)="boardVisible.set(true)"
           />
-          <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" (onClick)="editVisible.set(true)" />
+          <p-button
+            label="Редактировать"
+            icon="pi pi-pencil"
+            [outlined]="true"
+            (onClick)="editVisible.set(true)"
+          />
         </div>
       </div>
 
@@ -89,7 +106,13 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
           <div class="tb-inline">
             <tb-file-picker [(files)]="newFiles" label="Добавить файлы" />
             @if (newFiles().length > 0) {
-              <p-button label="Загрузить" icon="pi pi-upload" size="small" [loading]="uploading()" (onClick)="upload()" />
+              <p-button
+                label="Загрузить"
+                icon="pi pi-upload"
+                size="small"
+                [loading]="uploading()"
+                (onClick)="upload()"
+              />
             }
           </div>
         </p-card>
@@ -107,17 +130,34 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
             <ng-template #body let-task [tbRowType]="assignment.tasks">
               <tr>
                 <td>{{ task.studentName }}</td>
-                <td><tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" /></td>
-                <td>{{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</td>
+                <td>
+                  <tb-task-status
+                    [status]="task.status"
+                    [overdue]="task.overdue"
+                    [grade]="task.grade"
+                  />
+                </td>
+                <td>
+                  {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
+                </td>
                 <td class="tb-actions-column">
-                  <a pButton [routerLink]="['/teacher/homework/tasks', task.taskId]" [text]="true" size="small">
-                    <span pButtonLabel>{{ task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть' }}</span>
+                  <a
+                    pButton
+                    [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                    [text]="true"
+                    size="small"
+                  >
+                    <span pButtonLabel>{{
+                      task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть'
+                    }}</span>
                   </a>
                 </td>
               </tr>
             </ng-template>
             <ng-template #emptymessage>
-              <tr><td colspan="4" class="tb-empty">Задание ещё никому не выдано</td></tr>
+              <tr>
+                <td colspan="4" class="tb-empty">Задание ещё никому не выдано</td>
+              </tr>
             </ng-template>
           </p-table>
           <div class="tb-inline tb-assign">
@@ -134,12 +174,20 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
               styleClass="tb-grow"
             />
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
-            <p-button label="Выдать" [disabled]="selectedToAssign().length === 0" (onClick)="assign()" />
+            <p-button
+              label="Выдать"
+              [disabled]="selectedToAssign().length === 0"
+              (onClick)="assign()"
+            />
           </div>
         </p-card>
       </div>
 
-      <tb-assignment-dialog [(visible)]="editVisible" [assignment]="assignment" (saved)="details.set($event)" />
+      <tb-assignment-dialog
+        [(visible)]="editVisible"
+        [assignment]="assignment"
+        (saved)="details.set($event)"
+      />
       <tb-to-board-dialog
         [(visible)]="boardVisible"
         [title]="assignment.title"
@@ -167,7 +215,9 @@ export class AssignmentPage implements OnInit {
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
   readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
-  protected readonly selectedToAssign = toSignal(this.toAssign.valueChanges, { initialValue: this.toAssign.value });
+  protected readonly selectedToAssign = toSignal(this.toAssign.valueChanges, {
+    initialValue: this.toAssign.value,
+  });
   protected readonly unassigned = computed(() => {
     const assigned = new Set(this.details()?.tasks.map((task) => task.studentId) ?? []);
     return this.students().filter((student) => !assigned.has(student.id));
@@ -240,7 +290,9 @@ export class AssignmentPage implements OnInit {
   /** Adds the students of a chosen group who do not have the assignment yet. */
   protected addStudents(ids: readonly string[]): void {
     const available = new Set(this.unassigned().map((student) => student.id));
-    this.toAssign.setValue([...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))])]);
+    this.toAssign.setValue([
+      ...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))]),
+    ]);
   }
 
   protected assign(): void {

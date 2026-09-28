@@ -64,7 +64,9 @@ export class ScheduleCalendar {
   readonly slotSelect = output<SlotSelection>();
   readonly lessonMove = output<LessonMove>();
 
-  private readonly byId = computed(() => new Map(this.lessons().map((lesson) => [lesson.id, lesson])));
+  private readonly byId = computed(
+    () => new Map(this.lessons().map((lesson) => [lesson.id, lesson])),
+  );
 
   protected readonly options = computed<CalendarOptions>(() => {
     const editable = this.editable();
@@ -73,7 +75,11 @@ export class ScheduleCalendar {
       locale: ruLocale,
       initialView: this.initialView(),
       initialDate: this.initialDate() ?? undefined,
-      headerToolbar: { start: 'prev,next today', center: 'title', end: 'timeGridWeek,dayGridMonth,listWeek' },
+      headerToolbar: {
+        start: 'prev,next today',
+        center: 'title',
+        end: 'timeGridWeek,dayGridMonth,listWeek',
+      },
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,
@@ -141,7 +147,8 @@ export class ScheduleCalendar {
   private title(lesson: ScheduledLesson): string {
     const request = lesson.pendingRequests.length === 0 ? '' : '? ';
     if (this.showStudent() || lesson.groupId !== null) {
-      const name = lesson.groupId !== null ? (lesson.groupName ?? 'Группа') : (lesson.studentName ?? 'Ученик');
+      const name =
+        lesson.groupId !== null ? (lesson.groupName ?? 'Группа') : (lesson.studentName ?? 'Ученик');
       return request + (lesson.topic === null ? name : `${name} · ${lesson.topic}`);
     }
     return request + (lesson.topic ?? 'Занятие');

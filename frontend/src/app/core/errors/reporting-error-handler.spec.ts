@@ -42,9 +42,14 @@ describe('ReportingErrorHandler', () => {
     handler.handleError('just text');
     handler.handleError({ odd: true });
 
-    expect(backend.expectOne((request) => request.body !== null && JSON.stringify(request.body).includes('just text'))
-      .request.body).toEqual({ message: 'just text', url: window.location.pathname, stack: null });
-    backend.expectOne((request) => JSON.stringify(request.body).includes('Unknown error')).flush(null);
+    expect(
+      backend.expectOne(
+        (request) => request.body !== null && JSON.stringify(request.body).includes('just text'),
+      ).request.body,
+    ).toEqual({ message: 'just text', url: window.location.pathname, stack: null });
+    backend
+      .expectOne((request) => JSON.stringify(request.body).includes('Unknown error'))
+      .flush(null);
   });
 
   it('skips HTTP errors, repeats and floods', () => {

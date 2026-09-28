@@ -36,16 +36,25 @@ export class HomeworkApi {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, { ...input, studentIds });
   }
 
-  updateAssignment(id: string, input: AssignmentInput, version: number): Observable<AssignmentDetails> {
+  updateAssignment(
+    id: string,
+    input: AssignmentInput,
+    version: number,
+  ): Observable<AssignmentDetails> {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
   }
 
   assignStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
-    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, { studentIds });
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
+      studentIds,
+    });
   }
 
   uploadMaterials(id: string, files: readonly File[]): Observable<Attachment[]> {
-    return this.http.post<Attachment[]>(`${TEACHER}/assignments/${id}/attachments`, filesForm(files));
+    return this.http.post<Attachment[]>(
+      `${TEACHER}/assignments/${id}/attachments`,
+      filesForm(files),
+    );
   }
 
   removeMaterial(id: string, attachmentId: string): Observable<unknown> {
@@ -60,8 +69,17 @@ export class HomeworkApi {
     return this.http.get<TaskDetails>(`${TEACHER}/tasks/${taskId}`);
   }
 
-  review(taskId: string, decision: ReviewDecision, grade: string | null, comment: string | null): Observable<TaskDetails> {
-    return this.http.post<TaskDetails>(`${TEACHER}/tasks/${taskId}/review`, { decision, grade, comment });
+  review(
+    taskId: string,
+    decision: ReviewDecision,
+    grade: string | null,
+    comment: string | null,
+  ): Observable<TaskDetails> {
+    return this.http.post<TaskDetails>(`${TEACHER}/tasks/${taskId}/review`, {
+      decision,
+      grade,
+      comment,
+    });
   }
 
   teacherFile(attachmentId: string): Observable<Blob> {

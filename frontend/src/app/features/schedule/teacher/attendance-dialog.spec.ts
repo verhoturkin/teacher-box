@@ -39,7 +39,10 @@ describe('AttendanceDialog', () => {
     dialog.set('s-1', 'MISSED');
     buttonByText(document.body, 'Сохранить').click();
 
-    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/gl-1/attendance' });
+    const request = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/schedule/lessons/gl-1/attendance',
+    });
     expect(request.request.body).toEqual({ marks: { 's-1': 'MISSED', 's-2': 'EXCUSED' } });
     request.flush(groupLesson({ status: 'MISSED' }));
     await fixture.whenStable();
@@ -62,7 +65,10 @@ describe('AttendanceDialog', () => {
     fixture.componentInstance.save();
     backend
       .expectOne('/api/teacher/schedule/lessons/gl-1/attendance')
-      .flush({ status: 422, code: 'schedule.lesson-not-started' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'schedule.lesson-not-started' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Занятие ещё не началось');

@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -30,7 +40,13 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
   imports: [FormsModule, Button, Dialog, Message, SelectButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog header="Кто был на занятии" [(visible)]="visible" [modal]="true" [style]="{ width: '34rem' }" [draggable]="false">
+    <p-dialog
+      header="Кто был на занятии"
+      [(visible)]="visible"
+      [modal]="true"
+      [style]="{ width: '34rem' }"
+      [draggable]="false"
+    >
       @if (lesson(); as lesson) {
         <p class="tb-muted">{{ with(lesson) }}, {{ time() }}</p>
         <ul class="tb-attendance">
@@ -50,14 +66,26 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
             </li>
           }
         </ul>
-        <small class="tb-hint">«Был» и «Пропуск» спишутся по цене занятия, «Предупредил» — нет.</small>
+        <small class="tb-hint"
+          >«Был» и «Пропуск» спишутся по цене занятия, «Предупредил» — нет.</small
+        >
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       }
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
-        <p-button label="Сохранить" [loading]="pending()" [disabled]="!anybody()" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          label="Сохранить"
+          [loading]="pending()"
+          [disabled]="!anybody()"
+          (onClick)="save()"
+        />
       </ng-template>
     </p-dialog>
   `,
@@ -97,7 +125,9 @@ export class AttendanceDialog {
     return lesson === null ? '' : formatLessonTime(lesson.startsAt, lesson.endsAt);
   });
   /** Somebody attended or missed: otherwise the lesson should be cancelled. */
-  protected readonly anybody = computed(() => Object.values(this.marks()).some((mark) => mark !== 'EXCUSED'));
+  protected readonly anybody = computed(() =>
+    Object.values(this.marks()).some((mark) => mark !== 'EXCUSED'),
+  );
 
   constructor() {
     // Everybody «attended» unless marked otherwise before.

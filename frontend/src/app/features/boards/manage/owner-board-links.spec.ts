@@ -25,9 +25,15 @@ describe('OwnerBoardLinks', () => {
   });
 
   it('links the boards of the owners only', async () => {
-    backend
-      .expectOne('/api/teacher/boards')
-      .flush([aBoard(), aBoard({ id: 'board-2', ownerId: 'group-1', title: 'Общая', url: 'https://app.holst.so/g' })]);
+    backend.expectOne('/api/teacher/boards').flush([
+      aBoard(),
+      aBoard({
+        id: 'board-2',
+        ownerId: 'group-1',
+        title: 'Общая',
+        url: 'https://app.holst.so/g',
+      }),
+    ]);
     await fixture.whenStable();
 
     const links = hostElement(fixture).querySelectorAll('a');

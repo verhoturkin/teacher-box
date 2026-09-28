@@ -9,7 +9,9 @@ describe('admin labels', () => {
   });
 
   it('shortens logger names', () => {
-    expect(shortLogger('ru.teacherbox.notifications.telegram.TelegramChannel')).toBe('telegram.TelegramChannel');
+    expect(shortLogger('ru.teacherbox.notifications.telegram.TelegramChannel')).toBe(
+      'telegram.TelegramChannel',
+    );
     expect(shortLogger('teacherbox.audit')).toBe('teacherbox.audit');
   });
 

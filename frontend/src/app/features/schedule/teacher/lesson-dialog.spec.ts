@@ -33,7 +33,10 @@ describe('LessonDialog', () => {
     fixture.destroy();
   });
 
-  async function open(lesson: ScheduledLesson | null = null, slot: { start: Date; durationMinutes: number } | null = null) {
+  async function open(
+    lesson: ScheduledLesson | null = null,
+    slot: { start: Date; durationMinutes: number } | null = null,
+  ) {
     fixture.componentRef.setInput('lesson', lesson);
     fixture.componentRef.setInput('slot', slot);
     fixture.componentRef.setInput('visible', true);
@@ -48,7 +51,11 @@ describe('LessonDialog', () => {
     expect(dialog.form.getRawValue()).toEqual(
       expect.objectContaining({ owner: null, startsAt: start, durationMinutes: 90 }),
     );
-    dialog.form.patchValue({ owner: 'student:s-2', topic: '  Дроби ', meetingUrl: 'https://zoom.us/j/1' });
+    dialog.form.patchValue({
+      owner: 'student:s-2',
+      topic: '  Дроби ',
+      meetingUrl: 'https://zoom.us/j/1',
+    });
     await fixture.whenStable();
 
     buttonByText(document.body, 'Сохранить').click();
@@ -83,7 +90,13 @@ describe('LessonDialog', () => {
     buttonByText(document.body, 'Всё равно сохранить').click();
     const retry = backend.expectOne('/api/teacher/schedule/lessons');
     expect(retry.request.body).toEqual(
-      expect.objectContaining({ studentId: null, groupId: 'g-1', allowOverlap: true, topic: null, meetingUrl: null }),
+      expect.objectContaining({
+        studentId: null,
+        groupId: 'g-1',
+        allowOverlap: true,
+        topic: null,
+        meetingUrl: null,
+      }),
     );
     retry.flush(scheduledLesson());
     expect(saved).toHaveLength(1);
@@ -91,7 +104,11 @@ describe('LessonDialog', () => {
 
   it('shows other errors and rejects bad links', async () => {
     const dialog = await open();
-    dialog.form.patchValue({ owner: 'student:s-1', startsAt: new Date(2026, 9, 1, 18), meetingUrl: 'zoom' });
+    dialog.form.patchValue({
+      owner: 'student:s-1',
+      startsAt: new Date(2026, 9, 1, 18),
+      meetingUrl: 'zoom',
+    });
     await fixture.whenStable();
     expect(dialog.form.invalid).toBe(true);
     expect(bodyText()).toContain('Ссылка должна начинаться с http:// или https://');
@@ -101,7 +118,10 @@ describe('LessonDialog', () => {
     dialog.save();
     backend
       .expectOne('/api/teacher/schedule/lessons')
-      .flush({ status: 404, code: 'schedule.student-not-found' }, { status: 404, statusText: 'Not Found' });
+      .flush(
+        { status: 404, code: 'schedule.student-not-found' },
+        { status: 404, statusText: 'Not Found' },
+      );
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Ученик не найден или отключён');
@@ -116,7 +136,9 @@ describe('LessonDialog', () => {
     fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Иван' }]);
     await fixture.whenStable();
 
-    expect(dialog.form.getRawValue()).toEqual(expect.objectContaining({ owner: 'student:s-1', topic: 'Дроби' }));
+    expect(dialog.form.getRawValue()).toEqual(
+      expect.objectContaining({ owner: 'student:s-1', topic: 'Дроби' }),
+    );
   });
 
   it('changes a planned lesson', async () => {

@@ -8,7 +8,10 @@ describe('HelpButton', () => {
   let fixture: ComponentFixture<HelpButton>;
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({ imports: [HelpButton], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [HelpButton],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(HelpButton);
     fixture.componentRef.setInput('topic', 'teacher/groups');
     await fixture.whenStable();
@@ -25,7 +28,9 @@ describe('HelpButton', () => {
 
     expect(fixture.componentInstance.visible()).toBe(true);
     expect(bodyText()).toContain('Группа — это ученики, которые занимаются вместе.');
-    const all = Array.from(document.body.querySelectorAll('a')).find((link) => link.textContent.includes('Вся справка'));
+    const all = Array.from(document.body.querySelectorAll('a')).find((link) =>
+      link.textContent.includes('Вся справка'),
+    );
     expect(all?.getAttribute('href')).toBe('/teacher/help/groups');
   });
 
@@ -39,7 +44,9 @@ describe('HelpButton', () => {
     await fixture.whenStable();
     expect(document.body.querySelector('.p-drawer-mask')).toBeNull();
 
-    document.body.querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]')?.click();
+    document.body
+      .querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]')
+      ?.click();
     await fixture.whenStable();
 
     expect(fixture.componentInstance.visible()).toBe(false);
@@ -50,7 +57,9 @@ describe('HelpButton', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     await fixture.componentInstance.open();
     await fixture.whenStable();
-    const all = Array.from(document.body.querySelectorAll('a')).find((link) => link.textContent.includes('Вся справка'));
+    const all = Array.from(document.body.querySelectorAll('a')).find((link) =>
+      link.textContent.includes('Вся справка'),
+    );
     all?.addEventListener('click', (event) => {
       event.preventDefault();
     });

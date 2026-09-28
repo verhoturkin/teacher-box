@@ -24,7 +24,9 @@ describe('ScheduleApi', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(ScheduleApi);
     backend = TestBed.inject(HttpTestingController);
   });
@@ -34,7 +36,13 @@ describe('ScheduleApi', () => {
   });
 
   it('calls the teacher lesson endpoints', () => {
-    const details = { startsAt: '2026-10-01T15:00:00Z', durationMinutes: 60, topic: null, meetingUrl: null, allowOverlap: false };
+    const details = {
+      startsAt: '2026-10-01T15:00:00Z',
+      durationMinutes: 60,
+      topic: null,
+      meetingUrl: null,
+      allowOverlap: false,
+    };
     api.lessons('2026-09-28', '2026-10-05').subscribe();
     api.plan({ studentId: 's-1', groupId: null, ...details }).subscribe();
     api.edit('l-1', details).subscribe();
@@ -43,7 +51,10 @@ describe('ScheduleApi', () => {
     api.reopen('l-1').subscribe();
     api.unmarked().subscribe();
 
-    expect(backend.expectOne('/api/teacher/schedule/lessons?from=2026-09-28&to=2026-10-05').request.method).toBe('GET');
+    expect(
+      backend.expectOne('/api/teacher/schedule/lessons?from=2026-09-28&to=2026-10-05').request
+        .method,
+    ).toBe('GET');
     const plan = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/lessons' });
     expect(plan.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     const edit = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });
@@ -53,10 +64,15 @@ describe('ScheduleApi', () => {
       byStudent: true,
       charge: false,
     });
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1/outcome' }).request.body).toEqual({
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1/outcome' }).request
+        .body,
+    ).toEqual({
       outcome: 'MISSED',
     });
-    expect(backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/outcome' })).toBeTruthy();
+    expect(
+      backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/outcome' }),
+    ).toBeTruthy();
     expect(backend.expectOne('/api/teacher/schedule/unmarked').request.method).toBe('GET');
   });
 
@@ -70,16 +86,24 @@ describe('ScheduleApi', () => {
     api.decline('r-2', 'Нет').subscribe();
 
     expect(backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/series' })).toBeTruthy();
-    expect(backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/series' }).request.body).toEqual(series);
-    expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/series/sr-1' })).toBeTruthy();
-    expect(backend.expectOne('/api/teacher/schedule/series/sr-1/stop').request.body).toEqual({ from: '2026-10-05' });
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/series' }).request.body,
+    ).toEqual(series);
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/series/sr-1' }),
+    ).toBeTruthy();
+    expect(backend.expectOne('/api/teacher/schedule/series/sr-1/stop').request.body).toEqual({
+      from: '2026-10-05',
+    });
     expect(backend.expectOne('/api/teacher/schedule/requests').request.method).toBe('GET');
     expect(backend.expectOne('/api/teacher/schedule/requests/r-1/approve').request.body).toEqual({
       startsAt: null,
       charge: true,
       answer: 'Ок',
     });
-    expect(backend.expectOne('/api/teacher/schedule/requests/r-2/decline').request.body).toEqual({ answer: 'Нет' });
+    expect(backend.expectOne('/api/teacher/schedule/requests/r-2/decline').request.body).toEqual({
+      answer: 'Нет',
+    });
   });
 
   it('calls the personal area endpoints', () => {
@@ -93,10 +117,18 @@ describe('ScheduleApi', () => {
     api.disableFeed().subscribe();
 
     expect(backend.expectOne('/api/me/schedule/settings').request.method).toBe('GET');
-    expect(backend.expectOne('/api/me/schedule/lessons?from=2026-10-01&to=2026-11-01').request.method).toBe('GET');
-    expect(backend.expectOne('/api/me/schedule/lessons/l-1/requests').request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    expect(
+      backend.expectOne('/api/me/schedule/lessons?from=2026-10-01&to=2026-11-01').request.method,
+    ).toBe('GET');
+    expect(
+      backend
+        .expectOne('/api/me/schedule/lessons/l-1/requests')
+        .request.context.get(SKIP_ERROR_TOAST),
+    ).toBe(true);
     expect(backend.expectOne({ method: 'GET', url: '/api/me/schedule/requests' })).toBeTruthy();
-    expect(backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' })).toBeTruthy();
+    expect(
+      backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }),
+    ).toBeTruthy();
     expect(backend.expectOne({ method: 'GET', url: '/api/me/schedule/feed' })).toBeTruthy();
     expect(backend.expectOne({ method: 'POST', url: '/api/me/schedule/feed' })).toBeTruthy();
     expect(backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/feed' })).toBeTruthy();
@@ -120,7 +152,9 @@ describe('ScheduleApi', () => {
       busy: true,
     });
     expect(backend.expectOne('/api/teacher/schedule/google/sync').request.method).toBe('POST');
-    expect(backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/google' })).toBeTruthy();
+    expect(
+      backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/google' }),
+    ).toBeTruthy();
     expect(
       backend.expectOne(
         '/api/teacher/schedule/google/busy?from=2026-10-01T00:00:00Z&to=2026-10-08T00:00:00Z',

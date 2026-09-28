@@ -12,12 +12,16 @@ import { AttachmentList } from './attachment-list';
     @for (submission of submissions(); track submission.id; let first = $first) {
       <article class="tb-submission" [class.tb-submission--old]="!first">
         <header class="tb-muted">
-          {{ first ? 'Последний ответ' : 'Предыдущий ответ' }} · {{ submission.submittedAt | date: 'dd.MM.yyyy HH:mm' }}
+          {{ first ? 'Последний ответ' : 'Предыдущий ответ' }} ·
+          {{ submission.submittedAt | date: 'dd.MM.yyyy HH:mm' }}
         </header>
         @if (submission.text) {
           <p class="tb-pre">{{ submission.text }}</p>
         }
-        <tb-attachment-list [attachments]="submission.attachments" (download)="download.emit($event)" />
+        <tb-attachment-list
+          [attachments]="submission.attachments"
+          (download)="download.emit($event)"
+        />
       </article>
     } @empty {
       <p class="tb-muted">Ответов пока нет.</p>

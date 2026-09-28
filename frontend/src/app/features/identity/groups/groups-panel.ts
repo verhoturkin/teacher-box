@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  output,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -12,7 +20,13 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
 import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
-import { MeetingRoom, MeetingsApi, RoomCell, RoomDialog, RoomOwnerRef } from '@features/meetings/parts';
+import {
+  MeetingRoom,
+  MeetingsApi,
+  RoomCell,
+  RoomDialog,
+  RoomOwnerRef,
+} from '@features/meetings/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
@@ -103,14 +117,32 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
               }
             </td>
             <td class="tb-actions-column">
-              <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" pTooltip="Изменить"
-                [ariaLabel]="'Изменить группу: ' + group.name" (onClick)="openEdit(group)" />
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                [rounded]="true"
+                pTooltip="Изменить"
+                [ariaLabel]="'Изменить группу: ' + group.name"
+                (onClick)="openEdit(group)"
+              />
               @if (group.archivedAt) {
-                <p-button icon="pi pi-replay" [text]="true" [rounded]="true" pTooltip="Вернуть из архива"
-                  [ariaLabel]="'Вернуть из архива: ' + group.name" (onClick)="restore(group)" />
+                <p-button
+                  icon="pi pi-replay"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Вернуть из архива"
+                  [ariaLabel]="'Вернуть из архива: ' + group.name"
+                  (onClick)="restore(group)"
+                />
               } @else {
-                <p-button icon="pi pi-inbox" [text]="true" [rounded]="true" pTooltip="В архив"
-                  [ariaLabel]="'В архив: ' + group.name" (onClick)="confirmArchive(group)" />
+                <p-button
+                  icon="pi pi-inbox"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="В архив"
+                  [ariaLabel]="'В архив: ' + group.name"
+                  (onClick)="confirmArchive(group)"
+                />
               }
             </td>
           </tr>
@@ -118,7 +150,11 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
         <ng-template #emptymessage>
           <tr>
             <td colspan="6" class="tb-empty">
-              {{ groups().length === 0 ? 'Групп пока нет. Создайте группу, если занимаетесь с несколькими учениками сразу.' : 'Все группы в архиве' }}
+              {{
+                groups().length === 0
+                  ? 'Групп пока нет. Создайте группу, если занимаетесь с несколькими учениками сразу.'
+                  : 'Все группы в архиве'
+              }}
             </td>
           </tr>
         </ng-template>
@@ -170,7 +206,9 @@ export class GroupsPanel implements OnInit {
   protected readonly currency = signal('RUB');
   protected readonly loading = signal(true);
   protected readonly showArchived = new FormControl(false, { nonNullable: true });
-  private readonly includeArchived = toSignal(this.showArchived.valueChanges, { initialValue: false });
+  private readonly includeArchived = toSignal(this.showArchived.valueChanges, {
+    initialValue: false,
+  });
   protected readonly visibleGroups = computed(() => {
     // New rows when the rooms or boards arrive: the table re-renders the columns only for a new value.
     this.rooms();
@@ -310,6 +348,7 @@ export class GroupsPanel implements OnInit {
 function sortGroups(groups: StudentGroup[]): StudentGroup[] {
   return groups.sort(
     (a, b) =>
-      Number(a.archivedAt !== null) - Number(b.archivedAt !== null) || a.name.localeCompare(b.name, 'ru'),
+      Number(a.archivedAt !== null) - Number(b.archivedAt !== null) ||
+      a.name.localeCompare(b.name, 'ru'),
   );
 }

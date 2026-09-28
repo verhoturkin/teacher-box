@@ -43,6 +43,9 @@ describe('schedule labels', () => {
   });
 
   it('widens a calendar range by a day on each side', () => {
-    expect(widen({ from: '2026-10-01', to: '2026-11-01' })).toEqual({ from: '2026-09-30', to: '2026-11-02' });
+    expect(widen({ from: '2026-10-01', to: '2026-11-01' })).toEqual({
+      from: '2026-09-30',
+      to: '2026-11-02',
+    });
   });
 });

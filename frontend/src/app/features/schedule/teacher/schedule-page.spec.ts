@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
@@ -28,7 +32,12 @@ describe('SchedulePage', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SchedulePage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG(), MessageService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG(),
+        MessageService,
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -69,11 +78,13 @@ describe('SchedulePage', () => {
       { id: 's-1', displayName: 'Иван Петров', status: 'ACTIVE' },
       { id: 's-2', displayName: 'Ушедший', status: 'DEACTIVATED' },
     ]);
-    backend.expectOne('/api/teacher/groups').flush([
-      aGroup({ id: 'g-1', name: 'ОГЭ' }),
-      aGroup({ id: 'g-2', name: 'Пустая', members: [] }),
-      aGroup({ id: 'g-3', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
-    ]);
+    backend
+      .expectOne('/api/teacher/groups')
+      .flush([
+        aGroup({ id: 'g-1', name: 'ОГЭ' }),
+        aGroup({ id: 'g-2', name: 'Пустая', members: [] }),
+        aGroup({ id: 'g-3', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
+      ]);
     flushSidePanels(unmarked);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
     backend.expectOne('/api/teacher/schedule/google').flush(google);
@@ -94,7 +105,9 @@ describe('SchedulePage', () => {
   }
 
   it('shows requests, lessons to mark and regular series', async () => {
-    const text = await render(scheduleSettings(), [scheduledLesson({ id: 'l-9', studentName: 'Мария' })]);
+    const text = await render(scheduleSettings(), [
+      scheduledLesson({ id: 'l-9', studentName: 'Мария' }),
+    ]);
 
     expect(text).toContain('Запросы учеников');
     expect(text).toContain('Перенос');
@@ -109,7 +122,9 @@ describe('SchedulePage', () => {
     const text = await render(scheduleSettings(), [
       groupLesson({ id: 'gl-9', startsAt: at(2026, 9, 1, 18), endsAt: at(2026, 9, 1, 19, 30) }),
     ]);
-    const dialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
 
     expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ' }]);
     expect(text).toContain('Группа «ОГЭ»');
@@ -138,7 +153,9 @@ describe('SchedulePage', () => {
 
   it('plans a lesson in a selected slot with the default or the selected duration', async () => {
     await render(scheduleSettings({ defaultDurationMinutes: 45 }));
-    const dialog = fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog);
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
     const start = new Date(2026, 9, 1, 18);
 
     page.onSlot({ start, end: new Date(2026, 9, 1, 18, 30) });
@@ -218,7 +235,10 @@ describe('SchedulePage', () => {
     page.onMove(move(revert));
     backend
       .expectOne('/api/teacher/schedule/lessons/l-1')
-      .flush({ status: 422, code: 'schedule.lesson-not-scheduled' }, { status: 422, statusText: 'Unprocessable' });
+      .flush(
+        { status: 422, code: 'schedule.lesson-not-scheduled' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
     expect(revert).toHaveBeenCalledTimes(2);
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ detail: 'Занятие уже проведено или отменено' }),
@@ -235,7 +255,9 @@ describe('SchedulePage', () => {
     await flushReload([scheduledLesson({ id: 'l-9' })]);
 
     buttonByText(hostElement(fixture), 'Пропуск: Иван Петров').click();
-    expect(backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome').request.body).toEqual({ outcome: 'MISSED' });
+    expect(backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome').request.body).toEqual({
+      outcome: 'MISSED',
+    });
   });
 
   it('opens a request for an answer', async () => {
@@ -267,7 +289,9 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     buttonByText(document.body, 'Завершить').click();
     const stop = backend.expectOne('/api/teacher/schedule/series/sr-1/stop');
-    expect(stop.request.body).toEqual({ from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) as unknown });
+    expect(stop.request.body).toEqual({
+      from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) as unknown,
+    });
     stop.flush(null);
     await flushReload();
   });

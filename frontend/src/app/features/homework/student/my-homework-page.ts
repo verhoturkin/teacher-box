@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -30,15 +37,25 @@ import { TaskStatusTag } from '../ui/task-status-tag';
         </ng-template>
         <ng-template #body let-task [tbRowType]="tasks()">
           <tr>
-            <td><a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a></td>
+            <td>
+              <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
+            </td>
             <td [class.tb-negative]="task.overdue">
               {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
             </td>
-            <td><tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" /></td>
+            <td>
+              <tb-task-status
+                [status]="task.status"
+                [overdue]="task.overdue"
+                [grade]="task.grade"
+              />
+            </td>
           </tr>
         </ng-template>
         <ng-template #emptymessage>
-          <tr><td colspan="3" class="tb-empty">Заданий пока нет</td></tr>
+          <tr>
+            <td colspan="3" class="tb-empty">Заданий пока нет</td>
+          </tr>
         </ng-template>
       </p-table>
     </p-card>
@@ -51,8 +68,11 @@ export class MyHomeworkPage implements OnInit {
   protected readonly loading = signal(true);
   /** Open tasks (assigned or returned) first, then the rest; newest first inside each group. */
   protected readonly tasks = computed(() => {
-    const open = (task: MyTask): number => (task.status === 'ASSIGNED' || task.status === 'RETURNED' ? 0 : 1);
-    return [...this.all()].sort((a, b) => open(a) - open(b) || b.assignedAt.localeCompare(a.assignedAt));
+    const open = (task: MyTask): number =>
+      task.status === 'ASSIGNED' || task.status === 'RETURNED' ? 0 : 1;
+    return [...this.all()].sort(
+      (a, b) => open(a) - open(b) || b.assignedAt.localeCompare(a.assignedAt),
+    );
   });
 
   ngOnInit(): void {

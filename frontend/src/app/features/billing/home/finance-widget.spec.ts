@@ -10,7 +10,10 @@ describe('FinanceWidget', () => {
   let fixture: ComponentFixture<FinanceWidget>;
 
   async function render(summary: BillingSummary): Promise<void> {
-    TestBed.configureTestingModule({ imports: [FinanceWidget], providers: [provideRouter([]), providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [FinanceWidget],
+      providers: [provideRouter([]), providePrimeNG()],
+    });
     fixture = TestBed.createComponent(FinanceWidget);
     fixture.componentRef.setInput('summary', summary);
     fixture.detectChanges();
@@ -38,8 +41,14 @@ describe('FinanceWidget', () => {
     expect(text).toContain('Поступило за сентябрь 12 000 ₽');
     expect(text).toContain('Долг учеников 4 500 ₽ должников: 2');
     expect(text).toContain('Анна 3 000 ₽ Борис 1 500 ₽');
-    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) => a.getAttribute('href'));
-    expect(links).toEqual(['/teacher/billing/students/s-1', '/teacher/billing/students/s-2', '/teacher/billing']);
+    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
+      a.getAttribute('href'),
+    );
+    expect(links).toEqual([
+      '/teacher/billing/students/s-1',
+      '/teacher/billing/students/s-2',
+      '/teacher/billing',
+    ]);
   });
 
   it('shows no debtors when everything is paid', async () => {

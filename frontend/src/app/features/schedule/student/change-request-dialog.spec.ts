@@ -43,7 +43,10 @@ describe('ChangeRequestDialog', () => {
     expect(buttonByText(document.body, 'Отправить учителю').disabled).toBe(true);
     const proposed = new Date(2026, 9, 2, 17);
     fixture.componentInstance.proposed.set(proposed);
-    typeInto(requireElement(document.body, '#request-comment', HTMLTextAreaElement), 'Можно в пятницу?');
+    typeInto(
+      requireElement(document.body, '#request-comment', HTMLTextAreaElement),
+      'Можно в пятницу?',
+    );
     await fixture.whenStable();
 
     buttonByText(document.body, 'Отправить учителю').click();
@@ -67,7 +70,10 @@ describe('ChangeRequestDialog', () => {
 
     const request = backend.expectOne('/api/me/schedule/lessons/l-1/requests');
     expect(request.request.body).toEqual({ kind: 'CANCEL', proposedStartsAt: null, comment: null });
-    request.flush({ status: 409, code: 'schedule.request-pending' }, { status: 409, statusText: 'Conflict' });
+    request.flush(
+      { status: 409, code: 'schedule.request-pending' },
+      { status: 409, statusText: 'Conflict' },
+    );
     await fixture.whenStable();
     expect(bodyText()).toContain('По этому занятию уже есть запрос');
     expect(sent).toHaveLength(0);

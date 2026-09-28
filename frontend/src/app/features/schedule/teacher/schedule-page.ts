@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -29,7 +36,12 @@ import {
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
-import { CalendarRange, LessonMove, ScheduleCalendar, SlotSelection } from '../ui/schedule-calendar';
+import {
+  CalendarRange,
+  LessonMove,
+  ScheduleCalendar,
+  SlotSelection,
+} from '../ui/schedule-calendar';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
@@ -45,7 +57,8 @@ const CLICK_SELECTION_MINUTES = 30;
  */
 @Component({
   selector: 'tb-schedule-page',
-  imports: [HelpButton, 
+  imports: [
+    HelpButton,
     Button,
     Card,
     ConfirmDialog,
@@ -67,7 +80,12 @@ const CLICK_SELECTION_MINUTES = 30;
       </div>
       <div class="tb-actions">
         <p-button label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
-        <p-button label="Регулярные занятия" icon="pi pi-replay" [outlined]="true" (onClick)="newSeries()" />
+        <p-button
+          label="Регулярные занятия"
+          icon="pi pi-replay"
+          [outlined]="true"
+          (onClick)="newSeries()"
+        />
       </div>
     </div>
     @if (localTimeHint(); as hint) {
@@ -106,7 +124,12 @@ const CLICK_SELECTION_MINUTES = 30;
                       }
                     </div>
                   </div>
-                  <p-button label="Ответить" size="small" [outlined]="true" (onClick)="answer(request)" />
+                  <p-button
+                    label="Ответить"
+                    size="small"
+                    [outlined]="true"
+                    (onClick)="answer(request)"
+                  />
                 </li>
               }
             </ul>
@@ -132,21 +155,21 @@ const CLICK_SELECTION_MINUTES = 30;
                         (onClick)="openLesson(lesson)"
                       />
                     } @else {
-                    <p-button
-                      icon="pi pi-check"
-                      severity="success"
-                      size="small"
-                      [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
-                      (onClick)="mark(lesson, 'CONDUCTED')"
-                    />
-                    <p-button
-                      icon="pi pi-user-minus"
-                      severity="warn"
-                      size="small"
-                      [outlined]="true"
-                      [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
-                      (onClick)="mark(lesson, 'MISSED')"
-                    />
+                      <p-button
+                        icon="pi pi-check"
+                        severity="success"
+                        size="small"
+                        [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                        (onClick)="mark(lesson, 'CONDUCTED')"
+                      />
+                      <p-button
+                        icon="pi pi-user-minus"
+                        severity="warn"
+                        size="small"
+                        [outlined]="true"
+                        [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                        (onClick)="mark(lesson, 'MISSED')"
+                      />
                     }
                   </div>
                 </li>
@@ -217,7 +240,11 @@ const CLICK_SELECTION_MINUTES = 30;
       [timeZone]="settings()?.timeZone ?? null"
       (saved)="onSeriesSaved($event)"
     />
-    <tb-request-answer-dialog [(visible)]="answerVisible" [request]="answering()" (answered)="reload()" />
+    <tb-request-answer-dialog
+      [(visible)]="answerVisible"
+      [request]="answering()"
+      (answered)="reload()"
+    />
     <p-confirmdialog />
   `,
   styles: `
@@ -269,7 +296,9 @@ export class SchedulePage implements OnInit {
   protected readonly unmarked = signal<ScheduledLesson[]>([]);
   protected readonly series = signal<LessonSeries[]>([]);
   protected readonly busy = signal<BusyTime[]>([]);
-  protected readonly defaultDuration = computed(() => this.settings()?.defaultDurationMinutes ?? 60);
+  protected readonly defaultDuration = computed(
+    () => this.settings()?.defaultDurationMinutes ?? 60,
+  );
   protected readonly localTimeHint = computed(() => {
     const zone = this.settings()?.timeZone;
     return zone === undefined || zone === browserTimeZone()
