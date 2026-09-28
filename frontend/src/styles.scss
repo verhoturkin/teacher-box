@@ -22,7 +22,7 @@
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   font-family:
     Inter,
     system-ui,
@@ -45,7 +45,9 @@ body {
   color: var(--p-text-color);
 }
 
-@media (prefers-color-scheme: dark) {
+:root.tb-dark {
+  color-scheme: dark;
+
   body {
     background: var(--p-surface-950);
   }

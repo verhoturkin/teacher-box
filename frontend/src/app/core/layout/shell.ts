@@ -7,6 +7,13 @@ import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { Portal } from '@core/portal/portal';
+import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+
+const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
+  { choice: 'light', label: 'Светлая тема', icon: 'pi pi-sun' },
+  { choice: 'dark', label: 'Тёмная тема', icon: 'pi pi-moon' },
+  { choice: 'system', label: 'Тема как в системе', icon: 'pi pi-desktop' },
+];
 
 /** Application frame: navigation bar with the user menu and routed content. */
 @Component({
@@ -47,6 +54,7 @@ import { Portal } from '@core/portal/portal';
 })
 export class Shell {
   private readonly auth = inject(AuthService);
+  private readonly theme = inject(ThemeMode);
 
   protected readonly portalName = inject(Portal).name;
 
@@ -63,6 +71,15 @@ export class Shell {
     ...this.userLinks(),
     { label: 'Справка', icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
     { label: 'Мой аккаунт', icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
+    { separator: true },
+    // Flat items: a group (`items`) would turn every top-level item into a group label.
+    ...THEMES.map(({ choice, label, icon }) => ({
+      label,
+      icon: this.theme.choice() === choice ? 'pi pi-check' : icon,
+      command: () => {
+        this.theme.choose(choice);
+      },
+    })),
     { separator: true },
     {
       label: 'Выйти',

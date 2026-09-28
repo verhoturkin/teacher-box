@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { Portal } from '@core/portal/portal';
+import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
 import { Shell } from './shell';
@@ -56,6 +57,20 @@ describe('Shell', () => {
     await fixture.whenStable();
 
     expect(hostElement(fixture).querySelector('tb-notification-bell')).toBeNull();
+  });
+
+  it('switches the theme from the user menu', async () => {
+    buttonByText(hostElement(fixture), 'Меню пользователя').click();
+    await fixture.whenStable();
+
+    const dark = Array.from(document.body.querySelectorAll('a')).find((element) =>
+      element.textContent.includes('Тёмная тема'),
+    );
+    dark?.click();
+
+    expect(TestBed.inject(ThemeMode).choice()).toBe('dark');
+    TestBed.inject(ThemeMode).choose('system');
+    localStorage.clear();
   });
 
   it('signs out from the user menu', async () => {
