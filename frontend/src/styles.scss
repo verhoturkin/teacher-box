@@ -574,6 +574,11 @@ a.p-button:hover {
   }
 }
 
+/* Dialog buttons that do not fit in one row (e.g. the actions of a lesson) go on to the next one */
+.p-dialog-footer {
+  flex-wrap: wrap;
+}
+
 /*
  * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
  * bottom, fields are full width. Confirmations stay small.
