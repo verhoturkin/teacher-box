@@ -87,8 +87,8 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
     .tb-levels-form {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      gap: var(--tb-space-2);
+      margin-bottom: var(--tb-space-4);
     }
 
     .tb-levels-form__name {

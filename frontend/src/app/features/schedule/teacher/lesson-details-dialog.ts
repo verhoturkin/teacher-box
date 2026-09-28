@@ -223,20 +223,20 @@ import { AttendanceDialog } from './attendance-dialog';
     .tb-lesson-details {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
 
     .tb-lesson-details__head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: var(--tb-space-4);
     }
 
     .tb-lesson-details__participants {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -245,18 +245,18 @@ import { AttendanceDialog } from './attendance-dialog';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
 
     .tb-lesson-details__request {
-      padding: 0.5rem 0.75rem;
+      padding: var(--tb-space-2) var(--tb-space-3);
       border-radius: var(--p-border-radius-md);
       background: var(--p-highlight-background);
     }
 
     .tb-lesson-details__cancel {
-      margin-top: 1rem;
+      margin-top: var(--tb-space-4);
     }
   `,
 })

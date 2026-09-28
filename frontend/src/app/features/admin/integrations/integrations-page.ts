@@ -103,8 +103,8 @@ import { INTEGRATION_TAGS } from '../admin-labels';
     .tb-checks {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin: 1rem 0 0;
+      gap: var(--tb-space-3);
+      margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
 
@@ -112,7 +112,7 @@ import { INTEGRATION_TAGS } from '../admin-labels';
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 0.75rem;
+        gap: var(--tb-space-3);
       }
 
       strong {

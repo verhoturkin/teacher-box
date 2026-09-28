@@ -51,9 +51,9 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
     .tb-welcome {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin: 0 0 0.5rem;
-      padding-left: 1.25rem;
+      gap: var(--tb-space-2);
+      margin: 0 0 var(--tb-space-2);
+      padding-left: var(--tb-space-5);
     }
   `,
 })

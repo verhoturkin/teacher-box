@@ -186,7 +186,7 @@ export const UPCOMING_DAYS = 60;
     .tb-schedule-layout {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: 1rem;
+      gap: var(--tb-space-4);
       align-items: start;
 
       @media (max-width: 900px) {
@@ -197,7 +197,7 @@ export const UPCOMING_DAYS = 60;
     .tb-schedule-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -207,14 +207,14 @@ export const UPCOMING_DAYS = 60;
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
 
     .tb-schedule-list__main {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
     }
   `,
 })

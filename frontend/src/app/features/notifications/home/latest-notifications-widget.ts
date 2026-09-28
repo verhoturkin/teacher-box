@@ -59,8 +59,8 @@ export const LATEST_COUNT = 5;
       li {
         display: flex;
         align-items: baseline;
-        gap: 0.5rem;
-        padding: 0.4rem 0;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-2) 0;
         border-bottom: 1px solid var(--p-content-border-color);
 
         > i {

@@ -21,8 +21,8 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      padding: 4rem 1rem;
+      gap: var(--tb-space-4);
+      padding: var(--tb-space-16) var(--tb-space-4);
       text-align: center;
     }
     h1 {

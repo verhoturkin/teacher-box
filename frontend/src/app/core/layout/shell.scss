@@ -7,8 +7,8 @@
 .tb-shell__brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-right: 1rem;
+  gap: var(--tb-space-2);
+  margin-right: var(--tb-space-4);
   font-weight: 600;
   font-size: 1.125rem;
   color: var(--p-primary-color);
@@ -19,7 +19,7 @@
 .tb-shell__user {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .tb-shell__area {
@@ -34,7 +34,16 @@
 .tb-shell__content {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--tb-content-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: var(--tb-space-6) var(--tb-space-8);
+  box-sizing: border-box;
+
+  @media (max-width: 960px) {
+    padding: var(--tb-space-5) var(--tb-space-4);
+  }
+
+  @media (max-width: 480px) {
+    padding: var(--tb-space-4) var(--tb-space-3);
+  }
 }

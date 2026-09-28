@@ -153,15 +153,15 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     .tb-integrations {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin: 0 0 1rem;
+      gap: var(--tb-space-2);
+      margin: 0 0 var(--tb-space-4);
       padding: 0;
       list-style: none;
 
       li {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: var(--tb-space-3);
       }
 
       span {

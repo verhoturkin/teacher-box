@@ -244,14 +244,14 @@ const STEPS: readonly Step[] = [
     .tb-setup {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--tb-space-4);
       max-width: 44rem;
     }
 
     .tb-setup-steps {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem 1.25rem;
+      gap: var(--tb-space-2) var(--tb-space-5);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -260,7 +260,7 @@ const STEPS: readonly Step[] = [
       li {
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: var(--tb-space-2);
       }
 
       .tb-setup-steps__number {
@@ -298,8 +298,8 @@ const STEPS: readonly Step[] = [
     .tb-setup-later {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      padding-left: 1.25rem;
+      gap: var(--tb-space-2);
+      padding-left: var(--tb-space-5);
     }
   `,
 })

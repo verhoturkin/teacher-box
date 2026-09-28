@@ -58,7 +58,7 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: var(--tb-space-4);
 
       p {
         flex: 1;
@@ -70,7 +70,7 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
     .tb-broadcasts {
       display: flex;
       flex-direction: column;
-      margin: 1rem 0 0;
+      margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
     }
@@ -78,8 +78,8 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
     .tb-broadcast {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      padding: 0.75rem 0;
+      gap: var(--tb-space-1);
+      padding: var(--tb-space-3) 0;
       border-top: 1px solid var(--p-content-border-color);
     }
 
@@ -88,7 +88,7 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
       flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
 
     .tb-broadcast__body {

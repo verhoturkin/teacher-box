@@ -51,21 +51,21 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
     .tb-finance {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
+      gap: var(--tb-space-6);
     }
 
     .tb-debtors {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      margin: 1rem 0 0;
+      gap: var(--tb-space-1);
+      margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
 
       li {
         display: flex;
         justify-content: space-between;
-        gap: 1rem;
+        gap: var(--tb-space-4);
       }
     }
   `,

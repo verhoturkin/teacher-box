@@ -147,7 +147,7 @@ export const LOG_LIMIT = 200;
     .tb-log-filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
 
       input {
         min-width: 10rem;

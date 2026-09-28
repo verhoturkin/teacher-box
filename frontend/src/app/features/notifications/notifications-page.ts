@@ -122,7 +122,7 @@ function isTeacherTab(value: unknown): value is TeacherTab {
     .tb-notifications-layout {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: 1rem;
+      gap: var(--tb-space-4);
       align-items: start;
 
       @media (max-width: 900px) {

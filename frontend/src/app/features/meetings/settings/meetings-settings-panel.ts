@@ -205,22 +205,22 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     .tb-meetings-state {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
+      gap: var(--tb-space-3);
+      margin-bottom: var(--tb-space-2);
     }
 
     .tb-meetings-steps {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      padding-left: 1.25rem;
+      gap: var(--tb-space-2);
+      padding-left: var(--tb-space-5);
     }
 
     .tb-meetings-uri {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      margin: 0.25rem 0;
+      gap: var(--tb-space-1);
+      margin: var(--tb-space-1) 0;
 
       code {
         overflow-wrap: anywhere;
@@ -230,8 +230,8 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     .tb-meetings-options {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin-top: 1rem;
+      gap: var(--tb-space-2);
+      margin-top: var(--tb-space-4);
     }
   `,
 })

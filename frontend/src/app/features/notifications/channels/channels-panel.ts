@@ -108,7 +108,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
     .tb-channels {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -117,7 +117,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
     .tb-channel {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
 
       > i {
         font-size: 1.5rem;

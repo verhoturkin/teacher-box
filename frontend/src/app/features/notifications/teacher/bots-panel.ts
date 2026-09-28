@@ -87,7 +87,7 @@ import { BotWizardDialog } from './bot-wizard-dialog';
     .tb-bots {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--tb-space-4);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -97,7 +97,7 @@ import { BotWizardDialog } from './bot-wizard-dialog';
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
 
       > i {
         font-size: 1.5rem;

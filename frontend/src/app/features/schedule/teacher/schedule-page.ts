@@ -251,7 +251,7 @@ const CLICK_SELECTION_MINUTES = 30;
     .tb-schedule-layout {
       display: grid;
       grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
-      gap: 1rem;
+      gap: var(--tb-space-4);
       align-items: start;
 
       @media (max-width: 1100px) {
@@ -262,7 +262,7 @@ const CLICK_SELECTION_MINUTES = 30;
     .tb-schedule-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -271,11 +271,11 @@ const CLICK_SELECTION_MINUTES = 30;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
 
       p-tag {
-        margin-left: 0.5rem;
+        margin-left: var(--tb-space-2);
       }
     }
   `,

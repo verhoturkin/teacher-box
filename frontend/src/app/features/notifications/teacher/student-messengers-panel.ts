@@ -103,14 +103,14 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      gap: var(--tb-space-3);
+      margin-bottom: var(--tb-space-3);
     }
 
     .tb-student-channels {
       display: inline-flex;
       flex-wrap: wrap;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
     }
 
     .tb-check-column {

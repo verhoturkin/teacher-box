@@ -112,8 +112,8 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
     .tb-boards {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      margin: 0 0 1rem;
+      gap: var(--tb-space-1);
+      margin: 0 0 var(--tb-space-4);
       padding: 0;
       list-style: none;
 
@@ -121,7 +121,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
   `,

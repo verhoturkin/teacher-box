@@ -121,7 +121,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
     .tb-room-link {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
 
       a {
         overflow-wrap: anywhere;

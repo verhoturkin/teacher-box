@@ -38,7 +38,7 @@ import { Board } from '../data-access/boards.models';
     .tb-board-cell {
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
     }
   `,
 })

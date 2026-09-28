@@ -41,7 +41,7 @@ interface AttentionItem {
     .tb-attention {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -49,7 +49,7 @@ interface AttentionItem {
       li {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: var(--tb-space-3);
 
         > i {
           color: var(--p-orange-500);
@@ -63,7 +63,7 @@ interface AttentionItem {
 
     .tb-attention__count {
       min-width: 1.75rem;
-      padding: 0.1rem 0.5rem;
+      padding: var(--tb-space-1) var(--tb-space-2);
       border-radius: 1rem;
       background: var(--p-orange-100);
       color: var(--p-orange-700);

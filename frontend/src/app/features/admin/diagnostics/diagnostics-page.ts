@@ -47,9 +47,9 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
     .tb-send-list {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
-      padding-left: 1.25rem;
+      padding-left: var(--tb-space-5);
     }
   `,
 })

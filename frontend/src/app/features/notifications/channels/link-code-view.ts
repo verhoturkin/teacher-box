@@ -40,7 +40,7 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
 
       p {
         margin: 0;
@@ -49,12 +49,12 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
 
     .tb-link-code__open {
       display: inline-flex;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       text-decoration: none;
     }
 
     .tb-link-code__value {
-      padding: 0.5rem 1rem;
+      padding: var(--tb-space-2) var(--tb-space-4);
       border-radius: var(--p-border-radius-md);
       background: var(--p-surface-100);
       font-family: monospace;

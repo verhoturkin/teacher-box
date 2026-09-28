@@ -65,7 +65,7 @@ interface Step {
     .tb-checklist {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -73,10 +73,10 @@ interface Step {
       li {
         display: flex;
         align-items: flex-start;
-        gap: 0.75rem;
+        gap: var(--tb-space-3);
 
         > i {
-          margin-top: 0.2rem;
+          margin-top: var(--tb-space-1);
           color: var(--p-text-muted-color);
         }
 

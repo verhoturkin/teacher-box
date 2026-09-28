@@ -80,7 +80,7 @@ import { HelpArea } from './help-topics';
     .tb-help {
       display: grid;
       grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
-      gap: 1rem;
+      gap: var(--tb-space-4);
       align-items: start;
 
       @media (max-width: 768px) {
@@ -91,8 +91,8 @@ import { HelpArea } from './help-topics';
     .tb-help__list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin: 1rem 0 0;
+      gap: var(--tb-space-3);
+      margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
 

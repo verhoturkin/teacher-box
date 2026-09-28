@@ -39,7 +39,7 @@ import { MyBoard } from '../data-access/boards.models';
     .tb-my-boards {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -48,7 +48,7 @@ import { MyBoard } from '../data-access/boards.models';
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
   `,

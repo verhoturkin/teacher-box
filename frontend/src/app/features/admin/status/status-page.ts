@@ -91,7 +91,7 @@ import { PortalAddressCard } from './portal-address-card';
   `,
   styles: `
     .tb-component {
-      margin-right: 0.75rem;
+      margin-right: var(--tb-space-3);
     }
   `,
 })

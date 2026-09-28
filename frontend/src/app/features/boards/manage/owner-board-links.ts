@@ -31,7 +31,7 @@ import { Board } from '../data-access/boards.models';
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.25rem 0.75rem;
+      gap: var(--tb-space-1) var(--tb-space-3);
     }
   `,
 })

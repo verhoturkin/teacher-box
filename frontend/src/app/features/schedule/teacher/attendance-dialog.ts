@@ -93,8 +93,8 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
     .tb-attendance {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin: 0 0 0.75rem;
+      gap: var(--tb-space-2);
+      margin: 0 0 var(--tb-space-3);
       padding: 0;
       list-style: none;
 
@@ -103,7 +103,7 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
   `,

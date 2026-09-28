@@ -67,7 +67,7 @@ import { CalendarFeed } from '../data-access/schedule.models';
   styles: `
     .tb-feed-link {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
 
       input {
         flex: 1;
@@ -76,12 +76,12 @@ import { CalendarFeed } from '../data-access/schedule.models';
     }
 
     .tb-feed-help {
-      margin: 0.75rem 0 0.5rem;
-      padding-left: 1.25rem;
+      margin: var(--tb-space-3) 0 var(--tb-space-2);
+      padding-left: var(--tb-space-5);
     }
 
     .tb-actions {
-      margin-top: 0.75rem;
+      margin-top: var(--tb-space-3);
     }
   `,
 })

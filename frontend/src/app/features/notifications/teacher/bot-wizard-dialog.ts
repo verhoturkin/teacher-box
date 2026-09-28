@@ -316,7 +316,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
     .tb-wizard {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -325,9 +325,9 @@ function describeMessengerError(error: unknown, fallback: string): string {
     .tb-wizard__header {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       width: 100%;
-      padding: 0.25rem 0;
+      padding: var(--tb-space-1) 0;
       border: 0;
       background: none;
       color: var(--p-text-muted-color);
@@ -370,9 +370,9 @@ function describeMessengerError(error: unknown, fallback: string): string {
     .tb-wizard__body {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin: 0.25rem 0 0.75rem 1rem;
-      padding-left: 1.75rem;
+      gap: var(--tb-space-3);
+      margin: var(--tb-space-1) 0 var(--tb-space-3) var(--tb-space-4);
+      padding-left: var(--tb-space-7);
       border-left: 1px solid var(--p-content-border-color);
 
       p {
@@ -383,9 +383,9 @@ function describeMessengerError(error: unknown, fallback: string): string {
     .tb-wizard__howto {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
-      padding-left: 1.25rem;
+      padding-left: var(--tb-space-5);
     }
   `,
 })

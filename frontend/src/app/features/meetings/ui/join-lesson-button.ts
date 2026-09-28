@@ -42,7 +42,7 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
       display: inline-flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
 
     .tb-join__browser {

@@ -112,7 +112,7 @@ export interface Copied {
     .tb-to-board {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -120,7 +120,7 @@ export interface Copied {
       li {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--tb-space-2);
       }
     }
   `,

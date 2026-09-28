@@ -1,5 +1,26 @@
 @use 'primeicons/primeicons.css';
 
+/*
+ * Design tokens (ADR-0015): spacing on a 4 px grid (--tb-space-N = N x 4 px), the width of the
+ * content, the height of the header. Radii, colors and the sizes of controls come from the PrimeNG
+ * preset (core/theme), so that components and PrimeNG widgets match.
+ */
+:root {
+  --tb-space-1: 0.25rem;
+  --tb-space-2: 0.5rem;
+  --tb-space-3: 0.75rem;
+  --tb-space-4: 1rem;
+  --tb-space-5: 1.25rem;
+  --tb-space-6: 1.5rem;
+  --tb-space-7: 1.75rem;
+  --tb-space-8: 2rem;
+  --tb-space-16: 4rem;
+  --tb-content-max: 1440px;
+  --tb-content-narrow: 56rem;
+  --tb-header-height: 3.5rem;
+  --tb-radius: var(--p-content-border-radius);
+}
+
 :root {
   color-scheme: light dark;
   font-family:
@@ -31,7 +52,7 @@ body {
 }
 
 .tb-page-title {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--tb-space-4);
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -41,8 +62,8 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--tb-space-4);
+  margin-bottom: var(--tb-space-4);
 
   .tb-page-title {
     margin: 0;
@@ -53,8 +74,8 @@ body {
 .tb-page-heading {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
+  gap: var(--tb-space-1);
+  margin-bottom: var(--tb-space-4);
 
   .tb-page-title {
     margin: 0;
@@ -68,7 +89,7 @@ body {
 .tb-stack {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 
 /* Sign-in and invitation pages */
@@ -77,7 +98,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 1rem;
+  padding: var(--tb-space-4);
   box-sizing: border-box;
 }
 
@@ -90,7 +111,7 @@ body {
 .tb-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 
 .tb-form--narrow {
@@ -100,7 +121,7 @@ body {
 .tb-field {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--tb-space-2);
 
   label {
     font-weight: 500;
@@ -130,14 +151,14 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--tb-space-4);
+  margin-bottom: var(--tb-space-4);
 }
 
 .tb-switch {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   cursor: pointer;
 }
 
@@ -148,14 +169,14 @@ body {
 }
 
 .tb-empty {
-  padding: 2rem 1rem;
+  padding: var(--tb-space-8) var(--tb-space-4);
   text-align: center;
   color: var(--p-text-muted-color);
 }
 
 .tb-copy-row {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .tb-grow {
@@ -166,7 +187,7 @@ body {
 .tb-details {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.5rem 1.5rem;
+  gap: var(--tb-space-2) var(--tb-space-6);
   margin: 0;
 
   dt {
@@ -181,36 +202,46 @@ body {
 .tb-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .tb-back {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tb-space-2);
 }
 
-/* Links styled as PrimeNG buttons */
-a.p-button {
+/* Links: the primary color, underlined on hover; links styled as buttons stay buttons */
+a {
+  color: var(--p-primary-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+a.p-button,
+a.p-button:hover {
   text-decoration: none;
 }
 
 .tb-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 
 /* Key figures */
 .tb-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--tb-space-4);
+  margin-bottom: var(--tb-space-4);
 }
 
 .tb-stat {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
 }
 
 .tb-stat__value {
@@ -250,16 +281,16 @@ a.p-button {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .tb-assign {
   display: flex;
-  margin-top: 1rem;
+  margin-top: var(--tb-space-4);
 }
 
 .tb-subtitle {
-  margin: 1.25rem 0 0.5rem;
+  margin: var(--tb-space-5) 0 var(--tb-space-2);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -268,7 +299,7 @@ a.p-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 
 .tb-pre {
@@ -279,17 +310,17 @@ a.p-button {
 /* Files */
 .tb-files {
   list-style: none;
-  margin: 0.5rem 0;
+  margin: var(--tb-space-2) 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
 }
 
 .tb-files__item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .tb-link-button {
@@ -308,7 +339,7 @@ a.p-button {
 
 /* Homework */
 .tb-submission {
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
   border-bottom: 1px solid var(--p-content-border-color);
 
   &:last-child {
@@ -322,7 +353,7 @@ a.p-button {
 
 .tb-preview {
   min-height: 12rem;
-  padding: 0.75rem;
+  padding: var(--tb-space-3);
   border: 1px solid var(--p-content-border-color);
   border-radius: var(--p-content-border-radius);
 }
@@ -340,9 +371,9 @@ a.p-button {
 
   pre {
     overflow-x: auto;
-    padding: 0.75rem;
+    padding: var(--tb-space-3);
     background: var(--p-surface-100);
-    border-radius: 6px;
+    border-radius: var(--tb-radius);
   }
 }
 
@@ -350,7 +381,7 @@ a.p-button {
 .tb-home {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 1rem;
+  gap: var(--tb-space-4);
   align-items: start;
 
   @media (max-width: 900px) {
@@ -363,8 +394,8 @@ a.p-button {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: var(--tb-space-3);
+  margin-top: var(--tb-space-3);
 }
 
 .tb-sr-only {

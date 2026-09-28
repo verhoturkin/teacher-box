@@ -64,12 +64,12 @@ import { BotAbilities } from '../data-access/notifications.models';
     .tb-bot-abilities {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
+      gap: var(--tb-space-4);
+      margin-bottom: var(--tb-space-4);
 
       ul {
         margin: 0;
-        padding-inline-start: 1.25rem;
+        padding-inline-start: var(--tb-space-5);
       }
     }
   `,

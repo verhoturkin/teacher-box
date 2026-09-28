@@ -119,7 +119,7 @@ function shortTime(time: string | null, fallback: string): string {
     .tb-topics {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       border: 0;
@@ -128,7 +128,7 @@ function shortTime(time: string | null, fallback: string): string {
     .tb-topic {
       display: flex;
       align-items: flex-start;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
 
       label {
         display: flex;
@@ -139,14 +139,14 @@ function shortTime(time: string | null, fallback: string): string {
     .tb-quiet {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
 
     .tb-quiet__times {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
   `,
 })

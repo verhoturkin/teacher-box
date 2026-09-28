@@ -85,26 +85,26 @@ export const PAGE_SIZE = 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
+      gap: var(--tb-space-4);
+      margin-bottom: var(--tb-space-2);
     }
 
     .tb-notifications {
       display: flex;
       flex-direction: column;
-      margin: 0 0 0.5rem;
+      margin: 0 0 var(--tb-space-2);
       padding: 0;
       list-style: none;
     }
 
     .tb-notification {
       display: flex;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
+      gap: var(--tb-space-3);
+      padding: var(--tb-space-3) 0;
       border-bottom: 1px solid var(--p-content-border-color);
 
       > i {
-        margin-top: 0.2rem;
+        margin-top: var(--tb-space-1);
         color: var(--p-text-muted-color);
       }
     }
@@ -123,7 +123,7 @@ export const PAGE_SIZE = 20;
       display: flex;
       flex: 1;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--tb-space-1);
       min-width: 0;
     }
 

@@ -136,13 +136,13 @@ const STATUS_LABELS: Record<
   `,
   styles: `
     .tb-usage-features {
-      margin: 1rem 0 0;
-      padding-left: 1.25rem;
+      margin: var(--tb-space-4) 0 0;
+      padding-left: var(--tb-space-5);
     }
 
     .tb-usage-error {
       display: block;
-      margin-top: 0.25rem;
+      margin-top: var(--tb-space-1);
       overflow-wrap: anywhere;
     }
   `,

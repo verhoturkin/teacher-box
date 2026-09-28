@@ -187,7 +187,7 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
   `,
   styles: `
     .tb-group-tag {
-      margin-inline-start: 0.5rem;
+      margin-inline-start: var(--tb-space-2);
     }
   `,
 })

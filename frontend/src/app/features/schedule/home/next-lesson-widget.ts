@@ -83,7 +83,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
     .tb-next {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--tb-space-2);
     }
 
     .tb-next__time {
