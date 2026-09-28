@@ -90,6 +90,12 @@ body {
   }
 }
 
+/* Fields: Body Large with its line height, 48 px high like selects (PrimeNG's styles come later) */
+input.p-inputtext,
+textarea.p-textarea {
+  line-height: 1.5rem;
+}
+
 /* Buttons: Label Large (M3), 40 px high; PrimeNG's styles come later, hence the :not */
 .p-button:not(.p-button-sm, .p-button-lg) {
   font-size: 0.875rem;
@@ -636,6 +642,21 @@ a.p-menu-item-link:hover {
  * action buttons are at the bottom of the card.
  */
 @media (max-width: 768px) {
+  /* Search fills the width of the toolbar */
+  .tb-toolbar > p-iconfield,
+  .tb-toolbar > p-iconfield input {
+    width: 100%;
+  }
+
+  /* The card around the list gives way: the row cards lie on the page itself */
+  .p-card:has(.p-datatable.tb-cards) {
+    background: transparent;
+
+    > .p-card-body {
+      padding: var(--tb-space-2) 0 0;
+    }
+  }
+
   .p-datatable.tb-cards {
     .p-datatable-table-container {
       overflow: visible;
@@ -656,7 +677,6 @@ a.p-menu-item-link:hover {
     .p-datatable-tbody > tr {
       margin-bottom: var(--tb-space-3);
       padding: var(--tb-space-3) var(--tb-space-4);
-      border: 1px solid var(--p-md-outline-variant);
       border-radius: var(--tb-shape-md);
       background: var(--p-content-background);
     }
@@ -752,6 +772,49 @@ a.p-menu-item-link:hover {
     .p-button-icon {
       font-size: 1.5rem;
     }
+  }
+}
+
+/*
+ * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
+ * same button, fixed above the bottom navigation.
+ */
+@media (max-width: 768px) {
+  p-button.tb-page-fab {
+    position: fixed;
+    right: var(--tb-space-4);
+    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+    z-index: 900;
+
+    .p-button {
+      height: 3.5rem;
+      padding-inline: var(--tb-space-4) var(--tb-space-5);
+      gap: var(--tb-space-3);
+      border-color: var(--p-md-primary-container);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
+      box-shadow: var(--tb-elevation-3);
+
+      &:not(:disabled):hover {
+        border-color: var(--p-md-primary-container);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) 8%,
+          var(--p-md-primary-container)
+        );
+        color: var(--p-md-on-primary-container);
+      }
+
+      .p-button-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  /* The page keeps room at its end for the FAB */
+  main.tb-shell__content--nav:has(.tb-page-fab, .tb-fab) {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }
 

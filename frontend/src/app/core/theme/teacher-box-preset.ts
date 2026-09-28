@@ -357,6 +357,19 @@ const SWITCH_SCHEME = {
   },
 };
 
+/** The button of a date field: the trailing icon of the outlined field. */
+const DATE_BUTTON_SCHEME = {
+  dropdown: {
+    background: 'transparent',
+    hoverBackground: over('{md.on.surface}', 8),
+    activeBackground: over('{md.on.surface}', 12),
+    color: '{md.on.surface.variant}',
+    hoverColor: '{md.on.surface}',
+    activeColor: '{md.on.surface}',
+  },
+  today: { background: '{md.primary.container}', color: '{md.on.primary.container}' },
+};
+
 export const TeacherBoxPreset = definePreset(Aura, {
   primitive: {
     borderRadius: {
@@ -623,6 +636,22 @@ export const TeacherBoxPreset = definePreset(Aura, {
     datepicker: {
       panel: { background: '{md.surface.container.high}', borderRadius: '{border.radius.lg}' },
       date: { borderRadius: PILL, width: '2.5rem', height: '2.5rem' },
+      dropdown: {
+        width: '3rem',
+        borderColor: '{form.field.border.color}',
+        hoverBorderColor: '{form.field.border.color}',
+        activeBorderColor: '{form.field.border.color}',
+        borderRadius: '{border.radius.xs}',
+      },
+      colorScheme: { light: DATE_BUTTON_SCHEME, dark: DATE_BUTTON_SCHEME },
+      css: `
+        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input {
+          border-inline-end: 0;
+        }
+        .p-datepicker .p-datepicker-dropdown {
+          border-inline-start: 0;
+        }
+      `,
     },
   },
 });

@@ -53,9 +53,9 @@ import { PaymentDialog } from './payment-dialog';
         <h1 class="tb-page-title">{{ ledger.displayName }}</h1>
         <div class="tb-actions">
           <p-button
+            class="tb-page-fab"
             label="Оплата"
             icon="pi pi-wallet"
-            severity="success"
             (onClick)="paymentVisible.set(true)"
           />
         </div>

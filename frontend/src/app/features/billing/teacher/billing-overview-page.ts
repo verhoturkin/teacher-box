@@ -59,9 +59,9 @@ import { EmptyState } from '@shared/ui/empty-state';
       </div>
       <div class="tb-actions">
         <p-button
+          class="tb-page-fab"
           label="Оплата"
           icon="pi pi-wallet"
-          severity="success"
           (onClick)="openPayment(null)"
           [disabled]="!overview()"
         />
