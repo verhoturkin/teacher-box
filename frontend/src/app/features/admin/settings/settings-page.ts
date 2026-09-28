@@ -26,6 +26,7 @@ import {
   SettingKind,
   SettingSource,
 } from '../data-access/admin.models';
+import { TimeZoneOption, timeZoneOptions } from './time-zones';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
 
@@ -53,7 +54,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
   ADDRESS: 'https://school.example.com',
   URL: 'https://…',
   PROXY: 'socks5://host:port',
-  TIME_ZONE: 'Europe/Moscow',
+  TIME_ZONE: 'выберите часовой пояс',
   CURRENCY: 'RUB',
   NUMBER: 'число',
 };
@@ -117,6 +118,20 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
                     [options]="options(setting)"
                     optionLabel="label"
                     optionValue="value"
+                    [ngModel]="current(setting)"
+                    (ngModelChange)="change(setting, $event)"
+                    appendTo="body"
+                  />
+                } @else if (setting.kind === 'TIME_ZONE') {
+                  <p-select
+                    [inputId]="'setting-' + setting.name"
+                    [options]="timeZones()"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    filterPlaceholder="Город или смещение, например Moscow"
+                    [placeholder]="placeholder(setting)"
                     [ngModel]="current(setting)"
                     (ngModelChange)="change(setting, $event)"
                     appendTo="body"
@@ -277,6 +292,20 @@ export class SettingsPage implements OnInit {
       }
     }
     return groups;
+  });
+
+  /** Known time zones, and the one in force if the browser does not know it (e.g. an old name). */
+  protected readonly timeZones = computed<TimeZoneOption[]>(() => {
+    const known = timeZoneOptions();
+    const unknown = (this.settings()?.settings ?? [])
+      .filter((setting) => setting.kind === 'TIME_ZONE' && setting.value !== null)
+      .map((setting) => setting.value ?? '')
+      .filter((value) => value !== '' && !known.some((zone) => zone.value === value));
+    return [
+      { label: 'не задано', value: '' },
+      ...[...new Set(unknown)].map((value) => ({ label: value, value })),
+      ...known,
+    ];
   });
 
   protected readonly confirmVisible = signal(false);
