@@ -10,7 +10,7 @@ import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
 
-/** Student personal area dashboard: collects the widgets of the modules. */
+/** Student personal area dashboard: the nearest lesson with its link on top, then the widgets of the modules. */
 @Component({
   selector: 'tb-student-home',
   imports: [
@@ -30,22 +30,22 @@ import { StudentWelcomeCard } from './student-welcome-card';
       <tb-help-button topic="cabinet/lesson" />
     </div>
     <div class="tb-stack">
+      @if (schedule(); as schedule) {
+        <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />
+      }
       <tb-student-welcome-card />
       <tb-connect-messenger-card />
       <div class="tb-home">
         <div class="tb-stack">
-          @if (schedule(); as schedule) {
-            <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />
-          }
           @if (homework(); as homework) {
             <tb-my-deadlines-widget [summary]="homework" />
           }
+          <tb-my-boards-card />
         </div>
         <div class="tb-stack">
           @if (billing(); as billing) {
             <tb-my-balance-widget [summary]="billing" />
           }
-          <tb-my-boards-card />
           <tb-latest-notifications-widget link="/cabinet/notifications" />
         </div>
       </div>

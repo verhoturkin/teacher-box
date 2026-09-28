@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { ProgressBar } from 'primeng/progressbar';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 
 /** Browser storage key: the teacher hid the first-run checklist. */
@@ -23,26 +24,28 @@ interface Step {
   readonly query?: Readonly<Record<string, string>>;
 }
 
-/** Teacher's home: the first steps after installation, until they are done or hidden. */
+/** Teacher's home: the steps left after installation and the progress, until they are done or hidden. */
 @Component({
   selector: 'tb-first-run-checklist',
-  imports: [RouterLink, Button, Card],
+  imports: [RouterLink, Button, Card, ProgressBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
       <p-card header="С чего начать">
+        <p-progressbar
+          [value]="percent()"
+          [showValue]="false"
+          styleClass="tb-checklist__progress"
+          [attr.aria-label]="'Сделано ' + doneCount() + ' из ' + steps().length"
+        />
         <ol class="tb-checklist">
-          @for (step of steps(); track step.title) {
-            <li [class.tb-checklist__done]="step.done">
-              <i [class]="step.done ? 'pi pi-check-circle' : 'pi pi-circle'" aria-hidden="true"></i>
+          @for (step of left(); track step.title) {
+            <li>
+              <i class="pi pi-circle" aria-hidden="true"></i>
               <div>
-                @if (step.done) {
-                  <span>{{ step.title }}</span>
-                } @else {
-                  <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
-                    step.title
-                  }}</a>
-                }
+                <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
+                  step.title
+                }}</a>
                 <small class="tb-muted">{{ step.hint }}</small>
               </div>
             </li>
@@ -62,6 +65,11 @@ interface Step {
     }
   `,
   styles: `
+    :host ::ng-deep .tb-checklist__progress {
+      height: 0.5rem;
+      margin-bottom: var(--tb-space-4);
+    }
+
     .tb-checklist {
       display: flex;
       flex-direction: column;
@@ -84,17 +92,6 @@ interface Step {
           display: flex;
           flex-direction: column;
         }
-
-        &.tb-checklist__done {
-          > i {
-            color: var(--p-green-500);
-          }
-
-          span {
-            text-decoration: line-through;
-            color: var(--p-text-muted-color);
-          }
-        }
       }
     }
   `,
@@ -104,7 +101,7 @@ export class FirstRunChecklist {
 
   private readonly dismissed = signal(isHintHidden(CHECKLIST_DISMISSED_KEY));
 
-  protected readonly steps = computed<Step[]>(() => {
+  protected readonly steps = computed((): Step[] => {
     const progress = this.progress();
     return [
       {
@@ -112,6 +109,7 @@ export class FirstRunChecklist {
         title: 'Добавьте ученика',
         hint: 'и отправьте ему ссылку-приглашение',
         link: '/teacher/students',
+        query: { create: 'student' },
       },
       {
         done: progress.priceSet === true,
@@ -131,10 +129,15 @@ export class FirstRunChecklist {
         title: 'Запланируйте первое занятие',
         hint: 'разовое или регулярное — напоминания придут сами',
         link: '/teacher/schedule',
+        query: { create: 'lesson' },
       },
     ];
   });
-  protected readonly doneCount = computed(() => this.steps().filter((step) => step.done).length);
+  protected readonly left = computed(() => this.steps().filter((step) => !step.done));
+  protected readonly doneCount = computed(() => this.steps().length - this.left().length);
+  protected readonly percent = computed(() =>
+    Math.round((this.doneCount() / this.steps().length) * 100),
+  );
   /** Shown once everything is known, until all steps are done or the teacher hides it. */
   protected readonly visible = computed(() => {
     const progress = this.progress();

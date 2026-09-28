@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { CHECKLIST_DISMISSED_KEY, FirstRunChecklist, SetupProgress } from './first-run-checklist';
 
 describe('FirstRunChecklist', () => {
@@ -35,15 +35,24 @@ describe('FirstRunChecklist', () => {
     vi.restoreAllMocks();
   });
 
-  it('lists the steps with links to the ones left', async () => {
+  it('shows the progress and only the steps left, with links to their forms', async () => {
     await render(fresh);
 
     expect(text()).toContain('С чего начать');
     expect(text()).toContain('Сделано 2 из 4');
+    expect(text()).not.toContain('Добавьте ученика');
+    expect(
+      requireElement(hostElement(fixture), '[role="progressbar"]', HTMLElement).getAttribute(
+        'aria-valuenow',
+      ),
+    ).toBe('50');
     const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );
-    expect(links).toEqual(['/teacher/notifications?tab=messengers', '/teacher/schedule']);
+    expect(links).toEqual([
+      '/teacher/notifications?tab=messengers',
+      '/teacher/schedule?create=lesson',
+    ]);
   });
 
   it('waits until everything is known and hides when done', async () => {
