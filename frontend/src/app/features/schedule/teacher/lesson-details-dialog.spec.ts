@@ -148,6 +148,76 @@ describe('LessonDetailsDialog', () => {
     expect(changed).toHaveLength(0);
   });
 
+  it('deletes a lesson that was not held after a confirmation', async () => {
+    const deleted: string[] = [];
+    fixture.componentInstance.deleted.subscribe((id) => deleted.push(id));
+    await open(scheduledLesson());
+    buttonByText(document.body, 'Удалить').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Ученику придёт уведомление, что занятие отменено');
+    buttonByText(document.body, 'Назад').click();
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Ученику придёт уведомление');
+
+    buttonByText(document.body, 'Удалить').click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Удалить занятие').click();
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1' }).flush(null);
+    await fixture.whenStable();
+
+    expect(deleted).toEqual(['l-1']);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('keeps the lesson when deleting fails and offers no deleting of a charged one', async () => {
+    await open(scheduledLesson({ status: 'CANCELLED' }), new Date(2026, 9, 2));
+    buttonByText(document.body, 'Удалить').click();
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Ученику придёт уведомление');
+    buttonByText(document.body, 'Удалить занятие').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1')
+      .flush({ code: 'schedule.lesson-charged' }, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.visible()).toBe(true);
+
+    await open(
+      scheduledLesson({
+        status: 'MISSED',
+        participants: [{ studentId: 's-1', studentName: 'Иван Петров', attendance: 'MISSED' }],
+      }),
+    );
+    expect(() => buttonByText(document.body, 'Удалить')).toThrow();
+    fixture.componentRef.setInput('lesson', null);
+    fixture.componentInstance.deleteLesson();
+    fixture.componentInstance.restore();
+  });
+
+  it('restores a cancelled lesson, also over another one', async () => {
+    await open(scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }));
+    buttonByText(document.body, 'Восстановить').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/restore')
+      .flush({ status: 409, code: 'schedule.overlap' }, { status: 409, statusText: 'Conflict' });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('В это время уже есть другое занятие');
+
+    buttonByText(document.body, 'Всё равно восстановить').click();
+    const again = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
+    expect(again.request.body).toEqual({ allowOverlap: true });
+    again.flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Не удалось восстановить занятие');
+
+    buttonByText(document.body, 'Восстановить').click();
+    const restored = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
+    expect(restored.request.body).toEqual({ allowOverlap: false });
+    restored.flush(scheduledLesson());
+    await fixture.whenStable();
+    expect(changed).toHaveLength(1);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
   it('shows a cancelled lesson without actions', async () => {
     await open(
       scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }),

@@ -17,7 +17,9 @@ import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
+import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
+import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
@@ -107,6 +109,28 @@ class ScheduleNotifications {
         }
         notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED,
                 "Занятие " + texts.lessonTime(event.startsAt()) + " отменено", join(body));
+    }
+
+    /** For the students a deleted planned lesson that has not passed is a cancelled one. */
+    @ApplicationModuleListener
+    void on(LessonDeleted event) {
+        if (!event.planned() || !event.startsAt().isAfter(event.occurredAt())) {
+            return;
+        }
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED,
+                "Занятие " + texts.lessonTime(event.startsAt()) + " отменено",
+                group(event.groupId()).map(name -> "Группа «" + name + "».").orElse(null));
+    }
+
+    @ApplicationModuleListener
+    void on(LessonRestored event) {
+        if (!event.startsAt().isAfter(event.occurredAt())) {
+            return;
+        }
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED,
+                "Занятие " + texts.lessonTime(event.startsAt()) + " снова в расписании",
+                group(event.groupId()).map(name -> "Группа «" + name + "». ").orElse("")
+                        + "Отмена занятия снята.");
     }
 
     @ApplicationModuleListener

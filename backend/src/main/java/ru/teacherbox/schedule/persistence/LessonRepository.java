@@ -107,6 +107,17 @@ public class LessonRepository {
         lesson.markSaved(lesson.version() + 1);
     }
 
+    /** Deletes the lesson with its participants, requests and sent reminders. */
+    public void delete(Lesson lesson) {
+        int deleted = jdbc.sql("delete from schedule.lessons where id = :id and version = :version")
+                .param("id", lesson.id())
+                .param("version", lesson.version())
+                .update();
+        if (deleted != 1) {
+            throw new OptimisticLockingFailureException("Lesson " + lesson.id() + " was modified");
+        }
+    }
+
     public Optional<Lesson> findById(UUID id) {
         return load(jdbc.sql(SELECT + " where id = :id").param("id", id).query(LessonRepository::map).list())
                 .stream().findFirst();

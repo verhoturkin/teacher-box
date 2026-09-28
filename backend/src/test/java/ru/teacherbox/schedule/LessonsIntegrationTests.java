@@ -21,7 +21,9 @@ import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.LessonCompleted;
 import ru.teacherbox.schedule.api.LessonCompletionRevoked;
+import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
+import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -164,6 +166,71 @@ class LessonsIntegrationTests {
         assertThat(events).contains(LessonCompleted.class)
                 .matching(event -> event.lessonId().toString(), charged)
                 .matching(LessonCompleted::missed, true);
+    }
+
+    @Test
+    void deletesOnlyLessonsThatWereNotHeld(AssertablePublishedEvents events) throws UnsupportedEncodingException {
+        UUID student = directory.addStudent("Удаляет");
+        String planned = id(post("/api/teacher/schedule/lessons", lesson(student, Slots.next(clock), 60, true)));
+        String cancelled = id(post("/api/teacher/schedule/lessons", lesson(student, Slots.next(clock), 60, true)));
+        String charged = id(post("/api/teacher/schedule/lessons", lesson(student, Slots.next(clock), 60, true)));
+        assertThat(post("/api/teacher/schedule/lessons/" + cancelled + "/cancel", "{}")).hasStatusOk();
+        assertThat(post("/api/teacher/schedule/lessons/" + charged + "/cancel",
+                "{\"byStudent\":true,\"charge\":true}")).hasStatusOk();
+        assertThat(mvc.post().uri("/api/me/schedule/lessons/{id}/requests", planned).with(TestUsers.student(student))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"kind\":\"CANCEL\"}"))
+                .hasStatus(HttpStatus.CREATED);
+
+        assertThat(mvc.delete().uri("/api/teacher/schedule/lessons/" + planned).with(TestUsers.student(student)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(delete("/api/teacher/schedule/lessons/" + planned)).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(delete("/api/teacher/schedule/lessons/" + cancelled)).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(delete("/api/teacher/schedule/lessons/" + charged))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("schedule.lesson-charged");
+        assertThat(mvc.get().uri("/api/teacher/schedule/lessons/" + planned).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(delete("/api/teacher/schedule/lessons/" + planned)).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/me/schedule/requests").with(TestUsers.student(student)))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$[*].lessonId").asArray().doesNotContain(planned);
+
+        assertThat(events).contains(LessonDeleted.class)
+                .matching(event -> event.lessonId().toString(), planned)
+                .matching(LessonDeleted::planned, true)
+                .matching(LessonDeleted::studentIds, List.of(student));
+        assertThat(events).contains(LessonDeleted.class)
+                .matching(event -> event.lessonId().toString(), cancelled)
+                .matching(LessonDeleted::planned, false);
+    }
+
+    @Test
+    void restoresACancelledLesson(AssertablePublishedEvents events) throws UnsupportedEncodingException {
+        UUID student = directory.addStudent("Возвращает");
+        Instant start = Slots.next(clock);
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(student, start, 60, true)));
+        String planned = id(post("/api/teacher/schedule/lessons", lesson(student, Slots.next(clock), 60, true)));
+        assertThat(post("/api/teacher/schedule/lessons/" + lesson + "/cancel", "{\"reason\":\"Болею\"}")).hasStatusOk();
+        post("/api/teacher/schedule/lessons", lesson(directory.addStudent("Занял время"), start, 60, true));
+
+        assertThat(post("/api/teacher/schedule/lessons/" + lesson + "/restore", "{}"))
+                .hasStatus(HttpStatus.CONFLICT)
+                .bodyJson().extractingPath("$.code").isEqualTo("schedule.overlap");
+        assertThat(post("/api/teacher/schedule/lessons/" + lesson + "/restore", "{\"allowOverlap\":true}"))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.status").isEqualTo("SCHEDULED");
+                    assertThat(json).extractingPath("$.cancelledBy").isNull();
+                    assertThat(json).extractingPath("$.cancelReason").isNull();
+                });
+        assertThat(post("/api/teacher/schedule/lessons/" + planned + "/restore", "{}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("schedule.lesson-not-cancelled");
+
+        assertThat(events).contains(LessonRestored.class)
+                .matching(event -> event.lessonId().toString(), lesson)
+                .matching(LessonRestored::studentIds, List.of(student))
+                .matching(LessonRestored::startsAt, start);
     }
 
     @Test

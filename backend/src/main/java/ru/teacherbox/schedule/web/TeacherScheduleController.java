@@ -65,6 +65,9 @@ class TeacherScheduleController {
             @Nullable Boolean charge) {
     }
 
+    record RestoreRequest(@Nullable Boolean allowOverlap) {
+    }
+
     record OutcomeRequest(@NotNull LessonStatus outcome) {
     }
 
@@ -144,6 +147,17 @@ class TeacherScheduleController {
     LessonView cancel(@PathVariable UUID lessonId, @Valid @RequestBody CancelRequest request) {
         return schedule.cancel(lessonId,
                 new ScheduleService.CancelLesson(request.reason(), yes(request.byStudent()), yes(request.charge())));
+    }
+
+    @DeleteMapping("/lessons/{lessonId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable UUID lessonId) {
+        schedule.delete(lessonId);
+    }
+
+    @PostMapping("/lessons/{lessonId}/restore")
+    LessonView restore(@PathVariable UUID lessonId, @RequestBody(required = false) @Nullable RestoreRequest request) {
+        return schedule.reinstate(lessonId, request != null && yes(request.allowOverlap()));
     }
 
     @PutMapping("/lessons/{lessonId}/outcome")

@@ -150,6 +150,28 @@ public final class Lesson {
         return revoked;
     }
 
+    /**
+     * Checks that the lesson may be deleted: it was not held and nobody is charged for it (a planned
+     * or cancelled lesson). A held or charged lesson is corrected, not deleted.
+     */
+    public void requireDeletable() {
+        if ((status != LessonStatus.SCHEDULED && status != LessonStatus.CANCELLED) || !charged().isEmpty()) {
+            throw new BusinessRuleException("schedule.lesson-charged",
+                    "A held or charged lesson cannot be deleted; withdraw its outcome first");
+        }
+    }
+
+    /** Puts a cancelled lesson back into the schedule; excused students of a group stay excused. */
+    public void reinstate(Instant now) {
+        if (status != LessonStatus.CANCELLED) {
+            throw new BusinessRuleException("schedule.lesson-not-cancelled", "Only a cancelled lesson can be restored");
+        }
+        status = LessonStatus.SCHEDULED;
+        cancelledBy = null;
+        cancelReason = null;
+        updatedAt = now;
+    }
+
     /** A late cancellation of a lesson with one student that the teacher charges: it counts as missed. */
     public void chargeCancellation(CancelledBy by, @Nullable String reason, UUID newCompletionId, Instant now) {
         requireIndividual();

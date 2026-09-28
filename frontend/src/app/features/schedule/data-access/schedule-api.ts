@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
   ApproveRequest,
@@ -58,6 +58,20 @@ export class ScheduleApi {
     return this.http.post<ScheduledLesson>(
       `/api/teacher/schedule/lessons/${lessonId}/cancel`,
       request,
+    );
+  }
+
+  /** Deletes a lesson that was not held (planned, or cancelled without a charge). */
+  deleteLesson(lessonId: string): Observable<void> {
+    return this.http.delete(`/api/teacher/schedule/lessons/${lessonId}`).pipe(map(() => undefined));
+  }
+
+  /** Puts a cancelled lesson back; an overlap with another lesson is reported unless allowed. */
+  restore(lessonId: string, allowOverlap = false): Observable<ScheduledLesson> {
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/restore`,
+      { allowOverlap },
+      QUIET,
     );
   }
 

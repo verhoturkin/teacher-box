@@ -27,7 +27,9 @@ import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
+import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
+import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
@@ -120,6 +122,32 @@ class ScheduleNotificationsIntegrationTests {
         UUID quiet = directory.addStudent("Без причины");
         assertThat(latest(scenario, quiet, new ScheduledLessonCancelled(UUID.randomUUID(), null, List.of(quiet), START,
                 CancelledBy.TEACHER, null, false, false, Instant.now())).body()).isNull();
+    }
+
+    @Test
+    void aDeletedLessonIsCancelledForTheStudentsAndARestoredOneIsBack(Scenario scenario) {
+        UUID student = directory.addStudent("Удалено");
+        InboxNotification deleted = latest(scenario, student,
+                new LessonDeleted(UUID.randomUUID(), null, List.of(student), START, true, Instant.now()));
+        assertThat(deleted.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_CANCELLED);
+        assertThat(deleted.title()).isEqualTo("Занятие четверг, 01.10 в 18:00 отменено");
+        assertThat(deleted.body()).isNull();
+
+        UUID back = directory.addStudent("Снова в расписании");
+        InboxNotification restored = latest(scenario, back,
+                new LessonRestored(UUID.randomUUID(), null, List.of(back), LATER, 60, Instant.now()));
+        assertThat(restored.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_PLANNED);
+        assertThat(restored.title()).isEqualTo("Занятие пятница, 02.10 в 19:30 снова в расписании");
+        assertThat(restored.body()).isEqualTo("Отмена занятия снята.");
+
+        UUID quiet = directory.addStudent("Не узнает");
+        scenario.publish(new LessonDeleted(UUID.randomUUID(), null, List.of(quiet), START, false, Instant.now()))
+                .andWaitForEventOfType(LessonDeleted.class).toArrive();
+        scenario.publish(new LessonDeleted(UUID.randomUUID(), null, List.of(quiet), START, true, LATER))
+                .andWaitForEventOfType(LessonDeleted.class).toArrive();
+        scenario.publish(new LessonRestored(UUID.randomUUID(), null, List.of(quiet), START, 60, LATER))
+                .andWaitForEventOfType(LessonRestored.class).toArrive();
+        assertThat(inbox.findPage(quiet, 0, 10)).isEmpty();
     }
 
     @Test
