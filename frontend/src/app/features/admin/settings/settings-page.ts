@@ -16,6 +16,7 @@ import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { describeError } from '@core/http/error-messages';
+import { HelpButton } from '@features/help/parts';
 import { problemCode, problemDetailText } from '@core/http/problem-detail';
 import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { AdminApi } from '../data-access/admin-api';
@@ -63,12 +64,13 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
  */
 @Component({
   selector: 'tb-admin-settings-page',
-  imports: [FormsModule, Button, Card, Dialog, InputText, Message, Select, Tag],
+  imports: [FormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Select, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-header">
       <div class="tb-page-heading">
         <h1 class="tb-page-title">Настройки</h1>
+        <tb-help-button topic="admin/settings" />
       </div>
       <div class="tb-actions">
         <p-button
