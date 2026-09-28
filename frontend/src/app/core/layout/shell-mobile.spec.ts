@@ -40,7 +40,7 @@ describe('Shell on a phone', () => {
       'Задания',
       'Оплаты',
     ]);
-    expect(host.querySelector('.p-menubar-root-list')?.children.length ?? 0).toBe(0);
+    expect(host.querySelector('tb-side-nav')).toBeNull();
     expect(
       requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement).textContent,
     ).not.toContain('Анна');

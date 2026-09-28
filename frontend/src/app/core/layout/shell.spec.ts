@@ -7,7 +7,7 @@ import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
 import { Shell } from './shell';
-import { testProviders } from '@testing/setup';
+import { tabletScreen, testProviders } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
 
 describe('Shell', () => {
@@ -51,6 +51,13 @@ describe('Shell', () => {
     expect(text).toContain('Анна Сергеевна');
   });
 
+  it('puts the sections in the drawer on a wide screen', () => {
+    const nav = hostElement(fixture).querySelector('tb-side-nav');
+    expect(nav?.classList).not.toContain('tb-side-nav--rail');
+    expect(nav?.textContent).toContain('Ученики');
+    expect(hostElement(fixture).querySelector('nav.tb-bottom-nav')).toBeNull();
+  });
+
   it('has no notification bell for the administrator', async () => {
     expect(hostElement(fixture).querySelector('tb-notification-bell')).not.toBeNull();
 
@@ -90,5 +97,28 @@ describe('Shell', () => {
     TestBed.inject(HttpTestingController).expectOne('/api/auth/logout').flush(null);
 
     expect(TestBed.inject(AuthService).isAuthenticated()).toBe(false);
+  });
+});
+
+describe('Shell on a tablet', () => {
+  it('puts the sections in the rail', async () => {
+    TestBed.configureTestingModule({
+      imports: [Shell],
+      providers: testProviders(tabletScreen()),
+    });
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    const fixture = TestBed.createComponent(Shell);
+    fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
+    fixture.componentRef.setInput('homeLink', '/teacher');
+    fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(host.querySelector('tb-side-nav')?.classList).toContain('tb-side-nav--rail');
+    expect(host.querySelector('nav.tb-bottom-nav')).toBeNull();
+    expect(host.querySelector('button[aria-label="Меню пользователя"]')?.textContent).toContain(
+      'Анна',
+    );
+    fixture.destroy();
   });
 });

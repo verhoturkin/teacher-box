@@ -6,6 +6,7 @@ import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { of } from 'rxjs';
+import { MEDIUM_QUERY } from '@core/layout/mobile';
 
 type TestProvider = Provider | EnvironmentProviders;
 
@@ -37,5 +38,15 @@ export function phoneScreen(): Provider {
   return {
     provide: BreakpointObserver,
     useValue: { observe: () => of({ matches: true, breakpoints: {} }) },
+  };
+}
+
+/** A tablet's screen: the navigation rail instead of the drawer (ADR-0017). */
+export function tabletScreen(): Provider {
+  return {
+    provide: BreakpointObserver,
+    useValue: {
+      observe: (query: string) => of({ matches: query === MEDIUM_QUERY, breakpoints: {} }),
+    },
   };
 }

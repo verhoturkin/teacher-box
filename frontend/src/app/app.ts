@@ -7,7 +7,7 @@ import { Toast } from 'primeng/toast';
   imports: [RouterOutlet, Toast],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-toast position="top-right" />
+    <p-toast position="bottom-center" />
     <router-outlet />
   `,
 })

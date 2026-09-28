@@ -1,0 +1,111 @@
+/* The drawer: 280 px, items 56 px high with the pill indicator (M3 navigation drawer) */
+:host {
+  position: sticky;
+  top: var(--tb-header-height);
+  display: block;
+  flex: none;
+  box-sizing: border-box;
+  width: 17.5rem;
+  height: calc(100vh - var(--tb-header-height));
+  padding: var(--tb-space-2) var(--tb-space-3);
+  overflow-y: auto;
+}
+
+:host ::ng-deep {
+  .tb-side-nav__menu {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .p-menu-list {
+    gap: 0;
+    padding: 0;
+  }
+
+  .p-menu-item-content {
+    border-radius: var(--tb-shape-full);
+    transition: background var(--tb-duration-short) var(--tb-motion-standard);
+  }
+
+  .p-menu-item-link {
+    min-height: 3.5rem;
+    padding: 0 var(--tb-space-6) 0 var(--tb-space-4);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-label-l);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  .p-menu-item-icon {
+    color: inherit;
+    font-size: 1.25rem;
+  }
+
+  .p-menu-item-content:has(.p-menu-item-link-active) {
+    background: var(--p-md-secondary-container);
+
+    .p-menu-item-link {
+      color: var(--p-md-on-secondary-container);
+      font-weight: 600;
+    }
+  }
+}
+
+/* The rail: 88 px (long Russian labels), the label under the icon, the indicator around the icon (M3 navigation rail) */
+:host(.tb-side-nav--rail) {
+  width: 5.5rem;
+  padding: var(--tb-space-2) 0;
+
+  ::ng-deep {
+    .p-menu-list {
+      gap: var(--tb-space-3);
+    }
+
+    .p-menu-item-content,
+    .p-menu-item.p-focus > .p-menu-item-content,
+    .p-menu-item-content:has(.p-menu-item-link-active) {
+      background: transparent;
+    }
+
+    .p-menu-item-link {
+      flex-direction: column;
+      gap: var(--tb-space-1);
+      min-height: 0;
+      padding: 0 2px;
+      font: var(--tb-type-label-s);
+      text-align: center;
+    }
+
+    .p-menu-item-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.5rem;
+      height: 2rem;
+      margin: 0;
+      border-radius: var(--tb-shape-full);
+      transition: background var(--tb-duration-short) var(--tb-motion-standard);
+    }
+
+    .p-menu-item-link:hover .p-menu-item-icon,
+    .p-menu-item.p-focus .p-menu-item-icon {
+      background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+    }
+
+    .p-menu-item-link-active .p-menu-item-icon {
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .p-menu-item-label {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

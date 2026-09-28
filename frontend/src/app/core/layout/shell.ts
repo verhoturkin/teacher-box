@@ -3,13 +3,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
-import { injectMobile } from '@core/layout/mobile';
+import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { SideNav } from './side-nav';
 
 const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
   { choice: 'light', label: 'Светлая тема', icon: 'pi pi-sun' },
@@ -21,54 +21,55 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
 const NAV_ITEMS = 5;
 
 /**
- * Application frame: the header (kept at the top) with the sections and the user menu, the routed
- * content; on a phone the sections move to the bottom navigation.
+ * Application frame (ADR-0017): the top app bar (kept at the top) with the portal, the bell and the
+ * user menu; the sections of the role in the navigation drawer on a wide screen, in the rail on a
+ * tablet and in the bottom navigation on a phone; the routed content.
  */
 @Component({
   selector: 'tb-shell',
   imports: [
     Button,
     Menu,
-    Menubar,
     NotificationBell,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
     PortalLogo,
+    SideNav,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="tb-shell__header">
-      <p-menubar [model]="barItems()" styleClass="tb-shell__bar" breakpoint="1200px">
-        <ng-template #start>
-          <a class="tb-shell__brand" [routerLink]="homeLink()">
-            <tb-portal-logo size="1.5rem" />
-            <span>{{ portalName() }}</span>
-          </a>
-        </ng-template>
-        <ng-template #end>
-          <div class="tb-shell__user">
-            <span class="tb-shell__area">{{ areaTitle() }}</span>
-            @if (notifications()) {
-              <tb-notification-bell [link]="homeLink() + '/notifications'" />
-            }
-            <p-button
-              [label]="mobile() ? undefined : userName()"
-              icon="pi pi-user"
-              [text]="true"
-              severity="secondary"
-              ariaLabel="Меню пользователя"
-              (onClick)="userMenu.toggle($event)"
-            />
-            <p-menu #userMenu [model]="userItems()" [popup]="true" appendTo="body" />
-          </div>
-        </ng-template>
-      </p-menubar>
+      <a class="tb-shell__brand" [routerLink]="homeLink()">
+        <tb-portal-logo size="1.75rem" />
+        <span>{{ portalName() }}</span>
+      </a>
+      <div class="tb-shell__user">
+        <span class="tb-shell__area">{{ areaTitle() }}</span>
+        @if (notifications()) {
+          <tb-notification-bell [link]="homeLink() + '/notifications'" />
+        }
+        <p-button
+          [label]="compact() ? undefined : userName()"
+          icon="pi pi-user"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          ariaLabel="Меню пользователя"
+          (onClick)="userMenu.toggle($event)"
+        />
+        <p-menu #userMenu [model]="userItems()" [popup]="true" appendTo="body" />
+      </div>
     </header>
-    <main class="tb-shell__content" [class.tb-shell__content--nav]="mobile()">
-      <router-outlet />
-    </main>
-    @if (mobile()) {
+    <div class="tb-shell__body">
+      @if (!compact()) {
+        <tb-side-nav [items]="items()" [rail]="size() === 'medium'" />
+      }
+      <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
+        <router-outlet />
+      </main>
+    </div>
+    @if (compact()) {
       <nav class="tb-bottom-nav" aria-label="Разделы">
         @for (item of navItems(); track item.label) {
           <a
@@ -77,8 +78,8 @@ const NAV_ITEMS = 5;
             routerLinkActive="tb-bottom-nav__item--active"
             [routerLinkActiveOptions]="item.routerLinkActiveOptions ?? { exact: false }"
           >
-            <i [class]="item.icon" aria-hidden="true"></i>
-            <span>{{ item.label }}</span>
+            <span class="tb-bottom-nav__icon"><i [class]="item.icon" aria-hidden="true"></i></span>
+            <span class="tb-bottom-nav__label">{{ item.label }}</span>
           </a>
         }
         @if (moreItems().length > 0) {
@@ -88,8 +89,10 @@ const NAV_ITEMS = 5;
             aria-label="Ещё разделы"
             (click)="moreMenu.toggle($event)"
           >
-            <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
-            <span>Ещё</span>
+            <span class="tb-bottom-nav__icon"
+              ><i class="pi pi-ellipsis-h" aria-hidden="true"></i
+            ></span>
+            <span class="tb-bottom-nav__label">Ещё</span>
           </button>
         }
       </nav>
@@ -110,7 +113,8 @@ export class Shell {
   private readonly theme = inject(ThemeMode);
 
   protected readonly portalName = inject(Portal).name;
-  protected readonly mobile = injectMobile();
+  protected readonly size = injectWindowSize();
+  protected readonly compact = computed(() => this.size() === 'compact');
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();
@@ -120,8 +124,6 @@ export class Shell {
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
 
-  /** On a phone the header keeps only the logo, the bell and the user menu. */
-  protected readonly barItems = computed(() => (this.mobile() ? [] : this.items()));
   protected readonly navItems = computed(() => this.items().slice(0, NAV_ITEMS));
   protected readonly moreItems = computed(() => this.items().slice(NAV_ITEMS));
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');

@@ -645,17 +645,43 @@ a.p-menu-item-link:hover {
   font-size: 1.125rem;
 }
 
-/* The main action of a page on a phone: a round button above the bottom navigation (ADR-0015). */
+/* The main action of a page on a phone: the M3 FAB above the bottom navigation (ADR-0017). */
 .tb-fab {
   position: fixed;
   right: var(--tb-space-4);
-  bottom: calc(4.5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+  bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
   z-index: 900;
 
   .p-button {
     width: 3.5rem;
     height: 3.5rem;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+    border-color: var(--p-md-primary-container);
+    border-radius: var(--tb-shape-lg);
+    background: var(--p-md-primary-container);
+    color: var(--p-md-on-primary-container);
+    box-shadow: var(--tb-elevation-3);
+
+    &:not(:disabled):hover {
+      border-color: var(--p-md-primary-container);
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-primary-container) 8%,
+        var(--p-md-primary-container)
+      );
+      color: var(--p-md-on-primary-container);
+    }
+
+    .p-button-icon {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/* Snackbar (M3): at the bottom in the middle, above the bottom navigation on a phone */
+.p-toast.p-toast-bottom-center {
+  @media (max-width: 768px) {
+    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-2)) !important;
+    width: calc(100vw - 2rem);
   }
 }
 
