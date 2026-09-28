@@ -128,6 +128,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               [loading]="loading()"
               dataKey="id"
               [rowHover]="true"
+              styleClass="tb-cards"
             >
               <ng-template #header>
                 <tr>
@@ -143,18 +144,18 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               </ng-template>
               <ng-template #body let-student [tbRowType]="visibleStudents()">
                 <tr>
-                  <td>
+                  <td data-label="Имя">
                     <div class="tb-strong">{{ student.displayName }}</div>
                     @if (student.note) {
                       <small class="tb-muted">{{ student.note }}</small>
                     }
                   </td>
-                  <td>
+                  <td data-label="Контакты">
                     <div>{{ student.email ?? '' }}</div>
                     <div>{{ student.phone ?? '' }}</div>
                   </td>
-                  <td>{{ groupNames(student.id) }}</td>
-                  <td>
+                  <td data-label="Группы">{{ groupNames(student.id) }}</td>
+                  <td data-label="Видеовстреча">
                     @if (student.status !== 'DEACTIVATED') {
                       <tb-room-cell
                         [room]="roomOf(student.id)"
@@ -165,7 +166,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                       />
                     }
                   </td>
-                  <td>
+                  <td data-label="Доски">
                     @if (student.status !== 'DEACTIVATED') {
                       <tb-board-cell
                         [boards]="boards.of(student.id)"
@@ -180,7 +181,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                       />
                     }
                   </td>
-                  <td>
+                  <td data-label="Статус">
                     <p-tag
                       [value]="statusLabels[student.status]"
                       [severity]="statusSeverities[student.status]"
@@ -194,7 +195,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
                       </div>
                     }
                   </td>
-                  <td>{{ student.login ?? '—' }}</td>
+                  <td data-label="Логин">{{ student.login ?? '—' }}</td>
                   <td class="tb-actions-column">
                     <p-button
                       icon="pi pi-pencil"

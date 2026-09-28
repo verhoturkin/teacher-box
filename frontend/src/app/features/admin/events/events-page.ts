@@ -34,7 +34,7 @@ import { shortLogger } from '../admin-labels';
               (onClick)="resubmit([])"
             />
           </div>
-          <p-table [value]="events()" styleClass="p-datatable-sm">
+          <p-table [value]="events()" styleClass="tb-cards p-datatable-sm">
             <ng-template #header>
               <tr>
                 <th>Когда</th>
@@ -46,10 +46,12 @@ import { shortLogger } from '../admin-labels';
             </ng-template>
             <ng-template #body let-event [tbRowType]="events()">
               <tr>
-                <td>{{ event.publishedAt | date: 'dd.MM HH:mm:ss' }}</td>
-                <td>{{ event.eventType }}</td>
-                <td class="tb-mono" [title]="event.listener">{{ short(event.listener) }}</td>
-                <td>{{ event.attempts }}</td>
+                <td data-label="Когда">{{ event.publishedAt | date: 'dd.MM HH:mm:ss' }}</td>
+                <td data-label="Событие">{{ event.eventType }}</td>
+                <td data-label="Обработчик" class="tb-mono" [title]="event.listener">
+                  {{ short(event.listener) }}
+                </td>
+                <td data-label="Попыток">{{ event.attempts }}</td>
                 <td class="tb-row-actions">
                   <p-button
                     label="Повторить"
@@ -76,7 +78,7 @@ import { shortLogger } from '../admin-labels';
               (onClick)="retry([])"
             />
           </div>
-          <p-table [value]="deliveries()" styleClass="p-datatable-sm">
+          <p-table [value]="deliveries()" styleClass="tb-cards p-datatable-sm">
             <ng-template #header>
               <tr>
                 <th>Когда</th>
@@ -88,10 +90,10 @@ import { shortLogger } from '../admin-labels';
             </ng-template>
             <ng-template #body let-delivery [tbRowType]="deliveries()">
               <tr>
-                <td>{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
-                <td>{{ delivery.channel }}</td>
-                <td class="tb-mono">{{ delivery.recipientId }}</td>
-                <td class="tb-error-cell">{{ delivery.error ?? '—' }}</td>
+                <td data-label="Когда">{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
+                <td data-label="Мессенджер">{{ delivery.channel }}</td>
+                <td data-label="Получатель" class="tb-mono">{{ delivery.recipientId }}</td>
+                <td data-label="Ошибка" class="tb-error-cell">{{ delivery.error ?? '—' }}</td>
                 <td class="tb-row-actions">
                   <p-button
                     label="Повторить"

@@ -31,7 +31,13 @@ import { EmptyState } from '@shared/ui/empty-state';
     </a>
     <h1 class="tb-page-title">На проверку</h1>
     <p-card>
-      <p-table [value]="items()" dataKey="taskId" [rowHover]="true" [loading]="loading()">
+      <p-table
+        [value]="items()"
+        dataKey="taskId"
+        [rowHover]="true"
+        [loading]="loading()"
+        styleClass="tb-cards"
+      >
         <ng-template #header>
           <tr>
             <th>Ученик</th>
@@ -43,10 +49,14 @@ import { EmptyState } from '@shared/ui/empty-state';
         </ng-template>
         <ng-template #body let-item [tbRowType]="items()">
           <tr>
-            <td>{{ item.studentName }}</td>
-            <td>{{ item.title }}</td>
-            <td>{{ item.submittedAt ? (item.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</td>
-            <td>{{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td data-label="Ученик">{{ item.studentName }}</td>
+            <td data-label="Задание">{{ item.title }}</td>
+            <td data-label="Сдано">
+              {{ item.submittedAt ? (item.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
+            </td>
+            <td data-label="Срок">
+              {{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
+            </td>
             <td class="tb-actions-column">
               <a pButton [routerLink]="['/teacher/homework/tasks', item.taskId]" size="small">
                 <span pButtonLabel>Проверить</span>

@@ -99,7 +99,7 @@ const STATUS_LABELS: Record<
               @if (report.recent.length === 0) {
                 <p class="tb-muted">Запросов в этом месяце не было.</p>
               } @else {
-                <p-table [value]="report.recent" styleClass="p-datatable-sm">
+                <p-table [value]="report.recent" styleClass="tb-cards p-datatable-sm">
                   <ng-template #header>
                     <tr>
                       <th>Когда</th>
@@ -111,9 +111,9 @@ const STATUS_LABELS: Record<
                   </ng-template>
                   <ng-template #body [tbRowType]="report.recent" let-row>
                     <tr>
-                      <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                      <td>{{ featureLabels[row.feature] }}</td>
-                      <td>
+                      <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                      <td data-label="Что">{{ featureLabels[row.feature] }}</td>
+                      <td data-label="Результат">
                         <p-tag
                           [value]="statusLabel(row).label"
                           [severity]="statusLabel(row).severity"
@@ -122,8 +122,8 @@ const STATUS_LABELS: Record<
                           <small class="tb-muted tb-usage-error">{{ row.error }}</small>
                         }
                       </td>
-                      <td>{{ row.inputTokens + row.outputTokens | number }}</td>
-                      <td>{{ row.durationMs / 1000 | number: '1.0-1' }} с</td>
+                      <td data-label="Токены">{{ row.inputTokens + row.outputTokens | number }}</td>
+                      <td data-label="Время">{{ row.durationMs / 1000 | number: '1.0-1' }} с</td>
                     </tr>
                   </ng-template>
                 </p-table>

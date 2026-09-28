@@ -56,7 +56,13 @@ import { EmptyState } from '@shared/ui/empty-state';
     </div>
 
     <p-card>
-      <p-table [value]="assignments()" dataKey="id" [rowHover]="true" [loading]="loading()">
+      <p-table
+        [value]="assignments()"
+        dataKey="id"
+        [rowHover]="true"
+        [loading]="loading()"
+        styleClass="tb-cards"
+      >
         <ng-template #header>
           <tr>
             <th>Задание</th>
@@ -68,13 +74,17 @@ import { EmptyState } from '@shared/ui/empty-state';
         </ng-template>
         <ng-template #body let-row [tbRowType]="assignments()">
           <tr>
-            <td>
+            <td data-label="Задание">
               <a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a>
             </td>
-            <td>{{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}</td>
-            <td>{{ row.totalTasks }}</td>
-            <td [class.tb-strong]="row.submitted > 0">{{ row.submitted }}</td>
-            <td>{{ row.accepted }} из {{ row.totalTasks }}</td>
+            <td data-label="Срок">
+              {{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
+            </td>
+            <td data-label="Учеников">{{ row.totalTasks }}</td>
+            <td data-label="На проверке" [class.tb-strong]="row.submitted > 0">
+              {{ row.submitted }}
+            </td>
+            <td data-label="Принято">{{ row.accepted }} из {{ row.totalTasks }}</td>
           </tr>
         </ng-template>
         <ng-template #emptymessage>

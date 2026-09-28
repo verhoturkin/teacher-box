@@ -89,7 +89,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 
       <div class="tb-stack">
         <p-card header="По ученикам">
-          <p-table [value]="report.students" dataKey="studentId">
+          <p-table [value]="report.students" dataKey="studentId" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Ученик</th>
@@ -100,14 +100,18 @@ import { EmptyState } from '@shared/ui/empty-state';
             </ng-template>
             <ng-template #body let-row [tbRowType]="report.students">
               <tr>
-                <td>
+                <td data-label="Ученик">
                   <a [routerLink]="['/teacher/billing/students', row.studentId]" class="tb-link">{{
                     row.displayName
                   }}</a>
                 </td>
-                <td>{{ row.chargedLessons }}</td>
-                <td class="tb-amount">{{ row.charged | money: report.currency }}</td>
-                <td class="tb-amount">{{ row.paid | money: report.currency }}</td>
+                <td data-label="Занятий">{{ row.chargedLessons }}</td>
+                <td data-label="Начислено" class="tb-amount">
+                  {{ row.charged | money: report.currency }}
+                </td>
+                <td data-label="Оплачено" class="tb-amount">
+                  {{ row.paid | money: report.currency }}
+                </td>
               </tr>
             </ng-template>
             <ng-template #emptymessage>
@@ -124,7 +128,12 @@ import { EmptyState } from '@shared/ui/empty-state';
         </p-card>
 
         <p-card header="Журнал занятий">
-          <p-table [value]="report.lessons" [paginator]="report.lessons.length > 20" [rows]="20">
+          <p-table
+            [value]="report.lessons"
+            [paginator]="report.lessons.length > 20"
+            [rows]="20"
+            styleClass="tb-cards"
+          >
             <ng-template #header>
               <tr>
                 <th>Дата</th>
@@ -136,10 +145,10 @@ import { EmptyState } from '@shared/ui/empty-state';
             </ng-template>
             <ng-template #body let-entry [tbRowType]="report.lessons">
               <tr [class.tb-inactive]="entry.lesson.status === 'CANCELLED'">
-                <td>{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
-                <td>{{ entry.studentName }}</td>
-                <td>{{ entry.lesson.topic ?? '' }}</td>
-                <td>
+                <td data-label="Дата">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
+                <td data-label="Ученик">{{ entry.studentName }}</td>
+                <td data-label="Тема">{{ entry.lesson.topic ?? '' }}</td>
+                <td data-label="Итог">
                   <p-tag
                     [value]="lessonStatusLabels[entry.lesson.status]"
                     [severity]="
@@ -151,7 +160,9 @@ import { EmptyState } from '@shared/ui/empty-state';
                     "
                   />
                 </td>
-                <td class="tb-amount">{{ entry.lesson.price | money: report.currency }}</td>
+                <td data-label="Стоимость" class="tb-amount">
+                  {{ entry.lesson.price | money: report.currency }}
+                </td>
               </tr>
             </ng-template>
             <ng-template #emptymessage>
@@ -163,7 +174,7 @@ import { EmptyState } from '@shared/ui/empty-state';
         </p-card>
 
         <p-card header="Оплаты">
-          <p-table [value]="report.payments">
+          <p-table [value]="report.payments" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Дата</th>
@@ -175,11 +186,13 @@ import { EmptyState } from '@shared/ui/empty-state';
             </ng-template>
             <ng-template #body let-entry [tbRowType]="report.payments">
               <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
-                <td>{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
-                <td>{{ entry.studentName }}</td>
-                <td>{{ paymentMethodLabels[entry.payment.method] }}</td>
-                <td>{{ entry.payment.comment ?? '' }}</td>
-                <td class="tb-amount">{{ entry.payment.amount | money: report.currency }}</td>
+                <td data-label="Дата">{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
+                <td data-label="Ученик">{{ entry.studentName }}</td>
+                <td data-label="Способ">{{ paymentMethodLabels[entry.payment.method] }}</td>
+                <td data-label="Комментарий">{{ entry.payment.comment ?? '' }}</td>
+                <td data-label="Сумма" class="tb-amount">
+                  {{ entry.payment.amount | money: report.currency }}
+                </td>
               </tr>
             </ng-template>
             <ng-template #emptymessage>

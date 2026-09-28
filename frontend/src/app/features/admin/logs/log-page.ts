@@ -105,7 +105,7 @@ export const LOG_LIMIT = 200;
                 Показаны последние {{ result.entries.length }} записей — уточните поиск.
               </p>
             }
-            <p-table [value]="result.entries" styleClass="p-datatable-sm tb-log-table">
+            <p-table [value]="result.entries" styleClass="tb-cards p-datatable-sm tb-log-table">
               <ng-template #header>
                 <tr>
                   <th>Время</th>
@@ -116,10 +116,16 @@ export const LOG_LIMIT = 200;
               </ng-template>
               <ng-template #body let-entry [tbRowType]="result.entries">
                 <tr>
-                  <td class="tb-log-time">{{ entry.timestamp | date: 'dd.MM HH:mm:ss' }}</td>
-                  <td><p-tag [value]="entry.level" [severity]="severity(entry.level)" /></td>
-                  <td class="tb-log-logger" [title]="entry.logger">{{ short(entry.logger) }}</td>
-                  <td class="tb-log-message">
+                  <td data-label="Время" class="tb-log-time">
+                    {{ entry.timestamp | date: 'dd.MM HH:mm:ss' }}
+                  </td>
+                  <td data-label="Уровень">
+                    <p-tag [value]="entry.level" [severity]="severity(entry.level)" />
+                  </td>
+                  <td data-label="Раздел" class="tb-log-logger" [title]="entry.logger">
+                    {{ short(entry.logger) }}
+                  </td>
+                  <td data-label="Сообщение" class="tb-log-message">
                     <div>{{ entry.message }}</div>
                     @if (entry.requestId !== null) {
                       <button type="button" class="tb-log-code" (click)="findRequest(entry)">

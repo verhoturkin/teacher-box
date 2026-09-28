@@ -69,7 +69,7 @@ import { INTEGRATION_TAGS } from '../admin-labels';
           @if (usage.recent.length === 0) {
             <p class="tb-muted">В этом месяце запросов не было.</p>
           } @else {
-            <p-table [value]="usage.recent" styleClass="p-datatable-sm">
+            <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
               <ng-template #header>
                 <tr>
                   <th>Когда</th>
@@ -81,16 +81,18 @@ import { INTEGRATION_TAGS } from '../admin-labels';
               </ng-template>
               <ng-template #body let-request [tbRowType]="usage.recent">
                 <tr>
-                  <td>{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
-                  <td>{{ request.feature }}</td>
-                  <td>
+                  <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
+                  <td data-label="Что">{{ request.feature }}</td>
+                  <td data-label="Итог">
                     {{ request.status }}
                     @if (request.error !== null) {
                       <small class="tb-negative">{{ request.error }}</small>
                     }
                   </td>
-                  <td>{{ request.inputTokens | number }} / {{ request.outputTokens | number }}</td>
-                  <td>{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
+                  <td data-label="Токены">
+                    {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
+                  </td>
+                  <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
                 </tr>
               </ng-template>
             </p-table>

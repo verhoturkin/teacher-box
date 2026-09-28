@@ -110,6 +110,17 @@ describe('StudentsPage', () => {
     expect(rowsText().join()).toContain('Отключён');
   });
 
+  it('labels the cells for the cards on a phone', async () => {
+    await loadStudents([MARIA]);
+
+    expect(host.querySelector('.p-datatable.tb-cards')).not.toBeNull();
+    expect(
+      Array.from(host.querySelectorAll('tbody td[data-label]')).map((cell) =>
+        cell.getAttribute('data-label'),
+      ),
+    ).toEqual(['Имя', 'Контакты', 'Группы', 'Видеовстреча', 'Доски', 'Статус', 'Логин']);
+  });
+
   it('invites the first student', async () => {
     await loadStudents([]);
     expect(host.textContent).toContain('Учеников пока нет');

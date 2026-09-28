@@ -72,7 +72,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
       @if (backups().length === 0) {
         <tb-empty-state icon="pi-database" title="Копий пока нет" />
       } @else {
-        <p-table [value]="backups()" styleClass="p-datatable-sm">
+        <p-table [value]="backups()" styleClass="tb-cards p-datatable-sm">
           <ng-template #header>
             <tr>
               <th>Создана</th>
@@ -83,8 +83,8 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
           </ng-template>
           <ng-template #body let-backup [tbRowType]="backups()">
             <tr>
-              <td>{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td>
+              <td data-label="Создана">{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+              <td data-label="Как">
                 @if (kind(backup); as label) {
                   <p-tag
                     [value]="label"
@@ -94,7 +94,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                   />
                 }
               </td>
-              <td>{{ size(backup) }}</td>
+              <td data-label="Размер">{{ size(backup) }}</td>
               <td class="tb-row-actions">
                 <p-button
                   icon="pi pi-history"

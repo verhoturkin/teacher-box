@@ -117,7 +117,7 @@ import { EmptyState } from '@shared/ui/empty-state';
             Только должники
           </label>
         </div>
-        <p-table [value]="rows()" dataKey="studentId" [rowHover]="true">
+        <p-table [value]="rows()" dataKey="studentId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
               <th>Ученик</th>
@@ -130,7 +130,7 @@ import { EmptyState } from '@shared/ui/empty-state';
           </ng-template>
           <ng-template #body let-row [tbRowType]="rows()">
             <tr>
-              <td>
+              <td data-label="Ученик">
                 <a [routerLink]="['students', row.studentId]" class="tb-link">{{
                   row.displayName
                 }}</a>
@@ -138,10 +138,14 @@ import { EmptyState } from '@shared/ui/empty-state';
                   <small class="tb-muted"> (отключён)</small>
                 }
               </td>
-              <td>{{ row.lessonPrice | money: overview.currency }}</td>
-              <td>{{ row.chargedLessons }}</td>
-              <td>{{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}</td>
-              <td><tb-balance-amount [balance]="row.balance" [currency]="overview.currency" /></td>
+              <td data-label="Цена занятия">{{ row.lessonPrice | money: overview.currency }}</td>
+              <td data-label="Занятий">{{ row.chargedLessons }}</td>
+              <td data-label="Последнее">
+                {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
+              </td>
+              <td data-label="Баланс">
+                <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
+              </td>
               <td class="tb-actions-column">
                 <p-button
                   icon="pi pi-plus"

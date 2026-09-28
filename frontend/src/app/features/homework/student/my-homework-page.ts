@@ -37,7 +37,13 @@ import { EmptyState } from '@shared/ui/empty-state';
       <tb-help-button topic="cabinet/homework" />
     </div>
     <p-card>
-      <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" [loading]="loading()">
+      <p-table
+        [value]="tasks()"
+        dataKey="taskId"
+        [rowHover]="true"
+        [loading]="loading()"
+        styleClass="tb-cards"
+      >
         <ng-template #header>
           <tr>
             <th>Задание</th>
@@ -47,13 +53,13 @@ import { EmptyState } from '@shared/ui/empty-state';
         </ng-template>
         <ng-template #body let-task [tbRowType]="tasks()">
           <tr>
-            <td>
+            <td data-label="Задание">
               <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
             </td>
-            <td [class.tb-negative]="task.overdue">
+            <td data-label="Срок" [class.tb-negative]="task.overdue">
               {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
             </td>
-            <td>
+            <td data-label="Статус">
               <tb-task-status
                 [status]="task.status"
                 [overdue]="task.overdue"

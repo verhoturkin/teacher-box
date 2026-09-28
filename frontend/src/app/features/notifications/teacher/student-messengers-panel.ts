@@ -50,7 +50,7 @@ import { EmptyState } from '@shared/ui/empty-state';
             dataKey="studentId"
             [selection]="selection()"
             (selectionChange)="onSelection($event)"
-            styleClass="p-datatable-sm"
+            styleClass="tb-cards p-datatable-sm"
           >
             <ng-template #header>
               <tr>
@@ -63,8 +63,8 @@ import { EmptyState } from '@shared/ui/empty-state';
             <ng-template #body let-row [tbRowType]="students">
               <tr>
                 <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
-                <td>{{ row.displayName }}</td>
-                <td>
+                <td data-label="Ученик">{{ row.displayName }}</td>
+                <td data-label="Мессенджеры">
                   @if (row.channels.length === 0) {
                     <span class="tb-muted">не подключены</span>
                   } @else {
@@ -79,7 +79,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                     </span>
                   }
                 </td>
-                <td>
+                <td data-label="Доставка">
                   @if (row.failedDeliveries > 0) {
                     <p-tag [value]="'Не доставлено: ' + row.failedDeliveries" severity="danger" />
                   } @else {

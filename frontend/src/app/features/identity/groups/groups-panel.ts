@@ -67,7 +67,13 @@ import { EmptyState } from '@shared/ui/empty-state';
         </label>
       </div>
 
-      <p-table [value]="visibleGroups()" [loading]="loading()" dataKey="id" [rowHover]="true">
+      <p-table
+        [value]="visibleGroups()"
+        [loading]="loading()"
+        dataKey="id"
+        [rowHover]="true"
+        styleClass="tb-cards"
+      >
         <ng-template #header>
           <tr>
             <th>Группа</th>
@@ -80,27 +86,27 @@ import { EmptyState } from '@shared/ui/empty-state';
         </ng-template>
         <ng-template #body let-group [tbRowType]="visibleGroups()">
           <tr>
-            <td>
+            <td data-label="Группа">
               <span class="tb-strong">{{ group.name }}</span>
               @if (group.archivedAt) {
                 <p-tag value="В архиве" severity="secondary" class="tb-group-tag" />
               }
             </td>
-            <td>
+            <td data-label="Ученики">
               @if (group.members.length === 0) {
                 <span class="tb-muted">Пока никого</span>
               } @else {
                 {{ memberNames(group) }}
               }
             </td>
-            <td>
+            <td data-label="Цена занятия">
               @if (priceOf(group.id); as price) {
                 {{ price | money: currency() }}
               } @else {
                 <span class="tb-muted">—</span>
               }
             </td>
-            <td>
+            <td data-label="Видеовстреча">
               @if (!group.archivedAt) {
                 <tb-room-cell
                   [room]="roomOf(group.id)"
@@ -109,7 +115,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 />
               }
             </td>
-            <td>
+            <td data-label="Доски">
               @if (!group.archivedAt) {
                 <tb-board-cell
                   [boards]="boards.of(group.id)"

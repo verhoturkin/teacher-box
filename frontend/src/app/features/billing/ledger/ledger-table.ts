@@ -23,6 +23,7 @@ import { EmptyState } from '@shared/ui/empty-state';
       [rowHover]="true"
       [paginator]="entries().length > 20"
       [rows]="20"
+      styleClass="tb-cards"
     >
       <ng-template #header>
         <tr>
@@ -37,10 +38,10 @@ import { EmptyState } from '@shared/ui/empty-state';
       </ng-template>
       <ng-template #body let-entry [tbRowType]="entries()">
         <tr [class.tb-inactive]="entry.inactive">
-          <td>{{ entry.date | date: 'dd.MM.yyyy' }}</td>
+          <td data-label="Дата">{{ entry.date | date: 'dd.MM.yyyy' }}</td>
           @switch (entry.kind) {
             @case ('lesson') {
-              <td>
+              <td data-label="Операция">
                 Занятие, {{ entry.lesson.durationMinutes }} мин
                 @if (entry.lesson.status !== 'CONDUCTED') {
                   <p-tag
@@ -49,13 +50,13 @@ import { EmptyState } from '@shared/ui/empty-state';
                   />
                 }
               </td>
-              <td>
+              <td data-label="Подробности">
                 {{ entry.lesson.topic ?? '' }}
                 @if (entry.lesson.cancelReason) {
                   <small class="tb-muted">({{ entry.lesson.cancelReason }})</small>
                 }
               </td>
-              <td class="tb-amount tb-negative">
+              <td data-label="Сумма" class="tb-amount tb-negative">
                 −{{ entry.lesson.price | money: ledger().currency }}
               </td>
               @if (editable()) {
@@ -75,19 +76,19 @@ import { EmptyState } from '@shared/ui/empty-state';
               }
             }
             @case ('payment') {
-              <td>
+              <td data-label="Операция">
                 Оплата: {{ paymentMethodLabels[entry.payment.method] }}
                 @if (entry.payment.voidedAt) {
                   <p-tag value="Аннулирована" severity="secondary" />
                 }
               </td>
-              <td>
+              <td data-label="Подробности">
                 {{ entry.payment.comment ?? '' }}
                 @if (entry.payment.voidReason) {
                   <small class="tb-muted">({{ entry.payment.voidReason }})</small>
                 }
               </td>
-              <td class="tb-amount tb-positive">
+              <td data-label="Сумма" class="tb-amount tb-positive">
                 +{{ entry.payment.amount | money: ledger().currency }}
               </td>
               @if (editable()) {

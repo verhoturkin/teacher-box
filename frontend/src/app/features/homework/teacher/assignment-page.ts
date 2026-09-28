@@ -120,7 +120,7 @@ import { EmptyState } from '@shared/ui/empty-state';
         </p-card>
 
         <p-card header="Ученики">
-          <p-table [value]="assignment.tasks" dataKey="taskId">
+          <p-table [value]="assignment.tasks" dataKey="taskId" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Ученик</th>
@@ -131,15 +131,15 @@ import { EmptyState } from '@shared/ui/empty-state';
             </ng-template>
             <ng-template #body let-task [tbRowType]="assignment.tasks">
               <tr>
-                <td>{{ task.studentName }}</td>
-                <td>
+                <td data-label="Ученик">{{ task.studentName }}</td>
+                <td data-label="Статус">
                   <tb-task-status
                     [status]="task.status"
                     [overdue]="task.overdue"
                     [grade]="task.grade"
                   />
                 </td>
-                <td>
+                <td data-label="Сдано">
                   {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </td>
                 <td class="tb-actions-column">

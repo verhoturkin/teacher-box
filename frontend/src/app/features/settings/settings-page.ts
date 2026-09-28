@@ -117,7 +117,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         @if (failed().length === 0) {
           <p class="tb-muted">Все уведомления доставлены.</p>
         } @else {
-          <p-table [value]="failed()" styleClass="p-datatable-sm">
+          <p-table [value]="failed()" styleClass="tb-cards p-datatable-sm">
             <ng-template #header>
               <tr>
                 <th>Когда</th>
@@ -128,10 +128,10 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
             </ng-template>
             <ng-template #body let-row [tbRowType]="failed()">
               <tr>
-                <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                <td>{{ row.recipientName ?? 'Вы' }}</td>
-                <td>{{ messengerName(row) }}</td>
-                <td class="tb-error-cell">{{ row.error ?? '—' }}</td>
+                <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td data-label="Кому">{{ row.recipientName ?? 'Вы' }}</td>
+                <td data-label="Куда">{{ messengerName(row) }}</td>
+                <td data-label="Ошибка" class="tb-error-cell">{{ row.error ?? '—' }}</td>
               </tr>
             </ng-template>
           </p-table>

@@ -52,7 +52,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
         />
         <p-button type="submit" label="Применить" [disabled]="form.invalid" [loading]="pending()" />
       </form>
-      <p-table [value]="loggers()" styleClass="p-datatable-sm">
+      <p-table [value]="loggers()" styleClass="tb-cards p-datatable-sm">
         <ng-template #header>
           <tr>
             <th>Раздел</th>
@@ -63,11 +63,13 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
         </ng-template>
         <ng-template #body let-logger [tbRowType]="loggers()">
           <tr>
-            <td class="tb-logger-name">{{ logger.name }}</td>
-            <td>
+            <td data-label="Раздел" class="tb-logger-name">{{ logger.name }}</td>
+            <td data-label="Уровень">
               <p-tag [value]="logger.effectiveLevel" [severity]="severity(logger.effectiveLevel)" />
             </td>
-            <td>{{ logger.revertAt === null ? '—' : (logger.revertAt | date: 'dd.MM HH:mm') }}</td>
+            <td data-label="Вернётся">
+              {{ logger.revertAt === null ? '—' : (logger.revertAt | date: 'dd.MM HH:mm') }}
+            </td>
             <td class="tb-row-actions">
               @if (logger.revertAt !== null) {
                 <p-button
