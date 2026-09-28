@@ -207,7 +207,10 @@ body {
   margin-bottom: var(--tb-space-2);
 }
 
-/* Links: the primary color, underlined on hover; links styled as buttons stay buttons */
+/*
+ * Links: the primary color, underlined on hover; links styled as buttons stay buttons, menu items
+ * (the header, the user menu, «Ещё») are highlighted by the menu itself
+ */
 a {
   color: var(--p-primary-color);
   text-decoration: none;
@@ -218,7 +221,10 @@ a {
 }
 
 a.p-button,
-a.p-button:hover {
+a.p-button:hover,
+a.p-menubar-item-link:hover,
+a.p-menubar-button:hover,
+a.p-menu-item-link:hover {
   text-decoration: none;
 }
 
