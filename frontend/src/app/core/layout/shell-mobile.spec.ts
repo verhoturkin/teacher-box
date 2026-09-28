@@ -38,6 +38,7 @@ describe('Shell on a phone', () => {
       'Расписание',
       'Ученики',
       'Задания',
+      'Оплаты',
     ]);
     expect(host.querySelector('.p-menubar-root-list')?.children.length ?? 0).toBe(0);
     expect(
@@ -46,11 +47,12 @@ describe('Shell on a phone', () => {
 
     requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Оплаты');
+    expect(bodyText()).toContain('Уведомления');
     expect(bodyText()).toContain('ИИ');
+    expect(nav.children).toHaveLength(6);
   });
 
-  it('has no «Ещё» when four sections are all', async () => {
+  it('has no «Ещё» when all sections fit', async () => {
     const host = await render(STUDENT_MENU);
 
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(4);

@@ -129,10 +129,6 @@ function isTeacherTab(value: unknown): value is TeacherTab {
         grid-template-columns: minmax(0, 1fr);
       }
     }
-
-    p-tabpanels {
-      padding-inline: 0;
-    }
   `,
 })
 export class NotificationsPage {
