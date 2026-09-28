@@ -7,11 +7,13 @@ import { TableModule } from 'primeng/table';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewQueueItem } from '../data-access/homework.models';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
   selector: 'tb-review-queue-page',
   imports: [
+    EmptyState,
     DatePipe,
     RouterLink,
     ButtonDirective,
@@ -54,7 +56,13 @@ import { ReviewQueueItem } from '../data-access/homework.models';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="5" class="tb-empty">Всё проверено</td>
+            <td colspan="5">
+              <tb-empty-state
+                icon="pi-check-circle"
+                title="Всё проверено"
+                hint="Новые ответы учеников появятся здесь"
+              />
+            </td>
           </tr>
         </ng-template>
       </p-table>

@@ -33,6 +33,7 @@ import {
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** How far ahead the list of upcoming lessons looks. */
 export const UPCOMING_DAYS = 60;
@@ -44,6 +45,7 @@ export const UPCOMING_DAYS = 60;
 @Component({
   selector: 'tb-my-schedule-page',
   imports: [
+    EmptyState,
     HelpButton,
     Button,
     Card,
@@ -64,7 +66,7 @@ export const UPCOMING_DAYS = 60;
       <div class="tb-stack">
         <p-card header="Ближайшие занятия">
           @if (upcoming().length === 0) {
-            <p class="tb-muted">Запланированных занятий пока нет.</p>
+            <tb-empty-state icon="pi-calendar" title="Запланированных занятий пока нет" />
           } @else {
             <ul class="tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {

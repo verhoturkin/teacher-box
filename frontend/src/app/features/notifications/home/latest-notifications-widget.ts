@@ -6,19 +6,20 @@ import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem } from '../data-access/notifications.models';
 import { KIND_ICONS } from '../notification-labels';
+import { EmptyState } from '@shared/ui/empty-state';
 
 export const LATEST_COUNT = 5;
 
 /** Home: the latest notifications with a link to all of them. */
 @Component({
   selector: 'tb-latest-notifications-widget',
-  imports: [DatePipe, RouterLink, Card],
+  imports: [EmptyState, DatePipe, RouterLink, Card],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Уведомления">
       @if (items(); as items) {
         @if (items.length === 0) {
-          <p class="tb-muted">Уведомлений пока нет.</p>
+          <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
         } @else {
           <ul class="tb-latest">
             @for (item of items; track item.id) {

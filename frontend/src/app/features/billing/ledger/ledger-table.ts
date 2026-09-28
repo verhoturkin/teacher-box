@@ -9,11 +9,12 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { LESSON_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../billing-labels';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { ledgerEntries } from './ledger-entries';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** History of lessons and payments of one student. */
 @Component({
   selector: 'tb-ledger-table',
-  imports: [DatePipe, Button, TableModule, Tag, Tooltip, MoneyPipe, RowType],
+  imports: [EmptyState, DatePipe, Button, TableModule, Tag, Tooltip, MoneyPipe, RowType],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-table
@@ -110,8 +111,8 @@ import { ledgerEntries } from './ledger-entries';
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td [attr.colspan]="editable() ? 5 : 4" class="tb-empty">
-            Пока нет ни занятий, ни оплат
+          <td [attr.colspan]="editable() ? 5 : 4">
+            <tb-empty-state icon="pi-wallet" title="Пока нет ни занятий, ни оплат" />
           </td>
         </tr>
       </ng-template>

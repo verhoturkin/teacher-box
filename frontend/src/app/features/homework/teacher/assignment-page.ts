@@ -28,11 +28,13 @@ import { AttachmentList } from '../ui/attachment-list';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
   selector: 'tb-assignment-page',
   imports: [
+    EmptyState,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -156,7 +158,9 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="4" class="tb-empty">Задание ещё никому не выдано</td>
+                <td colspan="4">
+                  <tb-empty-state icon="pi-send" title="Задание ещё никому не выдано" />
+                </td>
               </tr>
             </ng-template>
           </p-table>

@@ -7,13 +7,14 @@ import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem } from '../data-access/notifications.models';
 import { KIND_ICONS } from '../notification-labels';
+import { EmptyState } from '@shared/ui/empty-state';
 
 export const PAGE_SIZE = 20;
 
 /** Notifications of the current user in the personal area. */
 @Component({
   selector: 'tb-inbox-panel',
-  imports: [DatePipe, Button, Card],
+  imports: [EmptyState, DatePipe, Button, Card],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -37,7 +38,7 @@ export const PAGE_SIZE = 20;
       </div>
       @if (items(); as items) {
         @if (items.length === 0) {
-          <p class="tb-muted">Уведомлений пока нет.</p>
+          <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
         } @else {
           <ul class="tb-notifications">
             @for (item of items; track item.id) {

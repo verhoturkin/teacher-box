@@ -18,11 +18,13 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentSummary } from '../data-access/homework.models';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: all assignments with progress. */
 @Component({
   selector: 'tb-assignments-page',
   imports: [
+    EmptyState,
     HelpButton,
     DatePipe,
     RouterLink,
@@ -77,7 +79,15 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="5" class="tb-empty">Заданий пока нет. Создайте первое!</td>
+            <td colspan="5">
+              <tb-empty-state
+                icon="pi-book"
+                title="Заданий пока нет"
+                hint="Создайте первое задание и выдайте его ученикам"
+              >
+                <p-button label="Новое задание" icon="pi pi-plus" (onClick)="openCreate()" />
+              </tb-empty-state>
+            </td>
           </tr>
         </ng-template>
       </p-table>

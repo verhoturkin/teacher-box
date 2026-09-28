@@ -15,17 +15,18 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { StudentMessengers } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
   selector: 'tb-student-messengers-panel',
-  imports: [Button, Card, TableModule, Tag, RowType],
+  imports: [EmptyState, Button, Card, TableModule, Tag, RowType],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Мессенджеры учеников">
       @if (students(); as students) {
         @if (students.length === 0) {
-          <p class="tb-muted">Учеников пока нет.</p>
+          <tb-empty-state icon="pi-users" title="Учеников пока нет" />
         } @else {
           <div class="tb-students-summary">
             <span>

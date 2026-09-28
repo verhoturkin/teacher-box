@@ -81,7 +81,7 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
   await expect(page).toHaveURL(/\/teacher$/);
 
   await page.goto('/teacher/students');
-  await expect(page.getByText('Пока нет ни одного ученика')).toBeVisible();
+  await expect(page.getByText('Учеников пока нет')).toBeVisible();
   await page.goto('/teacher/settings');
   await expect(page.getByRole('row').filter({ hasText: 'перед сбросом' }).first()).toBeVisible();
 });

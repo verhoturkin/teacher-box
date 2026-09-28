@@ -15,11 +15,21 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Student: own tasks; the ones that need work come first. */
 @Component({
   selector: 'tb-my-homework-page',
-  imports: [HelpButton, DatePipe, RouterLink, Card, TableModule, RowType, TaskStatusTag],
+  imports: [
+    EmptyState,
+    HelpButton,
+    DatePipe,
+    RouterLink,
+    Card,
+    TableModule,
+    RowType,
+    TaskStatusTag,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-page-heading">
@@ -54,7 +64,13 @@ import { TaskStatusTag } from '../ui/task-status-tag';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="3" class="tb-empty">Заданий пока нет</td>
+            <td colspan="3">
+              <tb-empty-state
+                icon="pi-book"
+                title="Заданий пока нет"
+                hint="Здесь появятся задания от преподавателя"
+              />
+            </td>
           </tr>
         </ng-template>
       </p-table>

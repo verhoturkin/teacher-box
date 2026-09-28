@@ -2,11 +2,12 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Attachment, Submission } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** All attempts of a student, newest first. The answer text is shown as plain text. */
 @Component({
   selector: 'tb-submission-list',
-  imports: [DatePipe, AttachmentList],
+  imports: [EmptyState, DatePipe, AttachmentList],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (submission of submissions(); track submission.id; let first = $first) {
@@ -24,7 +25,7 @@ import { AttachmentList } from './attachment-list';
         />
       </article>
     } @empty {
-      <p class="tb-muted">Ответов пока нет.</p>
+      <tb-empty-state icon="pi-comments" title="Ответов пока нет" />
     }
   `,
 })

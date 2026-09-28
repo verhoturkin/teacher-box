@@ -120,7 +120,7 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.fixture.whenStable();
 
     expect(title()).toBe('Ученики — Teacher Box');
-    expect(text()).toContain('Пока нет ни одного ученика');
+    expect(text()).toContain('Учеников пока нет');
   });
 
   it('leads a student to the personal area and account page', async () => {

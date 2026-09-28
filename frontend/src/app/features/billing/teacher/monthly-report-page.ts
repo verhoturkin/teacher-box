@@ -21,11 +21,13 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { LESSON_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../billing-labels';
 import { BillingApi } from '../data-access/billing-api';
 import { MonthlyReport } from '../data-access/billing.models';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: income and lessons of a month. */
 @Component({
   selector: 'tb-monthly-report-page',
   imports: [
+    EmptyState,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -110,7 +112,12 @@ import { MonthlyReport } from '../data-access/billing.models';
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="4" class="tb-empty">В этом месяце не было ни занятий, ни оплат</td>
+                <td colspan="4">
+                  <tb-empty-state
+                    icon="pi-calendar"
+                    title="В этом месяце не было ни занятий, ни оплат"
+                  />
+                </td>
               </tr>
             </ng-template>
           </p-table>
@@ -149,7 +156,7 @@ import { MonthlyReport } from '../data-access/billing.models';
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="5" class="tb-empty">Занятий нет</td>
+                <td colspan="5"><tb-empty-state icon="pi-calendar" title="Занятий нет" /></td>
               </tr>
             </ng-template>
           </p-table>
@@ -177,7 +184,7 @@ import { MonthlyReport } from '../data-access/billing.models';
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="5" class="tb-empty">Оплат нет</td>
+                <td colspan="5"><tb-empty-state icon="pi-wallet" title="Оплат нет" /></td>
               </tr>
             </ng-template>
           </p-table>

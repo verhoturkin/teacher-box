@@ -105,7 +105,7 @@ describe('SubmissionList and TaskStatusTag', () => {
     fixture.componentRef.setInput('submissions', []);
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toBe('Ответов пока нет.');
+    expect(readableText(hostElement(fixture))).toBe('Ответов пока нет');
   });
 
   it('marks overdue tasks and shows the grade', async () => {

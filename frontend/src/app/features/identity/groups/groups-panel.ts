@@ -32,11 +32,13 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: groups of students taught together, their members and lesson prices. */
 @Component({
   selector: 'tb-groups-panel',
   imports: [
+    EmptyState,
     ReactiveFormsModule,
     Button,
     Card,
@@ -149,12 +151,18 @@ import { GroupFormDialog, SavedGroup } from './group-form-dialog';
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="6" class="tb-empty">
-              {{
-                groups().length === 0
-                  ? 'Групп пока нет. Создайте группу, если занимаетесь с несколькими учениками сразу.'
-                  : 'Все группы в архиве'
-              }}
+            <td colspan="6">
+              @if (groups().length === 0) {
+                <tb-empty-state
+                  icon="pi-users"
+                  title="Групп пока нет"
+                  hint="Создайте группу, если занимаетесь с несколькими учениками сразу"
+                >
+                  <p-button label="Создать группу" icon="pi pi-users" (onClick)="openCreate()" />
+                </tb-empty-state>
+              } @else {
+                <tb-empty-state icon="pi-box" title="Все группы в архиве" />
+              }
             </td>
           </tr>
         </ng-template>

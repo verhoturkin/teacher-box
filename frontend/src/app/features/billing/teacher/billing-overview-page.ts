@@ -25,11 +25,13 @@ import { BalanceAmount } from '../ledger/balance-amount';
 import { DefaultPriceCard } from './default-price-card';
 import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: balances of all students and quick recording of lessons and payments. */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
+    EmptyState,
     HelpButton,
     DatePipe,
     ReactiveFormsModule,
@@ -163,12 +165,16 @@ import { PaymentDialog } from './payment-dialog';
           </ng-template>
           <ng-template #emptymessage>
             <tr>
-              <td colspan="6" class="tb-empty">
-                {{
-                  overview.students.length === 0
-                    ? 'Добавьте учеников в разделе «Ученики»'
-                    : 'Должников нет'
-                }}
+              <td colspan="6">
+                @if (overview.students.length === 0) {
+                  <tb-empty-state
+                    icon="pi-users"
+                    title="Учеников пока нет"
+                    hint="Добавьте учеников в разделе «Ученики»"
+                  />
+                } @else {
+                  <tb-empty-state icon="pi-check-circle" title="Должников нет" />
+                }
               </td>
             </tr>
           </ng-template>

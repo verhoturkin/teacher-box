@@ -112,9 +112,9 @@ describe('StudentsPage', () => {
 
   it('invites the first student', async () => {
     await loadStudents([]);
-    expect(host.textContent).toContain('Пока нет ни одного ученика');
+    expect(host.textContent).toContain('Учеников пока нет');
 
-    buttonByText(host, 'Добавить ученика').click();
+    requireElement(host, 'tb-empty-state button', HTMLButtonElement).click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Новый ученик');
   });
@@ -201,7 +201,7 @@ describe('StudentsPage', () => {
     backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
-    expect(host.textContent).toContain('Пока нет ни одного ученика');
+    expect(host.textContent).toContain('Учеников пока нет');
   });
 
   it('shows the current groups of each student', async () => {

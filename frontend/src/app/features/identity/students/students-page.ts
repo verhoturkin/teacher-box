@@ -44,6 +44,7 @@ import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Sections of the students page (`?tab=`). */
 export const STUDENTS_TABS = ['students', 'groups'] as const;
@@ -57,6 +58,7 @@ function isStudentsTab(value: unknown): value is StudentsTab {
 @Component({
   selector: 'tb-students-page',
   imports: [
+    EmptyState,
     HelpButton,
     DatePipe,
     ReactiveFormsModule,
@@ -239,12 +241,22 @@ function isStudentsTab(value: unknown): value is StudentsTab {
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="8" class="tb-empty">
-                    {{
-                      students().length === 0
-                        ? 'Пока нет ни одного ученика. Добавьте первого!'
-                        : 'Никого не найдено'
-                    }}
+                  <td colspan="8">
+                    @if (students().length === 0) {
+                      <tb-empty-state
+                        icon="pi-user-plus"
+                        title="Учеников пока нет"
+                        hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
+                      >
+                        <p-button
+                          label="Добавить ученика"
+                          icon="pi pi-user-plus"
+                          (onClick)="openCreate()"
+                        />
+                      </tb-empty-state>
+                    } @else {
+                      <tb-empty-state icon="pi-search" title="Никого не найдено" />
+                    }
                   </td>
                 </tr>
               </ng-template>

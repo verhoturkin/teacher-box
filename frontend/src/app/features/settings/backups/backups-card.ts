@@ -22,6 +22,7 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { RestoreDialog } from './restore-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
   SCHEDULED: 'по расписанию',
@@ -37,6 +38,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
 @Component({
   selector: 'tb-backups-card',
   imports: [
+    EmptyState,
     DatePipe,
     Button,
     Card,
@@ -68,7 +70,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
         />
       </div>
       @if (backups().length === 0) {
-        <p class="tb-muted">Копий пока нет.</p>
+        <tb-empty-state icon="pi-database" title="Копий пока нет" />
       } @else {
         <p-table [value]="backups()" styleClass="p-datatable-sm">
           <ng-template #header>
