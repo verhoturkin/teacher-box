@@ -20,7 +20,7 @@ import { Board } from '../data-access/boards.models';
         <span class="tb-muted">Доски:</span>
         @for (board of boards(); track board.id) {
           <a [href]="board.url" target="_blank" rel="noopener"
-            ><i class="pi pi-th-large"></i> {{ board.title }}</a
+            ><i class="pi pi-th-large" aria-hidden="true"></i> {{ board.title }}</a
           >
         }
       </div>

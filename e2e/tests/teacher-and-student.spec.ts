@@ -64,7 +64,8 @@ test('the teacher signs in and invites a student', async ({ page }) => {
   await expect(page).toHaveURL(/\/teacher$/);
 
   await page.getByRole('menuitem', { name: 'Ученики' }).click();
-  await page.getByRole('button', { name: 'Добавить ученика' }).click();
+  // The empty list offers the same button: the one in the page header.
+  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
   await page.getByLabel('Имя и фамилия').fill(STUDENT_NAME);
   await page.getByRole('button', { name: 'Сохранить' }).click();
 

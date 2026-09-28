@@ -59,7 +59,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/teacher/homework" [text]="true" class="tb-back">
-      <i pButtonIcon class="pi pi-arrow-left"></i>
+      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
       <span pButtonLabel>Все задания</span>
     </a>
     @if (details(); as assignment) {

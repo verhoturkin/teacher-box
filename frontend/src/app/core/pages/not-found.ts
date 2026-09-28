@@ -11,7 +11,7 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
       <h1>404</h1>
       <p>Такой страницы нет.</p>
       <a pButton routerLink="/">
-        <i pButtonIcon class="pi pi-home"></i>
+        <i pButtonIcon aria-hidden="true" class="pi pi-home"></i>
         <span pButtonLabel>На главную</span>
       </a>
     </section>

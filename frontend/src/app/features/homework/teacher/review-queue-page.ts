@@ -26,7 +26,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/teacher/homework" [text]="true" class="tb-back">
-      <i pButtonIcon class="pi pi-arrow-left"></i>
+      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
       <span pButtonLabel>Все задания</span>
     </a>
     <h1 class="tb-page-title">На проверку</h1>

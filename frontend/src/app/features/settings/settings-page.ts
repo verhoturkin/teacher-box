@@ -145,7 +145,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
       <p-card header="Профиль">
         <a pButton routerLink="/teacher/account" [outlined]="true">
-          <i pButtonIcon class="pi pi-id-card"></i>
+          <i pButtonIcon aria-hidden="true" class="pi pi-id-card"></i>
           <span pButtonLabel>Мой аккаунт и пароль</span>
         </a>
       </p-card>

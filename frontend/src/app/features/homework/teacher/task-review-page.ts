@@ -57,7 +57,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
         [text]="true"
         class="tb-back"
       >
-        <i pButtonIcon class="pi pi-arrow-left"></i>
+        <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
         <span pButtonLabel>{{ task.assignment.title }}</span>
       </a>
       <div class="tb-page-header">

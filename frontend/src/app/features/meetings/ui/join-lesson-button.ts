@@ -32,7 +32,7 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
         [size]="small() ? 'small' : undefined"
         [outlined]="outlined()"
       >
-        <i pButtonIcon class="pi pi-video"></i>
+        <i pButtonIcon aria-hidden="true" class="pi pi-video"></i>
         <span pButtonLabel>{{ label() }}</span>
       </a>
     }

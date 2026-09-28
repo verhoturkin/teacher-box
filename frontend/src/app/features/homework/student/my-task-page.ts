@@ -40,7 +40,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/cabinet/homework" [text]="true" class="tb-back">
-      <i pButtonIcon class="pi pi-arrow-left"></i>
+      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
       <span pButtonLabel>Все задания</span>
     </a>
     @if (task(); as task) {

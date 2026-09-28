@@ -44,7 +44,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/teacher/billing" [text]="true" class="tb-back">
-      <i pButtonIcon class="pi pi-arrow-left"></i>
+      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
       <span pButtonLabel>Оплаты</span>
     </a>
     <div class="tb-page-header">

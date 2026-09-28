@@ -47,7 +47,7 @@ import { PaymentDialog } from './payment-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a pButton routerLink="/teacher/billing" [text]="true" class="tb-back">
-      <i pButtonIcon class="pi pi-arrow-left"></i>
+      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
       <span pButtonLabel>Все ученики</span>
     </a>
     @if (ledger(); as ledger) {

@@ -23,7 +23,7 @@ import { MyBoard } from '../data-access/boards.models';
                 [outlined]="true"
                 size="small"
               >
-                <i pButtonIcon class="pi pi-th-large"></i>
+                <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
                 <span pButtonLabel>{{ board.title }}</span>
               </a>
               @if (board.groupName !== null) {

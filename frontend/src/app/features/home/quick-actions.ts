@@ -23,7 +23,7 @@ const ACTIONS = [
           [routerLink]="action.link"
           [queryParams]="{ create: action.create }"
         >
-          <i pButtonIcon class="pi {{ action.icon }}"></i>
+          <i pButtonIcon aria-hidden="true" class="pi {{ action.icon }}"></i>
           <span pButtonLabel>{{ action.label }}</span>
         </a>
       }

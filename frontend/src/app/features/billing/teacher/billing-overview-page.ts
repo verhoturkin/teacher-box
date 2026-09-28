@@ -74,7 +74,7 @@ import { EmptyState } from '@shared/ui/empty-state';
           [disabled]="!overview()"
         />
         <a pButton routerLink="report" [outlined]="true">
-          <i pButtonIcon class="pi pi-chart-bar"></i>
+          <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
           <span pButtonLabel>Отчёт за месяц</span>
         </a>
       </div>
