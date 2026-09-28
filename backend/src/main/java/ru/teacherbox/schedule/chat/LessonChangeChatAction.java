@@ -125,6 +125,10 @@ abstract class LessonChangeChatAction implements ChatAction {
         if (!proposed.isAfter(lessons.now())) {
             return askDate(state.without("date"), "Это время уже прошло.");
         }
+        if (state.id("lesson").map(lesson -> !requests.isFreeFor(lesson, proposed)).orElse(false)) {
+            return ChatStep.ask(ChatReply.of("В это время учитель занят. Напишите другое время, например 18:30,"
+                    + " или начните заново: /menu."), state);
+        }
         return askComment(state.with("proposed", proposed.toString()));
     }
 
@@ -189,6 +193,9 @@ abstract class LessonChangeChatAction implements ChatAction {
         try {
             request = requests.request(user.id(), lesson.get().id(), kind, proposed, state.get("comment").orElse(null));
         } catch (DomainException e) {
+            if (e.code().equals("schedule.slot-busy")) {
+                return ChatStep.done("Не получилось отправить запрос: в это время учитель уже занят.");
+            }
             return ChatStep.done("Не получилось отправить запрос: занятие изменилось или по нему уже есть запрос.");
         }
         if (request.status() == RequestStatus.APPROVED) {

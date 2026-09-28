@@ -50,8 +50,27 @@ describe('RequestAnswerDialog', () => {
       startsAt: request.proposedStartsAt,
       charge: false,
       answer: 'Договорились',
+      allowBusy: false,
     });
     call.flush(scheduledLesson());
+    expect(answered).toEqual([request]);
+  });
+
+  it('moves into busy time only when the teacher confirms', async () => {
+    const request = changeRequest();
+    await open(request);
+    buttonByText(document.body, 'Согласовать').click();
+    backend
+      .expectOne('/api/teacher/schedule/requests/r-1/approve')
+      .flush({ status: 409, code: 'schedule.slot-busy' }, { status: 409, statusText: 'Conflict' });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('В это время у вас другое занятие');
+    expect(answered).toHaveLength(0);
+
+    buttonByText(document.body, 'Всё равно перенести').click();
+    const forced = backend.expectOne('/api/teacher/schedule/requests/r-1/approve');
+    expect(forced.request.body).toEqual(expect.objectContaining({ allowBusy: true }));
+    forced.flush(scheduledLesson());
     expect(answered).toEqual([request]);
   });
 
@@ -68,6 +87,7 @@ describe('RequestAnswerDialog', () => {
       startsAt: null,
       charge: true,
       answer: null,
+      allowBusy: false,
     });
   });
 
@@ -79,7 +99,9 @@ describe('RequestAnswerDialog', () => {
     const call = backend.expectOne('/api/teacher/schedule/requests/r-1/decline');
     expect(call.request.body).toEqual({ answer: null });
     call.flush(null, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
     expect(answered).toHaveLength(0);
+    expect(bodyText()).toContain('Не удалось ответить на запрос');
     fixture.componentRef.setInput('request', null);
     fixture.componentInstance.approve();
   });

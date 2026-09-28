@@ -55,7 +55,8 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
               <label for="request-start">Удобное время</label>
               <p-datepicker
                 inputId="request-start"
-                [(ngModel)]="proposed"
+                [ngModel]="proposed()"
+                (ngModelChange)="choose($event)"
                 dateFormat="dd.mm.yy"
                 [showTime]="true"
                 hourFormat="24"
@@ -67,6 +68,11 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
                 [fluid]="true"
               />
             </div>
+            @if (busyAt()) {
+              <p-message severity="warn" styleClass="tb-form-message">
+                В это время учитель занят — выберите другое время.
+              </p-message>
+            }
           } @else if (late()) {
             <p-message severity="warn" styleClass="tb-form-message">
               До занятия осталось мало времени: учитель может засчитать его как пропуск.
@@ -97,7 +103,7 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
         <p-button
           [label]="absence() && !late() ? 'Предупредить учителя' : 'Отправить учителю'"
           [loading]="pending()"
-          [disabled]="kind() === 'RESCHEDULE' && proposed() === null"
+          [disabled]="kind() === 'RESCHEDULE' && (proposed() === null || busyAt())"
           (onClick)="send()"
         />
       </ng-template>
@@ -120,6 +126,8 @@ export class ChangeRequestDialog {
   protected readonly comment = signal('');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  /** The teacher is busy at the chosen time. */
+  protected readonly busyAt = signal(false);
   /** «I will not come» to a group lesson. */
   protected readonly absence = computed(
     () => this.kind() === 'CANCEL' && (this.lesson()?.groupId ?? null) !== null,
@@ -147,8 +155,27 @@ export class ChangeRequestDialog {
     effect(() => {
       if (this.visible()) {
         this.proposed.set(null);
+        this.busyAt.set(false);
         this.comment.set('');
         this.error.set(null);
+      }
+    });
+  }
+
+  /** A new time is chosen: the teacher's busy time for it is checked at once. */
+  choose(proposed: Date | null): void {
+    this.proposed.set(proposed);
+    this.busyAt.set(false);
+    const lesson = this.lesson();
+    if (proposed === null || lesson === null) {
+      return;
+    }
+    const minutes =
+      (new Date(lesson.endsAt).getTime() - new Date(lesson.startsAt).getTime()) / 60_000;
+    const end = new Date(proposed.getTime() + minutes * 60_000);
+    this.api.teacherBusy(proposed.toISOString(), end.toISOString()).subscribe((busy) => {
+      if (this.proposed() === proposed) {
+        this.busyAt.set(busy.length > 0);
       }
     });
   }

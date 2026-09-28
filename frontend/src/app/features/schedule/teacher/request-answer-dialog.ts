@@ -13,8 +13,11 @@ import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { DatePicker } from 'primeng/datepicker';
 import { Dialog } from 'primeng/dialog';
+import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { Observable } from 'rxjs';
+import { describeError } from '@core/http/error-messages';
+import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeRequest } from '../data-access/schedule.models';
 import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels';
@@ -25,7 +28,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
  */
 @Component({
   selector: 'tb-request-answer-dialog',
-  imports: [FormsModule, Button, Checkbox, DatePicker, Dialog, Textarea],
+  imports: [FormsModule, Button, Checkbox, DatePicker, Dialog, Message, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -79,6 +82,20 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
               <span>Засчитать как пропуск (оплачивается)</span>
             </label>
           }
+          @if (busy()) {
+            <p-message severity="warn" styleClass="tb-form-message">
+              В это время у вас другое занятие или дела в календаре.
+              <p-button
+                label="Всё равно перенести"
+                [link]="true"
+                size="small"
+                (onClick)="approve(true)"
+              />
+            </p-message>
+          }
+          @if (error(); as message) {
+            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+          }
           <div class="tb-field">
             <label for="answer-comment">Комментарий ученику</label>
             <textarea
@@ -116,6 +133,9 @@ export class RequestAnswerDialog {
   protected readonly startsAt = signal<Date | null>(null);
   protected readonly charge = signal(false);
   protected readonly answer = signal('');
+  /** The teacher is busy at the new time of the move. */
+  protected readonly busy = signal(false);
+  protected readonly error = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -126,6 +146,8 @@ export class RequestAnswerDialog {
         );
         this.charge.set(request.late);
         this.answer.set('');
+        this.busy.set(false);
+        this.error.set(null);
       }
     });
   }
@@ -134,12 +156,14 @@ export class RequestAnswerDialog {
     return formatLessonStart(iso);
   }
 
-  approve(): void {
+  /** @param allowBusy move even if the teacher is busy at the new time */
+  approve(allowBusy = false): void {
     this.run((request) =>
       this.api.approve(request.id, {
         startsAt: request.kind === 'RESCHEDULE' ? (this.startsAt()?.toISOString() ?? null) : null,
         charge: request.kind === 'CANCEL' && this.charge(),
         answer: optionalText(this.answer()),
+        allowBusy,
       }),
     );
   }
@@ -154,14 +178,21 @@ export class RequestAnswerDialog {
       return;
     }
     this.pending.set(true);
+    this.busy.set(false);
+    this.error.set(null);
     action(request).subscribe({
       next: () => {
         this.pending.set(false);
         this.visible.set(false);
         this.answered.emit(request);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.pending.set(false);
+        if (problemCode(error) === 'schedule.slot-busy') {
+          this.busy.set(true);
+        } else {
+          this.error.set(describeError(error, 'Не удалось ответить на запрос'));
+        }
       },
     });
   }

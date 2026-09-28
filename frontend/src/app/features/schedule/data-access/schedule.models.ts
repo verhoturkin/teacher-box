@@ -157,6 +157,8 @@ export interface ApproveRequest {
   readonly startsAt: string | null;
   readonly charge: boolean;
   readonly answer: string | null;
+  /** Move even if the teacher is busy at the new time. */
+  readonly allowBusy: boolean;
 }
 
 export interface ChangeRequestBody {
@@ -182,7 +184,7 @@ export interface GoogleCalendarStatus {
   readonly callbackPath: string;
 }
 
-/** A time when the teacher is busy in their own Google calendars. */
+/** A time when the teacher is busy: their Google calendar, or (for a student) other lessons. */
 export interface BusyTime {
   readonly start: string;
   readonly end: string;

@@ -9,7 +9,7 @@ import {
   scheduleSettings,
   scheduledLesson,
 } from '@testing/schedule-fixtures';
-import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
+import { BusyTime, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { MySchedulePage } from './my-schedule-page';
 import { testProviders } from '@testing/setup';
 
@@ -36,9 +36,17 @@ describe('MySchedulePage', () => {
   });
 
   afterEach(() => {
+    // The teacher's busy time comes with every load of the calendar.
+    for (const request of busyRequests()) {
+      request.flush([]);
+    }
     backend.verify();
     fixture.destroy();
   });
+
+  function busyRequests(): TestRequest[] {
+    return backend.match((request) => request.url === '/api/me/schedule/busy');
+  }
 
   function lessonRequests(): TestRequest[] {
     return backend.match((request) => request.url === '/api/me/schedule/lessons');
@@ -47,6 +55,7 @@ describe('MySchedulePage', () => {
   async function render(
     lessons: ScheduledLesson[],
     requests: ChangeRequest[] = [],
+    busy: BusyTime[] = [],
   ): Promise<string> {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
@@ -56,6 +65,9 @@ describe('MySchedulePage', () => {
     await fixture.whenStable();
     for (const request of lessonRequests()) {
       request.flush(lessons);
+    }
+    for (const request of busyRequests()) {
+      request.flush(busy);
     }
     await fixture.whenStable();
     return readableText(hostElement(fixture));
@@ -76,6 +88,13 @@ describe('MySchedulePage', () => {
       requireElement(hostElement(fixture), 'a[href="https://zoom.us/j/1"]', HTMLAnchorElement),
     ).toBeTruthy();
     expect(hostElement(fixture).querySelectorAll('.tb-schedule-list > li').length).toBe(2);
+  });
+
+  it('shows when the teacher is busy, without whose lessons', async () => {
+    const busy = future(30);
+    const text = await render([], [], [{ start: busy.startsAt, end: busy.endsAt }]);
+
+    expect(text).toContain('Учитель занят');
   });
 
   it('says when there are no lessons', async () => {

@@ -178,8 +178,11 @@ class AnswerRequestsChatAction implements ChatAction {
         }
         boolean charge = state.get("charge").map(Boolean::parseBoolean).orElse(false);
         try {
-            requests.approve(request.id(), new Approval(null, charge, null));
+            requests.approve(request.id(), new Approval(null, charge, null, false));
         } catch (DomainException e) {
+            if (e.code().equals("schedule.slot-busy")) {
+                return ChatStep.done("В это время у вас другое занятие или дела в календаре. Ответьте на портале.");
+            }
             return ChatStep.done("Не получилось принять запрос: занятие изменилось. Ответьте на портале.");
         }
         String done = request.kind() == ChangeKind.RESCHEDULE ? "Занятие перенесено."

@@ -82,7 +82,9 @@ describe('ScheduleApi', () => {
     api.changeSeries('sr-1', series).subscribe();
     api.stopSeries('sr-1', '2026-10-05').subscribe();
     api.pendingRequests().subscribe();
-    api.approve('r-1', { startsAt: null, charge: true, answer: 'Ок' }).subscribe();
+    api
+      .approve('r-1', { startsAt: null, charge: true, answer: 'Ок', allowBusy: false })
+      .subscribe();
     api.decline('r-2', 'Нет').subscribe();
 
     expect(backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/series' })).toBeTruthy();
@@ -100,6 +102,7 @@ describe('ScheduleApi', () => {
       startsAt: null,
       charge: true,
       answer: 'Ок',
+      allowBusy: false,
     });
     expect(backend.expectOne('/api/teacher/schedule/requests/r-2/decline').request.body).toEqual({
       answer: 'Нет',
