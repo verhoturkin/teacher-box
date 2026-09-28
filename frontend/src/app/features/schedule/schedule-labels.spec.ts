@@ -1,8 +1,16 @@
-import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import {
+  at,
+  changeRequest,
+  groupLesson,
+  onceOffTime,
+  scheduledLesson,
+  weeklyOffTime,
+} from '@testing/schedule-fixtures';
 import {
   browserTimeZone,
   formatLessonStart,
   formatLessonTime,
+  formatOffTime,
   formatWeekly,
   lessonWith,
   optionalText,
@@ -31,6 +39,27 @@ describe('schedule labels', () => {
 
   it('describes weekly series in the order of the week', () => {
     expect(formatWeekly(['THURSDAY', 'MONDAY'], '18:00:00')).toBe('Пн, Чт в 18:00');
+  });
+
+  it('describes off time once and weekly', () => {
+    expect(
+      formatOffTime(onceOffTime({ startsAt: at(2026, 10, 1, 13), endsAt: at(2026, 10, 1, 14) })),
+    ).toBe('чт, 01.10, 13:00–14:00');
+    expect(formatOffTime(onceOffTime())).toBe('пн, 05.10, 00:00 – сб, 10.10, 00:00');
+    expect(formatOffTime(weeklyOffTime())).toBe('Пн, Ср 13:00–14:00');
+    expect(
+      formatOffTime(
+        weeklyOffTime({
+          weekdays: ['SATURDAY'],
+          startTime: '00:00:00',
+          endTime: '00:00:00',
+          endsOn: '2026-12-31',
+        }),
+      ),
+    ).toBe('Сб 00:00–00:00, по 31.12.2026');
+    expect(formatOffTime(weeklyOffTime({ startsOn: '2999-01-01', endsOn: '2999-02-01' }))).toBe(
+      'Пн, Ср 13:00–14:00, с 01.01.2999 по 01.02.2999',
+    );
   });
 
   it('knows the browser time zone', () => {

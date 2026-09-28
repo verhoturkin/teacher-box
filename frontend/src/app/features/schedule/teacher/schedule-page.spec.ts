@@ -1,7 +1,7 @@
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import {
@@ -10,12 +10,15 @@ import {
   changeRequest,
   groupLesson,
   lessonSeries,
+  onceOffTime,
   scheduleSettings,
   scheduledLesson,
+  weeklyOffTime,
 } from '@testing/schedule-fixtures';
-import { ScheduledLesson } from '../data-access/schedule.models';
-import { LessonMove } from '../ui/schedule-calendar';
+import { OffTime, ScheduledLesson } from '../data-access/schedule.models';
+import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
 import { LessonDialog } from './lesson-dialog';
+import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
 import { testProviders } from '@testing/setup';
 
@@ -40,6 +43,9 @@ describe('SchedulePage', () => {
     for (const request of backend.match('/api/teacher/boards')) {
       request.flush([]);
     }
+    for (const request of offTimePeriodRequests()) {
+      request.flush([]);
+    }
     backend.verify();
     fixture.destroy();
   });
@@ -48,7 +54,12 @@ describe('SchedulePage', () => {
     return backend.expectOne((request) => request.url === '/api/teacher/schedule/lessons');
   }
 
-  function flushSidePanels(unmarked: ScheduledLesson[] = []): void {
+  function offTimePeriodRequests(): TestRequest[] {
+    return backend.match((request) => request.url === '/api/teacher/schedule/off-times/periods');
+  }
+
+  function flushSidePanels(unmarked: ScheduledLesson[] = [], offTimes: OffTime[] = []): void {
+    backend.expectOne('/api/teacher/schedule/off-times').flush(offTimes);
     backend.expectOne('/api/teacher/schedule/requests').flush([changeRequest({ late: true })]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush(unmarked);
     backend.expectOne('/api/teacher/schedule/series').flush([lessonSeries()]);
@@ -61,6 +72,7 @@ describe('SchedulePage', () => {
       status: 'NOT_CONNECTED',
       busyEnabled: false,
     },
+    offTimes: OffTime[] = [],
   ): Promise<string> {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(settings);
@@ -75,7 +87,7 @@ describe('SchedulePage', () => {
         aGroup({ id: 'g-2', name: 'Пустая', members: [] }),
         aGroup({ id: 'g-3', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
       ]);
-    flushSidePanels(unmarked);
+    flushSidePanels(unmarked, offTimes);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
     backend.expectOne('/api/teacher/schedule/google').flush(google);
     await fixture.whenStable();
@@ -133,6 +145,79 @@ describe('SchedulePage', () => {
       expect(request.request.params.get('from')).toMatch(/Z$/);
       request.flush([{ start: '2026-10-01T09:00:00Z', end: '2026-10-01T10:00:00Z' }]);
     }
+  });
+
+  it('shows the teacher’s off time in the card and in the calendar', async () => {
+    const text = await render(scheduleSettings(), [], undefined, [weeklyOffTime(), onceOffTime()]);
+
+    expect(text).toContain('Нерабочее время');
+    expect(text).toContain('Обед');
+    expect(text).toContain('Пн, Ср 13:00–14:00');
+    expect(text).toContain('Не работаю');
+    const periods = offTimePeriodRequests();
+    expect(periods.length).toBeGreaterThan(0);
+    for (const request of periods) {
+      expect(request.request.params.get('from')).toMatch(/Z$/);
+      request.flush([
+        { offTimeId: 'off-1', start: at(2026, 10, 5, 13), end: at(2026, 10, 5, 14), note: 'Обед' },
+      ]);
+    }
+    await fixture.whenStable();
+    expect(
+      fixture.debugElement
+        .query(By.directive(ScheduleCalendar))
+        .injector.get(ScheduleCalendar)
+        .offTime(),
+    ).toHaveLength(1);
+  });
+
+  it('says what off time is for while there is none', async () => {
+    expect(await render()).toContain('Отметьте обед, выходные или отпуск');
+  });
+
+  it('adds, changes and deletes off time', async () => {
+    await render(scheduleSettings(), [], undefined, [weeklyOffTime()]);
+    for (const request of offTimePeriodRequests()) {
+      request.flush([]);
+    }
+    const dialog = fixture.debugElement
+      .query(By.directive(OffTimeDialog))
+      .injector.get(OffTimeDialog);
+
+    buttonByText(hostElement(fixture), 'Нерабочее время').click();
+    await fixture.whenStable();
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.offTime()).toBeNull();
+    dialog.visible.set(false);
+
+    buttonByText(hostElement(fixture), 'Изменить нерабочее время: Пн, Ср 13:00–14:00').click();
+    await fixture.whenStable();
+    expect(dialog.offTime()).toEqual(weeklyOffTime());
+    dialog.visible.set(false);
+    dialog.saved.emit(weeklyOffTime({ note: 'Перерыв' }));
+    backend
+      .expectOne('/api/teacher/schedule/off-times')
+      .flush([weeklyOffTime({ note: 'Перерыв' })]);
+    expect(offTimePeriodRequests()).toHaveLength(1);
+    await fixture.whenStable();
+    expect(readableText(hostElement(fixture))).toContain('Перерыв');
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ summary: 'Нерабочее время сохранено' }),
+    );
+
+    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+    vi.spyOn(confirmation, 'confirm').mockImplementationOnce((options) => {
+      expect(options.message).toContain('Пн, Ср 13:00–14:00');
+      options.accept?.();
+      return confirmation;
+    });
+    buttonByText(hostElement(fixture), 'Удалить нерабочее время: Пн, Ср 13:00–14:00').click();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/off-times/off-1' })
+      .flush(null);
+    backend.expectOne('/api/teacher/schedule/off-times').flush([]);
+    await fixture.whenStable();
+    expect(readableText(hostElement(fixture))).toContain('Отметьте обед');
   });
 
   it('explains times when the portal is in another time zone', async () => {

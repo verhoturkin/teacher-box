@@ -28,6 +28,7 @@ describe('SchedulePage on a phone', () => {
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/teacher/students').flush([]);
     backend.expectOne('/api/teacher/groups').flush([]);
+    backend.expectOne('/api/teacher/schedule/off-times').flush([]);
     backend.expectOne('/api/teacher/schedule/requests').flush([]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     backend.expectOne('/api/teacher/schedule/series').flush([]);
@@ -39,6 +40,9 @@ describe('SchedulePage on a phone', () => {
     backend
       .expectOne((request) => request.url === '/api/teacher/schedule/lessons')
       .flush([scheduledLesson()]);
+    backend
+      .expectOne((request) => request.url === '/api/teacher/schedule/off-times/periods')
+      .flush([]);
     await fixture.whenStable();
     const host = hostElement(fixture);
 
@@ -48,7 +52,7 @@ describe('SchedulePage on a phone', () => {
       Array.from(host.querySelectorAll('.tb-page-header .tb-actions button')).map((b) =>
         b.textContent.trim(),
       ),
-    ).toEqual(['Регулярные занятия']);
+    ).toEqual(['Регулярные занятия', 'Нерабочее время']);
 
     requireElement(host, '.tb-fab button', HTMLButtonElement).click();
     await fixture.whenStable();

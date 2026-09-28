@@ -477,6 +477,18 @@ a.p-menu-item-link:hover {
   --fc-classic-background-event-foreground-opacity: 80%;
 }
 
+/* The teacher's own off time: hatched, with its caption */
+.tb-off-time {
+  --fc-classic-background-event: var(--p-surface-400);
+  --fc-classic-background-event-foreground-opacity: 80%;
+
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--p-surface-500) 35%, transparent) 6px 8px
+  );
+}
+
 /*
  * Tables with the class tb-cards become cards on phones (ADR-0015): every row is a card, every cell
  * a line "column: value" (the label comes from data-label), the first cell is the title and the

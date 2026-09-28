@@ -16,7 +16,7 @@ import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import ruLocale from 'fullcalendar/locales/ru';
 import { injectMobile } from '@core/layout/mobile';
 import { toIsoDate } from '@shared/dates/iso-date';
-import { BusyTime, ScheduledLesson } from '../data-access/schedule.models';
+import { BusyTime, OffTimePeriod, ScheduledLesson } from '../data-access/schedule.models';
 
 /** Days `[from, to)` shown by the calendar (`yyyy-MM-dd`, browser time zone). */
 export interface CalendarRange {
@@ -65,6 +65,8 @@ export class ScheduleCalendar {
   readonly busy = input<readonly BusyTime[]>([]);
   /** Caption on the busy times (the student's calendar: «Занято»); none by default. */
   readonly busyTitle = input<string | null>(null);
+  /** The teacher's off time (the teacher's calendar): hatched in the week, day and month. */
+  readonly offTime = input<readonly OffTimePeriod[]>([]);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -113,6 +115,7 @@ export class ScheduleCalendar {
       events: [
         ...this.lessons().map((lesson) => this.toEvent(lesson, editable)),
         ...this.busy().map((busy, index) => this.toBusy(busy, index)),
+        ...this.offTime().map((period, index) => toOffTime(period, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
         this.rangeChange.emit({ from: toIsoDate(info.start), to: toIsoDate(info.end) });
@@ -179,6 +182,17 @@ export class ScheduleCalendar {
     }
     return request + (lesson.topic ?? 'Занятие');
   }
+}
+
+function toOffTime(period: OffTimePeriod, index: number): EventInput {
+  return {
+    id: `off-${String(index)}`,
+    title: period.note ?? 'Нерабочее время',
+    start: period.start,
+    end: period.end,
+    display: 'background',
+    className: 'tb-off-time',
+  };
 }
 
 /** CSS classes of a lesson event: its status, a group lesson and whether a request waits for an answer. */

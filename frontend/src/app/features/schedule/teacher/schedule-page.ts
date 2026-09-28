@@ -24,6 +24,8 @@ import {
   ChangeRequest,
   LessonOutcome,
   LessonSeries,
+  OffTime,
+  OffTimePeriod,
   ScheduleSettings,
   ScheduledLesson,
   SeriesPlanned,
@@ -32,6 +34,7 @@ import {
   browserTimeZone,
   formatLessonStart,
   formatLessonTime,
+  formatOffTime,
   formatWeekly,
   lessonWith,
   requestKindLabel,
@@ -47,6 +50,7 @@ import {
 import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
+import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 
@@ -55,7 +59,8 @@ const CLICK_SELECTION_MINUTES = 30;
 
 /**
  * The teacher's schedule: the calendar with lessons (select empty time to plan, drag to move),
- * students' requests, lessons waiting for an outcome, regular series and the calendar link.
+ * students' requests, lessons waiting for an outcome, regular series, the teacher's off time and the
+ * calendar link.
  * On a phone a new lesson is planned with the floating «+».
  */
 @Component({
@@ -69,6 +74,7 @@ const CLICK_SELECTION_MINUTES = 30;
     CalendarFeedPanel,
     LessonDetailsDialog,
     LessonDialog,
+    OffTimeDialog,
     RequestAnswerDialog,
     ScheduleCalendar,
     SeriesDialog,
@@ -91,6 +97,12 @@ const CLICK_SELECTION_MINUTES = 30;
           [outlined]="true"
           (onClick)="newSeries()"
         />
+        <p-button
+          label="Нерабочее время"
+          icon="pi pi-moon"
+          [outlined]="true"
+          (onClick)="newOffTime()"
+        />
       </div>
     </div>
     @if (localTimeHint(); as hint) {
@@ -102,6 +114,7 @@ const CLICK_SELECTION_MINUTES = 30;
         <tb-schedule-calendar
           [lessons]="lessons()"
           [busy]="busy()"
+          [offTime]="offTimePeriods()"
           [editable]="true"
           (rangeChange)="onRange($event)"
           (lessonClick)="openLesson($event)"
@@ -217,6 +230,42 @@ const CLICK_SELECTION_MINUTES = 30;
           }
         </p-card>
 
+        <p-card header="Нерабочее время">
+          @if (offTimes().length === 0) {
+            <p class="tb-muted">
+              Отметьте обед, выходные или отпуск — ученики увидят это время занятым.
+            </p>
+          } @else {
+            <ul class="tb-schedule-list">
+              @for (item of offTimes(); track item.id) {
+                <li>
+                  <div>
+                    <strong>{{ item.note ?? 'Не работаю' }}</strong>
+                    <div class="tb-muted">{{ offTimeText(item) }}</div>
+                  </div>
+                  <div class="tb-actions">
+                    <p-button
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      size="small"
+                      [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      (onClick)="editOffTime(item)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      severity="danger"
+                      size="small"
+                      [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      (onClick)="deleteOffTime(item)"
+                    />
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </p-card>
+
         <tb-calendar-feed-panel />
       </div>
     </div>
@@ -256,6 +305,12 @@ const CLICK_SELECTION_MINUTES = 30;
       [defaultDuration]="defaultDuration()"
       [timeZone]="settings()?.timeZone ?? null"
       (saved)="onSeriesSaved($event)"
+    />
+    <tb-off-time-dialog
+      [(visible)]="offTimeDialogVisible"
+      [offTime]="editingOffTime()"
+      [timeZone]="settings()?.timeZone ?? null"
+      (saved)="onOffTimeSaved()"
     />
     <tb-request-answer-dialog
       [(visible)]="answerVisible"
@@ -314,6 +369,8 @@ export class SchedulePage implements OnInit {
   protected readonly unmarked = signal<ScheduledLesson[]>([]);
   protected readonly series = signal<LessonSeries[]>([]);
   protected readonly busy = signal<BusyTime[]>([]);
+  protected readonly offTimes = signal<OffTime[]>([]);
+  protected readonly offTimePeriods = signal<OffTimePeriod[]>([]);
   protected readonly defaultDuration = computed(
     () => this.settings()?.defaultDurationMinutes ?? 60,
   );
@@ -331,6 +388,8 @@ export class SchedulePage implements OnInit {
   protected readonly selected = signal<ScheduledLesson | null>(null);
   protected readonly seriesDialogVisible = signal(false);
   protected readonly editingSeries = signal<LessonSeries | null>(null);
+  protected readonly offTimeDialogVisible = signal(false);
+  protected readonly editingOffTime = signal<OffTime | null>(null);
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
 
@@ -372,6 +431,7 @@ export class SchedulePage implements OnInit {
     this.range = range;
     this.loadLessons();
     this.loadBusy();
+    this.loadOffTimePeriods();
   }
 
   /** Reloads everything a change of a lesson, series or request can affect. */
@@ -482,6 +542,43 @@ export class SchedulePage implements OnInit {
     });
   }
 
+  newOffTime(): void {
+    this.editingOffTime.set(null);
+    this.offTimeDialogVisible.set(true);
+  }
+
+  editOffTime(offTime: OffTime): void {
+    this.editingOffTime.set(offTime);
+    this.offTimeDialogVisible.set(true);
+  }
+
+  onOffTimeSaved(): void {
+    this.messages.add({ severity: 'success', summary: 'Нерабочее время сохранено' });
+    this.loadOffTimes();
+    this.loadOffTimePeriods();
+  }
+
+  deleteOffTime(offTime: OffTime): void {
+    this.confirmation.confirm({
+      header: 'Удалить нерабочее время?',
+      message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
+      acceptLabel: 'Удалить',
+      rejectLabel: 'Назад',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () => {
+        this.api.deleteOffTime(offTime.id).subscribe(() => {
+          this.loadOffTimes();
+          this.loadOffTimePeriods();
+        });
+      },
+    });
+  }
+
+  protected offTimeText(offTime: OffTime): string {
+    return formatOffTime(offTime);
+  }
+
   protected start(iso: string): string {
     return formatLessonStart(iso);
   }
@@ -535,7 +632,30 @@ export class SchedulePage implements OnInit {
       });
   }
 
+  private loadOffTimePeriods(): void {
+    const range = this.range;
+    if (range === null) {
+      return;
+    }
+    const widened = widen(range);
+    this.api
+      .offTimePeriods(
+        fromIsoDate(widened.from).toISOString(),
+        fromIsoDate(widened.to).toISOString(),
+      )
+      .subscribe((periods) => {
+        this.offTimePeriods.set(periods);
+      });
+  }
+
+  private loadOffTimes(): void {
+    this.api.offTimes().subscribe((offTimes) => {
+      this.offTimes.set(offTimes);
+    });
+  }
+
   private loadSidePanels(): void {
+    this.loadOffTimes();
     this.api.pendingRequests().subscribe((requests) => {
       this.requests.set(requests);
     });

@@ -3,6 +3,7 @@ import {
   Attendance,
   ChangeKind,
   ChangeRequest,
+  OffTime,
   RequestStatus,
   ScheduleLessonStatus,
   ScheduledLesson,
@@ -89,6 +90,37 @@ export function formatLessonTime(startsAt: string, endsAt: string): string {
 export function formatWeekly(weekdays: readonly Weekday[], startTime: string): string {
   const days = WEEKDAYS.filter((day) => weekdays.includes(day.value)).map((day) => day.short);
   return `${days.join(', ')} в ${startTime.slice(0, 5)}`;
+}
+
+const DATE = new Intl.DateTimeFormat('ru-RU', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+/**
+ * When the teacher does not work: «пн, 05.10, 13:00–14:00», «пн, 05.10, 00:00 – пт, 09.10, 00:00»
+ * or «Пн, Ср 13:00–14:00, с 05.10.2026 по 30.10.2026».
+ */
+export function formatOffTime(offTime: OffTime): string {
+  if (offTime.kind === 'ONCE') {
+    const start = offTime.startsAt ?? '';
+    const end = offTime.endsAt ?? '';
+    return new Date(start).toDateString() === new Date(end).toDateString()
+      ? formatLessonTime(start, end)
+      : `${formatLessonStart(start)} – ${formatLessonStart(end)}`;
+  }
+  const days = WEEKDAYS.filter((day) => offTime.weekdays.includes(day.value)).map(
+    (day) => day.short,
+  );
+  const time = `${(offTime.startTime ?? '').slice(0, 5)}–${(offTime.endTime ?? '').slice(0, 5)}`;
+  const since =
+    offTime.startsOn !== null && fromIsoDate(offTime.startsOn) > new Date()
+      ? `с ${DATE.format(fromIsoDate(offTime.startsOn))}`
+      : '';
+  const until = offTime.endsOn === null ? '' : `по ${DATE.format(fromIsoDate(offTime.endsOn))}`;
+  const dates = [since, until].filter((part) => part !== '').join(' ');
+  return `${days.join(', ')} ${time}${dates === '' ? '' : `, ${dates}`}`;
 }
 
 /** Time zone of the browser, e.g. `Europe/Moscow`. */

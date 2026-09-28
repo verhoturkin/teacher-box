@@ -121,6 +121,9 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.lesson-group': 'Это групповое занятие',
   'schedule.lesson-not-group': 'Это занятие не групповое',
   'schedule.range-invalid': 'Слишком большой период',
+  'schedule.off-time-invalid':
+    'Проверьте нерабочее время: заполните все поля, конец — позже начала и не дальше чем через год',
+  'schedule.off-time-not-found': 'Это нерабочее время уже удалено',
   'schedule.request-not-allowed': 'Перенести или отменить можно только предстоящее занятие',
   'schedule.proposed-time-invalid': 'Укажите новое время в будущем',
   'schedule.request-pending': 'По этому занятию уже есть запрос, дождитесь ответа учителя',
