@@ -78,10 +78,10 @@ class LedgerIntegrationTests {
         post("/api/teacher/billing/lessons", "{\"studentId\":\"%s\",\"date\":\"2026-09-01\"}".formatted(student));
 
         MvcTestResult payment = post("/api/teacher/billing/payments", """
-                {"studentId":"%s","amount":500000,"paidOn":"2026-09-03","method":"TRANSFER","comment":"за месяц"}
+                {"studentId":"%s","amount":500000,"paidOn":"2026-09-03","comment":"за месяц"}
                 """.formatted(student));
 
-        assertThat(payment).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.method").isEqualTo("TRANSFER");
+        assertThat(payment).hasStatus(HttpStatus.CREATED).bodyJson().doesNotHavePath("$.method");
         assertThat(balance(student)).isEqualTo(350_000);
         assertThat(events).contains(PaymentRecorded.class)
                 .matching(PaymentRecorded::studentId, student)
@@ -138,7 +138,7 @@ class LedgerIntegrationTests {
         post("/api/teacher/billing/lessons", "{\"studentId\":\"%s\",\"date\":\"2026-09-01\"}".formatted(student));
         post("/api/teacher/billing/lessons", "{\"studentId\":\"%s\",\"date\":\"2026-09-08\"}".formatted(student));
         post("/api/teacher/billing/payments", """
-                {"studentId":"%s","amount":100000,"paidOn":"2026-09-05","method":"CASH"}
+                {"studentId":"%s","amount":100000,"paidOn":"2026-09-05"}
                 """.formatted(student));
 
         assertThat(get("/api/teacher/billing/students/" + student)).hasStatusOk().bodyJson().satisfies(json -> {
@@ -149,7 +149,6 @@ class LedgerIntegrationTests {
             assertThat(json).extractingPath("$.paid").isEqualTo(100_000);
             assertThat(json).extractingPath("$.balance").isEqualTo(-200_000);
             assertThat(json).extractingPath("$.lessons[*].date").asArray().containsExactly("2026-09-08", "2026-09-01");
-            assertThat(json).extractingPath("$.payments[0].method").isEqualTo("CASH");
         });
     }
 
@@ -163,12 +162,12 @@ class LedgerIntegrationTests {
         assertThat(post("/api/teacher/billing/lessons", "{\"studentId\":\"%s\"}".formatted(student)))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(post("/api/teacher/billing/payments", """
-                {"studentId":"%s","amount":0,"paidOn":"2026-09-01","method":"CASH"}
+                {"studentId":"%s","amount":0,"paidOn":"2026-09-01"}
                 """.formatted(student)))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("payment.amount-invalid");
         assertThat(post("/api/teacher/billing/payments", """
-                {"studentId":"%s","amount":100,"paidOn":"2026-09-01"}
+                {"studentId":"%s","amount":100}
                 """.formatted(student)))
                 .hasStatus(HttpStatus.BAD_REQUEST);
     }

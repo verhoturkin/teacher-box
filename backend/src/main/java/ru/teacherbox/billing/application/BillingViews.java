@@ -9,7 +9,6 @@ import ru.teacherbox.billing.domain.BalanceTotals;
 import ru.teacherbox.billing.domain.Lesson;
 import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.billing.domain.Payment;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.identity.api.StudentStatus;
 
 /**
@@ -45,7 +44,6 @@ public final class BillingViews {
             UUID studentId,
             long amount,
             LocalDate paidOn,
-            PaymentMethod method,
             @Nullable String comment,
             Instant createdAt,
             @Nullable Instant voidedAt,
@@ -53,8 +51,7 @@ public final class BillingViews {
 
         static PaymentView of(Payment payment) {
             return new PaymentView(payment.id(), payment.studentId(), payment.amount().amountMinor(),
-                    payment.paidOn(), payment.method(), payment.comment(), payment.createdAt(), payment.voidedAt(),
-                    payment.voidReason());
+                    payment.paidOn(), payment.comment(), payment.createdAt(), payment.voidedAt(), payment.voidReason());
         }
     }
 

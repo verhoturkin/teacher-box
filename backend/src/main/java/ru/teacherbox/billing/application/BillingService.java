@@ -18,7 +18,6 @@ import ru.teacherbox.billing.domain.BillingCurrency;
 import ru.teacherbox.billing.domain.Lesson;
 import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.billing.domain.Payment;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.billing.domain.StudentAccount;
 import ru.teacherbox.billing.persistence.BalanceQueries;
 import ru.teacherbox.billing.persistence.LessonRepository;
@@ -47,8 +46,7 @@ public class BillingService {
     }
 
     /** @param amount minor units */
-    public record RecordPayment(UUID studentId, long amount, LocalDate paidOn, PaymentMethod method,
-            @Nullable String comment) {
+    public record RecordPayment(UUID studentId, long amount, LocalDate paidOn, @Nullable String comment) {
     }
 
     private final StudentAccountRepository accounts;
@@ -146,7 +144,7 @@ public class BillingService {
         accountOf(command.studentId());
         Instant now = clock.instant();
         Payment payment = Payment.record(Ids.newId(), command.studentId(), currency.of(command.amount()),
-                command.paidOn(), command.method(), command.comment(), now);
+                command.paidOn(), command.comment(), now);
         payments.insert(payment);
         events.publishEvent(new PaymentRecorded(payment.id(), payment.studentId(), payment.amount(),
                 payment.paidOn(), balanceOf(payment.studentId()), now));

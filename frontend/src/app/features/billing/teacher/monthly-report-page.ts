@@ -18,7 +18,7 @@ import { Tag } from 'primeng/tag';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
-import { LESSON_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../billing-labels';
+import { LESSON_STATUS_LABELS } from '../billing-labels';
 import { BillingApi } from '../data-access/billing-api';
 import { MonthlyReport } from '../data-access/billing.models';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -179,7 +179,6 @@ import { EmptyState } from '@shared/ui/empty-state';
               <tr>
                 <th>Дата</th>
                 <th>Ученик</th>
-                <th>Способ</th>
                 <th>Комментарий</th>
                 <th class="tb-amount">Сумма</th>
               </tr>
@@ -188,7 +187,6 @@ import { EmptyState } from '@shared/ui/empty-state';
               <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
                 <td data-label="Дата">{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
                 <td data-label="Ученик">{{ entry.studentName }}</td>
-                <td data-label="Способ">{{ paymentMethodLabels[entry.payment.method] }}</td>
                 <td data-label="Комментарий">{{ entry.payment.comment ?? '' }}</td>
                 <td data-label="Сумма" class="tb-amount">
                   {{ entry.payment.amount | money: report.currency }}
@@ -211,7 +209,6 @@ export class MonthlyReportPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
-  protected readonly paymentMethodLabels = PAYMENT_METHOD_LABELS;
   readonly month = new FormControl<Date>(new Date(), { nonNullable: true });
   protected readonly report = signal<MonthlyReport | null>(null);
 

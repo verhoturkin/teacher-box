@@ -34,7 +34,6 @@ import ru.teacherbox.billing.application.BillingViews.Overview;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
 import ru.teacherbox.billing.domain.LessonStatus;
-import ru.teacherbox.billing.domain.PaymentMethod;
 
 /** The teacher's billing API. Amounts are integers in minor currency units. */
 @RestController
@@ -54,7 +53,6 @@ class TeacherBillingController {
             @NotNull UUID studentId,
             @NotNull Long amount,
             @NotNull LocalDate paidOn,
-            @NotNull PaymentMethod method,
             @Size(max = 500) @Nullable String comment) {
     }
 
@@ -137,7 +135,7 @@ class TeacherBillingController {
     @ResponseStatus(HttpStatus.CREATED)
     PaymentView recordPayment(@Valid @RequestBody PaymentRequest request) {
         return billing.recordPayment(new BillingService.RecordPayment(request.studentId(), request.amount(),
-                request.paidOn(), request.method(), request.comment()));
+                request.paidOn(), request.comment()));
     }
 
     @PostMapping("/payments/{paymentId}/void")

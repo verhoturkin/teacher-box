@@ -2,8 +2,6 @@ package ru.teacherbox.billing.chat;
 
 import java.util.Currency;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingService.RecordPayment;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
@@ -25,16 +22,13 @@ import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.DomainException;
 
-/** The teacher records a payment: student → amount (1, 4 or 8 lessons, or typed) → method → confirmation. */
+/** The teacher records a payment: student → amount (1, 4 or 8 lessons, or typed) → confirmation. */
 @Component
 class RecordPaymentChatAction implements ChatAction {
 
     static final String PROMPT = "Кто оплатил?";
     static final String AMOUNT = "amount:";
-    static final String METHOD = "method:";
     static final List<Integer> LESSONS = List.of(1, 4, 8);
-    static final Map<PaymentMethod, String> METHODS = Map.of(PaymentMethod.TRANSFER, "Перевод",
-            PaymentMethod.CARD, "Карта", PaymentMethod.CASH, "Наличные", PaymentMethod.OTHER, "Другое");
 
     private final TeacherBilling billing;
     private final BillingService service;
@@ -92,7 +86,6 @@ class RecordPaymentChatAction implements ChatAction {
         }
         return switch (step) {
             case "amount" -> amount(student.get(), state, input);
-            case "method" -> method(student.get(), state, input);
             case "confirm" -> confirm(student.get(), state, input);
             default -> start(user);
         };
@@ -123,25 +116,10 @@ class RecordPaymentChatAction implements ChatAction {
         if (amount.isEmpty()) {
             return askAmount(student.id(), state, "Не понял сумму.");
         }
-        ChatReply reply = ChatReply.of("Как оплачено?")
-                .row(ChatButton.choice(METHODS.get(PaymentMethod.TRANSFER), METHOD + PaymentMethod.TRANSFER),
-                        ChatButton.choice(METHODS.get(PaymentMethod.CARD), METHOD + PaymentMethod.CARD))
-                .row(ChatButton.choice(METHODS.get(PaymentMethod.CASH), METHOD + PaymentMethod.CASH),
-                        ChatButton.choice(METHODS.get(PaymentMethod.OTHER), METHOD + PaymentMethod.OTHER));
-        return ChatStep.ask(reply, state.with("amount", amount.get().toString()).withStep("method"));
-    }
-
-    private ChatStep method(StudentSummary student, ChatState state, ChatInput input) {
-        Optional<PaymentMethod> method = ChatKit.choice(input, METHOD).flatMap(RecordPaymentChatAction::method);
-        if (method.isEmpty()) {
-            return amount(student, state, new ChatInput.Choice(AMOUNT + state.get("amount").orElse("")));
-        }
         Currency currency = Currency.getInstance(billing.currency(student.id()));
         String question = "Записать оплату: " + student.displayName() + ", "
-                + TeacherBilling.money(Long.parseLong(state.get("amount").orElseThrow()), currency) + ", "
-                + METHODS.get(method.get()).toLowerCase(Locale.ROOT) + ", " + ChatText.date(billing.today())
-                + "?";
-        return ChatKit.confirm(question, state.with("method", method.get().name()).withStep("confirm"));
+                + TeacherBilling.money(amount.get(), currency) + ", " + ChatText.date(billing.today()) + "?";
+        return ChatKit.confirm(question, state.with("amount", amount.get().toString()).withStep("confirm"));
     }
 
     private ChatStep confirm(StudentSummary student, ChatState state, ChatInput input) {
@@ -151,7 +129,7 @@ class RecordPaymentChatAction implements ChatAction {
         PaymentView payment;
         try {
             payment = service.recordPayment(new RecordPayment(student.id(), Long.parseLong(state.get("amount").orElseThrow()),
-                    billing.today(), PaymentMethod.valueOf(state.get("method").orElseThrow()), null));
+                    billing.today(), null));
         } catch (DomainException e) {
             return ChatStep.done("Не получилось записать оплату. Запишите её на портале.");
         }
@@ -168,14 +146,6 @@ class RecordPaymentChatAction implements ChatAction {
             long value = Long.parseLong(text);
             return value > 0 ? Optional.of(value) : Optional.empty();
         } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    private static Optional<PaymentMethod> method(String name) {
-        try {
-            return Optional.of(PaymentMethod.valueOf(name));
-        } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }

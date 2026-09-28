@@ -6,7 +6,7 @@ import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
-import { LESSON_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../billing-labels';
+import { LESSON_STATUS_LABELS } from '../billing-labels';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { ledgerEntries } from './ledger-entries';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -77,7 +77,7 @@ import { EmptyState } from '@shared/ui/empty-state';
             }
             @case ('payment') {
               <td data-label="Операция">
-                Оплата: {{ paymentMethodLabels[entry.payment.method] }}
+                Оплата
                 @if (entry.payment.voidedAt) {
                   <p-tag value="Аннулирована" severity="secondary" />
                 }
@@ -128,6 +128,5 @@ export class LedgerTable {
   readonly voidPayment = output<Payment>();
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
-  protected readonly paymentMethodLabels = PAYMENT_METHOD_LABELS;
   protected readonly entries = computed(() => ledgerEntries(this.ledger()));
 }

@@ -13,7 +13,6 @@ import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingService.RecordLesson;
 import ru.teacherbox.billing.application.BillingService.RecordPayment;
 import ru.teacherbox.billing.domain.LessonStatus;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatState;
@@ -52,7 +51,7 @@ class PaymentsChatIntegrationTests {
         billing.cancelLesson(mistake, "Ошибка");
         assertThat(done(payments.start(user)).reply().text()).startsWith("Задолженность: 1 500 ₽");
 
-        billing.recordPayment(new RecordPayment(student, 450_050, LocalDate.of(2026, 9, 2), PaymentMethod.CARD, null));
+        billing.recordPayment(new RecordPayment(student, 450_050, LocalDate.of(2026, 9, 2), null));
         String text = done(payments.next(user, ChatState.EMPTY, new ChatInput.Text("ещё"))).reply().text();
         assertThat(text).startsWith("Аванс: 3 000,50 ₽")
                 .contains("Последние оплаты:\n• 02.09.2026 — 4 500,50 ₽", "Последние занятия:\n• 01.09.2026 — 1 500 ₽")

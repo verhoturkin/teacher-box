@@ -91,7 +91,7 @@ class ResetIntegrationTest {
         assertThat(post("/api/teacher/boards", "{\"studentId\":\"" + student
                 + "\",\"url\":\"https://app.holst.so/board/1\"}")).hasStatus(HttpStatus.CREATED);
         assertThat(post("/api/teacher/billing/payments", "{\"studentId\":\"" + student
-                + "\",\"amount\":150000,\"paidOn\":\"" + LocalDate.now() + "\",\"method\":\"CASH\"}"))
+                + "\",\"amount\":150000,\"paidOn\":\"" + LocalDate.now() + "\"}"))
                 .hasStatus(HttpStatus.CREATED);
         assertThat(post("/api/teacher/schedule/lessons", "{\"studentId\":\"" + student + "\",\"startsAt\":\""
                 + Instant.now().plus(Duration.ofDays(3)) + "\"}")).hasStatus(HttpStatus.CREATED);

@@ -15,37 +15,35 @@ public final class Payment {
     private final UUID studentId;
     private final Money amount;
     private final LocalDate paidOn;
-    private final PaymentMethod method;
     private final @Nullable String comment;
     private final Instant createdAt;
     private @Nullable Instant voidedAt;
     private @Nullable String voidReason;
 
-    private Payment(UUID id, UUID studentId, Money amount, LocalDate paidOn, PaymentMethod method,
-            @Nullable String comment, Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
+    private Payment(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
+            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(studentId);
         this.amount = Objects.requireNonNull(amount);
         this.paidOn = Objects.requireNonNull(paidOn);
-        this.method = Objects.requireNonNull(method);
         this.comment = comment;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.voidedAt = voidedAt;
         this.voidReason = voidReason;
     }
 
-    public static Payment record(UUID id, UUID studentId, Money amount, LocalDate paidOn, PaymentMethod method,
-            @Nullable String comment, Instant now) {
+    public static Payment record(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
+            Instant now) {
         if (!amount.isPositive()) {
             throw new BusinessRuleException("payment.amount-invalid", "Payment amount must be positive");
         }
-        return new Payment(id, studentId, amount, paidOn, method, Texts.optional(comment, "payment.comment-invalid"),
-                now, null, null);
+        return new Payment(id, studentId, amount, paidOn, Texts.optional(comment, "payment.comment-invalid"), now,
+                null, null);
     }
 
-    public static Payment restore(UUID id, UUID studentId, Money amount, LocalDate paidOn, PaymentMethod method,
-            @Nullable String comment, Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
-        return new Payment(id, studentId, amount, paidOn, method, comment, createdAt, voidedAt, voidReason);
+    public static Payment restore(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
+            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
+        return new Payment(id, studentId, amount, paidOn, comment, createdAt, voidedAt, voidReason);
     }
 
     public void voidPayment(@Nullable String reason, Instant now) {
@@ -79,10 +77,6 @@ public final class Payment {
 
     public LocalDate paidOn() {
         return paidOn;
-    }
-
-    public PaymentMethod method() {
-        return method;
     }
 
     public @Nullable String comment() {
