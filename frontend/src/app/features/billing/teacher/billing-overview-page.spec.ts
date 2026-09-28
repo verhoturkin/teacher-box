@@ -1,15 +1,13 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { lesson, overview, payment, studentBalance } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { BillingOverviewPage } from './billing-overview-page';
 import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
+import { testProviders } from '@testing/setup';
 
 const IVAN = studentBalance({
   studentId: 's-1',
@@ -29,13 +27,7 @@ describe('BillingOverviewPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [BillingOverviewPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');

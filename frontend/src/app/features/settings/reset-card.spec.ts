@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { ResetCard } from './reset-card';
+import { testProviders } from '@testing/setup';
 
 describe('ResetCard', () => {
   let fixture: ComponentFixture<ResetCard>;
@@ -16,13 +15,7 @@ describe('ResetCard', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [ResetCard],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

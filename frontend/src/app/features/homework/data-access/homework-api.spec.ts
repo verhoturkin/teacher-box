@@ -1,7 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { HomeworkApi } from './homework-api';
+import { testProviders } from '@testing/setup';
 
 describe('HomeworkApi', () => {
   let api: HomeworkApi;
@@ -9,7 +9,7 @@ describe('HomeworkApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(HomeworkApi);
     backend = TestBed.inject(HttpTestingController);

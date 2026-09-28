@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { CreatedStudent, Student } from '../data-access/identity.models';
 import { StudentFormDialog } from './student-form-dialog';
+import { testProviders } from '@testing/setup';
 
 const STUDENT: Student = {
   id: 's-1',
@@ -26,7 +25,7 @@ describe('StudentFormDialog', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [StudentFormDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentFormDialog);

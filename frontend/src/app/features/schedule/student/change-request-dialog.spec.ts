@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
 import { ChangeKind, ChangeRequest } from '../data-access/schedule.models';
 import { ChangeRequestDialog } from './change-request-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('ChangeRequestDialog', () => {
   let fixture: ComponentFixture<ChangeRequestDialog>;
@@ -15,7 +14,7 @@ describe('ChangeRequestDialog', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ChangeRequestDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ChangeRequestDialog);

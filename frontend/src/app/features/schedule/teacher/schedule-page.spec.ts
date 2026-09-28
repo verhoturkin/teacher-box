@@ -1,13 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  TestRequest,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import {
@@ -23,6 +17,7 @@ import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonMove } from '../ui/schedule-calendar';
 import { LessonDialog } from './lesson-dialog';
 import { SchedulePage } from './schedule-page';
+import { testProviders } from '@testing/setup';
 
 describe('SchedulePage', () => {
   let fixture: ComponentFixture<SchedulePage>;
@@ -32,12 +27,7 @@ describe('SchedulePage', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SchedulePage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');

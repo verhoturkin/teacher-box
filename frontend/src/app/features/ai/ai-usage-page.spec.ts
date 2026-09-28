@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { aiStatus, usageReport } from '@testing/ai-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { AiStatus, UsageReport } from './data-access/ai.models';
 import { AiUsagePage } from './ai-usage-page';
+import { testProviders } from '@testing/setup';
 
 describe('AiUsagePage', () => {
   let fixture: ComponentFixture<AiUsagePage>;
@@ -14,7 +13,7 @@ describe('AiUsagePage', () => {
   async function render(status: AiStatus, report?: UsageReport): Promise<string> {
     TestBed.configureTestingModule({
       imports: [AiUsagePage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(AiUsagePage);

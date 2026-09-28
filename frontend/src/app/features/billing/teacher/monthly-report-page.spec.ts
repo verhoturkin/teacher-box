@@ -1,12 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { monthlyReport } from '@testing/billing-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { MonthlyReportPage } from './monthly-report-page';
+import { testProviders } from '@testing/setup';
 
 describe('MonthlyReportPage', () => {
   let fixture: ComponentFixture<MonthlyReportPage>;
@@ -16,12 +14,7 @@ describe('MonthlyReportPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [MonthlyReportPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(MonthlyReportPage);

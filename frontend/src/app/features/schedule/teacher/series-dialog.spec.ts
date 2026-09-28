@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText } from '@testing/dom';
 import { lessonSeries } from '@testing/schedule-fixtures';
 import { LessonSeries, SeriesPlanned } from '../data-access/schedule.models';
 import { SeriesDialog, fromTime, toTime } from './series-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('SeriesDialog', () => {
   let fixture: ComponentFixture<SeriesDialog>;
@@ -15,7 +14,7 @@ describe('SeriesDialog', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SeriesDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(SeriesDialog);

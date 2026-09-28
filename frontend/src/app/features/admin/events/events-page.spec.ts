@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { eventPublication, failedDelivery } from '@testing/admin-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { EventPublication, FailedDelivery } from '../data-access/admin.models';
 import { EventsPage } from './events-page';
+import { testProviders } from '@testing/setup';
 
 describe('EventsPage', () => {
   let fixture: ComponentFixture<EventsPage>;
@@ -16,12 +15,7 @@ describe('EventsPage', () => {
   async function render(events: EventPublication[], deliveries: FailedDelivery[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [EventsPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

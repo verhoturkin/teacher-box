@@ -1,14 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText } from '@testing/dom';
 import { billingSummary } from '@testing/billing-fixtures';
 import { homeworkSummary } from '@testing/homework-fixtures';
 import { notificationPage, teacherNotificationsSummary } from '@testing/notification-fixtures';
 import { scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { TeacherHome } from './teacher-home';
+import { testProviders } from '@testing/setup';
 
 describe('TeacherHome', () => {
   let fixture: ComponentFixture<TeacherHome>;
@@ -17,12 +15,7 @@ describe('TeacherHome', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TeacherHome],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TeacherHome);

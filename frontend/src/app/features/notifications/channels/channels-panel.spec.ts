@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { channel, linkCode } from '@testing/notification-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { ChannelState } from '../data-access/notifications.models';
 import { ChannelsPanel, LINK_POLL_INTERVAL_MS } from './channels-panel';
+import { testProviders } from '@testing/setup';
 
 describe('ChannelsPanel', () => {
   let fixture: ComponentFixture<ChannelsPanel>;
@@ -16,12 +15,7 @@ describe('ChannelsPanel', () => {
   async function render(channels: ChannelState[], teacher = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [ChannelsPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

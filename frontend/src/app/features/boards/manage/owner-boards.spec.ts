@@ -1,8 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { aBoard } from '@testing/boards-fixtures';
 import { OwnerBoards } from './owner-boards';
+import { testProviders } from '@testing/setup';
 
 describe('OwnerBoards', () => {
   let boards: OwnerBoards;
@@ -10,7 +10,7 @@ describe('OwnerBoards', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     boards = TestBed.runInInjectionContext(() => new OwnerBoards());

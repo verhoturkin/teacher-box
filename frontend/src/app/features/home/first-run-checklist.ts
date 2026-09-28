@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 
 /** Browser storage key: the teacher hid the first-run checklist. */
 export const CHECKLIST_DISMISSED_KEY = 'tb.first-run-checklist.dismissed';
@@ -20,22 +21,6 @@ interface Step {
   readonly hint: string;
   readonly link: string;
   readonly query?: Readonly<Record<string, string>>;
-}
-
-function readDismissed(): boolean {
-  try {
-    return localStorage.getItem(CHECKLIST_DISMISSED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function writeDismissed(): void {
-  try {
-    localStorage.setItem(CHECKLIST_DISMISSED_KEY, '1');
-  } catch {
-    // Storage is unavailable: the checklist shows up again next time.
-  }
 }
 
 /** Teacher's home: the first steps after installation, until they are done or hidden. */
@@ -117,7 +102,7 @@ function writeDismissed(): void {
 export class FirstRunChecklist {
   readonly progress = input.required<SetupProgress>();
 
-  private readonly dismissed = signal(readDismissed());
+  private readonly dismissed = signal(isHintHidden(CHECKLIST_DISMISSED_KEY));
 
   protected readonly steps = computed<Step[]>(() => {
     const progress = this.progress();
@@ -158,7 +143,7 @@ export class FirstRunChecklist {
   });
 
   dismiss(): void {
-    writeDismissed();
+    hideHint(CHECKLIST_DISMISSED_KEY);
     this.dismissed.set(true);
   }
 }

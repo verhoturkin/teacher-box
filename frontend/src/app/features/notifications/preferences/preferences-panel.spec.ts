@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { preferences } from '@testing/notification-fixtures';
 import { NotificationPreferences } from '../data-access/notifications.models';
 import { PreferencesPanel, QUIET_TIMES } from './preferences-panel';
+import { testProviders } from '@testing/setup';
 
 describe('QUIET_TIMES', () => {
   it('offers every half hour of the day', () => {
@@ -24,12 +23,7 @@ describe('PreferencesPanel', () => {
   async function render(saved: NotificationPreferences, teacher = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [PreferencesPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

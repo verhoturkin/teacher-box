@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { channelSetup } from '@testing/notification-fixtures';
 import { ChannelSetup } from '../data-access/notifications.models';
 import { BotsPanel } from './bots-panel';
+import { testProviders } from '@testing/setup';
 
 describe('BotsPanel', () => {
   let fixture: ComponentFixture<BotsPanel>;
@@ -17,12 +16,7 @@ describe('BotsPanel', () => {
   async function render(bots: ChannelSetup[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BotsPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

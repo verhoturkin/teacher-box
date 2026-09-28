@@ -1,13 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, readableText, requireElement, typeInto } from '@testing/dom';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { RESTART_POLL_MS, RestoreDialog } from './restore-dialog';
+import { testProviders } from '@testing/setup';
 
 const BACKUP: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
@@ -34,13 +33,7 @@ describe('RestoreDialog', () => {
   async function open(pollMs = 1_000_000): Promise<void> {
     TestBed.configureTestingModule({
       imports: [RestoreDialog],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        { provide: RESTART_POLL_MS, useValue: pollMs },
-      ],
+      providers: testProviders({ provide: RESTART_POLL_MS, useValue: pollMs }),
     });
     backend = TestBed.inject(HttpTestingController);
     TestBed.inject(AuthService).acceptSession(authResponse('ADMIN'));

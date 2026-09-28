@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { payment, studentBalance } from '@testing/billing-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { Payment } from '../data-access/billing.models';
 import { PaymentDialog } from './payment-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('PaymentDialog', () => {
   let fixture: ComponentFixture<PaymentDialog>;
@@ -14,7 +13,7 @@ describe('PaymentDialog', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [PaymentDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PaymentDialog);

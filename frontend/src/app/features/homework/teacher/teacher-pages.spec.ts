@@ -1,10 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { ToBoardDialog } from '@features/boards/parts';
 import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
@@ -23,6 +21,7 @@ import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { ReviewQueuePage } from './review-queue-page';
 import { TaskReviewPage } from './task-review-page';
+import { testProviders } from '@testing/setup';
 
 const STUDENTS = [
   { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
@@ -42,13 +41,7 @@ const STUDENTS = [
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
-    providers: [
-      provideHttpClient(),
-      provideHttpClientTesting(),
-      provideRouter([]),
-      providePrimeNG(),
-      MessageService,
-    ],
+    providers: testProviders(),
   });
   const saved: string[] = [];
   vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {

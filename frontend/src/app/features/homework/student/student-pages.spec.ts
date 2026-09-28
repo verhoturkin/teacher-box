@@ -1,25 +1,17 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { FileSaver } from '@shared/files/file-saver';
 import { myTask, taskDetails } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
 import { MyTaskPage } from './my-task-page';
+import { testProviders } from '@testing/setup';
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
-    providers: [
-      provideHttpClient(),
-      provideHttpClientTesting(),
-      provideRouter([]),
-      providePrimeNG(),
-      MessageService,
-    ],
+    providers: testProviders(),
   });
   const saved: string[] = [];
   vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {

@@ -1,13 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText } from '@testing/dom';
 import { aRoom } from '@testing/meetings-fixtures';
 import { MeetingRoom } from '../data-access/meetings.models';
 import { RoomDialog } from './room-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('RoomDialog', () => {
   let fixture: ComponentFixture<RoomDialog>;
@@ -18,12 +17,7 @@ describe('RoomDialog', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [RoomDialog],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     add = vi.spyOn(TestBed.inject(MessageService), 'add');

@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { BotAbilities } from '../data-access/notifications.models';
 import { BotAbilitiesPanel } from './bot-abilities-panel';
+import { testProviders } from '@testing/setup';
 
 function abilities(overrides: Partial<BotAbilities> = {}): BotAbilities {
   return {
@@ -22,7 +21,7 @@ describe('BotAbilitiesPanel', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [BotAbilitiesPanel],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BotAbilitiesPanel);

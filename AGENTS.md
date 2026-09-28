@@ -279,6 +279,9 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Компоненты — `TestBed` + Vitest, взаимодействие через DOM.
 - Сервисы — `HttpTestingController`.
 - Guards/interceptors — отдельные тесты.
+- Общая настройка — `testProviders(...)` из `@testing/setup` (HTTP с `HttpTestingController`, роутер,
+  PrimeNG, `MessageService`), фикстуры — `@testing/*-fixtures`, работа с DOM — `@testing/dom`.
+- Фронтенд проверяется `npm run lint`: ESLint, форматирование Prettier и knip (мёртвый код).
 
 Тест пишется вместе с кодом (или до него), а не «потом».
 

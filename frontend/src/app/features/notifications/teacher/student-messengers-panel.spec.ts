@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { channel, studentMessengers } from '@testing/notification-fixtures';
 import { StudentMessengers } from '../data-access/notifications.models';
 import { StudentMessengersPanel } from './student-messengers-panel';
+import { testProviders } from '@testing/setup';
 
 describe('StudentMessengersPanel', () => {
   let fixture: ComponentFixture<StudentMessengersPanel>;
@@ -25,12 +24,7 @@ describe('StudentMessengersPanel', () => {
   async function render(students: StudentMessengers[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StudentMessengersPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

@@ -1,9 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aBoard } from '@testing/boards-fixtures';
 import { hostElement } from '@testing/dom';
 import { OwnerBoardLinks } from './owner-board-links';
+import { testProviders } from '@testing/setup';
 
 describe('OwnerBoardLinks', () => {
   let fixture: ComponentFixture<OwnerBoardLinks>;
@@ -12,7 +12,7 @@ describe('OwnerBoardLinks', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [OwnerBoardLinks],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(OwnerBoardLinks);

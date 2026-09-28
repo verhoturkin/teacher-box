@@ -1,5 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
@@ -8,6 +7,7 @@ import { authResponse } from '@testing/auth';
 import { portalSettings } from '@testing/portal-fixtures';
 import { Portal, PortalSettings } from './portal';
 import { setupGuard } from './setup.guard';
+import { testProvidersWithRouter } from '@testing/setup';
 
 @Component({ selector: 'tb-empty', template: '', changeDetection: ChangeDetectionStrategy.OnPush })
 class Empty {}
@@ -18,9 +18,7 @@ describe('setupGuard', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
+      providers: testProvidersWithRouter(
         provideRouter([
           {
             path: 'teacher',
@@ -32,7 +30,7 @@ describe('setupGuard', () => {
             ],
           },
         ]),
-      ],
+      ),
     });
     backend = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);

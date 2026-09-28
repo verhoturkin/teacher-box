@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-settings';
 
 const TELEMOST_HOSTS = ['telemost.yandex.ru', 'telemost.360.yandex.ru'];
 /** Device setting: open Telemost links in the desktop application. */
@@ -37,19 +38,11 @@ export class MeetingPreferences {
 
   setOpenInApp(value: boolean): void {
     this.openInApp.set(value);
-    try {
-      localStorage.setItem(OPEN_IN_APP_KEY, value ? 'yes' : 'no');
-    } catch {
-      // storage unavailable (private mode): the setting lasts for this page only
-    }
+    writeDeviceSetting(OPEN_IN_APP_KEY, value ? 'yes' : 'no');
   }
 
   private static stored(): boolean {
-    try {
-      const value = localStorage.getItem(OPEN_IN_APP_KEY);
-      return value === null ? isWindows() : value === 'yes';
-    } catch {
-      return isWindows();
-    }
+    const value = readDeviceSetting(OPEN_IN_APP_KEY);
+    return value === null ? isWindows() : value === 'yes';
   }
 }

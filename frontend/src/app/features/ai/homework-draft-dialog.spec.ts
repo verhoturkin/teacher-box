@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText } from '@testing/dom';
 import { HomeworkDraft } from './data-access/ai.models';
 import { HomeworkDraftDialog } from './homework-draft-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('HomeworkDraftDialog', () => {
   let fixture: ComponentFixture<HomeworkDraftDialog>;
@@ -14,7 +13,7 @@ describe('HomeworkDraftDialog', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [HomeworkDraftDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(HomeworkDraftDialog);

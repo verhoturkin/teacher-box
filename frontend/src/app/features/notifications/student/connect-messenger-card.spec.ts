@@ -1,12 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { channel } from '@testing/notification-fixtures';
 import { ChannelState } from '../data-access/notifications.models';
 import { CONNECT_DISMISSED_KEY, ConnectMessengerCard } from './connect-messenger-card';
+import { testProviders } from '@testing/setup';
 
 describe('ConnectMessengerCard', () => {
   let fixture: ComponentFixture<ConnectMessengerCard>;
@@ -15,12 +13,7 @@ describe('ConnectMessengerCard', () => {
   function create(): void {
     TestBed.configureTestingModule({
       imports: [ConnectMessengerCard],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ConnectMessengerCard);

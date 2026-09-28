@@ -1,8 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
 import { MeetingsApi } from './meetings-api';
+import { testProviders } from '@testing/setup';
 
 describe('MeetingsApi', () => {
   let api: MeetingsApi;
@@ -10,7 +10,7 @@ describe('MeetingsApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(MeetingsApi);
     backend = TestBed.inject(HttpTestingController);

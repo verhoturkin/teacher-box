@@ -1,8 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { IdentityApi } from './identity-api';
+import { testProviders } from '@testing/setup';
 
 describe('IdentityApi', () => {
   let api: IdentityApi;
@@ -10,7 +10,7 @@ describe('IdentityApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(IdentityApi);
     backend = TestBed.inject(HttpTestingController);

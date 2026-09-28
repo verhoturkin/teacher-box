@@ -1,17 +1,16 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { ledger } from '@testing/billing-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { StudentLedger } from '../data-access/billing.models';
 import { MyBillingPage } from './my-billing-page';
+import { testProviders } from '@testing/setup';
 
 describe('MyBillingPage', () => {
   async function render(data: StudentLedger): Promise<string> {
     TestBed.configureTestingModule({
       imports: [MyBillingPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     const fixture = TestBed.createComponent(MyBillingPage);
     await fixture.whenStable();

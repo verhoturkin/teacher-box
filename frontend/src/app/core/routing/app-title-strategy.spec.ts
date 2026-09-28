@@ -3,10 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { DEFAULT_PORTAL_NAME, Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from './app-title-strategy';
+import { testProvidersWithRouter } from '@testing/setup';
 
 @Component({ selector: 'tb-empty', template: '', changeDetection: ChangeDetectionStrategy.OnPush })
 class Empty {}
@@ -14,15 +13,13 @@ class Empty {}
 describe('AppTitleStrategy', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
+      providers: testProvidersWithRouter(
         provideRouter([
           { path: 'titled', title: 'Оплаты', component: Empty },
           { path: 'untitled', component: Empty },
         ]),
         { provide: TitleStrategy, useClass: AppTitleStrategy },
-      ],
+      ),
     });
   });
 

@@ -1,8 +1,6 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { providePrimeNG } from 'primeng/config';
 import { ToBoardDialog } from '@features/boards/parts';
 import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails } from '@testing/homework-fixtures';
@@ -10,6 +8,7 @@ import { aGroup } from '@testing/identity-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { AssignmentDetails } from '../data-access/homework.models';
 import { AssignmentDialog } from './assignment-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('AssignmentDialog', () => {
   let fixture: ComponentFixture<AssignmentDialog>;
@@ -19,7 +18,7 @@ describe('AssignmentDialog', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [AssignmentDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(AssignmentDialog);

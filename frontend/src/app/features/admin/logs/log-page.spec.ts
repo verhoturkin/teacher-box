@@ -1,16 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  TestRequest,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { logEntry, logResult, loggerLevel } from '@testing/admin-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { LogResult } from '../data-access/admin.models';
 import { LogPage } from './log-page';
+import { testProviders } from '@testing/setup';
 
 describe('LogPage', () => {
   let fixture: ComponentFixture<LogPage>;
@@ -24,12 +18,7 @@ describe('LogPage', () => {
   async function render(result: LogResult, requestId?: string): Promise<TestRequest> {
     TestBed.configureTestingModule({
       imports: [LogPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LogPage);

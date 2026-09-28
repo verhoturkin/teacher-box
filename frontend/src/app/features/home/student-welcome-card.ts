@@ -3,25 +3,10 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Portal } from '@core/portal/portal';
+import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 
 /** Browser storage key: the student hid the welcome card. */
 export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
-
-function readDismissed(): boolean {
-  try {
-    return localStorage.getItem(WELCOME_DISMISSED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function writeDismissed(): void {
-  try {
-    localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
-  } catch {
-    // Storage is unavailable: the card shows up again next time.
-  }
-}
 
 /** Student's home: where things are, until the student hides it. */
 @Component({
@@ -74,10 +59,10 @@ function writeDismissed(): void {
 })
 export class StudentWelcomeCard {
   protected readonly portalName = inject(Portal).name;
-  protected readonly dismissed = signal(readDismissed());
+  protected readonly dismissed = signal(isHintHidden(WELCOME_DISMISSED_KEY));
 
   dismiss(): void {
-    writeDismissed();
+    hideHint(WELCOME_DISMISSED_KEY);
     this.dismissed.set(true);
   }
 }

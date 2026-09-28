@@ -1,9 +1,6 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { Role } from '@core/auth/auth.models';
 import { authResponse } from '@testing/auth';
@@ -16,6 +13,7 @@ import {
 } from '@testing/notification-fixtures';
 import { PAGE_SIZE } from './inbox/inbox-panel';
 import { NotificationsPage } from './notifications-page';
+import { testProviders } from '@testing/setup';
 
 describe('NotificationsPage', () => {
   let fixture: ComponentFixture<NotificationsPage>;
@@ -24,13 +22,7 @@ describe('NotificationsPage', () => {
   function render(role: Role, tab?: string): void {
     TestBed.configureTestingModule({
       imports: [NotificationsPage],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     TestBed.inject(AuthService).acceptSession(authResponse(role));
     backend = TestBed.inject(HttpTestingController);

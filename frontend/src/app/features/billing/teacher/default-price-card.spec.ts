@@ -1,10 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText } from '@testing/dom';
 import { DefaultPriceCard } from './default-price-card';
+import { testProviders } from '@testing/setup';
 
 describe('DefaultPriceCard', () => {
   let fixture: ComponentFixture<DefaultPriceCard>;
@@ -14,12 +12,7 @@ describe('DefaultPriceCard', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [DefaultPriceCard],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(DefaultPriceCard);

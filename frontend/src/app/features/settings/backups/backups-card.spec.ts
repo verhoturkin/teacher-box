@@ -1,15 +1,13 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { FileSaver } from '@shared/files/file-saver';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { BackupInfo } from '../data-access/settings.models';
 import { BackupsArea } from './backups-api';
 import { BackupsCard } from './backups-card';
 import { RESTART_POLL_MS } from './restore-dialog';
+import { testProviders } from '@testing/setup';
 
 const SCHEDULED: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
@@ -41,14 +39,7 @@ describe('BackupsCard', () => {
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [BackupsCard],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-        { provide: RESTART_POLL_MS, useValue: 1_000_000 },
-      ],
+      providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
     });
     backend = TestBed.inject(HttpTestingController);
     saved = [];

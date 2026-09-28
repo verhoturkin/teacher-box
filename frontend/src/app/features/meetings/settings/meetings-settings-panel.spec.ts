@@ -1,10 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
@@ -12,6 +9,7 @@ import { yandexStatus } from '@testing/meetings-fixtures';
 import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
 import { MeetingsSettingsPanel } from './meetings-settings-panel';
+import { testProviders } from '@testing/setup';
 
 describe('MeetingsSettingsPanel', () => {
   let fixture: ComponentFixture<MeetingsSettingsPanel>;
@@ -22,11 +20,7 @@ describe('MeetingsSettingsPanel', () => {
     navigation = { go: vi.fn(), origin: () => 'https://school.example.com' };
     TestBed.configureTestingModule({
       imports: [MeetingsSettingsPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
+      providers: testProviders(
         { provide: ExternalNavigation, useValue: navigation },
         {
           provide: ActivatedRoute,
@@ -36,7 +30,7 @@ describe('MeetingsSettingsPanel', () => {
             },
           },
         },
-      ],
+      ),
     });
     backend = TestBed.inject(HttpTestingController);
     TestBed.inject(Portal).set({ name: 'Teacher Box', address: 'https://school.example.com' });

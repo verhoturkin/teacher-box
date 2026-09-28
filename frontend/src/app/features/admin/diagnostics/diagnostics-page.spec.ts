@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { FileSaver } from '@shared/files/file-saver';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { ARCHIVE_NAME, DiagnosticsPage } from './diagnostics-page';
+import { testProviders } from '@testing/setup';
 
 describe('DiagnosticsPage', () => {
   let fixture: ComponentFixture<DiagnosticsPage>;
@@ -15,12 +14,7 @@ describe('DiagnosticsPage', () => {
     save = vi.fn();
     TestBed.configureTestingModule({
       imports: [DiagnosticsPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        { provide: FileSaver, useValue: { save } },
-      ],
+      providers: testProviders({ provide: FileSaver, useValue: { save } }),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(DiagnosticsPage);

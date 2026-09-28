@@ -1,14 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { Account } from '../data-access/identity.models';
 import { AccountPage } from './account-page';
+import { testProviders } from '@testing/setup';
 
 const ACCOUNT: Account = {
   id: '1',
@@ -28,13 +26,7 @@ describe('AccountPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [AccountPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);

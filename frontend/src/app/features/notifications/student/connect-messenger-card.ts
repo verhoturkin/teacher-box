@@ -12,25 +12,10 @@ import { Card } from 'primeng/card';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState } from '../data-access/notifications.models';
 import { CHANNEL_NAMES } from '../notification-labels';
+import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 
 /** Browser storage key: the student postponed connecting a messenger. */
 export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
-
-function readDismissed(): boolean {
-  try {
-    return localStorage.getItem(CONNECT_DISMISSED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function writeDismissed(): void {
-  try {
-    localStorage.setItem(CONNECT_DISMISSED_KEY, '1');
-  } catch {
-    // Storage is unavailable: the card just shows up again next time.
-  }
-}
 
 /** Student: invites to connect a messenger while none is connected. */
 @Component({
@@ -59,7 +44,7 @@ export class ConnectMessengerCard implements OnInit {
   private readonly api = inject(NotificationsApi);
 
   private readonly channels = signal<ChannelState[]>([]);
-  private readonly dismissed = signal(readDismissed());
+  private readonly dismissed = signal(isHintHidden(CONNECT_DISMISSED_KEY));
 
   protected readonly visible = computed(
     () =>
@@ -83,7 +68,7 @@ export class ConnectMessengerCard implements OnInit {
   }
 
   dismiss(): void {
-    writeDismissed();
+    hideHint(CONNECT_DISMISSED_KEY);
     this.dismissed.set(true);
   }
 }

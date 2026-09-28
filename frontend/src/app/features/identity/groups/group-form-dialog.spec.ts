@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { bodyText } from '@testing/dom';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('GroupFormDialog', () => {
   let fixture: ComponentFixture<GroupFormDialog>;
@@ -14,7 +13,7 @@ describe('GroupFormDialog', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [GroupFormDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupFormDialog);

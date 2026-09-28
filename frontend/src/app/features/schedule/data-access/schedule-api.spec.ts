@@ -1,9 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { ScheduleApi } from './schedule-api';
 import { SeriesRequest } from './schedule.models';
+import { testProviders } from '@testing/setup';
 
 describe('ScheduleApi', () => {
   let api: ScheduleApi;
@@ -25,7 +25,7 @@ describe('ScheduleApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(ScheduleApi);
     backend = TestBed.inject(HttpTestingController);

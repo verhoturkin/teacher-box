@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { authResponse } from '@testing/auth';
 import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { LoginPage } from './login-page';
+import { testProviders } from '@testing/setup';
 
 describe('LoginPage', () => {
   let fixture: ComponentFixture<LoginPage>;
@@ -15,12 +14,7 @@ describe('LoginPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);

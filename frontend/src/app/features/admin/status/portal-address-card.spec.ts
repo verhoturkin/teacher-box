@@ -1,12 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { Portal } from '@core/portal/portal';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { portalSettings } from '@testing/portal-fixtures';
 import { PortalAddressCard } from './portal-address-card';
+import { testProviders } from '@testing/setup';
 
 describe('PortalAddressCard', () => {
   let fixture: ComponentFixture<PortalAddressCard>;
@@ -15,12 +13,7 @@ describe('PortalAddressCard', () => {
   async function render(settings = portalSettings()): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [PortalAddressCard],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PortalAddressCard);

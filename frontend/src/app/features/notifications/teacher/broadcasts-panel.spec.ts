@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { broadcastItem } from '@testing/notification-fixtures';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastsPanel } from './broadcasts-panel';
+import { testProviders } from '@testing/setup';
 
 describe('BroadcastsPanel', () => {
   let fixture: ComponentFixture<BroadcastsPanel>;
@@ -15,12 +14,7 @@ describe('BroadcastsPanel', () => {
   async function render(history: BroadcastItem[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BroadcastsPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BroadcastsPanel);

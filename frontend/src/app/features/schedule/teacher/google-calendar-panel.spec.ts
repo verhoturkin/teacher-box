@@ -1,15 +1,14 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { GoogleCalendarPanel } from './google-calendar-panel';
+import { testProviders } from '@testing/setup';
 
 function googleStatus(overrides: Partial<GoogleCalendarStatus> = {}): GoogleCalendarStatus {
   return {
@@ -34,20 +33,14 @@ describe('GoogleCalendarPanel', () => {
   function setUp(result: string | null = null): void {
     TestBed.configureTestingModule({
       imports: [GoogleCalendarPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              queryParamMap: convertToParamMap(result === null ? {} : { google: result }),
-            },
+      providers: testProviders({
+        provide: ActivatedRoute,
+        useValue: {
+          snapshot: {
+            queryParamMap: convertToParamMap(result === null ? {} : { google: result }),
           },
         },
-      ],
+      }),
     });
     backend = TestBed.inject(HttpTestingController);
     navigation = TestBed.inject(ExternalNavigation);

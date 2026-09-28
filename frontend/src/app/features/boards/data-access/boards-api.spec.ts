@@ -1,8 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { aBoard, aMyBoard } from '@testing/boards-fixtures';
 import { BoardsApi } from './boards-api';
+import { testProviders } from '@testing/setup';
 
 describe('BoardsApi', () => {
   let api: BoardsApi;
@@ -10,7 +10,7 @@ describe('BoardsApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(BoardsApi);
     backend = TestBed.inject(HttpTestingController);

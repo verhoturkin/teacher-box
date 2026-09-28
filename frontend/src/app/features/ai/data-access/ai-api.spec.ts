@@ -1,10 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { aiStatus } from '@testing/ai-fixtures';
 import { AiApi } from './ai-api';
+import { testProviders } from '@testing/setup';
 
 describe('AiApi', () => {
   let api: AiApi;
@@ -12,7 +12,7 @@ describe('AiApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(AiApi);
     backend = TestBed.inject(HttpTestingController);

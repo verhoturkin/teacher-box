@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { aiStatus, aiUsage } from '@testing/admin-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { AiStatus, AiUsage } from '../data-access/admin.models';
 import { IntegrationsPage } from './integrations-page';
+import { testProviders } from '@testing/setup';
 
 describe('IntegrationsPage', () => {
   let fixture: ComponentFixture<IntegrationsPage>;
@@ -14,7 +13,7 @@ describe('IntegrationsPage', () => {
   async function render(status: AiStatus, usage: AiUsage): Promise<void> {
     TestBed.configureTestingModule({
       imports: [IntegrationsPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(IntegrationsPage);

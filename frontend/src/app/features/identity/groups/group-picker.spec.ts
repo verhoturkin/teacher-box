@@ -1,10 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { aGroup } from '@testing/identity-fixtures';
 import { hostElement } from '@testing/dom';
 import { GroupPicker } from './group-picker';
+import { testProviders } from '@testing/setup';
 
 describe('GroupPicker', () => {
   let fixture: ComponentFixture<GroupPicker>;
@@ -14,7 +13,7 @@ describe('GroupPicker', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [GroupPicker],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupPicker);

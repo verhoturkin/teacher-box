@@ -1,13 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { systemStatus } from '@testing/admin-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { SystemStatus } from '../data-access/admin.models';
 import { StatusPage } from './status-page';
+import { testProviders } from '@testing/setup';
 
 describe('StatusPage', () => {
   let fixture: ComponentFixture<StatusPage>;
@@ -16,12 +14,7 @@ describe('StatusPage', () => {
   async function render(status: SystemStatus): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StatusPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StatusPage);

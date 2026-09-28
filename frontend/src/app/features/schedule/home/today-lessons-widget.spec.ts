@@ -1,14 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { at, groupLesson, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { ScheduleSummary } from '../data-access/schedule.models';
 import { AttendanceDialog } from '../teacher/attendance-dialog';
 import { TodayLessonsWidget } from './today-lessons-widget';
+import { testProviders } from '@testing/setup';
 
 describe('TodayLessonsWidget', () => {
   let fixture: ComponentFixture<TodayLessonsWidget>;
@@ -18,12 +16,7 @@ describe('TodayLessonsWidget', () => {
   async function render(summary: ScheduleSummary): Promise<void> {
     TestBed.configureTestingModule({
       imports: [TodayLessonsWidget],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TodayLessonsWidget);

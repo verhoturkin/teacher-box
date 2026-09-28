@@ -1,12 +1,6 @@
-import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  TestRequest,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import {
   calendarFeed,
@@ -17,6 +11,7 @@ import {
 } from '@testing/schedule-fixtures';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { MySchedulePage } from './my-schedule-page';
+import { testProviders } from '@testing/setup';
 
 describe('MySchedulePage', () => {
   let fixture: ComponentFixture<MySchedulePage>;
@@ -33,12 +28,7 @@ describe('MySchedulePage', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [MySchedulePage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');

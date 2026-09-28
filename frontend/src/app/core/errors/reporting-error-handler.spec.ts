@@ -1,7 +1,8 @@
-import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpErrorResponse } from '@angular/common/http';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { REPORTS_PER_MINUTE, ReportingErrorHandler } from './reporting-error-handler';
+import { testProviders } from '@testing/setup';
 
 describe('ReportingErrorHandler', () => {
   let handler: ReportingErrorHandler;
@@ -9,7 +10,7 @@ describe('ReportingErrorHandler', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), ReportingErrorHandler],
+      providers: testProviders(ReportingErrorHandler),
     });
     handler = TestBed.inject(ReportingErrorHandler);
     backend = TestBed.inject(HttpTestingController);

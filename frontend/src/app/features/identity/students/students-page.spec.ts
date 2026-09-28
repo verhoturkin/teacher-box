@@ -1,10 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router, provideRouter } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
@@ -13,6 +11,7 @@ import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
 import { aBoard } from '@testing/boards-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { StudentsPage } from './students-page';
+import { testProviders } from '@testing/setup';
 
 function student(overrides: Partial<Student>): Student {
   return {
@@ -53,13 +52,7 @@ describe('StudentsPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [StudentsPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentsPage);

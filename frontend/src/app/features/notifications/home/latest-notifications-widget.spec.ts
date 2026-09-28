@@ -1,13 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { notification, notificationPage } from '@testing/notification-fixtures';
 import { NotificationItem } from '../data-access/notifications.models';
 import { LATEST_COUNT, LatestNotificationsWidget } from './latest-notifications-widget';
+import { testProviders } from '@testing/setup';
 
 describe('LatestNotificationsWidget', () => {
   let fixture: ComponentFixture<LatestNotificationsWidget>;
@@ -16,12 +15,7 @@ describe('LatestNotificationsWidget', () => {
   async function render(items: NotificationItem[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [LatestNotificationsWidget],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LatestNotificationsWidget);

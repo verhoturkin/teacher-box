@@ -1,9 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
+import { ConfirmationService } from 'primeng/api';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
@@ -13,6 +11,7 @@ import { RoomDialog } from '@features/meetings/parts';
 import { aBoard } from '@testing/boards-fixtures';
 import { GroupFormDialog } from './group-form-dialog';
 import { GroupsPanel } from './groups-panel';
+import { testProviders } from '@testing/setup';
 
 const CURRENT = aGroup({ id: 'g1', name: 'ОГЭ 9 класс' });
 const ARCHIVED = aGroup({
@@ -31,12 +30,7 @@ describe('GroupsPanel', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [GroupsPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupsPanel);

@@ -1,8 +1,8 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { AdminApi } from './admin-api';
+import { testProviders } from '@testing/setup';
 
 describe('AdminApi', () => {
   let api: AdminApi;
@@ -10,7 +10,7 @@ describe('AdminApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(AdminApi);
     backend = TestBed.inject(HttpTestingController);

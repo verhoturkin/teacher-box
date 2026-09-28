@@ -1,15 +1,13 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { aiStatus } from '@testing/ai-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { yandexStatus } from '@testing/meetings-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
+import { testProviders } from '@testing/setup';
 
 const BACKUP: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
@@ -57,13 +55,7 @@ describe('SettingsPage', () => {
   ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');

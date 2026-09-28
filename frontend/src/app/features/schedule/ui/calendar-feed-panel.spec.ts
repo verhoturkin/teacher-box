@@ -1,12 +1,11 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { calendarFeed } from '@testing/schedule-fixtures';
 import { CalendarFeedPanel } from './calendar-feed-panel';
+import { testProviders } from '@testing/setup';
 
 describe('CalendarFeedPanel', () => {
   let fixture: ComponentFixture<CalendarFeedPanel>;
@@ -15,12 +14,7 @@ describe('CalendarFeedPanel', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [CalendarFeedPanel],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');

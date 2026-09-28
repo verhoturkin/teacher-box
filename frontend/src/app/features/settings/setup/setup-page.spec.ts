@@ -1,9 +1,6 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { Portal } from '@core/portal/portal';
 import { authResponse } from '@testing/auth';
@@ -12,6 +9,7 @@ import { buttonByText, hostElement, readableText, requireElement, typeInto } fro
 import { portalSettings } from '@testing/portal-fixtures';
 import { scheduleSettings } from '@testing/schedule-fixtures';
 import { SetupPage } from './setup-page';
+import { testProviders } from '@testing/setup';
 
 describe('SetupPage', () => {
   let fixture: ComponentFixture<SetupPage>;
@@ -21,13 +19,7 @@ describe('SetupPage', () => {
   async function render(passwordChangeRequired = false, timeZone?: string): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [SetupPage],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        providePrimeNG(),
-        MessageService,
-      ],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     const response = authResponse('TEACHER');

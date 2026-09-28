@@ -1,16 +1,14 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { Router, TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { AuthService } from '@core/auth/auth.service';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
 import { portalSettings } from '@testing/portal-fixtures';
+import { testProvidersWithRouter } from '@testing/setup';
 
 // The first navigation loads lazy chunks cold, which can be slow under a parallel coverage run.
 describe('app routes', { timeout: 20_000 }, () => {
@@ -19,14 +17,10 @@ describe('app routes', { timeout: 20_000 }, () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [
-        provideRouter(routes, withComponentInputBinding()),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-        MessageService,
-        { provide: TitleStrategy, useClass: AppTitleStrategy },
-      ],
+      providers: testProvidersWithRouter(provideRouter(routes, withComponentInputBinding()), {
+        provide: TitleStrategy,
+        useClass: AppTitleStrategy,
+      }),
     });
     auth = TestBed.inject(AuthService);
     harness = await RouterTestingHarness.create();

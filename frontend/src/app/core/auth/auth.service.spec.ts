@@ -1,9 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { authResponse } from '@testing/auth';
 import { AuthService } from './auth.service';
+import { testProviders } from '@testing/setup';
 
 describe('AuthService', () => {
   let auth: AuthService;
@@ -12,7 +12,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: testProviders(),
     });
     auth = TestBed.inject(AuthService);
     backend = TestBed.inject(HttpTestingController);

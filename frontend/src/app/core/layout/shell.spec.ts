@@ -1,13 +1,12 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { providePrimeNG } from 'primeng/config';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { Portal } from '@core/portal/portal';
 import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
 import { Shell } from './shell';
+import { testProviders } from '@testing/setup';
 
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
@@ -15,12 +14,7 @@ describe('Shell', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        providePrimeNG(),
-      ],
+      providers: testProviders(),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

@@ -1,12 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { buttonByText, readableText, requireElement, typeInto } from '@testing/dom';
 import { channelSetup, linkCode } from '@testing/notification-fixtures';
 import { LINK_POLL_INTERVAL_MS } from '../channels/channels-panel';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { BotWizardDialog } from './bot-wizard-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('BotWizardDialog', () => {
   let fixture: ComponentFixture<BotWizardDialog>;
@@ -19,7 +18,7 @@ describe('BotWizardDialog', () => {
   ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BotWizardDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BotWizardDialog);

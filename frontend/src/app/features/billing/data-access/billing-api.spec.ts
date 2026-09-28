@@ -1,7 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { BillingApi } from './billing-api';
+import { testProviders } from '@testing/setup';
 
 describe('BillingApi', () => {
   let api: BillingApi;
@@ -9,7 +9,7 @@ describe('BillingApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: testProviders(),
     });
     api = TestBed.inject(BillingApi);
     backend = TestBed.inject(HttpTestingController);

@@ -1,11 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText } from '@testing/dom';
 import { scheduledLesson } from '@testing/schedule-fixtures';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonDialog } from './lesson-dialog';
+import { testProviders } from '@testing/setup';
 
 describe('LessonDialog', () => {
   let fixture: ComponentFixture<LessonDialog>;
@@ -15,7 +14,7 @@ describe('LessonDialog', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [LessonDialog],
-      providers: [provideHttpClient(), provideHttpClientTesting(), providePrimeNG()],
+      providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LessonDialog);
