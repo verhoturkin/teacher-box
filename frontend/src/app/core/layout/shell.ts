@@ -94,7 +94,13 @@ const NAV_ITEMS = 5;
         }
       </nav>
       <!-- Outside the navigation: in its grid the menu would take a column of its own. -->
-      <p-menu #moreMenu [model]="moreItems()" [popup]="true" appendTo="body" />
+      <p-menu
+        #moreMenu
+        [model]="moreItems()"
+        [popup]="true"
+        appendTo="body"
+        styleClass="tb-more-menu"
+      />
     }
   `,
   styleUrl: './shell.scss',

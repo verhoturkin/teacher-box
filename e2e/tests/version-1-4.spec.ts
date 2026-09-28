@@ -100,6 +100,7 @@ test.describe('on a phone', () => {
     await nav.getByRole('button', { name: 'Ещё разделы' }).click();
     await expect(page.getByRole('menuitem', { name: 'Уведомления' })).toBeVisible();
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toBeHidden();
     await expectNoSideScroll(page);
 
     await page.getByRole('link', { name: 'Ученик', exact: true }).click();

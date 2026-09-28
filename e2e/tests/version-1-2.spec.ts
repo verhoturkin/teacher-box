@@ -336,7 +336,8 @@ test('the student asks to move a lesson in Telegram and the teacher accepts it w
     request,
     STUDENT_CHAT,
     'комментарий',
-    await say(request, STUDENT_CHAT, '16:30'),
+    // Early morning: the other scenarios keep the teacher busy in the afternoon and evening.
+    await say(request, STUDENT_CHAT, '08:30'),
   );
   const confirm = await waitFor(
     request,
@@ -344,7 +345,7 @@ test('the student asks to move a lesson in Telegram and the teacher accepts it w
     'Попросить учителя перенести занятие',
     await press(request, STUDENT_CHAT, button(comment, 'Без комментария')),
   );
-  expect(confirm.text).toContain(`${dayMonth(4)}, 16:30`);
+  expect(confirm.text).toContain(`${dayMonth(4)}, 08:30`);
   await waitFor(
     request,
     STUDENT_CHAT,
@@ -373,7 +374,7 @@ test('the student asks to move a lesson in Telegram and the teacher accepts it w
     '/api/me/schedule/requests',
   );
   expect(requests[0]?.status).toBe('APPROVED');
-  expect(requests[0]?.proposedStartsAt).toBe(moscow(4, 16).replace(':00:00.000Z', ':30:00Z'));
+  expect(requests[0]?.proposedStartsAt).toBe(moscow(4, 8).replace(':00:00.000Z', ':30:00Z'));
 });
 
 test('the help opens from a section', async ({ page }) => {
