@@ -516,6 +516,16 @@ a.p-button:hover {
       text-align: left;
     }
 
+    /* long text: the label above, the text from the left */
+    .p-datatable-tbody > tr > td.tb-cell-wide {
+      text-align: left;
+
+      &::before {
+        display: block;
+        float: none;
+      }
+    }
+
     .p-datatable-tbody > tr > td:first-child {
       padding-bottom: var(--tb-space-2);
       font-weight: 600;
@@ -603,6 +613,39 @@ a.p-button:hover {
     .p-multiselect,
     .p-autocomplete {
       width: 100%;
+    }
+  }
+}
+
+/* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures two in a row */
+@media (max-width: 768px) {
+  .tb-page-header {
+    gap: var(--tb-space-3);
+
+    > .tb-actions {
+      width: 100%;
+
+      > p-button,
+      > a.p-button {
+        flex: 1 1 auto;
+      }
+
+      p-button .p-button {
+        width: 100%;
+      }
+    }
+  }
+
+  .tb-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--tb-space-2);
+
+    .p-card-body {
+      padding: var(--tb-space-3);
+    }
+
+    .tb-stat__value {
+      font-size: 1.25rem;
     }
   }
 }

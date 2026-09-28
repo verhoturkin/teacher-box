@@ -125,7 +125,7 @@ export const LOG_LIMIT = 200;
                   <td data-label="Раздел" class="tb-log-logger" [title]="entry.logger">
                     {{ short(entry.logger) }}
                   </td>
-                  <td data-label="Сообщение" class="tb-log-message">
+                  <td data-label="Сообщение" class="tb-log-message tb-cell-wide">
                     <div>{{ entry.message }}</div>
                     @if (entry.requestId !== null) {
                       <button type="button" class="tb-log-code" (click)="findRequest(entry)">

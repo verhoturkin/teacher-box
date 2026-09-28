@@ -131,7 +131,9 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
                 <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
                 <td data-label="Кому">{{ row.recipientName ?? 'Вы' }}</td>
                 <td data-label="Куда">{{ messengerName(row) }}</td>
-                <td data-label="Ошибка" class="tb-error-cell">{{ row.error ?? '—' }}</td>
+                <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
+                  {{ row.error ?? '—' }}
+                </td>
               </tr>
             </ng-template>
           </p-table>

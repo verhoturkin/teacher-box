@@ -93,7 +93,9 @@ import { shortLogger } from '../admin-labels';
                 <td data-label="Когда">{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
                 <td data-label="Мессенджер">{{ delivery.channel }}</td>
                 <td data-label="Получатель" class="tb-mono">{{ delivery.recipientId }}</td>
-                <td data-label="Ошибка" class="tb-error-cell">{{ delivery.error ?? '—' }}</td>
+                <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
+                  {{ delivery.error ?? '—' }}
+                </td>
                 <td class="tb-row-actions">
                   <p-button
                     label="Повторить"
