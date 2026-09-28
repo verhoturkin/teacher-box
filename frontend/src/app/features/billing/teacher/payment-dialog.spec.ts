@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { payment, studentBalance } from '@testing/billing-fixtures';
-import { bodyText, buttonByText } from '@testing/dom';
+import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { Payment } from '../data-access/billing.models';
 import { PaymentDialog } from './payment-dialog';
 import { testProviders } from '@testing/setup';
@@ -56,6 +56,30 @@ describe('PaymentDialog', () => {
 
     expect(saved).toHaveLength(1);
     expect(dialog.visible()).toBe(false);
+  });
+
+  it('keeps the student chosen in the list when opened without one', async () => {
+    fixture.componentRef.setInput('visible', false);
+    fixture.componentRef.setInput('students', [
+      studentBalance(),
+      studentBalance({ studentId: 's-2', displayName: 'Анна Смирнова' }),
+    ]);
+    fixture.componentRef.setInput('studentId', null);
+    fixture.componentRef.setInput('visible', true);
+    await fixture.whenStable();
+
+    requireElement(document.body, 'p-select', HTMLElement).click();
+    await fixture.whenStable();
+    const option = Array.from(document.body.querySelectorAll('li[role="option"]')).find((item) =>
+      item.textContent.includes('Анна Смирнова'),
+    );
+    if (!(option instanceof HTMLElement)) {
+      throw new Error('Option "Анна Смирнова" not found');
+    }
+    option.click();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.form.controls.studentId.value).toBe('s-2');
   });
 
   it('requires an amount', () => {
