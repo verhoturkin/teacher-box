@@ -12,7 +12,7 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
   imports: [RouterLink, Card, JoinLessonButton, OwnerBoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Следующее занятие" styleClass="tb-upcoming">
+    <p-card header="Следующее занятие" styleClass="tb-upcoming tb-hero">
       @let next = lesson();
       <div class="tb-upcoming__body">
         <div class="tb-upcoming__info">
@@ -48,8 +48,7 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
     }
 
     .tb-upcoming__time {
-      font-size: 1.25rem;
-      font-weight: 600;
+      font: var(--tb-type-headline-s);
     }
 
     .tb-actions {

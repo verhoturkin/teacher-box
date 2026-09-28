@@ -502,6 +502,22 @@ a.p-menu-item-link:hover {
   }
 }
 
+/* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
+.p-card.tb-hero {
+  background: var(--p-md-primary-container);
+  color: var(--p-md-on-primary-container);
+
+  .tb-muted,
+  .tb-hint {
+    color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
+  }
+
+  a:not(.p-button) {
+    color: var(--p-md-on-primary-container);
+    text-decoration: underline;
+  }
+}
+
 /* Home pages: widgets of the modules in two columns */
 .tb-home {
   display: grid;

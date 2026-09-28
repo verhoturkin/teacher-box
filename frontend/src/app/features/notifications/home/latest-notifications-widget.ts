@@ -62,10 +62,10 @@ export const LATEST_COUNT = 5;
         align-items: baseline;
         gap: var(--tb-space-2);
         padding: var(--tb-space-2) 0;
-        border-bottom: 1px solid var(--p-content-border-color);
+        border-bottom: 1px solid var(--p-md-outline-variant);
 
         > i {
-          color: var(--p-text-muted-color);
+          color: var(--p-md-on-surface-variant);
         }
 
         &.tb-latest--unread {
@@ -74,7 +74,7 @@ export const LATEST_COUNT = 5;
           }
 
           > i {
-            color: var(--p-primary-color);
+            color: var(--p-md-primary);
           }
         }
       }

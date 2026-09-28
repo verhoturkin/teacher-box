@@ -19,7 +19,7 @@ const ACTIONS = [
       @for (action of actions; track action.create) {
         <a
           pButton
-          [outlined]="true"
+          severity="secondary"
           [routerLink]="action.link"
           [queryParams]="{ create: action.create }"
         >

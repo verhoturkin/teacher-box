@@ -27,7 +27,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
   imports: [RouterLink, Button, Card, ChangeRequestDialog, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Ближайшее занятие">
+    <p-card header="Ближайшее занятие" styleClass="tb-hero">
       @if (summary().next; as lesson) {
         <div class="tb-next">
           <span class="tb-next__time">{{ time(lesson) }}</span>
@@ -87,8 +87,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
     }
 
     .tb-next__time {
-      font-size: 1.25rem;
-      font-weight: 600;
+      font: var(--tb-type-headline-s);
     }
   `,
 })
