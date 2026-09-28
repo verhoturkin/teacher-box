@@ -16,7 +16,6 @@ import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.GroupPriceService;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatInput;
@@ -82,13 +81,9 @@ class TeacherBillingChatIntegrationTests {
         assertThat(ask(payment.next(teacher(), amount.state(), new ChatInput.Choice("amount:-5"))).reply().text())
                 .startsWith("Не понял сумму.");
 
-        ChatStep.Ask method = ask(payment.next(teacher(), amount.state(), new ChatInput.Choice("amount:600000")));
-        assertThat(labels(method)).containsExactly("Перевод", "Карта", "Наличные", "Другое");
-        assertThat(labels(payment.next(teacher(), method.state(), new ChatInput.Choice("method:GOLD"))))
-                .contains("Перевод");
-        ChatStep.Ask confirm = ask(payment.next(teacher(), method.state(), new ChatInput.Choice("method:TRANSFER")));
+        ChatStep.Ask confirm = ask(payment.next(teacher(), amount.state(), new ChatInput.Choice("amount:600000")));
         assertThat(confirm.reply().text())
-                .isEqualTo("Записать оплату: Мария Оплата, 6 000 ₽, перевод, " + ChatText.date(today()) + "?");
+                .isEqualTo("Записать оплату: Мария Оплата, 6 000 ₽, " + ChatText.date(today()) + "?");
         assertThat(done(payment.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.NO))).reply().text())
                 .isEqualTo("Хорошо, не записываю.");
 
@@ -97,7 +92,6 @@ class TeacherBillingChatIntegrationTests {
         PaymentView saved = queries.ledger(maria).payments().getFirst();
         assertThat(recorded.audit()).isEqualTo("payment " + saved.id());
         assertThat(saved.amount()).isEqualTo(600_000);
-        assertThat(saved.method()).isEqualTo(PaymentMethod.TRANSFER);
         assertThat(saved.paidOn()).isEqualTo(today());
 
         ChatStep.Ask typed = ask(payment.next(teacher(), amount.state(), new ChatInput.Text("1 500,50")));

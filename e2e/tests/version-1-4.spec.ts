@@ -90,10 +90,17 @@ test.describe('on a phone', () => {
   }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
     const nav = page.locator('nav.tb-bottom-nav');
-    await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Ученики', 'Задания']);
+    await expect(nav.getByRole('link')).toHaveText([
+      'Главная',
+      'Расписание',
+      'Ученики',
+      'Задания',
+      'Оплаты',
+    ]);
     await nav.getByRole('button', { name: 'Ещё разделы' }).click();
-    await expect(page.getByRole('menuitem', { name: 'Оплаты' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Уведомления' })).toBeVisible();
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toBeHidden();
     await expectNoSideScroll(page);
 
     await page.getByRole('link', { name: 'Ученик', exact: true }).click();

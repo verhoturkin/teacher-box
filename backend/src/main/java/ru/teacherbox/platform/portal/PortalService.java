@@ -29,7 +29,7 @@ public class PortalService implements Portal {
      * @param address                the address links are built from
      * @param addressFromEnvironment the address comes from {@code TEACHERBOX_PUBLIC_URL} and cannot be changed
      * @param setupCompleted         the teacher finished or skipped the first setup
-     * @param accent                 the PrimeNG palette of the portal, e.g. {@code indigo}
+     * @param accent                 the PrimeNG palette of the portal, e.g. {@code indigo}, or the own color {@code #rrggbb}
      * @param logo                   address of the logo (changes with every new logo); {@code null}: none
      */
     public record View(String name, @Nullable String address, boolean addressFromEnvironment,
@@ -142,7 +142,7 @@ public class PortalService implements Portal {
         PortalSettings.Logo logo = settings.logo();
         return new View(settings.name() == null ? DEFAULT_NAME : settings.name(),
                 fromEnvironment != null ? fromEnvironment : settings.address(), fromEnvironment != null,
-                settings.setupCompletedAt() != null, accent.palette(),
+                settings.setupCompletedAt() != null, accent.value(),
                 logo == null ? null : LOGO_PATH + "?v=" + HexFormat.of().toHexDigits(logo.key().hashCode()));
     }
 

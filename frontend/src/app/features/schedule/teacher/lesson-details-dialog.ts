@@ -13,10 +13,13 @@ import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
+import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
 import { OwnerBoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
+import { describeError } from '@core/http/error-messages';
+import { problemCode } from '@core/http/problem-detail';
 import { Observable } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduledLesson } from '../data-access/schedule.models';
@@ -32,8 +35,9 @@ import { AttendanceDialog } from './attendance-dialog';
 
 /**
  * A lesson with the teacher's actions: change it, mark the outcome (the attendance of a group) after
- * it has started, withdraw the outcome, or cancel it (a lesson with one student also on the student's
- * behalf, optionally charged as a missed lesson).
+ * it has started, withdraw the outcome, cancel it (a lesson with one student also on the student's
+ * behalf, optionally charged as a missed lesson), restore a cancelled one or delete one that was not
+ * held.
  */
 @Component({
   selector: 'tb-lesson-details-dialog',
@@ -42,6 +46,7 @@ import { AttendanceDialog } from './attendance-dialog';
     Button,
     Checkbox,
     Dialog,
+    Message,
     Tag,
     Textarea,
     AttendanceDialog,
@@ -115,6 +120,30 @@ import { AttendanceDialog } from './attendance-dialog';
           }
         </div>
 
+        @if (deleting()) {
+          <p-message severity="warn" styleClass="tb-lesson-details__cancel">
+            Занятие исчезнет из расписания, календарей и отчётов.
+            @if (lesson.status === 'SCHEDULED') {
+              Ученику придёт уведомление, что занятие отменено.
+            }
+          </p-message>
+        }
+        @if (overlap()) {
+          <p-message severity="warn" styleClass="tb-lesson-details__cancel">
+            В это время уже есть другое занятие.
+            <p-button
+              label="Всё равно восстановить"
+              [link]="true"
+              size="small"
+              (onClick)="restore(true)"
+            />
+          </p-message>
+        }
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-lesson-details__cancel">{{
+            message
+          }}</p-message>
+        }
         @if (cancelling()) {
           <div class="tb-form tb-lesson-details__cancel">
             <label for="lesson-cancel-reason">Причина</label>
@@ -146,7 +175,20 @@ import { AttendanceDialog } from './attendance-dialog';
       }
       <ng-template #footer>
         @if (lesson(); as lesson) {
-          @if (cancelling()) {
+          @if (deleting()) {
+            <p-button
+              label="Назад"
+              severity="secondary"
+              [text]="true"
+              (onClick)="deleting.set(false)"
+            />
+            <p-button
+              label="Удалить занятие"
+              severity="danger"
+              [loading]="pending()"
+              (onClick)="deleteLesson()"
+            />
+          } @else if (cancelling()) {
             <p-button
               label="Назад"
               severity="secondary"
@@ -160,6 +202,23 @@ import { AttendanceDialog } from './attendance-dialog';
               (onClick)="cancel()"
             />
           } @else {
+            @if (deletable()) {
+              <p-button
+                label="Удалить"
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                (onClick)="deleting.set(true)"
+              />
+            }
+            @if (lesson.status === 'CANCELLED') {
+              <p-button
+                label="Восстановить"
+                icon="pi pi-replay"
+                [loading]="pending()"
+                (onClick)="restore()"
+              />
+            }
             @if (lesson.status === 'SCHEDULED') {
               <p-button
                 label="Отменить"
@@ -268,6 +327,8 @@ export class LessonDetailsDialog {
   /** Current time, for deciding whether the outcome can be marked. */
   readonly now = input<Date>(new Date());
   readonly changed = output<ScheduledLesson>();
+  /** The lesson was deleted. */
+  readonly deleted = output<string>();
   readonly edit = output<ScheduledLesson>();
 
   protected readonly kind = requestKindLabel;
@@ -276,6 +337,18 @@ export class LessonDetailsDialog {
   protected readonly attendanceVisible = signal(false);
   protected readonly pending = signal(false);
   protected readonly cancelling = signal(false);
+  protected readonly deleting = signal(false);
+  protected readonly overlap = signal(false);
+  protected readonly error = signal<string | null>(null);
+  /** Not held and nobody charged: planned, or cancelled without a charge (that one is «missed»). */
+  protected readonly deletable = computed(() => {
+    const lesson = this.lesson();
+    return (
+      lesson !== null &&
+      (lesson.status === 'SCHEDULED' || lesson.status === 'CANCELLED') &&
+      lesson.participants.every((participant) => participant.attendance !== 'MISSED')
+    );
+  });
   protected readonly reason = signal('');
   protected readonly byStudent = signal(false);
   protected readonly charge = signal(false);
@@ -295,6 +368,9 @@ export class LessonDetailsDialog {
     effect(() => {
       if (this.visible()) {
         this.cancelling.set(false);
+        this.deleting.set(false);
+        this.overlap.set(false);
+        this.error.set(null);
         this.reason.set('');
         this.byStudent.set(false);
         this.charge.set(false);
@@ -336,6 +412,49 @@ export class LessonDetailsDialog {
         charge: this.byStudent() && this.charge(),
       }),
     );
+  }
+
+  deleteLesson(): void {
+    const lesson = this.lesson();
+    if (lesson === null || this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.api.deleteLesson(lesson.id).subscribe({
+      next: () => {
+        this.pending.set(false);
+        this.visible.set(false);
+        this.deleted.emit(lesson.id);
+      },
+      error: () => {
+        this.pending.set(false);
+      },
+    });
+  }
+
+  restore(allowOverlap = false): void {
+    const lesson = this.lesson();
+    if (lesson === null || this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.overlap.set(false);
+    this.error.set(null);
+    this.api.restore(lesson.id, allowOverlap).subscribe({
+      next: (restored) => {
+        this.pending.set(false);
+        this.visible.set(false);
+        this.changed.emit(restored);
+      },
+      error: (error: unknown) => {
+        this.pending.set(false);
+        if (problemCode(error) === 'schedule.overlap') {
+          this.overlap.set(true);
+        } else {
+          this.error.set(describeError(error, 'Не удалось восстановить занятие'));
+        }
+      },
+    });
   }
 
   private run(action: (lesson: ScheduledLesson) => Observable<ScheduledLesson>): void {

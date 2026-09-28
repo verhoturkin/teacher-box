@@ -44,7 +44,6 @@ describe('BillingApi', () => {
       studentId: 's-1',
       amount: 100,
       paidOn: '2026-09-01',
-      method: 'CASH' as const,
       comment: null,
     };
     api.recordLesson(lessonRequest).subscribe();

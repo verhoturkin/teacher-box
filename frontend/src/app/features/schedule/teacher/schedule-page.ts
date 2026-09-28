@@ -245,6 +245,7 @@ const CLICK_SELECTION_MINUTES = 30;
       [(visible)]="detailsVisible"
       [lesson]="selected()"
       (changed)="reload()"
+      (deleted)="reload()"
       (edit)="editLesson($event)"
     />
     <tb-series-dialog

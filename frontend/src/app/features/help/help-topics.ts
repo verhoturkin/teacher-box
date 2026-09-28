@@ -30,7 +30,7 @@ export const STUDENT_TOPICS = [
   'bot',
   'appearance',
 ] as const;
-export const ADMIN_TOPICS = ['diagnostics', 'backups'] as const;
+export const ADMIN_TOPICS = ['diagnostics', 'backups', 'settings'] as const;
 
 export type TeacherTopic = (typeof TEACHER_TOPICS)[number];
 export type StudentTopic = (typeof STUDENT_TOPICS)[number];

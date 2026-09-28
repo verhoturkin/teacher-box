@@ -75,7 +75,8 @@ describe('LedgerTable', () => {
     expect(text[0]).toContain('04.09.2026');
     expect(text[0]).toContain('Отменено');
     expect(text[0]).toContain('(болел)');
-    expect(text[1]).toContain('Оплата: Перевод');
+    expect(text[1]).toContain('Оплата');
+    expect(text[1]).not.toContain('Перевод');
     expect(text[1]).toContain('Аннулирована');
     expect(text[1]).toContain('+5 000 ₽');
     expect(text[2]).toContain('Пропуск (оплачивается)');

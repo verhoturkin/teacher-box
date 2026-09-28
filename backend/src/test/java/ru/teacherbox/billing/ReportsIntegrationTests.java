@@ -14,7 +14,6 @@ import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingService.RecordLesson;
 import ru.teacherbox.billing.application.BillingService.RecordPayment;
 import ru.teacherbox.billing.domain.LessonStatus;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.testing.FakeUserDirectory;
 
@@ -135,7 +134,7 @@ class ReportsIntegrationTests {
     }
 
     private UUID payment(UUID student, String date, long amount) {
-        return billing.recordPayment(new RecordPayment(student, amount, LocalDate.parse(date), PaymentMethod.CARD,
+        return billing.recordPayment(new RecordPayment(student, amount, LocalDate.parse(date),
                 null)).id();
     }
 

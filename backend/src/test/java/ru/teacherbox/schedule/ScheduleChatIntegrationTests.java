@@ -11,8 +11,9 @@ import static ru.teacherbox.testing.ChatSteps.value;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -93,6 +94,11 @@ class ScheduleChatIntegrationTests {
     }
 
     @Test
+    void everyActionHasAnIconInTheMenu() {
+        assertThat(actions).isNotEmpty().allSatisfy(action -> assertThat(action.icon()).as(action.id()).isNotEmpty());
+    }
+
+    @Test
     void asksTheTeacherToMoveALesson() {
         UUID boris = directory.addStudent("Борис");
         ChatUser user = new ChatUser(boris, Role.STUDENT);
@@ -112,19 +118,22 @@ class ScheduleChatIntegrationTests {
         assertThat(labels(day)).hasSize(ChatKit.MAX_BUTTONS - 2);
         assertThat(ask(move.next(user, day.state(), new ChatInput.Text("когда-нибудь"))).reply().text())
                 .startsWith("Не понял дату.");
-        LocalDate newDay = LocalDate.ofInstant(clock.instant(), MOSCOW).plusDays(3);
+        // Half an hour later overlaps only the lesson itself, so the teacher is free.
+        LocalDateTime newTime = LocalDateTime.ofInstant(startsAt.plus(Duration.ofMinutes(30)), MOSCOW);
+        LocalDate newDay = newTime.toLocalDate();
+        String hhmm = newTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         ChatStep.Ask time = ask(move.next(user, day.state(), new ChatInput.Choice("date:" + newDay)));
         assertThat(time.reply().text()).isEqualTo("Во сколько? Напишите время, например 18:30.");
         assertThat(ask(move.next(user, time.state(), new ChatInput.Text("вечером"))).reply().text())
                 .startsWith("Не понял время.");
 
-        ChatStep.Ask comment = ask(move.next(user, time.state(), new ChatInput.Text("18:30")));
+        ChatStep.Ask comment = ask(move.next(user, time.state(), new ChatInput.Text(hhmm)));
         assertThat(labels(comment)).containsExactly("Без комментария");
         assertThat(ask(move.next(user, comment.state(), new ChatInput.Text("x".repeat(501)))).reply().text())
                 .startsWith("Слишком длинно");
         ChatStep.Ask confirm = ask(move.next(user, comment.state(), new ChatInput.Text("Уезжаю")));
         assertThat(confirm.reply().text()).startsWith("Попросить учителя перенести занятие ")
-                .contains(" на ", "18:30?", "Комментарий: Уезжаю");
+                .contains(" на ", hhmm + "?", "Комментарий: Уезжаю");
 
         ChatStep.Done sent = done(move.next(user, confirm.state(), new ChatInput.Choice(ChatKit.YES)));
         assertThat(sent.reply().text()).isEqualTo("Запрос отправлен учителю. Ответ придёт сюда.");
@@ -132,12 +141,33 @@ class ScheduleChatIntegrationTests {
         RequestView request = queries.studentRequests(boris).getFirst();
         assertThat(request.lessonId()).isEqualTo(lesson);
         assertThat(request.kind()).isEqualTo(ChangeKind.RESCHEDULE);
-        assertThat(request.proposedStartsAt()).isEqualTo(newDay.atTime(LocalTime.of(18, 30)).atZone(MOSCOW).toInstant());
+        assertThat(request.proposedStartsAt()).isEqualTo(newTime.atZone(MOSCOW).toInstant());
         assertThat(request.comment()).isEqualTo("Уезжаю");
 
         assertThat(done(move.next(user, confirm.state(), new ChatInput.Choice(ChatKit.YES))).reply().text())
                 .startsWith("Это занятие уже нельзя изменить");
         assertThat(done(move.start(user)).reply().text()).startsWith("Нет занятий, которые можно перенести");
+    }
+
+    @Test
+    void asksAgainWhenTheTeacherIsBusy() {
+        UUID gleb = directory.addStudent("Глеб");
+        ChatUser user = new ChatUser(gleb, Role.STUDENT);
+        Instant own = Slots.next(clock);
+        plan(gleb, null, own, null);
+        Instant taken = Slots.next(clock);
+        plan(directory.addStudent("Занимает время"), null, taken, null);
+        ChatAction move = action(actions, "schedule.move");
+        LocalDateTime busy = LocalDateTime.ofInstant(taken.plus(Duration.ofMinutes(30)), MOSCOW);
+
+        ChatStep.Ask which = ask(move.start(user));
+        ChatStep.Ask day = ask(move.next(user, which.state(), new ChatInput.Choice(value(which, ""))));
+        ChatStep.Ask time = ask(move.next(user, day.state(), new ChatInput.Choice("date:" + busy.toLocalDate())));
+        ChatStep.Ask again = ask(move.next(user, time.state(),
+                new ChatInput.Text(busy.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")))));
+
+        assertThat(again.reply().text()).startsWith("В это время учитель занят.");
+        assertThat(again.state().step()).isEqualTo("time");
     }
 
     @Test

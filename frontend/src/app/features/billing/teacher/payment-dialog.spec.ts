@@ -34,12 +34,11 @@ describe('PaymentDialog', () => {
     fixture.componentInstance.saved.subscribe((value) => saved.push(value));
     const dialog = fixture.componentInstance;
     expect(bodyText()).toContain('Оплата');
-    expect(dialog.form.controls.method.value).toBe('TRANSFER');
+    expect(bodyText()).not.toContain('Способ');
 
     dialog.form.patchValue({
       amount: 5000,
       paidOn: new Date(2026, 8, 3),
-      method: 'CASH',
       comment: ' наличными ',
     });
     await fixture.whenStable();
@@ -50,7 +49,6 @@ describe('PaymentDialog', () => {
       studentId: 's-1',
       amount: 500_000,
       paidOn: '2026-09-03',
-      method: 'CASH',
       comment: 'наличными',
     });
     request.flush(payment());

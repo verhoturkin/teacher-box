@@ -19,7 +19,6 @@ import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingService.RecordLesson;
 import ru.teacherbox.billing.application.BillingService.RecordPayment;
 import ru.teacherbox.billing.domain.LessonStatus;
-import ru.teacherbox.billing.domain.PaymentMethod;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 import ru.teacherbox.testing.FakeUserDirectory;
 
@@ -115,6 +114,6 @@ class SummaryIntegrationTests {
     }
 
     private UUID payment(UUID student, LocalDate date, long amount) {
-        return billing.recordPayment(new RecordPayment(student, amount, date, PaymentMethod.CARD, null)).id();
+        return billing.recordPayment(new RecordPayment(student, amount, date, null)).id();
     }
 }

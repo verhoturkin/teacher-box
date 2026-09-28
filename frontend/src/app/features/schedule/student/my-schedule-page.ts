@@ -13,9 +13,10 @@ import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
 import { MyBoardsCard } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
-import { toIsoDate } from '@shared/dates/iso-date';
+import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
+  BusyTime,
   ChangeKind,
   ChangeRequest,
   ScheduleSettings,
@@ -137,6 +138,8 @@ export const UPCOMING_DAYS = 60;
         <p-card>
           <tb-schedule-calendar
             [lessons]="calendarLessons()"
+            [busy]="busy()"
+            busyLabel="Учитель занят"
             [showStudent]="false"
             initialView="listWeek"
             (rangeChange)="onRange($event)"
@@ -231,6 +234,7 @@ export class MySchedulePage implements OnInit {
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly upcomingLessons = signal<ScheduledLesson[]>([]);
   protected readonly calendarLessons = signal<ScheduledLesson[]>([]);
+  protected readonly busy = signal<BusyTime[]>([]);
   protected readonly requests = signal<ChangeRequest[]>([]);
   protected readonly now = signal(new Date());
   protected readonly upcoming = computed(() =>
@@ -313,5 +317,10 @@ export class MySchedulePage implements OnInit {
     this.api.myLessons(widened.from, widened.to).subscribe((lessons) => {
       this.calendarLessons.set(lessons);
     });
+    this.api
+      .teacherBusy(fromIsoDate(widened.from).toISOString(), fromIsoDate(widened.to).toISOString())
+      .subscribe((busy) => {
+        this.busy.set(busy);
+      });
   }
 }

@@ -20,6 +20,11 @@ public interface ChatAction {
     /** The menu item, e.g. «Расписание». */
     String title();
 
+    /** The icon before the title in the menu ({@link ChatIcons}); none by default. */
+    default String icon() {
+        return "";
+    }
+
     /** Place in the menu: smaller first. */
     int order();
 

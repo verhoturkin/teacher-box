@@ -66,7 +66,7 @@ class BillingDomainTest {
     @Test
     void recordsAndVoidsPayments() {
         Payment payment = Payment.record(UUID.randomUUID(), UUID.randomUUID(), RUB.of(500_000), DAY,
-                PaymentMethod.TRANSFER, "за сентябрь", NOW);
+                "за сентябрь", NOW);
         assertThat(payment.credit()).isEqualTo(RUB.of(500_000));
         assertThat(payment.isVoided()).isFalse();
 
@@ -81,7 +81,7 @@ class BillingDomainTest {
     @Test
     void paymentAmountMustBePositive() {
         assertThatThrownBy(() -> Payment.record(UUID.randomUUID(), UUID.randomUUID(), RUB.of(0), DAY,
-                PaymentMethod.CASH, null, NOW))
+                null, NOW))
                 .isInstanceOf(BusinessRuleException.class)
                 .extracting(e -> ((BusinessRuleException) e).code()).isEqualTo("payment.amount-invalid");
     }

@@ -5,6 +5,7 @@ import static ru.teacherbox.testing.ChatSteps.action;
 import static ru.teacherbox.testing.ChatSteps.ask;
 import static ru.teacherbox.testing.ChatSteps.done;
 import static ru.teacherbox.testing.ChatSteps.labels;
+import static ru.teacherbox.testing.ChatSteps.rawLabels;
 import static ru.teacherbox.testing.ChatSteps.value;
 
 import java.time.Duration;
@@ -38,6 +39,7 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeStudentGroups;
+import ru.teacherbox.testing.ChatSteps;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
@@ -125,13 +127,13 @@ class TeacherChatIntegrationTests {
                 .contains("группа «Посещаемость»");
         ChatStep.Ask who = ask(unmarked.next(teacher(), list.state(), new ChatInput.Choice("lesson:" + lesson)));
         assertThat(who.reply().text()).endsWith("Отметьте, кто был на занятии, и нажмите «Готово».");
-        assertThat(labels(who)).containsExactly("✅ Анна Группа", "✅ Борис Группа", "✅ Вера Группа", "Готово");
+        assertThat(rawLabels(who)).containsExactly("✅ Анна Группа", "✅ Борис Группа", "✅ Вера Группа", "✔️ Готово");
 
         ChatStep.Ask off = ask(unmarked.next(teacher(), who.state(), new ChatInput.Choice("toggle:" + vera)));
-        assertThat(labels(off)).contains("⬜ Вера Группа");
+        assertThat(rawLabels(off)).contains("⬜ Вера Группа");
         ChatStep.Ask on = ask(unmarked.next(teacher(), off.state(), new ChatInput.Choice("toggle:" + vera)));
-        assertThat(labels(on)).contains("✅ Вера Группа");
-        assertThat(labels(unmarked.next(teacher(), off.state(), new ChatInput.Text("?")))).contains("⬜ Вера Группа");
+        assertThat(rawLabels(on)).contains("✅ Вера Группа");
+        assertThat(rawLabels(unmarked.next(teacher(), off.state(), new ChatInput.Text("?")))).contains("⬜ Вера Группа");
 
         ChatStep.Ask confirm = ask(unmarked.next(teacher(), off.state(), new ChatInput.Choice(value(off, "Готово"))));
         assertThat(confirm.reply().text())
@@ -235,7 +237,7 @@ class TeacherChatIntegrationTests {
         assertThat(answer.offer(teacher(), new ChatSubject("other", late.id()))).isEmpty();
         ChatOffer offer = answer.offer(teacher(), new ChatSubject(LessonChangeRequested.CHAT_SUBJECT, late.id()))
                 .orElseThrow();
-        assertThat(offer.rows().getFirst()).extracting(button -> button.label()).containsExactly("Принять", "Отклонить");
+        assertThat(offer.rows().getFirst()).extracting(button -> ChatSteps.plain(button.label())).containsExactly("Принять", "Отклонить");
 
         ChatStep.Ask charge = ask(answer.next(teacher(), offer.state(), new ChatInput.Choice("accept")));
         assertThat(charge.reply().text()).startsWith("Отмена поздняя.");

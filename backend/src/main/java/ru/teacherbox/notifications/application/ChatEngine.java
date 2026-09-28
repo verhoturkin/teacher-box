@@ -24,6 +24,7 @@ import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.ChatRepository;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatOffer;
@@ -239,7 +240,7 @@ public class ChatEngine {
         return switch (result) {
             case ChatStep.Ask ask -> {
                 chat.saveDialog(conversation.dialog().waitFor(action.id(), ask.state(), now.plus(DIALOG_TTL)), now);
-                yield send(conversation, ask.reply(), List.of(ChatButton.choice("Отмена", CANCEL)), action.id(),
+                yield send(conversation, ask.reply(), List.of(ChatButton.choice(ChatIcons.with(ChatIcons.CANCEL, "Отмена"), CANCEL)), action.id(),
                         ask.state(), now);
             }
             case ChatStep.Done done -> {
@@ -263,11 +264,11 @@ public class ChatEngine {
         List<List<ChatButton>> rows = new ArrayList<>();
         for (int i = 0; i < available.size(); i += 2) {
             rows.add(available.subList(i, Math.min(i + 2, available.size())).stream()
-                    .map(action -> ChatButton.choice(action.title(), START + action.id()))
+                    .map(action -> ChatButton.choice(ChatIcons.with(action.icon(), action.title()), START + action.id()))
                     .toList());
         }
         if (conversation.accounts() > 1) {
-            rows.add(List.of(ChatButton.choice("Сменить аккаунт", SWITCH)));
+            rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.SWITCH_ACCOUNT, "Сменить аккаунт"), SWITCH)));
         }
         ChatReply reply = new ChatReply(prefix == null ? question : prefix + "\n" + question, rows);
         return send(conversation, reply, List.of(), null, ChatState.EMPTY, now);
@@ -450,7 +451,7 @@ public class ChatEngine {
     }
 
     private static ChatButton menuButton() {
-        return ChatButton.choice("Меню", MENU);
+        return ChatButton.choice(ChatIcons.with(ChatIcons.MENU, "Меню"), MENU);
     }
 
     /** {@code /menu@school_bot} → {@code /menu}; plain words in lower case. */

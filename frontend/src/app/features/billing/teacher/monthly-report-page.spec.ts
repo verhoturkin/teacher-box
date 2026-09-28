@@ -42,7 +42,7 @@ describe('MonthlyReportPage', () => {
     expect(text()).toContain('пропусков: 1, отменено: 1');
     expect(text()).toContain('Проведено');
     expect(text()).toContain('Пропуск (оплачивается)');
-    expect(text()).toContain('Перевод');
+    expect(text()).not.toContain('Способ');
     expect(host.querySelectorAll('tr.tb-inactive')).toHaveLength(1);
   });
 

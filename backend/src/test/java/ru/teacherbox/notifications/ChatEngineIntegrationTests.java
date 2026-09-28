@@ -34,6 +34,7 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
+import ru.teacherbox.testing.ChatSteps;
 
 /** Dialogs with the bot: menu by role, steps, «Отмена», stale buttons, accounts, buttons under notifications. */
 @NotificationsIntegrationTest
@@ -94,6 +95,7 @@ class ChatEngineIntegrationTests {
         OutgoingMessage linked = say("8001", code);
         assertThat(linked.text()).startsWith("Готово!");
 
+        assertThat(linked.rows().getFirst().getFirst().label()).isEqualTo("🏠 Меню");
         OutgoingMessage menu = press("8001", linked, "Меню");
         assertThat(menu.text()).isEqualTo("Что вы хотите сделать?");
         assertThat(labels(menu)).containsExactly("Отзыв", "Сломано");
@@ -318,7 +320,7 @@ class ChatEngineIntegrationTests {
     private OutgoingMessage press(String externalId, OutgoingMessage message, String label) {
         String data = message.rows().stream()
                 .flatMap(List::stream)
-                .filter(button -> button.label().equals(label) && button.data() != null)
+                .filter(button -> ChatSteps.plain(button.label()).equals(label) && button.data() != null)
                 .map(OutgoingButton::data)
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No button «" + label + "» in " + message));
@@ -331,6 +333,6 @@ class ChatEngineIntegrationTests {
     }
 
     private static List<String> labels(OutgoingMessage message) {
-        return message.rows().stream().flatMap(List::stream).map(OutgoingButton::label).toList();
+        return message.rows().stream().flatMap(List::stream).map(OutgoingButton::label).map(ChatSteps::plain).toList();
     }
 }

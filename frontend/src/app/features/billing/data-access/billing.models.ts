@@ -1,7 +1,6 @@
 /** Mirrors `BillingViews` of the backend. Amounts are integers in minor units of `currency`. */
 
 export type LessonStatus = 'CONDUCTED' | 'MISSED' | 'CANCELLED';
-export type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER';
 export type StudentStatus = 'INVITED' | 'ACTIVE' | 'DEACTIVATED';
 
 export interface Lesson {
@@ -22,7 +21,6 @@ export interface Payment {
   readonly studentId: string;
   readonly amount: number;
   readonly paidOn: string;
-  readonly method: PaymentMethod;
   readonly comment: string | null;
   readonly createdAt: string;
   readonly voidedAt: string | null;
@@ -111,7 +109,6 @@ export interface RecordPaymentRequest {
   readonly studentId: string;
   readonly amount: number;
   readonly paidOn: string;
-  readonly method: PaymentMethod;
   readonly comment: string | null;
 }
 

@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
   ApproveRequest,
@@ -61,6 +61,20 @@ export class ScheduleApi {
     );
   }
 
+  /** Deletes a lesson that was not held (planned, or cancelled without a charge). */
+  deleteLesson(lessonId: string): Observable<void> {
+    return this.http.delete(`/api/teacher/schedule/lessons/${lessonId}`).pipe(map(() => undefined));
+  }
+
+  /** Puts a cancelled lesson back; an overlap with another lesson is reported unless allowed. */
+  restore(lessonId: string, allowOverlap = false): Observable<ScheduledLesson> {
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/restore`,
+      { allowOverlap },
+      QUIET,
+    );
+  }
+
   setOutcome(lessonId: string, outcome: LessonOutcome): Observable<ScheduledLesson> {
     return this.http.put<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`, {
       outcome,
@@ -111,13 +125,16 @@ export class ScheduleApi {
     return this.http.post<ScheduledLesson>(
       `/api/teacher/schedule/requests/${requestId}/approve`,
       request,
+      QUIET,
     );
   }
 
   decline(requestId: string, answer: string | null): Observable<ChangeRequest> {
-    return this.http.post<ChangeRequest>(`/api/teacher/schedule/requests/${requestId}/decline`, {
-      answer,
-    });
+    return this.http.post<ChangeRequest>(
+      `/api/teacher/schedule/requests/${requestId}/decline`,
+      { answer },
+      QUIET,
+    );
   }
 
   myLessons(from: string, to: string): Observable<ScheduledLesson[]> {
@@ -185,6 +202,13 @@ export class ScheduleApi {
   /** Busy times of the teacher's own calendars in `[from, to)` (ISO instants). */
   googleBusy(from: string, to: string): Observable<BusyTime[]> {
     return this.http.get<BusyTime[]>('/api/teacher/schedule/google/busy', {
+      params: new HttpParams().set('from', from).set('to', to),
+    });
+  }
+
+  /** For a student: when the teacher is busy in `[from, to)` (ISO instants), without whose lessons. */
+  teacherBusy(from: string, to: string): Observable<BusyTime[]> {
+    return this.http.get<BusyTime[]>('/api/me/schedule/busy', {
       params: new HttpParams().set('from', from).set('to', to),
     });
   }

@@ -57,7 +57,6 @@ export function payment(overrides: Partial<Payment> = {}): Payment {
     studentId: 's-1',
     amount: 500_000,
     paidOn: '2026-09-03',
-    method: 'TRANSFER',
     comment: 'за сентябрь',
     createdAt: '2026-09-03T10:00:00Z',
     voidedAt: null,

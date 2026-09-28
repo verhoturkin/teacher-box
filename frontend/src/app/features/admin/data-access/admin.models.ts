@@ -121,3 +121,57 @@ export interface AiUsage {
   readonly monthlyTokenLimit: number;
   readonly recent: AiRequest[];
 }
+
+/** Mirrors `SettingKind`: what a setting holds. */
+export type SettingKind =
+  | 'TEXT'
+  | 'NUMBER'
+  | 'BOOLEAN'
+  | 'DURATION'
+  | 'DURATIONS'
+  | 'DATA_SIZE'
+  | 'CRON'
+  | 'ADDRESS'
+  | 'URL'
+  | 'PROXY'
+  | 'TIME_ZONE'
+  | 'CURRENCY'
+  | 'CHOICE';
+
+/** Who may change a setting: the administrator here, only `.env` (Docker) or «Мой аккаунт». */
+export type SettingAccess = 'EDITABLE' | 'DOCKER' | 'ACCOUNT';
+
+/** Where the value in force comes from. */
+export type SettingSource = 'DEFAULT' | 'ENVIRONMENT' | 'ADMIN';
+
+/** Mirrors `AdminSettingsService.SettingView`: one setting of the portal (ADR-0016). */
+export interface AdminSetting {
+  readonly name: string;
+  readonly group: string;
+  readonly title: string;
+  readonly hint: string;
+  readonly kind: SettingKind;
+  readonly choices: readonly string[];
+  /** A password, token or key: its value is never sent, only whether it is set. */
+  readonly secret: boolean;
+  readonly access: SettingAccess;
+  readonly source: SettingSource;
+  readonly value: string | null;
+  readonly set: boolean;
+}
+
+/** Mirrors `AdminSettingsService.SettingsView`. */
+export interface AdminSettings {
+  readonly settings: readonly AdminSetting[];
+  readonly restartEnabled: boolean;
+  /** Saved values wait for a restart of the portal. */
+  readonly restartNeeded: boolean;
+  /** When the running portal started: a new value means it has restarted. */
+  readonly startedAt: string;
+}
+
+/** Mirrors `AdminSettingsService.Changed`. */
+export interface SettingsChanged {
+  readonly changed: readonly string[];
+  readonly restarting: boolean;
+}

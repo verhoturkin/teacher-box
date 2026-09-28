@@ -18,7 +18,7 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
 ];
 
 /** Sections in the bottom navigation; the others are under «Ещё». */
-const NAV_ITEMS = 4;
+const NAV_ITEMS = 5;
 
 /**
  * Application frame: the header (kept at the top) with the sections and the user menu, the routed
@@ -91,9 +91,16 @@ const NAV_ITEMS = 4;
             <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
             <span>Ещё</span>
           </button>
-          <p-menu #moreMenu [model]="moreItems()" [popup]="true" appendTo="body" />
         }
       </nav>
+      <!-- Outside the navigation: in its grid the menu would take a column of its own. -->
+      <p-menu
+        #moreMenu
+        [model]="moreItems()"
+        [popup]="true"
+        appendTo="body"
+        styleClass="tb-more-menu"
+      />
     }
   `,
   styleUrl: './shell.scss',

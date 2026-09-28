@@ -5,3 +5,4 @@ ru.teacherbox.platform.web.PlatformWebAutoConfiguration
 ru.teacherbox.platform.portal.PlatformPortalAutoConfiguration
 ru.teacherbox.platform.backup.PlatformBackupAutoConfiguration
 ru.teacherbox.platform.admin.PlatformAdminAutoConfiguration
+ru.teacherbox.platform.settings.PlatformSettingsAutoConfiguration

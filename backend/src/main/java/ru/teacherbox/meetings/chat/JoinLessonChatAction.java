@@ -6,6 +6,7 @@ import ru.teacherbox.meetings.application.RoomService;
 import ru.teacherbox.meetings.application.RoomService.MyRoomView;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -31,6 +32,11 @@ class JoinLessonChatAction implements ChatAction {
     @Override
     public String title() {
         return "Войти на урок";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.JOIN_LESSON;
     }
 
     @Override

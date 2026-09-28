@@ -6,6 +6,7 @@ import ru.teacherbox.boards.application.BoardService;
 import ru.teacherbox.boards.application.BoardService.MyBoardView;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -31,6 +32,11 @@ class MyBoardsChatAction implements ChatAction {
     @Override
     public String title() {
         return "Мои доски";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.BOARDS;
     }
 
     @Override

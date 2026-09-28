@@ -11,13 +11,12 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.billing.domain.BillingCurrency;
 import ru.teacherbox.billing.domain.Payment;
-import ru.teacherbox.billing.domain.PaymentMethod;
 
 @Repository
 public class PaymentRepository {
 
     private static final String SELECT = """
-            select id, student_id, amount, paid_on, method, comment, created_at, voided_at, void_reason
+            select id, student_id, amount, paid_on, comment, created_at, voided_at, void_reason
             from billing.payments
             """;
     private static final String ORDER = " order by paid_on desc, created_at desc";
@@ -32,15 +31,14 @@ public class PaymentRepository {
 
     public void insert(Payment payment) {
         jdbc.sql("""
-                insert into billing.payments (id, student_id, amount, paid_on, method, comment, created_at,
-                    voided_at, void_reason)
-                values (:id, :studentId, :amount, :paidOn, :method, :comment, :createdAt, :voidedAt, :voidReason)
+                insert into billing.payments (id, student_id, amount, paid_on, comment, created_at, voided_at,
+                    void_reason)
+                values (:id, :studentId, :amount, :paidOn, :comment, :createdAt, :voidedAt, :voidReason)
                 """)
                 .param("id", payment.id())
                 .param("studentId", payment.studentId())
                 .param("amount", payment.amount().amountMinor())
                 .param("paidOn", payment.paidOn())
-                .param("method", payment.method().name())
                 .param("comment", payment.comment())
                 .param("createdAt", payment.createdAt())
                 .param("voidedAt", payment.voidedAt())
@@ -83,7 +81,6 @@ public class PaymentRepository {
                 rs.getObject("student_id", UUID.class),
                 currency.of(rs.getLong("amount")),
                 rs.getObject("paid_on", LocalDate.class),
-                PaymentMethod.valueOf(rs.getString("method")),
                 rs.getString("comment"),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("voided_at", Instant.class),

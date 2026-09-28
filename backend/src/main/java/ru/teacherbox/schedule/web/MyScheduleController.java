@@ -22,6 +22,8 @@ import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.application.ChangeRequestService;
 import ru.teacherbox.schedule.application.FeedService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
+import ru.teacherbox.schedule.application.TeacherAvailability;
+import ru.teacherbox.schedule.application.TeacherAvailability.BusyTime;
 import ru.teacherbox.schedule.application.ScheduleViews.FeedView;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
@@ -47,8 +49,11 @@ class MyScheduleController {
     private final ScheduleQueries queries;
     private final ChangeRequestService requests;
     private final FeedService feeds;
+    private final TeacherAvailability availability;
 
-    MyScheduleController(ScheduleQueries queries, ChangeRequestService requests, FeedService feeds) {
+    MyScheduleController(ScheduleQueries queries, ChangeRequestService requests, FeedService feeds,
+            TeacherAvailability availability) {
+        this.availability = availability;
         this.queries = queries;
         this.requests = requests;
         this.feeds = feeds;
@@ -72,6 +77,12 @@ class MyScheduleController {
     @GetMapping("/lessons/{lessonId}")
     LessonView lesson(CurrentUser user, @PathVariable UUID lessonId) {
         return queries.studentLesson(studentId(user), lessonId);
+    }
+
+    /** When the teacher is busy: periods only, without whose lessons they are. */
+    @GetMapping("/busy")
+    List<BusyTime> busy(CurrentUser user, @RequestParam Instant from, @RequestParam Instant to) {
+        return availability.forStudent(studentId(user), from, to);
     }
 
     @PostMapping("/lessons/{lessonId}/requests")

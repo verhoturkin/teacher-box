@@ -60,6 +60,11 @@ export class ScheduleCalendar {
   readonly initialDate = input<string | null>(null);
   /** Busy times of the teacher's own calendars, shown in the background. */
   readonly busy = input<readonly BusyTime[]>([]);
+  /**
+   * Shows the busy times as events with this title (the student's calendar: they are also seen in the
+   * list, where background events are not).
+   */
+  readonly busyLabel = input<string | null>(null);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -107,13 +112,7 @@ export class ScheduleCalendar {
       eventDurationEditable: false,
       events: [
         ...this.lessons().map((lesson) => this.toEvent(lesson, editable)),
-        ...this.busy().map((busy, index) => ({
-          id: `busy-${String(index)}`,
-          start: busy.start,
-          end: busy.end,
-          display: 'background',
-          className: 'tb-busy',
-        })),
+        ...this.busy().map((busy, index) => this.toBusy(busy, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
         this.rangeChange.emit({ from: toIsoDate(info.start), to: toIsoDate(info.end) });
@@ -156,6 +155,18 @@ export class ScheduleCalendar {
       end: lesson.endsAt,
       editable: editable && lesson.status === 'SCHEDULED',
       className: lessonClasses(lesson).join(' '),
+    };
+  }
+
+  private toBusy(busy: BusyTime, index: number): EventInput {
+    const label = this.busyLabel();
+    return {
+      id: `busy-${String(index)}`,
+      start: busy.start,
+      end: busy.end,
+      ...(label === null
+        ? { display: 'background', className: 'tb-busy' }
+        : { title: label, className: 'tb-busy-slot', editable: false }),
     };
   }
 

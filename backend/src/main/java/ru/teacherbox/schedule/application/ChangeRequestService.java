@@ -1,6 +1,7 @@
 package ru.teacherbox.schedule.application;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,10 @@ public class ChangeRequestService {
      * @param startsAt new time of an approved move; defaults to the time the student proposed
      * @param charge   charge an approved cancellation as a missed lesson
      */
-    public record Approval(@Nullable Instant startsAt, boolean charge, @Nullable String answer) {
+    /**
+     * @param allowBusy move the lesson even if the teacher is busy at the new time
+     */
+    public record Approval(@Nullable Instant startsAt, boolean charge, @Nullable String answer, boolean allowBusy) {
     }
 
     private final ChangeRequestRepository requests;
@@ -45,11 +49,13 @@ public class ChangeRequestService {
     private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
+    private final TeacherAvailability availability;
     private final Clock clock;
 
     public ChangeRequestService(ChangeRequestRepository requests, LessonRepository lessons,
             ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
-            ApplicationEventPublisher events, ScheduleProperties properties, Clock clock) {
+            ApplicationEventPublisher events, ScheduleProperties properties, TeacherAvailability availability,
+            Clock clock) {
         this.requests = requests;
         this.lessons = lessons;
         this.directory = directory;
@@ -57,6 +63,7 @@ public class ChangeRequestService {
         this.lessonEvents = lessonEvents;
         this.events = events;
         this.properties = properties;
+        this.availability = availability;
         this.clock = clock;
     }
 
@@ -77,6 +84,10 @@ public class ChangeRequestService {
         Instant now = clock.instant();
         ChangeRequest request = ChangeRequest.open(Ids.newId(), lesson, studentId, kind, proposedStartsAt, comment,
                 now);
+        Instant proposed = request.proposedStartsAt();
+        if (proposed != null) {
+            availability.requireFree(proposed, proposed.plus(Duration.ofMinutes(lesson.durationMinutes())), lesson.id());
+        }
         boolean late = ScheduleViews.isLate(kind, lesson.startsAt(), now, properties.lateCancellation());
         boolean accepted = lesson.isGroup() && kind == ChangeKind.CANCEL && !late;
         if (accepted) {
@@ -88,6 +99,18 @@ public class ChangeRequestService {
         events.publishEvent(new LessonChangeRequested(request.id(), lesson.id(), studentId, lesson.groupId(), kind,
                 lesson.startsAt(), request.proposedStartsAt(), request.comment(), late, accepted, now));
         return view(request, lesson);
+    }
+
+    /**
+     * Whether the teacher is free for the lesson at the proposed time (the student's bot asks again
+     * instead of sending a request that would be refused).
+     */
+    @Transactional(readOnly = true)
+    public boolean isFreeFor(UUID lessonId, Instant proposedStartsAt) {
+        return lessons.findById(lessonId)
+                .map(lesson -> availability.isFree(proposedStartsAt, proposedStartsAt.plus(Duration.ofMinutes(lesson.durationMinutes())),
+                        lesson.id()))
+                .orElse(true);
     }
 
     /** The student takes back an unanswered request. */
@@ -111,8 +134,11 @@ public class ChangeRequestService {
                 throw new BusinessRuleException("schedule.charge-invalid", "Only a cancellation can be charged");
             }
             Instant previous = lesson.startsAt();
-            Instant startsAt = approval.startsAt() != null ? approval.startsAt() : request.proposedStartsAt();
-            lesson.edit(requireTime(startsAt), lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), now);
+            Instant startsAt = requireTime(approval.startsAt() != null ? approval.startsAt() : request.proposedStartsAt());
+            if (!approval.allowBusy()) {
+                availability.requireFree(startsAt, startsAt.plus(Duration.ofMinutes(lesson.durationMinutes())), lesson.id());
+            }
+            lesson.edit(startsAt, lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), now);
             lessons.update(lesson);
             lessons.clearReminders(lesson.id());
             outdateOthers(request, now);

@@ -1,4 +1,6 @@
 import {
+  AdminSetting,
+  AdminSettings,
   AiStatus,
   AiUsage,
   EventPublication,
@@ -120,6 +122,89 @@ export function aiUsage(overrides: Partial<AiUsage> = {}): AiUsage {
         createdAt: '2026-09-26T08:00:00Z',
       },
     ],
+    ...overrides,
+  };
+}
+
+export function adminSetting(overrides: Partial<AdminSetting> = {}): AdminSetting {
+  return {
+    name: 'TEACHERBOX_AI_MODEL',
+    group: 'ИИ-помощник',
+    title: 'Модель',
+    hint: 'Пусто — модель сервиса по умолчанию.',
+    kind: 'TEXT',
+    choices: [],
+    secret: false,
+    access: 'EDITABLE',
+    source: 'DEFAULT',
+    value: null,
+    set: false,
+    ...overrides,
+  };
+}
+
+export function adminSettings(overrides: Partial<AdminSettings> = {}): AdminSettings {
+  return {
+    settings: [
+      adminSetting({
+        name: 'TEACHERBOX_HTTP_PORT',
+        group: 'Docker',
+        title: 'Порт веб-интерфейса на сервере',
+        hint: 'Docker Compose читает её до запуска портала: меняется только в .env.',
+        kind: 'NUMBER',
+        access: 'DOCKER',
+        source: 'ENVIRONMENT',
+        value: '8080',
+        set: true,
+      }),
+      adminSetting({
+        name: 'TEACHERBOX_IDENTITY_TEACHER_PASSWORD',
+        group: 'Учётные записи',
+        title: 'Пароль учителя',
+        secret: true,
+        access: 'ACCOUNT',
+        source: 'ENVIRONMENT',
+        set: true,
+      }),
+      adminSetting({
+        name: 'TEACHERBOX_AI_PROVIDER',
+        title: 'Сервис ИИ',
+        hint: '',
+        kind: 'CHOICE',
+        choices: ['anthropic', 'gemini'],
+      }),
+      adminSetting(),
+      adminSetting({
+        name: 'TEACHERBOX_AI_API_KEY',
+        title: 'Ключ API',
+        hint: '',
+        secret: true,
+        source: 'ADMIN',
+        set: true,
+      }),
+      adminSetting({
+        name: 'TEACHERBOX_AI_FALLBACKS',
+        title: 'Запасная модель',
+        hint: '',
+        kind: 'BOOLEAN',
+        source: 'ENVIRONMENT',
+        value: 'true',
+        set: true,
+      }),
+      adminSetting({
+        name: 'TEACHERBOX_BACKUP_KEEP',
+        group: 'Резервные копии',
+        title: 'Сколько копий хранить',
+        hint: '',
+        kind: 'NUMBER',
+        source: 'ADMIN',
+        value: '14',
+        set: true,
+      }),
+    ],
+    restartEnabled: true,
+    restartNeeded: false,
+    startedAt: '2026-09-28T09:00:00Z',
     ...overrides,
   };
 }

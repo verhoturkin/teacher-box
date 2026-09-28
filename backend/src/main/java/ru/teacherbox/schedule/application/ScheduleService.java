@@ -171,6 +171,32 @@ public class ScheduleService {
         return queries.lesson(lesson.id());
     }
 
+    /** Deletes a lesson that was not held: a planned or cancelled one nobody is charged for. */
+    @Transactional
+    public void delete(UUID lessonId) {
+        Lesson lesson = find(lessonId);
+        lesson.requireDeletable();
+        lessons.delete(lesson);
+        lessonEvents.deleted(lesson, clock.instant());
+    }
+
+    /**
+     * Puts a cancelled lesson back into the schedule; a lesson that has already passed waits for its
+     * outcome.
+     *
+     * @param allowOverlap restore even if another lesson took the time
+     */
+    @Transactional
+    public LessonView reinstate(UUID lessonId, boolean allowOverlap) {
+        Lesson lesson = find(lessonId);
+        Instant now = clock.instant();
+        lesson.reinstate(now);
+        requireFree(lesson.startsAt(), lesson.endsAt(), lesson.id(), allowOverlap);
+        lessons.update(lesson);
+        lessonEvents.restored(lesson, now);
+        return queries.lesson(lesson.id());
+    }
+
     /** Marks the outcome of a started lesson with one student, or corrects it. */
     @Transactional
     public LessonView setOutcome(UUID lessonId, LessonStatus outcome) {

@@ -108,6 +108,10 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.series-student-fixed': 'Расписание нельзя передать другому ученику или группе',
   'schedule.group-not-found': 'Группа не найдена или в архиве',
   'schedule.group-empty': 'В группе пока нет учеников',
+  'schedule.slot-busy': 'В это время учитель занят — выберите другое время',
+  'schedule.lesson-charged':
+    'Проведённое или засчитанное занятие удалить нельзя — сначала снимите отметку',
+  'schedule.lesson-not-cancelled': 'Восстановить можно только отменённое занятие',
   'schedule.owner-invalid': 'Выберите ученика или группу',
   'schedule.attendance-required': 'Отметьте посещаемость каждого ученика группы',
   'schedule.attendance-invalid': 'Отметьте каждого ученика занятия',

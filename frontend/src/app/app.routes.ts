@@ -196,6 +196,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
+        path: 'settings',
+        title: 'Настройки',
+        loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
+      },
+      {
         path: 'diagnostics',
         title: 'Диагностика',
         loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),

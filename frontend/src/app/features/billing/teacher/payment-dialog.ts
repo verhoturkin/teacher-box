@@ -20,9 +20,8 @@ import { Select } from 'primeng/select';
 import { describeError } from '@core/http/error-messages';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { toMinorUnits } from '@shared/money/money';
-import { PAYMENT_METHOD_OPTIONS } from '../billing-labels';
 import { BillingApi } from '../data-access/billing-api';
-import { BillingStudent, Payment, PaymentMethod } from '../data-access/billing.models';
+import { BillingStudent, Payment } from '../data-access/billing.models';
 
 /** Registers a payment from a student. */
 @Component({
@@ -88,18 +87,6 @@ import { BillingStudent, Payment, PaymentMethod } from '../data-access/billing.m
           </div>
         </div>
         <div class="tb-field">
-          <label for="payment-method">Способ</label>
-          <p-select
-            inputId="payment-method"
-            formControlName="method"
-            [options]="methodOptions"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
-        <div class="tb-field">
           <label for="payment-comment">Комментарий</label>
           <input pInputText id="payment-comment" formControlName="comment" autocomplete="off" />
         </div>
@@ -133,7 +120,6 @@ export class PaymentDialog {
   readonly currency = input.required<string>();
   readonly saved = output<Payment>();
 
-  protected readonly methodOptions = PAYMENT_METHOD_OPTIONS;
   protected readonly studentOptions = computed(() =>
     this.students().map((student) => ({ label: student.displayName, value: student.studentId })),
   );
@@ -147,7 +133,6 @@ export class PaymentDialog {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    method: new FormControl<PaymentMethod>('TRANSFER', { nonNullable: true }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
   });
 
@@ -159,7 +144,6 @@ export class PaymentDialog {
           studentId: this.studentId(),
           amount: null,
           paidOn: new Date(),
-          method: 'TRANSFER',
           comment: '',
         });
       }
@@ -178,7 +162,6 @@ export class PaymentDialog {
         studentId: value.studentId,
         amount: toMinorUnits(value.amount, this.currency()),
         paidOn: toIsoDate(value.paidOn),
-        method: value.method,
         comment: value.comment.trim() === '' ? null : value.comment.trim(),
       })
       .subscribe({

@@ -9,6 +9,7 @@ import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
 import ru.teacherbox.shared.chat.ChatAction;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
@@ -37,6 +38,11 @@ class PaymentsChatAction implements ChatAction {
     @Override
     public String title() {
         return "Оплаты";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.PAYMENTS;
     }
 
     @Override

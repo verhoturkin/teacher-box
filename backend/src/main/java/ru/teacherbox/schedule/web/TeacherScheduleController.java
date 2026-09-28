@@ -65,6 +65,9 @@ class TeacherScheduleController {
             @Nullable Boolean charge) {
     }
 
+    record RestoreRequest(@Nullable Boolean allowOverlap) {
+    }
+
     record OutcomeRequest(@NotNull LessonStatus outcome) {
     }
 
@@ -100,7 +103,7 @@ class TeacherScheduleController {
     }
 
     record ApproveRequest(@Nullable Instant startsAt, @Nullable Boolean charge,
-            @Size(max = 500) @Nullable String answer) {
+            @Size(max = 500) @Nullable String answer, @Nullable Boolean allowBusy) {
     }
 
     record DeclineRequest(@Size(max = 500) @Nullable String answer) {
@@ -144,6 +147,17 @@ class TeacherScheduleController {
     LessonView cancel(@PathVariable UUID lessonId, @Valid @RequestBody CancelRequest request) {
         return schedule.cancel(lessonId,
                 new ScheduleService.CancelLesson(request.reason(), yes(request.byStudent()), yes(request.charge())));
+    }
+
+    @DeleteMapping("/lessons/{lessonId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable UUID lessonId) {
+        schedule.delete(lessonId);
+    }
+
+    @PostMapping("/lessons/{lessonId}/restore")
+    LessonView restore(@PathVariable UUID lessonId, @RequestBody(required = false) @Nullable RestoreRequest request) {
+        return schedule.reinstate(lessonId, request != null && yes(request.allowOverlap()));
     }
 
     @PutMapping("/lessons/{lessonId}/outcome")
@@ -203,7 +217,8 @@ class TeacherScheduleController {
     @PostMapping("/requests/{requestId}/approve")
     LessonView approve(@PathVariable UUID requestId, @Valid @RequestBody ApproveRequest request) {
         return requests.approve(requestId,
-                new ChangeRequestService.Approval(request.startsAt(), yes(request.charge()), request.answer()));
+                new ChangeRequestService.Approval(request.startsAt(), yes(request.charge()), request.answer(),
+                        yes(request.allowBusy())));
     }
 
     @PostMapping("/requests/{requestId}/decline")

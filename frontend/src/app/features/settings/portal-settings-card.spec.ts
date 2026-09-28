@@ -88,6 +88,55 @@ describe('PortalSettingsCard', () => {
     request.flush(portalSettings({ accent: 'emerald' }));
   });
 
+  it('picks an own color and warns when buttons would be poorly readable', async () => {
+    const host = await render();
+    const own = (): HTMLButtonElement =>
+      requireElement(host, 'button[aria-label="Свой цвет"]', HTMLButtonElement);
+
+    own().click();
+    await fixture.whenStable();
+    expect(own().getAttribute('aria-checked')).toBe('true');
+    const field = requireElement(host, '#portal-own-color', HTMLInputElement);
+    expect(field.value).toBe('#0f766e');
+    expect(readableText(host)).not.toContain('будет плохо читаться');
+
+    typeInto(field, '#FDE68A');
+    await fixture.whenStable();
+    expect(readableText(host)).toContain(
+      'будет плохо читаться в светлой теме — выберите цвет темнее',
+    );
+    typeInto(field, '#1e1b4b');
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('в тёмной теме — выберите цвет светлее');
+    typeInto(field, '#1e1b4');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.ownColor.value).toBe('#1e1b4');
+
+    buttonByText(host, 'Сохранить').click();
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
+    expect(request.request.body).toEqual(expect.objectContaining({ accent: '#1e1b4b' }));
+    request.flush(portalSettings({ accent: '#1e1b4b' }));
+    await fixture.whenStable();
+
+    requireElement(host, 'button[aria-label="Индиго"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(host.querySelector('#portal-own-color')).toBeNull();
+    own().click();
+    await fixture.whenStable();
+    expect(requireElement(host, '#portal-own-color', HTMLInputElement).value).toBe('#1e1b4b');
+  });
+
+  it('shows a saved own color', async () => {
+    const host = await render(portalSettings({ accent: '#b91c1c' }));
+
+    expect(
+      requireElement(host, 'button[aria-label="Свой цвет"]', HTMLButtonElement).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('true');
+    expect(requireElement(host, '#portal-own-color', HTMLInputElement).value).toBe('#b91c1c');
+  });
+
   it('uploads and removes the logo', async () => {
     const host = await render();
     const input = requireElement(host, 'input[type="file"]', HTMLInputElement);

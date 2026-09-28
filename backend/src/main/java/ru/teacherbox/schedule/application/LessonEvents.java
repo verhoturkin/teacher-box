@@ -11,10 +11,13 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.LessonCompleted;
 import ru.teacherbox.schedule.api.LessonCompletionRevoked;
+import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
+import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
@@ -43,6 +46,16 @@ class LessonEvents {
     void cancelled(Lesson lesson, CancelledBy by, boolean charged, boolean byRequest, Instant now) {
         events.publishEvent(new ScheduledLessonCancelled(lesson.id(), lesson.groupId(), lesson.studentIds(),
                 lesson.startsAt(), by, lesson.cancelReason(), charged, byRequest, now));
+    }
+
+    void deleted(Lesson lesson, Instant now) {
+        events.publishEvent(new LessonDeleted(lesson.id(), lesson.groupId(), lesson.expectedIds(), lesson.startsAt(),
+                lesson.status() == LessonStatus.SCHEDULED, now));
+    }
+
+    void restored(Lesson lesson, Instant now) {
+        events.publishEvent(new LessonRestored(lesson.id(), lesson.groupId(), lesson.expectedIds(), lesson.startsAt(),
+                lesson.durationMinutes(), now));
     }
 
     /** Revokes the previous charges of the changed participants and charges the new marks. */

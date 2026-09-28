@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatReply;
 import ru.teacherbox.shared.chat.ChatState;
@@ -33,6 +34,11 @@ class ScheduleChatAction implements ChatAction {
     @Override
     public String title() {
         return "Расписание";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.SCHEDULE;
     }
 
     @Override
@@ -69,7 +75,7 @@ class ScheduleChatAction implements ChatAction {
                 .map(LessonView::joinUrl)
                 .filter(Objects::nonNull)
                 .findFirst();
-        return ChatStep.done(link.map(url -> reply.row(ChatButton.link("Войти на ближайший урок", url)))
+        return ChatStep.done(link.map(url -> reply.row(ChatButton.link(ChatIcons.with(ChatIcons.JOIN_LESSON, "Войти на ближайший урок"), url)))
                 .orElse(reply));
     }
 

@@ -299,11 +299,6 @@ function isStudentsTab(value: unknown): value is StudentsTab {
     />
     <p-confirmdialog />
   `,
-  styles: `
-    p-tabpanels {
-      padding-inline: 0;
-    }
-  `,
 })
 export class StudentsPage implements OnInit {
   private readonly api = inject(IdentityApi);

@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  InjectionToken,
   inject,
   input,
   model,
@@ -16,16 +15,9 @@ import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
+import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
-
-/** How often the dialog asks whether the portal is back, in milliseconds. */
-export const RESTART_POLL_MS = new InjectionToken<number>('RESTART_POLL_MS', {
-  factory: () => 2000,
-});
-
-/** How long the dialog waits for the portal to come back, in milliseconds. */
-const RESTART_WAIT_MS = 5 * 60_000;
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
 

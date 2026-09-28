@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
+import ru.teacherbox.shared.chat.ChatIcons;
 
 /** The teacher: lessons that have ended without an outcome. */
 @Component
@@ -21,6 +22,11 @@ class UnmarkedChatAction extends MarkLessonsChatAction {
     @Override
     public String title() {
         return "Неотмеченные";
+    }
+
+    @Override
+    public String icon() {
+        return ChatIcons.UNMARKED;
     }
 
     @Override

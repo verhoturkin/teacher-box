@@ -3,8 +3,8 @@ import Aura from '@primeuix/themes/aura';
 
 /**
  * Aura with an indigo primary palette (the color of the portal can replace it, see portal-theme),
- * rounder corners on one scale (buttons and fields 8 px, cards and dialogs 14 px) and card titles
- * that match the page titles.
+ * rounder corners on one scale (buttons and fields 8 px, cards and dialogs 14 px), card titles
+ * that match the page titles and tabs that lie on the page (no white strip or panel behind them).
  */
 export const TeacherBoxPreset = definePreset(Aura, {
   primitive: {
@@ -40,6 +40,29 @@ export const TeacherBoxPreset = definePreset(Aura, {
       title: {
         fontSize: '1.125rem',
         fontWeight: '600',
+      },
+    },
+    tabs: {
+      tablist: {
+        background: 'transparent',
+      },
+      tab: {
+        padding: '0.75rem 1rem',
+      },
+      tabpanel: {
+        background: 'transparent',
+        padding: '1rem 0 0 0',
+      },
+      navButton: {
+        background: 'transparent',
+      },
+      activeBar: {
+        height: '2px',
+        bottom: '-1px',
+      },
+      colorScheme: {
+        light: { navButton: { shadow: 'none' } },
+        dark: { navButton: { shadow: 'none' } },
       },
     },
   },

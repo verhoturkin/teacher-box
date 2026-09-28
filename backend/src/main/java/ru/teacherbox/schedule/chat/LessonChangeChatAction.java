@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatReply;
@@ -125,6 +126,10 @@ abstract class LessonChangeChatAction implements ChatAction {
         if (!proposed.isAfter(lessons.now())) {
             return askDate(state.without("date"), "Это время уже прошло.");
         }
+        if (state.id("lesson").map(lesson -> !requests.isFreeFor(lesson, proposed)).orElse(false)) {
+            return ChatStep.ask(ChatReply.of("В это время учитель занят. Напишите другое время, например 18:30,"
+                    + " или начните заново: /menu."), state);
+        }
         return askComment(state.with("proposed", proposed.toString()));
     }
 
@@ -132,7 +137,7 @@ abstract class LessonChangeChatAction implements ChatAction {
         String question = kind == ChangeKind.CANCEL
                 ? "Напишите причину — учитель её увидит. Или нажмите «Без комментария»."
                 : "Напишите комментарий для учителя или нажмите «Без комментария».";
-        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice("Без комментария", SKIP)),
+        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)),
                 state.withStep("comment"));
     }
 
@@ -145,7 +150,7 @@ abstract class LessonChangeChatAction implements ChatAction {
             }
             if (text.get().length() > MAX_COMMENT) {
                 return ChatStep.ask(ChatReply.of("Слишком длинно: не больше " + MAX_COMMENT + " символов.")
-                        .row(ChatButton.choice("Без комментария", SKIP)), state);
+                        .row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)), state);
             }
             next = state.with("comment", text.get());
         }
@@ -189,6 +194,9 @@ abstract class LessonChangeChatAction implements ChatAction {
         try {
             request = requests.request(user.id(), lesson.get().id(), kind, proposed, state.get("comment").orElse(null));
         } catch (DomainException e) {
+            if (e.code().equals("schedule.slot-busy")) {
+                return ChatStep.done("Не получилось отправить запрос: в это время учитель уже занят.");
+            }
             return ChatStep.done("Не получилось отправить запрос: занятие изменилось или по нему уже есть запрос.");
         }
         if (request.status() == RequestStatus.APPROVED) {
