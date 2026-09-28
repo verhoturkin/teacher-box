@@ -65,7 +65,7 @@ import { HelpArea } from './help-topics';
           </ul>
         </nav>
       </p-card>
-      <p-card styleClass="tb-help__article">
+      <p-card class="tb-help__article-card" styleClass="tb-help__article">
         @if (current(); as article) {
           @if (missing()) {
             <p class="tb-muted">Такой статьи нет — вот «{{ article.title }}».</p>
@@ -85,6 +85,11 @@ import { HelpArea } from './help-topics';
 
       @media (max-width: 768px) {
         grid-template-columns: minmax(0, 1fr);
+
+        /* on a phone the article comes first, the contents follow it */
+        .tb-help__article-card {
+          order: -1;
+        }
       }
     }
 

@@ -17,6 +17,7 @@ export const TEACHER_TOPICS = [
   'bot',
   'calendars',
   'settings',
+  'appearance',
   'backups',
   'faq',
 ] as const;
@@ -27,6 +28,7 @@ export const STUDENT_TOPICS = [
   'homework',
   'billing',
   'bot',
+  'appearance',
 ] as const;
 export const ADMIN_TOPICS = ['diagnostics', 'backups'] as const;
 
