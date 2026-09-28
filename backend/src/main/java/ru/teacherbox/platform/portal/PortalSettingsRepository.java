@@ -17,7 +17,7 @@ public class PortalSettingsRepository {
 
     public PortalSettings load() {
         return jdbc.sql("""
-                select name, address, setup_completed_at, updated_at, version
+                select name, address, accent, logo_key, logo_type, setup_completed_at, updated_at, version
                 from platform.portal_settings where id = 1
                 """)
                 .query(PortalSettingsRepository::map)
@@ -29,14 +29,19 @@ public class PortalSettingsRepository {
      * @throws OptimisticLockingFailureException if they were changed since they were loaded
      */
     public PortalSettings save(PortalSettings settings) {
+        PortalSettings.Logo logo = settings.logo();
         int updated = jdbc.sql("""
                 update platform.portal_settings
-                set name = :name, address = :address, setup_completed_at = :setupCompletedAt,
-                    updated_at = :updatedAt, version = version + 1
+                set name = :name, address = :address, accent = :accent, logo_key = :logoKey,
+                    logo_type = :logoType, setup_completed_at = :setupCompletedAt, updated_at = :updatedAt,
+                    version = version + 1
                 where id = 1 and version = :version
                 """)
                 .param("name", settings.name())
                 .param("address", settings.address())
+                .param("accent", settings.accent() == null ? null : settings.accent().name())
+                .param("logoKey", logo == null ? null : logo.key())
+                .param("logoType", logo == null ? null : logo.contentType())
                 .param("setupCompletedAt", settings.setupCompletedAt())
                 .param("updatedAt", settings.updatedAt())
                 .param("version", settings.version())
@@ -44,12 +49,17 @@ public class PortalSettingsRepository {
         if (updated != 1) {
             throw new OptimisticLockingFailureException("Portal settings were modified");
         }
-        return new PortalSettings(settings.name(), settings.address(), settings.setupCompletedAt(),
-                settings.updatedAt(), settings.version() + 1);
+        return new PortalSettings(settings.name(), settings.address(), settings.accent(), logo,
+                settings.setupCompletedAt(), settings.updatedAt(), settings.version() + 1);
     }
 
     private static PortalSettings map(ResultSet rs, int row) throws SQLException {
+        String accent = rs.getString("accent");
+        String logoKey = rs.getString("logo_key");
+        String logoType = rs.getString("logo_type");
         return new PortalSettings(rs.getString("name"), rs.getString("address"),
+                accent == null ? null : PortalAccent.parse(accent).orElse(null),
+                logoKey == null || logoType == null ? null : new PortalSettings.Logo(logoKey, logoType),
                 rs.getObject("setup_completed_at", Instant.class), rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));
     }

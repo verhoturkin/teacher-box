@@ -8,6 +8,7 @@ import { authResponse } from '@testing/auth';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
 import { Shell } from './shell';
 import { testProviders } from '@testing/setup';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
@@ -34,7 +35,7 @@ describe('Shell', () => {
   });
 
   it('shows the name of the portal', async () => {
-    TestBed.inject(Portal).set({ name: 'Английский с Марией', address: null });
+    TestBed.inject(Portal).set(portalInfo({ name: 'Английский с Марией', address: null }));
     await fixture.whenStable();
 
     expect(hostElement(fixture).querySelector('.tb-shell__brand')?.textContent).toContain(

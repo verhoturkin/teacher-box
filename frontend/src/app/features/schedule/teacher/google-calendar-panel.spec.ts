@@ -9,6 +9,7 @@ import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { GoogleCalendarPanel } from './google-calendar-panel';
 import { testProviders } from '@testing/setup';
+import { portalInfo } from '@testing/portal-fixtures';
 
 function googleStatus(overrides: Partial<GoogleCalendarStatus> = {}): GoogleCalendarStatus {
   return {
@@ -45,7 +46,9 @@ describe('GoogleCalendarPanel', () => {
     backend = TestBed.inject(HttpTestingController);
     navigation = TestBed.inject(ExternalNavigation);
     vi.spyOn(navigation, 'origin').mockReturnValue('https://school.example.com');
-    TestBed.inject(Portal).set({ name: 'Уроки Марии', address: 'https://school.example.com' });
+    TestBed.inject(Portal).set(
+      portalInfo({ name: 'Уроки Марии', address: 'https://school.example.com' }),
+    );
     vi.spyOn(navigation, 'go').mockImplementation(() => undefined);
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(GoogleCalendarPanel);

@@ -97,6 +97,8 @@ body {
 /* Sign-in and invitation pages */
 .tb-auth-page {
   display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-4);
   align-items: center;
   justify-content: center;
   min-height: 100vh;

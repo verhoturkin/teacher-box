@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { DEFAULT_PORTAL_NAME, Portal } from './portal';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('Portal', () => {
   let portal: Portal;
@@ -36,12 +37,28 @@ describe('Portal', () => {
     const loaded = portal.load();
     backend
       .expectOne('/api/public/portal')
-      .flush({ name: 'Школа', address: 'https://school.example.com' });
+      .flush(portalInfo({ name: 'Школа', address: 'https://school.example.com' }));
     await loaded;
 
     expect(portal.name()).toBe('Школа');
     expect(portal.addressSet()).toBe(true);
     expect(portal.link('/cabinet')).toBe('https://school.example.com/cabinet');
+  });
+
+  it('shows the logo in the browser tab', () => {
+    const icon = document.createElement('link');
+    icon.rel = 'icon';
+    icon.href = 'favicon.ico';
+    document.head.append(icon);
+
+    portal.set(portalInfo({ logo: '/api/public/portal/logo?v=1', accent: 'emerald' }));
+    expect(icon.getAttribute('href')).toBe('/api/public/portal/logo?v=1');
+    expect(portal.logo()).toBe('/api/public/portal/logo?v=1');
+
+    portal.set(portalInfo());
+    expect(icon.getAttribute('href')).toBe('favicon.ico');
+    icon.remove();
+    portal.set(portalInfo({ logo: '/other' }));
   });
 
   it('keeps the defaults quietly when the server does not answer', async () => {

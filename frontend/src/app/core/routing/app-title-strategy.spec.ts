@@ -6,6 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { DEFAULT_PORTAL_NAME, Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from './app-title-strategy';
 import { testProvidersWithRouter } from '@testing/setup';
+import { portalInfo } from '@testing/portal-fixtures';
 
 @Component({ selector: 'tb-empty', template: '', changeDetection: ChangeDetectionStrategy.OnPush })
 class Empty {}
@@ -43,7 +44,7 @@ describe('AppTitleStrategy', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/titled');
 
-    TestBed.inject(Portal).set({ name: 'Английский с Марией', address: null });
+    TestBed.inject(Portal).set(portalInfo({ name: 'Английский с Марией', address: null }));
     TestBed.tick();
 
     expect(TestBed.inject(Title).getTitle()).toBe('Оплаты — Английский с Марией');

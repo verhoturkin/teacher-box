@@ -10,6 +10,7 @@ import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
 import { MeetingsSettingsPanel } from './meetings-settings-panel';
 import { testProviders } from '@testing/setup';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('MeetingsSettingsPanel', () => {
   let fixture: ComponentFixture<MeetingsSettingsPanel>;
@@ -33,7 +34,9 @@ describe('MeetingsSettingsPanel', () => {
       ),
     });
     backend = TestBed.inject(HttpTestingController);
-    TestBed.inject(Portal).set({ name: 'Teacher Box', address: 'https://school.example.com' });
+    TestBed.inject(Portal).set(
+      portalInfo({ name: 'Teacher Box', address: 'https://school.example.com' }),
+    );
     fixture = TestBed.createComponent(MeetingsSettingsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/meetings/yandex').flush(status);

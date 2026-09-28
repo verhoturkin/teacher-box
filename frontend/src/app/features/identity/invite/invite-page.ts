@@ -20,6 +20,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { Portal } from '@core/portal/portal';
+import { PortalLogo } from '@core/portal/portal-logo';
 import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { InviteInfo } from '../data-access/identity.models';
@@ -41,10 +42,12 @@ type InviteState =
     Message,
     Password,
     ProgressSpinner,
+    PortalLogo,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
+      <tb-portal-logo size="3rem" />
       @switch (state().kind) {
         @case ('loading') {
           <p-progress-spinner ariaLabel="Загрузка приглашения" />

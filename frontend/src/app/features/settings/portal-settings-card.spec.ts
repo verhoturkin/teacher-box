@@ -7,6 +7,19 @@ import { portalSettings } from '@testing/portal-fixtures';
 import { PortalSettingsCard } from './portal-settings-card';
 import { testProviders } from '@testing/setup';
 
+/** A FileList with the given files (jsdom cannot build one). */
+class TestFiles extends Array<File> implements FileList {
+  item(index: number): File | null {
+    return this[index] ?? null;
+  }
+}
+
+function listOf(...files: File[]): FileList {
+  const list = new TestFiles();
+  list.push(...files);
+  return list;
+}
+
 describe('PortalSettingsCard', () => {
   let fixture: ComponentFixture<PortalSettingsCard>;
   let backend: HttpTestingController;
@@ -45,6 +58,7 @@ describe('PortalSettingsCard', () => {
     expect(request.request.body).toEqual({
       name: 'Английский с Марией',
       address: 'https://school.example.com',
+      accent: 'indigo',
     });
     request.flush(
       portalSettings({ name: 'Английский с Марией', address: 'https://school.example.com' }),
@@ -55,6 +69,72 @@ describe('PortalSettingsCard', () => {
     expect(portal.name()).toBe('Английский с Марией');
     expect(portal.link('/cabinet')).toBe('https://school.example.com/cabinet');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+  });
+
+  it('saves the chosen color', async () => {
+    const host = await render();
+
+    requireElement(host, 'button[aria-label="Изумрудный"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(
+      requireElement(host, 'button[aria-label="Изумрудный"]', HTMLButtonElement).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('true');
+    buttonByText(host, 'Сохранить').click();
+
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
+    expect(request.request.body).toEqual(expect.objectContaining({ accent: 'emerald' }));
+    request.flush(portalSettings({ accent: 'emerald' }));
+  });
+
+  it('uploads and removes the logo', async () => {
+    const host = await render();
+    const input = requireElement(host, 'input[type="file"]', HTMLInputElement);
+
+    fixture.componentInstance.uploadLogo(input);
+    const logo = new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' });
+    Object.defineProperty(input, 'files', { value: listOf(logo), configurable: true });
+    input.dispatchEvent(new Event('change'));
+    const upload = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal/logo' });
+    expect(upload.request.body).toBeInstanceOf(FormData);
+    upload.flush(portalSettings({ logo: '/api/public/portal/logo?v=1' }));
+    await fixture.whenStable();
+    expect(TestBed.inject(Portal).logo()).toBe('/api/public/portal/logo?v=1');
+    expect(requireElement(host, 'tb-portal-logo img', HTMLImageElement).getAttribute('src')).toBe(
+      '/api/public/portal/logo?v=1',
+    );
+
+    buttonByText(host, 'Убрать').click();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/portal/logo' })
+      .flush(portalSettings());
+    await fixture.whenStable();
+    expect(TestBed.inject(Portal).logo()).toBeNull();
+    expect(host.textContent).not.toContain('Убрать');
+  });
+
+  it('refuses a logo over 1 MB and survives a failed upload', async () => {
+    const host = await render();
+    const input = requireElement(host, 'input[type="file"]', HTMLInputElement);
+    const large = new File([new Uint8Array(1024 * 1024 + 1)], 'big.png', { type: 'image/png' });
+    Object.defineProperty(input, 'files', { value: listOf(large), configurable: true });
+
+    fixture.componentInstance.uploadLogo(input);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Файл больше 1 МБ' }),
+    );
+
+    Object.defineProperty(input, 'files', {
+      value: listOf(new File(['x'], 'x.png')),
+      configurable: true,
+    });
+    fixture.componentInstance.uploadLogo(input);
+    backend
+      .expectOne('/api/teacher/portal/logo')
+      .flush(null, { status: 422, statusText: 'Unprocessable Content' });
+    await fixture.whenStable();
+    expect(buttonByText(host, 'Загрузить логотип').disabled).toBe(false);
   });
 
   it('does not save a wrong address and survives a failed save', async () => {

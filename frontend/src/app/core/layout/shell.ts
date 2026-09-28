@@ -7,6 +7,7 @@ import { Menubar } from 'primeng/menubar';
 import { AuthService } from '@core/auth/auth.service';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { Portal } from '@core/portal/portal';
+import { PortalLogo } from '@core/portal/portal-logo';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 
 const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
@@ -18,13 +19,13 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
 /** Application frame: navigation bar with the user menu and routed content. */
 @Component({
   selector: 'tb-shell',
-  imports: [Button, Menu, Menubar, NotificationBell, RouterOutlet, RouterLink],
+  imports: [Button, Menu, Menubar, NotificationBell, RouterOutlet, RouterLink, PortalLogo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-menubar [model]="items()" styleClass="tb-shell__bar" breakpoint="1200px">
       <ng-template #start>
         <a class="tb-shell__brand" [routerLink]="homeLink()">
-          <i class="pi pi-graduation-cap" aria-hidden="true"></i>
+          <tb-portal-logo size="1.5rem" />
           <span>{{ portalName() }}</span>
         </a>
       </ng-template>

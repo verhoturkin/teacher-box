@@ -4,6 +4,7 @@ import { providePrimeNG } from 'primeng/config';
 import { Portal } from '@core/portal/portal';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { StudentWelcomeCard, WELCOME_DISMISSED_KEY } from './student-welcome-card';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('StudentWelcomeCard', () => {
   let fixture: ComponentFixture<StudentWelcomeCard>;
@@ -13,7 +14,7 @@ describe('StudentWelcomeCard', () => {
       imports: [StudentWelcomeCard],
       providers: [provideRouter([]), providePrimeNG()],
     });
-    TestBed.inject(Portal).set({ name: 'Английский с Марией', address: null });
+    TestBed.inject(Portal).set(portalInfo({ name: 'Английский с Марией', address: null }));
     fixture = TestBed.createComponent(StudentWelcomeCard);
     await fixture.whenStable();
   }

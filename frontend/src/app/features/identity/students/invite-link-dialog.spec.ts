@@ -4,6 +4,7 @@ import { providePrimeNG } from 'primeng/config';
 import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { InviteLinkDialog } from './invite-link-dialog';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('InviteLinkDialog', () => {
   let fixture: ComponentFixture<InviteLinkDialog>;
@@ -50,7 +51,9 @@ describe('InviteLinkDialog', () => {
   });
 
   it('starts the link with the portal address', async () => {
-    TestBed.inject(Portal).set({ name: 'Школа', address: 'https://school.example.com' });
+    TestBed.inject(Portal).set(
+      portalInfo({ name: 'Школа', address: 'https://school.example.com' }),
+    );
     await fixture.whenStable();
 
     const input = requireElement(

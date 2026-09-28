@@ -10,13 +10,15 @@ import { AuthService } from '@core/auth/auth.service';
 import { safeReturnUrl } from '@core/auth/return-url';
 import { describeError } from '@core/http/error-messages';
 import { Portal } from '@core/portal/portal';
+import { PortalLogo } from '@core/portal/portal-logo';
 
 @Component({
   selector: 'tb-login-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Password],
+  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Password, PortalLogo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
+      <tb-portal-logo size="3rem" />
       <p-card [header]="'Вход в ' + portalName()" styleClass="tb-auth-card">
         @if (sessionExpired()) {
           <p-message severity="info" styleClass="tb-form-message"

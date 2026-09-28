@@ -3,6 +3,7 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { DEFAULT_ACCENT, applyAccent } from '@core/theme/portal-accent';
 
 export const DEFAULT_PORTAL_NAME = 'Teacher Box';
 
@@ -11,6 +12,10 @@ export interface PortalInfo {
   readonly name: string;
   /** The address links are built from; `null` until it is set. */
   readonly address: string | null;
+  /** The PrimeNG palette of the portal, e.g. `indigo`. */
+  readonly accent: string;
+  /** Address of the portal's own logo; `null`: the default icon. */
+  readonly logo: string | null;
 }
 
 /** The portal as the teacher and the administrator see it in the settings. */
@@ -30,10 +35,16 @@ export class Portal {
   /** HttpClient only for loading: components that just show the name do not need it. */
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
-  private readonly info = signal<PortalInfo>({ name: DEFAULT_PORTAL_NAME, address: null });
+  private readonly info = signal<PortalInfo>({
+    name: DEFAULT_PORTAL_NAME,
+    address: null,
+    accent: DEFAULT_ACCENT,
+    logo: null,
+  });
   private setupDone = false;
 
   readonly name = computed(() => this.info().name);
+  readonly logo = computed(() => this.info().logo);
   /** The portal address or, until it is set, the address this page is opened at. */
   readonly address = computed(() => this.info().address ?? this.openedAt());
   /** The teacher has set the address (or the server has it). */
@@ -80,7 +91,23 @@ export class Portal {
 
   /** After the teacher or the administrator has changed them. */
   set(info: PortalInfo): void {
-    this.info.set({ name: info.name, address: info.address });
+    const before = this.info();
+    this.info.set({ name: info.name, address: info.address, accent: info.accent, logo: info.logo });
+    if (info.accent !== before.accent) {
+      applyAccent(info.accent);
+    }
+    if (info.logo !== before.logo) {
+      this.showIcon(info.logo);
+    }
+  }
+
+  /** The logo becomes the icon of the browser tab. */
+  private showIcon(logo: string | null): void {
+    const icon = this.document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
+    if (icon !== null) {
+      icon.type = logo === null ? 'image/x-icon' : '';
+      icon.href = logo ?? 'favicon.ico';
+    }
   }
 
   /** @param path a path of the portal starting with `/` */

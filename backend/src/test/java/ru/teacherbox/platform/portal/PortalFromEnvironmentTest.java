@@ -2,6 +2,7 @@ package ru.teacherbox.platform.portal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import ru.teacherbox.shared.files.FileStorage;
 import ru.teacherbox.shared.persistence.ModuleMigrations;
 
 /** {@code TEACHERBOX_PUBLIC_URL} takes precedence over the address entered in the interface. */
@@ -24,9 +26,9 @@ class PortalFromEnvironmentTest {
     void theVariableWins() {
         withRepository(repository -> {
             PortalService portal = new PortalService(repository, new PortalProperties("https://school.example.com/"),
-                    CLOCK);
+                    mock(FileStorage.class), CLOCK);
 
-            PortalService.View view = portal.change("Школа", "http://localhost:8080");
+            PortalService.View view = portal.change("Школа", "http://localhost:8080", null);
 
             assertThat(view.address()).isEqualTo("https://school.example.com");
             assertThat(view.addressFromEnvironment()).isTrue();
@@ -50,9 +52,9 @@ class PortalFromEnvironmentTest {
     void aConcurrentChangeIsNotLost() {
         withRepository(repository -> {
             PortalSettings loaded = repository.load();
-            repository.save(new PortalSettings("Первое", null, null, CLOCK.instant(), loaded.version()));
+            repository.save(new PortalSettings("Первое", null, null, null, null, CLOCK.instant(), loaded.version()));
 
-            assertThatThrownBy(() -> repository.save(new PortalSettings("Второе", null, null, CLOCK.instant(),
+            assertThatThrownBy(() -> repository.save(new PortalSettings("Второе", null, null, null, null, CLOCK.instant(),
                     loaded.version())))
                     .isInstanceOf(OptimisticLockingFailureException.class);
             assertThat(repository.load().name()).isEqualTo("Первое");

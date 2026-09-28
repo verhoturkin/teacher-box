@@ -6,6 +6,7 @@ import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { ResetCard } from './reset-card';
 import { testProviders } from '@testing/setup';
+import { portalInfo } from '@testing/portal-fixtures';
 
 describe('ResetCard', () => {
   let fixture: ComponentFixture<ResetCard>;
@@ -55,7 +56,9 @@ describe('ResetCard', () => {
       backup: 'teacherbox-20260927-120000-000.zip',
       hints: ['Календарь портала остался в Google Календаре — удалите его там вручную.'],
     });
-    backend.expectOne('/api/public/portal').flush({ name: 'Teacher Box', address: null });
+    backend
+      .expectOne('/api/public/portal')
+      .flush(portalInfo({ name: 'Teacher Box', address: null }));
     await vi.waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('/teacher/setup');
     });

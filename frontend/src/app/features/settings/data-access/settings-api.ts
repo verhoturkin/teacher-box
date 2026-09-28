@@ -15,8 +15,20 @@ export class SettingsApi {
   }
 
   /** Empty values mean the default name and no address. */
-  changePortal(name: string, address: string): Observable<PortalSettings> {
-    return this.http.put<PortalSettings>('/api/teacher/portal', { name, address });
+  /** @param accent `undefined`: the color stays */
+  changePortal(name: string, address: string, accent?: string): Observable<PortalSettings> {
+    return this.http.put<PortalSettings>('/api/teacher/portal', { name, address, accent });
+  }
+
+  /** PNG, JPEG, WebP or SVG up to 1 MB. */
+  uploadLogo(file: File): Observable<PortalSettings> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.put<PortalSettings>('/api/teacher/portal/logo', form);
+  }
+
+  removeLogo(): Observable<PortalSettings> {
+    return this.http.delete<PortalSettings>('/api/teacher/portal/logo');
   }
 
   /** The first setup is finished or skipped. */
