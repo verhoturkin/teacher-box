@@ -3,5 +3,5 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { AiApi } from './data-access/ai-api';
-export type { HomeworkDraft, ReviewDraft } from './data-access/ai.models';
+export type { HomeworkDraft } from './data-access/ai.models';
 export { HomeworkDraftDialog } from './homework-draft-dialog';
