@@ -1,9 +1,11 @@
 @use 'primeicons/primeicons.css';
+@use '@fontsource-variable/roboto/wght.css';
 
 /*
- * Design tokens (ADR-0015): spacing on a 4 px grid (--tb-space-N = N x 4 px), the width of the
- * content, the height of the header. Radii, colors and the sizes of controls come from the PrimeNG
- * preset (core/theme), so that components and PrimeNG widgets match.
+ * Design tokens (ADR-0015, ADR-0017 Material Design 3): spacing on a 4 px grid (--tb-space-N =
+ * N x 4 px), the M3 type scale, shape, elevation, state layers and motion, the width of the
+ * content, the height of the top app bar. Colors come from the roles of the PrimeNG preset
+ * (core/theme, --p-md-*), so that components and PrimeNG widgets match.
  */
 :root {
   --tb-space-1: 0.25rem;
@@ -17,21 +19,55 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  --tb-header-height: 3.5rem;
-  --tb-radius: var(--p-content-border-radius);
+  --tb-header-height: 4rem;
+
+  /* Type scale: `font: var(--tb-type-title-l)` */
+  --tb-font:
+    'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --tb-type-headline-l: 400 2rem/2.5rem var(--tb-font);
+  --tb-type-headline-m: 400 1.75rem/2.25rem var(--tb-font);
+  --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
+  --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
+  --tb-type-title-m: 500 1rem/1.5rem var(--tb-font);
+  --tb-type-title-s: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-l: 400 1rem/1.5rem var(--tb-font);
+  --tb-type-body-m: 400 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-s: 400 0.75rem/1rem var(--tb-font);
+  --tb-type-label-l: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-label-m: 500 0.75rem/1rem var(--tb-font);
+  --tb-type-label-s: 500 0.6875rem/1rem var(--tb-font);
+
+  /* Shape scale */
+  --tb-shape-xs: 4px;
+  --tb-shape-sm: 8px;
+  --tb-shape-md: 12px;
+  --tb-shape-lg: 16px;
+  --tb-shape-xl: 28px;
+  --tb-shape-full: 999px;
+  --tb-radius: var(--tb-shape-md);
+
+  /* Elevation: surfaces differ by tone; shadows only for floating elements */
+  --tb-elevation-1: 0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%);
+  --tb-elevation-2: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
+  --tb-elevation-3: 0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%);
+
+  /* State layers: the color of the content over the element */
+  --tb-state-hover: 8%;
+  --tb-state-focus: 10%;
+  --tb-state-pressed: 10%;
+
+  /* Motion */
+  --tb-motion-standard: cubic-bezier(0.2, 0, 0, 1);
+  --tb-motion-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --tb-duration-short: 150ms;
+  --tb-duration-medium: 300ms;
 }
 
 :root {
   color-scheme: light;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif;
+  font: var(--tb-type-body-l);
+  -webkit-font-smoothing: antialiased;
 }
 
 html,
@@ -53,10 +89,25 @@ body {
   }
 }
 
+/* Less motion when the system asks for it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 .tb-page-title {
   margin: 0 0 var(--tb-space-4);
-  font-size: 1.5rem;
-  font-weight: 600;
+  font: var(--tb-type-headline-m);
+
+  @media (max-width: 768px) {
+    font: var(--tb-type-headline-s);
+  }
 }
 
 .tb-page-header {
@@ -249,8 +300,7 @@ a.p-menu-item-link:hover {
 }
 
 .tb-stat__value {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font: var(--tb-type-headline-s);
 }
 
 /* Money */
@@ -295,8 +345,7 @@ a.p-menu-item-link:hover {
 
 .tb-subtitle {
   margin: var(--tb-space-5) 0 var(--tb-space-2);
-  font-size: 1rem;
-  font-weight: 600;
+  font: var(--tb-type-title-m);
 }
 
 .tb-field__header {
@@ -670,7 +719,7 @@ a.p-menu-item-link:hover {
     }
 
     .tb-stat__value {
-      font-size: 1.25rem;
+      font: var(--tb-type-title-l);
     }
   }
 }
