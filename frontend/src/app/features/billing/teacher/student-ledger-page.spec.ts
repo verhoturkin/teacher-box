@@ -4,7 +4,6 @@ import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
-import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { StudentLedgerPage } from './student-ledger-page';
 import { testProviders } from '@testing/setup';
@@ -101,17 +100,10 @@ describe('StudentLedgerPage', () => {
     expect(text()).toContain('долг 1 500 ₽');
   });
 
-  it('records lessons and payments for this student', async () => {
-    buttonByText(host, 'Занятие').click();
-    await fixture.whenStable();
-    const lessonDialog = fixture.debugElement
-      .query(By.directive(LessonDialog))
-      .injector.get(LessonDialog);
-    expect(lessonDialog.form.controls.studentId.value).toBe('s-1');
-    expect(lessonDialog.form.controls.price.value).toBe(1500);
-    lessonDialog.save();
-    backend.expectOne('/api/teacher/billing/lessons').flush(lesson());
-    backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
+  it('records payments, not lessons, for this student', async () => {
+    expect(
+      Array.from(host.querySelectorAll('button')).map((button) => button.textContent.trim()),
+    ).not.toContain('Занятие');
 
     buttonByText(host, 'Оплата').click();
     await fixture.whenStable();
@@ -120,5 +112,9 @@ describe('StudentLedgerPage', () => {
       .injector.get(PaymentDialog);
     expect(paymentDialog.visible()).toBe(true);
     expect(paymentDialog.form.controls.studentId.value).toBe('s-1');
+    paymentDialog.form.patchValue({ amount: 100 });
+    paymentDialog.save();
+    backend.expectOne('/api/teacher/billing/payments').flush(payment());
+    backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
   });
 });

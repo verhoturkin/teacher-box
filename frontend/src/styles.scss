@@ -207,7 +207,10 @@ body {
   margin-bottom: var(--tb-space-2);
 }
 
-/* Links: the primary color, underlined on hover; links styled as buttons stay buttons */
+/*
+ * Links: the primary color, underlined on hover; links styled as buttons stay buttons, menu items
+ * (the header, the user menu, «Ещё») are highlighted by the menu itself
+ */
 a {
   color: var(--p-primary-color);
   text-decoration: none;
@@ -218,7 +221,10 @@ a {
 }
 
 a.p-button,
-a.p-button:hover {
+a.p-button:hover,
+a.p-menubar-item-link:hover,
+a.p-menubar-button:hover,
+a.p-menu-item-link:hover {
   text-decoration: none;
 }
 
@@ -467,6 +473,8 @@ a.p-button:hover {
 /* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
   --fc-classic-background-event: var(--p-surface-500);
+  /* The «Занято» caption of the student's calendar stays readable on the grey */
+  --fc-classic-background-event-foreground-opacity: 80%;
 }
 
 /*
@@ -572,6 +580,11 @@ a.p-button:hover {
     height: 3.5rem;
     box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
   }
+}
+
+/* Dialog buttons that do not fit in one row (e.g. the actions of a lesson) go on to the next one */
+.p-dialog-footer {
+  flex-wrap: wrap;
 }
 
 /*

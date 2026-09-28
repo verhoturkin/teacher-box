@@ -51,6 +51,22 @@ describe('ScheduleCalendar', () => {
     expect(text).not.toContain('Иван');
   });
 
+  it('captions the busy times only when asked to', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('busy', [
+      { start: '2026-10-01T09:00:00Z', end: '2026-10-01T10:00:00Z' },
+    ]);
+    const busy = (): Element[] => Array.from(hostElement(fixture).querySelectorAll('.tb-busy'));
+
+    await render([]);
+    expect(busy()).toHaveLength(1);
+    expect(busy()[0]?.textContent.trim()).toBe('');
+
+    fixture.componentRef.setInput('busyTitle', 'Занято');
+    await render([]);
+    expect(busy()[0]?.textContent.trim()).toBe('Занято');
+  });
+
   it('opens a clicked lesson', async () => {
     const clicked: ScheduledLesson[] = [];
     fixture.componentInstance.lessonClick.subscribe((lesson) => clicked.push(lesson));

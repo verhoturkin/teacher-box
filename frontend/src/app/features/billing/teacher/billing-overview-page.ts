@@ -24,11 +24,10 @@ import { BillingApi } from '../data-access/billing-api';
 import { BillingOverview, StudentBalance } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { DefaultPriceCard } from './default-price-card';
-import { LessonDialog } from './lesson-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 
-/** Teacher: balances of all students and quick recording of lessons and payments. */
+/** Teacher: balances of all students and quick recording of payments. */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
@@ -49,7 +48,6 @@ import { EmptyState } from '@shared/ui/empty-state';
     RowType,
     BalanceAmount,
     DefaultPriceCard,
-    LessonDialog,
     PaymentDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,12 +58,6 @@ import { EmptyState } from '@shared/ui/empty-state';
         <tb-help-button topic="teacher/billing" />
       </div>
       <div class="tb-actions">
-        <p-button
-          label="Занятие"
-          icon="pi pi-plus"
-          (onClick)="openLesson(null)"
-          [disabled]="!overview()"
-        />
         <p-button
           label="Оплата"
           icon="pi pi-wallet"
@@ -149,14 +141,6 @@ import { EmptyState } from '@shared/ui/empty-state';
               </td>
               <td class="tb-actions-column">
                 <p-button
-                  icon="pi pi-plus"
-                  [text]="true"
-                  [rounded]="true"
-                  pTooltip="Записать занятие"
-                  [ariaLabel]="'Занятие: ' + row.displayName"
-                  (onClick)="openLesson(row.studentId)"
-                />
-                <p-button
                   icon="pi pi-wallet"
                   [text]="true"
                   [rounded]="true"
@@ -186,14 +170,6 @@ import { EmptyState } from '@shared/ui/empty-state';
         </p-table>
       </p-card>
 
-      <tb-lesson-dialog
-        [(visible)]="lessonVisible"
-        [students]="activeStudents()"
-        [studentId]="selectedStudent()"
-        [currency]="overview.currency"
-        [defaultDuration]="overview.defaultLessonDuration"
-        (saved)="onSaved('Занятие записано')"
-      />
       <tb-payment-dialog
         [(visible)]="paymentVisible"
         [students]="overview.students"
@@ -216,15 +192,11 @@ export class BillingOverviewPage implements OnInit {
     const students = this.overview()?.students ?? [];
     return this.debtorsFilter() ? students.filter((student) => student.balance < 0) : students;
   });
-  protected readonly activeStudents = computed(() =>
-    (this.overview()?.students ?? []).filter((student) => student.status !== 'DEACTIVATED'),
-  );
   protected readonly debtorsCount = computed(
     () => (this.overview()?.students ?? []).filter((student) => student.balance < 0).length,
   );
 
   protected readonly selectedStudent = signal<string | null>(null);
-  protected readonly lessonVisible = signal(false);
   protected readonly paymentVisible = signal(false);
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();
@@ -234,11 +206,6 @@ export class BillingOverviewPage implements OnInit {
     if (this.create() === 'payment') {
       this.openPayment(null);
     }
-  }
-
-  protected openLesson(studentId: string | null): void {
-    this.selectedStudent.set(studentId);
-    this.lessonVisible.set(true);
   }
 
   protected openPayment(studentId: string | null): void {

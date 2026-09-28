@@ -139,6 +139,7 @@ export const UPCOMING_DAYS = 60;
           <tb-schedule-calendar
             [lessons]="calendarLessons()"
             [busy]="busy()"
+            busyTitle="Занято"
             [showStudent]="false"
             initialView="listWeek"
             (rangeChange)="onRange($event)"

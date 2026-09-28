@@ -8,6 +8,7 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -137,14 +138,14 @@ export class PaymentDialog {
   });
 
   constructor() {
+    // Opening resets the form. Untracked: the student list reads its own signals while the value is
+    // written, and choosing a student would reset the form again.
     effect(() => {
+      const studentId = this.studentId();
       if (this.visible()) {
-        this.error.set(null);
-        this.form.reset({
-          studentId: this.studentId(),
-          amount: null,
-          paidOn: new Date(),
-          comment: '',
+        untracked(() => {
+          this.error.set(null);
+          this.form.reset({ studentId, amount: null, paidOn: new Date(), comment: '' });
         });
       }
     });
