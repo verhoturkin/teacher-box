@@ -1,26 +1,49 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { MenuItem } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Menu } from 'primeng/menu';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost';
 
 /**
  * Opens the video meeting of a lesson. For the teacher a Telemost link opens in the desktop
- * application (if chosen on this device) with the browser as a fallback; students get the link.
+ * application (if chosen on this device): an M3 Expressive split button, the browser in the menu
+ * of its trailing part (ADR-0022); students get the link.
  */
 @Component({
   selector: 'tb-join-lesson-button',
-  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel],
+  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Menu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (inApp()) {
-      <span class="tb-join">
+      <span
+        class="tb-split"
+        role="group"
+        [attr.aria-label]="label()"
+        [class.tb-split--open]="menuOpen()"
+      >
         <p-button
+          styleClass="tb-split__main"
           [label]="label()"
           icon="pi pi-video"
           [severity]="tonal() ? 'secondary' : 'primary'"
           (onClick)="openApp()"
         />
-        <a class="tb-join__browser" [href]="url()" target="_blank" rel="noopener">в браузере</a>
+        <p-button
+          styleClass="tb-split__more"
+          icon="pi pi-chevron-down"
+          [severity]="tonal() ? 'secondary' : 'primary'"
+          ariaLabel="Другие способы открыть встречу"
+          (onClick)="menu.toggle($event)"
+        />
+        <p-menu
+          #menu
+          [model]="items()"
+          [popup]="true"
+          appendTo="body"
+          (onShow)="menuOpen.set(true)"
+          (onHide)="menuOpen.set(false)"
+        />
       </span>
     } @else {
       <a
@@ -33,18 +56,6 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
         <i pButtonIcon aria-hidden="true" class="pi pi-video"></i>
         <span pButtonLabel>{{ label() }}</span>
       </a>
-    }
-  `,
-  styles: `
-    .tb-join {
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-join__browser {
-      font-size: 0.875rem;
     }
   `,
 })
@@ -62,6 +73,16 @@ export class JoinLessonButton {
   protected readonly inApp = computed(
     () => this.teacher() && this.preferences.openInApp() && isTelemostLink(this.url()),
   );
+
+  protected readonly menuOpen = signal(false);
+  protected readonly items = computed<MenuItem[]>(() => [
+    {
+      label: 'Открыть в браузере',
+      icon: 'pi pi-external-link',
+      url: this.url(),
+      target: '_blank',
+    },
+  ]);
 
   openApp(): void {
     this.navigation.go(telemostAppLink(this.url()));

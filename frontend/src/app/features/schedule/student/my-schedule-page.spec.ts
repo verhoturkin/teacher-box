@@ -1,7 +1,9 @@
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
+import { BehaviorSubject } from 'rxjs';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import {
   calendarFeed,
@@ -29,10 +31,17 @@ describe('MySchedulePage', () => {
     };
   };
 
+  /** The screen: a computer unless a test says it is a phone. */
+  let phone: BehaviorSubject<BreakpointState>;
+
   beforeEach(() => {
+    phone = new BehaviorSubject<BreakpointState>({ matches: false, breakpoints: {} });
     TestBed.configureTestingModule({
       imports: [MySchedulePage],
-      providers: testProviders(),
+      providers: testProviders({
+        provide: BreakpointObserver,
+        useValue: { observe: () => phone },
+      }),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -165,6 +174,45 @@ describe('MySchedulePage', () => {
     expect(() => buttonByText(hostElement(fixture), 'Перенести')).toThrow();
 
     buttonByText(hostElement(fixture), 'Отозвать').click();
+    backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }).flush(null);
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    for (const request of lessonRequests()) {
+      request.flush([]);
+    }
+  });
+
+  it('on a phone keeps the rows in one line and opens the actions in the bottom sheet', async () => {
+    phone.next({ matches: true, breakpoints: {} });
+    const pending = changeRequest({ kind: 'CANCEL' });
+    await render(
+      [
+        scheduledLesson({ ...future(24), joinUrl: 'https://zoom.us/j/1' }),
+        scheduledLesson({ id: 'l-2', ...future(48), pendingRequests: [pending] }),
+      ],
+      [pending],
+    );
+    const host = hostElement(fixture);
+    expect(() => buttonByText(host, 'Перенести')).toThrow();
+    expect(host.querySelectorAll('.tb-schedule-list .pi-video')).toHaveLength(1);
+    const rows = host.querySelectorAll<HTMLButtonElement>('button[aria-label^="Занятие:"]');
+    expect(rows).toHaveLength(2);
+
+    rows[0]?.click();
+    await fixture.whenStable();
+    const sheet = requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement);
+    expect(readableText(sheet)).toContain('Подключиться');
+    expect(sheet.querySelector('a[href="https://zoom.us/j/1"]')).not.toBeNull();
+    buttonByText(sheet, 'Перенести').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Перенести занятие');
+
+    fixture.componentInstance.closeSheet();
+    rows[1]?.click();
+    await fixture.whenStable();
+    buttonByText(
+      requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement),
+      'Отозвать запрос',
+    ).click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }).flush(null);
     backend.expectOne('/api/me/schedule/requests').flush([]);
     for (const request of lessonRequests()) {

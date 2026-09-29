@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
-import { buttonByText, hostElement } from '@testing/dom';
+import { buttonByText, hostElement, requireElement } from '@testing/dom';
 import { MeetingPreferences } from '../telemost';
 import { JoinLessonButton } from './join-lesson-button';
 
@@ -33,9 +33,26 @@ describe('JoinLessonButton', () => {
     buttonByText(hostElement(fixture), 'Начать урок').click();
 
     expect(navigation.go).toHaveBeenCalledWith('telemost://https://telemost.yandex.ru/j/1');
-    const browser = hostElement(fixture).querySelector('a');
-    expect(browser?.textContent).toContain('в браузере');
-    expect(browser?.getAttribute('href')).toBe('https://telemost.yandex.ru/j/1');
+    expect(hostElement(fixture).querySelector('a')).toBeNull();
+  });
+
+  it('keeps the browser in the menu of the split button', async () => {
+    await render('https://telemost.yandex.ru/j/1', true, true);
+    const split = requireElement(hostElement(fixture), '.tb-split', HTMLElement);
+    expect(split.getAttribute('role')).toBe('group');
+
+    requireElement(
+      split,
+      'button[aria-label="Другие способы открыть встречу"]',
+      HTMLButtonElement,
+    ).click();
+    await fixture.whenStable();
+
+    expect(split.classList).toContain('tb-split--open');
+    const browser = requireElement(document.body, '.p-menu a.p-menu-item-link', HTMLAnchorElement);
+    expect(browser.textContent).toContain('Открыть в браузере');
+    expect(browser.getAttribute('href')).toBe('https://telemost.yandex.ru/j/1');
+    expect(browser.getAttribute('target')).toBe('_blank');
   });
 
   it('gives a plain link to other services', async () => {

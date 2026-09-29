@@ -9,7 +9,9 @@ import {
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Drawer } from 'primeng/drawer';
 import { Tag } from 'primeng/tag';
+import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { MyBoardsCard } from '@features/boards/parts';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
@@ -23,10 +25,8 @@ import {
 } from '../data-access/schedule.models';
 import {
   REQUEST_STATUS_LABELS,
-  STATUS_LABELS,
   formatLessonStart,
   formatLessonTime,
-  lessonWith,
   requestKindLabel,
   widen,
 } from '../schedule-labels';
@@ -34,6 +34,7 @@ import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { LessonActions } from '../ui/lesson-actions';
 import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
+import { LessonSummary, excusedFrom } from './lesson-summary';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 
@@ -52,10 +53,12 @@ export function nextMonday(date: Date): Date {
 @Component({
   selector: 'tb-my-schedule-page',
   imports: [
+    LessonSummary,
     EmptyState,
     HelpButton,
     Button,
     Card,
+    Drawer,
     Tag,
     CalendarFeedPanel,
     ChangeRequestDialog,
@@ -80,56 +83,48 @@ export function nextMonday(date: Date): Date {
         } @else {
           <ul class="tb-list tb-schedule-list">
             @for (lesson of upcoming(); track lesson.id) {
-              <li>
+              <li [class.tb-list__item--link]="mobile()">
                 <span class="tb-list__lead" aria-hidden="true">
-                  <i [class]="lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users'"></i>
+                  <i [class]="leadIcon(lesson)"></i>
                 </span>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ time(lesson) }}</span>
-                  @if (lesson.groupId !== null) {
-                    <span class="tb-list__supporting">{{ with(lesson) }}</span>
-                  }
-                  @if (lesson.topic !== null) {
-                    <span class="tb-list__supporting">{{ lesson.topic }}</span>
-                  }
-                  @if (lesson.status !== 'SCHEDULED') {
-                    <p-tag
-                      [value]="statuses[lesson.status].label"
-                      [severity]="statuses[lesson.status].severity"
-                    />
-                  }
-                  @if (excused(lesson)) {
-                    <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
-                  }
-                  @if (lesson.pendingRequests[0]; as request) {
-                    <span class="tb-list__supporting"
-                      >Запрос «{{ kind(request) }}» ждёт ответа учителя</span
-                    >
-                  }
+                  <tb-lesson-summary [lesson]="lesson" />
                 </div>
-                <div class="tb-list__trail">
-                  <tb-lesson-actions
-                    [joinUrl]="lesson.status === 'SCHEDULED' ? lesson.joinUrl : null"
-                    joinLabel="Подключиться"
-                    [requests]="
-                      lesson.status === 'SCHEDULED' &&
-                      lesson.pendingRequests.length === 0 &&
-                      !excused(lesson)
-                    "
-                    [group]="lesson.groupId !== null"
-                    [lessonName]="time(lesson)"
-                    (ask)="ask(lesson, $event)"
-                  />
-                  @if (lesson.pendingRequests[0]; as request) {
+                @if (mobile()) {
+                  <!-- a phone: the row stays one line, its actions are in the bottom sheet -->
+                  <div class="tb-list__trail tb-list__trail--icons">
+                    <!-- stretched over the row: the whole row opens the sheet -->
                     <p-button
-                      severity="danger"
-                      label="Отозвать"
+                      class="tb-list__stretched"
+                      icon="pi pi-chevron-right"
+                      severity="secondary"
                       [text]="true"
-                      [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
-                      (onClick)="withdraw(request)"
+                      [rounded]="true"
+                      [ariaLabel]="'Занятие: ' + time(lesson)"
+                      (onClick)="openSheet(lesson)"
                     />
-                  }
-                </div>
+                  </div>
+                } @else {
+                  <div class="tb-list__trail">
+                    <tb-lesson-actions
+                      [joinUrl]="joinUrl(lesson)"
+                      joinLabel="Подключиться"
+                      [requests]="canAsk(lesson)"
+                      [group]="lesson.groupId !== null"
+                      (ask)="ask(lesson, $event)"
+                    />
+                    @if (lesson.pendingRequests[0]; as request) {
+                      <p-button
+                        severity="danger"
+                        label="Отозвать"
+                        [text]="true"
+                        [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
+                        (onClick)="withdraw(request)"
+                      />
+                    }
+                  </div>
+                }
               </li>
             }
           </ul>
@@ -178,6 +173,39 @@ export function nextMonday(date: Date): Date {
       <tb-calendar-feed-panel />
     </div>
 
+    <p-drawer
+      [visible]="sheetLesson() !== null"
+      (visibleChange)="$event || closeSheet()"
+      position="bottom"
+      styleClass="tb-sheet"
+      [header]="sheetTitle()"
+    >
+      @if (sheetLesson(); as lesson) {
+        <div class="tb-list__text">
+          <tb-lesson-summary [lesson]="lesson" />
+        </div>
+        <tb-lesson-actions
+          [stacked]="true"
+          [joinUrl]="joinUrl(lesson)"
+          joinLabel="Подключиться"
+          [requests]="canAsk(lesson)"
+          [group]="lesson.groupId !== null"
+          rescheduleIcon="pi pi-calendar"
+          (ask)="closeSheet(); ask(lesson, $event)"
+        />
+        @if (lesson.pendingRequests[0]; as request) {
+          <p-button
+            class="tb-tonal"
+            severity="danger"
+            label="Отозвать запрос"
+            icon="pi pi-undo"
+            [fluid]="true"
+            (onClick)="closeSheet(); withdraw(request)"
+          />
+        }
+      }
+    </p-drawer>
+
     <tb-change-request-dialog
       [(visible)]="requestVisible"
       [lesson]="requestLesson()"
@@ -193,8 +221,6 @@ export class MySchedulePage implements OnInit {
   private readonly messages = inject(MessageService);
 
   protected readonly kind = requestKindLabel;
-  protected readonly with = lessonWith;
-  protected readonly statuses = STATUS_LABELS;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly upcomingLessons = signal<ScheduledLesson[]>([]);
@@ -205,6 +231,14 @@ export class MySchedulePage implements OnInit {
   protected readonly upcoming = computed(() =>
     this.upcomingLessons().filter((lesson) => new Date(lesson.endsAt) > this.now()),
   );
+
+  protected readonly mobile = injectMobile();
+  /** The lesson whose bottom sheet is open (a phone). */
+  protected readonly sheetLesson = signal<ScheduledLesson | null>(null);
+  protected readonly sheetTitle = computed(() => {
+    const lesson = this.sheetLesson();
+    return lesson === null ? '' : this.time(lesson);
+  });
 
   protected readonly requestVisible = signal(false);
   protected readonly requestLesson = signal<ScheduledLesson | null>(null);
@@ -226,7 +260,7 @@ export class MySchedulePage implements OnInit {
 
   /** The student said they would not come to this group lesson. */
   protected excused(lesson: ScheduledLesson): boolean {
-    return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');
+    return excusedFrom(lesson);
   }
 
   ask(lesson: ScheduledLesson, kind: ChangeKind): void {
@@ -234,6 +268,34 @@ export class MySchedulePage implements OnInit {
     this.requestLesson.set(lesson);
     this.requestKind.set(kind);
     this.requestVisible.set(true);
+  }
+
+  openSheet(lesson: ScheduledLesson): void {
+    this.sheetLesson.set(lesson);
+  }
+
+  closeSheet(): void {
+    this.sheetLesson.set(null);
+  }
+
+  /** A lesson with a meeting shows the camera, a group lesson the people. */
+  protected leadIcon(lesson: ScheduledLesson): string {
+    if (this.joinUrl(lesson) !== null) {
+      return 'pi pi-video';
+    }
+    return lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users';
+  }
+
+  /** The meeting of a lesson that is still planned. */
+  protected joinUrl(lesson: ScheduledLesson): string | null {
+    return lesson.status === 'SCHEDULED' ? lesson.joinUrl : null;
+  }
+
+  /** Whether the student may ask to move or cancel the lesson. */
+  protected canAsk(lesson: ScheduledLesson): boolean {
+    return (
+      lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !this.excused(lesson)
+    );
   }
 
   onSent(): void {

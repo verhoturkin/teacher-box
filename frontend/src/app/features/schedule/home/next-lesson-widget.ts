@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { injectMobile } from '@core/layout/mobile';
 import { Card } from 'primeng/card';
 import { LessonActions } from '../ui/lesson-actions';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -46,7 +47,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
               [joinUrl]="lesson.joinUrl"
               [requests]="lesson.pendingRequests.length === 0"
               [group]="lesson.groupId !== null"
-              [lessonName]="time(lesson)"
+              [stacked]="mobile()"
               rescheduleIcon="pi pi-calendar"
               (ask)="ask(lesson, $event)"
             />
@@ -82,6 +83,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
   `,
 })
 export class NextLessonWidget implements OnInit {
+  protected readonly mobile = injectMobile();
   private readonly api = inject(ScheduleApi);
 
   readonly summary = input.required<MyScheduleSummary>();

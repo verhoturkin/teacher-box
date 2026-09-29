@@ -364,6 +364,103 @@ textarea.p-textarea {
   }
 }
 
+/*
+ * M3 outlined text field (ADR-0022): the label sits on the outline at its top left (Body Small, on
+ * the background of the card or the dialog), primary while the field has the focus, red when the
+ * value is wrong. The field is 56 px high (the theme). Fields with a header of their own
+ * (`tb-field__header`: the label and a button) keep the label above.
+ */
+.tb-field:is(
+    :has(
+        > label:first-child
+          + :is(
+            input,
+            textarea,
+            p-select,
+            p-multiselect,
+            p-datepicker,
+            p-inputnumber,
+            p-password,
+            p-autocomplete,
+            p-iconfield
+          )
+      ),
+    /* :has() does not nest: a row with the field first is its own selector */
+    :has(
+        > label:first-child
+          + :is(.tb-copy-row, .tb-inline)
+          > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)
+      )
+  ) {
+  position: relative;
+  margin-top: var(--tb-space-2);
+
+  > label:first-child {
+    position: absolute;
+    top: 0;
+    left: var(--tb-space-3);
+    z-index: 1;
+    max-width: calc(100% - 2rem);
+    overflow: hidden;
+    padding: 0 var(--tb-space-1);
+    background: var(--p-content-background);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-s);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateY(-50%);
+  }
+
+  &:focus-within > label:first-child {
+    color: var(--p-md-primary);
+  }
+
+  &:has(.ng-invalid.ng-touched, .ng-invalid.ng-dirty, .p-invalid) > label:first-child {
+    color: var(--p-md-error);
+  }
+}
+
+/*
+ * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
+ * magnifier at its start; the focus is the primary ring.
+ */
+.p-iconfield:has(> .pi-search, > .p-inputicon.pi-search) > .p-inputtext {
+  border-color: transparent;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+  padding-inline-start: 3rem;
+
+  &:enabled:hover {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--p-md-on-surface) 8%, var(--p-md-surface-container-high));
+  }
+
+  &:enabled:focus {
+    border-color: transparent;
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+}
+
+.p-iconfield:has(> .pi-search, > .p-inputicon.pi-search) > .p-inputicon {
+  inset-inline-start: 1.25rem;
+}
+
+/* The filter of a dropdown list is the search bar too, a size smaller (48 px) */
+.p-select-overlay .p-select-filter,
+.p-multiselect-overlay .p-multiselect-filter {
+  padding-block: var(--tb-space-3);
+  border-color: transparent;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+
+  &:enabled:focus {
+    border-color: transparent;
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+}
+
 /* A group of fields or settings with its title (Title Medium) */
 .tb-section {
   display: flex;
@@ -494,7 +591,8 @@ textarea.p-textarea {
  * button with a changing label («Отменить» / «Не приду») keeps its own width.
  */
 @container (max-width: 26rem) {
-  .tb-list > li:has(> .tb-list__trail :is(p-button, tb-join-lesson-button)) {
+  .tb-list
+    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
     grid-template-areas: 'lead text text' 'trail trail trail';
 
     > .tb-list__trail {
@@ -509,6 +607,26 @@ textarea.p-textarea {
     .p-button-text:not(.p-button-icon-only) {
       padding-inline: var(--tb-space-3);
     }
+  }
+}
+
+/*
+ * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
+ * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
+ */
+.tb-list > li:has(p-button.tb-list__stretched) {
+  position: relative;
+}
+
+p-button.tb-list__stretched .p-button {
+  position: static;
+
+  /* ::after belongs to PrimeNG (icon-only buttons) */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
   }
 }
 
@@ -625,10 +743,14 @@ textarea.p-textarea {
   text-align: right;
 }
 
-/* A field with its buttons: the buttons go under the field when they do not fit */
+/*
+ * A field with its buttons: the buttons go under the field when they do not fit; a button (40 px)
+ * stands in the middle of the field (56 px)
+ */
 .tb-copy-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--tb-space-2);
 
   > .tb-grow,
@@ -1570,6 +1692,120 @@ a.p-menu-item-link:hover {
     .tb-stat__value {
       font: var(--tb-type-title-l);
     }
+  }
+}
+
+/*
+ * M3 Expressive split button (ADR-0022): the action and a trailing part with the menu of other ways,
+ * 2 px apart; the inner corners are small, the outer ones round. The trailing part becomes round
+ * while its menu is open.
+ */
+.tb-split {
+  display: inline-flex;
+  gap: 2px;
+
+  .p-button.tb-split__main {
+    border-start-end-radius: var(--tb-shape-xs);
+    border-end-end-radius: var(--tb-shape-xs);
+  }
+
+  .p-button.tb-split__more {
+    width: 3rem;
+    border-start-start-radius: var(--tb-shape-xs);
+    border-end-start-radius: var(--tb-shape-xs);
+
+    .p-button-icon {
+      font-size: 0.875rem;
+    }
+  }
+
+  &.tb-split--open .p-button.tb-split__more {
+    border-radius: var(--tb-shape-full);
+  }
+}
+
+/*
+ * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
+ * other; stacked (a phone) the meeting takes the whole width and the requests are an M3 Expressive
+ * connected button group under it: two halves 2 px apart, the inner corners small (ADR-0022).
+ */
+.tb-button-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1);
+}
+
+.tb-lesson-actions--stacked {
+  flex-direction: column;
+  gap: var(--tb-space-2);
+  width: 100%;
+
+  a.p-button,
+  tb-join-lesson-button .p-button {
+    width: 100%;
+  }
+
+  .tb-button-group {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+
+    > p-button {
+      flex: 1;
+    }
+
+    .p-button {
+      width: 100%;
+    }
+
+    > p-button:first-child .p-button:not(:active) {
+      border-start-end-radius: var(--tb-shape-sm);
+      border-end-end-radius: var(--tb-shape-sm);
+    }
+
+    > p-button:last-child .p-button:not(:active) {
+      border-start-start-radius: var(--tb-shape-sm);
+      border-end-start-radius: var(--tb-shape-sm);
+    }
+  }
+}
+
+/*
+ * M3 bottom sheet (ADR-0022): a drawer from the bottom of a phone's screen with the details and the
+ * actions of a row; the top corners extra large, the drag handle on top, as high as its content.
+ */
+.p-drawer.tb-sheet {
+  height: auto;
+  max-height: 90dvh;
+  border-start-start-radius: var(--tb-shape-xl);
+  border-start-end-radius: var(--tb-shape-xl);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  &::before {
+    content: '';
+    align-self: center;
+    width: 2rem;
+    height: 4px;
+    margin-top: var(--tb-space-4);
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-on-surface-variant);
+    opacity: 0.4;
+  }
+
+  .p-drawer-header {
+    padding: var(--tb-space-3) var(--tb-space-6) var(--tb-space-2);
+  }
+
+  .p-drawer-title {
+    font: var(--tb-type-title-l);
+  }
+
+  .p-drawer-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-4);
+    padding: 0 var(--tb-space-6) var(--tb-space-6);
   }
 }
 

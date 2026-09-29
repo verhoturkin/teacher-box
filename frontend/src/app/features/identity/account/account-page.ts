@@ -27,13 +27,14 @@ import { PageHeader } from '@shared/ui/page-header';
     <div class="tb-stack tb-stack--narrow">
       @if (account(); as account) {
         <p-card header="Профиль">
-          <dl class="tb-details">
-            <dt>Имя</dt>
-            <dd>
-              @if (isTeacher()) {
-                <form class="tb-copy-row" [formGroup]="nameForm" (ngSubmit)="rename()">
+          <div class="tb-stack">
+            @if (isTeacher()) {
+              <form class="tb-field" [formGroup]="nameForm" (ngSubmit)="rename()">
+                <label for="account-name">Имя</label>
+                <div class="tb-copy-row">
                   <input
                     pInputText
+                    id="account-name"
                     formControlName="name"
                     aria-label="Имя"
                     maxlength="100"
@@ -50,19 +51,23 @@ import { PageHeader } from '@shared/ui/page-header';
                     "
                     [loading]="renaming()"
                   />
-                </form>
+                </div>
                 <small class="tb-hint">Так вас видят ученики в портале и в сообщениях бота.</small>
-              } @else {
-                {{ account.displayName }}
+              </form>
+            }
+            <dl class="tb-details">
+              @if (!isTeacher()) {
+                <dt>Имя</dt>
+                <dd>{{ account.displayName }}</dd>
               }
-            </dd>
-            <dt>Логин</dt>
-            <dd>{{ account.login ?? '—' }}</dd>
-            <dt>E-mail</dt>
-            <dd>{{ account.email ?? '—' }}</dd>
-            <dt>Телефон</dt>
-            <dd>{{ account.phone ?? '—' }}</dd>
-          </dl>
+              <dt>Логин</dt>
+              <dd>{{ account.login ?? '—' }}</dd>
+              <dt>E-mail</dt>
+              <dd>{{ account.email ?? '—' }}</dd>
+              <dt>Телефон</dt>
+              <dd>{{ account.phone ?? '—' }}</dd>
+            </dl>
+          </div>
         </p-card>
       }
       <p-card header="Смена пароля">
