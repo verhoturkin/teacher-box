@@ -29,12 +29,7 @@ import { PortalAddressWarnings } from './portal-address-warnings';
           class="tb-grow"
         />
         @if (!fromEnvironment()) {
-          <p-button
-            label="Как в браузере"
-            severity="secondary"
-            [outlined]="true"
-            (onClick)="useOpenedAt()"
-          />
+          <p-button label="Как в браузере" severity="secondary" (onClick)="useOpenedAt()" />
         }
       </div>
       @if (fromEnvironment()) {

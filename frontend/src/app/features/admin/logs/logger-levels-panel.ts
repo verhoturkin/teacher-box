@@ -50,7 +50,13 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
           ariaLabel="На сколько"
           appendTo="body"
         />
-        <p-button type="submit" label="Применить" [disabled]="form.invalid" [loading]="pending()" />
+        <p-button
+          type="submit"
+          label="Применить"
+          severity="secondary"
+          [disabled]="form.invalid"
+          [loading]="pending()"
+        />
       </form>
       <p-table [value]="loggers()" styleClass="tb-cards p-datatable-sm">
         <ng-template #header>
@@ -72,12 +78,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
             </td>
             <td class="tb-row-actions">
               @if (logger.revertAt !== null) {
-                <p-button
-                  label="Вернуть"
-                  size="small"
-                  [text]="true"
-                  (onClick)="revert(logger.name)"
-                />
+                <p-button label="Вернуть" [text]="true" (onClick)="revert(logger.name)" />
               }
             </td>
           </tr>

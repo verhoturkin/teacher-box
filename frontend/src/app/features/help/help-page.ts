@@ -18,6 +18,7 @@ import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** The help of an area: contents, search and the chosen article (`/<area>/help/<topic>`). */
 @Component({
@@ -30,10 +31,11 @@ import { HelpArea } from './help-topics';
     InputIcon,
     InputText,
     HelpArticleView,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Справка</h1>
+    <tb-page-header title="Справка" />
     <div class="tb-help">
       <p-card styleClass="tb-help__contents">
         <p-iconfield>

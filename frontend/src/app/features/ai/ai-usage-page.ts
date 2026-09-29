@@ -21,6 +21,7 @@ import {
   AiStatus,
   UsageReport,
 } from './data-access/ai.models';
+import { PageHeader } from '@shared/ui/page-header';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = {
   HOMEWORK_DRAFT: 'Черновики заданий',
@@ -46,13 +47,22 @@ const STATUS_LABELS: Record<
 /** Teacher: whether the AI assistant is configured and how many tokens it used this month. */
 @Component({
   selector: 'tb-ai-usage-page',
-  imports: [HelpButton, DatePipe, DecimalPipe, Card, ProgressBar, TableModule, Tag, RowType],
+  imports: [
+    HelpButton,
+    DatePipe,
+    DecimalPipe,
+    Card,
+    ProgressBar,
+    TableModule,
+    Tag,
+    RowType,
+    PageHeader,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">ИИ-помощник</h1>
-      <tb-help-button topic="teacher/ai" />
-    </div>
+    <tb-page-header title="ИИ-помощник">
+      <tb-help-button help topic="teacher/ai" />
+    </tb-page-header>
     @if (status(); as status) {
       @if (!status.enabled) {
         <p-card>

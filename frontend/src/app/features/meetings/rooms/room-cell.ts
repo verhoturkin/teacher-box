@@ -17,8 +17,9 @@ import { MeetingRoom } from '../data-access/meetings.models';
         <p-button
           icon="pi pi-cog"
           [text]="true"
+          [pTooltip]="'Видеовстреча: ' + name()"
+          severity="secondary"
           [rounded]="true"
-          size="small"
           [ariaLabel]="'Видеовстреча: ' + name()"
           (onClick)="edit.emit()"
         />
@@ -28,7 +29,6 @@ import { MeetingRoom } from '../data-access/meetings.models';
         label="Добавить"
         icon="pi pi-video"
         [text]="true"
-        size="small"
         [ariaLabel]="'Добавить видеовстречу: ' + name()"
         (onClick)="edit.emit()"
       />

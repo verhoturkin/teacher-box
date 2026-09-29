@@ -14,6 +14,7 @@ import { AdminApi } from '../data-access/admin-api';
 import { LogEntry, LogLevelName, LogResult } from '../data-access/admin.models';
 import { levelSeverity, shortLogger } from '../admin-labels';
 import { LoggerLevelsPanel } from './logger-levels-panel';
+import { PageHeader } from '@shared/ui/page-header';
 
 export const PERIODS: readonly { readonly label: string; readonly minutes: number | null }[] = [
   { label: 'Последний час', minutes: 60 },
@@ -50,13 +51,13 @@ export const LOG_LIMIT = 200;
     Tag,
     RowType,
     LoggerLevelsPanel,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Журнал</h1>
-      <tb-help-button topic="admin/diagnostics" />
-    </div>
+    <tb-page-header title="Журнал">
+      <tb-help-button help topic="admin/diagnostics" />
+    </tb-page-header>
     <div class="tb-stack">
       <p-card>
         <form class="tb-log-filters" [formGroup]="form" (ngSubmit)="search()">
@@ -87,7 +88,13 @@ export const LOG_LIMIT = 200;
             placeholder="Раздел (логгер)"
             aria-label="Раздел"
           />
-          <p-button type="submit" label="Найти" icon="pi pi-search" [loading]="loading()" />
+          <p-button
+            type="submit"
+            label="Найти"
+            severity="secondary"
+            icon="pi pi-search"
+            [loading]="loading()"
+          />
         </form>
       </p-card>
 

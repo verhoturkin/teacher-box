@@ -50,7 +50,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
               <p-button
                 label="Перенести"
                 icon="pi pi-calendar"
-                [outlined]="true"
+                severity="secondary"
                 (onClick)="ask(lesson, 'RESCHEDULE')"
               />
               <p-button

@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-labels';
@@ -12,7 +13,7 @@ import { BotWizardDialog } from './bot-wizard-dialog';
 /** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
 @Component({
   selector: 'tb-bots-panel',
-  imports: [Button, Card, ConfirmDialog, Tag, BotWizardDialog],
+  imports: [Button, Card, ConfirmDialog, Tag, BotWizardDialog, Tooltip],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -53,21 +54,27 @@ import { BotWizardDialog } from './bot-wizard-dialog';
               <p-button
                 [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
                 icon="pi pi-cog"
-                size="small"
-                [outlined]="true"
+                severity="secondary"
                 (onClick)="open(bot)"
               />
               @if (!bot.fromEnvironment) {
                 <p-button
                   icon="pi pi-trash"
                   [text]="true"
-                  severity="danger"
+                  [pTooltip]="'Отключить бота ' + names[bot.channel]"
+                  [rounded]="true"
+                  severity="secondary"
                   [ariaLabel]="'Отключить бота ' + names[bot.channel]"
                   (onClick)="confirmRemove(bot.channel)"
                 />
               }
             } @else {
-              <p-button label="Подключить" icon="pi pi-plus" size="small" (onClick)="open(bot)" />
+              <p-button
+                label="Подключить"
+                severity="secondary"
+                icon="pi pi-plus"
+                (onClick)="open(bot)"
+              />
             }
           </li>
         }

@@ -20,7 +20,12 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
           Сообщение придёт ученикам в личный кабинет и в подключённые мессенджеры — например, о
           каникулах или смене ссылки на урок.
         </p>
-        <p-button label="Написать ученикам" icon="pi pi-send" (onClick)="openBroadcast()" />
+        <p-button
+          label="Написать ученикам"
+          severity="secondary"
+          icon="pi pi-send"
+          (onClick)="openBroadcast()"
+        />
       </div>
       @if (history(); as history) {
         @if (history.length === 0) {

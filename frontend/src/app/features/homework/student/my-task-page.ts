@@ -1,9 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+
 import { MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
@@ -16,6 +16,8 @@ import { AttachmentList } from '../ui/attachment-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Student: an assignment, the teacher's feedback and handing in an answer. */
 @Component({
@@ -23,11 +25,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
   imports: [
     DatePipe,
     ReactiveFormsModule,
-    RouterLink,
     Button,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     Card,
     Message,
     Textarea,
@@ -36,27 +34,27 @@ import { TaskStatusTag } from '../ui/task-status-tag';
     FilePicker,
     SubmissionList,
     TaskStatusTag,
+    PageHeader,
+    HelpButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a pButton routerLink="/cabinet/homework" [text]="true" class="tb-back">
-      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-      <span pButtonLabel>Все задания</span>
-    </a>
     @if (task(); as task) {
-      <div class="tb-page-header">
-        <div>
-          <h1 class="tb-page-title">{{ task.assignment.title }}</h1>
-          <span class="tb-muted" [class.tb-negative]="task.overdue">
-            {{
-              task.assignment.dueAt
-                ? 'Сдать до ' + (task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
-                : 'Без срока'
-            }}
-          </span>
-        </div>
-        <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
-      </div>
+      <tb-page-header
+        [title]="task.assignment.title"
+        back="/cabinet/homework"
+        backLabel="Все задания"
+      >
+        <tb-help-button help topic="cabinet/homework" />
+        <span meta [class.tb-negative]="task.overdue">
+          {{
+            task.assignment.dueAt
+              ? 'Сдать до ' + (task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
+              : 'Без срока'
+          }}
+        </span>
+        <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+      </tb-page-header>
 
       <div class="tb-stack">
         @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {

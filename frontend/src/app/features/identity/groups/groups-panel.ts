@@ -34,6 +34,7 @@ import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -55,13 +56,27 @@ import { EmptyState } from '@shared/ui/empty-state';
     GroupFormDialog,
     RoomCell,
     RoomDialog,
+    HelpButton,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Группы">
+    <p-card>
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span>Группы</span>
+          <tb-help-button topic="teacher/groups" />
+          <div class="tb-card-title__actions">
+            <p-button
+              label="Создать группу"
+              severity="secondary"
+              icon="pi pi-users"
+              (onClick)="openCreate()"
+            />
+          </div>
+        </div>
+      </ng-template>
       <div class="tb-toolbar">
-        <p-button label="Создать группу" icon="pi pi-users" (onClick)="openCreate()" />
         <label class="tb-switch" for="show-archived">
           <p-toggleswitch inputId="show-archived" [formControl]="showArchived" />
           Показывать архив
@@ -129,6 +144,7 @@ import { EmptyState } from '@shared/ui/empty-state';
               <p-button
                 icon="pi pi-pencil"
                 [text]="true"
+                severity="secondary"
                 [rounded]="true"
                 pTooltip="Изменить"
                 [ariaLabel]="'Изменить группу: ' + group.name"
@@ -138,6 +154,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 <p-button
                   icon="pi pi-replay"
                   [text]="true"
+                  severity="secondary"
                   [rounded]="true"
                   pTooltip="Вернуть из архива"
                   [ariaLabel]="'Вернуть из архива: ' + group.name"
@@ -147,6 +164,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 <p-button
                   icon="pi pi-inbox"
                   [text]="true"
+                  severity="secondary"
                   [rounded]="true"
                   pTooltip="В архив"
                   [ariaLabel]="'В архив: ' + group.name"
@@ -165,7 +183,12 @@ import { EmptyState } from '@shared/ui/empty-state';
                   title="Групп пока нет"
                   hint="Создайте группу, если занимаетесь с несколькими учениками сразу"
                 >
-                  <p-button label="Создать группу" icon="pi pi-users" (onClick)="openCreate()" />
+                  <p-button
+                    label="Создать группу"
+                    severity="secondary"
+                    icon="pi pi-users"
+                    (onClick)="openCreate()"
+                  />
                 </tb-empty-state>
               } @else {
                 <tb-empty-state icon="pi-box" title="Все группы в архиве" />

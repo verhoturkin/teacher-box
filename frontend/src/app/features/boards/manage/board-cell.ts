@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { Board } from '../data-access/boards.models';
 
 /** Boards of a student or a group in a table: open the first one, or set them up. */
 @Component({
   selector: 'tb-board-cell',
-  imports: [Button],
+  imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (boards()[0]; as first) {
@@ -17,8 +18,9 @@ import { Board } from '../data-access/boards.models';
         <p-button
           icon="pi pi-cog"
           [text]="true"
+          [pTooltip]="'Доски: ' + name()"
+          severity="secondary"
           [rounded]="true"
-          size="small"
           [ariaLabel]="'Доски: ' + name()"
           (onClick)="edit.emit()"
         />
@@ -28,7 +30,6 @@ import { Board } from '../data-access/boards.models';
         label="Добавить"
         icon="pi pi-th-large"
         [text]="true"
-        size="small"
         [ariaLabel]="'Добавить доску: ' + name()"
         (onClick)="edit.emit()"
       />

@@ -15,14 +15,7 @@ import { MyBoard } from '../data-access/boards.models';
         <ul class="tb-my-boards">
           @for (board of boards(); track board.id) {
             <li>
-              <a
-                pButton
-                [href]="board.url"
-                target="_blank"
-                rel="noopener"
-                [outlined]="true"
-                size="small"
-              >
+              <a pButton [href]="board.url" target="_blank" rel="noopener" severity="secondary">
                 <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
                 <span pButtonLabel>{{ board.title }}</span>
               </a>

@@ -17,6 +17,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { Tooltip } from 'primeng/tooltip';
 import { describeError } from '@core/http/error-messages';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
@@ -30,7 +31,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
  */
 @Component({
   selector: 'tb-room-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message],
+  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -48,7 +49,9 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               <p-button
                 icon="pi pi-copy"
                 [text]="true"
-                size="small"
+                pTooltip="Копировать ссылку"
+                [rounded]="true"
+                severity="secondary"
                 ariaLabel="Копировать ссылку"
                 (onClick)="copy(room.joinUrl)"
               />
@@ -57,7 +60,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               <p-button
                 [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
                 icon="pi pi-send"
-                [outlined]="true"
+                severity="secondary"
                 [loading]="pending()"
                 (onClick)="share(room)"
               />
@@ -101,6 +104,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               />
               <p-button
                 label="Сохранить"
+                severity="secondary"
                 [disabled]="link.invalid || link.value.trim() === ''"
                 [loading]="pending()"
                 (onClick)="save()"

@@ -124,6 +124,7 @@ textarea.p-textarea {
   }
 }
 
+/* The header of a page (ADR-0018, shared/ui/page-header): «back», title, «?», details, actions */
 .tb-page-header {
   display: flex;
   flex-wrap: wrap;
@@ -136,6 +137,39 @@ textarea.p-textarea {
   .tb-page-title {
     margin: 0;
   }
+
+  > .tb-actions:empty {
+    display: none;
+  }
+}
+
+.tb-page-header__lead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-2);
+  min-width: 0;
+}
+
+.tb-page-header__back {
+  flex-shrink: 0;
+  margin-left: calc(-1 * var(--tb-space-2));
+}
+
+.tb-page-header__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--tb-space-1);
+  min-width: 0;
+
+  > [meta] {
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-m);
+  }
+
+  > .tb-negative[meta] {
+    color: var(--p-md-error);
+  }
 }
 
 /* A page title with the «?» of the help next to it */
@@ -143,15 +177,8 @@ textarea.p-textarea {
   display: flex;
   align-items: center;
   gap: var(--tb-space-1);
-  margin-bottom: var(--tb-space-4);
-
-  .tb-page-title {
-    margin: 0;
-  }
-}
-
-.tb-page-header .tb-page-heading {
-  margin-bottom: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .tb-stack {
@@ -253,6 +280,44 @@ textarea.p-textarea {
   font: var(--tb-type-title-m);
 }
 
+/*
+ * The title of a card (section): the title, the «?» of the help next to it and the actions of the
+ * section on the right (ADR-0018). Used in the #title template of p-card.
+ */
+.tb-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+}
+
+.tb-card-title__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+  margin-left: auto;
+  font: var(--tb-type-body-m);
+}
+
+/* The buttons of a form in a section: at the end, under the fields (ADR-0018) */
+.tb-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+
+  @media (max-width: 768px) {
+    > p-button,
+    > .p-button {
+      flex: 1 1 auto;
+    }
+
+    p-button .p-button {
+      width: 100%;
+    }
+  }
+}
+
 .tb-form-message {
   width: 100%;
 }
@@ -278,6 +343,11 @@ textarea.p-textarea {
   justify-content: space-between;
   gap: var(--tb-space-4);
   margin-bottom: var(--tb-space-4);
+}
+
+/* Filters of a list are at the end of its toolbar, the search at the start (ADR-0018) */
+.tb-toolbar > .tb-switch {
+  margin-left: auto;
 }
 
 .tb-switch {
@@ -322,10 +392,6 @@ textarea.p-textarea {
   display: flex;
   flex-wrap: wrap;
   gap: var(--tb-space-2);
-}
-
-.tb-back {
-  margin-bottom: var(--tb-space-2);
 }
 
 /*
@@ -379,6 +445,11 @@ a.p-menu-item-link:hover {
 .tb-stat__value {
   color: var(--p-md-on-surface);
   font: var(--tb-type-headline-s);
+}
+
+/* A status tag keeps its text on one line (ADR-0018) */
+.p-tag {
+  white-space: nowrap;
 }
 
 /* Money */
@@ -829,41 +900,9 @@ a.p-menu-item-link:hover {
   font-size: 1.125rem;
 }
 
-/* The main action of a page on a phone: the M3 FAB above the bottom navigation (ADR-0017). */
-.tb-fab {
-  position: fixed;
-  right: var(--tb-space-4);
-  bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
-  z-index: 900;
-
-  .p-button {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-color: var(--p-md-primary-container);
-    border-radius: var(--tb-shape-lg);
-    background: var(--p-md-primary-container);
-    color: var(--p-md-on-primary-container);
-    box-shadow: var(--tb-elevation-3);
-
-    &:not(:disabled):hover {
-      border-color: var(--p-md-primary-container);
-      background: color-mix(
-        in srgb,
-        var(--p-md-on-primary-container) 8%,
-        var(--p-md-primary-container)
-      );
-      color: var(--p-md-on-primary-container);
-    }
-
-    .p-button-icon {
-      font-size: 1.5rem;
-    }
-  }
-}
-
 /*
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
- * same button, fixed above the bottom navigation.
+ * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
 @media (max-width: 768px) {
   p-button.tb-page-fab {
@@ -899,7 +938,7 @@ a.p-menu-item-link:hover {
   }
 
   /* The page keeps room at its end for the FAB */
-  main.tb-shell__content--nav:has(.tb-page-fab, .tb-fab) {
+  main.tb-shell__content--nav:has(.tb-page-fab) {
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }

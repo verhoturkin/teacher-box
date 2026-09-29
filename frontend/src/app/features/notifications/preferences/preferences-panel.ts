@@ -106,6 +106,7 @@ function shortTime(time: string | null, fallback: string): string {
             <p-button
               type="submit"
               label="Сохранить"
+              severity="secondary"
               icon="pi pi-check"
               [loading]="pending()"
               [disabled]="form.pristine"

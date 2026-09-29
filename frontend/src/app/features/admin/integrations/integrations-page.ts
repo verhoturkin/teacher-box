@@ -10,14 +10,29 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
 import { AiStatus, AiUsage, IntegrationStatus } from '../data-access/admin.models';
 import { INTEGRATION_TAGS } from '../admin-labels';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
   selector: 'tb-integrations-page',
-  imports: [DatePipe, DecimalPipe, Button, Card, Message, TableModule, Tag, RowType],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    Button,
+    Card,
+    Message,
+    TableModule,
+    Tag,
+    RowType,
+    PageHeader,
+    HelpButton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Интеграции</h1>
+    <tb-page-header title="Интеграции">
+      <tb-help-button help topic="admin/diagnostics" />
+    </tb-page-header>
     <div class="tb-stack">
       <p-card header="Проверка связи">
         <p class="tb-muted">
@@ -27,6 +42,7 @@ import { INTEGRATION_TAGS } from '../admin-labels';
         <div class="tb-actions">
           <p-button
             label="Проверить"
+            severity="secondary"
             icon="pi pi-refresh"
             [loading]="checking()"
             (onClick)="check()"

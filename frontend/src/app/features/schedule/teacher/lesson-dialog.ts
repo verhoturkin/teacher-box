@@ -131,12 +131,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             Время пересекается с другим занятием.
-            <p-button
-              label="Всё равно сохранить"
-              [link]="true"
-              size="small"
-              (onClick)="save(true)"
-            />
+            <p-button label="Всё равно сохранить" [text]="true" (onClick)="save(true)" />
           </p-message>
         }
         @if (error(); as message) {

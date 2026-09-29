@@ -15,14 +15,15 @@ import { AuthService } from '@core/auth/auth.service';
 import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { ChangePasswordForm } from './change-password-form';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Own account of the teacher or a student: profile data and password change. */
 @Component({
   selector: 'tb-account-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, ChangePasswordForm],
+  imports: [ReactiveFormsModule, Button, Card, InputText, ChangePasswordForm, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">Мой аккаунт</h1>
+    <tb-page-header title="Мой аккаунт" />
     <div class="tb-stack tb-stack--narrow">
       @if (account(); as account) {
         <p-card header="Профиль">
@@ -41,7 +42,7 @@ import { ChangePasswordForm } from './change-password-form';
                   <p-button
                     type="submit"
                     label="Сохранить"
-                    [outlined]="true"
+                    severity="secondary"
                     [disabled]="
                       nameForm.invalid ||
                       nameForm.controls.name.value.trim() === account.displayName

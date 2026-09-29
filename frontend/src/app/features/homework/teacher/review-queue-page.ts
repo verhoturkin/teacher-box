@@ -1,13 +1,15 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewQueueItem } from '../data-access/homework.models';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
@@ -17,19 +19,18 @@ import { EmptyState } from '@shared/ui/empty-state';
     DatePipe,
     RouterLink,
     ButtonDirective,
-    ButtonIcon,
     ButtonLabel,
     Card,
     TableModule,
     RowType,
+    PageHeader,
+    HelpButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a pButton routerLink="/teacher/homework" [text]="true" class="tb-back">
-      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-      <span pButtonLabel>Все задания</span>
-    </a>
-    <h1 class="tb-page-title">На проверку</h1>
+    <tb-page-header title="На проверку" back="/teacher/homework" backLabel="Все задания">
+      <tb-help-button help topic="teacher/homework" />
+    </tb-page-header>
     <p-card>
       <p-table
         [value]="items()"
@@ -58,7 +59,7 @@ import { EmptyState } from '@shared/ui/empty-state';
               {{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
             </td>
             <td class="tb-actions-column">
-              <a pButton [routerLink]="['/teacher/homework/tasks', item.taskId]" size="small">
+              <a pButton [routerLink]="['/teacher/homework/tasks', item.taskId]" [text]="true">
                 <span pButtonLabel>Проверить</span>
               </a>
             </td>

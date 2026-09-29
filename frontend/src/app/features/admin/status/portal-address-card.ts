@@ -15,8 +15,13 @@ import { AdminApi } from '../data-access/admin-api';
   imports: [ReactiveFormsModule, Button, Card, HelpButton, PortalAddressField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Адрес портала">
-      <tb-help-button topic="admin/backups" label="Подробнее" />
+    <p-card>
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span>Адрес портала</span>
+          <tb-help-button topic="admin/backups" />
+        </div>
+      </ng-template>
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <tb-portal-address-field
@@ -28,6 +33,7 @@ import { AdminApi } from '../data-access/admin-api';
               <p-button
                 type="submit"
                 label="Сохранить адрес"
+                severity="secondary"
                 [disabled]="form.invalid"
                 [loading]="pending()"
               />

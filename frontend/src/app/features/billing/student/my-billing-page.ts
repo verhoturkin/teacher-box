@@ -6,17 +6,17 @@ import { BillingApi } from '../data-access/billing-api';
 import { StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerTable } from '../ledger/ledger-table';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Student: own balance and history of lessons and payments. */
 @Component({
   selector: 'tb-my-billing-page',
-  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable],
+  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Оплаты</h1>
-      <tb-help-button topic="cabinet/billing" />
-    </div>
+    <tb-page-header title="Оплаты">
+      <tb-help-button help topic="cabinet/billing" />
+    </tb-page-header>
     @if (ledger(); as ledger) {
       <div class="tb-stats">
         <p-card>

@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Tooltip } from 'primeng/tooltip';
 import { Portal } from '@core/portal/portal';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
@@ -22,7 +23,7 @@ import { CalendarFeed } from '../data-access/schedule.models';
  */
 @Component({
   selector: 'tb-calendar-feed-panel',
-  imports: [DatePipe, Button, Card, InputText],
+  imports: [DatePipe, Button, Card, InputText, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Календарь на телефоне">
@@ -34,6 +35,9 @@ import { CalendarFeed } from '../data-access/schedule.models';
             <p-button
               icon="pi pi-copy"
               [text]="true"
+              pTooltip="Копировать ссылку"
+              [rounded]="true"
+              severity="secondary"
               ariaLabel="Копировать ссылку"
               (onClick)="copy(link)"
             />
@@ -53,7 +57,7 @@ import { CalendarFeed } from '../data-access/schedule.models';
           <p-button
             [label]="feed.enabled ? 'Новая ссылка' : 'Получить ссылку'"
             icon="pi pi-link"
-            [outlined]="feed.enabled"
+            severity="secondary"
             [loading]="pending()"
             (onClick)="create()"
           />

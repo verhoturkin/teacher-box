@@ -26,6 +26,7 @@ import { BalanceAmount } from '../ledger/balance-amount';
 import { DefaultPriceCard } from './default-price-card';
 import { PaymentDialog } from './payment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -49,28 +50,24 @@ import { EmptyState } from '@shared/ui/empty-state';
     BalanceAmount,
     DefaultPriceCard,
     PaymentDialog,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Оплаты</h1>
-        <tb-help-button topic="teacher/billing" />
-      </div>
-      <div class="tb-actions">
-        <p-button
-          class="tb-page-fab"
-          label="Оплата"
-          icon="pi pi-wallet"
-          (onClick)="openPayment(null)"
-          [disabled]="!overview()"
-        />
-        <a pButton routerLink="report" [outlined]="true">
-          <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
-          <span pButtonLabel>Отчёт за месяц</span>
-        </a>
-      </div>
-    </div>
+    <tb-page-header title="Оплаты">
+      <tb-help-button help topic="teacher/billing" />
+      <a pButton routerLink="report" severity="secondary">
+        <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
+        <span pButtonLabel>Отчёт за месяц</span>
+      </a>
+      <p-button
+        class="tb-page-fab"
+        label="Оплата"
+        icon="pi pi-wallet"
+        (onClick)="openPayment(null)"
+        [disabled]="!overview()"
+      />
+    </tb-page-header>
 
     @if (overview(); as overview) {
       <div class="tb-stats">
@@ -144,7 +141,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                   icon="pi pi-wallet"
                   [text]="true"
                   [rounded]="true"
-                  severity="success"
+                  severity="secondary"
                   pTooltip="Принять оплату"
                   [ariaLabel]="'Оплата: ' + row.displayName"
                   (onClick)="openPayment(row.studentId)"

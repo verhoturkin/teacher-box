@@ -24,6 +24,7 @@ import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
@@ -62,11 +63,17 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     Password,
     Tag,
     ToggleSwitch,
+    Tooltip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Видеовстречи (Яндекс Телемост)" id="meetings">
-      <tb-help-button topic="teacher/meetings" label="Подробнее" />
+    <p-card id="meetings">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span>Видеовстречи (Яндекс Телемост)</span>
+          <tb-help-button topic="teacher/meetings" />
+        </div>
+      </ng-template>
       @if (result(); as result) {
         <p-message [severity]="result.severity" styleClass="tb-form-message">{{
           result.text
@@ -102,6 +109,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
             <div class="tb-actions">
               <p-button
                 label="Подключить Яндекс"
+                severity="secondary"
                 icon="pi pi-video"
                 [loading]="pending()"
                 (onClick)="connect()"
@@ -133,7 +141,9 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   <p-button
                     icon="pi pi-copy"
                     [text]="true"
-                    size="small"
+                    pTooltip="Копировать адрес"
+                    [rounded]="true"
+                    severity="secondary"
                     ariaLabel="Копировать адрес"
                     (onClick)="copy(redirectUri())"
                   />
@@ -165,6 +175,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                 <p-button
                   type="submit"
                   label="Сохранить"
+                  severity="secondary"
                   [disabled]="form.invalid"
                   [loading]="pending()"
                 />

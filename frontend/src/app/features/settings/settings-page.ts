@@ -20,6 +20,7 @@ import {
   MessengerType,
   NotificationsStatus,
 } from './data-access/settings.models';
+import { PageHeader } from '@shared/ui/page-header';
 
 export const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'TELEGRAM', name: 'Telegram' },
@@ -46,13 +47,13 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     TableModule,
     Tag,
     RowType,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Настройки</h1>
-      <tb-help-button topic="teacher/settings" />
-    </div>
+    <tb-page-header title="Настройки">
+      <tb-help-button help topic="teacher/settings" />
+    </tb-page-header>
     <div class="tb-stack tb-stack--narrow">
       <tb-portal-settings-card />
       <p-card header="Интеграции">
@@ -144,7 +145,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       <tb-reset-card />
 
       <p-card header="Профиль">
-        <a pButton routerLink="/teacher/account" [outlined]="true">
+        <a pButton routerLink="/teacher/account" severity="secondary">
           <i pButtonIcon aria-hidden="true" class="pi pi-id-card"></i>
           <span pButtonLabel>Мой аккаунт и пароль</span>
         </a>

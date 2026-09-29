@@ -24,6 +24,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
@@ -65,11 +66,17 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     Message,
     Password,
     Tag,
+    Tooltip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Google Календарь" id="google">
-      <tb-help-button topic="teacher/calendars" label="Подробнее" />
+    <p-card id="google">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span>Google Календарь</span>
+          <tb-help-button topic="teacher/calendars" />
+        </div>
+      </ng-template>
       @if (result(); as result) {
         <p-message [severity]="result.severity" styleClass="tb-form-message">{{
           result.text
@@ -100,7 +107,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
               <p-button
                 label="Синхронизировать сейчас"
                 icon="pi pi-refresh"
-                [outlined]="true"
+                severity="secondary"
                 [loading]="pending()"
                 (onClick)="sync()"
               />
@@ -133,6 +140,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
               <div class="tb-actions">
                 <p-button
                   label="Подключить Google"
+                  severity="secondary"
                   icon="pi pi-google"
                   [loading]="pending()"
                   (onClick)="connect()"
@@ -172,7 +180,9 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     <p-button
                       icon="pi pi-copy"
                       [text]="true"
-                      size="small"
+                      pTooltip="Копировать адрес"
+                      [rounded]="true"
+                      severity="secondary"
                       ariaLabel="Копировать адрес"
                       (onClick)="copy(redirectUri())"
                     />
@@ -208,6 +218,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   <p-button
                     type="submit"
                     label="Сохранить"
+                    severity="secondary"
                     [disabled]="form.invalid"
                     [loading]="pending()"
                   />

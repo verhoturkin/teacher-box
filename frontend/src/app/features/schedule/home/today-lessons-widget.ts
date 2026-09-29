@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
@@ -12,7 +13,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
 /** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
-  imports: [RouterLink, Button, Card, Tag, AttendanceDialog, JoinLessonButton],
+  imports: [RouterLink, Button, Card, Tag, AttendanceDialog, JoinLessonButton, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Сегодня">
@@ -47,15 +48,13 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                     [url]="url"
                     label="Начать урок"
                     [teacher]="true"
-                    [small]="true"
-                    [outlined]="true"
+                    [tonal]="true"
                   />
                 }
                 @if (started(lesson) && lesson.groupId !== null) {
                   <p-button
                     label="Отметить"
                     icon="pi pi-users"
-                    size="small"
                     [text]="true"
                     [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
                     (onClick)="openAttendance(lesson)"
@@ -63,18 +62,20 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                 } @else if (started(lesson)) {
                   <p-button
                     icon="pi pi-check"
-                    size="small"
-                    severity="success"
+                    severity="secondary"
                     [text]="true"
+                    [pTooltip]="'Проведено: ' + (lesson.studentName ?? '')"
+                    [rounded]="true"
                     [ariaLabel]="'Проведено: ' + (lesson.studentName ?? '')"
                     [disabled]="pending() === lesson.id"
                     (onClick)="mark(lesson, 'CONDUCTED')"
                   />
                   <p-button
                     icon="pi pi-user-minus"
-                    size="small"
-                    severity="warn"
+                    severity="secondary"
                     [text]="true"
+                    [pTooltip]="'Пропуск: ' + (lesson.studentName ?? '')"
+                    [rounded]="true"
                     [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? '')"
                     [disabled]="pending() === lesson.id"
                     (onClick)="mark(lesson, 'MISSED')"

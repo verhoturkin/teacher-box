@@ -12,7 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
@@ -29,6 +29,8 @@ import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -40,7 +42,6 @@ import { EmptyState } from '@shared/ui/empty-state';
     RouterLink,
     Button,
     ButtonDirective,
-    ButtonIcon,
     ButtonLabel,
     Card,
     ConfirmDialog,
@@ -54,42 +55,36 @@ import { EmptyState } from '@shared/ui/empty-state';
     AssignmentDialog,
     GroupPicker,
     ToBoardDialog,
+    PageHeader,
+    HelpButton,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a pButton routerLink="/teacher/homework" [text]="true" class="tb-back">
-      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-      <span pButtonLabel>Все задания</span>
-    </a>
     @if (details(); as assignment) {
-      <div class="tb-page-header">
-        <div>
-          <h1 class="tb-page-title">{{ assignment.title }}</h1>
-          <span class="tb-muted">
-            {{
-              assignment.dueAt
-                ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
-                : 'Без срока'
-            }}
-          </span>
-        </div>
-        <div class="tb-actions">
-          <p-button
-            label="На доску"
-            icon="pi pi-th-large"
-            [outlined]="true"
-            [disabled]="!assignment.description"
-            (onClick)="boardVisible.set(true)"
-          />
-          <p-button
-            label="Редактировать"
-            icon="pi pi-pencil"
-            [outlined]="true"
-            (onClick)="editVisible.set(true)"
-          />
-        </div>
-      </div>
+      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Все задания">
+        <tb-help-button help topic="teacher/homework" />
+        <span meta>
+          {{
+            assignment.dueAt
+              ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
+              : 'Без срока'
+          }}
+        </span>
+        <p-button
+          label="На доску"
+          icon="pi pi-th-large"
+          severity="secondary"
+          [disabled]="!assignment.description"
+          (onClick)="boardVisible.set(true)"
+        />
+        <p-button
+          label="Редактировать"
+          icon="pi pi-pencil"
+          severity="secondary"
+          (onClick)="editVisible.set(true)"
+        />
+      </tb-page-header>
 
       <div class="tb-stack">
         <p-card header="Задание">
@@ -110,8 +105,8 @@ import { EmptyState } from '@shared/ui/empty-state';
             @if (newFiles().length > 0) {
               <p-button
                 label="Загрузить"
+                severity="secondary"
                 icon="pi pi-upload"
-                size="small"
                 [loading]="uploading()"
                 (onClick)="upload()"
               />
@@ -143,12 +138,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                   {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </td>
                 <td class="tb-actions-column">
-                  <a
-                    pButton
-                    [routerLink]="['/teacher/homework/tasks', task.taskId]"
-                    [text]="true"
-                    size="small"
-                  >
+                  <a pButton [routerLink]="['/teacher/homework/tasks', task.taskId]" [text]="true">
                     <span pButtonLabel>{{
                       task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть'
                     }}</span>
@@ -180,6 +170,7 @@ import { EmptyState } from '@shared/ui/empty-state';
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button
               label="Выдать"
+              severity="secondary"
               [disabled]="selectedToAssign().length === 0"
               (onClick)="assign()"
             />

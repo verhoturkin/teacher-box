@@ -9,9 +9,9 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { InputNumber } from 'primeng/inputnumber';
@@ -22,17 +22,15 @@ import { BillingStudent, Lesson, Payment, StudentLedger } from '../data-access/b
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerTable } from '../ledger/ledger-table';
 import { PaymentDialog } from './payment-dialog';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
   selector: 'tb-student-ledger-page',
   imports: [
     ReactiveFormsModule,
-    RouterLink,
     Button,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     Card,
     ConfirmDialog,
     InputNumber,
@@ -40,26 +38,22 @@ import { PaymentDialog } from './payment-dialog';
     BalanceAmount,
     LedgerTable,
     PaymentDialog,
+    PageHeader,
+    HelpButton,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a pButton routerLink="/teacher/billing" [text]="true" class="tb-back">
-      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-      <span pButtonLabel>Все ученики</span>
-    </a>
     @if (ledger(); as ledger) {
-      <div class="tb-page-header">
-        <h1 class="tb-page-title">{{ ledger.displayName }}</h1>
-        <div class="tb-actions">
-          <p-button
-            class="tb-page-fab"
-            label="Оплата"
-            icon="pi pi-wallet"
-            (onClick)="paymentVisible.set(true)"
-          />
-        </div>
-      </div>
+      <tb-page-header [title]="ledger.displayName" back="/teacher/billing" backLabel="Все ученики">
+        <tb-help-button help topic="teacher/billing" />
+        <p-button
+          class="tb-page-fab"
+          label="Оплата"
+          icon="pi pi-wallet"
+          (onClick)="paymentVisible.set(true)"
+        />
+      </tb-page-header>
 
       <div class="tb-stats">
         <p-card>

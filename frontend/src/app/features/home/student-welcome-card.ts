@@ -36,13 +36,7 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
         </ul>
         <div class="tb-widget-footer">
           <span></span>
-          <p-button
-            label="Понятно"
-            severity="secondary"
-            size="small"
-            [text]="true"
-            (onClick)="dismiss()"
-          />
+          <p-button label="Понятно" severity="secondary" [text]="true" (onClick)="dismiss()" />
         </div>
       </p-card>
     }

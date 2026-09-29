@@ -43,6 +43,7 @@ import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -70,22 +71,20 @@ import { EmptyState } from '@shared/ui/empty-state';
     RoomCell,
     RoomDialog,
     StudentFormDialog,
+    PageHeader,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Ученики</h1>
-        <tb-help-button topic="teacher/students" />
-      </div>
+    <tb-page-header title="Ученики">
+      <tb-help-button help topic="teacher/students" />
       <p-button
         class="tb-page-fab"
         label="Добавить ученика"
         icon="pi pi-user-plus"
         (onClick)="openCreate()"
       />
-    </div>
+    </tb-page-header>
 
     <div class="tb-stack">
       <p-card>
@@ -182,6 +181,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 <p-button
                   icon="pi pi-pencil"
                   [text]="true"
+                  severity="secondary"
                   [rounded]="true"
                   pTooltip="Редактировать"
                   [ariaLabel]="'Редактировать: ' + student.displayName"
@@ -191,6 +191,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                   <p-button
                     icon="pi pi-replay"
                     [text]="true"
+                    severity="secondary"
                     [rounded]="true"
                     pTooltip="Вернуть доступ"
                     [ariaLabel]="'Вернуть доступ: ' + student.displayName"
@@ -200,6 +201,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                   <p-button
                     icon="pi pi-link"
                     [text]="true"
+                    severity="secondary"
                     [rounded]="true"
                     [pTooltip]="
                       student.status === 'ACTIVE'
@@ -213,7 +215,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                     icon="pi pi-ban"
                     [text]="true"
                     [rounded]="true"
-                    severity="danger"
+                    severity="secondary"
                     pTooltip="Отключить доступ"
                     [ariaLabel]="'Отключить доступ: ' + student.displayName"
                     (onClick)="confirmDeactivate(student)"
@@ -234,6 +236,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                     <p-button
                       label="Добавить ученика"
                       icon="pi pi-user-plus"
+                      severity="secondary"
                       (onClick)="openCreate()"
                     />
                   </tb-empty-state>

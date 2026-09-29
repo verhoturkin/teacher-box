@@ -77,12 +77,7 @@ import { AttendanceDialog } from './attendance-dialog';
           }
           @if (lesson.joinUrl; as url) {
             <div>
-              <tb-join-lesson-button
-                [url]="url"
-                label="Начать урок"
-                [teacher]="true"
-                [small]="true"
-              />
+              <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" />
             </div>
           }
           @if (visible()) {
@@ -131,12 +126,7 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-lesson-details__cancel">
             В это время уже есть другое занятие.
-            <p-button
-              label="Всё равно восстановить"
-              [link]="true"
-              size="small"
-              (onClick)="restore(true)"
-            />
+            <p-button label="Всё равно восстановить" [text]="true" (onClick)="restore(true)" />
           </p-message>
         }
         @if (error(); as message) {
@@ -206,7 +196,7 @@ import { AttendanceDialog } from './attendance-dialog';
               <p-button
                 label="Удалить"
                 icon="pi pi-trash"
-                severity="danger"
+                severity="secondary"
                 [text]="true"
                 (onClick)="deleting.set(true)"
               />
@@ -222,16 +212,11 @@ import { AttendanceDialog } from './attendance-dialog';
             @if (lesson.status === 'SCHEDULED') {
               <p-button
                 label="Отменить"
-                severity="danger"
+                severity="secondary"
                 [text]="true"
                 (onClick)="cancelling.set(true)"
               />
-              <p-button
-                label="Изменить"
-                severity="secondary"
-                [outlined]="true"
-                (onClick)="editLesson()"
-              />
+              <p-button label="Изменить" severity="secondary" (onClick)="editLesson()" />
             }
             @if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
               <p-button
@@ -252,19 +237,13 @@ import { AttendanceDialog } from './attendance-dialog';
               @if (lesson.status !== 'MISSED') {
                 <p-button
                   label="Пропуск"
-                  severity="warn"
-                  [outlined]="true"
+                  severity="secondary"
                   [loading]="pending()"
                   (onClick)="mark('MISSED')"
                 />
               }
               @if (lesson.status !== 'CONDUCTED') {
-                <p-button
-                  label="Проведено"
-                  severity="success"
-                  [loading]="pending()"
-                  (onClick)="mark('CONDUCTED')"
-                />
+                <p-button label="Проведено" [loading]="pending()" (onClick)="mark('CONDUCTED')" />
               }
             }
           }

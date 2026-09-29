@@ -297,7 +297,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   label="Отправить тестовое сообщение"
                   icon="pi pi-send"
-                  [outlined]="tested()"
+                  [severity]="tested() ? 'secondary' : 'primary'"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />

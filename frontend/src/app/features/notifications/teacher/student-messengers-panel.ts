@@ -38,8 +38,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
               "
               icon="pi pi-bell"
-              size="small"
-              [outlined]="true"
+              severity="secondary"
               [disabled]="notConnected().length === 0"
               [loading]="pending()"
               (onClick)="remind()"

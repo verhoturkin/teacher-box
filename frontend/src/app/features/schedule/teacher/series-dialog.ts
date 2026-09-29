@@ -174,12 +174,7 @@ export const INTERVAL_OPTIONS = [
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             Некоторые занятия пересекаются с уже запланированными.
-            <p-button
-              label="Всё равно сохранить"
-              [link]="true"
-              size="small"
-              (onClick)="save(true)"
-            />
+            <p-button label="Всё равно сохранить" [text]="true" (onClick)="save(true)" />
           </p-message>
         }
         @if (error(); as message) {

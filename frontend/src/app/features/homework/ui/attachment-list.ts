@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { Attachment } from '../data-access/homework.models';
 import { formatFileSize } from '../homework-labels';
 
 /** Files of an assignment or a submission. */
 @Component({
   selector: 'tb-attachment-list',
-  imports: [Button],
+  imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (attachments().length > 0) {
@@ -22,9 +23,9 @@ import { formatFileSize } from '../homework-labels';
               <p-button
                 icon="pi pi-trash"
                 [text]="true"
+                [pTooltip]="'Удалить файл ' + file.filename"
                 [rounded]="true"
-                severity="danger"
-                size="small"
+                severity="secondary"
                 [ariaLabel]="'Удалить файл ' + file.filename"
                 (onClick)="remove.emit(file)"
               />
