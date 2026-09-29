@@ -1,9 +1,11 @@
 @use 'primeicons/primeicons.css';
+@use '@fontsource-variable/roboto/wght.css';
 
 /*
- * Design tokens (ADR-0015): spacing on a 4 px grid (--tb-space-N = N x 4 px), the width of the
- * content, the height of the header. Radii, colors and the sizes of controls come from the PrimeNG
- * preset (core/theme), so that components and PrimeNG widgets match.
+ * Design tokens (ADR-0015, ADR-0017 Material Design 3): spacing on a 4 px grid (--tb-space-N =
+ * N x 4 px), the M3 type scale, shape, elevation, state layers and motion, the width of the
+ * content, the height of the top app bar. Colors come from the roles of the PrimeNG preset
+ * (core/theme, --p-md-*), so that components and PrimeNG widgets match.
  */
 :root {
   --tb-space-1: 0.25rem;
@@ -17,21 +19,55 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  --tb-header-height: 3.5rem;
-  --tb-radius: var(--p-content-border-radius);
+  --tb-header-height: 4rem;
+
+  /* Type scale: `font: var(--tb-type-title-l)` */
+  --tb-font:
+    'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --tb-type-headline-l: 400 2rem/2.5rem var(--tb-font);
+  --tb-type-headline-m: 400 1.75rem/2.25rem var(--tb-font);
+  --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
+  --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
+  --tb-type-title-m: 500 1rem/1.5rem var(--tb-font);
+  --tb-type-title-s: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-l: 400 1rem/1.5rem var(--tb-font);
+  --tb-type-body-m: 400 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-s: 400 0.75rem/1rem var(--tb-font);
+  --tb-type-label-l: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-label-m: 500 0.75rem/1rem var(--tb-font);
+  --tb-type-label-s: 500 0.6875rem/1rem var(--tb-font);
+
+  /* Shape scale */
+  --tb-shape-xs: 4px;
+  --tb-shape-sm: 8px;
+  --tb-shape-md: 12px;
+  --tb-shape-lg: 16px;
+  --tb-shape-xl: 28px;
+  --tb-shape-full: 999px;
+  --tb-radius: var(--tb-shape-md);
+
+  /* Elevation: surfaces differ by tone; shadows only for floating elements */
+  --tb-elevation-1: 0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%);
+  --tb-elevation-2: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
+  --tb-elevation-3: 0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%);
+
+  /* State layers: the color of the content over the element */
+  --tb-state-hover: 8%;
+  --tb-state-focus: 10%;
+  --tb-state-pressed: 10%;
+
+  /* Motion */
+  --tb-motion-standard: cubic-bezier(0.2, 0, 0, 1);
+  --tb-motion-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --tb-duration-short: 150ms;
+  --tb-duration-medium: 300ms;
 }
 
 :root {
   color-scheme: light;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif;
+  font: var(--tb-type-body-l);
+  -webkit-font-smoothing: antialiased;
 }
 
 html,
@@ -40,8 +76,9 @@ body {
   padding: 0;
 }
 
+/* The page is a container; cards lie on it (ADR-0017) */
 body {
-  background: var(--p-surface-50);
+  background: var(--p-md-surface-container);
   color: var(--p-text-color);
 }
 
@@ -49,14 +86,42 @@ body {
   color-scheme: dark;
 
   body {
-    background: var(--p-surface-950);
+    background: var(--p-md-surface);
+  }
+}
+
+/* Fields: Body Large with its line height, 48 px high like selects (PrimeNG's styles come later) */
+input.p-inputtext,
+textarea.p-textarea {
+  line-height: 1.5rem;
+}
+
+/* Buttons: Label Large (M3), 40 px high; PrimeNG's styles come later, hence the :not */
+.p-button:not(.p-button-sm, .p-button-lg) {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.00625rem;
+}
+
+/* Less motion when the system asks for it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 .tb-page-title {
   margin: 0 0 var(--tb-space-4);
-  font-size: 1.5rem;
-  font-weight: 600;
+  font: var(--tb-type-headline-m);
+
+  @media (max-width: 768px) {
+    font: var(--tb-type-headline-s);
+  }
 }
 
 .tb-page-header {
@@ -65,6 +130,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: var(--tb-space-4);
+  min-height: 3.5rem;
   margin-bottom: var(--tb-space-4);
 
   .tb-page-title {
@@ -94,6 +160,11 @@ body {
   gap: var(--tb-space-4);
 }
 
+/* Forms and settings: a readable column (ADR-0015) */
+.tb-stack--narrow {
+  max-width: var(--tb-content-narrow);
+}
+
 /* Sign-in and invitation pages */
 .tb-auth-page {
   display: flex;
@@ -108,7 +179,32 @@ body {
 
 .tb-auth-card {
   width: 100%;
-  max-width: 26rem;
+  max-width: 28rem;
+
+  &.p-card {
+    border-radius: var(--tb-shape-xl);
+  }
+
+  .p-card-body {
+    gap: var(--tb-space-4);
+    padding: var(--tb-space-8) var(--tb-space-8) var(--tb-space-7);
+
+    @media (max-width: 480px) {
+      padding: var(--tb-space-6) var(--tb-space-5);
+    }
+  }
+
+  .p-card-title {
+    font: var(--tb-type-headline-s);
+  }
+
+  .tb-form {
+    gap: var(--tb-space-5);
+  }
+
+  p {
+    margin: 0;
+  }
 }
 
 /* Forms */
@@ -122,14 +218,39 @@ body {
   max-width: 26rem;
 }
 
+/* A field: the label above it (Label Large), the hint under it (Body Small) */
 .tb-field {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-2);
 
-  label {
-    font-weight: 500;
+  > label,
+  > span:first-child {
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-label-l);
   }
+
+  > .tb-hint,
+  > small {
+    font: var(--tb-type-body-s);
+  }
+}
+
+/* A group of fields or settings with its title (Title Medium) */
+.tb-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+
+  & + & {
+    padding-top: var(--tb-space-5);
+    border-top: 1px solid var(--p-md-outline-variant);
+  }
+}
+
+.tb-section__title {
+  margin: 0;
+  font: var(--tb-type-title-m);
 }
 
 .tb-form-message {
@@ -138,15 +259,15 @@ body {
 
 .tb-hint,
 .tb-muted {
-  color: var(--p-text-muted-color);
+  color: var(--p-md-on-surface-variant);
 }
 
 .tb-error {
-  color: var(--p-red-500);
+  color: var(--p-md-error);
 }
 
 .tb-strong {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Lists */
@@ -189,7 +310,7 @@ body {
   margin: 0;
 
   dt {
-    color: var(--p-text-muted-color);
+    color: var(--p-md-on-surface-variant);
   }
 
   dd {
@@ -208,22 +329,27 @@ body {
 }
 
 /*
- * Links: the primary color, underlined on hover; links styled as buttons stay buttons, menu items
- * (the header, the user menu, «Ещё») are highlighted by the menu itself
+ * Links: the primary color, underlined on hover, the focus ring from the keyboard; links styled as
+ * buttons stay buttons, menu items (the navigation, the user menu, «Ещё») are highlighted by the
+ * menu itself
  */
 a {
-  color: var(--p-primary-color);
+  color: var(--p-md-primary);
   text-decoration: none;
+  border-radius: var(--tb-shape-xs);
 
   &:hover {
     text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: 2px;
   }
 }
 
 a.p-button,
 a.p-button:hover,
-a.p-menubar-item-link:hover,
-a.p-menubar-button:hover,
 a.p-menu-item-link:hover {
   text-decoration: none;
 }
@@ -246,11 +372,13 @@ a.p-menu-item-link:hover {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-1);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-l);
 }
 
 .tb-stat__value {
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-headline-s);
 }
 
 /* Money */
@@ -260,11 +388,15 @@ a.p-menu-item-link:hover {
 }
 
 .tb-negative {
-  color: var(--p-red-500);
+  color: var(--p-md-error);
 }
 
 .tb-positive {
-  color: var(--p-green-600);
+  color: var(--p-green-700);
+
+  :root.tb-dark & {
+    color: var(--p-green-300);
+  }
 }
 
 .tb-inactive td {
@@ -273,7 +405,7 @@ a.p-menu-item-link:hover {
 }
 
 .tb-link {
-  color: var(--p-primary-color);
+  color: var(--p-md-primary);
   text-decoration: none;
 
   &:hover {
@@ -295,8 +427,8 @@ a.p-menu-item-link:hover {
 
 .tb-subtitle {
   margin: var(--tb-space-5) 0 var(--tb-space-2);
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-title-m);
 }
 
 .tb-field__header {
@@ -331,7 +463,7 @@ a.p-menu-item-link:hover {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--p-primary-color);
+  color: var(--p-md-primary);
   font: inherit;
   cursor: pointer;
   text-align: left;
@@ -344,7 +476,7 @@ a.p-menu-item-link:hover {
 /* Homework */
 .tb-submission {
   padding: var(--tb-space-3) 0;
-  border-bottom: 1px solid var(--p-content-border-color);
+  border-bottom: 1px solid var(--p-md-outline-variant);
 
   &:last-child {
     border-bottom: 0;
@@ -357,13 +489,29 @@ a.p-menu-item-link:hover {
 
 .tb-preview {
   min-height: 12rem;
-  padding: var(--tb-space-3);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: var(--p-content-border-radius);
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border: 1px solid var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-xs);
 }
 
 .tb-markdown {
   overflow-wrap: anywhere;
+
+  h1,
+  h2 {
+    margin: var(--tb-space-6) 0 var(--tb-space-3);
+    font: var(--tb-type-title-l);
+  }
+
+  h3,
+  h4 {
+    margin: var(--tb-space-5) 0 var(--tb-space-2);
+    font: var(--tb-type-title-m);
+  }
+
+  strong {
+    font-weight: 500;
+  }
 
   :first-child {
     margin-top: 0;
@@ -376,8 +524,24 @@ a.p-menu-item-link:hover {
   pre {
     overflow-x: auto;
     padding: var(--tb-space-3);
-    background: var(--p-surface-100);
-    border-radius: var(--tb-radius);
+    background: var(--p-md-surface-container);
+    border-radius: var(--tb-shape-sm);
+  }
+}
+
+/* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
+.p-card.tb-hero {
+  background: var(--p-md-primary-container);
+  color: var(--p-md-on-primary-container);
+
+  .tb-muted,
+  .tb-hint {
+    color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
+  }
+
+  a:not(.p-button) {
+    color: var(--p-md-on-primary-container);
+    text-decoration: underline;
   }
 }
 
@@ -411,41 +575,110 @@ a.p-menu-item-link:hover {
   white-space: nowrap;
 }
 
-/* Calendar (FullCalendar, classic theme) in the colors of the PrimeNG theme */
+/* Calendar (FullCalendar, classic theme) in the M3 roles of the theme (ADR-0017) */
 :root {
-  --fc-classic-button: var(--p-primary-color);
-  --fc-classic-button-border: var(--p-primary-color);
-  --fc-classic-button-strong: var(--p-primary-active-color);
-  --fc-classic-button-strong-border: var(--p-primary-active-color);
-  --fc-classic-button-outline: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
-  --fc-classic-button-foreground: var(--p-primary-contrast-color);
-  --fc-classic-primary: var(--p-primary-color);
-  --fc-classic-primary-foreground: var(--p-primary-contrast-color);
-  --fc-classic-event: var(--p-primary-color);
-  --fc-classic-event-contrast: var(--p-primary-contrast-color);
+  --fc-classic-button: var(--p-md-secondary-container);
+  --fc-classic-button-border: var(--p-md-secondary-container);
+  --fc-classic-button-strong: color-mix(
+    in srgb,
+    var(--p-md-on-secondary-container) 18%,
+    var(--p-md-secondary-container)
+  );
+  --fc-classic-button-strong-border: var(--fc-classic-button-strong);
+  --fc-classic-button-outline: color-mix(in srgb, var(--p-md-primary) 40%, transparent);
+  --fc-classic-button-foreground: var(--p-md-on-secondary-container);
+  --fc-classic-primary: var(--p-md-primary);
+  --fc-classic-primary-foreground: var(--p-md-on-primary);
+  --fc-classic-event: var(--p-md-primary-container);
+  --fc-classic-event-contrast: var(--p-md-on-primary-container);
   --fc-classic-background-event: var(--p-green-500);
   --fc-classic-background-event-opacity: 15%;
   --fc-classic-background-event-foreground-opacity: 50%;
-  --fc-classic-highlight: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
-  --fc-classic-today: color-mix(in srgb, var(--p-yellow-400) 15%, transparent);
-  --fc-classic-now: var(--p-red-500);
+  --fc-classic-highlight: color-mix(in srgb, var(--p-md-primary) 12%, transparent);
+  --fc-classic-today: color-mix(in srgb, var(--p-md-primary) 6%, transparent);
+  --fc-classic-now: var(--p-md-error);
   --fc-classic-small-dot-width: 8px;
   --fc-classic-large-dot-width: 10px;
   --fc-classic-background: var(--p-content-background);
-  --fc-classic-faint: color-mix(in srgb, var(--p-text-color) 4%, transparent);
-  --fc-classic-muted: color-mix(in srgb, var(--p-text-color) 8%, transparent);
-  --fc-classic-strong: color-mix(in srgb, var(--p-text-color) 14%, transparent);
-  --fc-classic-foreground: var(--p-text-color);
-  --fc-classic-faint-foreground: var(--p-text-muted-color);
-  --fc-classic-muted-foreground: var(--p-text-muted-color);
-  --fc-classic-border: var(--p-content-border-color);
-  --fc-classic-strong-border: var(--p-text-muted-color);
+  --fc-classic-faint: color-mix(in srgb, var(--p-md-on-surface) 4%, transparent);
+  --fc-classic-muted: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+  --fc-classic-strong: color-mix(in srgb, var(--p-md-on-surface) 14%, transparent);
+  --fc-classic-foreground: var(--p-md-on-surface);
+  --fc-classic-faint-foreground: var(--p-md-on-surface-variant);
+  --fc-classic-muted-foreground: var(--p-md-on-surface-variant);
+  --fc-classic-border: var(--p-md-outline-variant);
+  --fc-classic-strong-border: var(--p-md-outline);
 }
 
-/* Lesson events by status; a planned group lesson has its own color */
+/* Calendar buttons (M3): pill buttons; the views are a segmented button with the selected one tonal */
+.tb-fc-button.tb-fc-button,
+.tb-fc-segment.tb-fc-segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 var(--tb-space-4);
+  border: 1px solid var(--p-md-outline);
+  background: transparent;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-label-l);
+  cursor: pointer;
+  transition: background var(--tb-duration-short) var(--tb-motion-standard);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: default;
+  }
+}
+
+.tb-fc-button.tb-fc-button {
+  border-radius: var(--tb-shape-full);
+
+  & + .tb-fc-button {
+    margin-inline-start: var(--tb-space-1);
+  }
+}
+
+.tb-fc-segments.tb-fc-segments {
+  display: inline-flex;
+
+  .tb-fc-segment {
+    border-radius: 0;
+
+    & + .tb-fc-segment {
+      border-inline-start-width: 0;
+    }
+
+    &:first-child {
+      border-radius: var(--tb-shape-full) 0 0 var(--tb-shape-full);
+    }
+
+    &:last-child {
+      border-radius: 0 var(--tb-shape-full) var(--tb-shape-full) 0;
+    }
+
+    &[aria-selected='true'],
+    &[aria-pressed='true'] {
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+  }
+}
+
+/* Lesson events by status; a planned group lesson has the tertiary color */
 .tb-lesson--group.tb-lesson--scheduled {
-  --fc-classic-event: var(--p-teal-600);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-tertiary-container);
+  --fc-classic-event-contrast: var(--p-md-on-tertiary-container);
 }
 
 .tb-lesson--conducted {
@@ -459,8 +692,8 @@ a.p-menu-item-link:hover {
 }
 
 .tb-lesson--cancelled {
-  --fc-classic-event: var(--p-surface-400);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-surface-container-highest);
+  --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
   opacity: 0.7;
 }
@@ -495,6 +728,21 @@ a.p-menu-item-link:hover {
  * action buttons are at the bottom of the card.
  */
 @media (max-width: 768px) {
+  /* Search fills the width of the toolbar */
+  .tb-toolbar > p-iconfield,
+  .tb-toolbar > p-iconfield input {
+    width: 100%;
+  }
+
+  /* The card around the list gives way: the row cards lie on the page itself */
+  .p-card:has(.p-datatable.tb-cards) {
+    background: transparent;
+
+    > .p-card-body {
+      padding: var(--tb-space-2) 0 0;
+    }
+  }
+
   .p-datatable.tb-cards {
     .p-datatable-table-container {
       overflow: visible;
@@ -515,8 +763,7 @@ a.p-menu-item-link:hover {
     .p-datatable-tbody > tr {
       margin-bottom: var(--tb-space-3);
       padding: var(--tb-space-3) var(--tb-space-4);
-      border: 1px solid var(--p-content-border-color);
-      border-radius: var(--p-content-border-radius);
+      border-radius: var(--tb-shape-md);
       background: var(--p-content-background);
     }
 
@@ -532,7 +779,9 @@ a.p-menu-item-link:hover {
       content: attr(data-label);
       float: left;
       margin-right: var(--tb-space-3);
-      color: var(--p-text-muted-color);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+      line-height: inherit;
       text-align: left;
     }
 
@@ -548,7 +797,7 @@ a.p-menu-item-link:hover {
 
     .p-datatable-tbody > tr > td:first-child {
       padding-bottom: var(--tb-space-2);
-      font-weight: 600;
+      font: var(--tb-type-title-m);
       text-align: left;
 
       &::before {
@@ -559,7 +808,7 @@ a.p-menu-item-link:hover {
     .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
       margin-top: var(--tb-space-2);
       padding-top: var(--tb-space-2);
-      border-top: 1px solid var(--p-content-border-color);
+      border-top: 1px solid var(--p-md-outline-variant);
     }
 
     /* the empty message is not a card */
@@ -580,17 +829,86 @@ a.p-menu-item-link:hover {
   font-size: 1.125rem;
 }
 
-/* The main action of a page on a phone: a round button above the bottom navigation (ADR-0015). */
+/* The main action of a page on a phone: the M3 FAB above the bottom navigation (ADR-0017). */
 .tb-fab {
   position: fixed;
   right: var(--tb-space-4);
-  bottom: calc(4.5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+  bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
   z-index: 900;
 
   .p-button {
     width: 3.5rem;
     height: 3.5rem;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+    border-color: var(--p-md-primary-container);
+    border-radius: var(--tb-shape-lg);
+    background: var(--p-md-primary-container);
+    color: var(--p-md-on-primary-container);
+    box-shadow: var(--tb-elevation-3);
+
+    &:not(:disabled):hover {
+      border-color: var(--p-md-primary-container);
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-primary-container) 8%,
+        var(--p-md-primary-container)
+      );
+      color: var(--p-md-on-primary-container);
+    }
+
+    .p-button-icon {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/*
+ * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
+ * same button, fixed above the bottom navigation.
+ */
+@media (max-width: 768px) {
+  p-button.tb-page-fab {
+    position: fixed;
+    right: var(--tb-space-4);
+    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+    z-index: 900;
+
+    .p-button {
+      height: 3.5rem;
+      padding-inline: var(--tb-space-4) var(--tb-space-5);
+      gap: var(--tb-space-3);
+      border-color: var(--p-md-primary-container);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
+      box-shadow: var(--tb-elevation-3);
+
+      &:not(:disabled):hover {
+        border-color: var(--p-md-primary-container);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) 8%,
+          var(--p-md-primary-container)
+        );
+        color: var(--p-md-on-primary-container);
+      }
+
+      .p-button-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  /* The page keeps room at its end for the FAB */
+  main.tb-shell__content--nav:has(.tb-page-fab, .tb-fab) {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Snackbar (M3): at the bottom in the middle, above the bottom navigation on a phone */
+.p-toast.p-toast-bottom-center {
+  @media (max-width: 768px) {
+    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-2)) !important;
+    width: calc(100vw - 2rem);
   }
 }
 
@@ -618,7 +936,7 @@ a.p-menu-item-link:hover {
 
     .p-dialog-footer {
       padding-bottom: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
-      border-top: 1px solid var(--p-content-border-color);
+      border-top: 1px solid var(--p-md-outline-variant);
       padding-top: var(--tb-space-4);
 
       > p-button,
@@ -670,7 +988,7 @@ a.p-menu-item-link:hover {
     }
 
     .tb-stat__value {
-      font-size: 1.25rem;
+      font: var(--tb-type-title-l);
     }
   }
 }

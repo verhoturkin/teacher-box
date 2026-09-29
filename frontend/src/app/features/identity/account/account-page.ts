@@ -23,7 +23,7 @@ import { ChangePasswordForm } from './change-password-form';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="tb-page-title">Мой аккаунт</h1>
-    <div class="tb-stack">
+    <div class="tb-stack tb-stack--narrow">
       @if (account(); as account) {
         <p-card header="Профиль">
           <dl class="tb-details">

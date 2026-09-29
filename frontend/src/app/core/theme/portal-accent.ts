@@ -25,9 +25,11 @@ export const MIN_CONTRAST = 3;
 
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const OWN_COLOR = /^#[0-9a-f]{6}$/i;
-/** Text on buttons: white in the light theme, dark (surface 900) in the dark one — as in Aura. */
+/**
+ * The roles of a filled button (ADR-0017): in the light theme white text on the shade 600, in the
+ * dark one the shade 900 on the shade 200.
+ */
 const LIGHT_BUTTON_TEXT = '#ffffff';
-const DARK_BUTTON_TEXT = '#18181b';
 
 export function isAccent(value: string): value is Accent {
   return ACCENTS.some((accent) => accent.value === value);
@@ -53,8 +55,8 @@ export function applyAccent(accent: string): Record<string, string> {
 export function ownColorContrast(color: string): { readonly light: number; readonly dark: number } {
   const shades = ownShades(color);
   return {
-    light: contrast(LIGHT_BUTTON_TEXT, shades['500'] ?? color),
-    dark: contrast(DARK_BUTTON_TEXT, shades['400'] ?? color),
+    light: contrast(LIGHT_BUTTON_TEXT, shades['600'] ?? color),
+    dark: contrast(shades['900'] ?? color, shades['200'] ?? color),
   };
 }
 

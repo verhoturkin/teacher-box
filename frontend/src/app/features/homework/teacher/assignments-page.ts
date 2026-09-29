@@ -52,7 +52,12 @@ import { EmptyState } from '@shared/ui/empty-state';
             <p-badge [value]="toReview()" severity="warn" />
           }
         </a>
-        <p-button label="Новое задание" icon="pi pi-plus" (onClick)="openCreate()" />
+        <p-button
+          class="tb-page-fab"
+          label="Новое задание"
+          icon="pi pi-plus"
+          (onClick)="openCreate()"
+        />
       </div>
     </div>
 
@@ -96,7 +101,12 @@ import { EmptyState } from '@shared/ui/empty-state';
                 title="Заданий пока нет"
                 hint="Создайте первое задание и выдайте его ученикам"
               >
-                <p-button label="Новое задание" icon="pi pi-plus" (onClick)="openCreate()" />
+                <p-button
+                  class="tb-page-fab"
+                  label="Новое задание"
+                  icon="pi pi-plus"
+                  (onClick)="openCreate()"
+                />
               </tb-empty-state>
             </td>
           </tr>

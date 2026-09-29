@@ -53,7 +53,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       <h1 class="tb-page-title">Настройки</h1>
       <tb-help-button topic="teacher/settings" />
     </div>
-    <div class="tb-stack">
+    <div class="tb-stack tb-stack--narrow">
       <tb-portal-settings-card />
       <p-card header="Интеграции">
         <ul class="tb-integrations">

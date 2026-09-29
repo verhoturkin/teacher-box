@@ -103,11 +103,12 @@ describe('PortalSettingsCard', () => {
     typeInto(field, '#FDE68A');
     await fixture.whenStable();
     expect(readableText(host)).toContain(
-      'будет плохо читаться в светлой теме — выберите цвет темнее',
+      'будет плохо читаться в светлой теме — выберите цвет насыщеннее или темнее',
     );
+    // The dark theme puts the shade 900 on the shade 200: a dark color stays readable there.
     typeInto(field, '#1e1b4b');
     await fixture.whenStable();
-    expect(readableText(host)).toContain('в тёмной теме — выберите цвет светлее');
+    expect(readableText(host)).not.toContain('будет плохо читаться');
     typeInto(field, '#1e1b4');
     await fixture.whenStable();
     expect(fixture.componentInstance.ownColor.value).toBe('#1e1b4');

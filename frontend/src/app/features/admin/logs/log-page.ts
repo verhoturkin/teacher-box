@@ -187,7 +187,7 @@ export const LOG_LIMIT = 200;
       padding: 0;
       border: 0;
       background: none;
-      color: var(--p-primary-color);
+      color: var(--p-md-primary);
       font: inherit;
       font-size: 0.85rem;
       cursor: pointer;

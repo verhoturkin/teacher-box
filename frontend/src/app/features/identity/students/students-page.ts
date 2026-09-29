@@ -79,7 +79,12 @@ import { EmptyState } from '@shared/ui/empty-state';
         <h1 class="tb-page-title">Ученики</h1>
         <tb-help-button topic="teacher/students" />
       </div>
-      <p-button label="Добавить ученика" icon="pi pi-user-plus" (onClick)="openCreate()" />
+      <p-button
+        class="tb-page-fab"
+        label="Добавить ученика"
+        icon="pi pi-user-plus"
+        (onClick)="openCreate()"
+      />
     </div>
 
     <div class="tb-stack">

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import {
+  ButtonGroupInfo,
+  ButtonInfo,
   CalendarOptions,
   DateSelectInfo,
   DatesSetInfo,
@@ -99,7 +101,13 @@ export class ScheduleCalendar {
               center: 'title',
               end: 'timeGridWeek,dayGridMonth,listWeek',
             },
+            // Explicitly: after a rotation from the phone the footer would otherwise stay
+            footerToolbar: false,
           }),
+      // M3 buttons and segmented buttons (styles.scss)
+      buttonClass: (button: ButtonInfo) =>
+        button.buttonGroup?.hasSelection === true ? 'tb-fc-segment' : 'tb-fc-button',
+      buttonGroupClass: (group: ButtonGroupInfo) => (group.hasSelection ? 'tb-fc-segments' : ''),
       listText: 'Список',
       noEventsText: 'Занятий нет',
       firstDay: 1,

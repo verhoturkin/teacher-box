@@ -51,8 +51,11 @@ interface AttentionItem {
         align-items: center;
         gap: var(--tb-space-3);
 
+        min-height: 2.5rem;
+
         > i {
-          color: var(--p-orange-500);
+          color: var(--p-md-tertiary);
+          font-size: 1.125rem;
         }
 
         a {
@@ -62,12 +65,12 @@ interface AttentionItem {
     }
 
     .tb-attention__count {
-      min-width: 1.75rem;
+      min-width: 1.5rem;
       padding: var(--tb-space-1) var(--tb-space-2);
-      border-radius: 1rem;
-      background: var(--p-orange-100);
-      color: var(--p-orange-700);
-      font-weight: 600;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-tertiary-container);
+      color: var(--p-md-on-tertiary-container);
+      font: var(--tb-type-label-l);
       text-align: center;
     }
   `,

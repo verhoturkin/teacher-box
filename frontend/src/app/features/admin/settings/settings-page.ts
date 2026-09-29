@@ -75,6 +75,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
       </div>
       <div class="tb-actions">
         <p-button
+          class="tb-page-fab"
           label="Сохранить и перезапустить"
           icon="pi pi-save"
           [disabled]="changes() === 0"
@@ -249,7 +250,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
       min-width: 0;
 
       label {
-        font-weight: 500;
+        font: var(--tb-type-label-l);
       }
     }
 
@@ -261,7 +262,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
     }
 
     .tb-setting__name {
-      font-size: 0.75rem;
+      font: var(--tb-type-body-s);
       color: var(--p-text-muted-color);
       overflow-wrap: anywhere;
     }

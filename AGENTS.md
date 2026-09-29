@@ -38,7 +38,7 @@
 | | Сборка | Maven (через `mvnw`) |
 | | Тесты | JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo |
 | Frontend | Angular (standalone, signals, zoneless) | 21.2 LTS ([ADR-0007](docs/adr/0007-frontend-stack-licensing.md)) |
-| | PrimeNG (MIT) + @primeuix/themes 2 (Aura) + primeicons 7 | 21.1.x |
+| | PrimeNG (MIT) + @primeuix/themes 2 (Aura → Material Design 3, [ADR-0017](docs/adr/0017-material-design-3.md)) + primeicons 7, шрифт Roboto | 21.1.x |
 | | TypeScript | 5.9.x, `strict` |
 | | Тесты | Vitest (через `ng test`), jsdom |
 | | Линтер | ESLint + angular-eslint + typescript-eslint (type-checked) |

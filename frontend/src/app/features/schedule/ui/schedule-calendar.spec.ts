@@ -40,6 +40,18 @@ describe('ScheduleCalendar', () => {
     expect(text).toContain('Группа');
   });
 
+  it('has M3 buttons: the views are a segmented button, the toolbar only on top', async () => {
+    await render([]);
+    const host = hostElement(fixture);
+
+    const views = Array.from(host.querySelectorAll('.tb-fc-segments .tb-fc-segment'));
+    expect(views.map((view) => view.textContent.trim())).toEqual(['Неделя', 'Месяц', 'Список']);
+    const today = Array.from(host.querySelectorAll('.tb-fc-button')).filter(
+      (button) => button.textContent.trim() === 'Сегодня',
+    );
+    expect(today).toHaveLength(1);
+  });
+
   it('shows the student the topics', async () => {
     const text = await render(
       [scheduledLesson({ topic: 'Степени' }), scheduledLesson({ id: 'l-2' })],
