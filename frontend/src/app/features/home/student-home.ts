@@ -11,7 +11,10 @@ import type { MyScheduleSummary } from '@features/schedule/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
 import { PageHeader } from '@shared/ui/page-header';
 
-/** Student personal area dashboard: the nearest lesson with its link on top, then the widgets of the modules. */
+/**
+ * Student personal area dashboard: the nearest lesson with its link on top, then the widgets of the
+ * modules one under another (ADR-0021): homework, balance, notifications, boards.
+ */
 @Component({
   selector: 'tb-student-home',
   imports: [
@@ -36,20 +39,14 @@ import { PageHeader } from '@shared/ui/page-header';
       }
       <tb-student-welcome-card />
       <tb-connect-messenger-card />
-      <div class="tb-home">
-        <div class="tb-stack">
-          @if (homework(); as homework) {
-            <tb-my-deadlines-widget [summary]="homework" />
-          }
-          <tb-my-boards-card />
-        </div>
-        <div class="tb-stack">
-          @if (billing(); as billing) {
-            <tb-my-balance-widget [summary]="billing" />
-          }
-          <tb-latest-notifications-widget link="/cabinet/notifications" />
-        </div>
-      </div>
+      @if (homework(); as homework) {
+        <tb-my-deadlines-widget [summary]="homework" />
+      }
+      @if (billing(); as billing) {
+        <tb-my-balance-widget [summary]="billing" />
+      }
+      <tb-latest-notifications-widget link="/cabinet/notifications" />
+      <tb-my-boards-card />
     </div>
   `,
 })

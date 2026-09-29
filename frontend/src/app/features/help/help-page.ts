@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -20,7 +22,9 @@ import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
 import { PageHeader } from '@shared/ui/page-header';
 
-/** The help of an area: contents, search and the chosen article (`/<area>/help/<topic>`). */
+/**
+ * The help of an area (`/<area>/help/<topic>`): the chosen article, then the contents with search.
+ */
 @Component({
   selector: 'tb-help-page',
   imports: [
@@ -37,6 +41,15 @@ import { PageHeader } from '@shared/ui/page-header';
   template: `
     <tb-page-header title="Справка" />
     <div class="tb-help">
+      <p-card #article class="tb-help__article-card" styleClass="tb-help__article">
+        @if (current(); as article) {
+          @if (missing()) {
+            <p class="tb-muted">Такой статьи нет — вот «{{ article.title }}».</p>
+          }
+          <h2 class="tb-help__title">{{ article.title }}</h2>
+          <tb-help-article [body]="article.body" />
+        }
+      </p-card>
       <p-card styleClass="tb-help__contents">
         <p-iconfield>
           <p-inputicon styleClass="pi pi-search" />
@@ -54,6 +67,7 @@ import { PageHeader } from '@shared/ui/page-header';
                 <a
                   [routerLink]="['/', area(), 'help', article.id]"
                   [class.tb-help__current]="article.id === current()?.id"
+                  (click)="showArticle()"
                 >
                   {{ article.title }}
                 </a>
@@ -67,32 +81,15 @@ import { PageHeader } from '@shared/ui/page-header';
           </ul>
         </nav>
       </p-card>
-      <p-card class="tb-help__article-card" styleClass="tb-help__article">
-        @if (current(); as article) {
-          @if (missing()) {
-            <p class="tb-muted">Такой статьи нет — вот «{{ article.title }}».</p>
-          }
-          <h2 class="tb-help__title">{{ article.title }}</h2>
-          <tb-help-article [body]="article.body" />
-        }
-      </p-card>
     </div>
   `,
   styles: `
+    /* One column (ADR-0021): the article first, the contents follow it */
     .tb-help {
-      display: grid;
-      grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: var(--tb-space-4);
-      align-items: start;
-
-      @media (max-width: 768px) {
-        grid-template-columns: minmax(0, 1fr);
-
-        /* on a phone the article comes first, the contents follow it */
-        .tb-help__article-card {
-          order: -1;
-        }
-      }
+      max-width: var(--tb-content-narrow);
     }
 
     /* M3 list: the current article on the secondary container */
@@ -162,6 +159,8 @@ export class HelpPage {
     );
   });
 
+  private readonly article = viewChild.required('article', { read: ElementRef });
+
   constructor() {
     effect(() => {
       const area = this.area();
@@ -170,5 +169,13 @@ export class HelpPage {
         this.loaded.set(true);
       });
     });
+  }
+
+  /** An article chosen in the contents under it: the page goes up to the article. */
+  showArticle(): void {
+    const article: unknown = this.article().nativeElement;
+    if (article instanceof HTMLElement && typeof article.scrollIntoView === 'function') {
+      article.scrollIntoView({ block: 'start' });
+    }
   }
 }

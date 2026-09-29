@@ -90,16 +90,16 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
         (onClick)="openConfirm()"
       />
     </tb-page-header>
-    <p class="tb-hint">
-      Значения, заданные здесь, важнее файла .env и применяются после перезапуска портала. Пароли,
-      токены и ключи не показываются — их можно только задать заново.
-    </p>
-    @if (settings()?.restartNeeded) {
-      <p-message severity="warn" styleClass="tb-form-message">
-        Сохранённые настройки применятся после перезапуска портала.
-      </p-message>
-    }
-    <div class="tb-stack">
+    <div class="tb-stack tb-stack--narrow">
+      <p class="tb-hint">
+        Значения, заданные здесь, важнее файла .env и применяются после перезапуска портала. Пароли,
+        токены и ключи не показываются — их можно только задать заново.
+      </p>
+      @if (settings()?.restartNeeded) {
+        <p-message severity="warn" styleClass="tb-form-message">
+          Сохранённые настройки применятся после перезапуска портала.
+        </p-message>
+      }
       @for (group of groups(); track group.name) {
         <p-card [header]="group.name">
           <div class="tb-settings">
@@ -240,10 +240,11 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
     </p-dialog>
   `,
   styles: `
+    /* One setting under another (ADR-0021) */
     .tb-settings {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-      gap: var(--tb-space-4) var(--tb-space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-5);
     }
 
     .tb-setting {

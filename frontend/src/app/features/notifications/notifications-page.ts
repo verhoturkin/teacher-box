@@ -31,8 +31,8 @@ function isFolded(value: unknown): value is FoldedSection {
 
 /**
  * Notifications of the current user; the teacher also manages bots, messages to students and their
- * messengers. The teacher's page is a stack of cards (ADR-0019): the inbox and the messages to
- * students are always open, the settings fold.
+ * messengers. The page is a stack of cards in one column (ADR-0021); on the teacher's page the inbox
+ * and the messages to students are always open, the settings fold (ADR-0019).
  */
 @Component({
   selector: 'tb-notifications-page',
@@ -107,29 +107,16 @@ function isFolded(value: unknown): value is FoldedSection {
         </tb-fold-card>
       </div>
     } @else {
-      <div class="tb-notifications-layout">
+      <div class="tb-stack tb-notifications-sections">
         <tb-inbox-panel />
-        <div class="tb-stack">
-          <tb-channels-panel />
-          <tb-preferences-panel />
-        </div>
+        <tb-channels-panel />
+        <tb-preferences-panel />
       </div>
     }
   `,
   styles: `
     .tb-notifications-sections {
       max-width: var(--tb-content-narrow);
-    }
-
-    .tb-notifications-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: var(--tb-space-4);
-      align-items: start;
-
-      @media (max-width: 900px) {
-        grid-template-columns: minmax(0, 1fr);
-      }
     }
   `,
 })

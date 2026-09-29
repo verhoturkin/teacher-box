@@ -120,29 +120,41 @@ import { EmptyState } from '@shared/ui/empty-state';
     </div>
   `,
   styles: `
+    /* a check: the service and its state on the first line, the details and the time under them */
     .tb-checks {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-3);
+      gap: var(--tb-space-4);
       margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
 
       li {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-areas: 'name state' 'detail time';
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
-        gap: var(--tb-space-3);
+        gap: var(--tb-space-1) var(--tb-space-3);
       }
 
       strong {
-        min-width: 10rem;
+        grid-area: name;
+      }
+
+      p-tag {
+        grid-area: state;
+        justify-self: end;
+      }
+
+      small {
+        grid-area: time;
+        align-self: start;
+        white-space: nowrap;
       }
     }
 
     .tb-checks__detail {
-      flex: 1;
-      min-width: 12rem;
+      grid-area: detail;
       overflow-wrap: anywhere;
     }
   `,

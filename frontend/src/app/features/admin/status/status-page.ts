@@ -87,13 +87,22 @@ import { HelpButton } from '@features/help/parts';
           </div>
         </p-card>
       </div>
-      <p class="tb-muted">Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}</p>
+      <p class="tb-muted tb-status-data">
+        Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}
+      </p>
     }
     <tb-portal-address-card />
   `,
   styles: `
+    .tb-status-data {
+      overflow-wrap: anywhere;
+    }
+
+    /* a check keeps its name and state on one line */
     .tb-component {
+      display: inline-block;
       margin-right: var(--tb-space-3);
+      white-space: nowrap;
     }
   `,
 })

@@ -45,8 +45,9 @@ export function nextMonday(date: Date): Date {
 }
 
 /**
- * The student's schedule: upcoming lessons of this week with the link to the online lesson and requests to
- * move or cancel them, the calendar, the student's requests and the calendar link.
+ * The student's schedule, one card under another (ADR-0021): upcoming lessons of this week with the
+ * link to the online lesson and requests to move or cancel them, the student's requests, the
+ * calendar, the boards and the calendar link.
  */
 @Component({
   selector: 'tb-my-schedule-page',
@@ -68,125 +69,119 @@ export function nextMonday(date: Date): Date {
     <tb-page-header title="Расписание">
       <tb-help-button help topic="cabinet/schedule" />
     </tb-page-header>
-    <div class="tb-schedule-layout">
-      <div class="tb-stack">
-        <p-card header="Ближайшие занятия">
-          @if (upcoming().length === 0) {
-            <tb-empty-state
-              icon="pi-calendar"
-              title="На этой неделе занятий больше нет"
-              hint="Следующие занятия — в календаре"
-            />
-          } @else {
-            <ul class="tb-list tb-schedule-list">
-              @for (lesson of upcoming(); track lesson.id) {
-                <li>
-                  <span class="tb-list__lead" aria-hidden="true">
-                    <i [class]="lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users'"></i>
-                  </span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ time(lesson) }}</span>
-                    @if (lesson.groupId !== null) {
-                      <span class="tb-list__supporting">{{ with(lesson) }}</span>
-                    }
-                    @if (lesson.topic !== null) {
-                      <span class="tb-list__supporting">{{ lesson.topic }}</span>
-                    }
-                    @if (lesson.status !== 'SCHEDULED') {
-                      <p-tag
-                        [value]="statuses[lesson.status].label"
-                        [severity]="statuses[lesson.status].severity"
-                      />
-                    }
-                    @if (excused(lesson)) {
-                      <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
-                    }
-                    @if (lesson.pendingRequests[0]; as request) {
-                      <small class="tb-muted">
-                        Запрос «{{ kind(request) }}» ждёт ответа учителя
-                        <p-button
-                          severity="danger"
-                          label="Отозвать"
-                          [text]="true"
-                          (onClick)="withdraw(request)"
-                        />
-                      </small>
-                    }
-                  </div>
-                  <div class="tb-list__trail">
-                    @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
-                      <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" />
-                    }
-                    @if (
-                      lesson.status === 'SCHEDULED' &&
-                      lesson.pendingRequests.length === 0 &&
-                      !excused(lesson)
-                    ) {
-                      <p-button
-                        label="Перенести"
-                        severity="secondary"
-                        (onClick)="ask(lesson, 'RESCHEDULE')"
-                      />
-                      <p-button
-                        [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
-                        severity="danger"
-                        [text]="true"
-                        (onClick)="ask(lesson, 'CANCEL')"
-                      />
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
-          }
-        </p-card>
-
-        <p-card>
-          <tb-schedule-calendar
-            [lessons]="calendarLessons()"
-            [busy]="busy()"
-            busyTitle="Занято"
-            [showStudent]="false"
-            initialView="listWeek"
-            (rangeChange)="onRange($event)"
+    <div class="tb-stack">
+      <p-card header="Ближайшие занятия">
+        @if (upcoming().length === 0) {
+          <tb-empty-state
+            icon="pi-calendar"
+            title="На этой неделе занятий больше нет"
+            hint="Следующие занятия — в календаре"
           />
-        </p-card>
-      </div>
-
-      <div class="tb-stack">
-        @if (requests().length > 0) {
-          <p-card header="Мои запросы">
-            <ul class="tb-list tb-schedule-list">
-              @for (request of requests(); track request.id) {
-                <li>
-                  <span class="tb-list__lead" aria-hidden="true"
-                    ><i class="pi pi-comments"></i
-                  ></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">
-                      {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
-                      @if (request.groupName !== null) {
-                        · группа «{{ request.groupName }}»
-                      }
-                    </span>
-                    @if (request.answer !== null) {
-                      <span class="tb-list__supporting">Учитель: {{ request.answer }}</span>
-                    }
-                  </div>
-                  <div class="tb-list__trail">
+        } @else {
+          <ul class="tb-list tb-schedule-list">
+            @for (lesson of upcoming(); track lesson.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true">
+                  <i [class]="lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users'"></i>
+                </span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ time(lesson) }}</span>
+                  @if (lesson.groupId !== null) {
+                    <span class="tb-list__supporting">{{ with(lesson) }}</span>
+                  }
+                  @if (lesson.topic !== null) {
+                    <span class="tb-list__supporting">{{ lesson.topic }}</span>
+                  }
+                  @if (lesson.status !== 'SCHEDULED') {
                     <p-tag
-                      [value]="requestStatuses[request.status].label"
-                      [severity]="requestStatuses[request.status].severity"
+                      [value]="statuses[lesson.status].label"
+                      [severity]="statuses[lesson.status].severity"
                     />
-                  </div>
-                </li>
-              }
-            </ul>
-          </p-card>
+                  }
+                  @if (excused(lesson)) {
+                    <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
+                  }
+                  @if (lesson.pendingRequests[0]; as request) {
+                    <small class="tb-muted">
+                      Запрос «{{ kind(request) }}» ждёт ответа учителя
+                      <p-button
+                        severity="danger"
+                        label="Отозвать"
+                        [text]="true"
+                        (onClick)="withdraw(request)"
+                      />
+                    </small>
+                  }
+                </div>
+                <div class="tb-list__trail">
+                  @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
+                    <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" />
+                  }
+                  @if (
+                    lesson.status === 'SCHEDULED' &&
+                    lesson.pendingRequests.length === 0 &&
+                    !excused(lesson)
+                  ) {
+                    <p-button
+                      label="Перенести"
+                      severity="secondary"
+                      (onClick)="ask(lesson, 'RESCHEDULE')"
+                    />
+                    <p-button
+                      class="tb-button-steady"
+                      [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
+                      severity="danger"
+                      [text]="true"
+                      (onClick)="ask(lesson, 'CANCEL')"
+                    />
+                  }
+                </div>
+              </li>
+            }
+          </ul>
         }
-        <tb-my-boards-card />
-        <tb-calendar-feed-panel />
-      </div>
+      </p-card>
+
+      @if (requests().length > 0) {
+        <p-card header="Мои запросы">
+          <ul class="tb-list tb-schedule-list">
+            @for (request of requests(); track request.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">
+                    {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
+                    @if (request.groupName !== null) {
+                      · группа «{{ request.groupName }}»
+                    }
+                  </span>
+                  @if (request.answer !== null) {
+                    <span class="tb-list__supporting">Учитель: {{ request.answer }}</span>
+                  }
+                </div>
+                <div class="tb-list__trail">
+                  <p-tag
+                    [value]="requestStatuses[request.status].label"
+                    [severity]="requestStatuses[request.status].severity"
+                  />
+                </div>
+              </li>
+            }
+          </ul>
+        </p-card>
+      }
+      <p-card>
+        <tb-schedule-calendar
+          [lessons]="calendarLessons()"
+          [busy]="busy()"
+          busyTitle="Занято"
+          [showStudent]="false"
+          initialView="listWeek"
+          (rangeChange)="onRange($event)"
+        />
+      </p-card>
+      <tb-my-boards-card />
+      <tb-calendar-feed-panel />
     </div>
 
     <tb-change-request-dialog
@@ -197,18 +192,6 @@ export function nextMonday(date: Date): Date {
       [now]="now()"
       (sent)="onSent()"
     />
-  `,
-  styles: `
-    .tb-schedule-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: var(--tb-space-4);
-      align-items: start;
-
-      @media (max-width: 900px) {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
   `,
 })
 export class MySchedulePage implements OnInit {

@@ -63,9 +63,9 @@ import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 const CLICK_SELECTION_MINUTES = 30;
 
 /**
- * The teacher's schedule: the calendar with lessons (select empty time to plan, drag to move),
- * students' requests, lessons waiting for an outcome, regular series, the teacher's off time and the
- * calendar link.
+ * The teacher's schedule, one card under another (ADR-0021): students' requests and lessons waiting
+ * for an outcome first, then the calendar with lessons (select empty time to plan, drag to move),
+ * regular series, the teacher's off time and the calendar link.
  * On a phone a new lesson is planned with the floating «+».
  */
 @Component({
@@ -111,7 +111,85 @@ const CLICK_SELECTION_MINUTES = 30;
       <p class="tb-hint">{{ hint }}</p>
     }
 
-    <div class="tb-schedule-layout">
+    <div class="tb-stack">
+      @if (requests().length > 0) {
+        <p-card header="Запросы учеников">
+          <ul class="tb-list">
+            @for (request of requests(); track request.id) {
+              <li>
+                <span class="tb-avatar" aria-hidden="true">{{
+                  request.studentName ?? 'Ученик' | initials
+                }}</span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">
+                    {{ request.studentName ?? 'Ученик' }}
+                    <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
+                  </span>
+                  <span class="tb-list__supporting">
+                    @if (request.groupName !== null) {
+                      {{ request.groupName }},
+                    }
+                    {{ start(request.lessonStartsAt) }}
+                    @if (request.proposedStartsAt !== null) {
+                      → {{ start(request.proposedStartsAt) }}
+                    }
+                  </span>
+                </div>
+                <div class="tb-list__trail">
+                  <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
+                </div>
+              </li>
+            }
+          </ul>
+        </p-card>
+      }
+
+      @if (unmarked().length > 0) {
+        <p-card header="Отметьте прошедшие занятия">
+          <ul class="tb-list">
+            @for (lesson of unmarked(); track lesson.id) {
+              <li>
+                <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ with(lesson) }}</span>
+                  <span class="tb-list__supporting">{{ time(lesson) }}</span>
+                </div>
+                <div class="tb-list__trail">
+                  @if (lesson.groupId !== null) {
+                    <p-button
+                      label="Отметить"
+                      icon="pi pi-users"
+                      [text]="true"
+                      [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                      (onClick)="openLesson(lesson)"
+                    />
+                  } @else {
+                    <p-button
+                      icon="pi pi-check"
+                      [text]="true"
+                      [pTooltip]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      [rounded]="true"
+                      severity="success"
+                      [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      (onClick)="mark(lesson, 'CONDUCTED')"
+                    />
+                    <p-button
+                      icon="pi pi-user-minus"
+                      [text]="true"
+                      [pTooltip]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      [rounded]="true"
+                      severity="danger"
+                      [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      (onClick)="mark(lesson, 'MISSED')"
+                    />
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        </p-card>
+      }
+
       <p-card>
         <tb-schedule-calendar
           [lessons]="lessons()"
@@ -125,167 +203,87 @@ const CLICK_SELECTION_MINUTES = 30;
         />
       </p-card>
 
-      <div class="tb-stack">
-        @if (requests().length > 0) {
-          <p-card header="Запросы учеников">
-            <ul class="tb-list">
-              @for (request of requests(); track request.id) {
-                <li>
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    request.studentName ?? 'Ученик' | initials
-                  }}</span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">
-                      {{ request.studentName ?? 'Ученик' }}
-                      <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
-                    </span>
-                    <span class="tb-list__supporting">
-                      @if (request.groupName !== null) {
-                        {{ request.groupName }},
-                      }
-                      {{ start(request.lessonStartsAt) }}
-                      @if (request.proposedStartsAt !== null) {
-                        → {{ start(request.proposedStartsAt) }}
-                      }
-                    </span>
-                  </div>
-                  <div class="tb-list__trail">
-                    <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
-                  </div>
-                </li>
-              }
-            </ul>
-          </p-card>
+      <p-card header="Регулярные занятия">
+        @if (series().length === 0) {
+          <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
+        } @else {
+          <ul class="tb-list">
+            @for (item of series(); track item.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ with(item) }}</span>
+                  <span class="tb-list__supporting">{{ weekly(item) }}</span>
+                </div>
+                <div class="tb-list__trail">
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    [pTooltip]="'Изменить расписание: ' + with(item)"
+                    [rounded]="true"
+                    severity="secondary"
+                    [ariaLabel]="'Изменить расписание: ' + with(item)"
+                    (onClick)="editSeries(item)"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    [pTooltip]="'Завершить расписание: ' + with(item)"
+                    [rounded]="true"
+                    severity="danger"
+                    [ariaLabel]="'Завершить расписание: ' + with(item)"
+                    (onClick)="stopSeries(item)"
+                  />
+                </div>
+              </li>
+            }
+          </ul>
         }
+      </p-card>
 
-        @if (unmarked().length > 0) {
-          <p-card header="Отметьте прошедшие занятия">
-            <ul class="tb-list">
-              @for (lesson of unmarked(); track lesson.id) {
-                <li>
-                  <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ with(lesson) }}</span>
-                    <span class="tb-list__supporting">{{ time(lesson) }}</span>
-                  </div>
-                  <div class="tb-list__trail">
-                    @if (lesson.groupId !== null) {
-                      <p-button
-                        label="Отметить"
-                        icon="pi pi-users"
-                        [text]="true"
-                        [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
-                        (onClick)="openLesson(lesson)"
-                      />
-                    } @else {
-                      <p-button
-                        icon="pi pi-check"
-                        [text]="true"
-                        [pTooltip]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
-                        [rounded]="true"
-                        severity="success"
-                        [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
-                        (onClick)="mark(lesson, 'CONDUCTED')"
-                      />
-                      <p-button
-                        icon="pi pi-user-minus"
-                        [text]="true"
-                        [pTooltip]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
-                        [rounded]="true"
-                        severity="danger"
-                        [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
-                        (onClick)="mark(lesson, 'MISSED')"
-                      />
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
-          </p-card>
+      <p-card header="Нерабочее время">
+        @if (offTimes().length === 0) {
+          <tb-empty-state
+            icon="pi-moon"
+            title="Нерабочее время не отмечено"
+            hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
+          />
+        } @else {
+          <ul class="tb-list">
+            @for (item of offTimes(); track item.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
+                  <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
+                </div>
+                <div class="tb-list__trail">
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
+                    [rounded]="true"
+                    severity="secondary"
+                    [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
+                    (onClick)="editOffTime(item)"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
+                    [rounded]="true"
+                    severity="danger"
+                    [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
+                    (onClick)="deleteOffTime(item)"
+                  />
+                </div>
+              </li>
+            }
+          </ul>
         }
+      </p-card>
 
-        <p-card header="Регулярные занятия">
-          @if (series().length === 0) {
-            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
-          } @else {
-            <ul class="tb-list">
-              @for (item of series(); track item.id) {
-                <li>
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ with(item) }}</span>
-                    <span class="tb-list__supporting">{{ weekly(item) }}</span>
-                  </div>
-                  <div class="tb-list__trail">
-                    <p-button
-                      icon="pi pi-pencil"
-                      [text]="true"
-                      [pTooltip]="'Изменить расписание: ' + with(item)"
-                      [rounded]="true"
-                      severity="secondary"
-                      [ariaLabel]="'Изменить расписание: ' + with(item)"
-                      (onClick)="editSeries(item)"
-                    />
-                    <p-button
-                      icon="pi pi-trash"
-                      [text]="true"
-                      [pTooltip]="'Завершить расписание: ' + with(item)"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="'Завершить расписание: ' + with(item)"
-                      (onClick)="stopSeries(item)"
-                    />
-                  </div>
-                </li>
-              }
-            </ul>
-          }
-        </p-card>
-
-        <p-card header="Нерабочее время">
-          @if (offTimes().length === 0) {
-            <tb-empty-state
-              icon="pi-moon"
-              title="Нерабочее время не отмечено"
-              hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
-            />
-          } @else {
-            <ul class="tb-list">
-              @for (item of offTimes(); track item.id) {
-                <li>
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
-                    <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
-                  </div>
-                  <div class="tb-list__trail">
-                    <p-button
-                      icon="pi pi-pencil"
-                      [text]="true"
-                      [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
-                      [rounded]="true"
-                      severity="secondary"
-                      [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
-                      (onClick)="editOffTime(item)"
-                    />
-                    <p-button
-                      icon="pi pi-trash"
-                      [text]="true"
-                      [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
-                      (onClick)="deleteOffTime(item)"
-                    />
-                  </div>
-                </li>
-              }
-            </ul>
-          }
-        </p-card>
-
-        <tb-calendar-feed-panel />
-      </div>
+      <tb-calendar-feed-panel />
     </div>
 
     <tb-lesson-dialog
@@ -325,18 +323,6 @@ const CLICK_SELECTION_MINUTES = 30;
       (answered)="reload()"
     />
     <p-confirmdialog />
-  `,
-  styles: `
-    .tb-schedule-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
-      gap: var(--tb-space-4);
-      align-items: start;
-
-      @media (max-width: 1100px) {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
   `,
 })
 export class SchedulePage implements OnInit {

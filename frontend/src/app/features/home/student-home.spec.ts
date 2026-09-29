@@ -51,6 +51,20 @@ describe('StudentHome', () => {
     expect(text).toContain('аванс 1 500 ₽');
     expect(text).toContain('Уведомлений пока нет');
     expect(text).toContain('Доска по алгебре');
+    // one column (ADR-0021): the widgets one under another
+    expect(
+      Array.from(hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'), (widget) =>
+        widget.tagName.toLowerCase(),
+      ),
+    ).toEqual([
+      'tb-next-lesson-widget',
+      'tb-student-welcome-card',
+      'tb-connect-messenger-card',
+      'tb-my-deadlines-widget',
+      'tb-my-balance-widget',
+      'tb-latest-notifications-widget',
+      'tb-my-boards-card',
+    ]);
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/me/schedule/summary').flush(myScheduleSummary());
