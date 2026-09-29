@@ -27,6 +27,7 @@ import {
   SettingSource,
 } from '../data-access/admin.models';
 import { TimeZoneOption, timeZoneOptions } from './time-zones';
+import { PageHeader } from '@shared/ui/page-header';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
 
@@ -65,24 +66,29 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
  */
 @Component({
   selector: 'tb-admin-settings-page',
-  imports: [FormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Select, Tag],
+  imports: [
+    FormsModule,
+    Button,
+    Card,
+    Dialog,
+    HelpButton,
+    InputText,
+    Message,
+    Select,
+    Tag,
+    PageHeader,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Настройки</h1>
-        <tb-help-button topic="admin/settings" />
-      </div>
-      <div class="tb-actions">
-        <p-button
-          class="tb-page-fab"
-          label="Сохранить и перезапустить"
-          icon="pi pi-save"
-          [disabled]="changes() === 0"
-          (onClick)="openConfirm()"
-        />
-      </div>
-    </div>
+    <tb-page-header title="Настройки">
+      <tb-help-button help topic="admin/settings" />
+      <p-button
+        label="Сохранить и перезапустить"
+        icon="pi pi-save"
+        [disabled]="changes() === 0"
+        (onClick)="openConfirm()"
+      />
+    </tb-page-header>
     <p class="tb-hint">
       Значения, заданные здесь, важнее файла .env и применяются после перезапуска портала. Пароли,
       токены и ключи не показываются — их можно только задать заново.
@@ -152,12 +158,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
                   <small class="tb-muted">{{ setting.hint }}</small>
                 }
                 @if (setting.source === 'ADMIN' && setting.access === 'EDITABLE') {
-                  <p-button
-                    label="Вернуть как в .env"
-                    [link]="true"
-                    size="small"
-                    (onClick)="revert(setting)"
-                  />
+                  <p-button label="Вернуть как в .env" [text]="true" (onClick)="revert(setting)" />
                 }
               </div>
             }

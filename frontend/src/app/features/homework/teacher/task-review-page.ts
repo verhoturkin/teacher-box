@@ -10,9 +10,9 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+
 import { MessageService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -26,6 +26,8 @@ import { Attachment, ReviewDecision, TaskDetails } from '../data-access/homework
 import { AttachmentList } from '../ui/attachment-list';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -33,11 +35,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
   imports: [
     DatePipe,
     ReactiveFormsModule,
-    RouterLink,
     Button,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     Card,
     InputText,
     Message,
@@ -47,25 +45,20 @@ import { TaskStatusTag } from '../ui/task-status-tag';
     SubmissionList,
     TaskStatusTag,
     ToBoardDialog,
+    PageHeader,
+    HelpButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <a
-        pButton
-        [routerLink]="['/teacher/homework', task.assignment.id]"
-        [text]="true"
-        class="tb-back"
+      <tb-page-header
+        [title]="task.studentName"
+        [back]="['/teacher/homework', task.assignment.id]"
+        [backLabel]="task.assignment.title"
       >
-        <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-        <span pButtonLabel>{{ task.assignment.title }}</span>
-      </a>
-      <div class="tb-page-header">
-        <div>
-          <h1 class="tb-page-title">{{ task.studentName }}</h1>
-          <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
-        </div>
-      </div>
+        <tb-help-button help topic="teacher/homework" />
+        <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+      </tb-page-header>
 
       <div class="tb-stack">
         <p-card header="Ответы ученика">
@@ -80,8 +73,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
                   <p-button
                     label="Черновик проверки"
                     icon="pi pi-sparkles"
-                    size="small"
-                    [outlined]="true"
+                    severity="secondary"
                     [loading]="drafting()"
                     (onClick)="draftReview(task)"
                   />
@@ -118,7 +110,6 @@ import { TaskStatusTag } from '../ui/task-status-tag';
                   <p-button
                     label="Принять"
                     icon="pi pi-check"
-                    severity="success"
                     [loading]="pending()"
                     [disabled]="form.invalid"
                     (onClick)="review('ACCEPT')"
@@ -127,8 +118,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
                 <p-button
                   label="Вернуть на доработку"
                   icon="pi pi-replay"
-                  severity="warn"
-                  [outlined]="true"
+                  severity="secondary"
                   [loading]="pending()"
                   [disabled]="form.invalid"
                   (onClick)="review('RETURN')"

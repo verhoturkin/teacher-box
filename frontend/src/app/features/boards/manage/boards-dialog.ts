@@ -15,6 +15,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { BoardsApi } from '../data-access/boards-api';
@@ -25,7 +26,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 /** Boards of a student or a group: add a link, rename, change or remove. */
 @Component({
   selector: 'tb-boards-dialog',
-  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputText, Message],
+  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputText, Message, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -45,15 +46,18 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
                 <p-button
                   icon="pi pi-pencil"
                   [text]="true"
-                  size="small"
+                  [pTooltip]="'Изменить доску: ' + board.title"
+                  [rounded]="true"
+                  severity="secondary"
                   [ariaLabel]="'Изменить доску: ' + board.title"
                   (onClick)="edit(board)"
                 />
                 <p-button
                   icon="pi pi-trash"
                   [text]="true"
-                  severity="danger"
-                  size="small"
+                  [pTooltip]="'Удалить доску: ' + board.title"
+                  [rounded]="true"
+                  severity="secondary"
                   [ariaLabel]="'Удалить доску: ' + board.title"
                   (onClick)="remove(board)"
                 />

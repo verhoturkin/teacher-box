@@ -153,6 +153,11 @@
   }
 }
 
+/* Six items (the teacher's five sections and «Ещё») leave 65 px on a 390 px phone: Label Small fits */
+.tb-bottom-nav:has(> :nth-child(6)) .tb-bottom-nav__item {
+  font: var(--tb-type-label-s);
+}
+
 .tb-bottom-nav__label {
   max-width: 100%;
   overflow: hidden;
@@ -160,9 +165,9 @@
   white-space: nowrap;
 }
 
+/* The active item differs by its indicator and color, not by weight: a bolder label would not fit */
 .tb-bottom-nav__item--active {
   color: var(--p-md-on-surface);
-  font-weight: 600;
 
   .tb-bottom-nav__icon,
   &:hover .tb-bottom-nav__icon {

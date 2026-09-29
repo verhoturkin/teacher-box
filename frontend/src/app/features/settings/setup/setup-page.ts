@@ -24,6 +24,7 @@ import { ChangePasswordForm, IdentityApi } from '@features/identity/parts';
 import { ScheduleApi } from '@features/schedule/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { SettingsApi } from '../data-access/settings-api';
+import { PageHeader } from '@shared/ui/page-header';
 
 type StepId = 'password' | 'about' | 'address' | 'price' | 'next';
 
@@ -57,14 +58,14 @@ const STEPS: readonly Step[] = [
     InputText,
     Message,
     PortalAddressField,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-setup">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Первоначальная настройка</h1>
-        <tb-help-button topic="teacher/setup" />
-      </div>
+      <tb-page-header title="Первоначальная настройка">
+        <tb-help-button help topic="teacher/setup" />
+      </tb-page-header>
       <p class="tb-muted">
         Несколько коротких шагов — и портал готов к работе. Всё это можно поменять потом в
         «Настройках».
@@ -159,7 +160,7 @@ const STEPS: readonly Step[] = [
                 }
               }
               <div class="tb-actions">
-                <p-button label="Назад" severity="secondary" [outlined]="true" (onClick)="back()" />
+                <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button
                   type="submit"
                   label="Далее"
@@ -189,7 +190,7 @@ const STEPS: readonly Step[] = [
                 />
               </div>
               <div class="tb-actions">
-                <p-button label="Назад" severity="secondary" [outlined]="true" (onClick)="back()" />
+                <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button
                   type="submit"
                   label="Далее"
@@ -224,7 +225,7 @@ const STEPS: readonly Step[] = [
             </ul>
             <p>Начните с главного: добавьте ученика и запланируйте первое занятие.</p>
             <div class="tb-actions">
-              <p-button label="Назад" severity="secondary" [outlined]="true" (onClick)="back()" />
+              <p-button label="Назад" severity="secondary" (onClick)="back()" />
               <p-button
                 label="Перейти на главную"
                 icon="pi pi-home"

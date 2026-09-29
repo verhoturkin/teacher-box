@@ -9,6 +9,7 @@ import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notif
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Student personal area dashboard: the nearest lesson with its link on top, then the widgets of the modules. */
 @Component({
@@ -22,13 +23,13 @@ import { StudentWelcomeCard } from './student-welcome-card';
     MyDeadlinesWidget,
     NextLessonWidget,
     StudentWelcomeCard,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Личный кабинет</h1>
-      <tb-help-button topic="cabinet/lesson" />
-    </div>
+    <tb-page-header title="Личный кабинет">
+      <tb-help-button help topic="cabinet/lesson" />
+    </tb-page-header>
     <div class="tb-stack">
       @if (schedule(); as schedule) {
         <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />

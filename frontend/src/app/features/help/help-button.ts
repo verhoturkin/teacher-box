@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
+import { Tooltip } from 'primeng/tooltip';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary } from './help-library';
 import { HelpArticle } from './help.models';
@@ -14,21 +15,16 @@ import { HelpTopic, helpUrl } from './help-topics';
  */
 @Component({
   selector: 'tb-help-button',
-  imports: [RouterLink, Button, Drawer, HelpArticleView],
+  imports: [RouterLink, Button, Drawer, HelpArticleView, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (label(); as text) {
-      <p-button
-        [label]="text"
-        icon="pi pi-question-circle"
-        [link]="true"
-        size="small"
-        (onClick)="open()"
-      />
+      <p-button [label]="text" icon="pi pi-question-circle" [text]="true" (onClick)="open()" />
     } @else {
       <p-button
         icon="pi pi-question-circle"
         [text]="true"
+        pTooltip="Справка"
         [rounded]="true"
         severity="secondary"
         ariaLabel="Справка"

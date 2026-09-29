@@ -53,13 +53,7 @@ interface Step {
         </ol>
         <div class="tb-widget-footer">
           <span class="tb-muted">Сделано {{ doneCount() }} из {{ steps().length }}</span>
-          <p-button
-            label="Скрыть"
-            severity="secondary"
-            size="small"
-            [text]="true"
-            (onClick)="dismiss()"
-          />
+          <p-button label="Скрыть" severity="secondary" [text]="true" (onClick)="dismiss()" />
         </div>
       </p-card>
     }

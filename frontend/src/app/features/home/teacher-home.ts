@@ -18,6 +18,7 @@ import type { ScheduleSummary } from '@features/schedule/parts';
 import { AttentionCard } from './attention-card';
 import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 import { QuickActions } from './quick-actions';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules. */
 @Component({
@@ -31,13 +32,13 @@ import { QuickActions } from './quick-actions';
     QuickActions,
     TodayLessonsWidget,
     UpcomingLessonWidget,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Главная</h1>
-      <tb-help-button topic="teacher/first-steps" />
-    </div>
+    <tb-page-header title="Главная">
+      <tb-help-button help topic="teacher/first-steps" />
+    </tb-page-header>
     <div class="tb-stack">
       <tb-quick-actions />
       @if (schedule()?.next; as next) {

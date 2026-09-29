@@ -7,11 +7,12 @@ import { IdentityApi } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastDialog, Recipient } from './broadcast-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher: writes to students and sees what was sent. */
 @Component({
   selector: 'tb-broadcasts-panel',
-  imports: [DatePipe, Button, Card, BroadcastDialog],
+  imports: [DatePipe, Button, Card, BroadcastDialog, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -20,11 +21,16 @@ import { BroadcastDialog, Recipient } from './broadcast-dialog';
           Сообщение придёт ученикам в личный кабинет и в подключённые мессенджеры — например, о
           каникулах или смене ссылки на урок.
         </p>
-        <p-button label="Написать ученикам" icon="pi pi-send" (onClick)="openBroadcast()" />
+        <p-button
+          label="Написать ученикам"
+          severity="secondary"
+          icon="pi pi-send"
+          (onClick)="openBroadcast()"
+        />
       </div>
       @if (history(); as history) {
         @if (history.length === 0) {
-          <p class="tb-muted">Вы ещё не отправляли сообщений.</p>
+          <tb-empty-state icon="pi-send" title="Вы ещё не отправляли сообщений." />
         } @else {
           <ul class="tb-broadcasts">
             @for (item of history; track item.id) {

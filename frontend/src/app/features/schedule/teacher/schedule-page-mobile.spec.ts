@@ -23,7 +23,7 @@ describe('SchedulePage on a phone', () => {
     fixture.destroy();
   });
 
-  it('shows the lessons as a list by days and plans a lesson with «+»', async () => {
+  it('shows the lessons as a list by days and plans a lesson with the FAB', async () => {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/teacher/students').flush([]);
@@ -52,9 +52,10 @@ describe('SchedulePage on a phone', () => {
       Array.from(host.querySelectorAll('.tb-page-header .tb-actions button')).map((b) =>
         b.textContent.trim(),
       ),
-    ).toEqual(['Регулярные занятия', 'Нерабочее время']);
+    ).toEqual(['Регулярные занятия', 'Нерабочее время', 'Занятие']);
 
-    requireElement(host, '.tb-fab button', HTMLButtonElement).click();
+    // The main action is the same button: on a phone it is the extended FAB (ADR-0018)
+    requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Новое занятие');
   });

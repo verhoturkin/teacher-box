@@ -8,14 +8,19 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
 import { EventPublication, FailedDelivery } from '../data-access/admin.models';
 import { shortLogger } from '../admin-labels';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Administrator: events not processed yet and failed deliveries to messengers, with a retry. */
 @Component({
   selector: 'tb-events-page',
-  imports: [DatePipe, Button, Card, TableModule, RowType],
+  imports: [DatePipe, Button, Card, TableModule, RowType, PageHeader, HelpButton, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="tb-page-title">События</h1>
+    <tb-page-header title="События">
+      <tb-help-button help topic="admin/diagnostics" />
+    </tb-page-header>
     <div class="tb-stack">
       <p-card header="Необработанные события">
         <p class="tb-muted">
@@ -24,13 +29,13 @@ import { shortLogger } from '../admin-labels';
           сразу.
         </p>
         @if (events().length === 0) {
-          <p class="tb-muted">Всё обработано.</p>
+          <tb-empty-state icon="pi-check-circle" title="Всё обработано." />
         } @else {
           <div class="tb-actions">
             <p-button
               label="Повторить все"
               icon="pi pi-replay"
-              [outlined]="true"
+              severity="secondary"
               (onClick)="resubmit([])"
             />
           </div>
@@ -53,12 +58,7 @@ import { shortLogger } from '../admin-labels';
                 </td>
                 <td data-label="Попыток">{{ event.attempts }}</td>
                 <td class="tb-row-actions">
-                  <p-button
-                    label="Повторить"
-                    size="small"
-                    [text]="true"
-                    (onClick)="resubmit([event.id])"
-                  />
+                  <p-button label="Повторить" [text]="true" (onClick)="resubmit([event.id])" />
                 </td>
               </tr>
             </ng-template>
@@ -68,13 +68,13 @@ import { shortLogger } from '../admin-labels';
 
       <p-card header="Неудачные доставки в мессенджеры">
         @if (deliveries().length === 0) {
-          <p class="tb-muted">Все сообщения доставлены.</p>
+          <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены." />
         } @else {
           <div class="tb-actions">
             <p-button
               label="Отправить все повторно"
               icon="pi pi-replay"
-              [outlined]="true"
+              severity="secondary"
               (onClick)="retry([])"
             />
           </div>
@@ -97,12 +97,7 @@ import { shortLogger } from '../admin-labels';
                   {{ delivery.error ?? '—' }}
                 </td>
                 <td class="tb-row-actions">
-                  <p-button
-                    label="Повторить"
-                    size="small"
-                    [text]="true"
-                    (onClick)="retry([delivery.id])"
-                  />
+                  <p-button label="Повторить" [text]="true" (onClick)="retry([delivery.id])" />
                 </td>
               </tr>
             </ng-template>

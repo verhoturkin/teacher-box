@@ -15,17 +15,19 @@ import { AdminApi } from '../data-access/admin-api';
 import { SystemStatus } from '../data-access/admin.models';
 import { formatUptime } from '../admin-labels';
 import { PortalAddressCard } from './portal-address-card';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Administrator: version, uptime, memory, disk, database and health of the instance, the portal address. */
 @Component({
   selector: 'tb-status-page',
-  imports: [DatePipe, KeyValuePipe, Button, Card, Tag, PortalAddressCard],
+  imports: [DatePipe, KeyValuePipe, Button, Card, Tag, PortalAddressCard, PageHeader, HelpButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <h1 class="tb-page-title">Состояние</h1>
-      <p-button label="Обновить" icon="pi pi-refresh" [outlined]="true" (onClick)="load()" />
-    </div>
+    <tb-page-header title="Состояние">
+      <tb-help-button help topic="admin/diagnostics" />
+      <p-button label="Обновить" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
+    </tb-page-header>
     @if (status(); as status) {
       <div class="tb-stats">
         <p-card>

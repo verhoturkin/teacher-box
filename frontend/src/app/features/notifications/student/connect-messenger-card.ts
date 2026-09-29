@@ -30,7 +30,7 @@ export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
           приходить сразу, без захода в личный кабинет.
         </p>
         <div class="tb-actions">
-          <a pButton routerLink="/cabinet/notifications">
+          <a pButton routerLink="/cabinet/notifications" severity="secondary">
             <i pButtonIcon aria-hidden="true" class="pi pi-link"></i>
             <span pButtonLabel>Подключить</span>
           </a>

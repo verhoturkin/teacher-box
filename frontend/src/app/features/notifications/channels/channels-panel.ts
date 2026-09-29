@@ -16,6 +16,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Dialog } from 'primeng/dialog';
 import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Tooltip } from 'primeng/tooltip';
 import { Subscription, interval, switchMap } from 'rxjs';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState, ChannelType, LinkCode } from '../data-access/notifications.models';
@@ -28,7 +29,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 /** Messengers of the current user: connect with a one-time code, pause, disconnect. */
 @Component({
   selector: 'tb-channels-panel',
-  imports: [DatePipe, FormsModule, Button, Card, Dialog, LinkCodeView, ToggleSwitch],
+  imports: [DatePipe, FormsModule, Button, Card, Dialog, LinkCodeView, ToggleSwitch, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="header()">
@@ -68,6 +69,8 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                   <p-button
                     icon="pi pi-times"
                     [text]="true"
+                    [pTooltip]="'Отключить ' + names[channel.channel]"
+                    [rounded]="true"
                     severity="secondary"
                     [ariaLabel]="'Отключить ' + names[channel.channel]"
                     (onClick)="unlink(channel.channel)"
@@ -76,8 +79,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                   <p-button
                     label="Подключить"
                     icon="pi pi-link"
-                    size="small"
-                    [outlined]="true"
+                    severity="secondary"
                     (onClick)="connect(channel.channel)"
                   />
                 }

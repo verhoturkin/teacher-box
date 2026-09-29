@@ -20,6 +20,8 @@ import {
   MessengerType,
   NotificationsStatus,
 } from './data-access/settings.models';
+import { PageHeader } from '@shared/ui/page-header';
+import { EmptyState } from '@shared/ui/empty-state';
 
 export const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'TELEGRAM', name: 'Telegram' },
@@ -46,13 +48,14 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     TableModule,
     Tag,
     RowType,
+    PageHeader,
+    EmptyState,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Настройки</h1>
-      <tb-help-button topic="teacher/settings" />
-    </div>
+    <tb-page-header title="Настройки">
+      <tb-help-button help topic="teacher/settings" />
+    </tb-page-header>
     <div class="tb-stack tb-stack--narrow">
       <tb-portal-settings-card />
       <p-card header="Интеграции">
@@ -115,7 +118,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
       <p-card header="Неудачные доставки уведомлений">
         @if (failed().length === 0) {
-          <p class="tb-muted">Все уведомления доставлены.</p>
+          <tb-empty-state icon="pi-check-circle" title="Все уведомления доставлены." />
         } @else {
           <p-table [value]="failed()" styleClass="tb-cards p-datatable-sm">
             <ng-template #header>
@@ -144,7 +147,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       <tb-reset-card />
 
       <p-card header="Профиль">
-        <a pButton routerLink="/teacher/account" [outlined]="true">
+        <a pButton routerLink="/teacher/account" severity="secondary">
           <i pButtonIcon aria-hidden="true" class="pi pi-id-card"></i>
           <span pButtonLabel>Мой аккаунт и пароль</span>
         </a>
@@ -162,12 +165,18 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
       li {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        gap: var(--tb-space-3);
+        gap: var(--tb-space-1) var(--tb-space-3);
       }
 
-      span {
+      li > span:first-child {
         min-width: 9rem;
+
+        /* On a phone the name is a line of its own, the status and the link under it */
+        @media (max-width: 480px) {
+          flex-basis: 100%;
+        }
       }
     }
 

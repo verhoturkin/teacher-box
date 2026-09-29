@@ -22,8 +22,14 @@ export const RESET_WORD = 'СБРОСИТЬ';
   imports: [ReactiveFormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Password],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Полный сброс" id="reset">
-      <tb-help-button topic="teacher/backups" label="Подробнее" />
+    <p-card id="reset">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span class="tb-card-title__text"
+            >Полный сброс <tb-help-button topic="teacher/backups"
+          /></span>
+        </div>
+      </ng-template>
       <p>
         Удаляет все данные портала: учеников и группы, занятия и расписание, оплаты, задания и
         файлы, уведомления и подключения мессенджеров, комнаты видеовстреч, доски, историю ИИ,
@@ -36,8 +42,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
       <p-button
         label="Сбросить все данные…"
         icon="pi pi-trash"
-        severity="danger"
-        [outlined]="true"
+        severity="secondary"
         (onClick)="open()"
       />
     </p-card>

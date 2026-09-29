@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Tooltip } from 'primeng/tooltip';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem } from '../data-access/notifications.models';
@@ -14,7 +15,7 @@ export const PAGE_SIZE = 20;
 /** Notifications of the current user in the personal area. */
 @Component({
   selector: 'tb-inbox-panel',
-  imports: [EmptyState, DatePipe, Button, Card],
+  imports: [EmptyState, DatePipe, Button, Card, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -30,8 +31,6 @@ export const PAGE_SIZE = 20;
           label="Прочитать все"
           icon="pi pi-check"
           severity="secondary"
-          size="small"
-          [outlined]="true"
           [disabled]="unread() === 0"
           (onClick)="markAllRead()"
         />
@@ -53,13 +52,14 @@ export const PAGE_SIZE = 20;
                 </div>
                 <div class="tb-notification__actions">
                   @if (item.link !== null) {
-                    <p-button label="Открыть" size="small" [text]="true" (onClick)="open(item)" />
+                    <p-button label="Открыть" [text]="true" (onClick)="open(item)" />
                   }
                   @if (!item.read) {
                     <p-button
                       icon="pi pi-check"
-                      size="small"
                       [text]="true"
+                      pTooltip="Отметить прочитанным"
+                      [rounded]="true"
                       severity="secondary"
                       ariaLabel="Отметить прочитанным"
                       (onClick)="markRead(item)"
@@ -84,6 +84,7 @@ export const PAGE_SIZE = 20;
   styles: `
     .tb-inbox-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-4);

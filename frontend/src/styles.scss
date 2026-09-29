@@ -124,6 +124,7 @@ textarea.p-textarea {
   }
 }
 
+/* The header of a page (ADR-0018, shared/ui/page-header): «back», title, «?», details, actions */
 .tb-page-header {
   display: flex;
   flex-wrap: wrap;
@@ -136,6 +137,39 @@ textarea.p-textarea {
   .tb-page-title {
     margin: 0;
   }
+
+  > .tb-actions:empty {
+    display: none;
+  }
+}
+
+.tb-page-header__lead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-2);
+  min-width: 0;
+}
+
+.tb-page-header__back {
+  flex-shrink: 0;
+  margin-left: calc(-1 * var(--tb-space-2));
+}
+
+.tb-page-header__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--tb-space-1);
+  min-width: 0;
+
+  > [meta] {
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-m);
+  }
+
+  > .tb-negative[meta] {
+    color: var(--p-md-error);
+  }
 }
 
 /* A page title with the «?» of the help next to it */
@@ -143,15 +177,8 @@ textarea.p-textarea {
   display: flex;
   align-items: center;
   gap: var(--tb-space-1);
-  margin-bottom: var(--tb-space-4);
-
-  .tb-page-title {
-    margin: 0;
-  }
-}
-
-.tb-page-header .tb-page-heading {
-  margin-bottom: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .tb-stack {
@@ -253,6 +280,53 @@ textarea.p-textarea {
   font: var(--tb-type-title-m);
 }
 
+/*
+ * The title of a card (section): the title, the «?» of the help next to it and the actions of the
+ * section on the right (ADR-0018). Used in the #title template of p-card.
+ */
+.tb-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+}
+
+/* The «?» follows the last word of a long title instead of taking a line of its own */
+.tb-card-title__text {
+  min-width: 0;
+
+  tb-help-button {
+    vertical-align: middle;
+  }
+}
+
+.tb-card-title__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+  margin-left: auto;
+  font: var(--tb-type-body-m);
+}
+
+/* The buttons of a form in a section: at the end, under the fields (ADR-0018) */
+.tb-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+
+  @media (max-width: 768px) {
+    > p-button,
+    > .p-button {
+      flex: 1 1 auto;
+    }
+
+    p-button .p-button {
+      width: 100%;
+    }
+  }
+}
+
 .tb-form-message {
   width: 100%;
 }
@@ -280,11 +354,23 @@ textarea.p-textarea {
   margin-bottom: var(--tb-space-4);
 }
 
+/* Filters of a list are at the end of its toolbar, the search at the start (ADR-0018) */
+.tb-toolbar > .tb-switch {
+  margin-left: auto;
+}
+
 .tb-switch {
   display: inline-flex;
   align-items: center;
   gap: var(--tb-space-2);
   cursor: pointer;
+}
+
+/* The main column of a list (a name, a title) is not squeezed by the others on a computer */
+@media (min-width: 1200px) {
+  .tb-col-main {
+    min-width: 11rem;
+  }
 }
 
 .tb-actions-column {
@@ -293,9 +379,17 @@ textarea.p-textarea {
   text-align: right;
 }
 
+/* A field with its buttons: the buttons go under the field when they do not fit */
 .tb-copy-row {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--tb-space-2);
+
+  > .tb-grow,
+  > p-inputnumber {
+    flex: 1;
+    min-width: min(12rem, 100%);
+  }
 }
 
 .tb-grow {
@@ -322,10 +416,6 @@ textarea.p-textarea {
   display: flex;
   flex-wrap: wrap;
   gap: var(--tb-space-2);
-}
-
-.tb-back {
-  margin-bottom: var(--tb-space-2);
 }
 
 /*
@@ -363,7 +453,7 @@ a.p-menu-item-link:hover {
 /* Key figures */
 .tb-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: var(--tb-space-4);
   margin-bottom: var(--tb-space-4);
 }
@@ -381,10 +471,21 @@ a.p-menu-item-link:hover {
   font: var(--tb-type-headline-s);
 }
 
+/* A status tag keeps its text on one line (ADR-0018) */
+.p-tag {
+  white-space: nowrap;
+}
+
 /* Money */
-.tb-amount {
+.tb-amount,
+.p-datatable .tb-amount {
   text-align: right;
   white-space: nowrap;
+}
+
+/* A column title may take two lines on a tablet; the amounts under it stay whole */
+.p-datatable th.tb-amount {
+  white-space: normal;
 }
 
 .tb-negative {
@@ -420,9 +521,26 @@ a.p-menu-item-link:hover {
   gap: var(--tb-space-2);
 }
 
+/* «Выдать ещё ученикам»: the students, a group and the button; one under another on a phone */
 .tb-assign {
   display: flex;
   margin-top: var(--tb-space-4);
+
+  .p-multiselect {
+    min-width: 16rem;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .p-multiselect,
+    .p-select,
+    p-button .p-button {
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .tb-subtitle {
@@ -538,11 +656,6 @@ a.p-menu-item-link:hover {
   .tb-hint {
     color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
   }
-
-  a:not(.p-button) {
-    color: var(--p-md-on-primary-container);
-    text-decoration: underline;
-  }
 }
 
 /* Home pages: widgets of the modules in two columns */
@@ -641,8 +754,20 @@ a.p-menu-item-link:hover {
   }
 }
 
+/* Calendar buttons are tonal (ADR-0018); the views stay a segmented button with its outline */
 .tb-fc-button.tb-fc-button {
+  border-color: var(--p-md-secondary-container);
   border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-secondary-container)
+    );
+  }
 
   & + .tb-fc-button {
     margin-inline-start: var(--tb-space-1);
@@ -722,6 +847,86 @@ a.p-menu-item-link:hover {
   );
 }
 
+@mixin row-cards {
+  .p-datatable-table-container {
+    overflow: visible;
+  }
+
+  .p-datatable-table,
+  .p-datatable-tbody,
+  .p-datatable-tbody > tr,
+  .p-datatable-tbody > tr > td {
+    display: block;
+    width: 100%;
+  }
+
+  .p-datatable-thead {
+    display: none;
+  }
+
+  .p-datatable-tbody > tr {
+    margin-bottom: var(--tb-space-3);
+    padding: var(--tb-space-3) var(--tb-space-4);
+    border-radius: var(--tb-shape-md);
+    background: var(--p-content-background);
+  }
+
+  .p-datatable-tbody > tr > td {
+    display: flow-root;
+    padding: var(--tb-space-1) 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .p-datatable-tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    float: left;
+    margin-right: var(--tb-space-3);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-m);
+    line-height: inherit;
+    text-align: left;
+  }
+
+  /* long text: the label above, the text from the left */
+  .p-datatable-tbody > tr > td.tb-cell-wide {
+    text-align: left;
+
+    &::before {
+      display: block;
+      float: none;
+    }
+  }
+
+  .p-datatable-tbody > tr > td:first-child {
+    padding-bottom: var(--tb-space-2);
+    font: var(--tb-type-title-m);
+    text-align: left;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
+    margin-top: var(--tb-space-2);
+    padding-top: var(--tb-space-2);
+    border-top: 1px solid var(--p-md-outline-variant);
+  }
+
+  /* the empty message is not a card */
+  .p-datatable-tbody > tr:has(> td[colspan]) {
+    border: 0;
+    background: none;
+
+    > td {
+      padding: 0;
+      font-weight: normal;
+    }
+  }
+}
+
 /*
  * Tables with the class tb-cards become cards on phones (ADR-0015): every row is a card, every cell
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
@@ -744,82 +949,39 @@ a.p-menu-item-link:hover {
   }
 
   .p-datatable.tb-cards {
-    .p-datatable-table-container {
-      overflow: visible;
-    }
+    @include row-cards;
+  }
+}
 
-    .p-datatable-table,
-    .p-datatable-tbody,
-    .p-datatable-tbody > tr,
-    .p-datatable-tbody > tr > td {
-      display: block;
-      width: 100%;
-    }
+/* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .p-datatable .p-datatable-thead > tr > th,
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding-inline: var(--tb-space-2);
+  }
+}
 
-    .p-datatable-thead {
-      display: none;
+/*
+ * Wide lists (many columns: students, groups) are cards already on a tablet, two in a row: a table
+ * of eight columns does not fit in 616 px next to the navigation rail (ADR-0018).
+ */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .p-datatable.tb-cards.tb-cards--wide {
+    @include row-cards;
+
+    .p-datatable-tbody {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--tb-space-3);
     }
 
     .p-datatable-tbody > tr {
-      margin-bottom: var(--tb-space-3);
-      padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-md);
-      background: var(--p-content-background);
+      margin-bottom: 0;
+      border: 1px solid var(--p-md-outline-variant);
     }
 
-    .p-datatable-tbody > tr > td {
-      display: flow-root;
-      padding: var(--tb-space-1) 0;
-      border: 0;
-      text-align: right;
-      overflow-wrap: anywhere;
-    }
-
-    .p-datatable-tbody > tr > td[data-label]::before {
-      content: attr(data-label);
-      float: left;
-      margin-right: var(--tb-space-3);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
-      line-height: inherit;
-      text-align: left;
-    }
-
-    /* long text: the label above, the text from the left */
-    .p-datatable-tbody > tr > td.tb-cell-wide {
-      text-align: left;
-
-      &::before {
-        display: block;
-        float: none;
-      }
-    }
-
-    .p-datatable-tbody > tr > td:first-child {
-      padding-bottom: var(--tb-space-2);
-      font: var(--tb-type-title-m);
-      text-align: left;
-
-      &::before {
-        display: none;
-      }
-    }
-
-    .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
-      margin-top: var(--tb-space-2);
-      padding-top: var(--tb-space-2);
-      border-top: 1px solid var(--p-md-outline-variant);
-    }
-
-    /* the empty message is not a card */
     .p-datatable-tbody > tr:has(> td[colspan]) {
-      border: 0;
-      background: none;
-
-      > td {
-        padding: 0;
-        font-weight: normal;
-      }
+      grid-column: 1 / -1;
     }
   }
 }
@@ -829,41 +991,9 @@ a.p-menu-item-link:hover {
   font-size: 1.125rem;
 }
 
-/* The main action of a page on a phone: the M3 FAB above the bottom navigation (ADR-0017). */
-.tb-fab {
-  position: fixed;
-  right: var(--tb-space-4);
-  bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
-  z-index: 900;
-
-  .p-button {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-color: var(--p-md-primary-container);
-    border-radius: var(--tb-shape-lg);
-    background: var(--p-md-primary-container);
-    color: var(--p-md-on-primary-container);
-    box-shadow: var(--tb-elevation-3);
-
-    &:not(:disabled):hover {
-      border-color: var(--p-md-primary-container);
-      background: color-mix(
-        in srgb,
-        var(--p-md-on-primary-container) 8%,
-        var(--p-md-primary-container)
-      );
-      color: var(--p-md-on-primary-container);
-    }
-
-    .p-button-icon {
-      font-size: 1.5rem;
-    }
-  }
-}
-
 /*
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
- * same button, fixed above the bottom navigation.
+ * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
 @media (max-width: 768px) {
   p-button.tb-page-fab {
@@ -899,7 +1029,7 @@ a.p-menu-item-link:hover {
   }
 
   /* The page keeps room at its end for the FAB */
-  main.tb-shell__content--nav:has(.tb-page-fab, .tb-fab) {
+  main.tb-shell__content--nav:has(.tb-page-fab) {
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }

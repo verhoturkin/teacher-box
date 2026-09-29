@@ -248,6 +248,10 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Только standalone-компоненты, `ChangeDetectionStrategy.OnPush`, signals, `inject()`,
   новый control flow (`@if`, `@for`), `input()`/`output()`.
 - Компоненты UI — PrimeNG. Собственные компоненты — только если в PrimeNG нет подходящего.
+- Вид кнопок, главного действия (FAB), заголовка страницы, секций и списков — по единым правилам
+  [ADR-0018](docs/adr/0018-component-rules.md): главное действие — filled `tb-page-fab`,
+  второстепенные — tonal (`severity="secondary"`), без `outlined`, `size="small"` и цветных
+  кнопок; заголовок — `tb-page-header` из `@shared/ui`.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
 - Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),

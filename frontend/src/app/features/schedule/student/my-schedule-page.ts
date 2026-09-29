@@ -35,6 +35,7 @@ import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -60,13 +61,13 @@ export function nextMonday(date: Date): Date {
     JoinLessonButton,
     MyBoardsCard,
     ScheduleCalendar,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Расписание</h1>
-      <tb-help-button topic="cabinet/schedule" />
-    </div>
+    <tb-page-header title="Расписание">
+      <tb-help-button help topic="cabinet/schedule" />
+    </tb-page-header>
     <div class="tb-schedule-layout">
       <div class="tb-stack">
         <p-card header="Ближайшие занятия">
@@ -100,22 +101,13 @@ export function nextMonday(date: Date): Date {
                     @if (lesson.pendingRequests[0]; as request) {
                       <small class="tb-muted">
                         Запрос «{{ kind(request) }}» ждёт ответа учителя
-                        <p-button
-                          label="Отозвать"
-                          [link]="true"
-                          size="small"
-                          (onClick)="withdraw(request)"
-                        />
+                        <p-button label="Отозвать" [text]="true" (onClick)="withdraw(request)" />
                       </small>
                     }
                   </div>
                   <div class="tb-actions">
                     @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
-                      <tb-join-lesson-button
-                        [url]="lesson.joinUrl"
-                        label="Подключиться"
-                        [small]="true"
-                      />
+                      <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" />
                     }
                     @if (
                       lesson.status === 'SCHEDULED' &&
@@ -124,13 +116,11 @@ export function nextMonday(date: Date): Date {
                     ) {
                       <p-button
                         label="Перенести"
-                        size="small"
-                        [outlined]="true"
+                        severity="secondary"
                         (onClick)="ask(lesson, 'RESCHEDULE')"
                       />
                       <p-button
                         [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
-                        size="small"
                         severity="secondary"
                         [text]="true"
                         (onClick)="ask(lesson, 'CANCEL')"

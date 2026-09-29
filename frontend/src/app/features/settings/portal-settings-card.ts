@@ -50,8 +50,12 @@ const MAX_LOGO_SIZE = 1024 * 1024;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Портал" id="portal">
-      <tb-help-button topic="teacher/setup" label="Подробнее" />
+    <p-card id="portal">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span class="tb-card-title__text">Портал <tb-help-button topic="teacher/setup" /></span>
+        </div>
+      </ng-template>
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">
@@ -150,7 +154,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 label="Загрузить логотип"
                 icon="pi pi-upload"
                 severity="secondary"
-                [outlined]="true"
                 [loading]="uploading()"
                 (onClick)="logoFile.click()"
               />
@@ -168,10 +171,11 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               во вкладке браузера.
             </small>
           </div>
-          <div class="tb-actions">
+          <div class="tb-form-actions">
             <p-button
               type="submit"
               label="Сохранить"
+              severity="secondary"
               [disabled]="form.invalid"
               [loading]="pending()"
             />

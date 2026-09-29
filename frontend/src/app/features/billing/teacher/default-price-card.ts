@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputNumber } from 'primeng/inputnumber';
+import { Tooltip } from 'primeng/tooltip';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
@@ -11,7 +12,7 @@ import { BillingApi } from '../data-access/billing-api';
 /** The lesson price of new students and groups, changed in place. */
 @Component({
   selector: 'tb-default-price-card',
-  imports: [ReactiveFormsModule, Button, Card, InputNumber, MoneyPipe],
+  imports: [ReactiveFormsModule, Button, Card, InputNumber, MoneyPipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -26,6 +27,7 @@ import { BillingApi } from '../data-access/billing-api';
               [currency]="currency()"
               locale="ru-RU"
               [min]="0"
+              [fluid]="true"
               ariaLabel="Цена для новых учеников"
             />
             <p-button
@@ -39,6 +41,8 @@ import { BillingApi } from '../data-access/billing-api';
               icon="pi pi-times"
               severity="secondary"
               [text]="true"
+              pTooltip="Отменить"
+              [rounded]="true"
               ariaLabel="Отменить"
               (onClick)="editing.set(false)"
             />
@@ -50,7 +54,8 @@ import { BillingApi } from '../data-access/billing-api';
               icon="pi pi-pencil"
               severity="secondary"
               [text]="true"
-              size="small"
+              pTooltip="Изменить цену для новых учеников"
+              [rounded]="true"
               ariaLabel="Изменить цену для новых учеников"
               (onClick)="edit()"
             />

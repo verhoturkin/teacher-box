@@ -14,6 +14,7 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { HelpButton } from '@features/help/parts';
@@ -48,12 +49,28 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
     Tag,
     RowType,
     RestoreDialog,
+    Tooltip,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Резервные копии" id="backups">
-      <tb-help-button [topic]="helpTopic()" label="Подробнее" />
+    <p-card id="backups">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span class="tb-card-title__text"
+            >Резервные копии <tb-help-button [topic]="helpTopic()"
+          /></span>
+          <div class="tb-card-title__actions">
+            <p-button
+              label="Создать копию сейчас"
+              severity="secondary"
+              icon="pi pi-database"
+              [loading]="creating()"
+              (onClick)="create()"
+            />
+          </div>
+        </div>
+      </ng-template>
       <p class="tb-muted">
         Копия базы данных и файлов создаётся автоматически каждую ночь; хранятся последние копии.
         Копии, сделанные перед восстановлением и сбросом, остаются, пока их не удалит учитель.
@@ -61,14 +78,6 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
           Скачать копию может только учитель: в копиях данные учеников.
         }
       </p>
-      <div class="tb-actions">
-        <p-button
-          label="Создать копию сейчас"
-          icon="pi pi-database"
-          [loading]="creating()"
-          (onClick)="create()"
-        />
-      </div>
       @if (backups().length === 0) {
         <tb-empty-state icon="pi-database" title="Копий пока нет" />
       } @else {
@@ -99,6 +108,9 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                 <p-button
                   icon="pi pi-history"
                   [text]="true"
+                  [pTooltip]="'Восстановить ' + backup.name"
+                  [rounded]="true"
+                  severity="secondary"
                   [ariaLabel]="'Восстановить ' + backup.name"
                   (onClick)="openRestore(backup)"
                 />
@@ -106,13 +118,18 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                   <p-button
                     icon="pi pi-download"
                     [text]="true"
+                    [pTooltip]="'Скачать ' + backup.name"
+                    [rounded]="true"
+                    severity="secondary"
                     [ariaLabel]="'Скачать ' + backup.name"
                     (onClick)="download(backup)"
                   />
                   <p-button
                     icon="pi pi-trash"
                     [text]="true"
-                    severity="danger"
+                    [pTooltip]="'Удалить ' + backup.name"
+                    [rounded]="true"
+                    severity="secondary"
                     [ariaLabel]="'Удалить ' + backup.name"
                     (onClick)="confirmDelete(backup)"
                   />

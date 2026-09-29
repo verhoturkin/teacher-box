@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { formatFileSize } from '../homework-labels';
 
 /** Extensions accepted by the backend (FilePolicy). */
@@ -9,7 +10,7 @@ export const ACCEPTED_FILES =
 /** Selects several files; the selection is kept in the `files` model until the form is sent. */
 @Component({
   selector: 'tb-file-picker',
-  imports: [Button],
+  imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <input
@@ -24,8 +25,7 @@ export const ACCEPTED_FILES =
     <p-button
       [label]="label()"
       icon="pi pi-paperclip"
-      [outlined]="true"
-      size="small"
+      severity="secondary"
       (onClick)="input.click()"
     />
     @if (files().length > 0) {
@@ -38,8 +38,9 @@ export const ACCEPTED_FILES =
             <p-button
               icon="pi pi-times"
               [text]="true"
+              [pTooltip]="'Убрать ' + file.name"
+              severity="secondary"
               [rounded]="true"
-              size="small"
               [ariaLabel]="'Убрать ' + file.name"
               (onClick)="removeAt($index)"
             />

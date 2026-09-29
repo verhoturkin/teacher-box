@@ -93,7 +93,7 @@ export interface Copied {
         <p-button
           label="Картинкой"
           icon="pi pi-image"
-          [outlined]="true"
+          severity="secondary"
           [disabled]="chosenBoard() === null || !richClipboard"
           [loading]="copying()"
           (onClick)="copy('image')"

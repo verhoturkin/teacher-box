@@ -73,7 +73,6 @@ export interface StudentOption {
                 <p-button
                   label="Сгенерировать с ИИ"
                   icon="pi pi-sparkles"
-                  size="small"
                   [text]="true"
                   (onClick)="draftVisible.set(true)"
                 />
@@ -81,7 +80,6 @@ export interface StudentOption {
               <p-button
                 label="На доску"
                 icon="pi pi-th-large"
-                size="small"
                 [text]="true"
                 [disabled]="descriptionValue().trim() === ''"
                 (onClick)="boardVisible.set(true)"

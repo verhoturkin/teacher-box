@@ -12,6 +12,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { injectMobile } from '@core/layout/mobile';
@@ -53,6 +54,8 @@ import { LessonGroup } from './lesson-owner';
 import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -78,33 +81,29 @@ const CLICK_SELECTION_MINUTES = 30;
     RequestAnswerDialog,
     ScheduleCalendar,
     SeriesDialog,
+    Tooltip,
+    PageHeader,
+    EmptyState,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Расписание</h1>
-        <tb-help-button topic="teacher/schedule" />
-      </div>
-      <div class="tb-actions">
-        @if (!mobile()) {
-          <p-button label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
-        }
-        <p-button
-          label="Регулярные занятия"
-          icon="pi pi-replay"
-          [outlined]="true"
-          (onClick)="newSeries()"
-        />
-        <p-button
-          label="Нерабочее время"
-          icon="pi pi-moon"
-          [outlined]="true"
-          (onClick)="newOffTime()"
-        />
-      </div>
-    </div>
+    <tb-page-header title="Расписание">
+      <tb-help-button help topic="teacher/schedule" />
+      <p-button
+        label="Регулярные занятия"
+        icon="pi pi-replay"
+        severity="secondary"
+        (onClick)="newSeries()"
+      />
+      <p-button
+        label="Нерабочее время"
+        icon="pi pi-moon"
+        severity="secondary"
+        (onClick)="newOffTime()"
+      />
+      <p-button class="tb-page-fab" label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
+    </tb-page-header>
     @if (localTimeHint(); as hint) {
       <p class="tb-hint">{{ hint }}</p>
     }
@@ -142,12 +141,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       }
                     </div>
                   </div>
-                  <p-button
-                    label="Ответить"
-                    size="small"
-                    [outlined]="true"
-                    (onClick)="answer(request)"
-                  />
+                  <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
                 </li>
               }
             </ul>
@@ -168,23 +162,26 @@ const CLICK_SELECTION_MINUTES = 30;
                       <p-button
                         label="Отметить"
                         icon="pi pi-users"
-                        size="small"
+                        [text]="true"
                         [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
                         (onClick)="openLesson(lesson)"
                       />
                     } @else {
                       <p-button
                         icon="pi pi-check"
-                        severity="success"
-                        size="small"
+                        [text]="true"
+                        [pTooltip]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                        [rounded]="true"
+                        severity="secondary"
                         [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
                         (onClick)="mark(lesson, 'CONDUCTED')"
                       />
                       <p-button
                         icon="pi pi-user-minus"
-                        severity="warn"
-                        size="small"
-                        [outlined]="true"
+                        [text]="true"
+                        [pTooltip]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                        [rounded]="true"
+                        severity="secondary"
                         [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
                         (onClick)="mark(lesson, 'MISSED')"
                       />
@@ -198,7 +195,7 @@ const CLICK_SELECTION_MINUTES = 30;
 
         <p-card header="Регулярные занятия">
           @if (series().length === 0) {
-            <p class="tb-muted">Нет регулярных занятий.</p>
+            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
           } @else {
             <ul class="tb-schedule-list">
               @for (item of series(); track item.id) {
@@ -211,15 +208,18 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      size="small"
+                      [pTooltip]="'Изменить расписание: ' + with(item)"
+                      [rounded]="true"
+                      severity="secondary"
                       [ariaLabel]="'Изменить расписание: ' + with(item)"
                       (onClick)="editSeries(item)"
                     />
                     <p-button
                       icon="pi pi-stop-circle"
                       [text]="true"
-                      severity="danger"
-                      size="small"
+                      [pTooltip]="'Завершить расписание: ' + with(item)"
+                      [rounded]="true"
+                      severity="secondary"
                       [ariaLabel]="'Завершить расписание: ' + with(item)"
                       (onClick)="stopSeries(item)"
                     />
@@ -232,9 +232,11 @@ const CLICK_SELECTION_MINUTES = 30;
 
         <p-card header="Нерабочее время">
           @if (offTimes().length === 0) {
-            <p class="tb-muted">
-              Отметьте обед, выходные или отпуск — ученики увидят это время занятым.
-            </p>
+            <tb-empty-state
+              icon="pi-moon"
+              title="Нерабочее время не отмечено"
+              hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
+            />
           } @else {
             <ul class="tb-schedule-list">
               @for (item of offTimes(); track item.id) {
@@ -247,15 +249,18 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      size="small"
+                      [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      [rounded]="true"
+                      severity="secondary"
                       [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
                       (onClick)="editOffTime(item)"
                     />
                     <p-button
                       icon="pi pi-trash"
                       [text]="true"
-                      severity="danger"
-                      size="small"
+                      [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      [rounded]="true"
+                      severity="secondary"
                       [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
                       (onClick)="deleteOffTime(item)"
                     />
@@ -269,17 +274,6 @@ const CLICK_SELECTION_MINUTES = 30;
         <tb-calendar-feed-panel />
       </div>
     </div>
-
-    @if (mobile()) {
-      <p-button
-        class="tb-fab"
-        icon="pi pi-plus"
-        [rounded]="true"
-        size="large"
-        ariaLabel="Новое занятие"
-        (onClick)="newLesson()"
-      />
-    }
 
     <tb-lesson-dialog
       [(visible)]="lessonDialogVisible"
@@ -344,6 +338,17 @@ const CLICK_SELECTION_MINUTES = 30;
         align-items: center;
         justify-content: space-between;
         gap: var(--tb-space-2);
+
+        > div:first-child {
+          flex: 1;
+          min-width: 0;
+        }
+
+        > .tb-actions {
+          flex-shrink: 0;
+          flex-wrap: nowrap;
+          gap: 0;
+        }
       }
 
       p-tag {

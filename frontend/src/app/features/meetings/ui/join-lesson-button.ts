@@ -17,8 +17,7 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
         <p-button
           [label]="label()"
           icon="pi pi-video"
-          [size]="small() ? 'small' : undefined"
-          [outlined]="outlined()"
+          [severity]="tonal() ? 'secondary' : 'primary'"
           (onClick)="openApp()"
         />
         <a class="tb-join__browser" [href]="url()" target="_blank" rel="noopener">в браузере</a>
@@ -29,8 +28,7 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
         [href]="url()"
         target="_blank"
         rel="noopener"
-        [size]="small() ? 'small' : undefined"
-        [outlined]="outlined()"
+        [severity]="tonal() ? 'secondary' : 'primary'"
       >
         <i pButtonIcon aria-hidden="true" class="pi pi-video"></i>
         <span pButtonLabel>{{ label() }}</span>
@@ -58,8 +56,8 @@ export class JoinLessonButton {
   readonly label = input('Войти в урок');
   /** The teacher may open Telemost in the desktop application. */
   readonly teacher = input(false);
-  readonly small = input(false);
-  readonly outlined = input(false);
+  /** A secondary action next to others (ADR-0018): the tonal button. */
+  readonly tonal = input(false);
 
   protected readonly inApp = computed(
     () => this.teacher() && this.preferences.openInApp() && isTelemostLink(this.url()),

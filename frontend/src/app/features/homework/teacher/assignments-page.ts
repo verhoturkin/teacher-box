@@ -20,6 +20,7 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentSummary } from '../data-access/homework.models';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Teacher: all assignments with progress. */
 @Component({
@@ -37,29 +38,25 @@ import { EmptyState } from '@shared/ui/empty-state';
     TableModule,
     RowType,
     AssignmentDialog,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Домашние задания</h1>
-        <tb-help-button topic="teacher/homework" />
-      </div>
-      <div class="tb-actions">
-        <a pButton routerLink="review" [outlined]="true">
-          <span pButtonLabel>На проверку</span>
-          @if (toReview() > 0) {
-            <p-badge [value]="toReview()" severity="warn" />
-          }
-        </a>
-        <p-button
-          class="tb-page-fab"
-          label="Новое задание"
-          icon="pi pi-plus"
-          (onClick)="openCreate()"
-        />
-      </div>
-    </div>
+    <tb-page-header title="Домашние задания">
+      <tb-help-button help topic="teacher/homework" />
+      <a pButton routerLink="review" severity="secondary">
+        <span pButtonLabel>На проверку</span>
+        @if (toReview() > 0) {
+          <p-badge [value]="toReview()" severity="warn" />
+        }
+      </a>
+      <p-button
+        class="tb-page-fab"
+        label="Новое задание"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </tb-page-header>
 
     <p-card>
       <p-table
@@ -102,8 +99,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                 hint="Создайте первое задание и выдайте его ученикам"
               >
                 <p-button
-                  class="tb-page-fab"
                   label="Новое задание"
+                  severity="secondary"
                   icon="pi pi-plus"
                   (onClick)="openCreate()"
                 />

@@ -10,7 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+
 import { Card } from 'primeng/card';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
@@ -22,6 +22,8 @@ import { LESSON_STATUS_LABELS } from '../billing-labels';
 import { BillingApi } from '../data-access/billing-api';
 import { MonthlyReport } from '../data-access/billing.models';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
+import { HelpButton } from '@features/help/parts';
 
 /** Teacher: income and lessons of a month. */
 @Component({
@@ -31,24 +33,21 @@ import { EmptyState } from '@shared/ui/empty-state';
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     Card,
     DatePicker,
     TableModule,
     Tag,
     MoneyPipe,
     RowType,
+    PageHeader,
+    HelpButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a pButton routerLink="/teacher/billing" [text]="true" class="tb-back">
-      <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
-      <span pButtonLabel>Оплаты</span>
-    </a>
-    <div class="tb-page-header">
-      <h1 class="tb-page-title">Отчёт за месяц</h1>
+    <tb-page-header title="Отчёт за месяц" back="/teacher/billing" backLabel="Оплаты">
+      <tb-help-button help topic="teacher/billing" />
+    </tb-page-header>
+    <div class="tb-toolbar">
       <p-datepicker
         [formControl]="month"
         view="month"

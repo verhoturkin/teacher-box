@@ -71,6 +71,7 @@ import { IdentityApi } from '../data-access/identity-api';
       <p-button
         type="submit"
         [label]="submitLabel()"
+        [severity]="tonal() ? 'secondary' : 'primary'"
         [loading]="pending()"
         [disabled]="form.invalid"
       />
@@ -84,6 +85,8 @@ export class ChangePasswordForm {
 
   readonly currentLabel = input('Текущий пароль');
   readonly submitLabel = input('Сменить пароль');
+  /** A section of a page (the account) rather than the main step (the first setup): tonal. */
+  readonly tonal = input(false);
   /** The password has been changed. */
   readonly changed = output();
 

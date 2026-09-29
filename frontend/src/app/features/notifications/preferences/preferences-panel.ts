@@ -102,10 +102,11 @@ function shortTime(time: string | null, fallback: string): string {
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
-          <div class="tb-actions">
+          <div class="tb-form-actions">
             <p-button
               type="submit"
               label="Сохранить"
+              severity="secondary"
               icon="pi pi-check"
               [loading]="pending()"
               [disabled]="form.pristine"

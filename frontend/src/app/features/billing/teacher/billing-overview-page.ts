@@ -26,6 +26,7 @@ import { BalanceAmount } from '../ledger/balance-amount';
 import { DefaultPriceCard } from './default-price-card';
 import { PaymentDialog } from './payment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -49,28 +50,24 @@ import { EmptyState } from '@shared/ui/empty-state';
     BalanceAmount,
     DefaultPriceCard,
     PaymentDialog,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-header">
-      <div class="tb-page-heading">
-        <h1 class="tb-page-title">Оплаты</h1>
-        <tb-help-button topic="teacher/billing" />
-      </div>
-      <div class="tb-actions">
-        <p-button
-          class="tb-page-fab"
-          label="Оплата"
-          icon="pi pi-wallet"
-          (onClick)="openPayment(null)"
-          [disabled]="!overview()"
-        />
-        <a pButton routerLink="report" [outlined]="true">
-          <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
-          <span pButtonLabel>Отчёт за месяц</span>
-        </a>
-      </div>
-    </div>
+    <tb-page-header title="Оплаты">
+      <tb-help-button help topic="teacher/billing" />
+      <a pButton routerLink="report" severity="secondary">
+        <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
+        <span pButtonLabel>Отчёт за месяц</span>
+      </a>
+      <p-button
+        class="tb-page-fab"
+        label="Оплата"
+        icon="pi pi-wallet"
+        (onClick)="openPayment(null)"
+        [disabled]="!overview()"
+      />
+    </tb-page-header>
 
     @if (overview(); as overview) {
       <div class="tb-stats">
@@ -113,11 +110,11 @@ import { EmptyState } from '@shared/ui/empty-state';
         <p-table [value]="rows()" dataKey="studentId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Ученик</th>
-              <th>Цена занятия</th>
+              <th class="tb-col-main">Ученик</th>
+              <th class="tb-amount">Цена занятия</th>
               <th>Занятий</th>
               <th>Последнее</th>
-              <th>Баланс</th>
+              <th class="tb-amount">Баланс</th>
               <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
             </tr>
           </ng-template>
@@ -131,12 +128,14 @@ import { EmptyState } from '@shared/ui/empty-state';
                   <small class="tb-muted"> (отключён)</small>
                 }
               </td>
-              <td data-label="Цена занятия">{{ row.lessonPrice | money: overview.currency }}</td>
+              <td data-label="Цена занятия" class="tb-amount">
+                {{ row.lessonPrice | money: overview.currency }}
+              </td>
               <td data-label="Занятий">{{ row.chargedLessons }}</td>
               <td data-label="Последнее">
                 {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
               </td>
-              <td data-label="Баланс">
+              <td data-label="Баланс" class="tb-amount">
                 <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
               </td>
               <td class="tb-actions-column">
@@ -144,7 +143,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                   icon="pi pi-wallet"
                   [text]="true"
                   [rounded]="true"
-                  severity="success"
+                  severity="secondary"
                   pTooltip="Принять оплату"
                   [ariaLabel]="'Оплата: ' + row.displayName"
                   (onClick)="openPayment(row.studentId)"

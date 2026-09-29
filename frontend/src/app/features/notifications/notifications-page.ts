@@ -19,6 +19,7 @@ import { BotAbilitiesPanel } from './teacher/bot-abilities-panel';
 import { BotsPanel } from './teacher/bots-panel';
 import { BroadcastsPanel } from './teacher/broadcasts-panel';
 import { StudentMessengersPanel } from './teacher/student-messengers-panel';
+import { PageHeader } from '@shared/ui/page-header';
 
 /** Sections of the teacher's notifications page (`?tab=`). */
 export const TEACHER_TABS = ['inbox', 'messages', 'messengers', 'students', 'preferences'] as const;
@@ -46,13 +47,13 @@ function isTeacherTab(value: unknown): value is TeacherTab {
     InboxPanel,
     PreferencesPanel,
     StudentMessengersPanel,
+    PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-page-heading">
-      <h1 class="tb-page-title">Уведомления</h1>
-      <tb-help-button [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
-    </div>
+    <tb-page-header title="Уведомления">
+      <tb-help-button help [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
+    </tb-page-header>
     @if (teacher) {
       <p-tabs
         [value]="activeTab()"
