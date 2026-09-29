@@ -8,9 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { JoinLessonButton } from '@features/meetings/parts';
+import { LessonActions } from '../ui/lesson-actions';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
   ChangeKind,
@@ -24,7 +23,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
 /** Student's home: the nearest lesson with the lesson link and a request to move or cancel it. */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [RouterLink, Button, Card, ChangeRequestDialog, JoinLessonButton],
+  imports: [RouterLink, Card, ChangeRequestDialog, LessonActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Ближайшее занятие" styleClass="tb-hero">
@@ -43,23 +42,14 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
             >
           }
           <div class="tb-actions">
-            @if (lesson.joinUrl; as url) {
-              <tb-join-lesson-button [url]="url" />
-            }
-            @if (lesson.pendingRequests.length === 0) {
-              <p-button
-                label="Перенести"
-                icon="pi pi-calendar"
-                severity="secondary"
-                (onClick)="ask(lesson, 'RESCHEDULE')"
-              />
-              <p-button
-                [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
-                severity="danger"
-                [text]="true"
-                (onClick)="ask(lesson, 'CANCEL')"
-              />
-            }
+            <tb-lesson-actions
+              [joinUrl]="lesson.joinUrl"
+              [requests]="lesson.pendingRequests.length === 0"
+              [group]="lesson.groupId !== null"
+              [lessonName]="time(lesson)"
+              rescheduleIcon="pi pi-calendar"
+              (ask)="ask(lesson, $event)"
+            />
           </div>
         </div>
       } @else {

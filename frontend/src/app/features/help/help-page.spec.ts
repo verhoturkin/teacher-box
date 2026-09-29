@@ -47,31 +47,19 @@ describe('HelpPage', () => {
     expect(navigate).toHaveBeenCalledWith('/cabinet/help/bot');
   });
 
-  it('shows the article above the contents and goes up to it from the contents', async () => {
-    const host = await render('teacher');
-    const article = requireElement(host, '.tb-help__article-card', HTMLElement);
+  it('shows the contents above the article and marks the current one', async () => {
+    const host = await render('teacher', 'groups');
     const contents = requireElement(host, 'nav', HTMLElement);
+    const article = requireElement(host, '.tb-help__article-card', HTMLElement);
     expect(
-      article.compareDocumentPosition(contents) & Node.DOCUMENT_POSITION_FOLLOWING,
+      contents.compareDocumentPosition(article) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    const scroll = vi.fn();
-    Element.prototype.scrollIntoView = scroll;
-    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    requireElement(host, 'nav a[href="/teacher/help/groups"]', HTMLAnchorElement).click();
-
-    expect(scroll).toHaveBeenCalledWith({ block: 'start' });
-    expect(scroll.mock.contexts[0]).toBe(article);
-    Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
-  });
-
-  it('does not scroll where the browser cannot', async () => {
-    const host = await render('teacher');
-    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-
-    requireElement(host, 'nav a[href="/teacher/help/groups"]', HTMLAnchorElement).click();
-
-    expect(host.querySelector('h2')?.textContent).toBe('Первые шаги');
+    const current = requireElement(host, 'nav a[aria-current="page"]', HTMLAnchorElement);
+    expect(current.textContent.trim()).toBe('Группы');
+    expect(current.title).toBe('Занятия с несколькими учениками сразу');
+    expect(host.querySelectorAll('nav a[aria-current]')).toHaveLength(1);
+    expect(readableText(article)).toContain('Группы Занятия с несколькими учениками сразу');
   });
 
   it('says when the article is missing', async () => {

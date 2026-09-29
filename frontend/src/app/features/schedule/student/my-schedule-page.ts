@@ -12,7 +12,6 @@ import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
 import { MyBoardsCard } from '@features/boards/parts';
-import { JoinLessonButton } from '@features/meetings/parts';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
@@ -32,6 +31,7 @@ import {
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
+import { LessonActions } from '../ui/lesson-actions';
 import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -59,7 +59,7 @@ export function nextMonday(date: Date): Date {
     Tag,
     CalendarFeedPanel,
     ChangeRequestDialog,
-    JoinLessonButton,
+    LessonActions,
     MyBoardsCard,
     ScheduleCalendar,
     PageHeader,
@@ -102,37 +102,31 @@ export function nextMonday(date: Date): Date {
                     <p-tag value="Вы предупредили, что не придёте" severity="secondary" />
                   }
                   @if (lesson.pendingRequests[0]; as request) {
-                    <small class="tb-muted">
-                      Запрос «{{ kind(request) }}» ждёт ответа учителя
-                      <p-button
-                        severity="danger"
-                        label="Отозвать"
-                        [text]="true"
-                        (onClick)="withdraw(request)"
-                      />
-                    </small>
+                    <span class="tb-list__supporting"
+                      >Запрос «{{ kind(request) }}» ждёт ответа учителя</span
+                    >
                   }
                 </div>
                 <div class="tb-list__trail">
-                  @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
-                    <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" />
-                  }
-                  @if (
-                    lesson.status === 'SCHEDULED' &&
-                    lesson.pendingRequests.length === 0 &&
-                    !excused(lesson)
-                  ) {
+                  <tb-lesson-actions
+                    [joinUrl]="lesson.status === 'SCHEDULED' ? lesson.joinUrl : null"
+                    joinLabel="Подключиться"
+                    [requests]="
+                      lesson.status === 'SCHEDULED' &&
+                      lesson.pendingRequests.length === 0 &&
+                      !excused(lesson)
+                    "
+                    [group]="lesson.groupId !== null"
+                    [lessonName]="time(lesson)"
+                    (ask)="ask(lesson, $event)"
+                  />
+                  @if (lesson.pendingRequests[0]; as request) {
                     <p-button
-                      label="Перенести"
-                      severity="secondary"
-                      (onClick)="ask(lesson, 'RESCHEDULE')"
-                    />
-                    <p-button
-                      class="tb-button-steady"
-                      [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
                       severity="danger"
+                      label="Отозвать"
                       [text]="true"
-                      (onClick)="ask(lesson, 'CANCEL')"
+                      [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
+                      (onClick)="withdraw(request)"
                     />
                   }
                 </div>
