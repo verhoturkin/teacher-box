@@ -1,6 +1,7 @@
 # ADR-0017. Material Design 3
 
-- Статус: принято
+- Статус: принято, уточнено [ADR-0018](0018-component-rules.md) (кнопки, главное действие,
+  заголовок страницы)
 - Дата: 2026-09-29
 - Частично заменяет: [ADR-0015](0015-design-system-and-mobile.md) (радиусы, тени, типографика,
   шапка и меню разделов)
@@ -95,7 +96,7 @@
 - **Кнопки**:
   - высота 40 px, форма «таблетка», подпись Label Large (14 px, 500);
   - главное действие — filled (primary);
-  - второстепенное — tonal (secondary-container) или outlined;
+  - второстепенное — tonal (secondary-container); outlined не используется (ADR-0018);
   - действия в строках — text или icon.
   PrimeNG-варианты сопоставлены так: без варианта — filled, `severity="secondary"` — tonal,
   `outlined` — outlined, `text` — text.
