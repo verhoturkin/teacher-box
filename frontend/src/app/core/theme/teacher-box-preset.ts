@@ -171,16 +171,12 @@ function scheme(card: string): Record<string, unknown> {
     list: {
       option: {
         focusBackground: 'color-mix(in srgb, {md.on.surface} 8%, transparent)',
-        selectedBackground: '{md.secondary.container}',
-        selectedFocusBackground: layer(
-          '{md.on.secondary.container}',
-          '{md.secondary.container}',
-          12,
-        ),
+        selectedBackground: '{md.tertiary.container}',
+        selectedFocusBackground: layer('{md.on.tertiary.container}', '{md.tertiary.container}', 12),
         color: '{md.on.surface}',
         focusColor: '{md.on.surface}',
-        selectedColor: '{md.on.secondary.container}',
-        selectedFocusColor: '{md.on.secondary.container}',
+        selectedColor: '{md.on.tertiary.container}',
+        selectedFocusColor: '{md.on.tertiary.container}',
         icon: { color: '{md.on.surface.variant}', focusColor: '{md.on.surface}' },
       },
       optionGroup: { background: 'transparent', color: '{md.on.surface.variant}' },
@@ -408,9 +404,10 @@ export const TeacherBoxPreset = definePreset(Aura, {
       shadow: 'none',
     },
     disabledOpacity: '0.38',
+    // M3 outlined text field: 56 px high (24 px line, 15 px padding, 1 px outline), ADR-0022
     formField: {
       paddingX: '1rem',
-      paddingY: '0.6875rem',
+      paddingY: '0.9375rem',
       sm: { fontSize: '0.875rem', paddingX: '0.75rem', paddingY: '0.375rem' },
       lg: { fontSize: '1.125rem', paddingX: '1rem', paddingY: '0.875rem' },
       borderRadius: '{border.radius.xs}',
@@ -422,22 +419,23 @@ export const TeacherBoxPreset = definePreset(Aura, {
         shadow: 'none',
       },
     },
+    // M3 Expressive menus (ADR-0022): the items are rounded tiles 2 px apart inside the container
     list: {
-      padding: '0.5rem 0',
-      gap: '0',
+      padding: '0.25rem',
+      gap: '2px',
       header: { padding: '0.75rem 1rem 0.5rem' },
-      option: { padding: '0.75rem 1rem', borderRadius: '0' },
+      option: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}' },
       optionGroup: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
     },
     content: { borderRadius: '{border.radius.md}' },
     navigation: {
-      list: { padding: '0.5rem 0', gap: '0' },
-      item: { padding: '0.75rem 1rem', borderRadius: '0', gap: '0.75rem' },
+      list: { padding: '0.25rem', gap: '2px' },
+      item: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}', gap: '0.75rem' },
       submenuLabel: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
     },
     overlay: {
-      select: { borderRadius: '{border.radius.xs}', shadow: ELEVATION_2 },
-      popover: { borderRadius: '{border.radius.md}', padding: '1rem', shadow: ELEVATION_2 },
+      select: { borderRadius: '{border.radius.lg}', shadow: ELEVATION_2 },
+      popover: { borderRadius: '{border.radius.lg}', padding: '1rem', shadow: ELEVATION_2 },
       modal: { borderRadius: '{border.radius.xl}', padding: '1.5rem', shadow: ELEVATION_3 },
       navigation: { shadow: ELEVATION_2 },
     },
@@ -506,11 +504,11 @@ export const TeacherBoxPreset = definePreset(Aura, {
       root: {
         background: '{content.background}',
         borderColor: 'transparent',
-        borderRadius: '{border.radius.xs}',
+        borderRadius: '{border.radius.lg}',
         shadow: ELEVATION_2,
       },
-      list: { padding: '0.5rem 0', gap: '0' },
-      item: { padding: '0.75rem 1rem', borderRadius: '0', gap: '0.75rem' },
+      list: { padding: '0.25rem', gap: '2px' },
+      item: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}', gap: '0.75rem' },
       separator: { borderColor: '{md.outline.variant}' },
     },
     tabs: {
@@ -715,12 +713,34 @@ export const TeacherBoxPreset = definePreset(Aura, {
         borderRadius: '{border.radius.xs}',
       },
       colorScheme: { light: DATE_BUTTON_SCHEME, dark: DATE_BUTTON_SCHEME },
+      // M3 text field with a trailing icon (ADR-0022): one outline around the input and the
+      // calendar button, the focus is the outline of the whole field
       css: `
-        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input {
-          border-inline-end: 0;
+        .p-datepicker:has(.p-datepicker-dropdown) {
+          border: 1px solid dt('form.field.border.color');
+          border-radius: dt('form.field.border.radius');
+          transition: border-color dt('form.field.transition.duration');
         }
-        .p-datepicker .p-datepicker-dropdown {
-          border-inline-start: 0;
+        .p-datepicker:has(.p-datepicker-dropdown):hover {
+          border-color: dt('form.field.hover.border.color');
+        }
+        .p-datepicker:has(.p-datepicker-dropdown):focus-within {
+          border-color: dt('form.field.focus.border.color');
+          box-shadow: inset 0 0 0 1px dt('form.field.focus.border.color');
+        }
+        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input,
+        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input:enabled:hover,
+        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input:enabled:focus {
+          border: 0;
+          outline: none;
+          box-shadow: none;
+          background: transparent;
+        }
+        .p-datepicker .p-datepicker-dropdown,
+        .p-datepicker .p-datepicker-dropdown:not(:disabled):hover {
+          border: 0;
+          background: transparent;
+          color: dt('form.field.icon.color');
         }
       `,
     },
