@@ -488,16 +488,26 @@ textarea.p-textarea {
 }
 
 /*
- * In a narrow list (a side column, a phone) the trailing buttons go under the text; an amount or a
- * status stays on the right
+ * In a narrow list (a phone) the trailing buttons go under the row, across its whole width, so two
+ * buttons fit in one line even on a 360 px phone (ADR-0021); an amount or a status stays on the
+ * right. The buttons start at the left edge: the first of them stands still from row to row, so a
+ * button with a changing label («Отменить» / «Не приду») keeps its own width.
  */
 @container (max-width: 26rem) {
   .tb-list > li:has(> .tb-list__trail :is(p-button, tb-join-lesson-button)) {
-    grid-template-areas: 'lead text text' '. trail trail';
+    grid-template-areas: 'lead text text' 'trail trail trail';
 
     > .tb-list__trail {
       justify-content: flex-start;
-      margin-inline-start: calc(-1 * var(--tb-space-2));
+    }
+
+    p-button.tb-button-steady .p-button {
+      min-width: 0;
+    }
+
+    /* text buttons take the padding of M3 text buttons (12 px): «Подключиться» and «Отозвать» fit */
+    .p-button-text:not(.p-button-icon-only) {
+      padding-inline: var(--tb-space-3);
     }
   }
 }
@@ -1561,6 +1571,12 @@ a.p-menu-item-link:hover {
       font: var(--tb-type-title-l);
     }
   }
+}
+
+/* A menu item that cancels or deletes is red, like the buttons that do it (ADR-0019) */
+.p-menu .tb-menu-item--danger .p-menu-item-link,
+.p-menu .tb-menu-item--danger .p-menu-item-icon {
+  color: var(--p-md-error);
 }
 
 /* «Ещё» opens at the right edge: in six columns of 62.5 px its computed place sticks out by a pixel. */

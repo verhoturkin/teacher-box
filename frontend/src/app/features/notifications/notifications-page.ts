@@ -54,7 +54,7 @@ function isFolded(value: unknown): value is FoldedSection {
       <tb-help-button help [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
     </tb-page-header>
     @if (teacher) {
-      <div class="tb-stack tb-notifications-sections">
+      <div class="tb-stack">
         <tb-fold-card
           id="notifications-inbox"
           title="Входящие"
@@ -107,16 +107,11 @@ function isFolded(value: unknown): value is FoldedSection {
         </tb-fold-card>
       </div>
     } @else {
-      <div class="tb-stack tb-notifications-sections">
+      <div class="tb-stack">
         <tb-inbox-panel />
         <tb-channels-panel />
         <tb-preferences-panel />
       </div>
-    }
-  `,
-  styles: `
-    .tb-notifications-sections {
-      max-width: var(--tb-content-narrow);
     }
   `,
 })
