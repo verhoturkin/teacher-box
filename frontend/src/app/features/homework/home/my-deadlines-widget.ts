@@ -16,24 +16,34 @@ import { MyHomeworkSummary } from '../data-access/homework.models';
       @if (homework.upcoming.length === 0) {
         <p class="tb-muted">Открытых заданий нет.</p>
       } @else {
-        <ul class="tb-deadlines">
+        <ul class="tb-list tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
             <li>
-              <a [routerLink]="['/cabinet/homework', task.taskId]" class="tb-link">{{
-                task.title
-              }}</a>
+              <span
+                class="tb-list__lead"
+                [class.tb-list__lead--accent]="task.overdue"
+                aria-hidden="true"
+                ><i class="pi pi-book"></i
+              ></span>
+              <div class="tb-list__text">
+                <a
+                  [routerLink]="['/cabinet/homework', task.taskId]"
+                  class="tb-list__title tb-link"
+                  >{{ task.title }}</a
+                >
+                <span class="tb-list__supporting">
+                  @if (task.dueAt !== null) {
+                    до {{ task.dueAt | date: 'dd.MM, HH:mm' }}
+                  } @else {
+                    без срока
+                  }
+                </span>
+              </div>
               @if (task.overdue) {
-                <p-tag value="Просрочено" severity="danger" />
+                <div class="tb-list__trail"><p-tag value="Просрочено" severity="danger" /></div>
               } @else if (task.status === 'RETURNED') {
-                <p-tag value="На доработку" severity="warn" />
+                <div class="tb-list__trail"><p-tag value="На доработку" severity="warn" /></div>
               }
-              <small class="tb-muted">
-                @if (task.dueAt !== null) {
-                  до {{ task.dueAt | date: 'dd.MM, HH:mm' }}
-                } @else {
-                  без срока
-                }
-              </small>
             </li>
           }
         </ul>
@@ -43,29 +53,6 @@ import { MyHomeworkSummary } from '../data-access/homework.models';
         <a routerLink="/cabinet/homework">Все задания</a>
       </div>
     </p-card>
-  `,
-  styles: `
-    .tb-deadlines {
-      display: flex;
-      flex-direction: column;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: var(--tb-space-2);
-        padding: var(--tb-space-2) 0;
-        border-bottom: 1px solid var(--p-content-border-color);
-      }
-
-      a {
-        flex: 1;
-        min-width: 10rem;
-      }
-    }
   `,
 })
 export class MyDeadlinesWidget {

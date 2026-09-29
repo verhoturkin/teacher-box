@@ -46,8 +46,8 @@ describe('MyDeadlinesWidget', () => {
     );
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Вчера Просрочено до');
-    expect(text).toContain('Доработать На доработку до');
+    expect(text).toContain('Вчера до 10.09, 15:00 Просрочено');
+    expect(text).toContain('Доработать до 10.09, 15:00 На доработку');
     expect(text).toContain('Когда-нибудь без срока');
     expect(text).toContain('Открыто: 3, просрочено: 1');
     expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(

@@ -57,6 +57,11 @@
   --tb-shape-button: 1.25rem;
   --tb-radius: var(--tb-shape-md);
 
+  /* Rows of lists in cards (ADR-0020): a tile a tone lighter than the card */
+  --tb-list-item: var(--p-md-surface-container-low);
+  --tb-list-outer: var(--tb-shape-lg);
+  --tb-list-inner: var(--tb-shape-xs);
+
   /* Elevation: surfaces differ by tone; shadows only for floating elements */
   --tb-elevation-1: 0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%);
   --tb-elevation-2: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
@@ -133,6 +138,7 @@ body {
 
 :root.tb-dark {
   color-scheme: dark;
+  --tb-list-item: var(--p-md-surface-container-high);
 
   body {
     background: var(--p-md-surface);
@@ -416,6 +422,139 @@ textarea.p-textarea {
   font-weight: 500;
 }
 
+/*
+ * A list in a card (ADR-0020): the segmented list of M3 Expressive — every row is a tile, 2 px
+ * apart, the outer corners of the group rounder than the inner ones. A row is the leading avatar or
+ * icon, the title with its supporting text and the trailing amount, status or actions.
+ */
+.tb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  container-type: inline-size;
+
+  > li {
+    display: grid;
+    grid-template-areas: 'lead text trail';
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--tb-space-1) var(--tb-space-4);
+    min-height: 3.5rem;
+    box-sizing: border-box;
+    padding: var(--tb-space-3) var(--tb-space-4);
+    border-radius: var(--tb-list-inner);
+    background: var(--tb-list-item);
+    transition: background var(--tb-spring-fast-effects);
+
+    &:first-child {
+      border-start-start-radius: var(--tb-list-outer);
+      border-start-end-radius: var(--tb-list-outer);
+    }
+
+    &:last-child {
+      border-end-start-radius: var(--tb-list-outer);
+      border-end-end-radius: var(--tb-list-outer);
+    }
+  }
+}
+
+/*
+ * In a narrow list (a side column, a phone) the trailing buttons go under the text; an amount or a
+ * status stays on the right
+ */
+@container (max-width: 26rem) {
+  .tb-list > li:has(> .tb-list__trail :is(p-button, tb-join-lesson-button)) {
+    grid-template-areas: 'lead text' '. trail';
+    grid-template-columns: auto minmax(0, 1fr);
+
+    > .tb-list__trail {
+      justify-content: flex-start;
+      margin-inline-start: calc(-1 * var(--tb-space-2));
+    }
+  }
+}
+
+/* A row that opens as a whole: the state layer on hover */
+.tb-list > li.tb-list__item--link {
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-on-surface) 8%, var(--tb-list-item));
+  }
+}
+
+.tb-list__lead,
+.tb-avatar {
+  display: flex;
+  grid-area: lead;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+  font: var(--tb-type-title-m);
+
+  > .pi {
+    font-size: 1.125rem;
+  }
+}
+
+/* The lead of a row that needs attention (an unread notification, a debt) */
+.tb-list__lead--accent {
+  background: var(--p-md-primary-container);
+  color: var(--p-md-on-primary-container);
+}
+
+.tb-list__text {
+  display: flex;
+  grid-area: text;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tb-list__title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+  overflow-wrap: anywhere;
+}
+
+.tb-list__supporting {
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-m);
+  overflow-wrap: anywhere;
+}
+
+.tb-list__trail {
+  display: flex;
+  grid-area: trail;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tb-space-1);
+  font: var(--tb-type-title-m);
+  white-space: nowrap;
+}
+
+/* A person in a table cell: the avatar next to the name */
+.tb-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+}
+
 /* Lists */
 .tb-toolbar {
   display: flex;
@@ -441,7 +580,7 @@ textarea.p-textarea {
 /* The main column of a list (a name, a title) is not squeezed by the others on a computer */
 @media (min-width: 1200px) {
   .tb-col-main {
-    min-width: 11rem;
+    min-width: 13rem;
   }
 }
 
@@ -942,10 +1081,37 @@ a.p-menu-item-link:hover {
   }
 
   .p-datatable-tbody > tr {
-    margin-bottom: var(--tb-space-3);
+    margin-bottom: 2px;
     padding: var(--tb-space-3) var(--tb-space-4);
-    border-radius: var(--tb-shape-lg);
-    background: var(--p-content-background);
+    border-radius: var(--tb-list-inner);
+    background: var(--tb-list-item);
+  }
+
+  .p-datatable-tbody > tr:first-child {
+    border-start-start-radius: var(--tb-list-outer);
+    border-start-end-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:last-child {
+    margin-bottom: 0;
+    border-end-start-radius: var(--tb-list-outer);
+    border-end-end-radius: var(--tb-list-outer);
+  }
+
+  /* the row is the tile: its cells have neither corners (as specific as the rules of the columns) */
+  .p-datatable-tbody > tr:nth-child(n) > td:nth-child(n) {
+    border-radius: 0;
+  }
+
+  /* nor a background of their own */
+  .p-datatable-tbody > tr > td,
+  .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td,
+  .p-datatable-tbody > tr.p-datatable-row-selected > td {
+    background: none;
+  }
+
+  .p-datatable-tbody > tr.p-datatable-row-selected {
+    background: var(--p-md-secondary-container);
   }
 
   .p-datatable-tbody > tr > td {
@@ -978,7 +1144,7 @@ a.p-menu-item-link:hover {
 
   .p-datatable-tbody > tr > td:first-child {
     padding-bottom: var(--tb-space-2);
-    font: var(--tb-type-title-m);
+    font: var(--tb-type-body-l);
     text-align: left;
 
     &::before {
@@ -1005,6 +1171,71 @@ a.p-menu-item-link:hover {
 }
 
 /*
+ * Tables with the class tb-cards keep their columns on a computer, but their rows are the tiles of a
+ * segmented list (ADR-0020): no lines between cells, rows 2 px apart, the first and the last cell
+ * round the tile.
+ */
+.p-datatable.tb-cards {
+  .p-datatable-table {
+    border-spacing: 0 2px;
+  }
+
+  .p-datatable-thead > tr > th {
+    border: 0;
+  }
+
+  .p-datatable-tbody > tr {
+    background: transparent;
+  }
+
+  .p-datatable-tbody > tr > td {
+    border: 0;
+    background: var(--tb-list-item);
+    transition: background var(--tb-spring-fast-effects);
+  }
+
+  .p-datatable-tbody > tr > td:first-child {
+    border-start-start-radius: var(--tb-list-inner);
+    border-end-start-radius: var(--tb-list-inner);
+  }
+
+  .p-datatable-tbody > tr > td:last-child {
+    border-start-end-radius: var(--tb-list-inner);
+    border-end-end-radius: var(--tb-list-inner);
+  }
+
+  .p-datatable-tbody > tr:first-child > td:first-child {
+    border-start-start-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:first-child > td:last-child {
+    border-start-end-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:last-child > td:first-child {
+    border-end-start-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:last-child > td:last-child {
+    border-end-end-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td {
+    background: color-mix(in srgb, var(--p-md-on-surface) 4%, var(--tb-list-item));
+  }
+
+  .p-datatable-tbody > tr.p-datatable-row-selected > td {
+    background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+  }
+
+  /* the empty message is not a tile */
+  .p-datatable-tbody > tr > td[colspan] {
+    background: none;
+  }
+}
+
+/*
  * Tables with the class tb-cards become cards on phones (ADR-0015): every row is a card, every cell
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
  * action buttons are at the bottom of the card.
@@ -1016,12 +1247,11 @@ a.p-menu-item-link:hover {
     width: 100%;
   }
 
-  /* The card around the list gives way: the row cards lie on the page itself */
-  .p-card:has(.p-datatable.tb-cards) {
-    background: transparent;
-
+  /* The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020) */
+  .p-card:has(.p-datatable.tb-cards),
+  .p-card:has(.tb-list) {
     > .p-card-body {
-      padding: var(--tb-space-2) 0 0;
+      padding-inline: var(--tb-space-3);
     }
   }
 
@@ -1052,9 +1282,10 @@ a.p-menu-item-link:hover {
       gap: var(--tb-space-3);
     }
 
+    /* in the grid a tile has no neighbours above and below: all its corners are round */
     .p-datatable-tbody > tr {
       margin-bottom: 0;
-      border: 1px solid var(--p-md-outline-variant);
+      border-radius: var(--tb-list-outer);
     }
 
     .p-datatable-tbody > tr:has(> td[colspan]) {

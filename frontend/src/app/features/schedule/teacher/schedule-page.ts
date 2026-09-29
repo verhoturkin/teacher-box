@@ -55,6 +55,7 @@ import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { InitialsPipe } from '@shared/ui/initials';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 
@@ -70,6 +71,7 @@ const CLICK_SELECTION_MINUTES = 30;
 @Component({
   selector: 'tb-schedule-page',
   imports: [
+    InitialsPipe,
     HelpButton,
     Button,
     Card,
@@ -126,13 +128,18 @@ const CLICK_SELECTION_MINUTES = 30;
       <div class="tb-stack">
         @if (requests().length > 0) {
           <p-card header="Запросы учеников">
-            <ul class="tb-schedule-list">
+            <ul class="tb-list">
               @for (request of requests(); track request.id) {
                 <li>
-                  <div>
-                    <strong>{{ request.studentName ?? 'Ученик' }}</strong>
-                    <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
-                    <div class="tb-muted">
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    request.studentName ?? 'Ученик' | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">
+                      {{ request.studentName ?? 'Ученик' }}
+                      <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
+                    </span>
+                    <span class="tb-list__supporting">
                       @if (request.groupName !== null) {
                         {{ request.groupName }},
                       }
@@ -140,9 +147,11 @@ const CLICK_SELECTION_MINUTES = 30;
                       @if (request.proposedStartsAt !== null) {
                         → {{ start(request.proposedStartsAt) }}
                       }
-                    </div>
+                    </span>
                   </div>
-                  <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
+                  <div class="tb-list__trail">
+                    <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
+                  </div>
                 </li>
               }
             </ul>
@@ -151,14 +160,15 @@ const CLICK_SELECTION_MINUTES = 30;
 
         @if (unmarked().length > 0) {
           <p-card header="Отметьте прошедшие занятия">
-            <ul class="tb-schedule-list">
+            <ul class="tb-list">
               @for (lesson of unmarked(); track lesson.id) {
                 <li>
-                  <div>
-                    <strong>{{ with(lesson) }}</strong>
-                    <div class="tb-muted">{{ time(lesson) }}</div>
+                  <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ with(lesson) }}</span>
+                    <span class="tb-list__supporting">{{ time(lesson) }}</span>
                   </div>
-                  <div class="tb-actions">
+                  <div class="tb-list__trail">
                     @if (lesson.groupId !== null) {
                       <p-button
                         label="Отметить"
@@ -198,14 +208,15 @@ const CLICK_SELECTION_MINUTES = 30;
           @if (series().length === 0) {
             <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
           } @else {
-            <ul class="tb-schedule-list">
+            <ul class="tb-list">
               @for (item of series(); track item.id) {
                 <li>
-                  <div>
-                    <strong>{{ with(item) }}</strong>
-                    <div class="tb-muted">{{ weekly(item) }}</div>
+                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ with(item) }}</span>
+                    <span class="tb-list__supporting">{{ weekly(item) }}</span>
                   </div>
-                  <div class="tb-actions">
+                  <div class="tb-list__trail">
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
@@ -239,14 +250,15 @@ const CLICK_SELECTION_MINUTES = 30;
               hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
             />
           } @else {
-            <ul class="tb-schedule-list">
+            <ul class="tb-list">
               @for (item of offTimes(); track item.id) {
                 <li>
-                  <div>
-                    <strong>{{ item.note ?? 'Не работаю' }}</strong>
-                    <div class="tb-muted">{{ offTimeText(item) }}</div>
+                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
+                    <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
                   </div>
-                  <div class="tb-actions">
+                  <div class="tb-list__trail">
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
@@ -323,37 +335,6 @@ const CLICK_SELECTION_MINUTES = 30;
 
       @media (max-width: 1100px) {
         grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .tb-schedule-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--tb-space-2);
-
-        > div:first-child {
-          flex: 1;
-          min-width: 0;
-        }
-
-        > .tb-actions {
-          flex-shrink: 0;
-          flex-wrap: nowrap;
-          gap: 0;
-        }
-      }
-
-      p-tag {
-        margin-left: var(--tb-space-2);
       }
     }
   `,

@@ -21,19 +21,28 @@ export const LATEST_COUNT = 5;
         @if (items.length === 0) {
           <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
         } @else {
-          <ul class="tb-latest">
+          <ul class="tb-list tb-latest">
             @for (item of items; track item.id) {
               <li [class.tb-latest--unread]="!item.read">
-                <i [class]="icons[item.kind]" aria-hidden="true"></i>
-                <button
-                  type="button"
-                  class="tb-latest__title"
-                  [disabled]="item.link === null"
-                  (click)="open(item)"
-                >
-                  {{ item.title }}
-                </button>
-                <small class="tb-muted">{{ item.createdAt | date: 'dd.MM HH:mm' }}</small>
+                <span
+                  class="tb-list__lead"
+                  [class.tb-list__lead--accent]="!item.read"
+                  aria-hidden="true"
+                  ><i [class]="icons[item.kind]"></i
+                ></span>
+                <div class="tb-list__text">
+                  <button
+                    type="button"
+                    class="tb-list__title tb-latest__title"
+                    [disabled]="item.link === null"
+                    (click)="open(item)"
+                  >
+                    {{ item.title }}
+                  </button>
+                  <span class="tb-list__supporting">{{
+                    item.createdAt | date: 'dd.MM HH:mm'
+                  }}</span>
+                </div>
               </li>
             }
           </ul>
@@ -50,50 +59,24 @@ export const LATEST_COUNT = 5;
     </p-card>
   `,
   styles: `
-    .tb-latest {
-      display: flex;
-      flex-direction: column;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: baseline;
-        gap: var(--tb-space-2);
-        padding: var(--tb-space-2) 0;
-        border-bottom: 1px solid var(--p-md-outline-variant);
-
-        > i {
-          color: var(--p-md-on-surface-variant);
-        }
-
-        &.tb-latest--unread {
-          .tb-latest__title {
-            font-weight: 600;
-          }
-
-          > i {
-            color: var(--p-md-primary);
-          }
-        }
-      }
+    .tb-latest--unread .tb-latest__title {
+      font-weight: 500;
     }
 
     .tb-latest__title {
-      flex: 1;
-      min-width: 0;
       padding: 0;
       border: 0;
       background: none;
-      color: inherit;
-      font: inherit;
       text-align: left;
-      overflow-wrap: anywhere;
       cursor: pointer;
 
       &:disabled {
         cursor: default;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--p-md-primary);
+        outline-offset: 2px;
       }
     }
   `,

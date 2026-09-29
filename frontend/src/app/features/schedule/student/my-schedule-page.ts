@@ -78,16 +78,19 @@ export function nextMonday(date: Date): Date {
               hint="Следующие занятия — в календаре"
             />
           } @else {
-            <ul class="tb-schedule-list">
+            <ul class="tb-list tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {
                 <li>
-                  <div class="tb-schedule-list__main">
-                    <strong>{{ time(lesson) }}</strong>
+                  <span class="tb-list__lead" aria-hidden="true">
+                    <i [class]="lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users'"></i>
+                  </span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ time(lesson) }}</span>
                     @if (lesson.groupId !== null) {
-                      <span>{{ with(lesson) }}</span>
+                      <span class="tb-list__supporting">{{ with(lesson) }}</span>
                     }
                     @if (lesson.topic !== null) {
-                      <span>{{ lesson.topic }}</span>
+                      <span class="tb-list__supporting">{{ lesson.topic }}</span>
                     }
                     @if (lesson.status !== 'SCHEDULED') {
                       <p-tag
@@ -110,7 +113,7 @@ export function nextMonday(date: Date): Date {
                       </small>
                     }
                   </div>
-                  <div class="tb-actions">
+                  <div class="tb-list__trail">
                     @if (lesson.joinUrl !== null && lesson.status === 'SCHEDULED') {
                       <tb-join-lesson-button [url]="lesson.joinUrl" label="Подключиться" />
                     }
@@ -153,24 +156,29 @@ export function nextMonday(date: Date): Date {
       <div class="tb-stack">
         @if (requests().length > 0) {
           <p-card header="Мои запросы">
-            <ul class="tb-schedule-list">
+            <ul class="tb-list tb-schedule-list">
               @for (request of requests(); track request.id) {
                 <li>
-                  <div class="tb-schedule-list__main">
-                    <span>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i class="pi pi-comments"></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">
                       {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
                       @if (request.groupName !== null) {
                         · группа «{{ request.groupName }}»
                       }
                     </span>
                     @if (request.answer !== null) {
-                      <small class="tb-muted">Учитель: {{ request.answer }}</small>
+                      <span class="tb-list__supporting">Учитель: {{ request.answer }}</span>
                     }
                   </div>
-                  <p-tag
-                    [value]="requestStatuses[request.status].label"
-                    [severity]="requestStatuses[request.status].severity"
-                  />
+                  <div class="tb-list__trail">
+                    <p-tag
+                      [value]="requestStatuses[request.status].label"
+                      [severity]="requestStatuses[request.status].severity"
+                    />
+                  </div>
                 </li>
               }
             </ul>
@@ -200,29 +208,6 @@ export function nextMonday(date: Date): Date {
       @media (max-width: 900px) {
         grid-template-columns: minmax(0, 1fr);
       }
-    }
-
-    .tb-schedule-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--tb-space-2);
-      }
-    }
-
-    .tb-schedule-list__main {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-1);
     }
   `,
 })

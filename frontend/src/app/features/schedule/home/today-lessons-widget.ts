@@ -8,12 +8,22 @@ import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
 import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
+import { InitialsPipe } from '@shared/ui/initials';
 import { AttendanceDialog } from '../teacher/attendance-dialog';
 
 /** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
-  imports: [RouterLink, Button, Card, Tag, AttendanceDialog, JoinLessonButton, Tooltip],
+  imports: [
+    RouterLink,
+    Button,
+    Card,
+    Tag,
+    AttendanceDialog,
+    InitialsPipe,
+    JoinLessonButton,
+    Tooltip,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Сегодня">
@@ -21,67 +31,72 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
       @if (lessons.length === 0) {
         <p class="tb-muted">Сегодня занятий нет.</p>
       } @else {
-        <ul class="tb-today">
+        <ul class="tb-list tb-today">
           @for (lesson of lessons; track lesson.id) {
             <li
               class="tb-today__lesson"
               [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'"
             >
-              <span class="tb-today__time">{{ time(lesson) }}</span>
-              <div class="tb-today__info">
-                <strong>{{ with(lesson) }}</strong>
-                @if (lesson.groupId !== null) {
-                  <small class="tb-muted">Учеников: {{ lesson.participants.length }}</small>
-                }
-                @if (lesson.topic !== null) {
-                  <small class="tb-muted">{{ lesson.topic }}</small>
+              <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+              <div class="tb-list__text tb-today__info">
+                <span class="tb-list__title">{{ with(lesson) }}</span>
+                <span class="tb-list__supporting">
+                  <span class="tb-today__time">{{ time(lesson) }}</span>
+                  @if (lesson.groupId !== null) {
+                    · учеников: {{ lesson.participants.length }}
+                  }
+                  @if (lesson.topic !== null) {
+                    · {{ lesson.topic }}
+                  }
+                </span>
+              </div>
+              <div class="tb-list__trail">
+                @if (lesson.status !== 'SCHEDULED') {
+                  <p-tag
+                    [value]="statuses[lesson.status].label"
+                    [severity]="statuses[lesson.status].severity"
+                  />
+                } @else {
+                  @if (lesson.joinUrl; as url) {
+                    <tb-join-lesson-button
+                      [url]="url"
+                      label="Начать урок"
+                      [teacher]="true"
+                      [tonal]="true"
+                    />
+                  }
+                  @if (started(lesson) && lesson.groupId !== null) {
+                    <p-button
+                      label="Отметить"
+                      icon="pi pi-users"
+                      [text]="true"
+                      [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                      (onClick)="openAttendance(lesson)"
+                    />
+                  } @else if (started(lesson)) {
+                    <p-button
+                      icon="pi pi-check"
+                      severity="success"
+                      [text]="true"
+                      [pTooltip]="'Проведено: ' + (lesson.studentName ?? '')"
+                      [rounded]="true"
+                      [ariaLabel]="'Проведено: ' + (lesson.studentName ?? '')"
+                      [disabled]="pending() === lesson.id"
+                      (onClick)="mark(lesson, 'CONDUCTED')"
+                    />
+                    <p-button
+                      icon="pi pi-user-minus"
+                      severity="danger"
+                      [text]="true"
+                      [pTooltip]="'Пропуск: ' + (lesson.studentName ?? '')"
+                      [rounded]="true"
+                      [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? '')"
+                      [disabled]="pending() === lesson.id"
+                      (onClick)="mark(lesson, 'MISSED')"
+                    />
+                  }
                 }
               </div>
-              @if (lesson.status !== 'SCHEDULED') {
-                <p-tag
-                  [value]="statuses[lesson.status].label"
-                  [severity]="statuses[lesson.status].severity"
-                />
-              } @else {
-                @if (lesson.joinUrl; as url) {
-                  <tb-join-lesson-button
-                    [url]="url"
-                    label="Начать урок"
-                    [teacher]="true"
-                    [tonal]="true"
-                  />
-                }
-                @if (started(lesson) && lesson.groupId !== null) {
-                  <p-button
-                    label="Отметить"
-                    icon="pi pi-users"
-                    [text]="true"
-                    [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
-                    (onClick)="openAttendance(lesson)"
-                  />
-                } @else if (started(lesson)) {
-                  <p-button
-                    icon="pi pi-check"
-                    severity="success"
-                    [text]="true"
-                    [pTooltip]="'Проведено: ' + (lesson.studentName ?? '')"
-                    [rounded]="true"
-                    [ariaLabel]="'Проведено: ' + (lesson.studentName ?? '')"
-                    [disabled]="pending() === lesson.id"
-                    (onClick)="mark(lesson, 'CONDUCTED')"
-                  />
-                  <p-button
-                    icon="pi pi-user-minus"
-                    severity="danger"
-                    [text]="true"
-                    [pTooltip]="'Пропуск: ' + (lesson.studentName ?? '')"
-                    [rounded]="true"
-                    [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? '')"
-                    [disabled]="pending() === lesson.id"
-                    (onClick)="mark(lesson, 'MISSED')"
-                  />
-                }
-              }
             </li>
           }
         </ul>
@@ -99,38 +114,13 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
     />
   `,
   styles: `
-    .tb-today {
-      display: flex;
-      flex-direction: column;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-today__lesson {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-3);
-      padding: var(--tb-space-2) 0;
-      border-bottom: 1px solid var(--p-content-border-color);
-    }
-
     .tb-today__lesson--cancelled .tb-today__info {
       text-decoration: line-through;
       opacity: 0.7;
     }
 
     .tb-today__time {
-      min-width: 7.5rem;
       font-variant-numeric: tabular-nums;
-    }
-
-    .tb-today__info {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      min-width: 8rem;
     }
   `,
 })

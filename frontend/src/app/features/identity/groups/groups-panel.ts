@@ -103,10 +103,15 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
         <ng-template #body let-group [tbRowType]="visibleGroups()">
           <tr>
             <td data-label="Группа">
-              <span class="tb-strong">{{ group.name }}</span>
-              @if (group.archivedAt) {
-                <p-tag value="В архиве" severity="secondary" class="tb-group-tag" />
-              }
+              <div class="tb-person">
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
+                <span class="tb-list__title">
+                  {{ group.name }}
+                  @if (group.archivedAt) {
+                    <p-tag value="В архиве" severity="secondary" />
+                  }
+                </span>
+              </div>
             </td>
             <td data-label="Ученики">
               @if (group.members.length === 0) {
@@ -223,11 +228,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
     />
     <p-confirmdialog key="groups" />
   `,
-  styles: `
-    .tb-group-tag {
-      margin-inline-start: var(--tb-space-2);
-    }
-  `,
+  styles: ``,
 })
 export class GroupsPanel implements OnInit {
   private readonly api = inject(IdentityApi);

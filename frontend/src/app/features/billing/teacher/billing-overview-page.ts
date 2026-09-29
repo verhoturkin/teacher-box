@@ -27,11 +27,13 @@ import { DefaultPriceCard } from './default-price-card';
 import { PaymentDialog } from './payment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     HelpButton,
     DatePipe,
@@ -121,12 +123,17 @@ import { PageHeader } from '@shared/ui/page-header';
           <ng-template #body let-row [tbRowType]="rows()">
             <tr>
               <td data-label="Ученик">
-                <a [routerLink]="['students', row.studentId]" class="tb-link">{{
-                  row.displayName
-                }}</a>
-                @if (row.status === 'DEACTIVATED') {
-                  <small class="tb-muted"> (отключён)</small>
-                }
+                <div class="tb-person">
+                  <span class="tb-avatar" aria-hidden="true">{{ row.displayName | initials }}</span>
+                  <div class="tb-list__text">
+                    <a [routerLink]="['students', row.studentId]" class="tb-list__title tb-link">{{
+                      row.displayName
+                    }}</a>
+                    @if (row.status === 'DEACTIVATED') {
+                      <span class="tb-list__supporting">отключён</span>
+                    }
+                  </div>
+                </div>
               </td>
               <td data-label="Цена занятия" class="tb-amount">
                 {{ row.lessonPrice | money: overview.currency }}

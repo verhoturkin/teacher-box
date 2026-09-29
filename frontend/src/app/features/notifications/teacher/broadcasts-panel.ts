@@ -32,19 +32,20 @@ import { EmptyState } from '@shared/ui/empty-state';
         @if (history.length === 0) {
           <tb-empty-state icon="pi-send" title="Вы ещё не отправляли сообщений." />
         } @else {
-          <ul class="tb-broadcasts">
+          <ul class="tb-list tb-broadcasts">
             @for (item of history; track item.id) {
               <li class="tb-broadcast">
-                <div class="tb-broadcast__title">
-                  <strong>{{ item.title }}</strong>
-                  <small class="tb-muted">
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-send"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ item.title }}</span>
+                  @if (item.body !== null) {
+                    <span class="tb-list__supporting tb-broadcast__body">{{ item.body }}</span>
+                  }
+                  <span class="tb-list__supporting">
                     {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }} · получателей:
                     {{ item.recipients }}
-                  </small>
+                  </span>
                 </div>
-                @if (item.body !== null) {
-                  <div class="tb-broadcast__body">{{ item.body }}</div>
-                }
               </li>
             }
           </ul>
@@ -74,32 +75,15 @@ import { EmptyState } from '@shared/ui/empty-state';
     }
 
     .tb-broadcasts {
-      display: flex;
-      flex-direction: column;
-      margin: var(--tb-space-4) 0 0;
-      padding: 0;
-      list-style: none;
+      margin-top: var(--tb-space-4);
     }
 
     .tb-broadcast {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-1);
-      padding: var(--tb-space-3) 0;
-      border-top: 1px solid var(--p-content-border-color);
-    }
-
-    .tb-broadcast__title {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: var(--tb-space-2);
+      align-items: flex-start;
     }
 
     .tb-broadcast__body {
       white-space: pre-line;
-      overflow-wrap: anywhere;
     }
   `,
 })

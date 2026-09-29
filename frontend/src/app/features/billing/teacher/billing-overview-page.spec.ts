@@ -59,7 +59,7 @@ describe('BillingOverviewPage', () => {
     expect(rows()[0]).toContain('01.09.2026');
     expect(rows()[0]).toContain('долг 1 500 ₽');
     expect(rows()[1]).toContain('аванс 3 000 ₽');
-    expect(rows()[2]).toContain('(отключён)');
+    expect(rows()[2]).toContain('О Олег отключён');
   });
 
   it('filters debtors', async () => {
