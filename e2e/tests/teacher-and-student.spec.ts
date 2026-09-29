@@ -91,7 +91,8 @@ test('the student accepts the invitation', async ({ browser }) => {
 test('the teacher gives homework and the student hands it in', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.getByRole('menuitem', { name: 'Задания' }).click();
-  await page.getByRole('button', { name: 'Новое задание' }).click();
+  // The main action of the page; the empty list offers the same button
+  await page.locator('tb-page-header').getByRole('button', { name: 'Новое задание' }).click();
   await page.locator('#assignment-title').fill(HOMEWORK_TITLE);
   await page.locator('#assignment-description').fill('1. Сложите 1/2 и 1/3');
   // PrimeNG puts the id on a hidden input; the component itself opens the list.

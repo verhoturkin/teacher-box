@@ -236,7 +236,8 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await page.getByRole('menuitem', { name: 'Ученики' }).click();
   await page.getByRole('button', { name: `Добавить видеовстречу: ${ANNA}` }).click();
   await page.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
-  const row = page.getByRole('row', { name: new RegExp(ANNA) });
+  // Anna's own row: the row of her group has her name too
+  const row = page.getByRole('row', { name: new RegExp(`^${ANNA}`) });
   await expect(row).toContainText('Телемост');
 
   await page.getByRole('button', { name: `Добавить доску: ${ANNA}` }).click();

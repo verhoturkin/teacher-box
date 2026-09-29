@@ -120,7 +120,7 @@ test.describe('on a phone', () => {
     await expectNoSideScroll(page);
   });
 
-  test('the schedule is a day list with «+» for a new lesson', async ({ page }) => {
+  test('the schedule is a day list with the FAB for a new lesson', async ({ page }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
     await page.locator('nav.tb-bottom-nav').getByRole('link', { name: 'Расписание' }).click();
     await expect(page.getByRole('tab', { name: 'Список' })).toHaveAttribute(
@@ -129,7 +129,8 @@ test.describe('on a phone', () => {
     );
     await expectNoSideScroll(page);
 
-    await page.getByRole('button', { name: 'Новое занятие' }).click();
+    // The main action is the extended FAB «Занятие» (ADR-0018)
+    await page.locator('p-button.tb-page-fab').getByRole('button', { name: 'Занятие' }).click();
     const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
     await expect(dialog).toBeVisible();
     await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height);
