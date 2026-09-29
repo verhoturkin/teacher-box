@@ -52,8 +52,8 @@ test('on a phone the main action of every section is the same extended FAB', asy
     const fab = page.locator('p-button.tb-page-fab');
     await expect(fab).toHaveCount(1);
     await expect(fab.getByRole('button')).toHaveText(label);
-    const box = await fab.getByRole('button').boundingBox();
-    expect(box?.height).toBe(56);
+    // The FAB springs in when the page opens (ADR-0019): its size is checked once it has settled.
+    await expect.poll(async () => (await fab.getByRole('button').boundingBox())?.height).toBe(56);
   }
   await context.close();
 });
