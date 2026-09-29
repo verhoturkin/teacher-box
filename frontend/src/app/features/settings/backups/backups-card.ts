@@ -57,8 +57,9 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
     <p-card id="backups">
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Резервные копии</span>
-          <tb-help-button [topic]="helpTopic()" />
+          <span class="tb-card-title__text"
+            >Резервные копии <tb-help-button [topic]="helpTopic()"
+          /></span>
           <div class="tb-card-title__actions">
             <p-button
               label="Создать копию сейчас"

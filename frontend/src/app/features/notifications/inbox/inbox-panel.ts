@@ -84,6 +84,7 @@ export const PAGE_SIZE = 20;
   styles: `
     .tb-inbox-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-4);

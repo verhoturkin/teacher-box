@@ -25,8 +25,9 @@ export const RESET_WORD = 'СБРОСИТЬ';
     <p-card id="reset">
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Полный сброс</span>
-          <tb-help-button topic="teacher/backups" />
+          <span class="tb-card-title__text"
+            >Полный сброс <tb-help-button topic="teacher/backups"
+          /></span>
         </div>
       </ng-template>
       <p>

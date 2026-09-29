@@ -109,11 +109,11 @@ import { PageHeader } from '@shared/ui/page-header';
           [loading]="loading()"
           dataKey="id"
           [rowHover]="true"
-          styleClass="tb-cards"
+          styleClass="tb-cards tb-cards--wide"
         >
           <ng-template #header>
             <tr>
-              <th>Имя</th>
+              <th class="tb-col-main">Имя</th>
               <th>Контакты</th>
               <th>Группы</th>
               <th>Видеовстреча</th>

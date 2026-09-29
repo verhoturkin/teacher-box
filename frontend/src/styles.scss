@@ -291,6 +291,15 @@ textarea.p-textarea {
   gap: var(--tb-space-1) var(--tb-space-2);
 }
 
+/* The «?» follows the last word of a long title instead of taking a line of its own */
+.tb-card-title__text {
+  min-width: 0;
+
+  tb-help-button {
+    vertical-align: middle;
+  }
+}
+
 .tb-card-title__actions {
   display: flex;
   flex-wrap: wrap;
@@ -357,15 +366,30 @@ textarea.p-textarea {
   cursor: pointer;
 }
 
+/* The main column of a list (a name, a title) is not squeezed by the others on a computer */
+@media (min-width: 1200px) {
+  .tb-col-main {
+    min-width: 11rem;
+  }
+}
+
 .tb-actions-column {
   width: 1%;
   white-space: nowrap;
   text-align: right;
 }
 
+/* A field with its buttons: the buttons go under the field when they do not fit */
 .tb-copy-row {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--tb-space-2);
+
+  > .tb-grow,
+  > p-inputnumber {
+    flex: 1;
+    min-width: min(12rem, 100%);
+  }
 }
 
 .tb-grow {
@@ -429,7 +453,7 @@ a.p-menu-item-link:hover {
 /* Key figures */
 .tb-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: var(--tb-space-4);
   margin-bottom: var(--tb-space-4);
 }
@@ -453,9 +477,15 @@ a.p-menu-item-link:hover {
 }
 
 /* Money */
-.tb-amount {
+.tb-amount,
+.p-datatable .tb-amount {
   text-align: right;
   white-space: nowrap;
+}
+
+/* A column title may take two lines on a tablet; the amounts under it stay whole */
+.p-datatable th.tb-amount {
+  white-space: normal;
 }
 
 .tb-negative {
@@ -491,9 +521,26 @@ a.p-menu-item-link:hover {
   gap: var(--tb-space-2);
 }
 
+/* «Выдать ещё ученикам»: the students, a group and the button; one under another on a phone */
 .tb-assign {
   display: flex;
   margin-top: var(--tb-space-4);
+
+  .p-multiselect {
+    min-width: 16rem;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .p-multiselect,
+    .p-select,
+    p-button .p-button {
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .tb-subtitle {
@@ -609,11 +656,6 @@ a.p-menu-item-link:hover {
   .tb-hint {
     color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
   }
-
-  a:not(.p-button) {
-    color: var(--p-md-on-primary-container);
-    text-decoration: underline;
-  }
 }
 
 /* Home pages: widgets of the modules in two columns */
@@ -712,8 +754,20 @@ a.p-menu-item-link:hover {
   }
 }
 
+/* Calendar buttons are tonal (ADR-0018); the views stay a segmented button with its outline */
 .tb-fc-button.tb-fc-button {
+  border-color: var(--p-md-secondary-container);
   border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-secondary-container)
+    );
+  }
 
   & + .tb-fc-button {
     margin-inline-start: var(--tb-space-1);
@@ -793,6 +847,86 @@ a.p-menu-item-link:hover {
   );
 }
 
+@mixin row-cards {
+  .p-datatable-table-container {
+    overflow: visible;
+  }
+
+  .p-datatable-table,
+  .p-datatable-tbody,
+  .p-datatable-tbody > tr,
+  .p-datatable-tbody > tr > td {
+    display: block;
+    width: 100%;
+  }
+
+  .p-datatable-thead {
+    display: none;
+  }
+
+  .p-datatable-tbody > tr {
+    margin-bottom: var(--tb-space-3);
+    padding: var(--tb-space-3) var(--tb-space-4);
+    border-radius: var(--tb-shape-md);
+    background: var(--p-content-background);
+  }
+
+  .p-datatable-tbody > tr > td {
+    display: flow-root;
+    padding: var(--tb-space-1) 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .p-datatable-tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    float: left;
+    margin-right: var(--tb-space-3);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-m);
+    line-height: inherit;
+    text-align: left;
+  }
+
+  /* long text: the label above, the text from the left */
+  .p-datatable-tbody > tr > td.tb-cell-wide {
+    text-align: left;
+
+    &::before {
+      display: block;
+      float: none;
+    }
+  }
+
+  .p-datatable-tbody > tr > td:first-child {
+    padding-bottom: var(--tb-space-2);
+    font: var(--tb-type-title-m);
+    text-align: left;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
+    margin-top: var(--tb-space-2);
+    padding-top: var(--tb-space-2);
+    border-top: 1px solid var(--p-md-outline-variant);
+  }
+
+  /* the empty message is not a card */
+  .p-datatable-tbody > tr:has(> td[colspan]) {
+    border: 0;
+    background: none;
+
+    > td {
+      padding: 0;
+      font-weight: normal;
+    }
+  }
+}
+
 /*
  * Tables with the class tb-cards become cards on phones (ADR-0015): every row is a card, every cell
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
@@ -815,82 +949,31 @@ a.p-menu-item-link:hover {
   }
 
   .p-datatable.tb-cards {
-    .p-datatable-table-container {
-      overflow: visible;
-    }
+    @include row-cards;
+  }
+}
 
-    .p-datatable-table,
-    .p-datatable-tbody,
-    .p-datatable-tbody > tr,
-    .p-datatable-tbody > tr > td {
-      display: block;
-      width: 100%;
-    }
+/*
+ * Wide lists (many columns: students, groups) are cards already on a tablet, two in a row: a table
+ * of eight columns does not fit in 616 px next to the navigation rail (ADR-0018).
+ */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .p-datatable.tb-cards.tb-cards--wide {
+    @include row-cards;
 
-    .p-datatable-thead {
-      display: none;
+    .p-datatable-tbody {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--tb-space-3);
     }
 
     .p-datatable-tbody > tr {
-      margin-bottom: var(--tb-space-3);
-      padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-md);
-      background: var(--p-content-background);
+      margin-bottom: 0;
+      border: 1px solid var(--p-md-outline-variant);
     }
 
-    .p-datatable-tbody > tr > td {
-      display: flow-root;
-      padding: var(--tb-space-1) 0;
-      border: 0;
-      text-align: right;
-      overflow-wrap: anywhere;
-    }
-
-    .p-datatable-tbody > tr > td[data-label]::before {
-      content: attr(data-label);
-      float: left;
-      margin-right: var(--tb-space-3);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
-      line-height: inherit;
-      text-align: left;
-    }
-
-    /* long text: the label above, the text from the left */
-    .p-datatable-tbody > tr > td.tb-cell-wide {
-      text-align: left;
-
-      &::before {
-        display: block;
-        float: none;
-      }
-    }
-
-    .p-datatable-tbody > tr > td:first-child {
-      padding-bottom: var(--tb-space-2);
-      font: var(--tb-type-title-m);
-      text-align: left;
-
-      &::before {
-        display: none;
-      }
-    }
-
-    .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
-      margin-top: var(--tb-space-2);
-      padding-top: var(--tb-space-2);
-      border-top: 1px solid var(--p-md-outline-variant);
-    }
-
-    /* the empty message is not a card */
     .p-datatable-tbody > tr:has(> td[colspan]) {
-      border: 0;
-      background: none;
-
-      > td {
-        padding: 0;
-        font-weight: normal;
-      }
+      grid-column: 1 / -1;
     }
   }
 }

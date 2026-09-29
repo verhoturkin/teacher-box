@@ -21,6 +21,7 @@ import {
   AiStatus,
   UsageReport,
 } from './data-access/ai.models';
+import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = {
@@ -57,6 +58,7 @@ const STATUS_LABELS: Record<
     Tag,
     RowType,
     PageHeader,
+    EmptyState,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -66,13 +68,11 @@ const STATUS_LABELS: Record<
     @if (status(); as status) {
       @if (!status.enabled) {
         <p-card>
-          <p>ИИ-помощник не настроен.</p>
-          <p class="tb-muted">
-            Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера:
-            TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY
-            и при необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и
-            перезапустите портал.
-          </p>
+          <tb-empty-state
+            icon="pi-sparkles"
+            title="ИИ-помощник не настроен."
+            hint="Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера: TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY и при необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и перезапустите портал."
+          />
         </p-card>
       } @else {
         <div class="tb-stack">

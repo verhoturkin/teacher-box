@@ -110,11 +110,11 @@ import { PageHeader } from '@shared/ui/page-header';
         <p-table [value]="rows()" dataKey="studentId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Ученик</th>
-              <th>Цена занятия</th>
+              <th class="tb-col-main">Ученик</th>
+              <th class="tb-amount">Цена занятия</th>
               <th>Занятий</th>
               <th>Последнее</th>
-              <th>Баланс</th>
+              <th class="tb-amount">Баланс</th>
               <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
             </tr>
           </ng-template>
@@ -128,12 +128,14 @@ import { PageHeader } from '@shared/ui/page-header';
                   <small class="tb-muted"> (отключён)</small>
                 }
               </td>
-              <td data-label="Цена занятия">{{ row.lessonPrice | money: overview.currency }}</td>
+              <td data-label="Цена занятия" class="tb-amount">
+                {{ row.lessonPrice | money: overview.currency }}
+              </td>
               <td data-label="Занятий">{{ row.chargedLessons }}</td>
               <td data-label="Последнее">
                 {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
               </td>
-              <td data-label="Баланс">
+              <td data-label="Баланс" class="tb-amount">
                 <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
               </td>
               <td class="tb-actions-column">

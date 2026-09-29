@@ -70,8 +70,9 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     <p-card id="meetings">
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Видеовстречи (Яндекс Телемост)</span>
-          <tb-help-button topic="teacher/meetings" />
+          <span class="tb-card-title__text"
+            >Видеовстречи (Яндекс Телемост) <tb-help-button topic="teacher/meetings"
+          /></span>
         </div>
       </ng-template>
       @if (result(); as result) {
@@ -171,14 +172,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   [fluid]="true"
                 />
               </div>
-              <div class="tb-actions">
-                <p-button
-                  type="submit"
-                  label="Сохранить"
-                  severity="secondary"
-                  [disabled]="form.invalid"
-                  [loading]="pending()"
-                />
+              <div class="tb-form-actions">
                 @if (status.clientConfigured) {
                   <p-button
                     label="Отмена"
@@ -187,6 +181,13 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                     (onClick)="editingClient.set(false)"
                   />
                 }
+                <p-button
+                  type="submit"
+                  label="Сохранить"
+                  severity="secondary"
+                  [disabled]="form.invalid"
+                  [loading]="pending()"
+                />
               </div>
             </form>
           }

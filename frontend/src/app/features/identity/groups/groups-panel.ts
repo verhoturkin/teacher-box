@@ -64,8 +64,7 @@ import { HelpButton } from '@features/help/parts';
     <p-card>
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Группы</span>
-          <tb-help-button topic="teacher/groups" />
+          <span class="tb-card-title__text">Группы <tb-help-button topic="teacher/groups" /></span>
           <div class="tb-card-title__actions">
             <p-button
               label="Создать группу"
@@ -88,7 +87,7 @@ import { HelpButton } from '@features/help/parts';
         [loading]="loading()"
         dataKey="id"
         [rowHover]="true"
-        styleClass="tb-cards"
+        styleClass="tb-cards tb-cards--wide"
       >
         <ng-template #header>
           <tr>

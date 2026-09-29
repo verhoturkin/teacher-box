@@ -54,6 +54,7 @@ import { LessonGroup } from './lesson-owner';
 import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
+import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
@@ -82,6 +83,7 @@ const CLICK_SELECTION_MINUTES = 30;
     SeriesDialog,
     Tooltip,
     PageHeader,
+    EmptyState,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -193,7 +195,7 @@ const CLICK_SELECTION_MINUTES = 30;
 
         <p-card header="Регулярные занятия">
           @if (series().length === 0) {
-            <p class="tb-muted">Нет регулярных занятий.</p>
+            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
           } @else {
             <ul class="tb-schedule-list">
               @for (item of series(); track item.id) {
@@ -230,9 +232,11 @@ const CLICK_SELECTION_MINUTES = 30;
 
         <p-card header="Нерабочее время">
           @if (offTimes().length === 0) {
-            <p class="tb-muted">
-              Отметьте обед, выходные или отпуск — ученики увидят это время занятым.
-            </p>
+            <tb-empty-state
+              icon="pi-moon"
+              title="Нерабочее время не отмечено"
+              hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
+            />
           } @else {
             <ul class="tb-schedule-list">
               @for (item of offTimes(); track item.id) {
@@ -334,6 +338,17 @@ const CLICK_SELECTION_MINUTES = 30;
         align-items: center;
         justify-content: space-between;
         gap: var(--tb-space-2);
+
+        > div:first-child {
+          flex: 1;
+          min-width: 0;
+        }
+
+        > .tb-actions {
+          flex-shrink: 0;
+          flex-wrap: nowrap;
+          gap: 0;
+        }
       }
 
       p-tag {

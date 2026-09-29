@@ -10,11 +10,12 @@ import { EventPublication, FailedDelivery } from '../data-access/admin.models';
 import { shortLogger } from '../admin-labels';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Administrator: events not processed yet and failed deliveries to messengers, with a retry. */
 @Component({
   selector: 'tb-events-page',
-  imports: [DatePipe, Button, Card, TableModule, RowType, PageHeader, HelpButton],
+  imports: [DatePipe, Button, Card, TableModule, RowType, PageHeader, HelpButton, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="События">
@@ -28,7 +29,7 @@ import { HelpButton } from '@features/help/parts';
           сразу.
         </p>
         @if (events().length === 0) {
-          <p class="tb-muted">Всё обработано.</p>
+          <tb-empty-state icon="pi-check-circle" title="Всё обработано." />
         } @else {
           <div class="tb-actions">
             <p-button
@@ -67,7 +68,7 @@ import { HelpButton } from '@features/help/parts';
 
       <p-card header="Неудачные доставки в мессенджеры">
         @if (deliveries().length === 0) {
-          <p class="tb-muted">Все сообщения доставлены.</p>
+          <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены." />
         } @else {
           <div class="tb-actions">
             <p-button

@@ -53,8 +53,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     <p-card id="portal">
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Портал</span>
-          <tb-help-button topic="teacher/setup" />
+          <span class="tb-card-title__text">Портал <tb-help-button topic="teacher/setup" /></span>
         </div>
       </ng-template>
       @if (settings(); as settings) {
@@ -172,7 +171,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               во вкладке браузера.
             </small>
           </div>
-          <div class="tb-actions">
+          <div class="tb-form-actions">
             <p-button
               type="submit"
               label="Сохранить"

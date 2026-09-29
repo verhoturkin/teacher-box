@@ -13,6 +13,7 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Tooltip } from 'primeng/tooltip';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { formatMoney, toMajorUnits, toMinorUnits } from '@shared/money/money';
@@ -40,6 +41,7 @@ import { HelpButton } from '@features/help/parts';
     PaymentDialog,
     PageHeader,
     HelpButton,
+    Tooltip,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,23 +81,48 @@ import { HelpButton } from '@features/help/parts';
         <p-card>
           <div class="tb-stat">
             <label class="tb-muted" for="lesson-price-input">Цена занятия</label>
-            <div class="tb-copy-row">
-              <p-inputnumber
-                inputId="lesson-price-input"
-                [formControl]="price"
-                mode="currency"
-                [currency]="ledger.currency"
-                locale="ru-RU"
-                [min]="0"
-                styleClass="tb-grow"
-              />
-              <p-button
-                icon="pi pi-check"
-                ariaLabel="Сохранить цену"
-                [disabled]="price.invalid || !priceChanged()"
-                (onClick)="savePrice()"
-              />
-            </div>
+            @if (editingPrice()) {
+              <div class="tb-copy-row">
+                <p-inputnumber
+                  inputId="lesson-price-input"
+                  [formControl]="price"
+                  mode="currency"
+                  [currency]="ledger.currency"
+                  locale="ru-RU"
+                  [min]="0"
+                  [fluid]="true"
+                  styleClass="tb-grow"
+                />
+                <p-button
+                  icon="pi pi-check"
+                  ariaLabel="Сохранить цену"
+                  [disabled]="price.invalid || !priceChanged()"
+                  (onClick)="savePrice()"
+                />
+                <p-button
+                  icon="pi pi-times"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Отменить"
+                  ariaLabel="Отменить"
+                  (onClick)="cancelPrice()"
+                />
+              </div>
+            } @else {
+              <span class="tb-stat__value">
+                {{ ledger.lessonPrice | money: ledger.currency }}
+                <p-button
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Изменить цену занятия"
+                  ariaLabel="Изменить цену занятия"
+                  (onClick)="editingPrice.set(true)"
+                />
+              </span>
+            }
           </div>
         </p-card>
       </div>
@@ -134,6 +161,7 @@ export class StudentLedgerPage implements OnInit {
     return ledger === null ? [] : [ledger];
   });
   protected readonly paymentVisible = signal(false);
+  protected readonly editingPrice = signal(false);
   readonly price = new FormControl<number | null>(null, [Validators.required, Validators.min(0)]);
   private readonly priceValue = toSignal(this.price.valueChanges, { initialValue: null });
   protected readonly priceChanged = computed(() => {
@@ -167,12 +195,21 @@ export class StudentLedgerPage implements OnInit {
       .changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency))
       .subscribe((saved) => {
         this.ledger.set({ ...ledger, lessonPrice: saved });
+        this.editingPrice.set(false);
         this.messages.add({
           severity: 'success',
           summary: 'Сохранено',
           detail: 'Цена занятия изменена',
         });
       });
+  }
+
+  protected cancelPrice(): void {
+    const ledger = this.ledger();
+    if (ledger !== null) {
+      this.price.setValue(toMajorUnits(ledger.lessonPrice, ledger.currency));
+    }
+    this.editingPrice.set(false);
   }
 
   protected confirmCancel(lesson: Lesson): void {

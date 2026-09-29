@@ -12,6 +12,7 @@ import { AiStatus, AiUsage, IntegrationStatus } from '../data-access/admin.model
 import { INTEGRATION_TAGS } from '../admin-labels';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
@@ -27,6 +28,7 @@ import { HelpButton } from '@features/help/parts';
     RowType,
     PageHeader,
     HelpButton,
+    EmptyState,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -83,7 +85,7 @@ import { HelpButton } from '@features/help/parts';
         }
         @if (usage(); as usage) {
           @if (usage.recent.length === 0) {
-            <p class="tb-muted">В этом месяце запросов не было.</p>
+            <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было." />
           } @else {
             <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
               <ng-template #header>

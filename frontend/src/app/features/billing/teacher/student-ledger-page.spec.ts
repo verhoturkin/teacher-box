@@ -51,7 +51,10 @@ describe('StudentLedgerPage', () => {
     expect(host.querySelectorAll('tbody tr')).toHaveLength(2);
   });
 
-  it('changes the lesson price', async () => {
+  it('changes the lesson price in place', async () => {
+    expect(host.querySelector('#lesson-price-input')).toBeNull();
+    buttonByText(host, 'Изменить цену занятия').click();
+    await fixture.whenStable();
     expect(
       requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' '),
     ).toContain('1 500');
@@ -66,8 +69,21 @@ describe('StudentLedgerPage', () => {
     request.flush({ studentId: 's-1', lessonPrice: 200_000 });
     await fixture.whenStable();
 
-    expect(buttonByText(host, 'Сохранить цену').disabled).toBe(true);
+    expect(host.querySelector('#lesson-price-input')).toBeNull();
+    expect(text()).toContain('Цена занятия 2 000 ₽');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+  });
+
+  it('leaves the lesson price as it was when editing is cancelled', async () => {
+    buttonByText(host, 'Изменить цену занятия').click();
+    await fixture.whenStable();
+    fixture.componentInstance.price.setValue(2000);
+    buttonByText(host, 'Отменить').click();
+    await fixture.whenStable();
+
+    expect(host.querySelector('#lesson-price-input')).toBeNull();
+    expect(text()).toContain('Цена занятия 1 500 ₽');
+    expect(fixture.componentInstance.price.value).toBe(1500);
   });
 
   it('cancels a lesson after confirmation and reloads', async () => {

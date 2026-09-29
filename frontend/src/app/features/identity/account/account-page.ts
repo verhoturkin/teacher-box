@@ -65,7 +65,7 @@ import { PageHeader } from '@shared/ui/page-header';
         </p-card>
       }
       <p-card header="Смена пароля">
-        <tb-change-password-form (changed)="passwordChanged()" />
+        <tb-change-password-form [tonal]="true" (changed)="passwordChanged()" />
       </p-card>
     </div>
   `,

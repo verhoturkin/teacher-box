@@ -27,6 +27,7 @@ import { BillingApi } from '../data-access/billing-api';
               [currency]="currency()"
               locale="ru-RU"
               [min]="0"
+              [fluid]="true"
               ariaLabel="Цена для новых учеников"
             />
             <p-button

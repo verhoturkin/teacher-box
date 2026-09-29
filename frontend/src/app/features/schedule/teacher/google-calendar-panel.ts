@@ -73,8 +73,9 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     <p-card id="google">
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Google Календарь</span>
-          <tb-help-button topic="teacher/calendars" />
+          <span class="tb-card-title__text"
+            >Google Календарь <tb-help-button topic="teacher/calendars"
+          /></span>
         </div>
       </ng-template>
       @if (result(); as result) {
@@ -214,14 +215,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     [fluid]="true"
                   />
                 </div>
-                <div class="tb-actions">
-                  <p-button
-                    type="submit"
-                    label="Сохранить"
-                    severity="secondary"
-                    [disabled]="form.invalid"
-                    [loading]="pending()"
-                  />
+                <div class="tb-form-actions">
                   @if (status.clientConfigured) {
                     <p-button
                       label="Отмена"
@@ -230,6 +224,13 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                       (onClick)="editingClient.set(false)"
                     />
                   }
+                  <p-button
+                    type="submit"
+                    label="Сохранить"
+                    severity="secondary"
+                    [disabled]="form.invalid"
+                    [loading]="pending()"
+                  />
                 </div>
               </form>
             }

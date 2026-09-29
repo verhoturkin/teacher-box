@@ -18,8 +18,9 @@ import { AdminApi } from '../data-access/admin-api';
     <p-card>
       <ng-template #title>
         <div class="tb-card-title">
-          <span>Адрес портала</span>
-          <tb-help-button topic="admin/backups" />
+          <span class="tb-card-title__text"
+            >Адрес портала <tb-help-button topic="admin/backups"
+          /></span>
         </div>
       </ng-template>
       @if (settings(); as settings) {
@@ -29,7 +30,7 @@ import { AdminApi } from '../data-access/admin-api';
             [fromEnvironment]="settings.addressFromEnvironment"
           />
           @if (!settings.addressFromEnvironment) {
-            <div class="tb-actions">
+            <div class="tb-form-actions">
               <p-button
                 type="submit"
                 label="Сохранить адрес"
