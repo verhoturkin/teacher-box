@@ -20,7 +20,10 @@ import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 import { QuickActions } from './quick-actions';
 import { PageHeader } from '@shared/ui/page-header';
 
-/** Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules. */
+/**
+ * Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules one under
+ * another (ADR-0021): today's lessons, what needs attention, notifications, finance.
+ */
 @Component({
   selector: 'tb-teacher-home',
   imports: [
@@ -45,26 +48,20 @@ import { PageHeader } from '@shared/ui/page-header';
         <tb-upcoming-lesson-widget [lesson]="next" />
       }
       <tb-first-run-checklist [progress]="progress()" />
-      <div class="tb-home">
-        <div class="tb-stack">
-          @if (schedule(); as schedule) {
-            <tb-today-lessons-widget [summary]="schedule" (changed)="loadSchedule()" />
-          }
-          <tb-latest-notifications-widget link="/teacher/notifications" />
-        </div>
-        <div class="tb-stack">
-          @if (schedule() !== null && homework() !== null && notifications() !== null) {
-            <tb-attention-card
-              [schedule]="schedule()"
-              [homework]="homework()"
-              [notifications]="notifications()"
-            />
-          }
-          @if (billing(); as billing) {
-            <tb-finance-widget [summary]="billing" />
-          }
-        </div>
-      </div>
+      @if (schedule(); as schedule) {
+        <tb-today-lessons-widget [summary]="schedule" (changed)="loadSchedule()" />
+      }
+      @if (schedule() !== null && homework() !== null && notifications() !== null) {
+        <tb-attention-card
+          [schedule]="schedule()"
+          [homework]="homework()"
+          [notifications]="notifications()"
+        />
+      }
+      <tb-latest-notifications-widget link="/teacher/notifications" />
+      @if (billing(); as billing) {
+        <tb-finance-widget [summary]="billing" />
+      }
     </div>
   `,
 })

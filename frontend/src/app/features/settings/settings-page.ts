@@ -178,10 +178,17 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
       li > span:first-child {
         min-width: 9rem;
+      }
 
-        /* On a phone the name is a line of its own, the status and the link under it */
-        @media (max-width: 480px) {
-          flex-basis: 100%;
+      /* On a phone the name keeps its line: the states at the right edge, the link before them */
+      @media (max-width: 480px) {
+        li > span:first-child {
+          flex: 1;
+          min-width: 0;
+        }
+
+        li > p-tag {
+          order: 1;
         }
       }
     }

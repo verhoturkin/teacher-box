@@ -47,6 +47,33 @@ describe('HelpPage', () => {
     expect(navigate).toHaveBeenCalledWith('/cabinet/help/bot');
   });
 
+  it('shows the article above the contents and goes up to it from the contents', async () => {
+    const host = await render('teacher');
+    const article = requireElement(host, '.tb-help__article-card', HTMLElement);
+    const contents = requireElement(host, 'nav', HTMLElement);
+    expect(
+      article.compareDocumentPosition(contents) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    requireElement(host, 'nav a[href="/teacher/help/groups"]', HTMLAnchorElement).click();
+
+    expect(scroll).toHaveBeenCalledWith({ block: 'start' });
+    expect(scroll.mock.contexts[0]).toBe(article);
+    Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  });
+
+  it('does not scroll where the browser cannot', async () => {
+    const host = await render('teacher');
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    requireElement(host, 'nav a[href="/teacher/help/groups"]', HTMLAnchorElement).click();
+
+    expect(host.querySelector('h2')?.textContent).toBe('Первые шаги');
+  });
+
   it('says when the article is missing', async () => {
     const host = await render('admin', 'nothing');
 

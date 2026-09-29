@@ -381,6 +381,8 @@ test('the student asks to move a lesson in Telegram and the teacher accepts it w
 test('the help opens from a section', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.getByRole('menuitem', { name: 'Расписание' }).click();
+  // the home page has its «?» too: the click waits for the schedule
+  await expect(page).toHaveURL(/\/teacher\/schedule$/);
   await page.locator('.tb-page-heading').getByRole('button', { name: 'Справка' }).click();
 
   const panel = page.locator('.tb-help-drawer');

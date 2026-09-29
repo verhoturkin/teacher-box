@@ -203,17 +203,27 @@ textarea.p-textarea {
 }
 
 /* The header of a page (ADR-0018, shared/ui/page-header): «back», title, «?», details, actions */
+/*
+ * The actions stand on the line of the title, not in the middle of the title with its details: the
+ * buttons are at the same height on every page, with or without a line of details (ADR-0021).
+ */
 .tb-page-header {
+  --tb-page-header-line: 3.5rem;
+
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--tb-space-4);
-  min-height: 3.5rem;
   margin-bottom: var(--tb-space-4);
 
   .tb-page-title {
     margin: 0;
+  }
+
+  > .tb-actions {
+    align-items: center;
+    min-height: var(--tb-page-header-line);
   }
 
   > .tb-actions:empty {
@@ -230,6 +240,7 @@ textarea.p-textarea {
 
 .tb-page-header__back {
   flex-shrink: 0;
+  margin-top: calc((var(--tb-page-header-line) - 2.5rem) / 2);
   margin-left: calc(-1 * var(--tb-space-2));
 }
 
@@ -256,13 +267,25 @@ textarea.p-textarea {
   align-items: center;
   gap: var(--tb-space-1);
   min-width: 0;
-  overflow-wrap: anywhere;
+  min-height: var(--tb-page-header-line, auto);
+  overflow-wrap: break-word;
 }
 
 .tb-stack {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-4);
+
+  /* a hidden widget (no boards, a dismissed hint) leaves no double gap */
+  > :is(
+      tb-my-boards-card,
+      tb-student-welcome-card,
+      tb-connect-messenger-card,
+      tb-first-run-checklist,
+      tb-calendar-feed-panel
+    ):empty {
+    display: none;
+  }
 }
 
 /* Forms and settings: a readable column (ADR-0015) */
@@ -426,11 +449,13 @@ textarea.p-textarea {
  * A list in a card (ADR-0020): the segmented list of M3 Expressive — every row is a tile, 2 px
  * apart, the outer corners of the group rounder than the inner ones. A row is the leading avatar or
  * icon, the title with its supporting text and the trailing amount, status or actions.
+ * The rows share the columns of the list (subgrid): the text and the actions of every row start
+ * at the same place, so the buttons do not jump from row to row (ADR-0021).
  */
 .tb-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 2px var(--tb-space-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -438,10 +463,11 @@ textarea.p-textarea {
 
   > li {
     display: grid;
+    grid-column: 1 / -1;
     grid-template-areas: 'lead text trail';
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: subgrid;
     align-items: center;
-    gap: var(--tb-space-1) var(--tb-space-4);
+    row-gap: var(--tb-space-1);
     min-height: 3.5rem;
     box-sizing: border-box;
     padding: var(--tb-space-3) var(--tb-space-4);
@@ -467,8 +493,7 @@ textarea.p-textarea {
  */
 @container (max-width: 26rem) {
   .tb-list > li:has(> .tb-list__trail :is(p-button, tb-join-lesson-button)) {
-    grid-template-areas: 'lead text' '. trail';
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'lead text text' '. trail trail';
 
     > .tb-list__trail {
       justify-content: flex-start;
@@ -528,13 +553,13 @@ textarea.p-textarea {
   gap: var(--tb-space-1) var(--tb-space-2);
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-l);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .tb-list__supporting {
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-m);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .tb-list__trail {
@@ -630,6 +655,14 @@ textarea.p-textarea {
 }
 
 /*
+ * A button whose label changes from row to row («Отменить» / «Не приду») keeps one width: the
+ * buttons next to it stay in place in every row (ADR-0021)
+ */
+p-button.tb-button-steady .p-button {
+  min-width: 8.5rem;
+}
+
+/*
  * Links: the primary color, underlined on hover, the focus ring from the keyboard; links styled as
  * buttons stay buttons, menu items (the navigation, the user menu, «Ещё») are highlighted by the
  * menu itself
@@ -661,12 +694,64 @@ a.p-menu-item-link:hover {
   gap: var(--tb-space-4);
 }
 
-/* Key figures */
+/*
+ * Key figures: one card under another, 2 px apart, like the tiles of a list (ADR-0020, ADR-0021) —
+ * the name on the left, the figure on the right, its details under them.
+ */
 .tb-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-  gap: var(--tb-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin-bottom: var(--tb-space-4);
+
+  .p-card {
+    border-radius: var(--tb-list-inner);
+  }
+
+  > :first-child:is(.p-card),
+  > :first-child .p-card {
+    border-start-start-radius: var(--p-card-border-radius);
+    border-start-end-radius: var(--p-card-border-radius);
+  }
+
+  > :last-child:is(.p-card),
+  > :last-child .p-card {
+    border-end-start-radius: var(--p-card-border-radius);
+    border-end-end-radius: var(--p-card-border-radius);
+  }
+
+  .p-card-body {
+    padding-block: var(--tb-space-4);
+  }
+
+  .tb-stat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--tb-space-4);
+
+    > :first-child {
+      font: var(--tb-type-body-l);
+    }
+
+    > :not(:first-child, .tb-stat__value, .tb-copy-row) {
+      grid-column: 1 / -1;
+    }
+
+    > .tb-copy-row {
+      grid-column: 2;
+      justify-content: flex-end;
+    }
+  }
+
+  .tb-stat__value {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--tb-space-1);
+    text-align: right;
+  }
 }
 
 .tb-stat {
@@ -824,7 +909,7 @@ a.p-menu-item-link:hover {
 }
 
 .tb-markdown {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 
   h1,
   h2 {
@@ -869,18 +954,6 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* Home pages: widgets of the modules in two columns */
-.tb-home {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: var(--tb-space-4);
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 .tb-widget-footer {
   display: flex;
   flex-wrap: wrap;
@@ -888,6 +961,12 @@ a.p-menu-item-link:hover {
   justify-content: space-between;
   gap: var(--tb-space-3);
   margin-top: var(--tb-space-3);
+
+  /* a text button («Скрыть», «Понятно») ends at the edge of the card, like the links of the footers */
+  > p-button:last-child .p-button-text {
+    margin-inline-end: calc(-1 * var(--tb-space-3));
+    padding-inline: var(--tb-space-3);
+  }
 }
 
 .tb-sr-only {
@@ -1119,7 +1198,7 @@ a.p-menu-item-link:hover {
     padding: var(--tb-space-1) 0;
     border: 0;
     text-align: right;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .p-datatable-tbody > tr > td[data-label]::before {
@@ -1168,6 +1247,15 @@ a.p-menu-item-link:hover {
       font-weight: normal;
     }
   }
+}
+
+/*
+ * A cell of a table with columns may break a long word when the columns do not fit otherwise (a
+ * tablet): the table does not go out of the screen. Cards, lists and titles break between words.
+ */
+.p-datatable .p-datatable-tbody > tr > td,
+.p-datatable .p-datatable-tbody > tr > td :is(.tb-list__title, .tb-list__supporting) {
+  overflow-wrap: anywhere;
 }
 
 /*
@@ -1269,27 +1357,65 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * Wide lists (many columns: students, groups) are cards already on a tablet, two in a row: a table
- * of eight columns does not fit in 616 px next to the navigation rail (ADR-0018).
+ * Wide lists (many columns: students, groups) are cards on every screen: a table of eight columns
+ * does not fit next to the navigation, names and buttons go out of it (ADR-0018). The cards are one
+ * under another (ADR-0021); a card is wide, so the name of a field is in a column on the left and
+ * the value — a text or a button — is next to it, in the middle of its line.
  */
-@media (min-width: 769px) and (max-width: 1199px) {
+@media (min-width: 769px) {
   .p-datatable.tb-cards.tb-cards--wide {
     @include row-cards;
 
-    .p-datatable-tbody {
+    .p-datatable-tbody > tr > td[data-label]:not(:first-child) {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--tb-space-3);
+      grid-template-columns: 10rem minmax(0, 1fr);
+      align-content: center;
+      align-items: center;
+      justify-items: start;
+      column-gap: var(--tb-space-4);
+      box-sizing: border-box;
+      min-height: 2.5rem;
+      text-align: left;
+
+      &::before {
+        grid-row: 1 / span 4;
+        grid-column: 1;
+        float: none;
+        margin: 0;
+      }
+
+      > * {
+        grid-column: 2;
+      }
+
+      /* every line is as high as a line with a button; the text button starts where the text does */
+      .p-button-text {
+        height: 2rem;
+      }
+
+      p-button:first-child .p-button-text {
+        margin-inline-start: calc(-1 * var(--tb-space-3));
+        padding-inline: var(--tb-space-3);
+      }
     }
 
-    /* in the grid a tile has no neighbours above and below: all its corners are round */
+    /* the actions of a card are in its top corner, next to the name, at the same place in every card */
     .p-datatable-tbody > tr {
-      margin-bottom: 0;
-      border-radius: var(--tb-list-outer);
+      position: relative;
     }
 
-    .p-datatable-tbody > tr:has(> td[colspan]) {
-      grid-column: 1 / -1;
+    .p-datatable-tbody > tr > td:first-child {
+      padding-inline-end: 9rem;
+    }
+
+    .p-datatable-tbody > tr > td.tb-actions-column:not([data-label]):not(:first-child) {
+      position: absolute;
+      top: var(--tb-space-3);
+      right: var(--tb-space-4);
+      width: auto;
+      margin: 0;
+      padding: 0;
+      border: 0;
     }
   }
 }
@@ -1406,13 +1532,14 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures two in a row */
+/* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
 @media (max-width: 768px) {
   .tb-page-header {
     gap: var(--tb-space-3);
 
     > .tb-actions {
       width: 100%;
+      min-height: 0;
 
       > p-button,
       > a.p-button {
@@ -1426,11 +1553,8 @@ a.p-menu-item-link:hover {
   }
 
   .tb-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--tb-space-2);
-
     .p-card-body {
-      padding: var(--tb-space-3);
+      padding: var(--tb-space-3) var(--tb-space-4);
     }
 
     .tb-stat__value {

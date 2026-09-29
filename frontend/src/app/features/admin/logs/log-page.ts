@@ -67,6 +67,7 @@ export const LOG_LIMIT = 200;
             optionLabel="label"
             optionValue="minutes"
             ariaLabel="Период"
+            [fluid]="true"
           />
           <p-select
             formControlName="level"
@@ -74,6 +75,7 @@ export const LOG_LIMIT = 200;
             optionLabel="label"
             optionValue="level"
             ariaLabel="Уровень"
+            [fluid]="true"
           />
           <input
             pInputText
@@ -94,6 +96,7 @@ export const LOG_LIMIT = 200;
             severity="secondary"
             icon="pi pi-search"
             [loading]="loading()"
+            [fluid]="true"
           />
         </form>
       </p-card>
@@ -157,13 +160,15 @@ export const LOG_LIMIT = 200;
     </div>
   `,
   styles: `
+    /* the filters are of one width, on a phone one under another */
     .tb-log-filters {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
       gap: var(--tb-space-2);
 
       input {
-        min-width: 10rem;
+        width: 100%;
+        min-width: 0;
       }
     }
 

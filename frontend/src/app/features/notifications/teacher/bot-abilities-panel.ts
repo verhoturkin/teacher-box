@@ -62,8 +62,8 @@ import { BotAbilities } from '../data-access/notifications.models';
   `,
   styles: `
     .tb-bot-abilities {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: var(--tb-space-4);
       margin-bottom: var(--tb-space-4);
 

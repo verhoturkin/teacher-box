@@ -57,10 +57,26 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
     </p-card>
   `,
   styles: `
+    /* one figure under another (ADR-0021): the name on the left, the sum on the right */
     .tb-finance {
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-6);
+      flex-direction: column;
+      gap: var(--tb-space-3);
+
+      .tb-stat {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: baseline;
+        column-gap: var(--tb-space-4);
+
+        > :first-child {
+          font: var(--tb-type-body-l);
+        }
+
+        > small {
+          grid-column: 1 / -1;
+        }
+      }
     }
 
     .tb-debtors {

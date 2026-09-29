@@ -59,6 +59,20 @@ describe('TeacherHome', () => {
     expect(text).toContain('Работы на проверку 2');
     expect(text).toContain('Поступило за сентябрь 3 000 ₽');
     expect(text).toContain('Уведомлений пока нет');
+    // one column (ADR-0021): the widgets one under another, today first
+    const widgets = Array.from(
+      hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'),
+      (widget) => widget.tagName.toLowerCase(),
+    );
+    expect(widgets).toEqual([
+      'tb-quick-actions',
+      'tb-upcoming-lesson-widget',
+      'tb-first-run-checklist',
+      'tb-today-lessons-widget',
+      'tb-attention-card',
+      'tb-latest-notifications-widget',
+      'tb-finance-widget',
+    ]);
   });
 
   it('reloads the day after a lesson was marked', async () => {

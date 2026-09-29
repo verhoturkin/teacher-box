@@ -27,12 +27,14 @@ interface AttentionItem {
           @for (item of items(); track item.text) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"><i [class]="item.icon"></i></span>
-              <a
-                [routerLink]="item.link"
-                [queryParams]="item.query"
-                class="tb-list__text tb-list__title tb-link"
-                >{{ item.text }}</a
-              >
+              <span class="tb-list__text">
+                <a
+                  [routerLink]="item.link"
+                  [queryParams]="item.query"
+                  class="tb-list__title tb-link"
+                  >{{ item.text }}</a
+                >
+              </span>
               <span class="tb-list__trail"
                 ><span class="tb-attention__count">{{ item.count }}</span></span
               >

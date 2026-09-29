@@ -257,6 +257,9 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Списки внутри карточек — сегментированные ([ADR-0020](docs/adr/0020-lists-in-cards.md)):
   `ul.tb-list` со строками `tb-list__lead` / `tb-list__text` / `tb-list__trail`, таблицы —
   `styleClass="tb-cards"`; инициалы — `tb-avatar` и pipe `initials` из `@shared/ui/initials`.
+- Раздел — одна колонка карточек на любом экране ([ADR-0021](docs/adr/0021-single-column.md)):
+  блоки один под другим (`tb-stack`), без сеток из карточек; показатели — `tb-stats`, широкие
+  списки — `tb-cards--wide`; текст переносится между словами (`overflow-wrap: break-word`).
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
 - Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),
