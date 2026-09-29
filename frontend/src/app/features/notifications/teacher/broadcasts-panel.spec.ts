@@ -41,8 +41,9 @@ describe('BroadcastsPanel', () => {
     ]);
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Каникулы 24.09.2026');
-    expect(text).toContain('получателей: 3 Занятий не будет до 10 января');
+    expect(text).toContain(
+      'Каникулы Занятий не будет до 10 января 24.09.2026 10:00 · получателей: 3',
+    );
     expect(text).toContain('Без текста');
   });
 

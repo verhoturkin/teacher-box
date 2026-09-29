@@ -45,44 +45,48 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
           </p>
         } @else {
           <p class="tb-muted">Уведомления будут дублироваться в подключённые мессенджеры.</p>
-          <ul class="tb-channels">
+          <ul class="tb-list tb-channels">
             @for (channel of channels; track channel.channel) {
               <li class="tb-channel">
-                <i [class]="icons[channel.channel]" aria-hidden="true"></i>
-                <div class="tb-channel__info">
-                  <strong>{{ names[channel.channel] }}</strong>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i [class]="icons[channel.channel]"></i
+                ></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ names[channel.channel] }}</span>
                   @if (channel.linked) {
-                    <small class="tb-muted">
+                    <span class="tb-list__supporting">
                       {{ channel.displayName ?? 'подключён' }}, с
                       {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
-                    </small>
+                    </span>
                   } @else {
-                    <small class="tb-muted">не подключён</small>
+                    <span class="tb-list__supporting">не подключён</span>
                   }
                 </div>
-                @if (channel.linked) {
-                  <p-toggleswitch
-                    [ngModel]="channel.enabled"
-                    (ngModelChange)="setEnabled(channel.channel, $event)"
-                    [ariaLabel]="'Получать уведомления в ' + names[channel.channel]"
-                  />
-                  <p-button
-                    icon="pi pi-times"
-                    [text]="true"
-                    [pTooltip]="'Отключить ' + names[channel.channel]"
-                    [rounded]="true"
-                    severity="danger"
-                    [ariaLabel]="'Отключить ' + names[channel.channel]"
-                    (onClick)="unlink(channel.channel)"
-                  />
-                } @else {
-                  <p-button
-                    label="Подключить"
-                    icon="pi pi-link"
-                    severity="secondary"
-                    (onClick)="connect(channel.channel)"
-                  />
-                }
+                <div class="tb-list__trail">
+                  @if (channel.linked) {
+                    <p-toggleswitch
+                      [ngModel]="channel.enabled"
+                      (ngModelChange)="setEnabled(channel.channel, $event)"
+                      [ariaLabel]="'Получать уведомления в ' + names[channel.channel]"
+                    />
+                    <p-button
+                      icon="pi pi-times"
+                      [text]="true"
+                      [pTooltip]="'Отключить ' + names[channel.channel]"
+                      [rounded]="true"
+                      severity="danger"
+                      [ariaLabel]="'Отключить ' + names[channel.channel]"
+                      (onClick)="unlink(channel.channel)"
+                    />
+                  } @else {
+                    <p-button
+                      label="Подключить"
+                      icon="pi pi-link"
+                      severity="secondary"
+                      (onClick)="connect(channel.channel)"
+                    />
+                  }
+                </div>
               </li>
             }
           </ul>
@@ -108,29 +112,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
   `,
   styles: `
     .tb-channels {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-channel {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-
-      > i {
-        font-size: 1.5rem;
-        color: var(--p-primary-color);
-      }
-    }
-
-    .tb-channel__info {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
+      margin-top: var(--tb-space-3);
     }
   `,
 })

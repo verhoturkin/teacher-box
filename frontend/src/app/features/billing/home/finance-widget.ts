@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { MoneyPipe } from '@shared/money/money.pipe';
+import { InitialsPipe } from '@shared/ui/initials';
 import { BillingSummary } from '../data-access/billing.models';
 
 const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' });
@@ -9,7 +10,7 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
 /** Teacher's home: debts and the income of the month. */
 @Component({
   selector: 'tb-finance-widget',
-  imports: [RouterLink, Card, MoneyPipe],
+  imports: [RouterLink, Card, InitialsPipe, MoneyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let finance = summary();
@@ -30,13 +31,21 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
         </div>
       </div>
       @if (finance.topDebtors.length > 0) {
-        <ul class="tb-debtors">
+        <ul class="tb-list tb-debtors">
           @for (debtor of finance.topDebtors; track debtor.studentId) {
             <li>
-              <a [routerLink]="['/teacher/billing/students', debtor.studentId]" class="tb-link">{{
-                debtor.displayName
-              }}</a>
-              <span class="tb-negative">{{ -debtor.balance | money: finance.currency }}</span>
+              <span class="tb-avatar" aria-hidden="true">{{ debtor.displayName | initials }}</span>
+              <div class="tb-list__text">
+                <a
+                  [routerLink]="['/teacher/billing/students', debtor.studentId]"
+                  class="tb-list__title tb-link"
+                  >{{ debtor.displayName }}</a
+                >
+                <span class="tb-list__supporting">долг</span>
+              </div>
+              <span class="tb-list__trail tb-negative">{{
+                -debtor.balance | money: finance.currency
+              }}</span>
             </li>
           }
         </ul>
@@ -55,18 +64,7 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
     }
 
     .tb-debtors {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-1);
-      margin: var(--tb-space-4) 0 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        justify-content: space-between;
-        gap: var(--tb-space-4);
-      }
+      margin-top: var(--tb-space-4);
     }
   `,
 })

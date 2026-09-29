@@ -45,11 +45,13 @@ import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './stude
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
   selector: 'tb-students-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     HelpButton,
     DatePipe,
@@ -127,10 +129,17 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
           <ng-template #body let-student [tbRowType]="visibleStudents()">
             <tr>
               <td data-label="Имя">
-                <div class="tb-strong">{{ student.displayName }}</div>
-                @if (student.note) {
-                  <small class="tb-muted">{{ student.note }}</small>
-                }
+                <div class="tb-person">
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    student.displayName | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ student.displayName }}</span>
+                    @if (student.note) {
+                      <span class="tb-list__supporting">{{ student.note }}</span>
+                    }
+                  </div>
+                </div>
               </td>
               <td data-label="Контакты">
                 <div>{{ student.email ?? '' }}</div>

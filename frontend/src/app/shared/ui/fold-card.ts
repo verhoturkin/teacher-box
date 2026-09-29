@@ -188,8 +188,7 @@ let nextId = 0;
 
     /* Cards of the content are sections of this one: no frame of their own, a line between them */
     :host ::ng-deep .tb-fold-card__body {
-      .p-card,
-      .p-card:has(.p-datatable.tb-cards) {
+      .p-card {
         border-radius: 0;
         background: transparent;
         box-shadow: none;
@@ -206,13 +205,6 @@ let nextId = 0;
       .tb-stack > * + * {
         padding-top: var(--tb-space-5);
         border-top: 1px solid var(--p-md-outline-variant);
-      }
-
-      /* the rows that become cards on a phone lie on this card: they get an outline */
-      .p-datatable.tb-cards .p-datatable-tbody > tr:not(:has(> td[colspan])) {
-        @media (max-width: 768px) {
-          border: 1px solid var(--p-md-outline-variant);
-        }
       }
     }
 

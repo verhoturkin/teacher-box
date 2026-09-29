@@ -663,9 +663,10 @@ export const TeacherBoxPreset = definePreset(Aura, {
         borderColor: '{md.outline.variant}',
       },
       columnTitle: { fontWeight: '500' },
+      // a row is a tile of a segmented list (ADR-0020): hover tints the tile
       row: {
         background: 'transparent',
-        hoverBackground: over('{md.on.surface}', 8),
+        hoverBackground: 'color-mix(in srgb, {md.on.surface} 4%, var(--tb-list-item))',
         color: '{md.on.surface}',
       },
       bodyCell: { borderColor: '{md.outline.variant}' },

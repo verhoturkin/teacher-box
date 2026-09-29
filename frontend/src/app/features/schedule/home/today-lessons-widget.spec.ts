@@ -60,10 +60,10 @@ describe('TodayLessonsWidget', () => {
     );
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('18:00–19:00 Иван Петров Дроби Начать урок');
-    expect(text).toContain('20:00–21:00 Мария');
-    expect(text).toContain('Ученик Отменено');
-    expect(text).toContain('Олег Проведено');
+    expect(text).toContain('ИП Иван Петров 18:00–19:00 · Дроби Начать урок');
+    expect(text).toContain('Мария 20:00–21:00');
+    expect(text).toContain('Ученик 18:00–19:00 Отменено');
+    expect(text).toContain('Олег 18:00–19:00 Проведено');
     const join = hostElement(fixture).querySelector('tb-join-lesson-button a');
     expect(join?.getAttribute('href')).toBe('https://meet.example.com/1');
     expect(() => buttonByText(hostElement(fixture), 'Проведено: Мария')).toThrow();
@@ -89,7 +89,7 @@ describe('TodayLessonsWidget', () => {
     await render(scheduleSummary({ today: [groupLesson()] }));
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Группа «ОГЭ» Учеников: 2');
+    expect(text).toContain('ГО Группа «ОГЭ» 18:00–19:00 · учеников: 2');
     buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
     await fixture.whenStable();
 

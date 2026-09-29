@@ -39,18 +39,25 @@ export const PAGE_SIZE = 20;
         @if (items.length === 0) {
           <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
         } @else {
-          <ul class="tb-notifications">
+          <ul class="tb-list tb-notifications">
             @for (item of items; track item.id) {
               <li class="tb-notification" [class.tb-notification--unread]="!item.read">
-                <i [class]="icons[item.kind]" aria-hidden="true"></i>
-                <div class="tb-notification__content">
-                  <div class="tb-notification__title">{{ item.title }}</div>
+                <span
+                  class="tb-list__lead"
+                  [class.tb-list__lead--accent]="!item.read"
+                  aria-hidden="true"
+                  ><i [class]="icons[item.kind]"></i
+                ></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title tb-notification__title">{{ item.title }}</span>
                   @if (item.body !== null) {
-                    <div class="tb-notification__body">{{ item.body }}</div>
+                    <span class="tb-list__supporting tb-notification__body">{{ item.body }}</span>
                   }
-                  <small class="tb-muted">{{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+                  <span class="tb-list__supporting">{{
+                    item.createdAt | date: 'dd.MM.yyyy HH:mm'
+                  }}</span>
                 </div>
-                <div class="tb-notification__actions">
+                <div class="tb-list__trail">
                   @if (item.link !== null) {
                     <p-button label="Открыть" [text]="true" (onClick)="open(item)" />
                   }
@@ -92,78 +99,19 @@ export const PAGE_SIZE = 20;
     }
 
     .tb-notifications {
-      display: flex;
-      flex-direction: column;
-      margin: 0 0 var(--tb-space-2);
-      padding: 0;
-      list-style: none;
+      margin-bottom: var(--tb-space-2);
     }
 
-    /* M3 list item: the icon in a tonal circle, the text, the actions (under the text on a phone) */
     .tb-notification {
-      display: grid;
-      grid-template-columns: 2.5rem minmax(0, 1fr) auto;
-      grid-template-areas: 'icon content actions';
-      gap: var(--tb-space-1) var(--tb-space-4);
-      align-items: start;
-      padding: var(--tb-space-3) 0;
-      border-bottom: 1px solid var(--p-md-outline-variant);
-
-      @media (max-width: 768px) {
-        grid-template-columns: 2.5rem minmax(0, 1fr);
-        grid-template-areas: 'icon content' '. actions';
-      }
-
-      > i {
-        display: flex;
-        grid-area: icon;
-        align-items: center;
-        justify-content: center;
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: var(--tb-shape-full);
-        background: var(--p-md-surface-container-highest);
-        color: var(--p-md-on-surface-variant);
-        font-size: 1.125rem;
-      }
+      align-items: flex-start;
     }
 
-    .tb-notification--unread {
-      .tb-notification__title {
-        font-weight: 600;
-      }
-
-      > i {
-        background: var(--p-md-primary-container);
-        color: var(--p-md-on-primary-container);
-      }
-    }
-
-    .tb-notification__content {
-      display: flex;
-      grid-area: content;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    .tb-notification__title {
-      font: var(--tb-type-title-s);
-      font-size: 1rem;
-      line-height: 1.5rem;
+    .tb-notification--unread .tb-notification__title {
+      font-weight: 500;
     }
 
     .tb-notification__body {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
       white-space: pre-line;
-      overflow-wrap: anywhere;
-    }
-
-    .tb-notification__actions {
-      display: flex;
-      grid-area: actions;
-      align-items: center;
     }
   `,
 })

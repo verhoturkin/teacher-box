@@ -38,7 +38,14 @@ import { EmptyState } from '@shared/ui/empty-state';
       </ng-template>
       <ng-template #body let-entry [tbRowType]="entries()">
         <tr [class.tb-inactive]="entry.inactive">
-          <td data-label="Дата">{{ entry.date | date: 'dd.MM.yyyy' }}</td>
+          <td data-label="Дата">
+            <span class="tb-person">
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i [class]="entry.kind === 'lesson' ? 'pi pi-calendar' : 'pi pi-wallet'"></i
+              ></span>
+              {{ entry.date | date: 'dd.MM.yyyy' }}
+            </span>
+          </td>
           @switch (entry.kind) {
             @case ('lesson') {
               <td data-label="Операция">

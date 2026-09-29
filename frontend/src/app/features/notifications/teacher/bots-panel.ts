@@ -23,60 +23,64 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
         Через ботов уведомления приходят вам и ученикам в Telegram, ВКонтакте или MAX. Достаточно
         одного мессенджера — того, которым пользуются ваши ученики.
       </p>
-      <ul class="tb-bots">
+      <ul class="tb-list tb-bots">
         @for (bot of bots(); track bot.channel) {
           <li class="tb-bot">
-            <i [class]="icons[bot.channel]" aria-hidden="true"></i>
-            <div class="tb-bot__info">
-              <strong>{{ names[bot.channel] }}</strong>
+            <span class="tb-list__lead" aria-hidden="true"
+              ><i [class]="icons[bot.channel]"></i
+            ></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ names[bot.channel] }}</span>
               @if (bot.configured) {
-                <small class="tb-muted">
+                <span class="tb-list__supporting">
                   {{ bot.botName ?? 'бот из настроек сервера' }}
                   @if (!bot.teacherLinked) {
                     · ваш аккаунт не подключён
                   }
-                </small>
+                </span>
                 @if (bot.connection.connection === 'ERROR') {
-                  <small class="tb-bot__error">
+                  <span class="tb-list__supporting tb-bot__error">
                     {{ bot.connection.error }}
                     @if (bot.channel === 'TELEGRAM') {
                       Если Telegram заблокирован в сети сервера, укажите прокси в
                       TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
                     }
-                  </small>
+                  </span>
                 }
               } @else {
-                <small class="tb-muted">не подключён</small>
+                <span class="tb-list__supporting">не подключён</span>
               }
             </div>
-            @if (bot.configured) {
-              @let tag = tags[bot.connection.connection];
-              <p-tag [value]="tag.value" [severity]="tag.severity" />
-              <p-button
-                [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
-                icon="pi pi-cog"
-                severity="secondary"
-                (onClick)="open(bot)"
-              />
-              @if (!bot.fromEnvironment) {
+            <div class="tb-list__trail">
+              @if (bot.configured) {
+                @let tag = tags[bot.connection.connection];
+                <p-tag [value]="tag.value" [severity]="tag.severity" />
                 <p-button
-                  icon="pi pi-trash"
-                  [text]="true"
-                  [pTooltip]="'Отключить бота ' + names[bot.channel]"
-                  [rounded]="true"
-                  severity="danger"
-                  [ariaLabel]="'Отключить бота ' + names[bot.channel]"
-                  (onClick)="confirmRemove(bot.channel)"
+                  [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
+                  icon="pi pi-cog"
+                  severity="secondary"
+                  (onClick)="open(bot)"
+                />
+                @if (!bot.fromEnvironment) {
+                  <p-button
+                    icon="pi pi-trash"
+                    [text]="true"
+                    [pTooltip]="'Отключить бота ' + names[bot.channel]"
+                    [rounded]="true"
+                    severity="danger"
+                    [ariaLabel]="'Отключить бота ' + names[bot.channel]"
+                    (onClick)="confirmRemove(bot.channel)"
+                  />
+                }
+              } @else {
+                <p-button
+                  label="Подключить"
+                  severity="secondary"
+                  icon="pi pi-plus"
+                  (onClick)="open(bot)"
                 />
               }
-            } @else {
-              <p-button
-                label="Подключить"
-                severity="secondary"
-                icon="pi pi-plus"
-                (onClick)="open(bot)"
-              />
-            }
+            </div>
           </li>
         }
       </ul>
@@ -93,36 +97,11 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
   `,
   styles: `
     .tb-bots {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-4);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-bot {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-3);
-
-      > i {
-        font-size: 1.5rem;
-        color: var(--p-primary-color);
-      }
-    }
-
-    .tb-bot__info {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      min-width: 12rem;
+      margin-top: var(--tb-space-4);
     }
 
     .tb-bot__error {
-      overflow-wrap: anywhere;
-      color: var(--p-red-500);
+      color: var(--p-md-error);
     }
   `,
 })

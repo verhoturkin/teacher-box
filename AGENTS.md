@@ -254,6 +254,9 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
   `tb-page-header` из `@shared/ui`. Цвет кнопки — смысл ([ADR-0019](docs/adr/0019-material-3-expressive.md)):
   подтверждение — `success` (зелёная), отмена, удаление и отказ — `danger` (красная);
   подтверждения в диалогах — `dangerConfirmation` / `safeConfirmation` из `@shared/ui/confirmation`.
+- Списки внутри карточек — сегментированные ([ADR-0020](docs/adr/0020-lists-in-cards.md)):
+  `ul.tb-list` со строками `tb-list__lead` / `tb-list__text` / `tb-list__trail`, таблицы —
+  `styleClass="tb-cards"`; инициалы — `tb-avatar` и pipe `initials` из `@shared/ui/initials`.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
 - Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),

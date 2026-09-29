@@ -40,7 +40,7 @@ describe('FinanceWidget', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Поступило за сентябрь 12 000 ₽');
     expect(text).toContain('Долг учеников 4 500 ₽ должников: 2');
-    expect(text).toContain('Анна 3 000 ₽ Борис 1 500 ₽');
+    expect(text).toContain('А Анна долг 3 000 ₽ Б Борис долг 1 500 ₽');
     const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );

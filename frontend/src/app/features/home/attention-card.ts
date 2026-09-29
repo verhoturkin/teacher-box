@@ -23,14 +23,19 @@ interface AttentionItem {
       @if (items().length === 0) {
         <p class="tb-muted">Срочных дел нет.</p>
       } @else {
-        <ul class="tb-attention">
+        <ul class="tb-list tb-attention">
           @for (item of items(); track item.text) {
             <li>
-              <i [class]="item.icon" aria-hidden="true"></i>
-              <a [routerLink]="item.link" [queryParams]="item.query" class="tb-link">{{
-                item.text
-              }}</a>
-              <span class="tb-attention__count">{{ item.count }}</span>
+              <span class="tb-list__lead" aria-hidden="true"><i [class]="item.icon"></i></span>
+              <a
+                [routerLink]="item.link"
+                [queryParams]="item.query"
+                class="tb-list__text tb-list__title tb-link"
+                >{{ item.text }}</a
+              >
+              <span class="tb-list__trail"
+                ><span class="tb-attention__count">{{ item.count }}</span></span
+              >
             </li>
           }
         </ul>
@@ -38,32 +43,6 @@ interface AttentionItem {
     </p-card>
   `,
   styles: `
-    .tb-attention {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: center;
-        gap: var(--tb-space-3);
-
-        min-height: 2.5rem;
-
-        > i {
-          color: var(--p-md-tertiary);
-          font-size: 1.125rem;
-        }
-
-        a {
-          flex: 1;
-        }
-      }
-    }
-
     .tb-attention__count {
       min-width: 1.5rem;
       padding: var(--tb-space-1) var(--tb-space-2);
