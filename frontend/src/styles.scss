@@ -953,6 +953,14 @@ a.p-menu-item-link:hover {
   }
 }
 
+/* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .p-datatable .p-datatable-thead > tr > th,
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding-inline: var(--tb-space-2);
+  }
+}
+
 /*
  * Wide lists (many columns: students, groups) are cards already on a tablet, two in a row: a table
  * of eight columns does not fit in 616 px next to the navigation rail (ADR-0018).
