@@ -260,6 +260,11 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Раздел — одна колонка карточек на любом экране ([ADR-0021](docs/adr/0021-single-column.md)):
   блоки один под другим (`tb-stack`), без сеток из карточек; показатели — `tb-stats`, широкие
   списки — `tb-cards--wide`; текст переносится между словами (`overflow-wrap: break-word`).
+- Поля, меню и телефонные действия — по M3 Expressive ([ADR-0022](docs/adr/0022-expressive-fields-menus-sheets.md)):
+  поле — `.tb-field` с `label` первым (подпись ложится на рамку сама), поиск — `p-iconfield` с
+  `pi-search`; действия строки, не помещающиеся на телефоне, — в нижнем листе (`p-drawer`
+  снизу, `styleClass="tb-sheet"`), пары действий — `tb-button-group`, кнопка с запасным способом —
+  split button `tb-split`.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
 - Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),
