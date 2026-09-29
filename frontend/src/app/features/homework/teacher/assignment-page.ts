@@ -31,6 +31,7 @@ import { AssignmentDialog, StudentOption } from './assignment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -169,8 +170,9 @@ import { HelpButton } from '@features/help/parts';
             />
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button
+              class="tb-tonal"
               label="Выдать"
-              severity="secondary"
+              severity="success"
               [disabled]="selectedToAssign().length === 0"
               (onClick)="assign()"
             />
@@ -264,22 +266,22 @@ export class AssignmentPage implements OnInit {
     if (assignment === null) {
       return;
     }
-    this.confirmation.confirm({
-      header: 'Удалить файл?',
-      message: `Файл «${file.filename}» будет удалён без возможности восстановления.`,
-      acceptLabel: 'Удалить',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
-          this.details.set({
-            ...assignment,
-            attachments: assignment.attachments.filter((candidate) => candidate.id !== file.id),
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Удалить файл?',
+        message: `Файл «${file.filename}» будет удалён без возможности восстановления.`,
+        acceptLabel: 'Удалить',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
+            this.details.set({
+              ...assignment,
+              attachments: assignment.attachments.filter((candidate) => candidate.id !== file.id),
+            });
           });
-        });
-      },
-    });
+        },
+      }),
+    );
   }
 
   /** Adds the students of a chosen group who do not have the assignment yet. */

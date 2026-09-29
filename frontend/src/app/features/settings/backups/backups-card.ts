@@ -24,6 +24,7 @@ import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { RestoreDialog } from './restore-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
   SCHEDULED: 'по расписанию',
@@ -129,7 +130,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                     [text]="true"
                     [pTooltip]="'Удалить ' + backup.name"
                     [rounded]="true"
-                    severity="secondary"
+                    severity="danger"
                     [ariaLabel]="'Удалить ' + backup.name"
                     (onClick)="confirmDelete(backup)"
                   />
@@ -209,19 +210,19 @@ export class BackupsCard implements OnInit {
   }
 
   confirmDelete(backup: BackupInfo): void {
-    this.confirmation.confirm({
-      header: 'Удалить копию?',
-      message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
-      acceptLabel: 'Удалить',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.delete(backup.name).subscribe(() => {
-          this.reload();
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Удалить копию?',
+        message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
+        acceptLabel: 'Удалить',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.api.delete(backup.name).subscribe(() => {
+            this.reload();
+          });
+        },
+      }),
+    );
   }
 
   private reload(): void {

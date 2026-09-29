@@ -62,7 +62,7 @@ import { CalendarFeed } from '../data-access/schedule.models';
             (onClick)="create()"
           />
           @if (feed.enabled) {
-            <p-button label="Отключить" severity="secondary" [text]="true" (onClick)="disable()" />
+            <p-button label="Отключить" severity="danger" [text]="true" (onClick)="disable()" />
           }
         </div>
       }

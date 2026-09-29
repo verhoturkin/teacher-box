@@ -92,6 +92,7 @@ import { HelpButton } from '@features/help/parts';
               }
               <div>
                 <p-button
+                  severity="success"
                   label="Отправить на проверку"
                   icon="pi pi-send"
                   [loading]="pending()"

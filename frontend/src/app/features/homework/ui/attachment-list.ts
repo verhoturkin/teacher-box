@@ -25,7 +25,7 @@ import { formatFileSize } from '../homework-labels';
                 [text]="true"
                 [pTooltip]="'Удалить файл ' + file.filename"
                 [rounded]="true"
-                severity="secondary"
+                severity="danger"
                 [ariaLabel]="'Удалить файл ' + file.filename"
                 (onClick)="remove.emit(file)"
               />

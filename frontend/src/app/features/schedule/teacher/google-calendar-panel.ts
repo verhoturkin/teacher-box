@@ -114,7 +114,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
               />
               <p-button
                 label="Отключить"
-                severity="secondary"
+                severity="danger"
                 [text]="true"
                 (onClick)="disconnect()"
               />
@@ -219,15 +219,16 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   @if (status.clientConfigured) {
                     <p-button
                       label="Отмена"
-                      severity="secondary"
+                      severity="danger"
                       [text]="true"
                       (onClick)="editingClient.set(false)"
                     />
                   }
                   <p-button
+                    class="tb-tonal"
                     type="submit"
                     label="Сохранить"
-                    severity="secondary"
+                    severity="success"
                     [disabled]="form.invalid"
                     [loading]="pending()"
                   />

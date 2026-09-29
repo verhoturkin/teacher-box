@@ -88,13 +88,9 @@ export interface SavedGroup {
         }
       </form>
       <ng-template #footer>
+        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
         <p-button
-          label="Отмена"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
+          severity="success"
           label="Сохранить"
           [loading]="pending()"
           [disabled]="form.invalid"

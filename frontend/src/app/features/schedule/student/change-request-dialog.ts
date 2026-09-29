@@ -94,13 +94,9 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
         </div>
       }
       <ng-template #footer>
+        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
         <p-button
-          label="Отмена"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
+          severity="success"
           [label]="absence() && !late() ? 'Предупредить учителя' : 'Отправить учителю'"
           [loading]="pending()"
           [disabled]="kind() === 'RESCHEDULE' && (proposed() === null || busyAt())"

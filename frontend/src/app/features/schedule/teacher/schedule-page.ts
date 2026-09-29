@@ -56,6 +56,7 @@ import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -172,7 +173,7 @@ const CLICK_SELECTION_MINUTES = 30;
                         [text]="true"
                         [pTooltip]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
                         [rounded]="true"
-                        severity="secondary"
+                        severity="success"
                         [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
                         (onClick)="mark(lesson, 'CONDUCTED')"
                       />
@@ -181,7 +182,7 @@ const CLICK_SELECTION_MINUTES = 30;
                         [text]="true"
                         [pTooltip]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
                         [rounded]="true"
-                        severity="secondary"
+                        severity="danger"
                         [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
                         (onClick)="mark(lesson, 'MISSED')"
                       />
@@ -219,7 +220,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [text]="true"
                       [pTooltip]="'Завершить расписание: ' + with(item)"
                       [rounded]="true"
-                      severity="secondary"
+                      severity="danger"
                       [ariaLabel]="'Завершить расписание: ' + with(item)"
                       (onClick)="stopSeries(item)"
                     />
@@ -260,7 +261,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [text]="true"
                       [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
                       [rounded]="true"
-                      severity="secondary"
+                      severity="danger"
                       [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
                       (onClick)="deleteOffTime(item)"
                     />
@@ -532,19 +533,19 @@ export class SchedulePage implements OnInit {
   }
 
   stopSeries(series: LessonSeries): void {
-    this.confirmation.confirm({
-      header: 'Завершить регулярные занятия?',
-      message: `Занятия «${this.weekly(series)}» с сегодняшнего дня будут удалены из расписания. Перенесённые отдельно занятия останутся.`,
-      acceptLabel: 'Завершить',
-      rejectLabel: 'Назад',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
-          this.reload();
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Завершить регулярные занятия?',
+        message: `Занятия «${this.weekly(series)}» с сегодняшнего дня будут удалены из расписания. Перенесённые отдельно занятия останутся.`,
+        acceptLabel: 'Завершить',
+        rejectLabel: 'Назад',
+        accept: () => {
+          this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
+            this.reload();
+          });
+        },
+      }),
+    );
   }
 
   newOffTime(): void {
@@ -564,20 +565,20 @@ export class SchedulePage implements OnInit {
   }
 
   deleteOffTime(offTime: OffTime): void {
-    this.confirmation.confirm({
-      header: 'Удалить нерабочее время?',
-      message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
-      acceptLabel: 'Удалить',
-      rejectLabel: 'Назад',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.deleteOffTime(offTime.id).subscribe(() => {
-          this.loadOffTimes();
-          this.loadOffTimePeriods();
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Удалить нерабочее время?',
+        message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
+        acceptLabel: 'Удалить',
+        rejectLabel: 'Назад',
+        accept: () => {
+          this.api.deleteOffTime(offTime.id).subscribe(() => {
+            this.loadOffTimes();
+            this.loadOffTimePeriods();
+          });
+        },
+      }),
+    );
   }
 
   protected offTimeText(offTime: OffTime): string {
@@ -597,19 +598,20 @@ export class SchedulePage implements OnInit {
   }
 
   private confirmOverlap(move: LessonMove): void {
-    this.confirmation.confirm({
-      header: 'Время занято',
-      message: 'В это время уже есть другое занятие. Всё равно перенести?',
-      acceptLabel: 'Перенести',
-      rejectLabel: 'Отмена',
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.onMove(move, true);
-      },
-      reject: () => {
-        move.revert();
-      },
-    });
+    this.confirmation.confirm(
+      safeConfirmation({
+        header: 'Время занято',
+        message: 'В это время уже есть другое занятие. Всё равно перенести?',
+        acceptLabel: 'Перенести',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.onMove(move, true);
+        },
+        reject: () => {
+          move.revert();
+        },
+      }),
+    );
   }
 
   private loadLessons(): void {

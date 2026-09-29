@@ -52,6 +52,10 @@ const LIGHT_ROLES = {
   onError: '#ffffff',
   errorContainer: '{red.100}',
   onErrorContainer: '{red.900}',
+  success: '{green.700}',
+  onSuccess: '#ffffff',
+  successContainer: '{green.100}',
+  onSuccessContainer: '{green.900}',
   surface: '{surface.50}',
   surfaceContainerLowest: '{surface.0}',
   surfaceContainerLow: tone(0.965, 0.007),
@@ -83,6 +87,10 @@ const DARK_ROLES = {
   onError: '{red.900}',
   errorContainer: '{red.800}',
   onErrorContainer: '{red.100}',
+  success: '{green.300}',
+  onSuccess: '{green.950}',
+  successContainer: '{green.800}',
+  onSuccessContainer: '{green.100}',
   surface: '{surface.950}',
   surfaceContainerLowest: tone(0.13, 0.006),
   surfaceContainerLow: tone(0.19, 0.009),
@@ -222,7 +230,38 @@ function over(content: string, percent: number): string {
   return `color-mix(in srgb, ${content} ${String(percent)}%, transparent)`;
 }
 
-/** Filled, tonal, outlined and text buttons (M3) for PrimeNG's plain, secondary, outlined, text. */
+/** A filled button of a role: confirming (success) or cancelling and deleting (error), ADR-0019. */
+function filled(role: 'success' | 'error'): Record<string, unknown> {
+  const on = `{md.on.${role}}`;
+  const color = `{md.${role}}`;
+  return {
+    background: color,
+    hoverBackground: layer(on, color, 8),
+    activeBackground: layer(on, color, 12),
+    borderColor: color,
+    hoverBorderColor: layer(on, color, 8),
+    activeBorderColor: layer(on, color, 12),
+    color: on,
+    hoverColor: on,
+    activeColor: on,
+    focusRing: { color, shadow: 'none' },
+  };
+}
+
+/** A text (or outlined) button of a role: the color of the role over the state layer. */
+function plain(role: string): Record<string, unknown> {
+  return {
+    hoverBackground: over(`{md.${role}}`, 8),
+    activeBackground: over(`{md.${role}}`, 12),
+    borderColor: '{md.outline}',
+    color: `{md.${role}}`,
+  };
+}
+
+/**
+ * Filled, tonal, outlined and text buttons (M3) for PrimeNG's plain, secondary, outlined, text;
+ * success and danger give them the meaning (ADR-0019).
+ */
 const BUTTON_SCHEME = {
   root: {
     secondary: {
@@ -237,55 +276,20 @@ const BUTTON_SCHEME = {
       activeColor: '{md.on.secondary.container}',
       focusRing: { color: '{md.primary}', shadow: 'none' },
     },
-    danger: {
-      background: '{md.error}',
-      hoverBackground: layer('{md.on.error}', '{md.error}', 8),
-      activeBackground: layer('{md.on.error}', '{md.error}', 12),
-      borderColor: '{md.error}',
-      hoverBorderColor: layer('{md.on.error}', '{md.error}', 8),
-      activeBorderColor: layer('{md.on.error}', '{md.error}', 12),
-      color: '{md.on.error}',
-      hoverColor: '{md.on.error}',
-      activeColor: '{md.on.error}',
-      focusRing: { color: '{md.error}', shadow: 'none' },
-    },
+    success: filled('success'),
+    danger: filled('error'),
   },
   outlined: {
-    primary: {
-      hoverBackground: over('{md.primary}', 8),
-      activeBackground: over('{md.primary}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.primary}',
-    },
-    secondary: {
-      hoverBackground: over('{md.on.surface.variant}', 8),
-      activeBackground: over('{md.on.surface.variant}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.on.surface.variant}',
-    },
-    danger: {
-      hoverBackground: over('{md.error}', 8),
-      activeBackground: over('{md.error}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.error}',
-    },
+    primary: plain('primary'),
+    secondary: plain('on.surface.variant'),
+    success: plain('success'),
+    danger: plain('error'),
   },
   text: {
-    primary: {
-      hoverBackground: over('{md.primary}', 8),
-      activeBackground: over('{md.primary}', 12),
-      color: '{md.primary}',
-    },
-    secondary: {
-      hoverBackground: over('{md.on.surface.variant}', 8),
-      activeBackground: over('{md.on.surface.variant}', 12),
-      color: '{md.on.surface.variant}',
-    },
-    danger: {
-      hoverBackground: over('{md.error}', 8),
-      activeBackground: over('{md.error}', 12),
-      color: '{md.error}',
-    },
+    primary: plain('primary'),
+    secondary: plain('on.surface.variant'),
+    success: plain('success'),
+    danger: plain('error'),
   },
   link: { color: '{md.primary}', hoverColor: '{md.primary}', activeColor: '{md.primary}' },
 };
@@ -318,6 +322,7 @@ function snackbar(): Record<string, unknown> {
 const TAG_SCHEME = {
   primary: { background: '{md.primary.container}', color: '{md.on.primary.container}' },
   secondary: { background: '{md.secondary.container}', color: '{md.on.secondary.container}' },
+  success: { background: '{md.success.container}', color: '{md.on.success.container}' },
   danger: { background: '{md.error.container}', color: '{md.on.error.container}' },
 };
 

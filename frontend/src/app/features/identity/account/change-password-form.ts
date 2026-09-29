@@ -71,7 +71,8 @@ import { IdentityApi } from '../data-access/identity-api';
       <p-button
         type="submit"
         [label]="submitLabel()"
-        [severity]="tonal() ? 'secondary' : 'primary'"
+        severity="success"
+        [class.tb-tonal]="tonal()"
         [loading]="pending()"
         [disabled]="form.invalid"
       />

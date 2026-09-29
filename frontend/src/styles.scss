@@ -152,6 +152,29 @@ textarea.p-textarea {
   letter-spacing: 0.00625rem;
 }
 
+/*
+ * Tonal buttons with a meaning (ADR-0019): `class="tb-tonal"` with severity success or danger gives
+ * the container of the role instead of the filled color, e.g. «Вернуть на доработку».
+ */
+@each $role, $severity in (success: success, error: danger) {
+  p-button.tb-tonal .p-button-#{$severity}:not(.p-button-text) {
+    border-color: var(--p-md-#{$role}-container);
+    background: var(--p-md-#{$role}-container);
+    color: var(--p-md-on-#{$role}-container);
+
+    &:not(:disabled):hover,
+    &:not(:disabled):active {
+      border-color: var(--p-md-#{$role}-container);
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-#{$role}-container) 8%,
+        var(--p-md-#{$role}-container)
+      );
+      color: var(--p-md-on-#{$role}-container);
+    }
+  }
+}
+
 /* Less motion when the system asks for it */
 @media (prefers-reduced-motion: reduce) {
   *,

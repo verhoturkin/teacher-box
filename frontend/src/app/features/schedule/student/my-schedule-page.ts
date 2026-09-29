@@ -101,7 +101,12 @@ export function nextMonday(date: Date): Date {
                     @if (lesson.pendingRequests[0]; as request) {
                       <small class="tb-muted">
                         Запрос «{{ kind(request) }}» ждёт ответа учителя
-                        <p-button label="Отозвать" [text]="true" (onClick)="withdraw(request)" />
+                        <p-button
+                          severity="danger"
+                          label="Отозвать"
+                          [text]="true"
+                          (onClick)="withdraw(request)"
+                        />
                       </small>
                     }
                   </div>
@@ -121,7 +126,7 @@ export function nextMonday(date: Date): Date {
                       />
                       <p-button
                         [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
-                        severity="secondary"
+                        severity="danger"
                         [text]="true"
                         (onClick)="ask(lesson, 'CANCEL')"
                       />

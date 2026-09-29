@@ -206,6 +206,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
               }
               <div class="tb-actions">
                 <p-button
+                  severity="success"
                   type="submit"
                   label="Проверить и сохранить"
                   icon="pi pi-check"
@@ -302,7 +303,12 @@ function describeMessengerError(error: unknown, fallback: string): string {
                   (onClick)="sendTest()"
                 />
                 @if (tested()) {
-                  <p-button label="Готово" icon="pi pi-check" (onClick)="close()" />
+                  <p-button
+                    severity="success"
+                    label="Готово"
+                    icon="pi pi-check"
+                    (onClick)="close()"
+                  />
                 }
               </div>
             </div>

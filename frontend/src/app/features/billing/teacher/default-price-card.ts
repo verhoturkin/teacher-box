@@ -31,6 +31,7 @@ import { BillingApi } from '../data-access/billing-api';
               ariaLabel="Цена для новых учеников"
             />
             <p-button
+              severity="success"
               type="submit"
               icon="pi pi-check"
               ariaLabel="Сохранить цену"
@@ -39,7 +40,7 @@ import { BillingApi } from '../data-access/billing-api';
             />
             <p-button
               icon="pi pi-times"
-              severity="secondary"
+              severity="danger"
               [text]="true"
               pTooltip="Отменить"
               [rounded]="true"

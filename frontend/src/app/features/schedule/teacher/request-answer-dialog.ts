@@ -85,7 +85,12 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
           @if (busy()) {
             <p-message severity="warn" styleClass="tb-form-message">
               В это время у вас другое занятие или дела в календаре.
-              <p-button label="Всё равно перенести" [text]="true" (onClick)="approve(true)" />
+              <p-button
+                severity="success"
+                label="Всё равно перенести"
+                [text]="true"
+                (onClick)="approve(true)"
+              />
             </p-message>
           }
           @if (error(); as message) {
@@ -106,12 +111,17 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
       <ng-template #footer>
         <p-button
           label="Отклонить"
-          severity="secondary"
+          severity="danger"
           [text]="true"
           [loading]="pending()"
           (onClick)="decline()"
         />
-        <p-button label="Согласовать" [loading]="pending()" (onClick)="approve()" />
+        <p-button
+          severity="success"
+          label="Согласовать"
+          [loading]="pending()"
+          (onClick)="approve()"
+        />
       </ng-template>
     </p-dialog>
   `,

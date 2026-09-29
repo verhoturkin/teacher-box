@@ -44,6 +44,7 @@ import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -215,7 +216,7 @@ import { PageHeader } from '@shared/ui/page-header';
                     icon="pi pi-ban"
                     [text]="true"
                     [rounded]="true"
-                    severity="secondary"
+                    severity="danger"
                     pTooltip="Отключить доступ"
                     [ariaLabel]="'Отключить доступ: ' + student.displayName"
                     (onClick)="confirmDeactivate(student)"
@@ -432,20 +433,20 @@ export class StudentsPage implements OnInit {
   }
 
   protected confirmDeactivate(student: Student): void {
-    this.confirmation.confirm({
-      header: 'Отключить доступ?',
-      message: `${student.displayName} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Отключить',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.deactivate(student.id).subscribe((saved) => {
-          this.replace(saved);
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Отключить доступ?',
+        message: `${student.displayName} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Отключить',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.api.deactivate(student.id).subscribe((saved) => {
+            this.replace(saved);
+          });
+        },
+      }),
+    );
   }
 
   protected reactivate(student: Student): void {

@@ -108,6 +108,7 @@ import { HelpButton } from '@features/help/parts';
               <div class="tb-actions">
                 @if (task.status === 'SUBMITTED') {
                   <p-button
+                    severity="success"
                     label="Принять"
                     icon="pi pi-check"
                     [loading]="pending()"
@@ -116,9 +117,10 @@ import { HelpButton } from '@features/help/parts';
                   />
                 }
                 <p-button
+                  class="tb-tonal"
                   label="Вернуть на доработку"
                   icon="pi pi-replay"
-                  severity="secondary"
+                  severity="danger"
                   [loading]="pending()"
                   [disabled]="form.invalid"
                   (onClick)="review('RETURN')"

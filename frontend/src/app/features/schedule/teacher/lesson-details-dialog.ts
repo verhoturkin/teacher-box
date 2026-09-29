@@ -126,7 +126,12 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-lesson-details__cancel">
             В это время уже есть другое занятие.
-            <p-button label="Всё равно восстановить" [text]="true" (onClick)="restore(true)" />
+            <p-button
+              severity="success"
+              label="Всё равно восстановить"
+              [text]="true"
+              (onClick)="restore(true)"
+            />
           </p-message>
         }
         @if (error(); as message) {
@@ -196,13 +201,14 @@ import { AttendanceDialog } from './attendance-dialog';
               <p-button
                 label="Удалить"
                 icon="pi pi-trash"
-                severity="secondary"
+                severity="danger"
                 [text]="true"
                 (onClick)="deleting.set(true)"
               />
             }
             @if (lesson.status === 'CANCELLED') {
               <p-button
+                severity="success"
                 label="Восстановить"
                 icon="pi pi-replay"
                 [loading]="pending()"
@@ -212,7 +218,7 @@ import { AttendanceDialog } from './attendance-dialog';
             @if (lesson.status === 'SCHEDULED') {
               <p-button
                 label="Отменить"
-                severity="secondary"
+                severity="danger"
                 [text]="true"
                 (onClick)="cancelling.set(true)"
               />
@@ -221,7 +227,7 @@ import { AttendanceDialog } from './attendance-dialog';
             @if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
               <p-button
                 label="Снять отметку"
-                severity="secondary"
+                severity="danger"
                 [text]="true"
                 [loading]="pending()"
                 (onClick)="reopen()"
@@ -236,14 +242,20 @@ import { AttendanceDialog } from './attendance-dialog';
             } @else if (started() && lesson.status !== 'CANCELLED') {
               @if (lesson.status !== 'MISSED') {
                 <p-button
+                  class="tb-tonal"
                   label="Пропуск"
-                  severity="secondary"
+                  severity="danger"
                   [loading]="pending()"
                   (onClick)="mark('MISSED')"
                 />
               }
               @if (lesson.status !== 'CONDUCTED') {
-                <p-button label="Проведено" [loading]="pending()" (onClick)="mark('CONDUCTED')" />
+                <p-button
+                  severity="success"
+                  label="Проведено"
+                  [loading]="pending()"
+                  (onClick)="mark('CONDUCTED')"
+                />
               }
             }
           }

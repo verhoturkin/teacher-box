@@ -35,6 +35,7 @@ import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { HelpButton } from '@features/help/parts';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -163,7 +164,7 @@ import { HelpButton } from '@features/help/parts';
                 <p-button
                   icon="pi pi-inbox"
                   [text]="true"
-                  severity="secondary"
+                  severity="danger"
                   [rounded]="true"
                   pTooltip="В архив"
                   [ariaLabel]="'В архив: ' + group.name"
@@ -349,21 +350,21 @@ export class GroupsPanel implements OnInit {
   }
 
   protected confirmArchive(group: StudentGroup): void {
-    this.confirmation.confirm({
-      key: 'groups',
-      header: 'Убрать группу в архив?',
-      message: `Регулярные занятия группы «${group.name}» остановятся, будущие занятия отменятся. Проведённые занятия и оплаты сохранятся.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'В архив',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.archiveGroup(group.id).subscribe((saved) => {
-          this.replace(saved);
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        key: 'groups',
+        header: 'Убрать группу в архив?',
+        message: `Регулярные занятия группы «${group.name}» остановятся, будущие занятия отменятся. Проведённые занятия и оплаты сохранятся.`,
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'В архив',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.api.archiveGroup(group.id).subscribe((saved) => {
+            this.replace(saved);
+          });
+        },
+      }),
+    );
   }
 
   protected restore(group: StudentGroup): void {

@@ -55,7 +55,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
               />
               <p-button
                 [label]="lesson.groupId === null ? 'Отменить' : 'Не приду'"
-                severity="secondary"
+                severity="danger"
                 [text]="true"
                 (onClick)="ask(lesson, 'CANCEL')"
               />

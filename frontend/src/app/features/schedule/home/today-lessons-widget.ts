@@ -62,7 +62,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                 } @else if (started(lesson)) {
                   <p-button
                     icon="pi pi-check"
-                    severity="secondary"
+                    severity="success"
                     [text]="true"
                     [pTooltip]="'Проведено: ' + (lesson.studentName ?? '')"
                     [rounded]="true"
@@ -72,7 +72,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                   />
                   <p-button
                     icon="pi pi-user-minus"
-                    severity="secondary"
+                    severity="danger"
                     [text]="true"
                     [pTooltip]="'Пропуск: ' + (lesson.studentName ?? '')"
                     [rounded]="true"
