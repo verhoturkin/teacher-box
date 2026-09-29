@@ -151,6 +151,8 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
 
   const student = await studentPage(browser);
   await student.getByRole('menuitem', { name: 'Расписание' }).click();
+  // the home page has «Перенести» too: the click waits for the schedule
+  await expect(student).toHaveURL(/\/cabinet\/schedule$/);
   await student.getByRole('button', { name: 'Перенести' }).click();
   await student.locator('#request-start').pressSequentially(dateTime(4, 16));
   await student.locator('#request-comment').fill('Можно на день позже?');

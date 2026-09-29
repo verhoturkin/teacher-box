@@ -93,7 +93,8 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
 
 test('a table keeps its columns, its rows are tiles with the initials', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/students');
+  // students and groups are cards on every screen since 1.6.8 (ADR-0021): the payments keep columns
+  await page.goto('/teacher/billing');
 
   const row = page
     .locator('.p-datatable.tb-cards tbody tr')
