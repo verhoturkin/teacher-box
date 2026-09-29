@@ -205,7 +205,11 @@ const STEPS: readonly Step[] = [
             <p>Портал настроен. Остальное можно подключить, когда понадобится:</p>
             <ul class="tb-setup-later">
               <li>
-                <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }">
+                <a
+                  routerLink="/teacher/notifications"
+                  [queryParams]="{ open: 'messengers' }"
+                  fragment="notifications-messengers"
+                >
                   Мессенджеры
                 </a>
                 — уведомления и действия через бота в Telegram, ВКонтакте или MAX.

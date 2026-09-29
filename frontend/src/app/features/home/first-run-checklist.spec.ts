@@ -50,7 +50,7 @@ describe('FirstRunChecklist', () => {
       a.getAttribute('href'),
     );
     expect(links).toEqual([
-      '/teacher/notifications?tab=messengers',
+      '/teacher/notifications?open=messengers#notifications-messengers',
       '/teacher/schedule?create=lesson',
     ]);
   });

@@ -74,18 +74,16 @@ async function studentPage(browser: Browser): Promise<Page> {
   return page;
 }
 
-test('tabs lie on the page and the phone navigation has five even sections', async ({
+// Since 1.6.6 the notifications have folding cards instead of tabs (ADR-0019).
+test('sections lie on the page and the phone navigation has five even sections', async ({
   page,
   browser,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/notifications');
-  await expect(page.getByRole('tab', { name: 'Что присылать' })).toBeVisible();
-  expect(
-    await page
-      .locator('.p-tabpanels')
-      .evaluate((panels) => getComputedStyle(panels).backgroundColor),
-  ).toBe('rgba(0, 0, 0, 0)');
+  await expect(
+    page.locator('#notifications-preferences').getByRole('button', { expanded: false }),
+  ).toContainText('Что присылать');
 
   const phone = await (await browser.newContext({ baseURL: BASE_URL, viewport: PHONE })).newPage();
   await signIn(phone, 'teacher', TEACHER_PASSWORD);

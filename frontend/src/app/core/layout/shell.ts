@@ -21,9 +21,9 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
 const NAV_ITEMS = 5;
 
 /**
- * Application frame (ADR-0017): the top app bar (kept at the top) with the portal, the bell and the
- * user menu; the sections of the role in the navigation drawer on a wide screen, in the rail on a
- * tablet and in the bottom navigation on a phone; the routed content.
+ * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the portal, the
+ * bell and the user menu; the sections of the role in the expanded navigation rail on a wide
+ * screen, in the rail on a tablet and in the bottom navigation on a phone; the routed content.
  */
 @Component({
   selector: 'tb-shell',
@@ -45,7 +45,6 @@ const NAV_ITEMS = 5;
         <span>{{ portalName() }}</span>
       </a>
       <div class="tb-shell__user">
-        <span class="tb-shell__area">{{ areaTitle() }}</span>
         @if (notifications()) {
           <tb-notification-bell [link]="homeLink() + '/notifications'" />
         }
@@ -118,7 +117,6 @@ export class Shell {
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();
-  readonly areaTitle = input.required<string>();
   /** Links shown in the user menu before «Мой аккаунт» (e.g. the teacher's settings). */
   readonly userLinks = input<MenuItem[]>([]);
   /** The notification bell (the administrator has no notifications). */

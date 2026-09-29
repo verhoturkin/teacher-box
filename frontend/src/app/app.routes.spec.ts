@@ -41,7 +41,7 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.navigateByUrl('/');
     expect(TestBed.inject(Router).url).toBe('/admin/logs');
     expect(title()).toBe('Журнал — Teacher Box');
-    expect(text()).toContain('Администрирование');
+    expect(text()).toContain('Журнал');
     backend.match(() => true);
 
     for (const [url, heading] of [
@@ -81,7 +81,7 @@ describe('app routes', { timeout: 20_000 }, () => {
     await navigation;
 
     expect(TestBed.inject(Router).url).toBe('/teacher');
-    expect(text()).toContain('Кабинет учителя');
+    expect(text()).not.toContain('Кабинет учителя');
     expect(text()).toContain('Главная');
     expect(title()).toBe('Главная — Teacher Box');
   });

@@ -1,14 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  afterNextRender,
   computed,
   inject,
   input,
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Badge } from 'primeng/badge';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { HelpButton } from '@features/help/parts';
 import { AuthService } from '@core/auth/auth.service';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
@@ -19,31 +18,31 @@ import { BotAbilitiesPanel } from './teacher/bot-abilities-panel';
 import { BotsPanel } from './teacher/bots-panel';
 import { BroadcastsPanel } from './teacher/broadcasts-panel';
 import { StudentMessengersPanel } from './teacher/student-messengers-panel';
+import { FoldCard } from '@shared/ui/fold-card';
 import { PageHeader } from '@shared/ui/page-header';
 
-/** Sections of the teacher's notifications page (`?tab=`). */
-export const TEACHER_TABS = ['inbox', 'messages', 'messengers', 'students', 'preferences'] as const;
-export type TeacherTab = (typeof TEACHER_TABS)[number];
+/** Sections of the teacher's notifications page that fold (`?open=messengers,students`). */
+export const FOLDED_SECTIONS = ['messengers', 'students', 'preferences'] as const;
+export type FoldedSection = (typeof FOLDED_SECTIONS)[number];
 
-function isTeacherTab(value: unknown): value is TeacherTab {
-  return TEACHER_TABS.some((tab) => tab === value);
+function isFolded(value: unknown): value is FoldedSection {
+  return FOLDED_SECTIONS.some((section) => section === value);
 }
 
-/** Notifications of the current user; the teacher also manages bots, messages to students and their messengers. */
+/**
+ * Notifications of the current user; the teacher also manages bots, messages to students and their
+ * messengers. The teacher's page is a stack of cards (ADR-0019): the inbox and the messages to
+ * students are always open, the settings fold.
+ */
 @Component({
   selector: 'tb-notifications-page',
   imports: [
     HelpButton,
-    Badge,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
     BotAbilitiesPanel,
     BotsPanel,
     BroadcastsPanel,
     ChannelsPanel,
+    FoldCard,
     InboxPanel,
     PreferencesPanel,
     StudentMessengersPanel,
@@ -55,60 +54,58 @@ function isTeacherTab(value: unknown): value is TeacherTab {
       <tb-help-button help [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
     </tb-page-header>
     @if (teacher) {
-      <p-tabs
-        [value]="activeTab()"
-        (valueChange)="select($event)"
-        [lazy]="true"
-        [scrollable]="true"
-      >
-        <p-tablist>
-          <p-tab value="inbox">
-            Входящие
-            @if (unread() > 0) {
-              <p-badge [value]="unread()" />
-            }
-          </p-tab>
-          <p-tab value="messages">Сообщения ученикам</p-tab>
-          <p-tab value="messengers">Мессенджеры</p-tab>
-          <p-tab value="students">Ученики</p-tab>
-          <p-tab value="preferences">Что присылать</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel value="inbox">
-            <ng-template #content>
-              <tb-inbox-panel />
-            </ng-template>
-          </p-tabpanel>
-          <p-tabpanel value="messages">
-            <ng-template #content>
-              <tb-broadcasts-panel />
-            </ng-template>
-          </p-tabpanel>
-          <p-tabpanel value="messengers">
-            <ng-template #content>
-              <div class="tb-stack">
-                <tb-bots-panel (changed)="reloadChannels()" />
-                <tb-channels-panel
-                  [teacher]="true"
-                  header="Мои мессенджеры"
-                  (changed)="reloadBots()"
-                />
-                <tb-bot-abilities-panel />
-              </div>
-            </ng-template>
-          </p-tabpanel>
-          <p-tabpanel value="students">
-            <ng-template #content>
-              <tb-student-messengers-panel />
-            </ng-template>
-          </p-tabpanel>
-          <p-tabpanel value="preferences">
-            <ng-template #content>
-              <tb-preferences-panel [teacher]="true" />
-            </ng-template>
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+      <div class="tb-stack tb-notifications-sections">
+        <tb-fold-card
+          id="notifications-inbox"
+          title="Входящие"
+          [collapsible]="false"
+          [badge]="unread()"
+        >
+          <ng-template><tb-inbox-panel /></ng-template>
+        </tb-fold-card>
+        <tb-fold-card id="notifications-messages" title="Сообщения ученикам" [collapsible]="false">
+          <ng-template><tb-broadcasts-panel /></ng-template>
+        </tb-fold-card>
+        <tb-fold-card
+          id="notifications-messengers"
+          title="Мессенджеры"
+          summary="Боты портала, ваши мессенджеры и что умеет бот"
+          [open]="opened().has('messengers')"
+          (openChange)="fold('messengers', $event)"
+        >
+          <ng-template>
+            <div class="tb-stack">
+              <tb-bots-panel (changed)="reloadChannels()" />
+              <tb-channels-panel
+                [teacher]="true"
+                header="Мои мессенджеры"
+                (changed)="reloadBots()"
+              />
+              <tb-bot-abilities-panel />
+            </div>
+          </ng-template>
+        </tb-fold-card>
+        <tb-fold-card
+          id="notifications-students"
+          title="Ученики"
+          summary="Кто из учеников подключил мессенджер, напоминание подключить"
+          [single]="true"
+          [open]="opened().has('students')"
+          (openChange)="fold('students', $event)"
+        >
+          <ng-template><tb-student-messengers-panel /></ng-template>
+        </tb-fold-card>
+        <tb-fold-card
+          id="notifications-preferences"
+          title="Что присылать"
+          summary="Какие уведомления дублировать в мессенджеры"
+          [single]="true"
+          [open]="opened().has('preferences')"
+          (openChange)="fold('preferences', $event)"
+        >
+          <ng-template><tb-preferences-panel [teacher]="true" /></ng-template>
+        </tb-fold-card>
+      </div>
     } @else {
       <div class="tb-notifications-layout">
         <tb-inbox-panel />
@@ -120,6 +117,10 @@ function isTeacherTab(value: unknown): value is TeacherTab {
     }
   `,
   styles: `
+    .tb-notifications-sections {
+      max-width: var(--tb-content-narrow);
+    }
+
     .tb-notifications-layout {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -137,20 +138,43 @@ export class NotificationsPage {
   private readonly channels = viewChild(ChannelsPanel);
   private readonly bots = viewChild(BotsPanel);
 
-  /** The open section (query parameter). */
+  /** The open folded sections (query parameter), e.g. `messengers,students`. */
+  readonly open = input<string>();
+  /** A section of the former tabs (`?tab=messengers`, links of settings and help): opened and shown. */
   readonly tab = input<string>();
 
   protected readonly teacher = inject(AuthService).user()?.role === 'TEACHER';
   protected readonly unread = inject(UnreadNotifications).count;
-  protected readonly activeTab = computed<TeacherTab>(() => {
-    const tab = this.tab();
-    return isTeacherTab(tab) ? tab : 'inbox';
+  protected readonly opened = computed<ReadonlySet<FoldedSection>>(() => {
+    const sections: unknown[] = (this.open() ?? '').split(',');
+    sections.push(this.tab());
+    return new Set(sections.filter(isFolded));
   });
 
-  select(tab: string | number | undefined): void {
-    if (isTeacherTab(tab) && tab !== this.activeTab()) {
-      void this.router.navigate([], { queryParams: { tab }, replaceUrl: true });
+  constructor() {
+    afterNextRender(() => {
+      const tab = this.tab();
+      const section = tab === undefined ? null : document.getElementById(`notifications-${tab}`);
+      if (section !== null && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView({ block: 'start' });
+      }
+    });
+  }
+
+  /** Keeps the open sections in the address; the former `tab` becomes one of them. */
+  fold(section: FoldedSection, open: boolean): void {
+    const next = new Set(this.opened());
+    if (open) {
+      next.add(section);
+    } else {
+      next.delete(section);
     }
+    const sections = FOLDED_SECTIONS.filter((name) => next.has(name)).join(',');
+    void this.router.navigate([], {
+      queryParams: { open: sections === '' ? null : sections, tab: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   reloadChannels(): void {

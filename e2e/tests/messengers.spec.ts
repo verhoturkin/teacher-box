@@ -22,8 +22,8 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
   await expect(page).toHaveURL(/\/teacher$/);
 
   await page.getByRole('menuitem', { name: 'Уведомления' }).click();
-  await page.getByRole('tab', { name: 'Мессенджеры' }).click();
-  await expect(page).toHaveURL(/tab=messengers/);
+  await page.locator('#notifications-messengers').getByRole('button', { expanded: false }).click();
+  await expect(page).toHaveURL(/open=messengers/);
   const bots = page.locator('tb-bots-panel');
   await bots
     .getByRole('listitem')

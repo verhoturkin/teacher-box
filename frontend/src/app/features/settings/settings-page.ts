@@ -76,7 +76,10 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
                 }
                 @default {
                   <p-tag value="Не настроен" severity="secondary" />
-                  <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }"
+                  <a
+                    routerLink="/teacher/notifications"
+                    [queryParams]="{ open: 'messengers' }"
+                    fragment="notifications-messengers"
                     >подключить</a
                   >
                 }
@@ -106,7 +109,10 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         </ul>
         <small class="tb-hint">
           Ботов мессенджеров можно подключить в разделе
-          <a routerLink="/teacher/notifications" [queryParams]="{ tab: 'messengers' }"
+          <a
+            routerLink="/teacher/notifications"
+            [queryParams]="{ open: 'messengers' }"
+            fragment="notifications-messengers"
             >«Уведомления» → «Мессенджеры»</a
           >. ИИ-помощник настраивается переменными окружения сервера (см. .env.example).
         </small>

@@ -27,12 +27,7 @@ export const TEACHER_USER_LINKS: MenuItem[] = [
   selector: 'tb-teacher-layout',
   imports: [Shell],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-shell
-    [items]="menu"
-    [userLinks]="userLinks"
-    homeLink="/teacher"
-    areaTitle="Кабинет учителя"
-  />`,
+  template: `<tb-shell [items]="menu" [userLinks]="userLinks" homeLink="/teacher" />`,
 })
 export class TeacherLayout {
   protected readonly menu = TEACHER_MENU;

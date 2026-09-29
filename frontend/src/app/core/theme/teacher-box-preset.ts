@@ -110,7 +110,8 @@ const DARK_ROLES = {
 /**
  * The PrimeNG meanings of the roles, the same in both schemes except the background of cards:
  * the page is a container and cards lie on it lighter (light: the lowest container on the
- * container, dark: the container on the surface).
+ * container, dark: the container on the surface). Dialogs, menus and lists that pop up have the
+ * background of cards and stand out by their shadow (ADR-0019).
  */
 function scheme(card: string): Record<string, unknown> {
   return {
@@ -163,21 +164,9 @@ function scheme(card: string): Record<string, unknown> {
       hoverColor: '{md.on.surface}',
     },
     overlay: {
-      select: {
-        background: '{md.surface.container}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
-      popover: {
-        background: '{md.surface.container}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
-      modal: {
-        background: '{md.surface.container.high}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
+      select: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
+      popover: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
+      modal: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
     },
     list: {
       option: {
@@ -510,12 +499,12 @@ export const TeacherBoxPreset = definePreset(Aura, {
       footer: { padding: '1.5rem', gap: '0.5rem' },
     },
     drawer: {
-      root: { background: '{md.surface.container.low}', borderColor: 'transparent' },
+      root: { background: '{content.background}', borderColor: 'transparent' },
       title: { fontSize: '1.375rem', fontWeight: '400' },
     },
     menu: {
       root: {
-        background: '{md.surface.container}',
+        background: '{content.background}',
         borderColor: 'transparent',
         borderRadius: '{border.radius.xs}',
         shadow: ELEVATION_2,
@@ -715,7 +704,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       value: { background: '{md.primary}' },
     },
     datepicker: {
-      panel: { background: '{md.surface.container.high}', borderRadius: '{border.radius.lg}' },
+      panel: { background: '{content.background}', borderRadius: '{border.radius.lg}' },
       date: { borderRadius: PILL, width: '2.5rem', height: '2.5rem' },
       dropdown: {
         width: '3rem',

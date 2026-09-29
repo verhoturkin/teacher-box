@@ -216,7 +216,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       (onClick)="editSeries(item)"
                     />
                     <p-button
-                      icon="pi pi-stop-circle"
+                      icon="pi pi-trash"
                       [text]="true"
                       [pTooltip]="'Завершить расписание: ' + with(item)"
                       [rounded]="true"
