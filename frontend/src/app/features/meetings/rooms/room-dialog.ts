@@ -82,6 +82,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           }
           @if (canCreate()) {
             <p-button
+              severity="success"
               [label]="
                 room() === null ? 'Создать встречу в Телемосте' : 'Новая встреча в Телемосте'
               "
@@ -103,8 +104,9 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
                 class="tb-grow"
               />
               <p-button
+                class="tb-tonal"
                 label="Сохранить"
-                severity="secondary"
+                severity="success"
                 [disabled]="link.invalid || link.value.trim() === ''"
                 [loading]="pending()"
                 (onClick)="save()"

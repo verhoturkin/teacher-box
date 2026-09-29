@@ -2,6 +2,7 @@ import {
   applyAccent,
   contrast,
   isAccent,
+  isGreenAccent,
   isOwnColor,
   ownColorContrast,
   ownShades,
@@ -41,5 +42,18 @@ describe('portal accent', () => {
     // dark: the shade 900 on the shade 200 — readable even for a very dark or a pale color
     expect(ownColorContrast('#1e1b4b').dark).toBeGreaterThan(3);
     expect(ownColorContrast('#fde68a').dark).toBeGreaterThan(3);
+  });
+
+  it('knows a green color of the portal that looks like confirming buttons', () => {
+    expect(isGreenAccent('emerald')).toBe(true);
+    expect(isGreenAccent('#16a34a')).toBe(true);
+    expect(isGreenAccent('#65a30d')).toBe(true);
+    // teal, blue, red, a greyish green and a named palette that is not green
+    expect(isGreenAccent('#0f766e')).toBe(false);
+    expect(isGreenAccent('#2563eb')).toBe(false);
+    expect(isGreenAccent('#dc2626')).toBe(false);
+    expect(isGreenAccent('#6b7a6b')).toBe(false);
+    expect(isGreenAccent('#808080')).toBe(false);
+    expect(isGreenAccent('indigo')).toBe(false);
   });
 });

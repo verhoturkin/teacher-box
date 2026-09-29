@@ -23,7 +23,6 @@ describe('Shell', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
-    fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
     fixture.componentRef.setInput('userLinks', [
       { label: 'Настройки', routerLink: '/teacher/settings' },
     ]);
@@ -43,15 +42,15 @@ describe('Shell', () => {
     );
   });
 
-  it('shows navigation, area and the user', () => {
+  it('shows the navigation and the user, but not the name of the area (ADR-0019)', () => {
     const text = hostElement(fixture).textContent;
     expect(text).toContain('Teacher Box');
     expect(text).toContain('Ученики');
-    expect(text).toContain('Кабинет учителя');
     expect(text).toContain('Анна Сергеевна');
+    expect(text).not.toContain('Кабинет учителя');
   });
 
-  it('puts the sections in the drawer on a wide screen', () => {
+  it('puts the sections in the expanded rail on a wide screen', () => {
     const nav = hostElement(fixture).querySelector('tb-side-nav');
     expect(nav?.classList).not.toContain('tb-side-nav--rail');
     expect(nav?.textContent).toContain('Ученики');
@@ -110,7 +109,6 @@ describe('Shell on a tablet', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
-    fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
     await fixture.whenStable();
 
     const host = hostElement(fixture);

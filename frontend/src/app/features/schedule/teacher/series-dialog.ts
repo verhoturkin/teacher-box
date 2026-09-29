@@ -174,7 +174,12 @@ export const INTERVAL_OPTIONS = [
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             Некоторые занятия пересекаются с уже запланированными.
-            <p-button label="Всё равно сохранить" [text]="true" (onClick)="save(true)" />
+            <p-button
+              severity="success"
+              label="Всё равно сохранить"
+              [text]="true"
+              (onClick)="save(true)"
+            />
           </p-message>
         }
         @if (error(); as message) {
@@ -182,13 +187,9 @@ export const INTERVAL_OPTIONS = [
         }
       </form>
       <ng-template #footer>
+        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
         <p-button
-          label="Отмена"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
+          severity="success"
           label="Сохранить"
           [loading]="pending()"
           [disabled]="form.invalid"

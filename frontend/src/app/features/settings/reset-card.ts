@@ -40,9 +40,10 @@ export const RESET_WORD = 'СБРОСИТЬ';
         сбросом портал сам сделает копию — из неё всё можно вернуть.
       </p>
       <p-button
+        class="tb-tonal"
         label="Сбросить все данные…"
         icon="pi pi-trash"
-        severity="secondary"
+        severity="danger"
         (onClick)="open()"
       />
     </p-card>

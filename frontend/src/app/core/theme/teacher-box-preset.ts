@@ -2,7 +2,7 @@ import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
 /**
- * Material Design 3 on top of Aura (ADR-0017).
+ * Material 3 Expressive on top of Aura (ADR-0017, ADR-0019).
  *
  * The color of the portal is the seed: its shades 50–950 (indigo by default, replaced by
  * `applyAccent`) give the primary roles, and the neutral, secondary and tertiary tones are derived
@@ -43,15 +43,19 @@ const LIGHT_ROLES = {
   primaryContainer: '{primary.100}',
   onPrimaryContainer: '{primary.900}',
   secondary: tone(0.48, 0.04),
-  secondaryContainer: tone(0.915, 0.035),
-  onSecondaryContainer: tone(0.28, 0.04),
+  secondaryContainer: tone(0.91, 0.05),
+  onSecondaryContainer: tone(0.28, 0.05),
   tertiary: tone(0.48, 0.09, 60),
-  tertiaryContainer: tone(0.92, 0.045, 60),
+  tertiaryContainer: tone(0.915, 0.06, 60),
   onTertiaryContainer: tone(0.3, 0.06, 60),
   error: '{red.600}',
   onError: '#ffffff',
   errorContainer: '{red.100}',
   onErrorContainer: '{red.900}',
+  success: '{green.700}',
+  onSuccess: '#ffffff',
+  successContainer: '{green.100}',
+  onSuccessContainer: '{green.900}',
   surface: '{surface.50}',
   surfaceContainerLowest: '{surface.0}',
   surfaceContainerLow: tone(0.965, 0.007),
@@ -74,15 +78,19 @@ const DARK_ROLES = {
   primaryContainer: '{primary.800}',
   onPrimaryContainer: '{primary.100}',
   secondary: tone(0.82, 0.035),
-  secondaryContainer: tone(0.35, 0.035),
-  onSecondaryContainer: tone(0.91, 0.03),
+  secondaryContainer: tone(0.35, 0.05),
+  onSecondaryContainer: tone(0.91, 0.035),
   tertiary: tone(0.82, 0.07, 60),
-  tertiaryContainer: tone(0.37, 0.06, 60),
+  tertiaryContainer: tone(0.37, 0.075, 60),
   onTertiaryContainer: tone(0.92, 0.04, 60),
   error: '{red.300}',
   onError: '{red.900}',
   errorContainer: '{red.800}',
   onErrorContainer: '{red.100}',
+  success: '{green.300}',
+  onSuccess: '{green.950}',
+  successContainer: '{green.800}',
+  onSuccessContainer: '{green.100}',
   surface: '{surface.950}',
   surfaceContainerLowest: tone(0.13, 0.006),
   surfaceContainerLow: tone(0.19, 0.009),
@@ -102,7 +110,8 @@ const DARK_ROLES = {
 /**
  * The PrimeNG meanings of the roles, the same in both schemes except the background of cards:
  * the page is a container and cards lie on it lighter (light: the lowest container on the
- * container, dark: the container on the surface).
+ * container, dark: the container on the surface). Dialogs, menus and lists that pop up have the
+ * background of cards and stand out by their shadow (ADR-0019).
  */
 function scheme(card: string): Record<string, unknown> {
   return {
@@ -155,21 +164,9 @@ function scheme(card: string): Record<string, unknown> {
       hoverColor: '{md.on.surface}',
     },
     overlay: {
-      select: {
-        background: '{md.surface.container}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
-      popover: {
-        background: '{md.surface.container}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
-      modal: {
-        background: '{md.surface.container.high}',
-        borderColor: 'transparent',
-        color: '{md.on.surface}',
-      },
+      select: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
+      popover: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
+      modal: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
     },
     list: {
       option: {
@@ -214,13 +211,46 @@ function scheme(card: string): Record<string, unknown> {
 const ELEVATION_2 = '0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%)';
 const ELEVATION_3 = '0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%)';
 const PILL = '999px';
+/** Half the height of a 40 px button: round, and its corners can morph when pressed (Expressive). */
+const BUTTON_SHAPE = '1.25rem';
 
 /** A state layer of the content color over a transparent background. */
 function over(content: string, percent: number): string {
   return `color-mix(in srgb, ${content} ${String(percent)}%, transparent)`;
 }
 
-/** Filled, tonal, outlined and text buttons (M3) for PrimeNG's plain, secondary, outlined, text. */
+/** A filled button of a role: confirming (success) or cancelling and deleting (error), ADR-0019. */
+function filled(role: 'success' | 'error'): Record<string, unknown> {
+  const on = `{md.on.${role}}`;
+  const color = `{md.${role}}`;
+  return {
+    background: color,
+    hoverBackground: layer(on, color, 8),
+    activeBackground: layer(on, color, 12),
+    borderColor: color,
+    hoverBorderColor: layer(on, color, 8),
+    activeBorderColor: layer(on, color, 12),
+    color: on,
+    hoverColor: on,
+    activeColor: on,
+    focusRing: { color, shadow: 'none' },
+  };
+}
+
+/** A text (or outlined) button of a role: the color of the role over the state layer. */
+function plain(role: string): Record<string, unknown> {
+  return {
+    hoverBackground: over(`{md.${role}}`, 8),
+    activeBackground: over(`{md.${role}}`, 12),
+    borderColor: '{md.outline}',
+    color: `{md.${role}}`,
+  };
+}
+
+/**
+ * Filled, tonal, outlined and text buttons (M3) for PrimeNG's plain, secondary, outlined, text;
+ * success and danger give them the meaning (ADR-0019).
+ */
 const BUTTON_SCHEME = {
   root: {
     secondary: {
@@ -235,55 +265,20 @@ const BUTTON_SCHEME = {
       activeColor: '{md.on.secondary.container}',
       focusRing: { color: '{md.primary}', shadow: 'none' },
     },
-    danger: {
-      background: '{md.error}',
-      hoverBackground: layer('{md.on.error}', '{md.error}', 8),
-      activeBackground: layer('{md.on.error}', '{md.error}', 12),
-      borderColor: '{md.error}',
-      hoverBorderColor: layer('{md.on.error}', '{md.error}', 8),
-      activeBorderColor: layer('{md.on.error}', '{md.error}', 12),
-      color: '{md.on.error}',
-      hoverColor: '{md.on.error}',
-      activeColor: '{md.on.error}',
-      focusRing: { color: '{md.error}', shadow: 'none' },
-    },
+    success: filled('success'),
+    danger: filled('error'),
   },
   outlined: {
-    primary: {
-      hoverBackground: over('{md.primary}', 8),
-      activeBackground: over('{md.primary}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.primary}',
-    },
-    secondary: {
-      hoverBackground: over('{md.on.surface.variant}', 8),
-      activeBackground: over('{md.on.surface.variant}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.on.surface.variant}',
-    },
-    danger: {
-      hoverBackground: over('{md.error}', 8),
-      activeBackground: over('{md.error}', 12),
-      borderColor: '{md.outline}',
-      color: '{md.error}',
-    },
+    primary: plain('primary'),
+    secondary: plain('on.surface.variant'),
+    success: plain('success'),
+    danger: plain('error'),
   },
   text: {
-    primary: {
-      hoverBackground: over('{md.primary}', 8),
-      activeBackground: over('{md.primary}', 12),
-      color: '{md.primary}',
-    },
-    secondary: {
-      hoverBackground: over('{md.on.surface.variant}', 8),
-      activeBackground: over('{md.on.surface.variant}', 12),
-      color: '{md.on.surface.variant}',
-    },
-    danger: {
-      hoverBackground: over('{md.error}', 8),
-      activeBackground: over('{md.error}', 12),
-      color: '{md.error}',
-    },
+    primary: plain('primary'),
+    secondary: plain('on.surface.variant'),
+    success: plain('success'),
+    danger: plain('error'),
   },
   link: { color: '{md.primary}', hoverColor: '{md.primary}', activeColor: '{md.primary}' },
 };
@@ -316,27 +311,37 @@ function snackbar(): Record<string, unknown> {
 const TAG_SCHEME = {
   primary: { background: '{md.primary.container}', color: '{md.on.primary.container}' },
   secondary: { background: '{md.secondary.container}', color: '{md.on.secondary.container}' },
+  success: { background: '{md.success.container}', color: '{md.on.success.container}' },
   danger: { background: '{md.error.container}', color: '{md.on.error.container}' },
 };
 
+/** Buttons of a connected button group (Expressive): tonal, the selected one primary. */
 const TOGGLE_SCHEME = {
   root: {
-    background: 'transparent',
-    checkedBackground: '{md.secondary.container}',
-    hoverBackground: over('{md.on.surface}', 8),
-    borderColor: '{md.outline}',
-    color: '{md.on.surface}',
-    hoverColor: '{md.on.surface}',
-    checkedColor: '{md.on.secondary.container}',
-    checkedBorderColor: '{md.outline}',
+    background: '{md.secondary.container}',
+    checkedBackground: '{md.primary}',
+    hoverBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 8),
+    borderColor: 'transparent',
+    color: '{md.on.secondary.container}',
+    hoverColor: '{md.on.secondary.container}',
+    checkedColor: '{md.on.primary}',
+    checkedBorderColor: 'transparent',
   },
   content: { checkedBackground: 'transparent' },
   icon: {
-    color: '{md.on.surface}',
-    hoverColor: '{md.on.surface}',
-    checkedColor: '{md.on.secondary.container}',
+    color: '{md.on.secondary.container}',
+    hoverColor: '{md.on.secondary.container}',
+    checkedColor: '{md.on.primary}',
   },
 };
+
+/** A spring of the shape plus PrimeNG's own transitions of a button. */
+function shapeTransition(component: string): string {
+  const duration = `var(--p-${component}-transition-duration)`;
+  return `background ${duration}, color ${duration}, border-color ${duration},
+    outline-color ${duration}, box-shadow ${duration},
+    border-radius var(--tb-spring-fast-spatial)`;
+}
 
 const SWITCH_SCHEME = {
   root: {
@@ -444,8 +449,8 @@ export const TeacherBoxPreset = definePreset(Aura, {
   components: {
     button: {
       root: {
-        borderRadius: PILL,
-        roundedBorderRadius: PILL,
+        borderRadius: BUTTON_SHAPE,
+        roundedBorderRadius: BUTTON_SHAPE,
         gap: '0.5rem',
         paddingX: '1.5rem',
         paddingY: '0.625rem',
@@ -466,31 +471,40 @@ export const TeacherBoxPreset = definePreset(Aura, {
         raisedShadow: '0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%)',
       },
       colorScheme: { light: BUTTON_SCHEME, dark: BUTTON_SCHEME },
+      // Pressed, a button squares its corners and springs back (Expressive shape morph)
+      css: `
+        .p-button {
+          transition: ${shapeTransition('button')};
+        }
+        .p-button:not(:disabled):active {
+          border-radius: var(--tb-shape-md);
+        }
+      `,
     },
     card: {
       root: {
         background: '{content.background}',
-        borderRadius: '{border.radius.lg}',
+        borderRadius: '1.25rem',
         shadow: 'none',
       },
       body: { padding: '1.25rem 1.5rem', gap: '0.75rem' },
-      title: { fontSize: '1.375rem', fontWeight: '400' },
+      title: { fontSize: '1.375rem', fontWeight: '500' },
       subtitle: { color: '{md.on.surface.variant}' },
     },
     dialog: {
       root: { background: '{overlay.modal.background}', borderColor: 'transparent' },
       header: { padding: '1.5rem 1.5rem 1rem', gap: '0.5rem' },
-      title: { fontSize: '1.5rem', fontWeight: '400' },
+      title: { fontSize: '1.5rem', fontWeight: '500' },
       content: { padding: '0 1.5rem' },
       footer: { padding: '1.5rem', gap: '0.5rem' },
     },
     drawer: {
-      root: { background: '{md.surface.container.low}', borderColor: 'transparent' },
+      root: { background: '{content.background}', borderColor: 'transparent' },
       title: { fontSize: '1.375rem', fontWeight: '400' },
     },
     menu: {
       root: {
-        background: '{md.surface.container}',
+        background: '{content.background}',
         borderColor: 'transparent',
         borderRadius: '{border.radius.xs}',
         shadow: ELEVATION_2,
@@ -568,12 +582,68 @@ export const TeacherBoxPreset = definePreset(Aura, {
       colorScheme: { light: SWITCH_SCHEME, dark: SWITCH_SCHEME },
     },
     togglebutton: {
-      root: { padding: '0', borderRadius: PILL, fontWeight: '500' },
-      content: { padding: '0.5rem 1rem', borderRadius: PILL, checkedShadow: 'none' },
+      root: { padding: '0', borderRadius: BUTTON_SHAPE, fontWeight: '500' },
+      content: { padding: '0.5625rem 1rem', borderRadius: PILL, checkedShadow: 'none' },
       colorScheme: { light: TOGGLE_SCHEME, dark: TOGGLE_SCHEME },
+      css: `
+        .p-togglebutton {
+          font-size: 0.875rem;
+          transition: ${shapeTransition('togglebutton')};
+        }
+        .p-togglebutton:not(:disabled):active {
+          border-radius: var(--tb-shape-md);
+        }
+      `,
     },
+    // A connected button group: 2 px apart, small inner corners, the selected button round
     selectbutton: {
-      root: { borderRadius: PILL },
+      root: { borderRadius: BUTTON_SHAPE },
+      css: `
+        .p-selectbutton {
+          gap: 2px;
+        }
+        .p-selectbutton .p-togglebutton {
+          border-width: 1px;
+          border-radius: var(--tb-shape-sm);
+        }
+        .p-selectbutton .p-togglebutton-checked {
+          border-radius: var(--tb-shape-button);
+        }
+        .p-selectbutton .p-togglebutton:not(:disabled):active {
+          border-radius: var(--tb-shape-md);
+        }
+      `,
+    },
+    // The loading indicator of M3 Expressive: a morphing shape in a round container
+    progressspinner: {
+      css: `
+        .p-progressspinner {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 3rem;
+          height: 3rem;
+          border-radius: var(--tb-shape-2xl);
+          background: var(--p-md-primary-container);
+        }
+        .p-progressspinner-spin {
+          display: none;
+        }
+        .p-progressspinner::after {
+          content: '';
+          width: 60%;
+          height: 60%;
+          background: var(--p-md-primary);
+          animation: tb-loading-morph 1.6s linear infinite;
+        }
+        @keyframes tb-loading-morph {
+          0% { border-radius: 50%; transform: rotate(0deg) scale(1); }
+          25% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(90deg) scale(0.9); }
+          50% { border-radius: 22%; transform: rotate(180deg) scale(0.85); }
+          75% { border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%; transform: rotate(270deg) scale(0.9); }
+          100% { border-radius: 50%; transform: rotate(360deg) scale(1); }
+        }
+      `,
     },
     checkbox: {
       root: {
@@ -634,7 +704,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       value: { background: '{md.primary}' },
     },
     datepicker: {
-      panel: { background: '{md.surface.container.high}', borderRadius: '{border.radius.lg}' },
+      panel: { background: '{content.background}', borderRadius: '{border.radius.lg}' },
       date: { borderRadius: PILL, width: '2.5rem', height: '2.5rem' },
       dropdown: {
         width: '3rem',

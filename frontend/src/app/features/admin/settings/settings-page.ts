@@ -83,6 +83,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
     <tb-page-header title="Настройки">
       <tb-help-button help topic="admin/settings" />
       <p-button
+        severity="success"
         label="Сохранить и перезапустить"
         icon="pi pi-save"
         [disabled]="changes() === 0"
@@ -221,11 +222,12 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
         @if (stage() === 'confirm') {
           <p-button
             label="Отмена"
-            severity="secondary"
+            severity="danger"
             [text]="true"
             (onClick)="confirmVisible.set(false)"
           />
           <p-button
+            severity="success"
             label="Сохранить"
             [loading]="pending()"
             [disabled]="password().trim() === ''"

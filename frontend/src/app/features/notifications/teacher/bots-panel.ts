@@ -9,6 +9,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-labels';
 import { BotWizardDialog } from './bot-wizard-dialog';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 /** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
 @Component({
@@ -63,7 +64,7 @@ import { BotWizardDialog } from './bot-wizard-dialog';
                   [text]="true"
                   [pTooltip]="'Отключить бота ' + names[bot.channel]"
                   [rounded]="true"
-                  severity="secondary"
+                  severity="danger"
                   [ariaLabel]="'Отключить бота ' + names[bot.channel]"
                   (onClick)="confirmRemove(bot.channel)"
                 />
@@ -165,25 +166,25 @@ export class BotsPanel implements OnInit {
   }
 
   confirmRemove(channel: ChannelType): void {
-    this.confirmation.confirm({
-      header: 'Отключить бота?',
-      message: `Уведомления перестанут приходить в ${CHANNEL_NAMES[channel]}. Подключения учеников сохранятся и заработают снова, если подключить этого же бота.`,
-      acceptLabel: 'Отключить',
-      rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.removeBot(channel).subscribe(() => {
-          this.messages.add({
-            severity: 'info',
-            summary: 'Отключено',
-            detail: `Бот ${CHANNEL_NAMES[channel]} отключён`,
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Отключить бота?',
+        message: `Уведомления перестанут приходить в ${CHANNEL_NAMES[channel]}. Подключения учеников сохранятся и заработают снова, если подключить этого же бота.`,
+        acceptLabel: 'Отключить',
+        rejectLabel: 'Отмена',
+        accept: () => {
+          this.api.removeBot(channel).subscribe(() => {
+            this.messages.add({
+              severity: 'info',
+              summary: 'Отключено',
+              detail: `Бот ${CHANNEL_NAMES[channel]} отключён`,
+            });
+            this.reload();
+            this.changed.emit();
           });
-          this.reload();
-          this.changed.emit();
-        });
-      },
-    });
+        },
+      }),
+    );
   }
 
   /** Reloads the bots (e.g. after the teacher connected or disconnected their own account). */

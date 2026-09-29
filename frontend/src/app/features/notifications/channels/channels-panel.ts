@@ -71,7 +71,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                     [text]="true"
                     [pTooltip]="'Отключить ' + names[channel.channel]"
                     [rounded]="true"
-                    severity="secondary"
+                    severity="danger"
                     [ariaLabel]="'Отключить ' + names[channel.channel]"
                     (onClick)="unlink(channel.channel)"
                   />

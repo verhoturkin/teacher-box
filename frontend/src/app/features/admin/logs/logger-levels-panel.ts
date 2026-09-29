@@ -51,9 +51,10 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
           appendTo="body"
         />
         <p-button
+          class="tb-tonal"
           type="submit"
           label="Применить"
-          severity="secondary"
+          severity="success"
           [disabled]="form.invalid"
           [loading]="pending()"
         />

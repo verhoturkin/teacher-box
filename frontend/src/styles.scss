@@ -2,8 +2,9 @@
 @use '@fontsource-variable/roboto/wght.css';
 
 /*
- * Design tokens (ADR-0015, ADR-0017 Material Design 3): spacing on a 4 px grid (--tb-space-N =
- * N x 4 px), the M3 type scale, shape, elevation, state layers and motion, the width of the
+ * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
+ * a 4 px grid (--tb-space-N = N x 4 px), the M3 type scale, shape, elevation, state layers and
+ * motion (springs), the width of the
  * content, the height of the top app bar. Colors come from the roles of the PrimeNG preset
  * (core/theme, --p-md-*), so that components and PrimeNG widgets match.
  */
@@ -29,6 +30,10 @@
   --tb-type-headline-m: 400 1.75rem/2.25rem var(--tb-font);
   --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
   --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
+  /* Emphasized roles (Expressive): the titles of pages, cards and dialogs */
+  --tb-type-headline-m-emphasized: 500 1.75rem/2.25rem var(--tb-font);
+  --tb-type-headline-s-emphasized: 500 1.5rem/2rem var(--tb-font);
+  --tb-type-title-l-emphasized: 500 1.375rem/1.75rem var(--tb-font);
   --tb-type-title-m: 500 1rem/1.5rem var(--tb-font);
   --tb-type-title-s: 500 0.875rem/1.25rem var(--tb-font);
   --tb-type-body-l: 400 1rem/1.5rem var(--tb-font);
@@ -43,8 +48,13 @@
   --tb-shape-sm: 8px;
   --tb-shape-md: 12px;
   --tb-shape-lg: 16px;
+  --tb-shape-lg-plus: 20px;
   --tb-shape-xl: 28px;
+  --tb-shape-xl-plus: 32px;
+  --tb-shape-2xl: 48px;
   --tb-shape-full: 999px;
+  /* A 40 px button: half its height, so that pressing it can morph the corners (Expressive) */
+  --tb-shape-button: 1.25rem;
   --tb-radius: var(--tb-shape-md);
 
   /* Elevation: surfaces differ by tone; shadows only for floating elements */
@@ -62,6 +72,45 @@
   --tb-motion-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
   --tb-duration-short: 150ms;
   --tb-duration-medium: 300ms;
+
+  /*
+   * Springs of M3 Expressive (damping / stiffness): spatial ones overshoot and are for position,
+   * size and shape, effects ones do not and are for color and opacity. Each token is a duration
+   * with the precomputed curve: `transition: border-radius var(--tb-spring-fast-spatial)`.
+   */
+  /* 0.6 / 800 */
+  /* prettier-ignore */
+  --tb-spring-fast-spatial: 380ms
+    linear(
+      0, 0.049, 0.169, 0.325, 0.492, 0.65, 0.787, 0.899, 0.983, 1.041, 1.075, 1.092, 1.094, 1.087,
+      1.075, 1.059, 1.044, 1.029, 1.017, 1.007, 1, 0.995, 0.992, 0.991, 0.991, 0.992, 0.993,
+      0.995, 0.996, 0.998, 0.999, 1, 1
+    );
+  /* 0.8 / 380 */
+  /* prettier-ignore */
+  --tb-spring-default-spatial: 430ms
+    linear(
+      0, 0.03, 0.104, 0.203, 0.312, 0.423, 0.528, 0.623, 0.707, 0.778, 0.838, 0.886, 0.924, 0.953,
+      0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
+      1.006, 1.004, 1.003, 1.002, 1.002, 1
+    );
+  /* 0.8 / 200: the same curve, slower */
+  /* prettier-ignore */
+  --tb-spring-slow-spatial: 595ms
+    linear(
+      0, 0.03, 0.104, 0.203, 0.312, 0.423, 0.528, 0.623, 0.707, 0.778, 0.838, 0.886, 0.924, 0.953,
+      0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
+      1.006, 1.004, 1.003, 1.002, 1.002, 1
+    );
+  /* critically damped (1 / 3800, 1 / 1600, 1 / 800): one curve, three durations */
+  /* prettier-ignore */
+  --tb-spring-effects-curve: linear(
+    0, 0.099, 0.286, 0.472, 0.625, 0.742, 0.826, 0.885, 0.924, 0.951, 0.968, 0.98, 0.987, 0.992,
+    0.995, 0.997, 1
+  );
+  --tb-spring-fast-effects: 140ms var(--tb-spring-effects-curve);
+  --tb-spring-default-effects: 210ms var(--tb-spring-effects-curve);
+  --tb-spring-slow-effects: 300ms var(--tb-spring-effects-curve);
 }
 
 :root {
@@ -103,6 +152,29 @@ textarea.p-textarea {
   letter-spacing: 0.00625rem;
 }
 
+/*
+ * Tonal buttons with a meaning (ADR-0019): `class="tb-tonal"` with severity success or danger gives
+ * the container of the role instead of the filled color, e.g. «Вернуть на доработку».
+ */
+@each $role, $severity in (success: success, error: danger) {
+  p-button.tb-tonal .p-button-#{$severity}:not(.p-button-text) {
+    border-color: var(--p-md-#{$role}-container);
+    background: var(--p-md-#{$role}-container);
+    color: var(--p-md-on-#{$role}-container);
+
+    &:not(:disabled):hover,
+    &:not(:disabled):active {
+      border-color: var(--p-md-#{$role}-container);
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-#{$role}-container) 8%,
+        var(--p-md-#{$role}-container)
+      );
+      color: var(--p-md-on-#{$role}-container);
+    }
+  }
+}
+
 /* Less motion when the system asks for it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -117,10 +189,10 @@ textarea.p-textarea {
 
 .tb-page-title {
   margin: 0 0 var(--tb-space-4);
-  font: var(--tb-type-headline-m);
+  font: var(--tb-type-headline-m-emphasized);
 
   @media (max-width: 768px) {
-    font: var(--tb-type-headline-s);
+    font: var(--tb-type-headline-s-emphasized);
   }
 }
 
@@ -209,7 +281,7 @@ textarea.p-textarea {
   max-width: 28rem;
 
   &.p-card {
-    border-radius: var(--tb-shape-xl);
+    border-radius: var(--tb-shape-xl-plus);
   }
 
   .p-card-body {
@@ -222,7 +294,7 @@ textarea.p-textarea {
   }
 
   .p-card-title {
-    font: var(--tb-type-headline-s);
+    font: var(--tb-type-headline-s-emphasized);
   }
 
   .tb-form {
@@ -723,7 +795,10 @@ a.p-menu-item-link:hover {
   --fc-classic-strong-border: var(--p-md-outline);
 }
 
-/* Calendar buttons (M3): pill buttons; the views are a segmented button with the selected one tonal */
+/*
+ * Calendar buttons (M3 Expressive): tonal pill buttons that change their shape when pressed; the
+ * views are a connected button group (ADR-0019) — the selected view is primary and fully round.
+ */
 .tb-fc-button.tb-fc-button,
 .tb-fc-segment.tb-fc-segment {
   display: inline-flex;
@@ -732,15 +807,27 @@ a.p-menu-item-link:hover {
   min-width: 2.5rem;
   height: 2.5rem;
   padding: 0 var(--tb-space-4);
-  border: 1px solid var(--p-md-outline);
-  background: transparent;
-  color: var(--p-md-on-surface);
+  border: 1px solid var(--p-md-secondary-container);
+  border-radius: var(--tb-shape-button);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
   font: var(--tb-type-label-l);
   cursor: pointer;
-  transition: background var(--tb-duration-short) var(--tb-motion-standard);
+  transition:
+    background var(--tb-spring-fast-effects),
+    color var(--tb-spring-fast-effects),
+    border-radius var(--tb-spring-fast-spatial);
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-secondary-container)
+    );
+  }
+
+  &:active:not(:disabled) {
+    border-radius: var(--tb-shape-md);
   }
 
   &:focus-visible {
@@ -754,48 +841,38 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* Calendar buttons are tonal (ADR-0018); the views stay a segmented button with its outline */
-.tb-fc-button.tb-fc-button {
-  border-color: var(--p-md-secondary-container);
-  border-radius: var(--tb-shape-full);
-  background: var(--p-md-secondary-container);
-  color: var(--p-md-on-secondary-container);
-
-  &:hover:not(:disabled) {
-    background: color-mix(
-      in srgb,
-      var(--p-md-on-secondary-container) 8%,
-      var(--p-md-secondary-container)
-    );
-  }
-
-  & + .tb-fc-button {
-    margin-inline-start: var(--tb-space-1);
-  }
+.tb-fc-button.tb-fc-button + .tb-fc-button {
+  margin-inline-start: var(--tb-space-1);
 }
 
+/* The connected group: 2 px apart, small inner corners, round outer ones, the selected one round */
 .tb-fc-segments.tb-fc-segments {
   display: inline-flex;
+  gap: 2px;
 
   .tb-fc-segment {
-    border-radius: 0;
-
-    & + .tb-fc-segment {
-      border-inline-start-width: 0;
-    }
+    border-radius: var(--tb-shape-sm);
 
     &:first-child {
-      border-radius: var(--tb-shape-full) 0 0 var(--tb-shape-full);
+      border-start-start-radius: var(--tb-shape-button);
+      border-end-start-radius: var(--tb-shape-button);
     }
 
     &:last-child {
-      border-radius: 0 var(--tb-shape-full) var(--tb-shape-full) 0;
+      border-start-end-radius: var(--tb-shape-button);
+      border-end-end-radius: var(--tb-shape-button);
+    }
+
+    &:active:not(:disabled) {
+      border-radius: var(--tb-shape-md);
     }
 
     &[aria-selected='true'],
     &[aria-pressed='true'] {
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
+      border-color: var(--p-md-primary);
+      border-radius: var(--tb-shape-button);
+      background: var(--p-md-primary);
+      color: var(--p-md-on-primary);
     }
   }
 }
@@ -867,7 +944,7 @@ a.p-menu-item-link:hover {
   .p-datatable-tbody > tr {
     margin-bottom: var(--tb-space-3);
     padding: var(--tb-space-3) var(--tb-space-4);
-    border-radius: var(--tb-shape-md);
+    border-radius: var(--tb-shape-lg);
     background: var(--p-content-background);
   }
 
@@ -1011,6 +1088,7 @@ a.p-menu-item-link:hover {
       background: var(--p-md-primary-container);
       color: var(--p-md-on-primary-container);
       box-shadow: var(--tb-elevation-3);
+      animation: tb-fab-in var(--tb-spring-default-spatial) both;
 
       &:not(:disabled):hover {
         border-color: var(--p-md-primary-container);
@@ -1025,6 +1103,13 @@ a.p-menu-item-link:hover {
       .p-button-icon {
         font-size: 1.25rem;
       }
+    }
+  }
+
+  @keyframes tb-fab-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
     }
   }
 

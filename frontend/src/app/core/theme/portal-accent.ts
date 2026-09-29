@@ -60,6 +60,32 @@ export function ownColorContrast(color: string): { readonly light: number; reado
   };
 }
 
+/**
+ * Whether the color of the portal looks like the green of confirming buttons (ADR-0019): the
+ * emerald palette or an own color of a green hue (75–165°) that is not greyish.
+ */
+export function isGreenAccent(accent: string): boolean {
+  if (accent === 'emerald') {
+    return true;
+  }
+  if (!isOwnColor(accent)) {
+    return false;
+  }
+  const [red = 0, green = 0, blue = 0] = [1, 3, 5].map(
+    (start) => parseInt(accent.slice(start, start + 2), 16) / 255,
+  );
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const lightness = (max + min) / 2;
+  const chroma = max - min;
+  const saturation = chroma === 0 ? 0 : chroma / (1 - Math.abs(2 * lightness - 1));
+  if (max !== green || saturation < 0.25) {
+    return false;
+  }
+  const hue = 60 * ((blue - red) / chroma + 2);
+  return hue >= 75 && hue <= 165;
+}
+
 /** Shades 50–950 of the own color (the color itself is 500). */
 export function ownShades(color: string): Record<string, string> {
   const scale: unknown = palette(color.toLowerCase());

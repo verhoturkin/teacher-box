@@ -25,6 +25,7 @@ import { LedgerTable } from '../ledger/ledger-table';
 import { PaymentDialog } from './payment-dialog';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
@@ -94,6 +95,7 @@ import { HelpButton } from '@features/help/parts';
                   styleClass="tb-grow"
                 />
                 <p-button
+                  severity="success"
                   icon="pi pi-check"
                   ariaLabel="Сохранить цену"
                   [disabled]="price.invalid || !priceChanged()"
@@ -101,7 +103,7 @@ import { HelpButton } from '@features/help/parts';
                 />
                 <p-button
                   icon="pi pi-times"
-                  severity="secondary"
+                  severity="danger"
                   [text]="true"
                   [rounded]="true"
                   pTooltip="Отменить"
@@ -214,35 +216,35 @@ export class StudentLedgerPage implements OnInit {
 
   protected confirmCancel(lesson: Lesson): void {
     const ledger = this.ledger();
-    this.confirmation.confirm({
-      header: 'Отменить занятие?',
-      message: `Начисление ${ledger === null ? '' : formatMoney(lesson.price, ledger.currency)} будет снято. Запись останется в истории.`,
-      acceptLabel: 'Отменить занятие',
-      rejectLabel: 'Назад',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.cancelLesson(lesson.id, null).subscribe(() => {
-          this.reload();
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Отменить занятие?',
+        message: `Начисление ${ledger === null ? '' : formatMoney(lesson.price, ledger.currency)} будет снято. Запись останется в истории.`,
+        acceptLabel: 'Отменить занятие',
+        rejectLabel: 'Назад',
+        accept: () => {
+          this.api.cancelLesson(lesson.id, null).subscribe(() => {
+            this.reload();
+          });
+        },
+      }),
+    );
   }
 
   protected confirmVoid(payment: Payment): void {
     const ledger = this.ledger();
-    this.confirmation.confirm({
-      header: 'Аннулировать оплату?',
-      message: `Оплата ${ledger === null ? '' : formatMoney(payment.amount, ledger.currency)} перестанет учитываться. Запись останется в истории.`,
-      acceptLabel: 'Аннулировать',
-      rejectLabel: 'Назад',
-      acceptButtonProps: { severity: 'danger' },
-      rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => {
-        this.api.voidPayment(payment.id, null).subscribe(() => {
-          this.reload();
-        });
-      },
-    });
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: 'Аннулировать оплату?',
+        message: `Оплата ${ledger === null ? '' : formatMoney(payment.amount, ledger.currency)} перестанет учитываться. Запись останется в истории.`,
+        acceptLabel: 'Аннулировать',
+        rejectLabel: 'Назад',
+        accept: () => {
+          this.api.voidPayment(payment.id, null).subscribe(() => {
+            this.reload();
+          });
+        },
+      }),
+    );
   }
 }

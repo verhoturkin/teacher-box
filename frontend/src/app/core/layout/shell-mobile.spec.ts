@@ -20,7 +20,6 @@ describe('Shell on a phone', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('homeLink', '/teacher');
-    fixture.componentRef.setInput('areaTitle', 'Кабинет учителя');
     await fixture.whenStable();
     return hostElement(fixture);
   }

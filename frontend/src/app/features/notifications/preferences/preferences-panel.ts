@@ -104,9 +104,10 @@ function shortTime(time: string | null, fallback: string): string {
           }
           <div class="tb-form-actions">
             <p-button
+              class="tb-tonal"
               type="submit"
               label="Сохранить"
-              severity="secondary"
+              severity="success"
               icon="pi pi-check"
               [loading]="pending()"
               [disabled]="form.pristine"

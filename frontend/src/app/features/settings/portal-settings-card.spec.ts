@@ -71,8 +71,9 @@ describe('PortalSettingsCard', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
 
-  it('saves the chosen color', async () => {
+  it('saves the chosen color and warns that a green one looks like confirming buttons', async () => {
     const host = await render();
+    expect(readableText(host)).not.toContain('Кнопки подтверждения');
 
     requireElement(host, 'button[aria-label="Изумрудный"]', HTMLButtonElement).click();
     await fixture.whenStable();
@@ -81,6 +82,9 @@ describe('PortalSettingsCard', () => {
         'aria-checked',
       ),
     ).toBe('true');
+    expect(readableText(host)).toContain(
+      'Кнопки подтверждения («Сохранить», «Принять») тоже зелёные',
+    );
     buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });

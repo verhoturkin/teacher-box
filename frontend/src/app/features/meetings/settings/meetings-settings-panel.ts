@@ -96,7 +96,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
             <p-tag value="Яндекс подключён" severity="success" />
             <span class="tb-muted">с {{ status.connectedAt | date: 'dd.MM.yyyy HH:mm' }}</span>
           </div>
-          <p-button label="Отключить" severity="secondary" [text]="true" (onClick)="disconnect()" />
+          <p-button label="Отключить" severity="danger" [text]="true" (onClick)="disconnect()" />
         } @else {
           @if (status.status === 'NEEDS_RECONNECT') {
             <p-message severity="warn" styleClass="tb-form-message">
@@ -176,15 +176,16 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                 @if (status.clientConfigured) {
                   <p-button
                     label="Отмена"
-                    severity="secondary"
+                    severity="danger"
                     [text]="true"
                     (onClick)="editingClient.set(false)"
                   />
                 }
                 <p-button
+                  class="tb-tonal"
                   type="submit"
                   label="Сохранить"
-                  severity="secondary"
+                  severity="success"
                   [disabled]="form.invalid"
                   [loading]="pending()"
                 />

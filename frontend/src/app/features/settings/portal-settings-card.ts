@@ -24,6 +24,7 @@ import {
   DEFAULT_ACCENT,
   DEFAULT_OWN_COLOR,
   MIN_CONTRAST,
+  isGreenAccent,
   isOwnColor,
   ownColorContrast,
   ownShades,
@@ -136,6 +137,12 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
               }
             }
+            @if (green()) {
+              <p-message severity="warn" styleClass="tb-form-message"
+                >Кнопки подтверждения («Сохранить», «Принять») тоже зелёные — с зелёным цветом
+                портала главное действие раздела будет трудно отличить от них.</p-message
+              >
+            }
             <small class="tb-hint">Кнопки, ссылки и выделения портала — в этом цвете.</small>
           </div>
           <div class="tb-field">
@@ -158,12 +165,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 (onClick)="logoFile.click()"
               />
               @if (settings.logo !== null) {
-                <p-button
-                  label="Убрать"
-                  severity="secondary"
-                  [text]="true"
-                  (onClick)="removeLogo()"
-                />
+                <p-button label="Убрать" severity="danger" [text]="true" (onClick)="removeLogo()" />
               }
             </div>
             <small class="tb-hint">
@@ -173,9 +175,10 @@ const MAX_LOGO_SIZE = 1024 * 1024;
           </div>
           <div class="tb-form-actions">
             <p-button
+              class="tb-tonal"
               type="submit"
               label="Сохранить"
-              severity="secondary"
+              severity="success"
               [disabled]="form.invalid"
               [loading]="pending()"
             />
@@ -277,6 +280,8 @@ export class PortalSettingsCard implements OnInit {
   protected readonly shades = computed(() =>
     ownShades(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
   );
+  /** The color of the portal looks like the green of confirming buttons (ADR-0019). */
+  protected readonly green = computed(() => isGreenAccent(this.accent()));
   /** Advice when the text on buttons of the own color would be poorly readable. */
   protected readonly poorContrast = computed(() => {
     if (!this.own()) {

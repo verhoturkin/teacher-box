@@ -40,9 +40,10 @@ import { PageHeader } from '@shared/ui/page-header';
                     class="tb-grow"
                   />
                   <p-button
+                    class="tb-tonal"
                     type="submit"
                     label="Сохранить"
-                    severity="secondary"
+                    severity="success"
                     [disabled]="
                       nameForm.invalid ||
                       nameForm.controls.name.value.trim() === account.displayName

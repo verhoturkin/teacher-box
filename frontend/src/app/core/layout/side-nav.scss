@@ -1,4 +1,7 @@
-/* The drawer: 280 px, items 56 px high with the pill indicator (M3 navigation drawer) */
+/*
+ * The expanded navigation rail (M3 Expressive, ADR-0019): 280 px, items 56 px high and 4 px apart,
+ * the pill indicator of the active section springs out from its middle
+ */
 :host {
   position: sticky;
   top: var(--tb-header-height);
@@ -19,13 +22,29 @@
   }
 
   .p-menu-list {
-    gap: 0;
+    gap: var(--tb-space-1);
     padding: 0;
   }
 
   .p-menu-item-content {
+    position: relative;
+    isolation: isolate;
     border-radius: var(--tb-shape-full);
-    transition: background var(--tb-duration-short) var(--tb-motion-standard);
+    transition: background var(--tb-spring-fast-effects);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: var(--p-md-secondary-container);
+      opacity: 0;
+      transform: scaleX(0.4);
+      transition:
+        transform var(--tb-spring-default-spatial),
+        opacity var(--tb-spring-fast-effects);
+    }
   }
 
   .p-menu-item-link {
@@ -46,7 +65,10 @@
   }
 
   .p-menu-item-content:has(.p-menu-item-link-active) {
-    background: var(--p-md-secondary-container);
+    &::before {
+      opacity: 1;
+      transform: none;
+    }
 
     .p-menu-item-link {
       color: var(--p-md-on-secondary-container);
@@ -69,6 +91,10 @@
     .p-menu-item.p-focus > .p-menu-item-content,
     .p-menu-item-content:has(.p-menu-item-link-active) {
       background: transparent;
+
+      &::before {
+        display: none;
+      }
     }
 
     .p-menu-item-link {
@@ -88,7 +114,7 @@
       height: 2rem;
       margin: 0;
       border-radius: var(--tb-shape-full);
-      transition: background var(--tb-duration-short) var(--tb-motion-standard);
+      transition: background var(--tb-spring-fast-effects);
     }
 
     .p-menu-item-link:hover .p-menu-item-icon,

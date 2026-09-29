@@ -32,9 +32,10 @@ import { AdminApi } from '../data-access/admin-api';
           @if (!settings.addressFromEnvironment) {
             <div class="tb-form-actions">
               <p-button
+                class="tb-tonal"
                 type="submit"
                 label="Сохранить адрес"
-                severity="secondary"
+                severity="success"
                 [disabled]="form.invalid"
                 [loading]="pending()"
               />

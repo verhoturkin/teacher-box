@@ -17,12 +17,7 @@ export const ADMIN_MENU: MenuItem[] = [
   selector: 'tb-admin-layout',
   imports: [Shell],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-shell
-    [items]="menu"
-    homeLink="/admin"
-    areaTitle="Администрирование"
-    [notifications]="false"
-  />`,
+  template: `<tb-shell [items]="menu" homeLink="/admin" [notifications]="false" />`,
 })
 export class AdminLayout {
   protected readonly menu = ADMIN_MENU;

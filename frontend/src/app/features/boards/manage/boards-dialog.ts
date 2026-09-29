@@ -57,7 +57,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
                   [text]="true"
                   [pTooltip]="'Удалить доску: ' + board.title"
                   [rounded]="true"
-                  severity="secondary"
+                  severity="danger"
                   [ariaLabel]="'Удалить доску: ' + board.title"
                   (onClick)="remove(board)"
                 />
@@ -100,13 +100,14 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
         }
         <div class="tb-actions">
           <p-button
+            severity="success"
             type="submit"
             [label]="editing() === null ? 'Добавить доску' : 'Сохранить'"
             [disabled]="form.invalid"
             [loading]="pending()"
           />
           @if (editing() !== null) {
-            <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
+            <p-button label="Отмена" severity="danger" [text]="true" (onClick)="cancelEdit()" />
           }
         </div>
       </form>

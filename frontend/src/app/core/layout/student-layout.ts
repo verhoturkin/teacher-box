@@ -19,7 +19,7 @@ export const STUDENT_MENU: MenuItem[] = [
   selector: 'tb-student-layout',
   imports: [Shell],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-shell [items]="menu" homeLink="/cabinet" areaTitle="Личный кабинет" />`,
+  template: `<tb-shell [items]="menu" homeLink="/cabinet" />`,
 })
 export class StudentLayout {
   protected readonly menu = STUDENT_MENU;

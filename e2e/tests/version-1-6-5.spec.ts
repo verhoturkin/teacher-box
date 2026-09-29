@@ -52,20 +52,22 @@ test('on a phone the main action of every section is the same extended FAB', asy
     const fab = page.locator('p-button.tb-page-fab');
     await expect(fab).toHaveCount(1);
     await expect(fab.getByRole('button')).toHaveText(label);
-    const box = await fab.getByRole('button').boundingBox();
-    expect(box?.height).toBe(56);
+    // The FAB springs in when the page opens (ADR-0019): its size is checked once it has settled.
+    await expect.poll(async () => (await fab.getByRole('button').boundingBox())?.height).toBe(56);
   }
   await context.close();
 });
 
-test('secondary buttons are tonal: no outlined, small or colored buttons', async ({ page }) => {
+// Since 1.6.6 buttons are green or red by their meaning (ADR-0019); outlined, small, orange and
+// blue ones stay out.
+test('secondary buttons are tonal: no outlined, small, orange or blue buttons', async ({
+  page,
+}) => {
   await signIn(page);
   for (const path of PAGES) {
     await open(page, path);
     await expect(
-      page.locator(
-        '.p-button-outlined, .p-button-sm, .p-button-success, .p-button-warn, .p-button-info',
-      ),
+      page.locator('.p-button-outlined, .p-button-sm, .p-button-warn, .p-button-info'),
     ).toHaveCount(0);
     // One filled button on a page at most: its main action.
     const filled = await page
@@ -75,7 +77,7 @@ test('secondary buttons are tonal: no outlined, small or colored buttons', async
           buttons.filter(
             (button) =>
               !/p-button-(secondary|text|link|danger)/.test(button.className) &&
-              button.closest('.p-dialog, .p-datepicker, .fc') === null,
+              button.closest('.p-dialog, .p-datepicker, .fc, .tb-tonal') === null,
           ).length,
       );
     expect(filled, path).toBeLessThanOrEqual(1);
