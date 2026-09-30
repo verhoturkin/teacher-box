@@ -7,47 +7,51 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem } from '../data-access/notifications.models';
 import { KIND_ICONS } from '../notification-labels';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 export const LATEST_COUNT = 5;
 
 /** Home: the latest notifications with a link to all of them. */
 @Component({
   selector: 'tb-latest-notifications-widget',
-  imports: [EmptyState, DatePipe, RouterLink, Card],
+  imports: [EmptyState, DatePipe, RouterLink, Card, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Уведомления">
-      @if (items(); as items) {
-        @if (items.length === 0) {
-          <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
-        } @else {
-          <ul class="tb-list tb-latest">
-            @for (item of items; track item.id) {
-              <li [class.tb-latest--unread]="!item.read">
-                <span
-                  class="tb-list__lead"
-                  [class.tb-list__lead--accent]="!item.read"
-                  aria-hidden="true"
-                  ><i [class]="icons[item.kind]"></i
-                ></span>
-                <div class="tb-list__text">
-                  <button
-                    type="button"
-                    class="tb-list__title tb-latest__title"
-                    [disabled]="item.link === null"
-                    (click)="open(item)"
-                  >
-                    {{ item.title }}
-                  </button>
-                  <span class="tb-list__supporting">{{
-                    item.createdAt | date: 'dd.MM HH:mm'
-                  }}</span>
-                </div>
-              </li>
-            }
-          </ul>
+      <tb-load-state [state]="state" what="уведомления" [compact]="true" (retry)="load()">
+        @if (items(); as items) {
+          @if (items.length === 0) {
+            <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
+          } @else {
+            <ul class="tb-list tb-latest">
+              @for (item of items; track item.id) {
+                <li [class.tb-latest--unread]="!item.read">
+                  <span
+                    class="tb-list__lead"
+                    [class.tb-list__lead--accent]="!item.read"
+                    aria-hidden="true"
+                    ><i [class]="icons[item.kind]"></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <button
+                      type="button"
+                      class="tb-list__title tb-latest__title"
+                      [disabled]="item.link === null"
+                      (click)="open(item)"
+                    >
+                      {{ item.title }}
+                    </button>
+                    <span class="tb-list__supporting">{{
+                      item.createdAt | date: 'dd.MM HH:mm'
+                    }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
         }
-      }
+      </tb-load-state>
       <div class="tb-widget-footer">
         <span class="tb-muted">
           @if (unread() > 0) {
@@ -92,12 +96,20 @@ export class LatestNotificationsWidget implements OnInit {
   protected readonly icons = KIND_ICONS;
   protected readonly items = signal<NotificationItem[] | null>(null);
   protected readonly unread = this.unreadCounter.count;
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.api.page(0, LATEST_COUNT).subscribe((page) => {
-      this.items.set(page.items);
-      this.unreadCounter.set(page.unread);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .page(0, LATEST_COUNT)
+      .pipe(this.state.track())
+      .subscribe((page) => {
+        this.items.set(page.items);
+        this.unreadCounter.set(page.unread);
+      });
   }
 
   open(item: NotificationItem): void {

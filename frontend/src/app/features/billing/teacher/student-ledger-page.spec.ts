@@ -51,18 +51,22 @@ describe('StudentLedgerPage', () => {
     expect(host.querySelectorAll('tbody tr')).toHaveLength(2);
   });
 
-  it('changes the lesson price in place', async () => {
+  it('changes the lesson price in place: the field under its label, the buttons under it', async () => {
     expect(host.querySelector('#lesson-price-input')).toBeNull();
     buttonByText(host, 'Изменить цену занятия').click();
     await fixture.whenStable();
     expect(
       requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' '),
     ).toContain('1 500');
-    expect(buttonByText(host, 'Сохранить цену').disabled).toBe(true);
+    expect(requireElement(host, '.tb-field > label', HTMLLabelElement).htmlFor).toBe(
+      'lesson-price-input',
+    );
+    expect(host.querySelector('.tb-form-actions')).not.toBeNull();
+    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
 
     fixture.componentInstance.price.setValue(2000);
     await fixture.whenStable();
-    buttonByText(host, 'Сохранить цену').click();
+    buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne('/api/teacher/billing/students/s-1/price');
     expect(request.request.body).toEqual({ lessonPrice: 200_000 });
@@ -78,7 +82,7 @@ describe('StudentLedgerPage', () => {
     buttonByText(host, 'Изменить цену занятия').click();
     await fixture.whenStable();
     fixture.componentInstance.price.setValue(2000);
-    buttonByText(host, 'Отменить').click();
+    buttonByText(host, 'Отмена').click();
     await fixture.whenStable();
 
     expect(host.querySelector('#lesson-price-input')).toBeNull();
@@ -114,6 +118,16 @@ describe('StudentLedgerPage', () => {
     await fixture.whenStable();
 
     expect(text()).toContain('долг 1 500 ₽');
+  });
+
+  it('shows a failed load with «Повторить» and the way back', async () => {
+    fixture.componentInstance.reload();
+    backend
+      .expectOne('/api/teacher/billing/students/s-1')
+      .flush({ status: 404, code: 'student.not-found' }, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+
+    expect(text()).toContain('Не удалось загрузить историю оплат Ученик не найден Повторить');
   });
 
   it('records payments, not lessons, for this student', async () => {

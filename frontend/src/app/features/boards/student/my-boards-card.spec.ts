@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aMyBoard } from '@testing/boards-fixtures';
-import { hostElement } from '@testing/dom';
+import { buttonByText, hostElement } from '@testing/dom';
 import { MyBoardsCard } from './my-boards-card';
 import { testProviders } from '@testing/setup';
 
@@ -46,5 +46,18 @@ describe('MyBoardsCard', () => {
     await fixture.whenStable();
 
     expect(hostElement(fixture).textContent).not.toContain('Мои доски');
+  });
+
+  it('shows a failed load with «Повторить» instead of hiding', async () => {
+    backend.expectOne('/api/me/boards').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).textContent).toContain('Не удалось загрузить доски');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/me/boards').flush([aMyBoard()]);
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('a')).toHaveLength(1);
   });
 });

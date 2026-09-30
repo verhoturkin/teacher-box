@@ -157,7 +157,7 @@ describe('GroupsPanel', () => {
     expect(changes).toBe(2);
   });
 
-  it('stops loading when the groups cannot be loaded', async () => {
+  it('shows a failed load with «Повторить», not «no groups»', async () => {
     const prices = backend.expectOne('/api/teacher/billing/groups');
     backend.expectOne('/api/teacher/groups').flush(null, { status: 500, statusText: 'Error' });
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
@@ -166,7 +166,8 @@ describe('GroupsPanel', () => {
     expect(prices.cancelled).toBe(true);
     await fixture.whenStable();
 
-    expect(host.textContent).toContain('Групп пока нет');
+    expect(host.textContent).toContain('Не удалось загрузить группы');
+    expect(host.textContent).not.toContain('Групп пока нет');
   });
 
   it('sets up the video room of a group', async () => {

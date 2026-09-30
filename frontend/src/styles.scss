@@ -446,6 +446,23 @@ textarea.p-textarea {
   inset-inline-start: 1.25rem;
 }
 
+/*
+ * A dropdown list is never wider than the screen (ADR-0022): a long name breaks between words
+ * instead of widening the list and the page on a phone.
+ */
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay {
+  max-width: calc(100vw - 2rem);
+}
+
+.p-select-option,
+.p-multiselect-option,
+.p-autocomplete-option {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* The filter of a dropdown list is the search bar too, a size smaller (48 px) */
 .p-select-overlay .p-select-filter,
 .p-multiselect-overlay .p-multiselect-filter {

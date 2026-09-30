@@ -16,6 +16,8 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /** Student: own tasks; the ones that need work come first. */
@@ -30,6 +32,7 @@ import { PageHeader } from '@shared/ui/page-header';
     TableModule,
     RowType,
     TaskStatusTag,
+    LoadStateView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,49 +41,45 @@ import { PageHeader } from '@shared/ui/page-header';
       <tb-help-button help topic="cabinet/homework" />
     </tb-page-header>
     <p-card>
-      <p-table
-        [value]="tasks()"
-        dataKey="taskId"
-        [rowHover]="true"
-        [loading]="loading()"
-        styleClass="tb-cards"
-      >
-        <ng-template #header>
-          <tr>
-            <th>Задание</th>
-            <th>Срок</th>
-            <th>Статус</th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-task [tbRowType]="tasks()">
-          <tr>
-            <td data-label="Задание">
-              <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
-            </td>
-            <td data-label="Срок" [class.tb-negative]="task.overdue">
-              {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
-            </td>
-            <td data-label="Статус">
-              <tb-task-status
-                [status]="task.status"
-                [overdue]="task.overdue"
-                [grade]="task.grade"
-              />
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="3">
-              <tb-empty-state
-                icon="pi-book"
-                title="Заданий пока нет"
-                hint="Здесь появятся задания от преподавателя"
-              />
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+      <tb-load-state [state]="state" what="задания" (retry)="load()">
+        <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
+          <ng-template #header>
+            <tr>
+              <th>Задание</th>
+              <th>Срок</th>
+              <th>Статус</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-task [tbRowType]="tasks()">
+            <tr>
+              <td data-label="Задание">
+                <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
+              </td>
+              <td data-label="Срок" [class.tb-negative]="task.overdue">
+                {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
+              </td>
+              <td data-label="Статус">
+                <tb-task-status
+                  [status]="task.status"
+                  [overdue]="task.overdue"
+                  [grade]="task.grade"
+                />
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="3">
+                <tb-empty-state
+                  icon="pi-book"
+                  title="Заданий пока нет"
+                  hint="Здесь появятся задания от преподавателя"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </tb-load-state>
     </p-card>
   `,
 })
@@ -88,7 +87,7 @@ export class MyHomeworkPage implements OnInit {
   private readonly api = inject(HomeworkApi);
 
   private readonly all = signal<MyTask[]>([]);
-  protected readonly loading = signal(true);
+  protected readonly state = new LoadState();
   /** Open tasks (assigned or returned) first, then the rest; newest first inside each group. */
   protected readonly tasks = computed(() => {
     const open = (task: MyTask): number =>
@@ -99,14 +98,15 @@ export class MyHomeworkPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.api.myTasks().subscribe({
-      next: (tasks) => {
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .myTasks()
+      .pipe(this.state.track())
+      .subscribe((tasks) => {
         this.all.set(tasks);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+      });
   }
 }

@@ -33,6 +33,29 @@ describe('LatestNotificationsWidget', () => {
     backend.verify();
   });
 
+  it('shows a failed load with «Повторить», not «nothing»', async () => {
+    TestBed.configureTestingModule({
+      imports: [LatestNotificationsWidget],
+      providers: testProviders(),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(LatestNotificationsWidget);
+    fixture.componentRef.setInput('link', '/cabinet/notifications');
+    fixture.detectChanges();
+    const url = `/api/me/notifications?page=0&size=${String(LATEST_COUNT)}`;
+    backend.expectOne(url).flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить уведомления');
+    expect(readableText(hostElement(fixture))).not.toContain('Уведомлений пока нет');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne(url).flush(notificationPage([]));
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Уведомлений пока нет');
+  });
+
   it('says when there is nothing', async () => {
     await render([]);
 

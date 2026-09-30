@@ -19,8 +19,9 @@ import {
 export class IdentityApi {
   private readonly http = inject(HttpClient);
 
-  listStudents(): Observable<Student[]> {
-    return this.http.get<Student[]>('/api/teacher/students');
+  /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
+  listStudents(context?: HttpContext): Observable<Student[]> {
+    return this.http.get<Student[]>('/api/teacher/students', { context });
   }
 
   createStudent(profile: StudentProfileInput): Observable<CreatedStudent> {
@@ -43,8 +44,9 @@ export class IdentityApi {
     return this.http.post<Student>(`/api/teacher/students/${id}/reactivate`, null);
   }
 
-  listGroups(): Observable<StudentGroup[]> {
-    return this.http.get<StudentGroup[]>('/api/teacher/groups');
+  /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
+  listGroups(context?: HttpContext): Observable<StudentGroup[]> {
+    return this.http.get<StudentGroup[]>('/api/teacher/groups', { context });
   }
 
   createGroup(group: GroupInput): Observable<StudentGroup> {

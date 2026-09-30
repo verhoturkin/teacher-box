@@ -68,6 +68,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       [header]="'Подключение ' + name()"
       [(visible)]="visible"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: '40rem' }"
       [draggable]="false"
     >

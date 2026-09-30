@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ledger } from '@testing/billing-fixtures';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { StudentLedger } from '../data-access/billing.models';
 import { MyBillingPage } from './my-billing-page';
 import { testProviders } from '@testing/setup';
@@ -34,5 +34,23 @@ describe('MyBillingPage', () => {
 
   it('confirms that everything is paid', async () => {
     expect(await render(ledger({ balance: 0 }))).toContain('Всё оплачено');
+  });
+
+  it('shows a failed load with «Повторить»', async () => {
+    TestBed.configureTestingModule({ imports: [MyBillingPage], providers: testProviders() });
+    const backend = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MyBillingPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/me/billing').flush(null, { status: 0, statusText: 'Unknown Error' });
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить оплаты');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/me/billing').flush(ledger({ balance: 0 }));
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('Всё оплачено');
   });
 });

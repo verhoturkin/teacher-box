@@ -32,6 +32,8 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -58,6 +60,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
     ToBoardDialog,
     PageHeader,
     HelpButton,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -191,6 +194,9 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
         [markdown]="assignment.description ?? ''"
         [ownerIds]="taskStudents(assignment)"
       />
+    } @else {
+      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Все задания" />
+      <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
     <p-confirmdialog />
   `,
@@ -220,10 +226,10 @@ export class AssignmentPage implements OnInit {
     return this.students().filter((student) => !assigned.has(student.id));
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.api.assignment(this.assignmentId()).subscribe((assignment) => {
-      this.details.set(assignment);
-    });
+    this.load();
     this.identity.listStudents().subscribe((students) => {
       this.students.set(
         students
@@ -231,6 +237,15 @@ export class AssignmentPage implements OnInit {
           .map((student) => ({ id: student.id, displayName: student.displayName })),
       );
     });
+  }
+
+  protected load(): void {
+    this.api
+      .assignment(this.assignmentId())
+      .pipe(this.state.track())
+      .subscribe((assignment) => {
+        this.details.set(assignment);
+      });
   }
 
   protected taskStudents(assignment: AssignmentDetails): string[] {

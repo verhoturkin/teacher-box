@@ -254,9 +254,16 @@ describe('StudentsPage', () => {
     expect(rowsText()[0]).toContain('Активен');
   });
 
-  it('stops loading when the list cannot be loaded', async () => {
+  it('shows a failed load with «Повторить», not «no students»', async () => {
     backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
     flushEverything();
+    await fixture.whenStable();
+
+    expect(host.textContent).toContain('Не удалось загрузить учеников');
+    expect(host.textContent).not.toContain('Учеников пока нет');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/teacher/students').flush([]);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Учеников пока нет');

@@ -99,6 +99,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       [visible]="linkCode() !== null"
       (visibleChange)="onLinkVisibleChange($event)"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: '30rem' }"
       [draggable]="false"
     >

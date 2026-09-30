@@ -17,7 +17,9 @@ export class BackupsApi {
   private readonly http = inject(HttpClient);
 
   list(area: BackupsArea): Observable<BackupInfo[]> {
-    return this.http.get<BackupInfo[]>(base(area));
+    return this.http.get<BackupInfo[]>(base(area), {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
   }
 
   create(area: BackupsArea): Observable<BackupInfo> {

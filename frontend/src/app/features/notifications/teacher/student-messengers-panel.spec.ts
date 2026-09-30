@@ -41,6 +41,30 @@ describe('StudentMessengersPanel', () => {
     backend.verify();
   });
 
+  it('shows a failed load with «Повторить», not «no students»', async () => {
+    TestBed.configureTestingModule({
+      imports: [StudentMessengersPanel],
+      providers: testProviders(),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(StudentMessengersPanel);
+    fixture.detectChanges();
+    backend
+      .expectOne('/api/teacher/notifications/students')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain(
+      'Не удалось загрузить мессенджеры учеников',
+    );
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/teacher/notifications/students').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Учеников пока нет');
+  });
+
   it('says when there are no students', async () => {
     await render([]);
 

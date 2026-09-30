@@ -16,6 +16,8 @@ import { AttachmentList } from '../ui/attachment-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 
@@ -34,6 +36,7 @@ import { HelpButton } from '@features/help/parts';
     FilePicker,
     SubmissionList,
     TaskStatusTag,
+    LoadStateView,
     PageHeader,
     HelpButton,
   ],
@@ -107,6 +110,9 @@ import { HelpButton } from '@features/help/parts';
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </p-card>
       </div>
+    } @else {
+      <tb-page-header title="Задание" back="/cabinet/homework" backLabel="Все задания" />
+      <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
   `,
 })
@@ -126,11 +132,19 @@ export class MyTaskPage implements OnInit {
   readonly files = signal<File[]>([]);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.api.myTask(this.taskId()).subscribe((task) => {
-      this.task.set(task);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .myTask(this.taskId())
+      .pipe(this.state.track())
+      .subscribe((task) => {
+        this.task.set(task);
+      });
   }
 
   submit(): void {

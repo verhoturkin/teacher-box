@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import {
@@ -13,6 +13,7 @@ import {
   RecordPaymentRequest,
   StudentLedger,
 } from './billing.models';
+import { quietContext } from '@core/http/api-error.interceptor';
 
 /** HTTP client of the billing module. */
 @Injectable({ providedIn: 'root' })
@@ -26,16 +27,19 @@ export class BillingApi {
       .pipe(map((response) => response.lessonPrice));
   }
 
-  overview(): Observable<BillingOverview> {
-    return this.http.get<BillingOverview>('/api/teacher/billing/overview');
+  /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
+  overview(context?: HttpContext): Observable<BillingOverview> {
+    return this.http.get<BillingOverview>('/api/teacher/billing/overview', { context });
   }
 
   ledger(studentId: string): Observable<StudentLedger> {
-    return this.http.get<StudentLedger>(`/api/teacher/billing/students/${studentId}`);
+    return this.http.get<StudentLedger>(`/api/teacher/billing/students/${studentId}`, {
+      context: quietContext(),
+    });
   }
 
   myLedger(): Observable<StudentLedger> {
-    return this.http.get<StudentLedger>('/api/me/billing');
+    return this.http.get<StudentLedger>('/api/me/billing', { context: quietContext() });
   }
 
   /** @returns the saved price in minor units */
@@ -47,8 +51,9 @@ export class BillingApi {
       .pipe(map((response) => response.lessonPrice));
   }
 
-  groupPrices(): Observable<GroupPrices> {
-    return this.http.get<GroupPrices>('/api/teacher/billing/groups');
+  /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
+  groupPrices(context?: HttpContext): Observable<GroupPrices> {
+    return this.http.get<GroupPrices>('/api/teacher/billing/groups', { context });
   }
 
   /** @returns the saved price in minor units */
@@ -73,15 +78,18 @@ export class BillingApi {
   /** @param month `yyyy-MM` */
   monthlyReport(month: string): Observable<MonthlyReport> {
     return this.http.get<MonthlyReport>('/api/teacher/billing/reports/monthly', {
+      context: quietContext(),
       params: new HttpParams().set('month', month),
     });
   }
 
   summary(): Observable<BillingSummary> {
-    return this.http.get<BillingSummary>('/api/teacher/billing/summary');
+    return this.http.get<BillingSummary>('/api/teacher/billing/summary', {
+      context: quietContext(),
+    });
   }
 
   mySummary(): Observable<MyBillingSummary> {
-    return this.http.get<MyBillingSummary>('/api/me/billing/summary');
+    return this.http.get<MyBillingSummary>('/api/me/billing/summary', { context: quietContext() });
   }
 }

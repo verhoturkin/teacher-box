@@ -39,6 +39,27 @@ describe('SettingsPage', () => {
     fixture.destroy();
   });
 
+  it('shows a failed load with «Повторить»', async () => {
+    TestBed.configureTestingModule({
+      imports: [SettingsPage],
+      providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(SettingsPage);
+    fixture.detectChanges();
+    backend.expectOne('/api/admin/settings').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить настройки');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/admin/settings').flush(adminSettings());
+    await fixture.whenStable();
+
+    expect(readableText(host)).not.toContain('Не удалось загрузить');
+  });
+
   async function saveWith(password: string): Promise<void> {
     await fixture.whenStable();
     buttonByText(host, 'Сохранить и перезапустить').click();

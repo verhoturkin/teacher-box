@@ -164,8 +164,12 @@ let nextId = 0;
       padding: 0 var(--tb-space-6) var(--tb-space-5);
     }
 
+    /*
+     * Only the start of the animation is filled (backwards): an element with a transform left after
+     * its animation would hold the dialogs of the section like a frame instead of the screen.
+     */
     :host(.tb-fold-card--collapsible) .tb-fold-card__body {
-      animation: tb-fold-in var(--tb-spring-default-spatial) both;
+      animation: tb-fold-in var(--tb-spring-default-spatial) backwards;
     }
 
     @keyframes tb-fold-in {

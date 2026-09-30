@@ -16,6 +16,7 @@ import {
   StudentMessengers,
   TeacherNotificationsSummary,
 } from './notifications.models';
+import { quietContext } from '@core/http/api-error.interceptor';
 
 /** HTTP client of the notifications module. */
 @Injectable({ providedIn: 'root' })
@@ -24,6 +25,7 @@ export class NotificationsApi {
 
   page(page: number, size: number): Observable<NotificationPage> {
     return this.http.get<NotificationPage>('/api/me/notifications', {
+      context: quietContext(),
       params: new HttpParams().set('page', page).set('size', size),
     });
   }
@@ -106,7 +108,9 @@ export class NotificationsApi {
 
   /** Teacher: current students and their messengers. */
   studentMessengers(): Observable<StudentMessengers[]> {
-    return this.http.get<StudentMessengers[]>('/api/teacher/notifications/students');
+    return this.http.get<StudentMessengers[]>('/api/teacher/notifications/students', {
+      context: quietContext(),
+    });
   }
 
   /**
@@ -123,6 +127,8 @@ export class NotificationsApi {
 
   /** Teacher: notifications at a glance. */
   summary(): Observable<TeacherNotificationsSummary> {
-    return this.http.get<TeacherNotificationsSummary>('/api/teacher/notifications/summary');
+    return this.http.get<TeacherNotificationsSummary>('/api/teacher/notifications/summary', {
+      context: quietContext(),
+    });
   }
 }

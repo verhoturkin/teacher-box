@@ -30,6 +30,24 @@ describe('StatusPage', () => {
     backend.verify();
   });
 
+  it('shows a failed load with «Повторить»', async () => {
+    TestBed.configureTestingModule({ imports: [StatusPage], providers: testProviders() });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(StatusPage);
+    fixture.detectChanges();
+    backend.expectOne('/api/admin/status').flush(null, { status: 503, statusText: 'Down' });
+    backend.expectOne('/api/admin/portal').flush(portalSettings());
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить состояние портала');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/admin/status').flush(systemStatus());
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Версия 1.1.0');
+  });
+
   it('shows the state of the instance', async () => {
     await render(systemStatus());
 

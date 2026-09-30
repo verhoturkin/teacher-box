@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -36,6 +37,8 @@ import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { LessonSummary, excusedFrom } from './lesson-summary';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
@@ -65,6 +68,7 @@ export function nextMonday(date: Date): Date {
     LessonActions,
     MyBoardsCard,
     ScheduleCalendar,
+    LoadStateView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,61 +78,63 @@ export function nextMonday(date: Date): Date {
     </tb-page-header>
     <div class="tb-stack">
       <p-card header="Ближайшие занятия">
-        @if (upcoming().length === 0) {
-          <tb-empty-state
-            icon="pi-calendar"
-            title="На этой неделе занятий больше нет"
-            hint="Следующие занятия — в календаре"
-          />
-        } @else {
-          <ul class="tb-list tb-schedule-list">
-            @for (lesson of upcoming(); track lesson.id) {
-              <li [class.tb-list__item--link]="mobile()">
-                <span class="tb-list__lead" aria-hidden="true">
-                  <i [class]="leadIcon(lesson)"></i>
-                </span>
-                <div class="tb-list__text">
-                  <span class="tb-list__title">{{ time(lesson) }}</span>
-                  <tb-lesson-summary [lesson]="lesson" />
-                </div>
-                @if (mobile()) {
-                  <!-- a phone: the row stays one line, its actions are in the bottom sheet -->
-                  <div class="tb-list__trail tb-list__trail--icons">
-                    <!-- stretched over the row: the whole row opens the sheet -->
-                    <p-button
-                      class="tb-list__stretched"
-                      icon="pi pi-chevron-right"
-                      severity="secondary"
-                      [text]="true"
-                      [rounded]="true"
-                      [ariaLabel]="'Занятие: ' + time(lesson)"
-                      (onClick)="openSheet(lesson)"
-                    />
+        <tb-load-state [state]="upcomingState" what="ближайшие занятия" (retry)="reload()">
+          @if (upcoming().length === 0) {
+            <tb-empty-state
+              icon="pi-calendar"
+              title="На этой неделе занятий больше нет"
+              hint="Следующие занятия — в календаре"
+            />
+          } @else {
+            <ul class="tb-list tb-schedule-list">
+              @for (lesson of upcoming(); track lesson.id) {
+                <li [class.tb-list__item--link]="mobile()">
+                  <span class="tb-list__lead" aria-hidden="true">
+                    <i [class]="leadIcon(lesson)"></i>
+                  </span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ time(lesson) }}</span>
+                    <tb-lesson-summary [lesson]="lesson" />
                   </div>
-                } @else {
-                  <div class="tb-list__trail">
-                    <tb-lesson-actions
-                      [joinUrl]="joinUrl(lesson)"
-                      joinLabel="Подключиться"
-                      [requests]="canAsk(lesson)"
-                      [group]="lesson.groupId !== null"
-                      (ask)="ask(lesson, $event)"
-                    />
-                    @if (lesson.pendingRequests[0]; as request) {
+                  @if (mobile()) {
+                    <!-- a phone: the row stays one line, its actions are in the bottom sheet -->
+                    <div class="tb-list__trail tb-list__trail--icons">
+                      <!-- stretched over the row: the whole row opens the sheet -->
                       <p-button
-                        severity="danger"
-                        label="Отозвать"
+                        class="tb-list__stretched"
+                        icon="pi pi-chevron-right"
+                        severity="secondary"
                         [text]="true"
-                        [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
-                        (onClick)="withdraw(request)"
+                        [rounded]="true"
+                        [ariaLabel]="'Занятие: ' + time(lesson)"
+                        (onClick)="openSheet(lesson)"
                       />
-                    }
-                  </div>
-                }
-              </li>
-            }
-          </ul>
-        }
+                    </div>
+                  } @else {
+                    <div class="tb-list__trail">
+                      <tb-lesson-actions
+                        [joinUrl]="joinUrl(lesson)"
+                        joinLabel="Подключиться"
+                        [requests]="canAsk(lesson)"
+                        [group]="lesson.groupId !== null"
+                        (ask)="ask(lesson, $event)"
+                      />
+                      @if (lesson.pendingRequests[0]; as request) {
+                        <p-button
+                          severity="danger"
+                          label="Отозвать"
+                          [text]="true"
+                          [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
+                          (onClick)="withdraw(request)"
+                        />
+                      }
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </tb-load-state>
       </p-card>
 
       @if (requests().length > 0) {
@@ -160,12 +166,21 @@ export function nextMonday(date: Date): Date {
         </p-card>
       }
       <p-card>
+        @if (calendarState.status() === 'error') {
+          <tb-load-state
+            [state]="calendarState"
+            what="календарь"
+            [compact]="true"
+            (retry)="loadCalendar()"
+          />
+        }
         <tb-schedule-calendar
           [lessons]="calendarLessons()"
           [busy]="busy()"
           busyTitle="Занято"
           [showStudent]="false"
           initialView="listWeek"
+          [loaded]="calendarState.ready()"
           (rangeChange)="onRange($event)"
         />
       </p-card>
@@ -244,12 +259,12 @@ export class MySchedulePage implements OnInit {
   protected readonly requestLesson = signal<ScheduledLesson | null>(null);
   protected readonly requestKind = signal<ChangeKind>('RESCHEDULE');
 
+  protected readonly upcomingState = new LoadState();
+  protected readonly calendarState = new LoadState();
+
   private range: CalendarRange | null = null;
 
   ngOnInit(): void {
-    this.api.settings().subscribe((settings) => {
-      this.settings.set(settings);
-    });
     this.reload();
   }
 
@@ -321,30 +336,39 @@ export class MySchedulePage implements OnInit {
     return formatLessonStart(iso);
   }
 
-  private reload(): void {
+  protected reload(): void {
     this.now.set(new Date());
     const today = this.now();
-    this.api.myLessons(toIsoDate(today), toIsoDate(nextMonday(today))).subscribe((lessons) => {
-      this.upcomingLessons.set(lessons);
-    });
-    this.api.myRequests().subscribe((requests) => {
-      this.requests.set(requests);
-    });
+    forkJoin({
+      settings: this.api.settings(),
+      lessons: this.api.myLessons(toIsoDate(today), toIsoDate(nextMonday(today))),
+      requests: this.api.myRequests(),
+    })
+      .pipe(this.upcomingState.track())
+      .subscribe(({ settings, lessons, requests }) => {
+        this.settings.set(settings);
+        this.upcomingLessons.set(lessons);
+        this.requests.set(requests);
+      });
     this.loadCalendar();
   }
 
-  private loadCalendar(): void {
+  protected loadCalendar(): void {
     const range = this.range;
     if (range === null) {
       return;
     }
     const widened = widen(range);
-    this.api.myLessons(widened.from, widened.to).subscribe((lessons) => {
-      this.calendarLessons.set(lessons);
-    });
-    this.api
-      .teacherBusy(fromIsoDate(widened.from).toISOString(), fromIsoDate(widened.to).toISOString())
-      .subscribe((busy) => {
+    forkJoin({
+      lessons: this.api.myLessons(widened.from, widened.to),
+      busy: this.api.teacherBusy(
+        fromIsoDate(widened.from).toISOString(),
+        fromIsoDate(widened.to).toISOString(),
+      ),
+    })
+      .pipe(this.calendarState.track())
+      .subscribe(({ lessons, busy }) => {
+        this.calendarLessons.set(lessons);
         this.busy.set(busy);
       });
   }

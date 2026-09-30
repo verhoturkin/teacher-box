@@ -271,7 +271,7 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Доступность — по [ADR-0024](docs/adr/0024-accessibility.md): заголовок секции — `h2` (`tb-card-title`),
   ошибка поля — текстом под полем, обязательное поле отмечено, кнопка отправки не отключается из-за
   неверных полей; окно возвращает фокус; медиазапросы — в `em` диапазонами (`width <= 48em`).
-- Загрузка данных раздела — `loader()` и `tb-load-state` ([ADR-0025](docs/adr/0025-page-states.md)):
+- Загрузка данных раздела — `LoadState` и `tb-load-state` ([ADR-0025](docs/adr/0025-page-states.md)):
   загрузка, ошибка с «Повторить», пустое состояние только после ответа.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.

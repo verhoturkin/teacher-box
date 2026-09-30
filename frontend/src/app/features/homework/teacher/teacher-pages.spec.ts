@@ -89,13 +89,19 @@ describe('AssignmentsPage', () => {
     fixture.destroy();
   });
 
-  it('shows an empty state and survives load errors', async () => {
+  it('shows a failed load with «Повторить», then the empty state', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
     backend
       .expectOne('/api/teacher/homework/assignments')
       .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить задания');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/teacher/homework/assignments').flush([]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
@@ -133,6 +139,32 @@ describe('AssignmentPage', () => {
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('shows a failed load with «Повторить» and the way back', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(AssignmentPage);
+    fixture.componentRef.setInput('assignmentId', 'a-1');
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/homework/assignments/a-1')
+      .flush(
+        { status: 404, code: 'assignment.not-found' },
+        { status: 404, statusText: 'Not Found' },
+      );
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить задание Задание не найдено');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
+  });
 
   it('shows the assignment, materials and progress', async () => {
     const { fixture, host, backend, saved } = await render();
@@ -258,12 +290,23 @@ describe('ReviewQueuePage', () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(ReviewQueuePage);
     await fixture.whenStable();
+    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Всё проверено');
+  });
+
+  it('shows a failed load of the queue with «Повторить»', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(ReviewQueuePage);
+    await fixture.whenStable();
     backend
       .expectOne('/api/teacher/homework/review-queue')
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Всё проверено');
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить работы на проверку');
+    expect(readableText(hostElement(fixture))).not.toContain('Всё проверено');
   });
 });
 
@@ -278,6 +321,27 @@ describe('TaskReviewPage', () => {
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('shows a failed load with «Повторить»', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(TaskReviewPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить работу');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('Мой ответ');
+  });
 
   it('accepts a submission with a grade', async () => {
     const { fixture, host, backend } = await render();

@@ -17,80 +17,96 @@ import { formatUptime } from '../admin-labels';
 import { PortalAddressCard } from './portal-address-card';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Administrator: version, uptime, memory, disk, database and health of the instance, the portal address. */
 @Component({
   selector: 'tb-status-page',
-  imports: [DatePipe, KeyValuePipe, Button, Card, Tag, PortalAddressCard, PageHeader, HelpButton],
+  imports: [
+    DatePipe,
+    KeyValuePipe,
+    Button,
+    Card,
+    Tag,
+    PortalAddressCard,
+    PageHeader,
+    HelpButton,
+    LoadStateView,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Состояние">
       <tb-help-button help topic="admin/diagnostics" />
       <p-button label="Обновить" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
     </tb-page-header>
-    @if (status(); as status) {
-      <div class="tb-stats">
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Проверки</span>
-            <span class="tb-stat__value">
-              <p-tag
-                [value]="status.health"
-                [severity]="status.health === 'UP' ? 'success' : 'danger'"
-              />
-            </span>
-            <small class="tb-muted">
-              @for (component of status.components | keyvalue; track component.key) {
-                <span class="tb-component">{{ component.key }}: {{ component.value }}</span>
+    <tb-load-state [state]="state" what="состояние портала" (retry)="load()">
+      @if (status(); as status) {
+        <div class="tb-stats">
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Проверки</span>
+              <span class="tb-stat__value">
+                <p-tag
+                  [value]="status.health"
+                  [severity]="status.health === 'UP' ? 'success' : 'danger'"
+                />
+              </span>
+              <small class="tb-muted">
+                @for (component of status.components | keyvalue; track component.key) {
+                  <span class="tb-component">{{ component.key }}: {{ component.value }}</span>
+                }
+              </small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Версия</span>
+              <span class="tb-stat__value">{{ status.version ?? 'разработка' }}</span>
+              @if (status.builtAt !== null) {
+                <small class="tb-muted"
+                  >сборка {{ status.builtAt | date: 'dd.MM.yyyy HH:mm' }}</small
+                >
               }
-            </small>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Версия</span>
-            <span class="tb-stat__value">{{ status.version ?? 'разработка' }}</span>
-            @if (status.builtAt !== null) {
-              <small class="tb-muted">сборка {{ status.builtAt | date: 'dd.MM.yyyy HH:mm' }}</small>
-            }
-            <small class="tb-muted">Java {{ status.javaVersion }}</small>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Работает</span>
-            <span class="tb-stat__value">{{ uptime() }}</span>
-            <small class="tb-muted">с {{ status.startedAt | date: 'dd.MM.yyyy HH:mm' }}</small>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Память</span>
-            <span class="tb-stat__value">{{ size(status.heapUsed) }}</span>
-            <small class="tb-muted">из {{ size(status.heapMax) }}</small>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Свободно на диске</span>
-            <span class="tb-stat__value" [class.tb-negative]="lowDisk()">{{
-              size(status.diskFree)
-            }}</span>
-            <small class="tb-muted">из {{ size(status.diskTotal) }}</small>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">База данных</span>
-            <span class="tb-stat__value">{{ size(status.dataSize) }}</span>
-            <small class="tb-muted">журналы: {{ size(status.logsSize) }}</small>
-          </div>
-        </p-card>
-      </div>
-      <p class="tb-muted tb-status-data">
-        Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}
-      </p>
-    }
+              <small class="tb-muted">Java {{ status.javaVersion }}</small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Работает</span>
+              <span class="tb-stat__value">{{ uptime() }}</span>
+              <small class="tb-muted">с {{ status.startedAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Память</span>
+              <span class="tb-stat__value">{{ size(status.heapUsed) }}</span>
+              <small class="tb-muted">из {{ size(status.heapMax) }}</small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Свободно на диске</span>
+              <span class="tb-stat__value" [class.tb-negative]="lowDisk()">{{
+                size(status.diskFree)
+              }}</span>
+              <small class="tb-muted">из {{ size(status.diskTotal) }}</small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">База данных</span>
+              <span class="tb-stat__value">{{ size(status.dataSize) }}</span>
+              <small class="tb-muted">журналы: {{ size(status.logsSize) }}</small>
+            </div>
+          </p-card>
+        </div>
+        <p class="tb-muted tb-status-data">
+          Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}
+        </p>
+      }
+    </tb-load-state>
     <tb-portal-address-card />
   `,
   styles: `
@@ -117,14 +133,19 @@ export class StatusPage implements OnInit {
     return status !== null && status.diskTotal > 0 && status.diskFree / status.diskTotal < 0.1;
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
-    this.api.status().subscribe((status) => {
-      this.status.set(status);
-    });
+    this.api
+      .status()
+      .pipe(this.state.track())
+      .subscribe((status) => {
+        this.status.set(status);
+      });
   }
 
   protected size(bytes: number): string {

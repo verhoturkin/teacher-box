@@ -28,6 +28,8 @@ import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -47,6 +49,7 @@ import { HelpButton } from '@features/help/parts';
     ToBoardDialog,
     PageHeader,
     HelpButton,
+    LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -156,6 +159,13 @@ import { HelpButton } from '@features/help/parts';
         [markdown]="reviewText()"
         [ownerIds]="[task.studentId]"
       />
+    } @else {
+      <tb-page-header
+        title="Проверка работы"
+        back="/teacher/homework/review"
+        backLabel="На проверку"
+      />
+      <tb-load-state [state]="state" what="работу" (retry)="load()" />
     }
   `,
 })
@@ -195,10 +205,19 @@ export class TaskReviewPage implements OnInit {
 ${this.commentValue()}`;
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.api.task(this.taskId()).subscribe((task) => {
-      this.show(task);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .task(this.taskId())
+      .pipe(this.state.track())
+      .subscribe((task) => {
+        this.show(task);
+      });
   }
 
   protected review(decision: ReviewDecision): void {

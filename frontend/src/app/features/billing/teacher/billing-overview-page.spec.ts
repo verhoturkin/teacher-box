@@ -78,6 +78,25 @@ describe('BillingOverviewPage', () => {
     expect(buttons.filter((label) => label.includes('Занятие'))).toEqual([]);
   });
 
+  it('shows a failed load with «Повторить»', async () => {
+    const failing = TestBed.createComponent(BillingOverviewPage);
+    await failing.whenStable();
+    backend
+      .expectOne('/api/teacher/billing/overview')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await failing.whenStable();
+    const page = hostElement(failing);
+
+    expect(readableText(page)).toContain('Не удалось загрузить оплаты');
+
+    buttonByText(page, 'Повторить').click();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN]));
+    await failing.whenStable();
+
+    expect(readableText(page)).toContain('Долг учеников');
+    failing.destroy();
+  });
+
   it('opens the payment dialog from the home page', async () => {
     const fromHome = TestBed.createComponent(BillingOverviewPage);
     fromHome.componentRef.setInput('create', 'payment');

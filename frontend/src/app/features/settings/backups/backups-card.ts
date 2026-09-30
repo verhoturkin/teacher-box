@@ -24,6 +24,8 @@ import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { RestoreDialog } from './restore-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
@@ -51,6 +53,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
     RowType,
     RestoreDialog,
     Tooltip,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,67 +82,71 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
           Скачать копию может только учитель: в копиях данные учеников.
         }
       </p>
-      @if (backups().length === 0) {
-        <tb-empty-state icon="pi-database" title="Копий пока нет" />
-      } @else {
-        <p-table [value]="backups()" styleClass="tb-cards p-datatable-sm">
-          <ng-template #header>
-            <tr>
-              <th>Создана</th>
-              <th>Как</th>
-              <th>Размер</th>
-              <th></th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-backup [tbRowType]="backups()">
-            <tr>
-              <td data-label="Создана">{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td data-label="Как">
-                @if (kind(backup); as label) {
-                  <p-tag
-                    [value]="label"
-                    [severity]="
-                      backup.kind === 'SCHEDULED' || backup.kind === 'MANUAL' ? 'secondary' : 'warn'
-                    "
-                  />
-                }
-              </td>
-              <td data-label="Размер">{{ size(backup) }}</td>
-              <td class="tb-row-actions">
-                <p-button
-                  icon="pi pi-history"
-                  [text]="true"
-                  [pTooltip]="'Восстановить ' + backup.name"
-                  [rounded]="true"
-                  severity="secondary"
-                  [ariaLabel]="'Восстановить ' + backup.name"
-                  (onClick)="openRestore(backup)"
-                />
-                @if (!isAdmin()) {
+      <tb-load-state [state]="state" what="список копий" (retry)="reload()">
+        @if (backups().length === 0) {
+          <tb-empty-state icon="pi-database" title="Копий пока нет" />
+        } @else {
+          <p-table [value]="backups()" styleClass="tb-cards p-datatable-sm">
+            <ng-template #header>
+              <tr>
+                <th>Создана</th>
+                <th>Как</th>
+                <th>Размер</th>
+                <th></th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-backup [tbRowType]="backups()">
+              <tr>
+                <td data-label="Создана">{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td data-label="Как">
+                  @if (kind(backup); as label) {
+                    <p-tag
+                      [value]="label"
+                      [severity]="
+                        backup.kind === 'SCHEDULED' || backup.kind === 'MANUAL'
+                          ? 'secondary'
+                          : 'warn'
+                      "
+                    />
+                  }
+                </td>
+                <td data-label="Размер">{{ size(backup) }}</td>
+                <td class="tb-row-actions">
                   <p-button
-                    icon="pi pi-download"
+                    icon="pi pi-history"
                     [text]="true"
-                    [pTooltip]="'Скачать ' + backup.name"
+                    [pTooltip]="'Восстановить ' + backup.name"
                     [rounded]="true"
                     severity="secondary"
-                    [ariaLabel]="'Скачать ' + backup.name"
-                    (onClick)="download(backup)"
+                    [ariaLabel]="'Восстановить ' + backup.name"
+                    (onClick)="openRestore(backup)"
                   />
-                  <p-button
-                    icon="pi pi-trash"
-                    [text]="true"
-                    [pTooltip]="'Удалить ' + backup.name"
-                    [rounded]="true"
-                    severity="danger"
-                    [ariaLabel]="'Удалить ' + backup.name"
-                    (onClick)="confirmDelete(backup)"
-                  />
-                }
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
+                  @if (!isAdmin()) {
+                    <p-button
+                      icon="pi pi-download"
+                      [text]="true"
+                      [pTooltip]="'Скачать ' + backup.name"
+                      [rounded]="true"
+                      severity="secondary"
+                      [ariaLabel]="'Скачать ' + backup.name"
+                      (onClick)="download(backup)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      [pTooltip]="'Удалить ' + backup.name"
+                      [rounded]="true"
+                      severity="danger"
+                      [ariaLabel]="'Удалить ' + backup.name"
+                      (onClick)="confirmDelete(backup)"
+                    />
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </tb-load-state>
     </p-card>
     <tb-restore-dialog [(visible)]="restoring" [backup]="selected()" [area]="area()" />
     <p-confirmdialog />
@@ -167,6 +174,7 @@ export class BackupsCard implements OnInit {
   protected readonly creating = signal(false);
   protected readonly selected = signal<BackupInfo | null>(null);
   protected readonly restoring = signal(false);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
     this.reload();
@@ -225,9 +233,12 @@ export class BackupsCard implements OnInit {
     );
   }
 
-  private reload(): void {
-    this.api.list(this.area()).subscribe((backups) => {
-      this.backups.set(backups);
-    });
+  protected reload(): void {
+    this.api
+      .list(this.area())
+      .pipe(this.state.track())
+      .subscribe((backups) => {
+        this.backups.set(backups);
+      });
   }
 }

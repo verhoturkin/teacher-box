@@ -93,7 +93,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
       [setup]="wizardSetup()"
       (changed)="onChanged($event)"
     />
-    <p-confirmdialog />
+    <p-confirmdialog appendTo="body" />
   `,
   styles: `
     .tb-bots {

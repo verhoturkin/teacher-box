@@ -9,17 +9,20 @@ import { MoneyPipe } from '@shared/money/money.pipe';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
 
-/** The lesson price of new students and groups, changed in place. */
+/**
+ * The lesson price of new students and groups, changed in place: the field takes the whole width
+ * of the card under its label, the buttons are under it (ADR-0018, ADR-0022).
+ */
 @Component({
   selector: 'tb-default-price-card',
   imports: [ReactiveFormsModule, Button, Card, InputNumber, MoneyPipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
-      <div class="tb-stat">
-        <span class="tb-muted">Цена для новых учеников</span>
-        @if (editing()) {
-          <form class="tb-copy-row" [formGroup]="form" (ngSubmit)="save()">
+      @if (editing()) {
+        <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+          <div class="tb-field">
+            <label for="default-price">Цена для новых учеников</label>
             <p-inputnumber
               inputId="default-price"
               formControlName="price"
@@ -28,27 +31,29 @@ import { BillingApi } from '../data-access/billing-api';
               locale="ru-RU"
               [min]="0"
               [fluid]="true"
-              ariaLabel="Цена для новых учеников"
             />
+            <small class="tb-hint">Цена каждого ученика меняется в его строке</small>
+          </div>
+          <div class="tb-form-actions">
             <p-button
-              severity="success"
-              type="submit"
-              icon="pi pi-check"
-              ariaLabel="Сохранить цену"
-              [loading]="pending()"
-              [disabled]="form.invalid"
-            />
-            <p-button
-              icon="pi pi-times"
+              label="Отмена"
               severity="danger"
               [text]="true"
-              pTooltip="Отменить"
-              [rounded]="true"
-              ariaLabel="Отменить"
               (onClick)="editing.set(false)"
             />
-          </form>
-        } @else {
+            <p-button
+              class="tb-tonal"
+              severity="success"
+              type="submit"
+              label="Сохранить"
+              icon="pi pi-check"
+              [loading]="pending()"
+            />
+          </div>
+        </form>
+      } @else {
+        <div class="tb-stat">
+          <span class="tb-muted">Цена для новых учеников</span>
           <span class="tb-stat__value">
             {{ price() | money: currency() }}
             <p-button
@@ -61,9 +66,9 @@ import { BillingApi } from '../data-access/billing-api';
               (onClick)="edit()"
             />
           </span>
-        }
-        <small class="tb-muted">цена каждого ученика меняется в его строке</small>
-      </div>
+          <small class="tb-muted">цена каждого ученика меняется в его строке</small>
+        </div>
+      }
     </p-card>
   `,
 })

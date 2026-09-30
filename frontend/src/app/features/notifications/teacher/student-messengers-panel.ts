@@ -16,85 +16,91 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { StudentMessengers } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
   selector: 'tb-student-messengers-panel',
-  imports: [EmptyState, Button, Card, TableModule, Tag, RowType],
+  imports: [EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Мессенджеры учеников">
-      @if (students(); as students) {
-        @if (students.length === 0) {
-          <tb-empty-state icon="pi-users" title="Учеников пока нет" />
-        } @else {
-          <div class="tb-students-summary">
-            <span>
-              Подключили мессенджер: <strong>{{ connectedCount() }}</strong> из
-              {{ students.length }}
-            </span>
-            <p-button
-              [label]="
-                selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
-              "
-              icon="pi pi-bell"
-              severity="secondary"
-              [disabled]="notConnected().length === 0"
-              [loading]="pending()"
-              (onClick)="remind()"
-            />
-          </div>
-          <p-table
-            [value]="students"
-            dataKey="studentId"
-            [selection]="selection()"
-            (selectionChange)="onSelection($event)"
-            styleClass="tb-cards p-datatable-sm"
-          >
-            <ng-template #header>
-              <tr>
-                <th class="tb-check-column"><p-tableHeaderCheckbox /></th>
-                <th>Ученик</th>
-                <th>Мессенджеры</th>
-                <th>Доставка</th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-row [tbRowType]="students">
-              <tr>
-                <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
-                <td data-label="Ученик">{{ row.displayName }}</td>
-                <td data-label="Мессенджеры">
-                  @if (row.channels.length === 0) {
-                    <span class="tb-muted">не подключены</span>
-                  } @else {
-                    <span class="tb-student-channels">
-                      @for (channel of row.channels; track channel.channel) {
-                        <p-tag
-                          [icon]="icons[channel.channel]"
-                          [value]="names[channel.channel] + (channel.enabled ? '' : ' (на паузе)')"
-                          [severity]="channel.enabled ? 'success' : 'secondary'"
-                        />
-                      }
-                    </span>
-                  }
-                </td>
-                <td data-label="Доставка">
-                  @if (row.failedDeliveries > 0) {
-                    <p-tag [value]="'Не доставлено: ' + row.failedDeliveries" severity="danger" />
-                  } @else {
-                    <span class="tb-muted">—</span>
-                  }
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-          <small class="tb-hint">
-            Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у
-            которых мессенджер уже подключён, его не получат. «Не доставлено» — сообщения за 30
-            дней, которые мессенджер не принял (например, ученик заблокировал бота).
-          </small>
+      <tb-load-state [state]="state" what="мессенджеры учеников" (retry)="load()">
+        @if (students(); as students) {
+          @if (students.length === 0) {
+            <tb-empty-state icon="pi-users" title="Учеников пока нет" />
+          } @else {
+            <div class="tb-students-summary">
+              <span>
+                Подключили мессенджер: <strong>{{ connectedCount() }}</strong> из
+                {{ students.length }}
+              </span>
+              <p-button
+                [label]="
+                  selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
+                "
+                icon="pi pi-bell"
+                severity="secondary"
+                [disabled]="notConnected().length === 0"
+                [loading]="pending()"
+                (onClick)="remind()"
+              />
+            </div>
+            <p-table
+              [value]="students"
+              dataKey="studentId"
+              [selection]="selection()"
+              (selectionChange)="onSelection($event)"
+              styleClass="tb-cards p-datatable-sm"
+            >
+              <ng-template #header>
+                <tr>
+                  <th class="tb-check-column"><p-tableHeaderCheckbox /></th>
+                  <th>Ученик</th>
+                  <th>Мессенджеры</th>
+                  <th>Доставка</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-row [tbRowType]="students">
+                <tr>
+                  <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
+                  <td data-label="Ученик">{{ row.displayName }}</td>
+                  <td data-label="Мессенджеры">
+                    @if (row.channels.length === 0) {
+                      <span class="tb-muted">не подключены</span>
+                    } @else {
+                      <span class="tb-student-channels">
+                        @for (channel of row.channels; track channel.channel) {
+                          <p-tag
+                            [icon]="icons[channel.channel]"
+                            [value]="
+                              names[channel.channel] + (channel.enabled ? '' : ' (на паузе)')
+                            "
+                            [severity]="channel.enabled ? 'success' : 'secondary'"
+                          />
+                        }
+                      </span>
+                    }
+                  </td>
+                  <td data-label="Доставка">
+                    @if (row.failedDeliveries > 0) {
+                      <p-tag [value]="'Не доставлено: ' + row.failedDeliveries" severity="danger" />
+                    } @else {
+                      <span class="tb-muted">—</span>
+                    }
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+            <small class="tb-hint">
+              Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у
+              которых мессенджер уже подключён, его не получат. «Не доставлено» — сообщения за 30
+              дней, которые мессенджер не принял (например, ученик заблокировал бота).
+            </small>
+          }
         }
-      }
+      </tb-load-state>
     </p-card>
   `,
   styles: `
@@ -136,10 +142,19 @@ export class StudentMessengersPanel implements OnInit {
     ),
   );
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.api.studentMessengers().subscribe((students) => {
-      this.students.set(students);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .studentMessengers()
+      .pipe(this.state.track())
+      .subscribe((students) => {
+        this.students.set(students);
+      });
   }
 
   onSelection(selection: StudentMessengers[]): void {

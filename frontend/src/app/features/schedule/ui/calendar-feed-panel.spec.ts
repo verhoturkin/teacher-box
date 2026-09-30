@@ -32,6 +32,21 @@ describe('CalendarFeedPanel', () => {
     return hostElement(fixture);
   }
 
+  it('shows a failed load with «Повторить»', async () => {
+    fixture.detectChanges();
+    backend.expectOne('/api/me/schedule/feed').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить ссылку календаря');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('Получить ссылку');
+  });
+
   it('creates a link and shows it once with instructions', async () => {
     const host = await render();
     expect(readableText(host)).toContain('Занятия могут появляться в календаре на телефоне');

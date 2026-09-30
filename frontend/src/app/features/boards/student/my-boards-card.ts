@@ -1,16 +1,25 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { BoardsApi } from '../data-access/boards-api';
 import { MyBoard } from '../data-access/boards.models';
 
-/** A student's boards (their own and their groups'); hidden while there are none. */
+/**
+ * A student's boards (their own and their groups'); hidden while there are none, a failed load
+ * shows the card with «Повторить» (ADR-0025).
+ */
 @Component({
   selector: 'tb-my-boards-card',
-  imports: [ButtonDirective, ButtonIcon, ButtonLabel, Card],
+  imports: [ButtonDirective, ButtonIcon, ButtonLabel, Card, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (boards().length > 0) {
+    @if (state.status() === 'error') {
+      <p-card header="Мои доски">
+        <tb-load-state [state]="state" what="доски" [compact]="true" (retry)="load()" />
+      </p-card>
+    } @else if (boards().length > 0) {
       <p-card header="Мои доски">
         <ul class="tb-my-boards">
           @for (board of boards(); track board.id) {
@@ -50,10 +59,18 @@ export class MyBoardsCard implements OnInit {
   private readonly api = inject(BoardsApi);
 
   protected readonly boards = signal<MyBoard[]>([]);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.api.myBoards().subscribe((boards) => {
-      this.boards.set(boards);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .myBoards()
+      .pipe(this.state.track())
+      .subscribe((boards) => {
+        this.boards.set(boards);
+      });
   }
 }

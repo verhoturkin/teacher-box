@@ -42,7 +42,10 @@ import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { InitialsPipe } from '@shared/ui/initials';
@@ -74,6 +77,7 @@ import { InitialsPipe } from '@shared/ui/initials';
     RoomCell,
     RoomDialog,
     StudentFormDialog,
+    LoadStateView,
     PageHeader,
   ],
   providers: [ConfirmationService],
@@ -107,156 +111,157 @@ import { InitialsPipe } from '@shared/ui/initials';
           </label>
         </div>
 
-        <p-table
-          [value]="visibleStudents()"
-          [loading]="loading()"
-          dataKey="id"
-          [rowHover]="true"
-          styleClass="tb-cards tb-cards--wide"
-        >
-          <ng-template #header>
-            <tr>
-              <th class="tb-col-main">Имя</th>
-              <th>Контакты</th>
-              <th>Группы</th>
-              <th>Видеовстреча</th>
-              <th>Доски</th>
-              <th>Статус</th>
-              <th>Логин</th>
-              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-student [tbRowType]="visibleStudents()">
-            <tr>
-              <td data-label="Имя">
-                <div class="tb-person">
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    student.displayName | initials
-                  }}</span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ student.displayName }}</span>
-                    @if (student.note) {
-                      <span class="tb-list__supporting">{{ student.note }}</span>
-                    }
+        <tb-load-state [state]="state" what="учеников" (retry)="loadStudents()">
+          <p-table
+            [value]="visibleStudents()"
+            dataKey="id"
+            [rowHover]="true"
+            styleClass="tb-cards tb-cards--wide"
+          >
+            <ng-template #header>
+              <tr>
+                <th class="tb-col-main">Имя</th>
+                <th>Контакты</th>
+                <th>Группы</th>
+                <th>Видеовстреча</th>
+                <th>Доски</th>
+                <th>Статус</th>
+                <th>Логин</th>
+                <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-student [tbRowType]="visibleStudents()">
+              <tr>
+                <td data-label="Имя">
+                  <div class="tb-person">
+                    <span class="tb-avatar" aria-hidden="true">{{
+                      student.displayName | initials
+                    }}</span>
+                    <div class="tb-list__text">
+                      <span class="tb-list__title">{{ student.displayName }}</span>
+                      @if (student.note) {
+                        <span class="tb-list__supporting">{{ student.note }}</span>
+                      }
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td data-label="Контакты">
-                <div>{{ student.email ?? '' }}</div>
-                <div>{{ student.phone ?? '' }}</div>
-              </td>
-              <td data-label="Группы">{{ groupNames(student.id) }}</td>
-              <td data-label="Видеовстреча">
-                @if (student.status !== 'DEACTIVATED') {
-                  <tb-room-cell
-                    [room]="roomOf(student.id)"
-                    [name]="student.displayName"
-                    (edit)="
-                      openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
-                    "
-                  />
-                }
-              </td>
-              <td data-label="Доски">
-                @if (student.status !== 'DEACTIVATED') {
-                  <tb-board-cell
-                    [boards]="boards.of(student.id)"
-                    [name]="student.displayName"
-                    (edit)="
-                      boards.open({
-                        type: 'STUDENT',
-                        id: student.id,
-                        name: student.displayName,
-                      })
-                    "
-                  />
-                }
-              </td>
-              <td data-label="Статус">
-                <p-tag
-                  [value]="statusLabels[student.status]"
-                  [severity]="statusSeverities[student.status]"
-                />
-                @if (student.pendingInvite; as invite) {
-                  <div>
-                    <small class="tb-muted">
-                      {{ purposeLabels[invite.purpose] }} до
-                      {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
-                    </small>
-                  </div>
-                }
-              </td>
-              <td data-label="Логин">{{ student.login ?? '—' }}</td>
-              <td class="tb-actions-column">
-                <p-button
-                  icon="pi pi-pencil"
-                  [text]="true"
-                  severity="secondary"
-                  [rounded]="true"
-                  pTooltip="Редактировать"
-                  [ariaLabel]="'Редактировать: ' + student.displayName"
-                  (onClick)="openEdit(student)"
-                />
-                @if (student.status === 'DEACTIVATED') {
-                  <p-button
-                    icon="pi pi-replay"
-                    [text]="true"
-                    severity="secondary"
-                    [rounded]="true"
-                    pTooltip="Вернуть доступ"
-                    [ariaLabel]="'Вернуть доступ: ' + student.displayName"
-                    (onClick)="reactivate(student)"
-                  />
-                } @else {
-                  <p-button
-                    icon="pi pi-link"
-                    [text]="true"
-                    severity="secondary"
-                    [rounded]="true"
-                    [pTooltip]="
-                      student.status === 'ACTIVE'
-                        ? 'Ссылка для сброса пароля'
-                        : 'Новая ссылка-приглашение'
-                    "
-                    [ariaLabel]="'Ссылка: ' + student.displayName"
-                    (onClick)="reissueInvite(student)"
-                  />
-                  <p-button
-                    icon="pi pi-ban"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="danger"
-                    pTooltip="Отключить доступ"
-                    [ariaLabel]="'Отключить доступ: ' + student.displayName"
-                    (onClick)="confirmDeactivate(student)"
-                  />
-                }
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td colspan="8">
-                @if (students().length === 0) {
-                  <tb-empty-state
-                    icon="pi-user-plus"
-                    title="Учеников пока нет"
-                    hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
-                  >
-                    <p-button
-                      label="Добавить ученика"
-                      icon="pi pi-user-plus"
-                      severity="secondary"
-                      (onClick)="openCreate()"
+                </td>
+                <td data-label="Контакты">
+                  <div>{{ student.email ?? '' }}</div>
+                  <div>{{ student.phone ?? '' }}</div>
+                </td>
+                <td data-label="Группы">{{ groupNames(student.id) }}</td>
+                <td data-label="Видеовстреча">
+                  @if (student.status !== 'DEACTIVATED') {
+                    <tb-room-cell
+                      [room]="roomOf(student.id)"
+                      [name]="student.displayName"
+                      (edit)="
+                        openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
+                      "
                     />
-                  </tb-empty-state>
-                } @else {
-                  <tb-empty-state icon="pi-search" title="Никого не найдено" />
-                }
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                  }
+                </td>
+                <td data-label="Доски">
+                  @if (student.status !== 'DEACTIVATED') {
+                    <tb-board-cell
+                      [boards]="boards.of(student.id)"
+                      [name]="student.displayName"
+                      (edit)="
+                        boards.open({
+                          type: 'STUDENT',
+                          id: student.id,
+                          name: student.displayName,
+                        })
+                      "
+                    />
+                  }
+                </td>
+                <td data-label="Статус">
+                  <p-tag
+                    [value]="statusLabels[student.status]"
+                    [severity]="statusSeverities[student.status]"
+                  />
+                  @if (student.pendingInvite; as invite) {
+                    <div>
+                      <small class="tb-muted">
+                        {{ purposeLabels[invite.purpose] }} до
+                        {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
+                      </small>
+                    </div>
+                  }
+                </td>
+                <td data-label="Логин">{{ student.login ?? '—' }}</td>
+                <td class="tb-actions-column">
+                  <p-button
+                    icon="pi pi-pencil"
+                    [text]="true"
+                    severity="secondary"
+                    [rounded]="true"
+                    pTooltip="Редактировать"
+                    [ariaLabel]="'Редактировать: ' + student.displayName"
+                    (onClick)="openEdit(student)"
+                  />
+                  @if (student.status === 'DEACTIVATED') {
+                    <p-button
+                      icon="pi pi-replay"
+                      [text]="true"
+                      severity="secondary"
+                      [rounded]="true"
+                      pTooltip="Вернуть доступ"
+                      [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                      (onClick)="reactivate(student)"
+                    />
+                  } @else {
+                    <p-button
+                      icon="pi pi-link"
+                      [text]="true"
+                      severity="secondary"
+                      [rounded]="true"
+                      [pTooltip]="
+                        student.status === 'ACTIVE'
+                          ? 'Ссылка для сброса пароля'
+                          : 'Новая ссылка-приглашение'
+                      "
+                      [ariaLabel]="'Ссылка: ' + student.displayName"
+                      (onClick)="reissueInvite(student)"
+                    />
+                    <p-button
+                      icon="pi pi-ban"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="danger"
+                      pTooltip="Отключить доступ"
+                      [ariaLabel]="'Отключить доступ: ' + student.displayName"
+                      (onClick)="confirmDeactivate(student)"
+                    />
+                  }
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="8">
+                  @if (students().length === 0) {
+                    <tb-empty-state
+                      icon="pi-user-plus"
+                      title="Учеников пока нет"
+                      hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
+                    >
+                      <p-button
+                        label="Добавить ученика"
+                        icon="pi pi-user-plus"
+                        severity="secondary"
+                        (onClick)="openCreate()"
+                      />
+                    </tb-empty-state>
+                  } @else {
+                    <tb-empty-state icon="pi-search" title="Никого не найдено" />
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </tb-load-state>
       </p-card>
       <tb-groups-panel [students]="students()" (changed)="loadGroups()" />
     </div>
@@ -314,7 +319,7 @@ export class StudentsPage implements OnInit {
     return owner === null ? null : this.roomOf(owner.id);
   });
 
-  protected readonly loading = signal(true);
+  protected readonly state = new LoadState();
   protected readonly search = new FormControl('', { nonNullable: true });
   protected readonly showDeactivated = new FormControl(false, { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
@@ -346,18 +351,19 @@ export class StudentsPage implements OnInit {
     if (this.create() === 'student') {
       this.openCreate();
     }
-    this.api.listStudents().subscribe({
-      next: (students) => {
-        this.students.set(students);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.loadStudents();
     this.loadGroups();
     this.loadRooms();
     this.boards.load();
+  }
+
+  protected loadStudents(): void {
+    this.api
+      .listStudents(quietContext())
+      .pipe(this.state.track())
+      .subscribe((students) => {
+        this.students.set(students);
+      });
   }
 
   protected loadGroups(): void {

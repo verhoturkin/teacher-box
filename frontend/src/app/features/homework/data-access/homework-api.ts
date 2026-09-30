@@ -13,6 +13,7 @@ import {
   ReviewQueueItem,
   TaskDetails,
 } from './homework.models';
+import { quietContext } from '@core/http/api-error.interceptor';
 
 const TEACHER = '/api/teacher/homework';
 const ME = '/api/me/homework';
@@ -25,11 +26,15 @@ export class HomeworkApi {
   // --- teacher ---
 
   assignments(): Observable<AssignmentSummary[]> {
-    return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`);
+    return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
+      context: quietContext(),
+    });
   }
 
   assignment(id: string): Observable<AssignmentDetails> {
-    return this.http.get<AssignmentDetails>(`${TEACHER}/assignments/${id}`);
+    return this.http.get<AssignmentDetails>(`${TEACHER}/assignments/${id}`, {
+      context: quietContext(),
+    });
   }
 
   createAssignment(input: AssignmentInput, studentIds: string[]): Observable<AssignmentDetails> {
@@ -62,11 +67,13 @@ export class HomeworkApi {
   }
 
   reviewQueue(): Observable<ReviewQueueItem[]> {
-    return this.http.get<ReviewQueueItem[]>(`${TEACHER}/review-queue`);
+    return this.http.get<ReviewQueueItem[]>(`${TEACHER}/review-queue`, {
+      context: quietContext(),
+    });
   }
 
   task(taskId: string): Observable<TaskDetails> {
-    return this.http.get<TaskDetails>(`${TEACHER}/tasks/${taskId}`);
+    return this.http.get<TaskDetails>(`${TEACHER}/tasks/${taskId}`, { context: quietContext() });
   }
 
   review(
@@ -89,11 +96,11 @@ export class HomeworkApi {
   // --- student ---
 
   myTasks(): Observable<MyTask[]> {
-    return this.http.get<MyTask[]>(ME);
+    return this.http.get<MyTask[]>(ME, { context: quietContext() });
   }
 
   myTask(taskId: string): Observable<TaskDetails> {
-    return this.http.get<TaskDetails>(`${ME}/tasks/${taskId}`);
+    return this.http.get<TaskDetails>(`${ME}/tasks/${taskId}`, { context: quietContext() });
   }
 
   submit(taskId: string, text: string | null, files: readonly File[]): Observable<TaskDetails> {
@@ -109,11 +116,15 @@ export class HomeworkApi {
   }
 
   summary(): Observable<HomeworkSummary> {
-    return this.http.get<HomeworkSummary>('/api/teacher/homework/summary');
+    return this.http.get<HomeworkSummary>('/api/teacher/homework/summary', {
+      context: quietContext(),
+    });
   }
 
   mySummary(): Observable<MyHomeworkSummary> {
-    return this.http.get<MyHomeworkSummary>('/api/me/homework/summary');
+    return this.http.get<MyHomeworkSummary>('/api/me/homework/summary', {
+      context: quietContext(),
+    });
   }
 }
 

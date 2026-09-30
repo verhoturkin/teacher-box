@@ -60,14 +60,36 @@ describe('MyHomeworkPage', () => {
     expect(rows[2]).toContain('Оценка: 5');
   });
 
-  it('shows an empty state', async () => {
+  it('shows a failed load with «Повторить», then the empty state', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend.expectOne('/api/me/homework').flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить задания');
+    expect(readableText(hostElement(fixture))).not.toContain('Заданий пока нет');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/me/homework').flush([]);
+    await fixture.whenStable();
+
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
+  });
+
+  it('shows a task that is not found as an error, not an empty page', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(MyTaskPage);
+    fixture.componentRef.setInput('taskId', 'nope');
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/me/homework/tasks/nope')
+      .flush({ status: 404, code: 'task.not-found' }, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain(
+      'Задание Не удалось загрузить задание Задание не найдено Повторить',
+    );
   });
 });
 

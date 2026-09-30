@@ -72,4 +72,23 @@ describe('StudentHome', () => {
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Ближайших занятий нет');
   });
+
+  it('shows a failed load with «Повторить» in the place of the nearest lesson', async () => {
+    fixture.detectChanges();
+    backend.expectOne('/api/me/channels').flush([channel()]);
+    backend.expectOne('/api/me/homework/summary').flush(myHomeworkSummary());
+    backend.expectOne('/api/me/billing/summary').flush(myBillingSummary());
+    backend
+      .expectOne('/api/me/schedule/summary')
+      .flush(null, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/boards').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain(
+      'Не удалось загрузить занятия, задания и баланс',
+    );
+    expect(hostElement(fixture).querySelector('tb-next-lesson-widget')).toBeNull();
+  });
 });

@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { DefaultPriceCard } from './default-price-card';
 import { testProviders } from '@testing/setup';
 
@@ -43,8 +43,14 @@ describe('DefaultPriceCard', () => {
 
     button('Изменить цену для новых учеников').click();
     await fixture.whenStable();
+    const host = hostElement(fixture);
+    // the field under its label across the card, the buttons under it (ADR-0018)
+    expect(requireElement(host, '.tb-field > label', HTMLLabelElement).htmlFor).toBe(
+      'default-price',
+    );
+    expect(readableText(host)).toContain('Цена каждого ученика меняется в его строке');
     fixture.componentInstance.form.setValue({ price: 1800 });
-    button('Сохранить цену').click();
+    buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/default-price' });
     expect(request.request.body).toEqual({ lessonPrice: 180_000 });
@@ -52,7 +58,7 @@ describe('DefaultPriceCard', () => {
     await fixture.whenStable();
 
     expect(changed).toEqual([180_000]);
-    expect(hostElement(fixture).querySelector('button[aria-label="Сохранить цену"]')).toBeNull();
+    expect(hostElement(fixture).querySelector('form')).toBeNull();
   });
 
   it('keeps the editor open when saving fails and can be cancelled', async () => {
@@ -68,7 +74,7 @@ describe('DefaultPriceCard', () => {
     await fixture.whenStable();
 
     expect(changed).toEqual([]);
-    button('Отменить').click();
+    buttonByText(hostElement(fixture), 'Отмена').click();
     await fixture.whenStable();
     expect(button('Изменить цену для новых учеников')).toBeTruthy();
   });

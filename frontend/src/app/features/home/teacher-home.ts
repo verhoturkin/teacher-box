@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
@@ -18,6 +19,8 @@ import type { ScheduleSummary } from '@features/schedule/parts';
 import { AttentionCard } from './attention-card';
 import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 import { QuickActions } from './quick-actions';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /**
@@ -35,6 +38,7 @@ import { PageHeader } from '@shared/ui/page-header';
     QuickActions,
     TodayLessonsWidget,
     UpcomingLessonWidget,
+    LoadStateView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +48,13 @@ import { PageHeader } from '@shared/ui/page-header';
     </tb-page-header>
     <div class="tb-stack">
       <tb-quick-actions />
+      @if (!state.ready()) {
+        <tb-load-state
+          [state]="state"
+          what="занятия, задания, уведомления и финансы"
+          (retry)="load()"
+        />
+      }
       @if (schedule()?.next; as next) {
         <tb-upcoming-lesson-widget [lesson]="next" />
       }
@@ -85,23 +96,35 @@ export class TeacherHome implements OnInit {
     };
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.loadSchedule();
-    this.homeworkApi.summary().subscribe((summary) => {
-      this.homework.set(summary);
-    });
-    this.billingApi.summary().subscribe((summary) => {
-      this.billing.set(summary);
-    });
-    this.notificationsApi.summary().subscribe((summary) => {
-      this.notifications.set(summary);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    forkJoin({
+      schedule: this.scheduleApi.summary(),
+      homework: this.homeworkApi.summary(),
+      billing: this.billingApi.summary(),
+      notifications: this.notificationsApi.summary(),
+    })
+      .pipe(this.state.track())
+      .subscribe(({ schedule, homework, billing, notifications }) => {
+        this.schedule.set(schedule);
+        this.homework.set(homework);
+        this.billing.set(billing);
+        this.notifications.set(notifications);
+      });
   }
 
   /** Reloads the schedule counters (e.g. after a lesson was marked). */
   loadSchedule(): void {
-    this.scheduleApi.summary().subscribe((summary) => {
-      this.schedule.set(summary);
-    });
+    this.scheduleApi
+      .summary()
+      .pipe(this.state.track())
+      .subscribe((summary) => {
+        this.schedule.set(summary);
+      });
   }
 }

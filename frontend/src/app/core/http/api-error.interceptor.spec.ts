@@ -2,7 +2,7 @@ import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@a
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MessageService, ToastMessageOptions } from 'primeng/api';
-import { SKIP_ERROR_TOAST, apiErrorInterceptor } from './api-error.interceptor';
+import { SKIP_ERROR_TOAST, apiErrorInterceptor, quietContext } from './api-error.interceptor';
 
 describe('apiErrorInterceptor', () => {
   let http: HttpClient;
@@ -52,11 +52,22 @@ describe('apiErrorInterceptor', () => {
     expect(shown).toEqual([
       {
         severity: 'error',
-        summary: 'Ошибка',
         detail: 'Данные изменились. Обновите страницу и повторите',
+        life: 8000,
       },
     ]);
     expect(result.error).toBeDefined();
+  });
+
+  it('shows the same message once while it is on the screen', () => {
+    request();
+    request();
+
+    for (const pending of backend.match('/api/test')) {
+      pending.flush(null, { status: 500, statusText: 'Server Error' });
+    }
+
+    expect(shown).toHaveLength(1);
   });
 
   it('does not show a toast for 401', () => {
@@ -70,6 +81,14 @@ describe('apiErrorInterceptor', () => {
 
   it('respects SKIP_ERROR_TOAST', () => {
     request(new HttpContext().set(SKIP_ERROR_TOAST, true));
+
+    backend.expectOne('/api/test').flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(shown).toEqual([]);
+  });
+
+  it('keeps a load quiet: the page shows its error itself', () => {
+    request(quietContext());
 
     backend.expectOne('/api/test').flush(null, { status: 500, statusText: 'Server Error' });
 
