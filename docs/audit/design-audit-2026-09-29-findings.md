@@ -11,8 +11,9 @@
 - «пресет» — это `core/theme/teacher-box-preset.ts`.
 - Номера строк — версия 1.6.10, ветка `claude/teacher-box-ui-audit-2huqzl`.
 
-**Скриншоты** названы `<участок>/<файл>.png`. Лежат в рабочем каталоге сессии аудита, в репозиторий не
-добавлены (так требует задание). 1 143 снимка, каталоги по участкам — раздел 2 главного файла.
+**Скриншоты** названы `<участок>/<файл>.png` и открываются по ссылке: все снимки, на которые ссылаются карточки,
+лежат в [design-audit-2026-09-29-shots/](design-audit-2026-09-29-shots/). Сколько снято всего и сколько добавлено —
+раздел 2.6 главного файла.
 
 **Числа M3.** Сайт m3.material.io из окружения закрыт прокси, поэтому числа сверены по токенам Material 3:
 - «сверено: MW `<файл>`» — токены Material Web 2.5.0 (Material 3 v34.0.21), `tokens/versions/latest/sass/`;
@@ -80,7 +81,7 @@
     304,299 размером 1112×1121.
   - Окно стоит в прямоугольнике 540,615 размером 640×490, его нижние 205 px — за краем экрана.
   - На 390×844 «полноэкранное» окно начинается с y = 544: видна только верхушка под нижней панелью.
-  - Снимки: `LV2/dlg-bot-wizard-direct-1440.png` (проверен при сведении), `LV2/dlg-bot-wizard-direct-390.png`.
+  - Снимки: [`LV2/dlg-bot-wizard-direct-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-bot-wizard-direct-1440.png) (проверен при сведении), [`LV2/dlg-bot-wizard-direct-390.png`](design-audit-2026-09-29-shots/LV2/dlg-bot-wizard-direct-390.png).
 - **Причина:**
   - У тела раскрываемой секции анимация с `transform` и заполнением `both`:
     `shared/ui/fold-card.ts:168` — `animation: tb-fold-in var(--tb-spring-default-spatial) both`, кадры в `:171-176`.
@@ -113,15 +114,15 @@
 - **Что сейчас:**
   - **Ученик.** Главная без «Ближайшего занятия», заданий и баланса. В расписании — «На этой неделе занятий
     больше нет» и «Занятий нет». В заданиях — «Заданий пока нет. Здесь появятся задания от преподавателя».
-    В оплатах — только заголовок. Снимки: `LV3/err-500-schedule-390-light.png`, `LV3/err-500-home-390-light.png`,
-    `LV3/err-abort-homework-390-light.png`.
+    В оплатах — только заголовок. Снимки: [`LV3/err-500-schedule-390-light.png`](design-audit-2026-09-29-shots/LV3/err-500-schedule-390-light.png), [`LV3/err-500-home-390-light.png`](design-audit-2026-09-29-shots/LV3/err-500-home-390-light.png),
+    [`LV3/err-abort-homework-390-light.png`](design-audit-2026-09-29-shots/LV3/err-abort-homework-390-light.png).
   - **Учитель.** «Ученики» — «Учеников пока нет. Добавьте первого ученика…» с кнопкой «Добавить ученика». Причина:
-    `error: () => loading.set(false)` оставляет пустой массив. Снимок: `LV1/snackbar-error-students-390-light.png`.
+    `error: () => loading.set(false)` оставляет пустой массив. Снимок: [`LV1/snackbar-error-students-390-light.png`](design-audit-2026-09-29-shots/LV1/snackbar-error-students-390-light.png).
   - **Администратор.** «Всё обработано.», «Все сообщения доставлены.», «Копий пока нет» видны и до загрузки, и
-    после ошибки (`LV4/state-events-error-390.png`, `LV4/state-backups-error-390.png`).
+    после ошибки ([`LV4/state-events-error-390.png`](design-audit-2026-09-29-shots/LV4/state-events-error-390.png), [`LV4/state-backups-error-390.png`](design-audit-2026-09-29-shots/LV4/state-backups-error-390.png)).
   - **Тосты.** Интерцептор показывает тост на каждый запрос. На главной учителя пять одинаковых тостов
     «Внутренняя ошибка сервера. Код ошибки: …» закрывают экран телефона целиком. Снимок
-    `LV1/error-500-teacher_teacher-390.png` проверен при сведении.
+    [`LV1/error-500-teacher_teacher-390.png`](design-audit-2026-09-29-shots/LV1/error-500-teacher_teacher-390.png) проверен при сведении.
   - Кнопки «Повторить» нет нигде.
   - Неверный id задания открывает пустую страницу с одним тостом «Задание не найдено».
 - **Как должно быть:**
@@ -180,7 +181,7 @@
   - Палитра `surface` в пресете одна на обе темы (`scheme()` кладёт `surface: NEUTRAL` и в light, и в dark). Поэтому
     `--p-surface-100` и в тёмной теме светлый: #eef0f6.
   - Текст наследует on-surface тёмной темы: #e4e6ee.
-  - Контраст 1,09 : 1. Код «3Z9G-TA9Z» на снимке `LV3/msg-code-dialog-390-dark.png` (проверен при сведении)
+  - Контраст 1,09 : 1. Код «3Z9G-TA9Z» на снимке [`LV3/msg-code-dialog-390-dark.png`](design-audit-2026-09-29-shots/LV3/msg-code-dialog-390-dark.png) (проверен при сведении)
     почти не виден.
 - **Как должно быть:** только роли `--p-md-*` (ADR-0017 §Цвет); WCAG 1.4.3 — не меньше 4,5 : 1.
 - **Почему важно:** код — единственный способ подключить ВКонтакте и запасной для Telegram и MAX. Без него
@@ -232,7 +233,7 @@
     - в «Состоянии» администратора.
   - В окнах занятия — только при событии: «Время пересекается…».
   - У возвращённой работы ученика комментарий учителя стоит в жёлтом блоке «Нужно доработать» — 2,83 : 1
-    (`LV3/lv3-task-returned-390-light.png`).
+    ([`LV3/lv3-task-returned-390-light.png`](design-audit-2026-09-29-shots/LV3/lv3-task-returned-390-light.png)).
   - **Разнобой одного статуса:**
     - `warn` жёлтый в `p-message`, оранжевый в `p-tag` и `p-badge`;
     - «Запланировано» в тегах голубое (info), а в календаре — primary-container;
@@ -313,7 +314,7 @@
   - Фоновые события не зависят от темы: `--p-green-500`, `.tb-busy` на `--p-surface-500`, `.tb-off-time` на `--p-surface-400`.
   - Роли success и success-container есть (ADR-0019), но календарь их не использует.
   - При этом запланированное занятие на primary-container читается хорошо: 9,27 : 1.
-  - Снимки: `ST4/calendar-week-light.png`, `ST4/calendar-week-dark.png`, `ST2/event-conducted-light.png`.
+  - Снимки: [`ST4/calendar-week-light.png`](design-audit-2026-09-29-shots/ST4/calendar-week-light.png), [`ST4/calendar-week-dark.png`](design-audit-2026-09-29-shots/ST4/calendar-week-dark.png), [`ST2/event-conducted-light.png`](design-audit-2026-09-29-shots/ST2/event-conducted-light.png).
 - **Как должно быть:** ADR-0017 §Цвет — цвета только из ролей; ADR-0019 — роль success; WCAG 1.4.3 и 1.4.11.
 - **Почему важно:** неделя — главный рабочий экран учителя. Проведённые и пропущенные занятия — самые частые
   метки, и читаются они хуже всего.
@@ -346,7 +347,7 @@
   - После Esc фокус уходит в календарь, а не на строку.
   - Панель «?» ведёт себя так же.
   - Для сравнения: `p-dialog` удерживает фокус правильно — 14 Tab циклически внутри окна.
-  - Снимок `LV1/sheet-anna-390-light.png`; данные `LV3/sheet-390-light.json` (поле `tabsInSheet`).
+  - Снимок [`LV1/sheet-anna-390-light.png`](design-audit-2026-09-29-shots/LV1/sheet-anna-390-light.png); данные `LV3/sheet-390-light.json` (поле `tabsInSheet`).
 - **Как должно быть:**
   - модальный нижний лист M3 ведёт себя как диалог: фокус внутри, ловушка фокуса, Esc, возврат на вызвавший элемент
     (по памяти, требует сверки);
@@ -375,7 +376,7 @@
     - фокус — слой on-surface 8 % на `.p-menu-item-content`;
     - таблетка активного раздела — `::before` с `z-index: -1` внутри `isolation: isolate` — рисуется поверх этого слоя;
     - поэтому активный пункт с фокусом не отличается от активного без фокуса. Снимок
-      `LV1/focus-sidenav-active-focused-1440-light.png` проверен при сведении: фокус стоит на «Расписании», а
+      [`LV1/focus-sidenav-active-focused-1440-light.png`](design-audit-2026-09-29-shots/LV1/focus-sidenav-active-focused-1440-light.png) проверен при сведении: фокус стоит на «Расписании», а
       визуально фокуса нет;
     - на соседнем пункте фокус — серая таблетка примерно 1,1 : 1 к фону.
   - Rail и нижняя панель:
@@ -416,7 +417,7 @@
   - У `.tb-list__text` стоит `align-items: flex-start`, у `.tb-list__supporting` — `overflow-wrap: break-word`, а он не
     уменьшает min-content.
   - В итоге плитка растёт, страница едет вбок, заголовок и логотип срезаны слева.
-  - Снимки: `LV3/notif-url-overflow-360-light.png`, `LV3/notif-url-overflow-390-light.png`.
+  - Снимки: [`LV3/notif-url-overflow-360-light.png`](design-audit-2026-09-29-shots/LV3/notif-url-overflow-360-light.png), [`LV3/notif-url-overflow-390-light.png`](design-audit-2026-09-29-shots/LV3/notif-url-overflow-390-light.png).
   - Штатный замер `L.audit` этого не видит: с `isMobile` окно само расширяется до 385 px.
 - **Как должно быть:** ADR-0021 §Переносы; WCAG 1.4.10.
 - **Почему важно:** на самом частом телефоне Android (360 px) весь раздел «ездит» вбок.
@@ -461,7 +462,7 @@
   - Роль success (green.700) на плитке — 4,53 : 1, впритык.
   - **Приглушение `opacity` вместо роли:**
     - `.tb-inactive td { opacity: .55 }` — строка «Ошибочный платёж» в отчёте: 3,72 : 1, приглушённый текст 2,19 : 1
-      (`ST2/report-inactive-row-1440.png`);
+      ([`ST2/report-inactive-row-1440.png`](design-audit-2026-09-29-shots/ST2/report-inactive-row-1440.png));
     - отменённые занятия — `opacity: .7`;
     - старые ответы — `.tb-submission--old { opacity: .75 }`.
 
@@ -529,8 +530,8 @@
     ΔE — разница цветов в OKLab × 100: около 2 — порог заметности, меньше 10 — «похожие».
   - При протанопии и дейтеранопии success и error различаются слабо: ΔE 9,6 и 8,6, в тёмной теме при
     дейтеранопии — 5,7. Кнопки при этом различимы формой и подписью: filled «Сохранить» против text «Отмена».
-  - Снимки: `LV1/color-emerald-schedule-1440-light.png`, `LV1/color-xfbc02d-schedule-1440-light.png`,
-    `LV1/color-x2e7d32-dialog-student-1440-light.png`.
+  - Снимки: [`LV1/color-emerald-schedule-1440-light.png`](design-audit-2026-09-29-shots/LV1/color-emerald-schedule-1440-light.png), [`LV1/color-xfbc02d-schedule-1440-light.png`](design-audit-2026-09-29-shots/LV1/color-xfbc02d-schedule-1440-light.png),
+    [`LV1/color-x2e7d32-dialog-student-1440-light.png`](design-audit-2026-09-29-shots/LV1/color-x2e7d32-dialog-student-1440-light.png).
 - **Как должно быть:** WCAG 1.4.3 (4,5 : 1), 1.4.11 (3 : 1 для кольца фокуса); в M3 primary = тон 40, контраст с белым
   гарантирован тоном, а не номером оттенка палитры (сверено: MW `_md-sys-color.scss`: primary = primary40).
 - **Почему важно:** учитель выбирает готовый «Изумрудный», а бледные кнопки и ссылки получают все ученики — без
@@ -646,7 +647,7 @@
 - **Где:** все роли, все `p-dialog` (22), `p-confirmdialog` (7), `p-drawer` (2), тосты, `p-select`, календарь.
 - **Что сейчас:**
   - `button.p-dialog-close-button` 40×40 без `aria-label` и без текста. В обходе Tab он пустой; axe `button-name`
-    (critical) — `LV4/a11y-restore-1440-light.png`, `LV4/a11y-confirm-delete-1440-light.png`.
+    (critical) — [`LV4/a11y-restore-1440-light.png`](design-audit-2026-09-29-shots/LV4/a11y-restore-1440-light.png), [`LV4/a11y-confirm-delete-1440-light.png`](design-audit-2026-09-29-shots/LV4/a11y-confirm-delete-1440-light.png).
   - PrimeNG берёт имя только из входа `closeAriaLabel` (`primeng-dialog.mjs:1083`), в проекте его нигде не задают.
   - Где PrimeNG берёт подпись из перевода, она английская: в `core/i18n/primeng-ru.ts:4-102` нет блока `aria`.
     Примеры: «Close» у тоста, «dropdown trigger» у `p-select`, «Events» и «Timed» у FullCalendar.
@@ -734,7 +735,7 @@
     - текста ошибки под полем нет;
     - `aria-invalid` и `aria-describedby` не ставятся;
     - «Сохранить», «Далее», «Создать аккаунт», «Сбросить» просто неактивны.
-  - Снимки: `LV2/dlg-student-invalid-1440.png`, `LV2/dlg-payment-zero-1440.png`, `LV4/invite-390-light-invalid.png`.
+  - Снимки: [`LV2/dlg-student-invalid-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-student-invalid-1440.png), [`LV2/dlg-payment-zero-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-payment-zero-1440.png), [`LV4/invite-390-light-invalid.png`](design-audit-2026-09-29-shots/LV4/invite-390-light-invalid.png).
   - Сервер присылает `errors` по полям (`core/http/problem-detail.ts:10-11`), но фронтенд их нигде не показывает.
     Ошибки сервера («Логин: 3–50 символов…», «Этот логин уже занят») выводятся внизу формы, а не у поля.
   - Подсказка «Не короче 8 символов» при ошибке остаётся серой.
@@ -788,7 +789,7 @@
   - `life` не задан: 3000 мс, измерено 2,86 с, в том числе у ошибок с кодом.
   - Вид: 384×84 px — заголовок «Ошибка» или «Готово» плюс текст и значок важности. Действий нет ни в одном тосте.
     «×» — 28×28 с подписью «Close».
-  - На телефоне тост (y 612–696) ложится поверх FAB (y 648–704): `LV1/snackbar-error-students-390-light.png`.
+  - На телефоне тост (y 612–696) ложится поверх FAB (y 648–704): [`LV1/snackbar-error-students-390-light.png`](design-audit-2026-09-29-shots/LV1/snackbar-error-students-390-light.png).
   - Несколько ошибок дают стопку, см. DA-002.
 - **Как должно быть:**
   - появление сообщения не переносит фокус (WCAG 2.4.3, 3.2);
@@ -883,7 +884,7 @@
 - **Что сейчас:**
   - Из 81 `.tb-field` 75 сделаны по ADR-0022 ✓.
   - **Подпись только в placeholder или `aria-label`:**
-    - фильтры журнала «Код ошибки», «Текст», «Раздел (логгер)» — placeholder исчезает при вводе (`LV4/admin-logs-390-light-viewport.png`);
+    - фильтры журнала «Код ошибки», «Текст», «Раздел (логгер)» — placeholder исчезает при вводе ([`LV4/admin-logs-390-light-viewport.png`](design-audit-2026-09-29-shots/LV4/admin-logs-390-light-viewport.png));
     - «Последние сутки», «Все уровни» и три выбора «Подробного журнала»;
     - «Выдать ещё ученикам» и «Добавить группу» (встроен в три формы);
     - «Цена для новых учеников»;
@@ -960,10 +961,10 @@
   - **Шрифт браузера 200 %** (корень 32 px):
     - 1440 px: шапка 128 px, развёрнутый rail 560 px (39 % окна), быстрые действия обрезаны;
     - 390 px: шапка 128 + панель 160 = 288 из 900 px, горизонтальная прокрутка страницы до 537 px, все подписи панели
-      обрезаны, от названия портала видно 62 px. Снимки `LV1/font200-_teacher-1440.png`, `LV1/font200-_teacher-390.png`.
+      обрезаны, от названия портала видно 62 px. Снимки [`LV1/font200-_teacher-1440.png`](design-audit-2026-09-29-shots/LV1/font200-_teacher-1440.png), [`LV1/font200-_teacher-390.png`](design-audit-2026-09-29-shots/LV1/font200-_teacher-390.png).
   - **Масштаб 400 %** (окно 1280×1024, то есть 320×256 CSS px):
     - шапка и панель занимают 144 из 256 px, на контент остаётся 112 px, из них 56 — FAB;
-    - меню пользователя выше окна, «Выйти» виден только после прокрутки. Снимок `LV1/zoom400-of-1280x1024-usermenu.png`.
+    - меню пользователя выше окна, «Выйти» виден только после прокрутки. Снимок [`LV1/zoom400-of-1280x1024-usermenu.png`](design-audit-2026-09-29-shots/LV1/zoom400-of-1280x1024-usermenu.png).
   - Работает: масштаб 200 % (720×450) — раскладка телефона, всё доступно.
   - Радиусы при шрифте 200 % расходятся: у `p-card` 40 px (rem), у `tb-fold-card` 20 px (px), у плиток 16 px.
 - **Как должно быть:**
@@ -1011,8 +1012,8 @@
 
   - `p-progressspinner` в виде индикатора M3E используется только в `features/identity/invite/invite-page.ts`.
     Таблицы показывают маску PrimeNG со значком.
-  - Снимки: `LV1/slow-teacher_teacher_notifications-1440-t350.png`, `LV1/slow-anna_cabinet_schedule-1440-t350.png`,
-    `LV3/slow-schedule-390-400ms.png`.
+  - Снимки: [`LV1/slow-teacher_teacher_notifications-1440-t350.png`](design-audit-2026-09-29-shots/LV1/slow-teacher_teacher_notifications-1440-t350.png), [`LV1/slow-anna_cabinet_schedule-1440-t350.png`](design-audit-2026-09-29-shots/LV1/slow-anna_cabinet_schedule-1440-t350.png),
+    [`LV3/slow-schedule-390-400ms.png`](design-audit-2026-09-29-shots/LV3/slow-schedule-390-400ms.png).
 - **Как должно быть:**
   - M3 Expressive: loading indicator там, где ждут контент (сверено: MW `_md-comp-loading-indicator.scss`);
   - пустое состояние — только после ответа;
@@ -1058,10 +1059,10 @@
     - 360 px: «Расписание», у администратора «Интеграции»;
     - 320 px: «Состояние».
 
-    Снимки: `LV1/crop-bottomnav-teacher-390-light.png`, `main/smoke-teacher-home-390.png`.
+    Снимки: [`LV1/crop-bottomnav-teacher-390-light.png`](design-audit-2026-09-29-shots/LV1/crop-bottomnav-teacher-390-light.png), [`main/smoke-teacher-home-390.png`](design-audit-2026-09-29-shots/main/smoke-teacher-home-390.png).
   - **Индикатор** 61×32 на 390 px и 56×32 на 360 px вместо 64×32.
   - **Раздел из «Ещё».** После «Ещё» → «Уведомления» ни один пункт панели не активен, «Ещё» тоже.
-    Снимок `LV1/more-selected-390-light.png`.
+    Снимок [`LV1/more-selected-390-light.png`](design-audit-2026-09-29-shots/LV1/more-selected-390-light.png).
   - **Высота панели** 80 px — как у M3 navigation bar; у Expressive — 64 (см. раздел 5, С-3).
 - **Как должно быть:**
   - M3 navigation bar: подпись Label Medium, индикатор 64×32 (сверено: MW `_md-comp-navigation-bar.scss`);
@@ -1098,8 +1099,8 @@
 - **Что сейчас:**
   - На мобильном вьюпорте `innerWidth` становится 635, 522 или 496 px. Полноэкранное окно съезжает, фильтр и длинные
     имена обрезаны.
-  - Снимки: `LV2/dlg-lesson-select-390-settled.png`, `LV2/dlg-payment-select-kon-390.png`,
-    `LV2/dlg-group-multiselect-390.png`.
+  - Снимки: [`LV2/dlg-lesson-select-390-settled.png`](design-audit-2026-09-29-shots/LV2/dlg-lesson-select-390-settled.png), [`LV2/dlg-payment-select-kon-390.png`](design-audit-2026-09-29-shots/LV2/dlg-payment-select-kon-390.png),
+    [`LV2/dlg-group-multiselect-390.png`](design-audit-2026-09-29-shots/LV2/dlg-group-multiselect-390.png).
 - **Как должно быть:** ADR-0022 §Меню и выпадающие списки — список не шире окна, длинный пункт переносится.
 - **Почему важно:** выбор ученика — первый шаг записи занятия и оплаты с телефона.
 - **Предложение:**
@@ -1133,7 +1134,7 @@
     | «Оплаты» | 769 | «Константиноп\|ольская», «Приглашё\|нная», «Соловьёв\|а» |
     | «Задания» | 800 | «04.10.2\|026» |
 
-    Снимки: `ST2/billing-table-800.png`, `LV2/review-1024-light.png`, `LV2/billing-769-light.png`.
+    Снимки: [`ST2/billing-table-800.png`](design-audit-2026-09-29-shots/ST2/billing-table-800.png), [`LV2/review-1024-light.png`](design-audit-2026-09-29-shots/LV2/review-1024-light.png), [`LV2/billing-769-light.png`](design-audit-2026-09-29-shots/LV2/billing-769-light.png).
   - **Причина:**
     - `anywhere` задан всем `td` таблиц и заголовкам строк внутри ячеек;
     - минимальная ширина колонки падает до одного символа, и автораскладка сжимает имя при свободном месте рядом;
@@ -1170,7 +1171,7 @@
   только `tb-empty-state`») · **Раздел:** состояния, компоненты
 - **Где:** все роли. Полностью пустые разделы сняты на чистом инстансе — 0 учеников.
 - **Что сейчас:**
-  - **Четыре вида, часто на одной странице** (`LV4/empty-cabinet-1440-light.png`, `LV4/scn-setup-5-home-390-full.png`):
+  - **Четыре вида, часто на одной странице** ([`LV4/empty-cabinet-1440-light.png`](design-audit-2026-09-29-shots/LV4/empty-cabinet-1440-light.png), [`LV4/scn-setup-5-home-390-full.png`](design-audit-2026-09-29-shots/LV4/scn-setup-5-home-390-full.png)):
     1. `tb-empty-state` с кругом 64 px — «Уведомлений пока нет»;
     2. абзац `p.tb-muted` — «Сегодня занятий нет.», «Срочных дел нет.», «Ближайших занятий нет.», «Открытых заданий
        нет.», «Ничего не найдено.», «Запросов в этом месяце не было.», «Ничего не нашлось…»;
@@ -1270,7 +1271,7 @@
   | Моноширинный текст | `monospace` литералом ×4 | токена нет |
 
   - Высота строки заголовков наследуется от body, потому что пресет задаёт только размер и вес. Двухстрочные заголовки
-    окон слипаются: `LV2/dlg-invite-1-1440.png`, `LV4/fr-invite-link-dialog-390.png`.
+    окон слипаются: [`LV2/dlg-invite-1-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-invite-1-1440.png), [`LV4/fr-invite-link-dialog-390.png`](design-audit-2026-09-29-shots/LV4/fr-invite-link-dialog-390.png).
   - Подписи показателей — «должников: 3», «Эта сумма пойдёт в счёт…», «сборка …»: `small` наследует Label Large и
     уменьшается браузером.
   - Вес 600 у активного пункта противоречит комментарию `shell.scss` «not by weight».
@@ -1322,7 +1323,7 @@
 - **Где и что сейчас:**
   - **«Подключиться» у ученика.** `/cabinet/schedule`, 1024 и 1440 px: по filled «Подключиться» в каждой строке
     ближайших занятий, у anna их 4. `lesson-actions` не передаёт `tonal` в `tb-join-lesson-button`, а у учителя в
-    «Сегодня» та же кнопка tonal. Снимок `ST1/student-schedule-upcoming-1440.png`.
+    «Сегодня» та же кнопка tonal. Снимок [`ST1/student-schedule-upcoming-1440.png`](design-audit-2026-09-29-shots/ST1/student-schedule-upcoming-1440.png).
   - **«✓ Сохранить цену».** «Оплаты» и история оплат, режим правки цены: `severity="success"` без `text` и
     `tb-tonal` — вторая filled рядом с FAB. К тому же это «капля» 40×42, без подсказки, а на странице ученика — без
     `[loading]`.
@@ -1372,8 +1373,8 @@
     «Отправить учителю» — какая отменяет занятие? На 390 px «Отправить учителю» переносится в две строки.
   - **Раскладка опасных окон.** В восстановлении и сбросе кнопки стоят в теле окна слева, на телефоне — посреди
     экрана. В окне настроек — в подвале справа.
-  - Снимки: `ST1/confirm-deactivate-student.png`, `LV2/dlg-details-1440.png`, `LV3/lv3-cancel-dialog-1440-light.png`,
-    `LV4/dlg-restore-390.png`.
+  - Снимки: [`ST1/confirm-deactivate-student.png`](design-audit-2026-09-29-shots/ST1/confirm-deactivate-student.png), [`LV2/dlg-details-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-details-1440.png), [`LV3/lv3-cancel-dialog-1440-light.png`](design-audit-2026-09-29-shots/LV3/lv3-cancel-dialog-1440-light.png),
+    [`LV4/dlg-restore-390.png`](design-audit-2026-09-29-shots/LV4/dlg-restore-390.png).
 - **Как должно быть:**
   - ADR-0019 §Диалог подтверждения. ADR внутренне согласован: нейтральная «Назад» в опасном окне описана как
     осознанное исключение, чтобы не было двух красных кнопок;
@@ -1420,7 +1421,7 @@
     - «Проведено» — filled зелёная.
 
     При ссылке на встречу в теле окна есть ещё filled «Начать урок». На 390 px подвал занимает три ряда.
-    Снимки `ST1/lesson-details-1440.png`, `ST1/lesson-details-390.png`.
+    Снимки [`ST1/lesson-details-1440.png`](design-audit-2026-09-29-shots/ST1/lesson-details-1440.png), [`ST1/lesson-details-390.png`](design-audit-2026-09-29-shots/ST1/lesson-details-390.png).
   - **Начальный фокус.** PrimeNG ставит его на первый фокусируемый элемент тела, а если такого нет — подвала
     (`primeng-dialog.mjs:617-627`). Без встречи это «Удалить», со встречей — «Начать урок» с видимым кольцом:
     Enter запускает урок.
@@ -1456,7 +1457,7 @@
 - **Что сейчас:**
   - **«Пропуск» и «Проведено»** в «Отметьте прошедшие занятия» и на главной — одно нажатие на значок 40×40 рядом с
     соседним. Нет ни окна, ни тоста, ни «Отменить»: строка просто исчезает.
-    - Проверено на LV2-ученике: баланс +1 000 ₽ → долг 500 ₽, ученик получил уведомление (`LV2/ledger-lv2-after-missed.png`).
+    - Проверено на LV2-ученике: баланс +1 000 ₽ → долг 500 ₽, ученик получил уведомление ([`LV2/ledger-lv2-after-missed.png`](design-audit-2026-09-29-shots/LV2/ledger-lv2-after-missed.png)).
     - Вернуть можно только через календарь → занятие → «Снять отметку». Ошибка запроса молча игнорируется.
   - **Без подтверждения и без «Отменить»:**
     - удаление доски (корзина);
@@ -1509,8 +1510,8 @@
   - **С тостом:** регулярные занятия, оплата, возврат и приём работы, сообщение ученикам, напоминание, правка
     ученика, цена, запрос из расписания ученика.
   - Новое занятие появляется в календаре ниже экрана, новая группа — в конце страницы высотой около 15 000 px.
-  - Снимки: `LV2/schedule-after-lesson-create-1440.png`, `LV2/schedule-after-answer-1440.png`,
-    `LV2/groups-after-create-1440.png`.
+  - Снимки: [`LV2/schedule-after-lesson-create-1440.png`](design-audit-2026-09-29-shots/LV2/schedule-after-lesson-create-1440.png), [`LV2/schedule-after-answer-1440.png`](design-audit-2026-09-29-shots/LV2/schedule-after-answer-1440.png),
+    [`LV2/groups-after-create-1440.png`](design-audit-2026-09-29-shots/LV2/groups-after-create-1440.png).
 - **Как должно быть:** Нильсен №1 и №4 — одинаковая обратная связь для одинаковых действий; M3 snackbar — короткое
   подтверждение.
 - **Почему важно:** учитель не видит, сохранилось ли, и нажимает второй раз (см. DA-064).
@@ -1543,7 +1544,7 @@
     - «Подробный журнал» начинается на y ≈ 55 976 px;
     - фильтры занимают весь первый экран.
 
-    Снимок `LV4/admin-logs-390-light-viewport.png`.
+    Снимок [`LV4/admin-logs-390-light-viewport.png`](design-audit-2026-09-29-shots/LV4/admin-logs-390-light-viewport.png).
 - **Как должно быть:** ADR-0018 §Списки и фильтры; ADR-0021 — сверху то, что требует действия; Нильсен №7 и №8.
 - **Почему важно:** создать группу, найти должника или включить подробный журнал — частые действия. Сейчас это
   прокрутка на 15–56 тысяч пикселей или Ctrl+F.
@@ -1763,7 +1764,7 @@
 - **Серьёзность:** Major · **Уровень:** A (ADR-0016: эти настройки — у администратора в интерфейсе; ADR-0010 —
   техника у администратора) · **Раздел:** тексты
 - **Где:** учитель:
-  - `/teacher/ai`: пустое состояние из 8 строк переменных, `LV4/empty-ai-390-light-viewport.png`;
+  - `/teacher/ai`: пустое состояние из 8 строк переменных, [`LV4/empty-ai-390-light-viewport.png`](design-audit-2026-09-29-shots/LV4/empty-ai-390-light-viewport.png);
   - «Настройки»: «см. .env.example», «TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY»;
   - мастер, шаг «Адрес»: `TEACHERBOX_PUBLIC_URL`, `TEACHERBOX_TIMEZONE`;
   - Телемост;
@@ -1855,7 +1856,7 @@
   «Финансы» на главной учителя, «Интеграции» администратора.
 - **Что сейчас:** свои разметки вместо сегментированного списка:
   - интеграции в «Настройках» — `ul.tb-integrations`: строки без плиток, «подключить» строчными
-    (`ST3/phone_settings-integrations.png`);
+    ([`ST3/phone_settings-integrations.png`](design-audit-2026-09-29-shots/ST3/phone_settings-integrations.png));
   - «Мои доски» — столбик tonal-кнопок 42 px, подпись сбоку или снизу;
   - доски в окне;
   - участники занятия — без аватара;
@@ -1890,7 +1891,7 @@
   - «Подключиться» стоит на x = 937 в строках 1–3 и на x = 1086 в строке с «Отозвать». На 1024 px — 521 и 670.
   - «Отозвать» шириной 112 px против 136 px у «Отменить» и «Не приду»: `tb-button-steady` на ней не стоит, а хвост
     строки выровнен вправо.
-  - Снимки: `LV3/anna-schedule-1440-light.png`, `ST1/student-schedule-upcoming-1440.png`.
+  - Снимки: [`LV3/anna-schedule-1440-light.png`](design-audit-2026-09-29-shots/LV3/anna-schedule-1440-light.png), [`ST1/student-schedule-upcoming-1440.png`](design-audit-2026-09-29-shots/ST1/student-schedule-upcoming-1440.png).
 - **Как должно быть:** ADR-0021 §Кнопки на месте — одинаковые кнопки соседних строк стоят в одной колонке и одной
   ширины; «Отозвать» — кнопка строки той же ширины, что «Отменить» и «Не приду» (этап 67.2 плана).
 - **Почему важно:** перед уроком взгляд ищет «Подключиться» на одном месте.
@@ -1915,7 +1916,7 @@
   - «Цена занятия» наезжает на поле.
   - Подсказка «Отменить» после касания рисуется вертикально по букве и раздвигает страницу до 398 px.
   - Кнопка сохранения — круглая залитая зелёная (см. DA-026).
-  - Снимки: `LV2/billing-default-price-edit-390.png`, `LV2/ledger-price-edit-390.png`.
+  - Снимки: [`LV2/billing-default-price-edit-390.png`](design-audit-2026-09-29-shots/LV2/billing-default-price-edit-390.png), [`LV2/ledger-price-edit-390.png`](design-audit-2026-09-29-shots/LV2/ledger-price-edit-390.png).
 - **Как должно быть:** ADR-0022 §Поля — поле с подписью на рамке во всю ширину колонки; ADR-0018 — вёрстка не
   выходит за экран, кнопки правки — пара tonal «Сохранить | Отмена», а не «капля».
 - **Почему важно:** цена — второй шаг первоначальной настройки.
@@ -1943,11 +1944,11 @@
     | «Удалить файл?» | 772 px |
 
     На 390 px окно идёт от края до края, а углы 28 px прижаты к краям. Снимки
-    `LV2/dlg-group-archive-confirm-1440.png`, `LV2/dlg-deactivate-confirm-390.png`.
+    [`LV2/dlg-group-archive-confirm-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-group-archive-confirm-1440.png), [`LV2/dlg-deactivate-confirm-390.png`](design-audit-2026-09-29-shots/LV2/dlg-deactivate-confirm-390.png).
   - **Окна форм** — inline `[style]="{ width }"`, 6 разных значений (30, 32, 34, 36, 40, 44 rem) в 22 окнах.
     36–44 rem — это 576–704 px.
   - **Окна с одним полем пароля** (восстановление, сохранение настроек, сброс) на телефоне открываются на весь экран:
-    80 % экрана пусто между полем и кнопками (`LV4/dlg-settings-confirm-390.png`). А `p-confirmdialog` —
+    80 % экрана пусто между полем и кнопками ([`LV4/dlg-settings-confirm-390.png`](design-audit-2026-09-29-shots/LV4/dlg-settings-confirm-390.png)). А `p-confirmdialog` —
     обычное окно с углами 28 px.
 - **Как должно быть:**
   - M3 dialog — ширина 280–560 dp (по памяти, требует сверки), поля от краёв экрана;
@@ -1977,7 +1978,7 @@
   - **Без заголовка.** У карточки календаря нет заголовка; заголовок периода 18/24 700 — вне шкалы.
   - **«Занятий нет»** — серый блок FullCalendar.
   - **axe** `aria-required-children` на FullCalendar.
-  - Снимки: `LV2/schedule-390-list-view.png`, `LV3/anna-schedule-390-light.png`.
+  - Снимки: [`LV2/schedule-390-list-view.png`](design-audit-2026-09-29-shots/LV2/schedule-390-list-view.png), [`LV3/anna-schedule-390-light.png`](design-audit-2026-09-29-shots/LV3/anna-schedule-390-light.png).
 - **Как должно быть:** ADR-0021 §Переносы; M3 lists — двухстрочный пункт; цвет — не единственный носитель смысла
   (WCAG 1.4.1).
 - **Почему важно:** на телефоне расписание — главный способ узнать, с кем и о чём урок.
@@ -2007,7 +2008,7 @@
     - меню, тост и подсказка тоже прозрачные;
     - рамки полей чёрные.
 
-    Снимки: `ST4/no-relative-color-dialog-dark.png`, `ST4/no-relative-color-students-light.png`.
+    Снимки: [`ST4/no-relative-color-dialog-dark.png`](design-audit-2026-09-29-shots/ST4/no-relative-color-dialog-dark.png), [`ST4/no-relative-color-students-light.png`](design-audit-2026-09-29-shots/ST4/no-relative-color-students-light.png).
   - ADR-0017 пишет только «нейтральные цвета не вычисляются… приемлемо».
   - Фактический минимум браузера с учётом `linear()` и `:has()` — Chrome 119, Safari 17.2, Firefox 128.
   - `tone()` у части цветов выходит за пределы sRGB: secondary-container у indigo, blue, violet; tertiary у зелёных.
@@ -2032,7 +2033,7 @@
 - **Что сейчас:**
   - **Идущее занятие.** Ученик открыл главную через 10 минут после начала: там «вт, 29.09, 18:54–19:54» без пометки
     «идёт сейчас» и кнопки «Перенести | Отменить». Окно пишет «До занятия осталось мало времени…», а после отправки
-    сервер отвечает «Перенести или отменить можно только предстоящее занятие» (`LV3/lv3-cancel-ongoing-390-light.png`).
+    сервер отвечает «Перенести или отменить можно только предстоящее занятие» ([`LV3/lv3-cancel-ongoing-390-light.png`](design-audit-2026-09-29-shots/LV3/lv3-cancel-ongoing-390-light.png)).
   - **Выбор времени:**
     - формат поля не подсказан, «30.09.26 11:00» молча стирается при уходе из поля;
     - по умолчанию стоит «сейчас» (18:41 — не кратно шагу);
@@ -2126,7 +2127,7 @@
 - **Что сейчас:**
   - **Раздувание таблицы.** После раскрытия «Подробностей ошибки» колонка «Сообщение» — 1441 px, `scrollWidth`
     контейнера 1713 px при ширине 1064. «Время», «Уровень», «Раздел» сжимаются до 122 / 79 / 71 px и уезжают при
-    прокрутке. Снимок `LV4/logs-8092-error-details-1440.png`.
+    прокрутке. Снимок [`LV4/logs-8092-error-details-1440.png`](design-audit-2026-09-29-shots/LV4/logs-8092-error-details-1440.png).
   - **Код не в адресе.** Нажатие на «код …» фильтрует журнал, но адрес остаётся `/admin/logs`: не работают «Назад» и
     ссылка на поиск.
   - **Период.** При ручном вводе кода период остаётся «Последние сутки», и старый код не находится. В `?requestId=` он
@@ -2153,7 +2154,7 @@
 - **Где:** `/admin/settings`: на 390 px — 62 настройки, 12 карточек, страница 11 742 px; также 1440 px.
 - **Что сейчас:**
   - **Кнопка сохранения.** Единственная «Сохранить и перезапустить» — в заголовке страницы, не закреплена: после правки
-    в середине страницы её не видно (`LV4/d8092-settings-deep-edit-1440.png`). На странице нет счётчика правок.
+    в середине страницы её не видно ([`LV4/d8092-settings-deep-edit-1440.png`](design-audit-2026-09-29-shots/LV4/d8092-settings-deep-edit-1440.png)). На странице нет счётчика правок.
   - **Потеря правок.** Уход в «Журнал» с несохранёнными правками — без вопроса, правки пропадают.
   - **Окно подтверждения:**
     - поле пароля не в `<form>`, Enter не отправляет;
@@ -2187,7 +2188,7 @@
     - нет кнопки «Войти», а для вошедшего ученика — «В личный кабинет»;
     - нет названия портала, нет h1.
 
-    Снимки `LV4/invite-used-390-light.png`, `LV4/scn-invite-4-used-signed-in-390.png`.
+    Снимки [`LV4/invite-used-390-light.png`](design-audit-2026-09-29-shots/LV4/invite-used-390-light.png), [`LV4/scn-invite-4-used-signed-in-390.png`](design-audit-2026-09-29-shots/LV4/scn-invite-4-used-signed-in-390.png).
   - **Вошедший учитель** видит форму «Здравствуйте, Гордей Новенький! Придумайте логин…» без пометки. По коду
     отправка заменит сессию учителя сессией ученика и израсходует приглашение.
   - **Логин.** На клиенте у логина только `maxLength(50)` и required: «ab» и кириллица проходят, ошибка приходит
@@ -2217,7 +2218,7 @@
 - **Что сейчас:**
   - **FAB без учеников.**
     - «Занятие» открывает «Новое занятие», где в списке «С кем» только заголовок группы «Ученики», пусто, без
-      сообщения (`LV4/fr-schedule-fab-no-students-390-select.png`).
+      сообщения ([`LV4/fr-schedule-fab-no-students-390-select.png`](design-audit-2026-09-29-shots/LV4/fr-schedule-fab-no-students-390-select.png)).
     - «Оплата» — выбор ученика пуст. Быстрые действия главной ведут туда же.
     - Пустое состояние «Оплат» пишет «Добавьте учеников в разделе «Ученики»» без ссылки.
   - **Мастер настройки:**
@@ -2475,7 +2476,7 @@
   - **Reduced motion.**
     - Глобальное правило сводит бесконечную `tb-loading-morph` к одному кадру за 0,01 мс.
     - В базовом состоянии у `::after` нет `border-radius`, и остаётся неподвижный квадрат: пользователь не видит, что
-      идёт загрузка. Снимки `ST2/spinner-reduce.png`, `ST2/spinner-normal.png`.
+      идёт загрузка. Снимки [`ST2/spinner-reduce.png`](design-audit-2026-09-29-shots/ST2/spinner-reduce.png), [`ST2/spinner-normal.png`](design-audit-2026-09-29-shots/ST2/spinner-normal.png).
     - Остальное reduce отключает правильно: FAB, индикаторы, меню, диалоги, секции.
   - **Переходы.** Смены разделов нет: `provideRouter` без `withViewTransitions`.
   - **Совпадает с M3:** пружины совпадают с `ExpressiveMotionTokens` (сверено: CMP), кривые `linear()` точны до 0,2 %
@@ -2668,7 +2669,7 @@
   - Высоты кнопок шапки — 38, 40 и 42.
   - У названия портала при обрезке нет ни `title`, ни подсказки.
   - Цвета счётчиков — danger, warn и primary (см. DA-004).
-  - Снимок: `LV1/crop-header-teacher-360-light.png`.
+  - Снимок: [`LV1/crop-header-teacher-360-light.png`](design-audit-2026-09-29-shots/LV1/crop-header-teacher-360-light.png).
 - **Как должно быть:** M3 badge — на углу значка, large 16 px, цвет error (сверено: MW `_md-comp-badge.scss`); кнопка-значок
   с целью касания 48.
 - **Почему важно:** колокольчик — единственный индикатор новых событий; таблетка с бейджем в строку отнимает место у
@@ -2968,7 +2969,7 @@
     - прокрутка очереди проверки теряется.
   - **Сохраняется:** `?open=` уведомлений ✓.
   - **Сессия.** 401 во время работы → `/login?expired=1` без `returnUrl`: после входа — главная, а не раздел, где был
-    пользователь (`LV1/error-401-inapp-390.png`). Перезагрузка без refresh-cookie `returnUrl` передаёт ✓.
+    пользователь ([`LV1/error-401-inapp-390.png`](design-audit-2026-09-29-shots/LV1/error-401-inapp-390.png)). Перезагрузка без refresh-cookie `returnUrl` передаёт ✓.
 - **Как должно быть:** «Назад» и перезагрузка возвращают экран в том же виде (Нильсен №3 и №6); после повторного
   входа пользователь попадает туда, где был.
 - **Почему важно:** учитель, проверяющий работы по очереди, каждый раз ищет место в списке из 66 работ; после
@@ -3190,7 +3191,7 @@
   (360 px), нижний лист занятия (390 px).
 - **Что сейчас:**
   - **Форма после сдачи.** Сразу после «Отправлено» под заданием — пустая форма «Новый ответ» и зелёная filled
-    «Отправить на проверку» при статусе «На проверке» (`LV3/lv3-task-submitted-390-light.png`).
+    «Отправить на проверку» при статусе «На проверке» ([`LV3/lv3-task-submitted-390-light.png`](design-audit-2026-09-29-shots/LV3/lv3-task-submitted-390-light.png)).
   - **Список заданий** (1440 px):
     - строка подсвечивается при наведении, но щелчок вне названия ничего не делает;
     - «27.09.2026 20:00» переносится в две строки;
@@ -3244,7 +3245,7 @@
 - **Что сейчас:**
   - **Прошедшее время.** Занятие на вчера 10:00 сохранено без вопроса и сразу попало в «Отметьте прошедшие».
   - **Пересечение.** Жёлтый блок (2,84 : 1, см. DA-004) с text-кнопкой «Всё равно сохранить» и зелёной «Сохранить» в
-    подвале. Нижний край блока срезан прокруткой (`LV2/dlg-lesson-overlap-1440.png`).
+    подвале. Нижний край блока срезан прокруткой ([`LV2/dlg-lesson-overlap-1440.png`](design-audit-2026-09-29-shots/LV2/dlg-lesson-overlap-1440.png)).
 - **Как должно быть:** Нильсен №5 — «Занятие в прошлом — записать как проведённое?»; одно действие сохранения.
 - **Почему важно:** занятие, созданное задним числом по ошибке в дате, сразу требует отметки и влияет на баланс;
   две кнопки «сохранить» заставляют угадывать, какая сохранит с пересечением.
