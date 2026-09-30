@@ -1,7 +1,9 @@
 # ADR-0019. Material 3 Expressive и цвет кнопок
 
 - Статус: принято, уточнено [ADR-0022](0022-expressive-fields-menus-sheets.md) (поля, меню,
-  split button, нижний лист)
+  split button, нижний лист), [ADR-0023](0023-status-colors-and-contrast.md) (роль warning, error
+  red 700, близость цвета портала к success и error) и [ADR-0025](0025-page-states.md) (индикатор
+  загрузки в разделах)
 - Дата: 2026-09-29
 - Уточняет: [ADR-0017](0017-material-design-3.md) (форма, движение, типографика, навигация,
   диалоги, шапка), [ADR-0018](0018-component-rules.md) (цвет кнопок)
