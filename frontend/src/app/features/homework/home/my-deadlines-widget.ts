@@ -42,7 +42,7 @@ import { MyHomeworkSummary } from '../data-access/homework.models';
               @if (task.overdue) {
                 <div class="tb-list__trail"><p-tag value="Просрочено" severity="danger" /></div>
               } @else if (task.status === 'RETURNED') {
-                <div class="tb-list__trail"><p-tag value="На доработку" severity="warn" /></div>
+                <div class="tb-list__trail"><p-tag value="На доработку" severity="danger" /></div>
               }
             </li>
           }

@@ -55,8 +55,9 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
 
     .tb-link-code__value {
       padding: var(--tb-space-2) var(--tb-space-4);
-      border-radius: var(--p-border-radius-md);
-      background: var(--p-surface-100);
+      border-radius: var(--tb-shape-sm);
+      background: var(--p-md-surface-container-highest);
+      color: var(--p-md-on-surface);
       font-family: monospace;
       font-size: 1.75rem;
       letter-spacing: 0.15em;

@@ -195,7 +195,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
     .tb-integration-error {
       overflow-wrap: anywhere;
-      color: var(--p-red-500);
+      color: var(--p-md-error);
     }
 
     .tb-error-cell {

@@ -938,15 +938,12 @@ a.p-menu-item-link:hover {
 }
 
 .tb-positive {
-  color: var(--p-green-700);
-
-  :root.tb-dark & {
-    color: var(--p-green-300);
-  }
+  color: var(--p-md-success);
 }
 
+/* Muted data (a voided payment, a cancelled lesson) is on-surface-variant, not transparent (ADR-0023) */
 .tb-inactive td {
-  opacity: 0.55;
+  color: var(--p-md-on-surface-variant);
   text-decoration: line-through;
 }
 
@@ -1047,7 +1044,7 @@ a.p-menu-item-link:hover {
 }
 
 .tb-submission--old {
-  opacity: 0.75;
+  color: var(--p-md-on-surface-variant);
 }
 
 .tb-preview {
@@ -1099,7 +1096,7 @@ a.p-menu-item-link:hover {
 
   .tb-muted,
   .tb-hint {
-    color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
+    color: var(--p-md-on-primary-container);
   }
 }
 
@@ -1143,7 +1140,7 @@ a.p-menu-item-link:hover {
   --fc-classic-primary-foreground: var(--p-md-on-primary);
   --fc-classic-event: var(--p-md-primary-container);
   --fc-classic-event-contrast: var(--p-md-on-primary-container);
-  --fc-classic-background-event: var(--p-green-500);
+  --fc-classic-background-event: var(--p-md-success);
   --fc-classic-background-event-opacity: 15%;
   --fc-classic-background-event-foreground-opacity: 50%;
   --fc-classic-highlight: color-mix(in srgb, var(--p-md-primary) 12%, transparent);
@@ -1250,44 +1247,45 @@ a.p-menu-item-link:hover {
   --fc-classic-event-contrast: var(--p-md-on-tertiary-container);
 }
 
+/* The containers of the roles (ADR-0023): conducted — success, missed — warning */
 .tb-lesson--conducted {
-  --fc-classic-event: var(--p-green-600);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-success-container);
+  --fc-classic-event-contrast: var(--p-md-on-success-container);
 }
 
 .tb-lesson--missed {
-  --fc-classic-event: var(--p-orange-500);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-warning-container);
+  --fc-classic-event-contrast: var(--p-md-on-warning-container);
 }
 
 .tb-lesson--cancelled {
   --fc-classic-event: var(--p-md-surface-container-highest);
   --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
-  opacity: 0.7;
 }
 
+/* A request waits for an answer: the outline of the warning role, 3:1 to the card */
 .tb-lesson--request {
-  outline: 2px dashed var(--p-orange-500);
+  outline: 2px dashed var(--p-md-warning);
   outline-offset: 1px;
 }
 
 /* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
-  --fc-classic-background-event: var(--p-surface-500);
+  --fc-classic-background-event: var(--p-md-outline);
   /* The «Занято» caption of the student's calendar stays readable on the grey */
   --fc-classic-background-event-foreground-opacity: 80%;
 }
 
 /* The teacher's own off time: hatched, with its caption */
 .tb-off-time {
-  --fc-classic-background-event: var(--p-surface-400);
+  --fc-classic-background-event: var(--p-md-outline-variant);
   --fc-classic-background-event-foreground-opacity: 80%;
 
   background-image: repeating-linear-gradient(
     -45deg,
     transparent 0 6px,
-    color-mix(in srgb, var(--p-surface-500) 35%, transparent) 6px 8px
+    color-mix(in srgb, var(--p-md-outline) 35%, transparent) 6px 8px
   );
 }
 

@@ -24,10 +24,9 @@ import {
   DEFAULT_ACCENT,
   DEFAULT_OWN_COLOR,
   MIN_CONTRAST,
-  isGreenAccent,
+  accentAdvice,
+  accentScheme,
   isOwnColor,
-  ownColorContrast,
-  ownShades,
 } from '@core/theme/portal-accent';
 import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
@@ -112,35 +111,50 @@ const MAX_LOGO_SIZE = 1024 * 1024;
             @if (own()) {
               <div class="tb-own-color">
                 <p-colorpicker [formControl]="ownColor" appendTo="body" />
-                <input
-                  pInputText
-                  id="portal-own-color"
-                  aria-label="Свой цвет в формате #rrggbb"
-                  [formControl]="ownColor"
-                  maxlength="7"
-                  placeholder="#0f766e"
-                />
+                <div class="tb-field tb-grow">
+                  <label for="portal-own-color">Свой цвет, #rrggbb</label>
+                  <input
+                    pInputText
+                    id="portal-own-color"
+                    [formControl]="ownColor"
+                    maxlength="7"
+                    placeholder="#0f766e"
+                  />
+                </div>
+                <!-- the buttons as they will be: the tones of the roles, not the shades (ADR-0023) -->
                 <span
                   class="tb-own-color__sample"
-                  [style.background]="shades()['600']"
-                  style="color: #ffffff"
+                  [style.background]="scheme().light.primary"
+                  [style.color]="scheme().light.onPrimary"
                   >Светлая тема</span
                 >
                 <span
                   class="tb-own-color__sample"
-                  [style.background]="shades()['200']"
-                  [style.color]="shades()['900']"
+                  [style.background]="scheme().dark.primary"
+                  [style.color]="scheme().dark.onPrimary"
                   >Тёмная тема</span
                 >
               </div>
               @if (poorContrast(); as advice) {
                 <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
               }
+              @if (advice().adjusted) {
+                <small class="tb-hint"
+                  >Чтобы текст читался, кнопки и ссылки будут темнее выбранного цвета (в тёмной теме
+                  — светлее), как на образцах.</small
+                >
+              }
             }
-            @if (green()) {
+            @if (advice().likeSuccess) {
               <p-message severity="warn" styleClass="tb-form-message"
-                >Кнопки подтверждения («Сохранить», «Принять») тоже зелёные — с зелёным цветом
-                портала главное действие раздела будет трудно отличить от них.</p-message
+                >Кнопки подтверждения («Сохранить», «Принять») зелёные — с этим цветом портала
+                главное действие раздела будет трудно отличить от них.</p-message
+              >
+            }
+            @if (advice().likeError) {
+              <p-message severity="warn" styleClass="tb-form-message"
+                >Кнопки отмены и удаления красные — с этим цветом портала главное действие раздела
+                будет похоже на них.</p-message
               >
             }
             <small class="tb-hint">Кнопки, ссылки и выделения портала — в этом цвете.</small>
@@ -231,8 +245,8 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       align-items: center;
       gap: var(--tb-space-2);
 
-      input {
-        width: 7rem;
+      .tb-field {
+        flex: 0 1 11rem;
       }
     }
 
@@ -277,17 +291,17 @@ export class PortalSettingsCard implements OnInit {
     initialValue: this.form.controls.accent.value,
   });
   protected readonly own = computed(() => isOwnColor(this.accent()));
-  protected readonly shades = computed(() =>
-    ownShades(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
+  protected readonly scheme = computed(() =>
+    accentScheme(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
   );
-  /** The color of the portal looks like the green of confirming buttons (ADR-0019). */
-  protected readonly green = computed(() => isGreenAccent(this.accent()));
-  /** Advice when the text on buttons of the own color would be poorly readable. */
+  /** Whether the color was made darker to stay readable, whether it looks like green or red buttons. */
+  protected readonly advice = computed(() => accentAdvice(this.accent()));
+  /** Advice when a text in the own color would be poorly readable (ADR-0023). */
   protected readonly poorContrast = computed(() => {
     if (!this.own()) {
       return null;
     }
-    const { light, dark } = ownColorContrast(this.accent());
+    const { light, dark } = this.advice();
     const poor = [light < MIN_CONTRAST && 'светлой', dark < MIN_CONTRAST && 'тёмной'].filter(
       (theme) => theme !== false,
     );

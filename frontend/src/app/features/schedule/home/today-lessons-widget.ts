@@ -115,8 +115,8 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
   `,
   styles: `
     .tb-today__lesson--cancelled .tb-today__info {
+      color: var(--p-md-on-surface-variant);
       text-decoration: line-through;
-      opacity: 0.7;
     }
 
     .tb-today__time {

@@ -82,9 +82,7 @@ describe('PortalSettingsCard', () => {
         'aria-checked',
       ),
     ).toBe('true');
-    expect(readableText(host)).toContain(
-      'Кнопки подтверждения («Сохранить», «Принять») тоже зелёные',
-    );
+    expect(readableText(host)).toContain('Кнопки подтверждения («Сохранить», «Принять») зелёные');
     buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
@@ -92,7 +90,7 @@ describe('PortalSettingsCard', () => {
     request.flush(portalSettings({ accent: 'emerald' }));
   });
 
-  it('picks an own color and warns when buttons would be poorly readable', async () => {
+  it('picks an own color and says when it is made darker to stay readable', async () => {
     const host = await render();
     const own = (): HTMLButtonElement =>
       requireElement(host, 'button[aria-label="Свой цвет"]', HTMLButtonElement);
@@ -103,13 +101,18 @@ describe('PortalSettingsCard', () => {
     const field = requireElement(host, '#portal-own-color', HTMLInputElement);
     expect(field.value).toBe('#0f766e');
     expect(readableText(host)).not.toContain('будет плохо читаться');
+    expect(requireElement(host, '.tb-own-color .tb-field > label', HTMLLabelElement).htmlFor).toBe(
+      'portal-own-color',
+    );
 
+    // A pale color: buttons and links are its dark tone, readable (ADR-0023)
     typeInto(field, '#FDE68A');
     await fixture.whenStable();
-    expect(readableText(host)).toContain(
-      'будет плохо читаться в светлой теме — выберите цвет насыщеннее или темнее',
-    );
-    // The dark theme puts the shade 900 on the shade 200: a dark color stays readable there.
+    expect(readableText(host)).toContain('кнопки и ссылки будут темнее выбранного цвета');
+    expect(readableText(host)).not.toContain('будет плохо читаться');
+    typeInto(field, '#e53935');
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Кнопки отмены и удаления красные');
     typeInto(field, '#1e1b4b');
     await fixture.whenStable();
     expect(readableText(host)).not.toContain('будет плохо читаться');
