@@ -2,8 +2,11 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   TemplateRef,
+  afterEveryRender,
   computed,
+  inject,
   contentChild,
   input,
   model,
@@ -234,6 +237,18 @@ export class FoldCard {
   protected readonly content = contentChild.required(TemplateRef);
   protected readonly expanded = computed(() => !this.collapsible() || this.open());
   protected readonly bodyId = `tb-fold-card-${String(nextId++)}`;
+
+  constructor() {
+    // the cards of the content are sections of this one: their titles are one level lower (ADR-0024)
+    const host = inject<ElementRef<HTMLElement>>(ElementRef);
+    afterEveryRender(() => {
+      for (const title of host.nativeElement.querySelectorAll(
+        '.tb-fold-card__body .p-card-title[aria-level="2"]',
+      )) {
+        title.setAttribute('aria-level', '3');
+      }
+    });
+  }
 
   protected toggle(): void {
     this.open.update((open) => !open);

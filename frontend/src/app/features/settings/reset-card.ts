@@ -12,6 +12,7 @@ import { describeError } from '@core/http/error-messages';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 /** The word the teacher types to confirm the reset. */
 export const RESET_WORD = 'СБРОСИТЬ';
@@ -19,7 +20,17 @@ export const RESET_WORD = 'СБРОСИТЬ';
 /** Teacher: deleting all data of the portal after a backup (ADR-0014). */
 @Component({
   selector: 'tb-reset-card',
-  imports: [ReactiveFormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Password],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Card,
+    Dialog,
+    HelpButton,
+    InputText,
+    Message,
+    Password,
+    PasswordToggle,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="reset">
@@ -68,7 +79,10 @@ export const RESET_WORD = 'СБРОСИТЬ';
             [feedback]="false"
             [toggleMask]="true"
             [fluid]="true"
-          />
+          >
+            <ng-template #showicon><tb-password-toggle /></ng-template>
+            <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+          </p-password>
         </div>
         <div class="tb-field">
           <label for="reset-word">Напишите «{{ word }}»</label>

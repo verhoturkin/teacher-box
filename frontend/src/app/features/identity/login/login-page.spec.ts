@@ -50,6 +50,20 @@ describe('LoginPage', () => {
     backend.expectNone('/api/auth/login');
   });
 
+  it('shows the password with a named button (ADR-0024)', async () => {
+    const host = hostElement(fixture);
+    const password = requireElement(host, '#password', HTMLInputElement);
+    expect(password.type).toBe('password');
+
+    const show = buttonByText(host, 'Показать пароль');
+    expect(show.getAttribute('aria-pressed')).toBe('false');
+    show.click();
+    await fixture.whenStable();
+
+    expect(password.type).toBe('text');
+    expect(buttonByText(host, 'Скрыть пароль').getAttribute('aria-pressed')).toBe('true');
+  });
+
   it('signs in and opens the start page of the role', async () => {
     await signIn('teacher', 'secret-password');
 

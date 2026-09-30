@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
+import { ProgressLabel } from '@shared/ui/progress-label.directive';
 
 /** Browser storage key: the teacher hid the first-run checklist. */
 export const CHECKLIST_DISMISSED_KEY = 'tb.first-run-checklist.dismissed';
@@ -29,7 +30,7 @@ interface Step {
 /** Teacher's home: the steps left after installation and the progress, until they are done or hidden. */
 @Component({
   selector: 'tb-first-run-checklist',
-  imports: [RouterLink, Button, Card, ProgressBar],
+  imports: [RouterLink, Button, Card, ProgressBar, ProgressLabel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
@@ -38,7 +39,7 @@ interface Step {
           [value]="percent()"
           [showValue]="false"
           styleClass="tb-checklist__progress"
-          [attr.aria-label]="'Сделано ' + doneCount() + ' из ' + steps().length"
+          [tbProgressLabel]="'Сделано ' + doneCount() + ' из ' + steps().length"
         />
         <ol class="tb-checklist">
           @for (step of left(); track step.title) {

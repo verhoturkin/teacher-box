@@ -24,6 +24,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
 import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { InviteInfo } from '../data-access/identity.models';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 type InviteState =
   | { readonly kind: 'loading' }
@@ -43,6 +44,7 @@ type InviteState =
     Password,
     ProgressSpinner,
     PortalLogo,
+    PasswordToggle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -53,7 +55,11 @@ type InviteState =
           <p-progress-spinner ariaLabel="Загрузка приглашения" />
         }
         @case ('invalid') {
-          <p-card header="Приглашение недействительно" styleClass="tb-auth-card">
+          <p-card
+            header="Приглашение недействительно"
+            styleClass="tb-auth-card"
+            [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
+          >
             <p>
               Ссылка устарела или уже была использована. Попросите учителя прислать новое
               приглашение.
@@ -65,6 +71,7 @@ type InviteState =
             <p-card
               [header]="'Здравствуйте, ' + invite.displayName + '!'"
               styleClass="tb-auth-card"
+              [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
             >
               <p class="tb-muted">
                 @if (isActivation()) {
@@ -94,7 +101,10 @@ type InviteState =
                     [feedback]="false"
                     [toggleMask]="true"
                     [fluid]="true"
-                  />
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
                   <small class="tb-hint">Не короче 8 символов</small>
                 </div>
                 <div class="tb-field">
@@ -106,7 +116,10 @@ type InviteState =
                     [feedback]="false"
                     [toggleMask]="true"
                     [fluid]="true"
-                  />
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
                   @if (form.hasError('fieldsMismatch') && form.controls.confirm.dirty) {
                     <small class="tb-error">Пароли не совпадают</small>
                   }

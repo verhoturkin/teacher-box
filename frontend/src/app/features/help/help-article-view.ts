@@ -22,7 +22,8 @@ export class HelpArticleView {
   /** A link inside the portal was followed. */
   readonly navigated = output<string>();
 
-  protected readonly html = computed(() => renderMarkdown(this.body()));
+  // the article has its title (h2): its sections are one level lower (ADR-0024)
+  protected readonly html = computed(() => renderMarkdown(this.body(), 1));
 
   follow(event: MouseEvent): void {
     const target = event.target;

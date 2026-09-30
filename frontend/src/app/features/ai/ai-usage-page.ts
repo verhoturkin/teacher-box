@@ -23,6 +23,7 @@ import {
 } from './data-access/ai.models';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { ProgressLabel } from '@shared/ui/progress-label.directive';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = {
   HOMEWORK_DRAFT: 'Черновики заданий',
@@ -59,6 +60,7 @@ const STATUS_LABELS: Record<
     RowType,
     PageHeader,
     EmptyState,
+    ProgressLabel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -94,7 +96,12 @@ const STATUS_LABELS: Record<
                 }
               </p>
               @if (report.monthlyTokenLimit > 0) {
-                <p-progressbar [value]="percent()" [showValue]="false" styleClass="tb-usage-bar" />
+                <p-progressbar
+                  [value]="percent()"
+                  [showValue]="false"
+                  styleClass="tb-usage-bar"
+                  tbProgressLabel="Израсходовано токенов за месяц"
+                />
               }
               <ul class="tb-usage-features">
                 @for (feature of report.features; track feature.feature) {

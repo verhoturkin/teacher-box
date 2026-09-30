@@ -18,6 +18,7 @@ import { describeError } from '@core/http/error-messages';
 import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
 
@@ -27,7 +28,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
  */
 @Component({
   selector: 'tb-restore-dialog',
-  imports: [ReactiveFormsModule, DatePipe, Button, Dialog, Message, Password],
+  imports: [ReactiveFormsModule, DatePipe, Button, Dialog, Message, Password, PasswordToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -62,7 +63,10 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
                   [feedback]="false"
                   [toggleMask]="true"
                   [fluid]="true"
-                />
+                >
+                  <ng-template #showicon><tb-password-toggle /></ng-template>
+                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                </p-password>
               </div>
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>

@@ -7,6 +7,12 @@ describe('MarkdownView', () => {
     expect(renderMarkdown('**жирный**\nстрока')).toContain('<strong>жирный</strong><br>строка');
   });
 
+  it('moves the headings down, not beyond h6', () => {
+    expect(renderMarkdown('## Раздел', 1)).toContain('<h3');
+    expect(renderMarkdown('## Раздел', 1)).toContain('</h3>');
+    expect(renderMarkdown('##### Мелко', 3)).toContain('<h6');
+  });
+
   it('shows sanitized html', async () => {
     TestBed.configureTestingModule({ imports: [MarkdownView] });
     const fixture = TestBed.createComponent(MarkdownView);
@@ -17,7 +23,9 @@ describe('MarkdownView', () => {
     await fixture.whenStable();
 
     const host = hostElement(fixture);
-    expect(host.querySelector('h1')?.textContent).toBe('Заголовок');
+    // inside a section (h2) the heading of the text is h3 (ADR-0024)
+    expect(host.querySelector('h3')?.textContent).toBe('Заголовок');
+    expect(host.querySelector('h1')).toBeNull();
     expect(host.querySelector('script')).toBeNull();
     // Angular neutralizes dangerous URLs by prefixing them with "unsafe:".
     expect(host.querySelector('a')?.getAttribute('href')).toMatch(/^unsafe:/);

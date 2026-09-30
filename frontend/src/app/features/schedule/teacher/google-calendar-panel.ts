@@ -30,6 +30,7 @@ import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -67,6 +68,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     Password,
     Tag,
     Tooltip,
+    PasswordToggle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -213,7 +215,10 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     [feedback]="false"
                     [toggleMask]="true"
                     [fluid]="true"
-                  />
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
                 </div>
                 <div class="tb-form-actions">
                   @if (status.clientConfigured) {

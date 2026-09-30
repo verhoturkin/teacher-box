@@ -31,6 +31,7 @@ import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -64,6 +65,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     Tag,
     ToggleSwitch,
     Tooltip,
+    PasswordToggle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -170,7 +172,10 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   [feedback]="false"
                   [toggleMask]="true"
                   [fluid]="true"
-                />
+                >
+                  <ng-template #showicon><tb-password-toggle /></ng-template>
+                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                </p-password>
               </div>
               <div class="tb-form-actions">
                 @if (status.clientConfigured) {

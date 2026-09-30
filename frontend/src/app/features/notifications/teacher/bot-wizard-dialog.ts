@@ -27,6 +27,7 @@ import { LinkCodeView } from '../channels/link-code-view';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType, LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_NAMES } from '../notification-labels';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 /** Wizard steps: create a bot, check its token, connect the teacher's account, send a test message. */
 export type WizardStep = 1 | 2 | 3 | 4;
@@ -61,6 +62,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
     LinkCodeView,
     Message,
     Password,
+    PasswordToggle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -188,7 +190,10 @@ function describeMessengerError(error: unknown, fallback: string): string {
                   [toggleMask]="true"
                   [fluid]="true"
                   autocomplete="off"
-                />
+                >
+                  <ng-template #showicon><tb-password-toggle /></ng-template>
+                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                </p-password>
               </div>
               @if (channel() === 'VK') {
                 <div class="tb-field">

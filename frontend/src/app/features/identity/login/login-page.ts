@@ -19,15 +19,29 @@ import { safeReturnUrl } from '@core/auth/return-url';
 import { describeError } from '@core/http/error-messages';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 @Component({
   selector: 'tb-login-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Password, PortalLogo],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Card,
+    InputText,
+    Message,
+    Password,
+    PortalLogo,
+    PasswordToggle,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
       <tb-portal-logo size="3rem" />
-      <p-card [header]="'Вход в ' + portalName()" styleClass="tb-auth-card">
+      <p-card
+        [header]="'Вход в ' + portalName()"
+        styleClass="tb-auth-card"
+        [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
+      >
         @if (sessionExpired()) {
           <p-message severity="info" styleClass="tb-form-message"
             >Сессия истекла. Войдите снова.</p-message
@@ -47,7 +61,10 @@ import { PortalLogo } from '@core/portal/portal-logo';
               [feedback]="false"
               [toggleMask]="true"
               [fluid]="true"
-            />
+            >
+              <ng-template #showicon><tb-password-toggle /></ng-template>
+              <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+            </p-password>
           </div>
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
