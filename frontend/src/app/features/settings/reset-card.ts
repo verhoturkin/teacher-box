@@ -13,6 +13,7 @@ import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** The word the teacher types to confirm the reset. */
 export const RESET_WORD = 'СБРОСИТЬ';
@@ -30,6 +31,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
     Message,
     Password,
     PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -69,7 +71,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
         Все ученики, занятия, оплаты и задания будут удалены. Копия перед сбросом останется в
         «Резервных копиях».
       </p>
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
         <div class="tb-field">
           <label for="reset-password">Ваш пароль</label>
           <p-password
@@ -102,7 +104,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
             type="submit"
             label="Сбросить"
             severity="danger"
-            [disabled]="form.invalid || !confirmed()"
+            [disabled]="!confirmed()"
             [loading]="pending()"
           />
         </div>
@@ -137,7 +139,7 @@ export class ResetCard {
   }
 
   reset(): void {
-    if (this.form.invalid || !this.confirmed() || this.pending()) {
+    if (!revealErrors(this.form) || !this.confirmed() || this.pending()) {
       return;
     }
     this.pending.set(true);

@@ -24,6 +24,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { optionalText } from '../schedule-labels';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** A student the teacher can plan a lesson with. */
 export interface LessonStudent {
@@ -54,6 +55,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     InputText,
     Message,
     Select,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -64,7 +66,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
       [style]="{ width: '32rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="schedule-lesson-student">С кем</label>
           <p-select
@@ -78,6 +80,8 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             optionValue="value"
             placeholder="Выберите ученика или группу"
             [filter]="true"
+            filterPlaceholder="Поиск"
+            ariaFilterLabel="Поиск"
             appendTo="body"
             [fluid]="true"
           />
@@ -145,13 +149,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -205,7 +203,12 @@ export class LessonDialog {
 
   save(allowOverlap = false): void {
     const value = this.form.getRawValue();
-    if (this.form.invalid || this.pending() || value.owner === null || value.startsAt === null) {
+    if (
+      !revealErrors(this.form) ||
+      this.pending() ||
+      value.owner === null ||
+      value.startsAt === null
+    ) {
       return;
     }
     this.pending.set(true);

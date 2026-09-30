@@ -32,6 +32,7 @@ import { MeetingsApi } from '../data-access/meetings-api';
 import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -66,6 +67,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     ToggleSwitch,
     Tooltip,
     PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -154,7 +156,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
               </li>
               <li>Скопируйте сюда ClientID и Client secret приложения.</li>
             </ol>
-            <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
+            <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
               <div class="tb-field">
                 <label for="yandex-client-id">ClientID</label>
                 <input
@@ -191,7 +193,6 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   type="submit"
                   label="Сохранить"
                   severity="success"
-                  [disabled]="form.invalid"
                   [loading]="pending()"
                 />
               </div>
@@ -293,7 +294,7 @@ export class MeetingsSettingsPanel implements OnInit {
   }
 
   saveClient(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

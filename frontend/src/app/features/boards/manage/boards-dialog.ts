@@ -20,13 +20,23 @@ import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board, BoardOwnerRef } from '../data-access/boards.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
 /** Boards of a student or a group: add a link, rename, change or remove. */
 @Component({
   selector: 'tb-boards-dialog',
-  imports: [HelpButton, ReactiveFormsModule, Button, Dialog, InputText, Message, Tooltip],
+  imports: [
+    HelpButton,
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputText,
+    Message,
+    Tooltip,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -71,7 +81,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           сюда — ученик увидит доску в своём кабинете.
         </p>
       }
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="board-title">Название</label>
           <input
@@ -103,7 +113,6 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             severity="success"
             type="submit"
             [label]="editing() === null ? 'Добавить доску' : 'Сохранить'"
-            [disabled]="form.invalid"
             [loading]="pending()"
           />
           @if (editing() !== null) {
@@ -180,7 +189,7 @@ export class BoardsDialog {
 
   save(): void {
     const owner = this.owner();
-    if (owner === null || this.form.invalid || this.pending()) {
+    if (owner === null || !revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

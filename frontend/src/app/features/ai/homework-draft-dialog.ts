@@ -18,11 +18,21 @@ import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { AiApi } from './data-access/ai-api';
 import { HomeworkDraft } from './data-access/ai.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** Asks the AI assistant for a draft of homework; the result goes to the assignment editor. */
 @Component({
   selector: 'tb-homework-draft-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputNumber, InputText, Message, Textarea],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputNumber,
+    InputText,
+    Message,
+    Textarea,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -32,7 +42,7 @@ import { HomeworkDraft } from './data-access/ai.models';
       [style]="{ width: '34rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="generate()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="generate()">
         <div class="tb-field">
           <label for="ai-topic">Тема</label>
           <input
@@ -87,7 +97,6 @@ import { HomeworkDraft } from './data-access/ai.models';
           label="Сгенерировать"
           icon="pi pi-sparkles"
           [loading]="pending()"
-          [disabled]="form.invalid"
           (onClick)="generate()"
         />
       </ng-template>
@@ -130,7 +139,7 @@ export class HomeworkDraftDialog {
 
   generate(): void {
     const value = this.form.getRawValue();
-    if (this.form.invalid || this.pending() || value.taskCount === null) {
+    if (!revealErrors(this.form) || this.pending() || value.taskCount === null) {
       return;
     }
     this.pending.set(true);

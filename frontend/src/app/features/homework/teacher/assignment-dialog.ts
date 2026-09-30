@@ -26,6 +26,7 @@ import { GroupPicker } from '@features/identity/parts';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** A student that can receive homework. */
 export interface StudentOption {
@@ -50,6 +51,7 @@ export interface StudentOption {
     HomeworkDraftDialog,
     ToBoardDialog,
     MarkdownView,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -60,7 +62,7 @@ export interface StudentOption {
       [style]="{ width: '44rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="assignment-title">Название</label>
           <input pInputText id="assignment-title" formControlName="title" autocomplete="off" />
@@ -136,6 +138,8 @@ export interface StudentOption {
               optionValue="id"
               placeholder="Кому выдать"
               [filter]="true"
+              filterPlaceHolder="Поиск"
+              ariaFilterLabel="Поиск"
               display="chip"
               appendTo="body"
               [fluid]="true"
@@ -155,7 +159,6 @@ export interface StudentOption {
           severity="success"
           [label]="assignment() === null ? 'Выдать' : 'Сохранить'"
           [loading]="pending()"
-          [disabled]="form.invalid"
           (onClick)="save()"
         />
       </ng-template>
@@ -259,7 +262,7 @@ export class AssignmentDialog {
   }
 
   save(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

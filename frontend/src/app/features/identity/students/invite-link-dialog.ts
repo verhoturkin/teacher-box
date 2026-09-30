@@ -38,19 +38,16 @@ import { IssuedInvite } from '../data-access/identity.models';
           }
           Ссылка одноразовая и действует до {{ invite.expiresAt | date: 'dd.MM.yyyy HH:mm' }}.
         </p>
-        <div class="tb-copy-row">
-          <input
-            pInputText
-            readonly
-            [value]="link()"
-            aria-label="Ссылка-приглашение"
-            class="tb-grow"
-          />
-          <p-button
-            [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
-            [label]="copied() ? 'Скопировано' : 'Копировать'"
-            (onClick)="copy()"
-          />
+        <div class="tb-field">
+          <label for="invite-link">Ссылка-приглашение</label>
+          <div class="tb-copy-row">
+            <input pInputText id="invite-link" readonly [value]="link()" class="tb-grow" />
+            <p-button
+              [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
+              [label]="copied() ? 'Скопировано' : 'Копировать'"
+              (onClick)="copy()"
+            />
+          </div>
         </div>
       }
     </p-dialog>

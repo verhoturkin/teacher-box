@@ -33,17 +33,20 @@ import { CalendarFeed } from '../data-access/schedule.models';
         @if (feed(); as feed) {
           @if (url(); as link) {
             <p>Скопируйте ссылку и добавьте её в календарь. Больше она показана не будет.</p>
-            <div class="tb-feed-link">
-              <input pInputText [value]="link" readonly aria-label="Ссылка на календарь" />
-              <p-button
-                icon="pi pi-copy"
-                [text]="true"
-                pTooltip="Копировать ссылку"
-                [rounded]="true"
-                severity="secondary"
-                ariaLabel="Копировать ссылку"
-                (onClick)="copy(link)"
-              />
+            <div class="tb-field">
+              <label for="calendar-feed-link">Ссылка на календарь</label>
+              <div class="tb-copy-row">
+                <input pInputText id="calendar-feed-link" class="tb-grow" [value]="link" readonly />
+                <p-button
+                  icon="pi pi-copy"
+                  [text]="true"
+                  pTooltip="Копировать ссылку"
+                  [rounded]="true"
+                  severity="secondary"
+                  ariaLabel="Копировать ссылку"
+                  (onClick)="copy(link)"
+                />
+              </div>
             </div>
             <ul class="tb-muted tb-feed-help">
               <li>Google Календарь: «Другие календари» → «+» → «Добавить по URL».</li>
@@ -73,16 +76,6 @@ import { CalendarFeed } from '../data-access/schedule.models';
     </p-card>
   `,
   styles: `
-    .tb-feed-link {
-      display: flex;
-      gap: var(--tb-space-2);
-
-      input {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-
     .tb-feed-help {
       margin: var(--tb-space-3) 0 var(--tb-space-2);
       padding-left: var(--tb-space-5);

@@ -29,11 +29,7 @@ describe('InviteLinkDialog', () => {
   });
 
   it('shows the invitation link', () => {
-    const input = requireElement(
-      document.body,
-      'input[aria-label="Ссылка-приглашение"]',
-      HTMLInputElement,
-    );
+    const input = requireElement(document.body, '#invite-link', HTMLInputElement);
 
     expect(input.value).toBe(`${window.location.origin}/invite/secret-token`);
     expect(bodyText()).toContain('Ссылка для ученика: Мария');
@@ -56,11 +52,7 @@ describe('InviteLinkDialog', () => {
     );
     await fixture.whenStable();
 
-    const input = requireElement(
-      document.body,
-      'input[aria-label="Ссылка-приглашение"]',
-      HTMLInputElement,
-    );
+    const input = requireElement(document.body, '#invite-link', HTMLInputElement);
     expect(input.value).toBe('https://school.example.com/invite/secret-token');
   });
 
@@ -79,6 +71,6 @@ describe('InviteLinkDialog', () => {
     fixture.componentRef.setInput('invite', null);
     await fixture.whenStable();
 
-    expect(document.body.querySelector('input[aria-label="Ссылка-приглашение"]')).toBeNull();
+    expect(document.body.querySelector('#invite-link')).toBeNull();
   });
 });

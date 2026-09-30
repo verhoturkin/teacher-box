@@ -13,6 +13,7 @@ import { describeError } from '@core/http/error-messages';
 import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors';
 
 /**
  * Current password, new password and its confirmation. The new session replaces the current one
@@ -20,10 +21,11 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
  */
 @Component({
   selector: 'tb-change-password-form',
-  imports: [ReactiveFormsModule, Button, Message, Password, PasswordToggle],
+  imports: [ReactiveFormsModule, Button, Message, Password, PasswordToggle, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form
+      tbFieldErrors
       class="tb-form tb-form--narrow"
       [formGroup]="form"
       (ngSubmit)="submit(formDirective)"
@@ -84,7 +86,6 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
         severity="success"
         [class.tb-tonal]="tonal()"
         [loading]="pending()"
-        [disabled]="form.invalid"
       />
       <small class="tb-hint">После смены пароля все остальные устройства выйдут из аккаунта.</small>
     </form>
@@ -117,7 +118,7 @@ export class ChangePasswordForm {
   );
 
   protected submit(formDirective: FormGroupDirective): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const { current, next } = this.form.getRawValue();
@@ -132,7 +133,13 @@ export class ChangePasswordForm {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сменить пароль. Попробуйте позже'));
+        const fields = {
+          'password.wrong-current': this.form.controls.current,
+          'password.weak': this.form.controls.next,
+        };
+        if (!showAtField(error, fields)) {
+          this.error.set(describeError(error, 'Не удалось сменить пароль. Попробуйте позже'));
+        }
       },
     });
   }

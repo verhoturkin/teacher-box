@@ -61,7 +61,7 @@ describe('CalendarFeedPanel', () => {
     );
     await fixture.whenStable();
 
-    const link = requireElement(host, 'input[aria-label="Ссылка на календарь"]', HTMLInputElement);
+    const link = requireElement(host, '#calendar-feed-link', HTMLInputElement);
     expect(link.value).toBe(`${window.location.origin}/api/public/schedule/abc.ics`);
     expect(requireElement(host, 'a', HTMLAnchorElement).getAttribute('href')).toMatch(
       /^webcal:\/\//,

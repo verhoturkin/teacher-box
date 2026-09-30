@@ -61,35 +61,41 @@ export const LOG_LIMIT = 200;
     <div class="tb-stack">
       <p-card>
         <form class="tb-log-filters" [formGroup]="form" (ngSubmit)="search()">
-          <p-select
-            formControlName="minutes"
-            [options]="periods"
-            optionLabel="label"
-            optionValue="minutes"
-            ariaLabel="Период"
-            [fluid]="true"
-          />
-          <p-select
-            formControlName="level"
-            [options]="levels"
-            optionLabel="label"
-            optionValue="level"
-            ariaLabel="Уровень"
-            [fluid]="true"
-          />
-          <input
-            pInputText
-            formControlName="requestId"
-            placeholder="Код ошибки"
-            aria-label="Код ошибки"
-          />
-          <input pInputText formControlName="text" placeholder="Текст" aria-label="Текст" />
-          <input
-            pInputText
-            formControlName="logger"
-            placeholder="Раздел (логгер)"
-            aria-label="Раздел"
-          />
+          <!-- every filter has its label on the outline: it stays when the field is filled (ADR-0024) -->
+          <div class="tb-field">
+            <label for="log-period">Период</label>
+            <p-select
+              inputId="log-period"
+              formControlName="minutes"
+              [options]="periods"
+              optionLabel="label"
+              optionValue="minutes"
+              [fluid]="true"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="log-level">Уровень</label>
+            <p-select
+              inputId="log-level"
+              formControlName="level"
+              [options]="levels"
+              optionLabel="label"
+              optionValue="level"
+              [fluid]="true"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="log-request">Код ошибки</label>
+            <input pInputText id="log-request" formControlName="requestId" />
+          </div>
+          <div class="tb-field">
+            <label for="log-text">Текст</label>
+            <input pInputText id="log-text" formControlName="text" />
+          </div>
+          <div class="tb-field">
+            <label for="log-logger">Раздел (логгер)</label>
+            <input pInputText id="log-logger" formControlName="logger" />
+          </div>
           <p-button
             type="submit"
             label="Найти"
@@ -164,7 +170,8 @@ export const LOG_LIMIT = 200;
     .tb-log-filters {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-      gap: var(--tb-space-2);
+      align-items: end;
+      gap: var(--tb-space-3) var(--tb-space-2);
 
       input {
         width: 100%;

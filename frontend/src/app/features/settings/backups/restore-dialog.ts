@@ -19,6 +19,7 @@ import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
 
@@ -28,7 +29,16 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
  */
 @Component({
   selector: 'tb-restore-dialog',
-  imports: [ReactiveFormsModule, DatePipe, Button, Dialog, Message, Password, PasswordToggle],
+  imports: [
+    ReactiveFormsModule,
+    DatePipe,
+    Button,
+    Dialog,
+    Message,
+    Password,
+    PasswordToggle,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -53,7 +63,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
               вернуться. Портал перезапустится и примерно минуту будет недоступен; войти потом нужно
               с паролем, который действовал на момент копии.
             </p>
-            <form class="tb-form" [formGroup]="form" (ngSubmit)="restore()">
+            <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="restore()">
               <div class="tb-field">
                 <label for="restore-password">Ваш пароль</label>
                 <p-password
@@ -82,7 +92,6 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
                   type="submit"
                   label="Восстановить"
                   severity="danger"
-                  [disabled]="form.invalid"
                   [loading]="pending()"
                 />
               </div>
@@ -166,7 +175,7 @@ export class RestoreDialog {
 
   restore(): void {
     const backup = this.backup();
-    if (backup === null || this.form.invalid || this.pending()) {
+    if (backup === null || !revealErrors(this.form) || this.pending()) {
       return;
     }
     this.pending.set(true);

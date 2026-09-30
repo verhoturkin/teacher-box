@@ -78,20 +78,24 @@ function shortTime(time: string | null, fallback: string): string {
             </label>
             @if (form.controls.quiet.value) {
               <div class="tb-quiet__times">
-                <label for="quiet-from">с</label>
-                <p-select
-                  inputId="quiet-from"
-                  formControlName="quietFrom"
-                  [options]="times"
-                  appendTo="body"
-                />
-                <label for="quiet-to">до</label>
-                <p-select
-                  inputId="quiet-to"
-                  formControlName="quietTo"
-                  [options]="times"
-                  appendTo="body"
-                />
+                <div class="tb-field">
+                  <label for="quiet-from">С</label>
+                  <p-select
+                    inputId="quiet-from"
+                    formControlName="quietFrom"
+                    [options]="times"
+                    appendTo="body"
+                  />
+                </div>
+                <div class="tb-field">
+                  <label for="quiet-to">До</label>
+                  <p-select
+                    inputId="quiet-to"
+                    formControlName="quietTo"
+                    [options]="times"
+                    appendTo="body"
+                  />
+                </div>
               </div>
               <small class="tb-hint"
                 >Уведомления за это время придут в мессенджер, когда тихие часы закончатся.</small
@@ -147,7 +151,7 @@ function shortTime(time: string | null, fallback: string): string {
     .tb-quiet__times {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       gap: var(--tb-space-2);
     }
   `,

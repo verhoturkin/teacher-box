@@ -25,6 +25,7 @@ import { ScheduleApi } from '@features/schedule/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { SettingsApi } from '../data-access/settings-api';
 import { PageHeader } from '@shared/ui/page-header';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 type StepId = 'password' | 'about' | 'address' | 'price' | 'next';
 
@@ -59,6 +60,7 @@ const STEPS: readonly Step[] = [
     Message,
     PortalAddressField,
     PageHeader,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -104,7 +106,7 @@ const STEPS: readonly Step[] = [
           }
           @case ('about') {
             <h2 class="tb-setup-title">Знакомство</h2>
-            <form class="tb-form" [formGroup]="about" (ngSubmit)="saveAbout()">
+            <form tbFieldErrors class="tb-form" [formGroup]="about" (ngSubmit)="saveAbout()">
               <div class="tb-field">
                 <label for="setup-teacher-name">Ваше имя</label>
                 <input
@@ -132,18 +134,13 @@ const STEPS: readonly Step[] = [
                 </small>
               </div>
               <div class="tb-actions">
-                <p-button
-                  type="submit"
-                  label="Далее"
-                  [disabled]="about.invalid"
-                  [loading]="pending()"
-                />
+                <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
           }
           @case ('address') {
             <h2 class="tb-setup-title">Адрес портала</h2>
-            <form class="tb-form" [formGroup]="address" (ngSubmit)="saveAddress()">
+            <form tbFieldErrors class="tb-form" [formGroup]="address" (ngSubmit)="saveAddress()">
               <tb-portal-address-field
                 inputId="setup-address"
                 [control]="address.controls.address"
@@ -161,12 +158,7 @@ const STEPS: readonly Step[] = [
               }
               <div class="tb-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
-                <p-button
-                  type="submit"
-                  label="Далее"
-                  [disabled]="address.invalid"
-                  [loading]="pending()"
-                />
+                <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
           }
@@ -176,7 +168,12 @@ const STEPS: readonly Step[] = [
               Проведённые занятия списываются с баланса ученика по этой цене. Она достаётся новым
               ученикам и группам; у каждого ученика цену можно поменять отдельно.
             </p>
-            <form class="tb-form tb-form--narrow" [formGroup]="price" (ngSubmit)="savePrice()">
+            <form
+              tbFieldErrors
+              class="tb-form tb-form--narrow"
+              [formGroup]="price"
+              (ngSubmit)="savePrice()"
+            >
               <div class="tb-field">
                 <label for="setup-price">Цена одного занятия</label>
                 <p-inputnumber
@@ -191,12 +188,7 @@ const STEPS: readonly Step[] = [
               </div>
               <div class="tb-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
-                <p-button
-                  type="submit"
-                  label="Далее"
-                  [disabled]="price.invalid"
-                  [loading]="pending()"
-                />
+                <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
           }
@@ -396,7 +388,7 @@ export class SetupPage implements OnInit {
   }
 
   saveAbout(): void {
-    if (this.about.invalid || this.pending()) {
+    if (!revealErrors(this.about) || this.pending()) {
       return;
     }
     const { teacherName, portalName } = this.about.getRawValue();
@@ -415,7 +407,7 @@ export class SetupPage implements OnInit {
   }
 
   saveAddress(): void {
-    if (this.address.invalid || this.pending()) {
+    if (!revealErrors(this.address) || this.pending()) {
       return;
     }
     const name = this.settings()?.name ?? '';
@@ -429,7 +421,7 @@ export class SetupPage implements OnInit {
 
   savePrice(): void {
     const price = this.price.controls.price.value;
-    if (this.price.invalid || price === null || this.pending()) {
+    if (!revealErrors(this.price) || price === null || this.pending()) {
       return;
     }
     this.save(this.billing.changeDefaultPrice(toMinorUnits(price, this.currency())), () => {

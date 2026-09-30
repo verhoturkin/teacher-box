@@ -159,18 +159,22 @@ import { LoadStateView } from '@shared/ui/load-state-view';
             </ng-template>
           </p-table>
           <div class="tb-inline tb-assign">
-            <p-multiselect
-              [options]="unassigned()"
-              [formControl]="toAssign"
-              optionLabel="displayName"
-              optionValue="id"
-              placeholder="Выдать ещё ученикам"
-              [filter]="true"
-              display="chip"
-              appendTo="body"
-              ariaLabel="Выдать ещё ученикам"
-              styleClass="tb-grow"
-            />
+            <div class="tb-field tb-grow">
+              <label for="assign-students">Выдать ещё ученикам</label>
+              <p-multiselect
+                inputId="assign-students"
+                [options]="unassigned()"
+                [formControl]="toAssign"
+                optionLabel="displayName"
+                optionValue="id"
+                [filter]="true"
+                filterPlaceHolder="Поиск"
+                ariaFilterLabel="Поиск"
+                display="chip"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button
               class="tb-tonal"

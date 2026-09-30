@@ -18,11 +18,12 @@ import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** Creates a student (when `student` is null) or edits an existing one. */
 @Component({
   selector: 'tb-student-form-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Textarea],
+  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Textarea, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -32,7 +33,7 @@ import { CreatedStudent, Student, StudentProfileInput } from '../data-access/ide
       [style]="{ width: '32rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="displayName">Имя и фамилия</label>
           <input pInputText id="displayName" formControlName="displayName" autocomplete="off" />
@@ -55,13 +56,7 @@ import { CreatedStudent, Student, StudentProfileInput } from '../data-access/ide
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -105,7 +100,7 @@ export class StudentFormDialog {
   }
 
   protected save(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

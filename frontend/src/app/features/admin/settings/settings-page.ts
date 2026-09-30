@@ -110,7 +110,11 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
               @for (setting of group.settings; track setting.name) {
                 <div class="tb-setting">
                   <div class="tb-setting__head">
-                    <label [for]="'setting-' + setting.name">{{ setting.title }}</label>
+                    <!-- a value that cannot be changed is text, not a field: the label is for fields only -->
+                    <label
+                      [attr.for]="setting.access === 'EDITABLE' ? 'setting-' + setting.name : null"
+                      >{{ setting.title }}</label
+                    >
                     <p-tag
                       [value]="sources[setting.source]"
                       [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"

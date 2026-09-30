@@ -31,6 +31,7 @@ import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -69,6 +70,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     Tag,
     Tooltip,
     PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -197,7 +199,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 </li>
                 <li>Скопируйте Client ID и Client secret сюда.</li>
               </ol>
-              <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
+              <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
                 <div class="tb-field">
                   <label for="google-client-id">Client ID</label>
                   <input
@@ -234,7 +236,6 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     type="submit"
                     label="Сохранить"
                     severity="success"
-                    [disabled]="form.invalid"
                     [loading]="pending()"
                   />
                 </div>
@@ -317,7 +318,7 @@ export class GoogleCalendarPanel implements OnInit {
   }
 
   saveClient(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

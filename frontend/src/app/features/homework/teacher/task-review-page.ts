@@ -30,6 +30,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -50,6 +51,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
     PageHeader,
     HelpButton,
     LoadStateView,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -70,7 +72,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
           <p-card header="Проверка">
-            <form class="tb-form tb-form--narrow" [formGroup]="form">
+            <form tbFieldErrors class="tb-form tb-form--narrow" [formGroup]="form">
               @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
                 <div>
                   <p-button
@@ -115,7 +117,6 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                     label="Принять"
                     icon="pi pi-check"
                     [loading]="pending()"
-                    [disabled]="form.invalid"
                     (onClick)="review('ACCEPT')"
                   />
                 }
@@ -125,7 +126,6 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                   icon="pi pi-replay"
                   severity="danger"
                   [loading]="pending()"
-                  [disabled]="form.invalid"
                   (onClick)="review('RETURN')"
                 />
                 <p-button
@@ -222,7 +222,7 @@ ${this.commentValue()}`;
 
   protected review(decision: ReviewDecision): void {
     const task = this.task();
-    if (task === null || this.form.invalid || this.pending()) {
+    if (task === null || !revealErrors(this.form) || this.pending()) {
       return;
     }
     const { grade, comment } = this.form.getRawValue();

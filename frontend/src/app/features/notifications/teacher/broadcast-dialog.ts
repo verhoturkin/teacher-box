@@ -18,6 +18,7 @@ import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** A student the teacher can write to. */
 export interface Recipient {
@@ -37,6 +38,7 @@ export interface Recipient {
     Message,
     MultiSelect,
     Textarea,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -47,7 +49,7 @@ export interface Recipient {
       [style]="{ width: '36rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="send()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="send()">
         <div class="tb-field">
           <label for="broadcast-students">Кому</label>
           <p-multiselect
@@ -58,6 +60,8 @@ export interface Recipient {
             optionValue="id"
             placeholder="Всем ученикам"
             [filter]="true"
+            filterPlaceHolder="Поиск"
+            ariaFilterLabel="Поиск"
             display="chip"
             appendTo="body"
             [fluid]="true"
@@ -86,7 +90,6 @@ export interface Recipient {
           label="Отправить"
           icon="pi pi-send"
           [loading]="pending()"
-          [disabled]="form.invalid"
           (onClick)="send()"
         />
       </ng-template>
@@ -130,7 +133,7 @@ export class BroadcastDialog {
   }
 
   send(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

@@ -199,8 +199,9 @@ describe('PortalSettingsCard', () => {
 
     typeInto(requireElement(host, '#portal-address', HTMLInputElement), 'school.example.com');
     await fixture.whenStable();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+    expect(buttonByText(host, 'Сохранить').disabled).toBe(false);
     fixture.componentInstance.save();
+    backend.expectNone({ method: 'PUT', url: '/api/teacher/portal' });
 
     typeInto(requireElement(host, '#portal-address', HTMLInputElement), '');
     fixture.componentInstance.save();

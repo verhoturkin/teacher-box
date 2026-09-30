@@ -11,6 +11,7 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
 import { LogLevelName, LoggerLevel } from '../data-access/admin.models';
 import { LEVELS, levelSeverity } from '../admin-labels';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 export const DURATIONS: readonly { readonly label: string; readonly minutes: number }[] = [
   { label: '15 минут', minutes: 15 },
@@ -22,7 +23,17 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
 /** Temporary log levels: more details for a part of the application, the previous level comes back by itself. */
 @Component({
   selector: 'tb-logger-levels-panel',
-  imports: [DatePipe, ReactiveFormsModule, Button, Card, Select, TableModule, Tag, RowType],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    Button,
+    Card,
+    Select,
+    TableModule,
+    Tag,
+    RowType,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Подробный журнал">
@@ -30,32 +41,44 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
         Уровень DEBUG записывает больше подробностей для выбранного раздела. Через заданное время
         уровень вернётся сам.
       </p>
-      <form class="tb-levels-form" [formGroup]="form" (ngSubmit)="apply()">
-        <p-select
-          formControlName="name"
-          [options]="names()"
-          [editable]="true"
-          placeholder="Раздел, например ru.teacherbox.notifications"
-          ariaLabel="Раздел журнала"
-          appendTo="body"
-          [fluid]="true"
-          class="tb-levels-form__name"
-        />
-        <p-select formControlName="level" [options]="levels" ariaLabel="Уровень" appendTo="body" />
-        <p-select
-          formControlName="minutes"
-          [options]="durations"
-          optionLabel="label"
-          optionValue="minutes"
-          ariaLabel="На сколько"
-          appendTo="body"
-        />
+      <form tbFieldErrors class="tb-levels-form" [formGroup]="form" (ngSubmit)="apply()">
+        <div class="tb-field tb-levels-form__name">
+          <label for="logger-name">Раздел журнала</label>
+          <p-select
+            inputId="logger-name"
+            formControlName="name"
+            [options]="names()"
+            [editable]="true"
+            placeholder="например ru.teacherbox.notifications"
+            appendTo="body"
+            [fluid]="true"
+          />
+        </div>
+        <div class="tb-field">
+          <label for="logger-level">Уровень</label>
+          <p-select
+            inputId="logger-level"
+            formControlName="level"
+            [options]="levels"
+            appendTo="body"
+          />
+        </div>
+        <div class="tb-field">
+          <label for="logger-minutes">На сколько</label>
+          <p-select
+            inputId="logger-minutes"
+            formControlName="minutes"
+            [options]="durations"
+            optionLabel="label"
+            optionValue="minutes"
+            appendTo="body"
+          />
+        </div>
         <p-button
           class="tb-tonal"
           type="submit"
           label="Применить"
           severity="success"
-          [disabled]="form.invalid"
           [loading]="pending()"
         />
       </form>
@@ -91,7 +114,8 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
     .tb-levels-form {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--tb-space-2);
+      align-items: flex-end;
+      gap: var(--tb-space-3) var(--tb-space-2);
       margin-bottom: var(--tb-space-4);
     }
 
@@ -138,7 +162,7 @@ export class LoggerLevelsPanel implements OnInit {
   }
 
   apply(): void {
-    if (this.form.invalid) {
+    if (!revealErrors(this.form)) {
       return;
     }
     const { name, level, minutes } = this.form.getRawValue();

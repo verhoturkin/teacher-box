@@ -28,6 +28,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType, LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_NAMES } from '../notification-labels';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** Wizard steps: create a bot, check its token, connect the teacher's account, send a test message. */
 export type WizardStep = 1 | 2 | 3 | 4;
@@ -63,6 +64,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
     Message,
     Password,
     PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -170,7 +172,12 @@ function describeMessengerError(error: unknown, fallback: string): string {
               </p>
             </div>
           } @else if (step() === 2) {
-            <form class="tb-wizard__body tb-form" [formGroup]="form" (ngSubmit)="saveToken()">
+            <form
+              tbFieldErrors
+              class="tb-wizard__body tb-form"
+              [formGroup]="form"
+              (ngSubmit)="saveToken()"
+            >
               @if (bot(); as current) {
                 @if (current.configured) {
                   <p class="tb-muted">
@@ -217,7 +224,6 @@ function describeMessengerError(error: unknown, fallback: string): string {
                   label="Проверить и сохранить"
                   icon="pi pi-check"
                   [loading]="pending()"
-                  [disabled]="form.invalid"
                 />
               </div>
             </form>
@@ -455,7 +461,7 @@ export class BotWizardDialog {
   }
 
   saveToken(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

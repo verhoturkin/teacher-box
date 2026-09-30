@@ -57,6 +57,9 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                     <span class="tb-list__supporting">
                       {{ channel.displayName ?? 'подключён' }}, с
                       {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
+                      @if (!channel.enabled) {
+                        · на паузе
+                      }
                     </span>
                   } @else {
                     <span class="tb-list__supporting">не подключён</span>
@@ -64,11 +67,15 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                 </div>
                 <div class="tb-list__trail">
                   @if (channel.linked) {
-                    <p-toggleswitch
-                      [ngModel]="channel.enabled"
-                      (ngModelChange)="setEnabled(channel.channel, $event)"
-                      [ariaLabel]="'Получать уведомления в ' + names[channel.channel]"
-                    />
+                    <!-- the switch has its visible label (ADR-0024) -->
+                    <label class="tb-switch" [for]="'channel-enabled-' + channel.channel">
+                      <p-toggleswitch
+                        [inputId]="'channel-enabled-' + channel.channel"
+                        [ngModel]="channel.enabled"
+                        (ngModelChange)="setEnabled(channel.channel, $event)"
+                      />
+                      Присылать
+                    </label>
                     <p-button
                       icon="pi pi-times"
                       [text]="true"

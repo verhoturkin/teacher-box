@@ -8,6 +8,7 @@ import { portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
 import { HelpButton } from '@features/help/parts';
 import { AdminApi } from '../data-access/admin-api';
+import { revealErrors } from '@shared/ui/field-errors';
 
 /** Administrator: the address of the portal (a setting of the server); the name is the teacher's. */
 @Component({
@@ -36,7 +37,6 @@ import { AdminApi } from '../data-access/admin-api';
                 type="submit"
                 label="Сохранить адрес"
                 severity="success"
-                [disabled]="form.invalid"
                 [loading]="pending()"
               />
             </div>
@@ -65,7 +65,7 @@ export class PortalAddressCard implements OnInit {
   }
 
   save(): void {
-    if (this.form.invalid) {
+    if (!revealErrors(this.form)) {
       return;
     }
     this.pending.set(true);

@@ -421,6 +421,23 @@ textarea.p-textarea {
 }
 
 /*
+ * The error of a field (M3 supporting text, ADR-0024): Body Small in the error color under the
+ * field; it takes the place of the hint. A required field has «*» after its label.
+ */
+.tb-field__error {
+  color: var(--p-md-error);
+  font: var(--tb-type-body-s);
+}
+
+.tb-field:has(> .tb-field__error) > :is(.tb-hint, small:not(.tb-field__error)) {
+  display: none;
+}
+
+.tb-field--required > label:first-child::after {
+  content: ' *';
+}
+
+/*
  * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
  * magnifier at its start; the focus is the primary ring.
  */

@@ -30,6 +30,7 @@ import {
 } from '@core/theme/portal-accent';
 import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** The largest logo the server takes, bytes. */
 const MAX_LOGO_SIZE = 1024 * 1024;
@@ -47,6 +48,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     Message,
     PortalAddressField,
     PortalLogo,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -57,7 +59,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
         </div>
       </ng-template>
       @if (settings(); as settings) {
-        <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+        <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">
             <label for="portal-name">Название</label>
             <input
@@ -193,7 +195,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               type="submit"
               label="Сохранить"
               severity="success"
-              [disabled]="form.invalid"
               [loading]="pending()"
             />
           </div>
@@ -334,7 +335,7 @@ export class PortalSettingsCard implements OnInit {
   }
 
   save(): void {
-    if (this.form.invalid) {
+    if (!revealErrors(this.form)) {
       return;
     }
     this.pending.set(true);
