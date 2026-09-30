@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Tooltip } from 'primeng/tooltip';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary } from './help-library';
 import { HelpArticle } from './help.models';
@@ -10,12 +11,11 @@ import { HelpTopic, helpUrl } from './help-topics';
 
 /**
  * «?» (or «Подробнее») next to a heading: opens the help article in a side panel without leaving
- * the page. The panel does not shade the page: the article can be read next to it, and leaving the
- * page with the panel open leaves nothing behind (the shade of a modal drawer would stay).
+ * the page. The panel is modal (ADR-0024): the focus is in it until it closes, then back on «?».
  */
 @Component({
   selector: 'tb-help-button',
-  imports: [RouterLink, Button, Drawer, HelpArticleView, Tooltip],
+  imports: [RouterLink, Button, Drawer, HelpArticleView, Tooltip, ModalDrawer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (label(); as text) {
@@ -32,10 +32,12 @@ import { HelpTopic, helpUrl } from './help-topics';
       />
     }
     <p-drawer
+      tbModalDrawer
       [(visible)]="visible"
       position="right"
       appendTo="body"
-      [modal]="false"
+      [blockScroll]="true"
+      ariaCloseLabel="Закрыть"
       [header]="article()?.title ?? 'Справка'"
       styleClass="tb-help-drawer"
     >

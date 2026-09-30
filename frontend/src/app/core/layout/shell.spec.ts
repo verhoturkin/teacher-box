@@ -5,7 +5,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { Portal } from '@core/portal/portal';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
-import { bodyText, buttonByText, hostElement } from '@testing/dom';
+import { bodyText, hostElement, requireElement } from '@testing/dom';
 import { Shell } from './shell';
 import { tabletScreen, testProviders } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
@@ -67,9 +67,15 @@ describe('Shell', () => {
   });
 
   it('switches the theme from the user menu', async () => {
-    buttonByText(hostElement(fixture), 'Меню пользователя').click();
+    requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement).click();
     await fixture.whenStable();
 
+    const user = requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement);
+    expect(user.getAttribute('aria-haspopup')).toBe('menu');
+    expect(user.getAttribute('aria-expanded')).toBe('true');
+    // the chosen theme is highlighted and says it is chosen (ADR-0024)
+    const chosen = document.body.querySelector('.tb-menu-item--selected');
+    expect(chosen?.textContent).toContain('Тема как в системе (выбрана)');
     const dark = Array.from(document.body.querySelectorAll('a')).find((element) =>
       element.textContent.includes('Тёмная тема'),
     );
@@ -81,7 +87,7 @@ describe('Shell', () => {
   });
 
   it('signs out from the user menu', async () => {
-    buttonByText(hostElement(fixture), 'Меню пользователя').click();
+    requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement).click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Настройки');
     expect(bodyText()).toContain('Мой аккаунт');
@@ -114,9 +120,10 @@ describe('Shell on a tablet', () => {
     const host = hostElement(fixture);
     expect(host.querySelector('tb-side-nav')?.classList).toContain('tb-side-nav--rail');
     expect(host.querySelector('nav.tb-bottom-nav')).toBeNull();
-    expect(host.querySelector('button[aria-label="Меню пользователя"]')?.textContent).toContain(
-      'Анна',
-    );
+    const user = requireElement(host, '.tb-shell__user-button', HTMLButtonElement);
+    expect(user.textContent).toContain('Анна');
+    // the visible name is the start of the accessible one (WCAG 2.5.3)
+    expect(user.getAttribute('aria-label')).toMatch(/^Анна.*: меню пользователя$/);
     fixture.destroy();
   });
 });

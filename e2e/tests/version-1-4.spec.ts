@@ -98,7 +98,9 @@ test.describe('on a phone', () => {
       'Оплаты',
     ]);
     await nav.getByRole('button', { name: 'Ещё разделы' }).click();
-    await expect(page.getByRole('menuitem', { name: 'Уведомления' })).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Уведомления' }),
+    ).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu')).toBeHidden();
     await expectNoSideScroll(page);

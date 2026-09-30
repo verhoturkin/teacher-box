@@ -37,6 +37,7 @@ import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { LessonSummary, excusedFrom } from './lesson-summary';
 import { EmptyState } from '@shared/ui/empty-state';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -68,6 +69,7 @@ export function nextMonday(date: Date): Date {
     LessonActions,
     MyBoardsCard,
     ScheduleCalendar,
+    ModalDrawer,
     LoadStateView,
     PageHeader,
   ],
@@ -189,6 +191,9 @@ export function nextMonday(date: Date): Date {
     </div>
 
     <p-drawer
+      tbModalDrawer
+      [blockScroll]="true"
+      ariaCloseLabel="Закрыть"
       [visible]="sheetLesson() !== null"
       (visibleChange)="$event || closeSheet()"
       position="bottom"

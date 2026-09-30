@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
+import { FocusReturn } from '@core/a11y/focus-return';
 import { Snackbar } from '@core/snackbar/snackbar';
 
 @Component({
@@ -14,6 +15,10 @@ import { Snackbar } from '@core/snackbar/snackbar';
 })
 export class App {
   private readonly snackbar = inject(Snackbar);
+
+  constructor() {
+    inject(FocusReturn).start();
+  }
 
   protected closed(event: ToastCloseEvent): void {
     this.snackbar.closed(event.message);

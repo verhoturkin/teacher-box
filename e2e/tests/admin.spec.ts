@@ -28,10 +28,16 @@ test('the administrator searches the log and checks the instance', async ({ page
   await expect(page.getByLabel('Код ошибки')).not.toHaveValue('');
   await expect(page.getByRole('row').filter({ hasText: 'role=ADMIN' }).first()).toBeVisible();
 
-  await page.getByRole('menuitem', { name: 'Состояние' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Состояние' })
+    .click();
   await expect(page.getByText('db: UP')).toBeVisible();
 
-  await page.getByRole('menuitem', { name: 'Интеграции' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Интеграции' })
+    .click();
   await expect(page.getByText('Google Календарь')).toBeVisible();
   await expect(page.getByText('Провайдер не выбран (TEACHERBOX_AI_PROVIDER)')).toBeVisible();
 

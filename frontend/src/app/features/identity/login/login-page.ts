@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -60,6 +68,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
 export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly host = inject(ElementRef);
 
   protected readonly portalName = inject(Portal).name;
 
@@ -82,6 +91,7 @@ export class LoginPage {
     }
     if (this.form.invalid) {
       this.error.set('Введите логин и пароль');
+      this.focus(this.form.controls.login.invalid ? 'login' : 'password');
       return;
     }
     const { login, password } = this.form.getRawValue();
@@ -94,7 +104,16 @@ export class LoginPage {
       error: (error: unknown) => {
         this.pending.set(false);
         this.error.set(describeError(error, 'Не удалось войти. Попробуйте позже'));
+        // after a wrong password the focus is in the password, not lost on the page (ADR-0024)
+        this.focus('password');
       },
     });
+  }
+
+  private focus(id: string): void {
+    const host: unknown = this.host.nativeElement;
+    if (host instanceof HTMLElement) {
+      host.querySelector<HTMLInputElement>(`#${id}`)?.focus();
+    }
   }
 }

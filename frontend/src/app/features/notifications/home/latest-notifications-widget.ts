@@ -79,7 +79,7 @@ export const LATEST_COUNT = 5;
       }
 
       &:focus-visible {
-        outline: 2px solid var(--p-md-primary);
+        outline: 3px solid var(--p-md-secondary);
         outline-offset: 2px;
       }
     }

@@ -118,13 +118,19 @@
     text-decoration: none;
   }
 
-  &:hover .tb-bottom-nav__icon,
-  &:focus-visible .tb-bottom-nav__icon {
+  &:hover .tb-bottom-nav__icon {
     background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
   }
 
+  /* the focus: the ring around the indicator and the state layer over it (ADR-0024) */
   &:focus-visible {
     outline: none;
+  }
+
+  &:focus-visible .tb-bottom-nav__icon {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--p-md-on-surface) 10%, transparent);
   }
 }
 
@@ -159,9 +165,24 @@
 .tb-bottom-nav__item--active {
   color: var(--p-md-on-surface);
 
-  .tb-bottom-nav__icon,
-  &:hover .tb-bottom-nav__icon {
+  .tb-bottom-nav__icon {
     background: var(--p-md-secondary-container);
     color: var(--p-md-on-secondary-container);
+  }
+
+  &:hover .tb-bottom-nav__icon {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-secondary-container)
+    );
+  }
+
+  &:focus-visible .tb-bottom-nav__icon {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 10%,
+      var(--p-md-secondary-container)
+    );
   }
 }

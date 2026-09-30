@@ -156,7 +156,7 @@ function filled(role: 'success' | 'error'): Record<string, unknown> {
     color: on,
     hoverColor: on,
     activeColor: on,
-    focusRing: { color, shadow: 'none' },
+    focusRing: { color: '{md.secondary}', shadow: 'none' },
   };
 }
 
@@ -186,7 +186,7 @@ const BUTTON_SCHEME = {
       color: '{md.on.secondary.container}',
       hoverColor: '{md.on.secondary.container}',
       activeColor: '{md.on.secondary.container}',
-      focusRing: { color: '{md.primary}', shadow: 'none' },
+      focusRing: { color: '{md.secondary}', shadow: 'none' },
     },
     success: filled('success'),
     danger: filled('error'),
@@ -257,7 +257,7 @@ function message(role: keyof typeof CONTAINERS): Record<string, unknown> {
     shadow: 'none',
     closeButton: {
       hoverBackground: `color-mix(in srgb, ${color} 8%, transparent)`,
-      focusRing: { color, shadow: 'none' },
+      focusRing: { color: '{md.secondary}', shadow: 'none' },
     },
     outlined: { color, borderColor: color },
     simple: { color },
@@ -357,10 +357,11 @@ export const TeacherBoxPreset = definePreset(Aura, {
   },
   semantic: {
     ...schemeTokens(DEFAULT_SCHEME),
+    // the M3 focus indicator: 3 px of secondary, 2 px from the element (ADR-0024)
     focusRing: {
-      width: '2px',
+      width: '3px',
       style: 'solid',
-      color: '{md.primary}',
+      color: '{md.secondary}',
       offset: '2px',
       shadow: 'none',
     },

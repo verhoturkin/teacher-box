@@ -88,7 +88,7 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   await signIn(page);
   await page.goto('/teacher/students');
 
-  const items = page.locator('tb-side-nav .p-menu-item');
+  const items = page.locator('tb-side-nav li');
   const first = await items.nth(0).boundingBox();
   const second = await items.nth(1).boundingBox();
   expect(first).not.toBeNull();
