@@ -37,7 +37,7 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Домашние задания">
+    <tb-page-header title="Задания">
       <tb-help-button help topic="cabinet/homework" />
     </tb-page-header>
     <p-card>

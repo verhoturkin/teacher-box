@@ -36,6 +36,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { pageDetail } from '@core/routing/page-detail';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -68,7 +69,7 @@ import { Busy } from '@shared/ui/busy';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
-      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Все задания">
+      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Задания">
         <tb-help-button help topic="teacher/homework" />
         <span meta>
           {{
@@ -212,7 +213,7 @@ import { Busy } from '@shared/ui/busy';
         [ownerIds]="taskStudents(assignment)"
       />
     } @else {
-      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Все задания" />
+      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Задания" />
       <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
     <p-confirmdialog />
@@ -230,6 +231,10 @@ export class AssignmentPage implements OnInit {
   readonly assignmentId = input.required<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
+
+  constructor() {
+    pageDetail(() => this.details()?.title);
+  }
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
   protected readonly newFiles = signal<File[]>([]);

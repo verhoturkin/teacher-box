@@ -14,6 +14,7 @@ import { Card } from 'primeng/card';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
+import { pageDetail } from '@core/routing/page-detail';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticle } from './help.models';
@@ -160,6 +161,7 @@ export class HelpPage {
   });
 
   constructor() {
+    pageDetail(() => this.current()?.title);
     effect(() => {
       const area = this.area();
       void this.library.articles(area).then((articles) => {

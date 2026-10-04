@@ -45,7 +45,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Домашние задания">
+    <tb-page-header title="Задания">
       <tb-help-button help topic="teacher/homework" />
       <a pButton routerLink="review" severity="secondary">
         <span pButtonLabel>На проверку</span>

@@ -19,6 +19,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { pageDetail } from '@core/routing/page-detail';
 
 /** Student: an assignment, the teacher's feedback and handing in an answer. */
 @Component({
@@ -42,11 +43,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <tb-page-header
-        [title]="task.assignment.title"
-        back="/cabinet/homework"
-        backLabel="Все задания"
-      >
+      <tb-page-header [title]="task.assignment.title" back="/cabinet/homework" backLabel="Задания">
         <tb-help-button help topic="cabinet/homework" />
         <span meta [class.tb-negative]="task.overdue">
           {{
@@ -110,7 +107,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </p-card>
       </div>
     } @else {
-      <tb-page-header title="Задание" back="/cabinet/homework" backLabel="Все задания" />
+      <tb-page-header title="Задание" back="/cabinet/homework" backLabel="Задания" />
       <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
   `,
@@ -124,6 +121,10 @@ export class MyTaskPage implements OnInit {
   readonly taskId = input.required<string>();
 
   protected readonly task = signal<TaskDetails | null>(null);
+
+  constructor() {
+    pageDetail(() => this.task()?.assignment.title);
+  }
   readonly text = new FormControl('', {
     nonNullable: true,
     validators: [Validators.maxLength(20_000)],

@@ -34,7 +34,7 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Личный кабинет">
+    <tb-page-header title="Главная">
       <tb-help-button help topic="cabinet/lesson" />
     </tb-page-header>
     <div class="tb-stack">

@@ -48,7 +48,7 @@ describe('app routes', { timeout: 20_000 }, () => {
       ['/admin/status', 'Состояние'],
       ['/admin/events', 'События'],
       ['/admin/integrations', 'Интеграции'],
-      ['/admin/backups', 'Резервные копии'],
+      ['/admin/backups', 'Копии'],
       ['/admin/diagnostics', 'Диагностика'],
       ['/admin/account', 'Мой аккаунт'],
     ] as const) {
@@ -127,8 +127,8 @@ describe('app routes', { timeout: 20_000 }, () => {
     auth.acceptSession(authResponse('STUDENT'));
 
     await harness.navigateByUrl('/');
-    expect(text()).toContain('Личный кабинет');
-    expect(title()).toBe('Личный кабинет — Teacher Box');
+    expect(text()).toContain('Главная');
+    expect(title()).toBe('Главная — Teacher Box');
 
     await harness.navigateByUrl('/cabinet/account');
     TestBed.inject(HttpTestingController).expectOne('/api/me').flush({
@@ -172,7 +172,7 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/teacher/homework');
     backend.expectOne('/api/teacher/homework/assignments');
-    expect(title()).toBe('Домашние задания — Teacher Box');
+    expect(title()).toBe('Задания — Teacher Box');
 
     await harness.navigateByUrl('/teacher/homework/review');
     backend.expectOne('/api/teacher/homework/review-queue');
@@ -190,7 +190,7 @@ describe('app routes', { timeout: 20_000 }, () => {
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/homework');
     backend.expectOne('/api/me/homework');
-    expect(title()).toBe('Домашние задания — Teacher Box');
+    expect(title()).toBe('Задания — Teacher Box');
 
     await harness.navigateByUrl('/cabinet/homework/t-1');
     backend.expectOne('/api/me/homework/tasks/t-1');
@@ -244,7 +244,23 @@ describe('app routes', { timeout: 20_000 }, () => {
   it('shows the not found page for unknown urls', async () => {
     await harness.navigateByUrl('/no/such/page');
 
-    expect(text()).toContain('404');
+    expect(text()).toContain('Страница не найдена');
     expect(title()).toBe('Страница не найдена — Teacher Box');
+    // a visitor who is not signed in has no frame: the page brings its own main
+    expect(document.body.querySelector('main.tb-not-found-page')).not.toBeNull();
+  });
+
+  it('keeps the frame of the role around the not found page', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/no-such-page');
+    backend.match(() => true);
+
+    expect(text()).toContain('Такой страницы нет');
+    expect(title()).toBe('Страница не найдена — Teacher Box');
+    expect(document.body.querySelector('tb-shell')).not.toBeNull();
+    expect(document.body.querySelectorAll('main')).toHaveLength(1);
+    expect(document.body.querySelector('main.tb-not-found-page')).toBeNull();
   });
 });
