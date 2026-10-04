@@ -7,7 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -61,6 +61,7 @@ import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -366,7 +367,7 @@ export class SchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly mobile = injectMobile();
   protected readonly kind = requestKindLabel;
@@ -501,11 +502,7 @@ export class SchedulePage implements OnInit {
             this.confirmOverlap(move);
           } else {
             move.revert();
-            this.messages.add({
-              severity: 'error',
-              summary: 'Ошибка',
-              detail: describeError(error, 'Не удалось перенести занятие'),
-            });
+            this.snackbar.error(describeError(error, 'Не удалось перенести занятие'));
           }
         },
       });
@@ -533,11 +530,7 @@ export class SchedulePage implements OnInit {
   }
 
   onSeriesSaved(planned: SeriesPlanned): void {
-    this.messages.add({
-      severity: 'success',
-      summary: 'Расписание сохранено',
-      detail: `Запланировано занятий: ${String(planned.lessons)}`,
-    });
+    this.snackbar.success(`Расписание сохранено, занятий: ${String(planned.lessons)}`);
     this.reload();
   }
 
@@ -568,7 +561,7 @@ export class SchedulePage implements OnInit {
   }
 
   onOffTimeSaved(): void {
-    this.messages.add({ severity: 'success', summary: 'Нерабочее время сохранено' });
+    this.snackbar.success('Нерабочее время сохранено');
     this.loadOffTimes();
     this.loadOffTimePeriods();
   }

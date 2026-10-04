@@ -50,6 +50,13 @@ describe('Snackbar', () => {
     expect(shown).toHaveLength(3);
   });
 
+  it('keeps a notice until it is closed', () => {
+    snackbar.notice('Перезапустите портал');
+    snackbar.notice('Перезапустите портал');
+
+    expect(shown).toEqual([{ severity: 'info', detail: 'Перезапустите портал', sticky: true }]);
+  });
+
   it('forgets a closed message without a severity or text', () => {
     snackbar.closed({});
 

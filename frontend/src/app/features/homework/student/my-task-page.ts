@@ -1,8 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
@@ -20,6 +18,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Student: an assignment, the teacher's feedback and handing in an answer. */
 @Component({
@@ -118,7 +117,7 @@ import { HelpButton } from '@features/help/parts';
 })
 export class MyTaskPage implements OnInit {
   private readonly api = inject(HomeworkApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
 
   /** Route parameter. */
@@ -164,11 +163,7 @@ export class MyTaskPage implements OnInit {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Отправлено',
-          detail: 'Ответ отправлен учителю',
-        });
+        this.snackbar.success('Ответ отправлен учителю');
       },
       error: (error: unknown) => {
         this.pending.set(false);

@@ -11,7 +11,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -31,6 +30,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { InitialsPipe } from '@shared/ui/initials';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -198,7 +198,7 @@ import { InitialsPipe } from '@shared/ui/initials';
 })
 export class BillingOverviewPage implements OnInit {
   private readonly api = inject(BillingApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly overview = signal<BillingOverview | null>(null);
   protected readonly state = new LoadState();
@@ -231,7 +231,7 @@ export class BillingOverviewPage implements OnInit {
   }
 
   protected onSaved(message: string): void {
-    this.messages.add({ severity: 'success', summary: 'Готово', detail: message });
+    this.snackbar.success(message);
     this.load();
   }
 

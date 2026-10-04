@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Select } from 'primeng/select';
@@ -12,6 +11,7 @@ import { AdminApi } from '../data-access/admin-api';
 import { LogLevelName, LoggerLevel } from '../data-access/admin.models';
 import { LEVELS, levelSeverity } from '../admin-labels';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 export const DURATIONS: readonly { readonly label: string; readonly minutes: number }[] = [
   { label: '15 минут', minutes: 15 },
@@ -136,7 +136,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
 })
 export class LoggerLevelsPanel implements OnInit {
   private readonly api = inject(AdminApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly levels = [...LEVELS];
   protected readonly durations = [...DURATIONS];
@@ -170,11 +170,7 @@ export class LoggerLevelsPanel implements OnInit {
     this.api.changeLevel(name.trim(), level, minutes).subscribe({
       next: (changed) => {
         this.pending.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Уровень изменён',
-          detail: `${changed.name}: ${changed.effectiveLevel}`,
-        });
+        this.snackbar.success(`Уровень изменён: ${changed.name} — ${changed.effectiveLevel}`);
         this.reload();
       },
       error: () => {

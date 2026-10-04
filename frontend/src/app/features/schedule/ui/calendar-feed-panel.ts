@@ -8,7 +8,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -18,6 +17,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /**
  * Subscription to the schedule from Google, Apple or Yandex Calendar by a secret link. The link is
@@ -88,7 +88,7 @@ import { CalendarFeed } from '../data-access/schedule.models';
 })
 export class CalendarFeedPanel implements OnInit {
   private readonly api = inject(ScheduleApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly clipboard = inject(Clipboard);
   private readonly portal = inject(Portal);
 
@@ -135,11 +135,7 @@ export class CalendarFeedPanel implements OnInit {
 
   copy(link: string): void {
     if (this.clipboard.copy(link)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Ссылка в буфере обмена',
-      });
+      this.snackbar.success('Ссылка в буфере обмена');
     }
   }
 }

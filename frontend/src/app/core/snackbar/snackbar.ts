@@ -30,15 +30,20 @@ export class Snackbar {
     this.show('error', detail);
   }
 
-  show(severity: SnackbarSeverity, detail: string): void {
+  /** A note that stays until it is closed: a step left to do. */
+  notice(detail: string): void {
+    this.show('info', detail, true);
+  }
+
+  show(severity: SnackbarSeverity, detail: string, sticky = false): void {
     const now = Date.now();
     const key = `${severity}:${detail}`;
     if ((this.shown.get(key) ?? 0) > now) {
       return;
     }
     const life = severity === 'error' ? SNACKBAR_ERROR_LIFE : SNACKBAR_LIFE;
-    this.shown.set(key, now + life);
-    this.messages.add({ severity, detail, life });
+    this.shown.set(key, sticky ? Number.POSITIVE_INFINITY : now + life);
+    this.messages.add(sticky ? { severity, detail, sticky } : { severity, detail, life });
   }
 
   /** The message was closed (by its button or its time): the same text may be shown again. */

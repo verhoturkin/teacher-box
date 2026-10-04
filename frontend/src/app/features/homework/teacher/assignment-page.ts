@@ -11,7 +11,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -34,6 +34,7 @@ import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -209,7 +210,7 @@ export class AssignmentPage implements OnInit {
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
 
   /** Route parameter. */
@@ -320,7 +321,7 @@ export class AssignmentPage implements OnInit {
     this.api.assignStudents(assignment.id, studentIds).subscribe((updated) => {
       this.details.set(updated);
       this.toAssign.setValue([]);
-      this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Задание выдано' });
+      this.snackbar.success('Задание выдано');
     });
   }
 }

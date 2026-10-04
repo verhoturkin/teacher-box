@@ -11,7 +11,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Dialog } from 'primeng/dialog';
@@ -22,6 +21,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState, ChannelType, LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -126,7 +126,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 })
 export class ChannelsPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;
 
   /** The teacher sees how to configure bots instead of a hint for students. */
@@ -181,11 +181,7 @@ export class ChannelsPanel implements OnInit {
 
   unlink(channel: ChannelType): void {
     this.api.unlink(channel).subscribe(() => {
-      this.messages.add({
-        severity: 'info',
-        summary: 'Отключено',
-        detail: `${CHANNEL_NAMES[channel]} отключён`,
-      });
+      this.snackbar.info(`${CHANNEL_NAMES[channel]} отключён`);
       this.reload();
       this.changed.emit();
     });
@@ -207,11 +203,7 @@ export class ChannelsPanel implements OnInit {
         this.channels.set(channels);
         if (channels.some((state) => state.channel === channel && state.linked)) {
           this.closeLink();
-          this.messages.add({
-            severity: 'success',
-            summary: 'Готово',
-            detail: `${CHANNEL_NAMES[channel]} подключён`,
-          });
+          this.snackbar.success(`${CHANNEL_NAMES[channel]} подключён`);
           this.changed.emit();
         }
       });

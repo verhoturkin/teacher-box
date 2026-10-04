@@ -65,11 +65,11 @@ describe('ResetCard', () => {
 
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({
-        detail: 'Копия перед сбросом: teacherbox-20260927-120000-000.zip',
+        detail: 'Данные удалены. Копия перед сбросом: teacherbox-20260927-120000-000.zip',
       }),
     );
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'warn', sticky: true }),
+      expect.objectContaining({ severity: 'info', sticky: true }),
     );
     const setup = portal.setupCompleted();
     backend.expectOne('/api/teacher/portal').flush({

@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { IdentityApi } from '@features/identity/parts';
@@ -8,6 +7,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastDialog, Recipient } from './broadcast-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: writes to students and sees what was sent. */
 @Component({
@@ -90,7 +90,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 export class BroadcastsPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
   private readonly identity = inject(IdentityApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly history = signal<BroadcastItem[] | null>(null);
   protected readonly broadcastVisible = signal(false);
@@ -112,11 +112,7 @@ export class BroadcastsPanel implements OnInit {
   }
 
   onBroadcast(recipients: number): void {
-    this.messages.add({
-      severity: 'success',
-      summary: 'Отправлено',
-      detail: `Получателей: ${String(recipients)}`,
-    });
+    this.snackbar.success(`Сообщение отправлено, получателей: ${String(recipients)}`);
     this.reload();
   }
 

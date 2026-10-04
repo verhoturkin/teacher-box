@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
@@ -21,6 +20,7 @@ import { Tooltip } from 'primeng/tooltip';
 import { describeError } from '@core/http/error-messages';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** An http(s) address; spaces around it are trimmed when it is saved. */
 export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
@@ -138,7 +138,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 export class RoomDialog {
   private readonly api = inject(MeetingsApi);
   private readonly clipboard = inject(Clipboard);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   readonly visible = model(false);
   readonly owner = input<RoomOwnerRef | null>(null);
@@ -194,11 +194,7 @@ export class RoomDialog {
     this.run(
       this.api.share(room.ownerId),
       (recipients) => {
-        this.messages.add({
-          severity: 'success',
-          summary: 'Ссылка отправлена',
-          detail: `Получателей: ${String(recipients)}`,
-        });
+        this.snackbar.success(`Ссылка отправлена, получателей: ${String(recipients)}`);
       },
       false,
     );
@@ -206,11 +202,7 @@ export class RoomDialog {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Ссылка в буфере обмена',
-      });
+      this.snackbar.success('Ссылка в буфере обмена');
     }
   }
 

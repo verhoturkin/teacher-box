@@ -10,8 +10,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -31,6 +29,7 @@ import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -171,7 +170,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 })
 export class TaskReviewPage implements OnInit {
   private readonly api = inject(HomeworkApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly ai = inject(AiApi);
 
@@ -238,11 +237,9 @@ ${this.commentValue()}`;
         next: (reviewed) => {
           this.pending.set(false);
           this.show(reviewed);
-          this.messages.add({
-            severity: 'success',
-            summary: 'Готово',
-            detail: decision === 'ACCEPT' ? 'Работа принята' : 'Работа возвращена на доработку',
-          });
+          this.snackbar.success(
+            decision === 'ACCEPT' ? 'Работа принята' : 'Работа возвращена на доработку',
+          );
         },
         error: () => {
           this.pending.set(false);

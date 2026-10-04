@@ -65,7 +65,9 @@ describe('BroadcastsPanel', () => {
     backend.expectOne('/api/teacher/notifications/broadcasts').flush([broadcastItem()]);
     await fixture.whenStable();
 
-    expect(messages).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Получателей: 1' }));
+    expect(messages).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Сообщение отправлено, получателей: 1' }),
+    );
     expect(readableText(hostElement(fixture))).toContain('Каникулы');
   });
 });

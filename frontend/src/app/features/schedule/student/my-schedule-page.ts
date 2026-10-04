@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Drawer } from 'primeng/drawer';
@@ -41,6 +40,7 @@ import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -238,7 +238,7 @@ export function nextMonday(date: Date): Date {
 })
 export class MySchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly kind = requestKindLabel;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
@@ -319,11 +319,7 @@ export class MySchedulePage implements OnInit {
   }
 
   onSent(): void {
-    this.messages.add({
-      severity: 'success',
-      summary: 'Отправлено',
-      detail: 'Учитель получит ваш запрос',
-    });
+    this.snackbar.success('Учитель получит ваш запрос');
     this.reload();
   }
 

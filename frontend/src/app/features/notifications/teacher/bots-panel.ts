@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -10,6 +10,7 @@ import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-labels';
 import { BotWizardDialog } from './bot-wizard-dialog';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
 @Component({
@@ -108,7 +109,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 export class BotsPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** A bot was connected, replaced or removed. */
   readonly changed = output();
@@ -153,11 +154,7 @@ export class BotsPanel implements OnInit {
         rejectLabel: 'Отмена',
         accept: () => {
           this.api.removeBot(channel).subscribe(() => {
-            this.messages.add({
-              severity: 'info',
-              summary: 'Отключено',
-              detail: `Бот ${CHANNEL_NAMES[channel]} отключён`,
-            });
+            this.snackbar.info(`Бот ${CHANNEL_NAMES[channel]} отключён`);
             this.reload();
             this.changed.emit();
           });

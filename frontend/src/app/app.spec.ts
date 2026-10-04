@@ -24,6 +24,20 @@ describe('App', () => {
     expect(element.querySelector('router-outlet')).not.toBeNull();
   });
 
+  it('shows a snackbar that does not take the focus and has «Закрыть»', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    TestBed.inject(Snackbar).error('Нет связи');
+    await fixture.whenStable();
+
+    const close = document.body.querySelector('.tb-snackbar__close');
+    expect(close?.getAttribute('aria-label')).toBe('Закрыть');
+    expect(document.activeElement).not.toBe(close);
+    expect(document.body.querySelector('.tb-snackbar__text')?.getAttribute('role')).toBe('alert');
+    expect(document.body.querySelector('.p-toast-message')?.getAttribute('role')).toBe('status');
+    fixture.destroy();
+  });
+
   it('lets the snackbar show a closed message again', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();

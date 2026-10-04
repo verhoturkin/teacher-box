@@ -9,8 +9,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tooltip } from 'primeng/tooltip';
@@ -28,6 +27,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
@@ -162,7 +162,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 export class StudentLedgerPage implements OnInit {
   private readonly api = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** Route parameter. */
   readonly studentId = input.required<string>();
@@ -216,11 +216,7 @@ export class StudentLedgerPage implements OnInit {
         this.savingPrice.set(false);
         this.ledger.set({ ...ledger, lessonPrice: saved });
         this.editingPrice.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Сохранено',
-          detail: 'Цена занятия изменена',
-        });
+        this.snackbar.success('Цена занятия изменена');
       },
       error: () => {
         this.savingPrice.set(false);

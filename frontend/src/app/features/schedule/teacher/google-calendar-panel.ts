@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
@@ -32,6 +31,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -284,7 +284,7 @@ export class GoogleCalendarPanel implements OnInit {
 
   protected readonly portalName = this.portal.name;
   private readonly clipboard = inject(Clipboard);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly status = signal<GoogleCalendarStatus | null>(null);
@@ -353,11 +353,7 @@ export class GoogleCalendarPanel implements OnInit {
     this.api.syncGoogle().subscribe({
       next: (response) => {
         this.pending.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Готово',
-          detail: `Изменено событий: ${String(response.changed)}`,
-        });
+        this.snackbar.success(`Изменено событий: ${String(response.changed)}`);
         this.load();
       },
       error: () => {
@@ -375,11 +371,7 @@ export class GoogleCalendarPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Адрес в буфере обмена',
-      });
+      this.snackbar.success('Адрес в буфере обмена');
     }
   }
 

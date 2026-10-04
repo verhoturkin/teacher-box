@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputNumber } from 'primeng/inputnumber';
@@ -8,6 +7,7 @@ import { Tooltip } from 'primeng/tooltip';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /**
  * The lesson price of new students and groups, changed in place: the field takes the whole width
@@ -74,7 +74,7 @@ import { BillingApi } from '../data-access/billing-api';
 })
 export class DefaultPriceCard {
   private readonly api = inject(BillingApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** Minor units. */
   readonly price = input.required<number>();
@@ -104,11 +104,7 @@ export class DefaultPriceCard {
         this.pending.set(false);
         this.editing.set(false);
         this.changed.emit(saved);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Сохранено',
-          detail: 'Новые ученики и группы получат эту цену',
-        });
+        this.snackbar.success('Новые ученики и группы получат эту цену');
       },
       error: () => {
         this.pending.set(false);

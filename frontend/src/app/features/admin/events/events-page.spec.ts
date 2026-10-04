@@ -95,7 +95,9 @@ describe('EventsPage', () => {
     all.flush({ resubmitted: 1 });
     backend.expectOne('/api/admin/events').flush([]);
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Событий: 1' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Отправлено повторно событий: 1' }),
+    );
   });
 
   it('sends failed deliveries again', async () => {
@@ -110,7 +112,9 @@ describe('EventsPage', () => {
     retry.flush({ retried: 2 });
     backend.expectOne('/api/admin/notifications/deliveries').flush([]);
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Сообщений: 2' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Отправлено повторно сообщений: 2' }),
+    );
     fixture.componentInstance.retry(['d-1']);
     backend.expectOne('/api/admin/notifications/deliveries/retry').flush({ retried: 1 });
     backend.expectOne('/api/admin/notifications/deliveries').flush([]);

@@ -6,7 +6,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -18,6 +17,7 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
@@ -126,7 +126,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 })
 export class StudentMessengersPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly names = CHANNEL_NAMES;
   protected readonly icons = CHANNEL_ICONS;
@@ -167,11 +167,7 @@ export class StudentMessengersPanel implements OnInit {
     this.api.remindToConnect(selected).subscribe({
       next: (recipients) => {
         this.pending.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Напоминание отправлено',
-          detail: `Получили учеников: ${String(recipients)}`,
-        });
+        this.snackbar.success(`Получили учеников: ${String(recipients)}`);
       },
       error: () => {
         this.pending.set(false);

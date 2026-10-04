@@ -854,6 +854,15 @@ a.p-menu-item-link:hover {
   text-decoration: none;
 }
 
+/*
+ * A link inside text (a paragraph, a list, an article of the help, a hint) is always underlined: it
+ * differs from the text not by its color alone (WCAG 1.4.1, ADR-0024)
+ */
+:is(p, .tb-markdown, .tb-hint, small, ul.tb-muted) a:not(.p-button, .tb-link) {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .tb-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
@@ -1640,11 +1649,62 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* Snackbar (M3): at the bottom in the middle, above the bottom navigation on a phone */
+/*
+ * Snackbar (M3, ADR-0024): at the bottom in the middle, above the bottom navigation on a phone and
+ * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
+ */
 .p-toast.p-toast-bottom-center {
   @media (max-width: 768px) {
     bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-2)) !important;
     width: calc(100vw - 2rem);
+  }
+}
+
+@media (max-width: 768px) {
+  body:has(p-button.tb-page-fab) .p-toast.p-toast-bottom-center {
+    bottom: calc(
+      5rem + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem + var(--tb-space-2)
+    ) !important;
+  }
+}
+
+.tb-snackbar {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-height: 3rem;
+  padding: 0 var(--tb-space-1) 0 var(--tb-space-4);
+  color: var(--p-md-inverse-on-surface);
+  font: var(--tb-type-body-m);
+}
+
+.tb-snackbar__text {
+  flex: 1;
+  padding-block: var(--tb-space-3);
+  overflow-wrap: break-word;
+}
+
+.tb-snackbar__close {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-inverse-on-surface) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-inverse-primary);
+    outline-offset: 2px;
   }
 }
 

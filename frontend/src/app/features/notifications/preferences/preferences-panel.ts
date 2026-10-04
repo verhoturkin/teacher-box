@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
@@ -19,6 +18,7 @@ import { describeError } from '@core/http/error-messages';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationPreferences, NotificationTopic } from '../data-access/notifications.models';
 import { MUTABLE_TOPICS } from '../notification-labels';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Every half hour of the day: `00:00`, `00:30` … `23:30`. */
 export const QUIET_TIMES: readonly string[] = Array.from({ length: 48 }, (_, index) => {
@@ -158,7 +158,7 @@ function shortTime(time: string | null, fallback: string): string {
 })
 export class PreferencesPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** The teacher also gets notifications about students and the calendar. */
   readonly teacher = input(false);
@@ -215,11 +215,7 @@ export class PreferencesPanel implements OnInit {
         next: (saved) => {
           this.pending.set(false);
           this.fill(saved);
-          this.messages.add({
-            severity: 'success',
-            summary: 'Сохранено',
-            detail: 'Настройки уведомлений сохранены',
-          });
+          this.snackbar.success('Настройки уведомлений сохранены');
         },
         error: (error: unknown) => {
           this.pending.set(false);

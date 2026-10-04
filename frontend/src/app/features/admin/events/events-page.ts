@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -13,6 +12,7 @@ import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Administrator: events not processed yet and failed deliveries to messengers, with a retry. */
 @Component({
@@ -140,7 +140,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 })
 export class EventsPage implements OnInit {
   private readonly api = inject(AdminApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly events = signal<EventPublication[]>([]);
   protected readonly deliveries = signal<FailedDelivery[]>([]);
@@ -158,22 +158,14 @@ export class EventsPage implements OnInit {
 
   resubmit(ids: string[]): void {
     this.api.resubmitEvents(ids).subscribe((count) => {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Отправлено повторно',
-        detail: `Событий: ${String(count)}`,
-      });
+      this.snackbar.success(`Отправлено повторно событий: ${String(count)}`);
       this.loadEvents();
     });
   }
 
   retry(ids: string[]): void {
     this.api.retryDeliveries(ids).subscribe((count) => {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Отправлено повторно',
-        detail: `Сообщений: ${String(count)}`,
-      });
+      this.snackbar.success(`Отправлено повторно сообщений: ${String(count)}`);
       this.loadDeliveries();
     });
   }

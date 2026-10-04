@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Dialog } from 'primeng/dialog';
@@ -14,6 +13,7 @@ import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** The word the teacher types to confirm the reset. */
 export const RESET_WORD = 'СБРОСИТЬ';
@@ -116,7 +116,7 @@ export class ResetCard {
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
   private readonly router = inject(Router);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly word = RESET_WORD;
   protected readonly visible = signal(false);
@@ -148,18 +148,10 @@ export class ResetCard {
       next: (result) => {
         this.pending.set(false);
         this.visible.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Данные удалены',
-          detail: `Копия перед сбросом: ${result.backup}`,
-        });
+        this.snackbar.success(`Данные удалены. Копия перед сбросом: ${result.backup}`);
         for (const hint of result.hints) {
-          this.messages.add({
-            severity: 'warn',
-            summary: 'Остался шаг',
-            detail: hint,
-            sticky: true,
-          });
+          // a step left to do after the reset stays until it is read
+          this.snackbar.notice(hint);
         }
         this.portal.setSetupCompleted(false);
         void this.portal.load().then(() => this.router.navigateByUrl('/teacher/setup'));

@@ -85,7 +85,9 @@ describe('PreferencesPanel', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ summary: 'Сохранено' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Настройки уведомлений сохранены' }),
+    );
     expect(checkbox('topic-BILLING').checked).toBe(false);
     expect(fixture.componentInstance.form.pristine).toBe(true);
   });

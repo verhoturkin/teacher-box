@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -33,6 +32,7 @@ import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -259,7 +259,7 @@ export class MeetingsSettingsPanel implements OnInit {
   private readonly navigation = inject(ExternalNavigation);
   private readonly portal = inject(Portal);
   private readonly clipboard = inject(Clipboard);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
   private readonly preferences = inject(MeetingPreferences);
 
@@ -343,11 +343,7 @@ export class MeetingsSettingsPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Адрес в буфере обмена',
-      });
+      this.snackbar.success('Адрес в буфере обмена');
     }
   }
 

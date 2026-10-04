@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -49,6 +49,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { InitialsPipe } from '@shared/ui/initials';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -298,7 +299,7 @@ export class StudentsPage implements OnInit {
   private readonly api = inject(IdentityApi);
   private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly statusSeverities = STATUS_SEVERITIES;
@@ -434,7 +435,7 @@ export class StudentsPage implements OnInit {
 
   protected onUpdated(student: Student): void {
     this.replace(student);
-    this.messages.add({ severity: 'success', summary: 'Сохранено', detail: student.displayName });
+    this.snackbar.success(`Сохранено: ${student.displayName}`);
   }
 
   protected reissueInvite(student: Student): void {

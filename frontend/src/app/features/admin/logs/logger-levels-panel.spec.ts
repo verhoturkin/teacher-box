@@ -62,7 +62,7 @@ describe('LoggerLevelsPanel', () => {
     await fixture.whenStable();
 
     expect(messages.add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'ru.teacherbox.ai: DEBUG' }),
+      expect.objectContaining({ detail: 'Уровень изменён: ru.teacherbox.ai — DEBUG' }),
     );
   });
 

@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ColorPicker } from 'primeng/colorpicker';
@@ -31,6 +30,7 @@ import {
 import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** The largest logo the server takes, bytes. */
 const MAX_LOGO_SIZE = 1024 * 1024;
@@ -268,7 +268,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 export class PortalSettingsCard implements OnInit {
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly defaultName = DEFAULT_PORTAL_NAME;
   protected readonly maxNameLength = MAX_PORTAL_NAME_LENGTH;
@@ -345,11 +345,7 @@ export class PortalSettingsCard implements OnInit {
         this.pending.set(false);
         this.show(settings);
         this.portal.set(settings);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Сохранено',
-          detail: 'Настройки портала сохранены',
-        });
+        this.snackbar.success('Настройки портала сохранены');
       },
       error: () => {
         this.pending.set(false);
@@ -364,7 +360,7 @@ export class PortalSettingsCard implements OnInit {
       return;
     }
     if (file.size > MAX_LOGO_SIZE) {
-      this.messages.add({ severity: 'warn', summary: 'Логотип', detail: 'Файл больше 1 МБ' });
+      this.snackbar.error('Файл больше 1 МБ');
       return;
     }
     this.uploading.set(true);

@@ -8,7 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -27,6 +27,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
   SCHEDULED: 'по расписанию',
@@ -162,7 +163,7 @@ export class BackupsCard implements OnInit {
   private readonly api = inject(BackupsApi);
   private readonly fileSaver = inject(FileSaver);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   readonly area = input<BackupsArea>('teacher');
 
@@ -193,11 +194,7 @@ export class BackupsCard implements OnInit {
     this.api.create(this.area()).subscribe({
       next: (backup) => {
         this.creating.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Готово',
-          detail: `Копия ${backup.name} создана`,
-        });
+        this.snackbar.success(`Копия ${backup.name} создана`);
         this.reload();
       },
       error: () => {

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Portal, PortalSettings } from '@core/portal/portal';
@@ -9,6 +8,7 @@ import { PortalAddressField } from '@core/portal/portal-address-field';
 import { HelpButton } from '@features/help/parts';
 import { AdminApi } from '../data-access/admin-api';
 import { revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Administrator: the address of the portal (a setting of the server); the name is the teacher's. */
 @Component({
@@ -49,7 +49,7 @@ import { revealErrors } from '@shared/ui/field-errors';
 export class PortalAddressCard implements OnInit {
   private readonly api = inject(AdminApi);
   private readonly portal = inject(Portal);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly settings = signal<PortalSettings | null>(null);
   protected readonly pending = signal(false);
@@ -74,11 +74,7 @@ export class PortalAddressCard implements OnInit {
         this.pending.set(false);
         this.show(settings);
         this.portal.set(settings);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Сохранено',
-          detail: 'Адрес портала сохранён',
-        });
+        this.snackbar.success('Адрес портала сохранён');
       },
       error: () => {
         this.pending.set(false);

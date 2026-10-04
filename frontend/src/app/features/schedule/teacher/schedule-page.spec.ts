@@ -247,7 +247,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Перерыв');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ summary: 'Нерабочее время сохранено' }),
+      expect.objectContaining({ detail: 'Нерабочее время сохранено' }),
     );
 
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);
@@ -410,7 +410,7 @@ describe('SchedulePage', () => {
 
     page.onSeriesSaved({ series: lessonSeries(), lessons: 12 });
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Запланировано занятий: 12' }),
+      expect.objectContaining({ detail: 'Расписание сохранено, занятий: 12' }),
     );
     await flushReload();
 
