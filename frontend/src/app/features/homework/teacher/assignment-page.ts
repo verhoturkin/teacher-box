@@ -37,11 +37,13 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { pageDetail } from '@core/routing/page-detail';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
   selector: 'tb-assignment-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     DatePipe,
     ReactiveFormsModule,
@@ -126,7 +128,7 @@ import { pageDetail } from '@core/routing/page-detail';
           <p-table [value]="assignment.tasks" dataKey="taskId" styleClass="tb-cards">
             <ng-template #header>
               <tr>
-                <th>Ученик</th>
+                <th class="tb-col-main">Ученик</th>
                 <th>Статус</th>
                 <th>Сдано</th>
                 <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -134,7 +136,16 @@ import { pageDetail } from '@core/routing/page-detail';
             </ng-template>
             <ng-template #body let-task [tbRowType]="assignment.tasks">
               <tr>
-                <td data-label="Ученик">{{ task.studentName }}</td>
+                <td data-label="Ученик">
+                  <div class="tb-person">
+                    <span class="tb-avatar" aria-hidden="true">{{
+                      task.studentName | initials
+                    }}</span>
+                    <div class="tb-list__text">
+                      <span class="tb-list__title">{{ task.studentName }}</span>
+                    </div>
+                  </div>
+                </td>
                 <td data-label="Статус">
                   <tb-task-status
                     [status]="task.status"

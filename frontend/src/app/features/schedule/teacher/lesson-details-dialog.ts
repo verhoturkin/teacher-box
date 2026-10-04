@@ -36,6 +36,7 @@ import {
   lessonWith,
   requestKindLabel,
 } from '../schedule-labels';
+import { InitialsPipe } from '@shared/ui/initials';
 import { AttendanceDialog } from './attendance-dialog';
 
 /**
@@ -47,6 +48,7 @@ import { AttendanceDialog } from './attendance-dialog';
 @Component({
   selector: 'tb-lesson-details-dialog',
   imports: [
+    InitialsPipe,
     FormsModule,
     Button,
     Checkbox,
@@ -133,15 +135,22 @@ import { AttendanceDialog } from './attendance-dialog';
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>
           }
           @if (lesson.groupId !== null) {
-            <ul class="tb-lesson-details__participants">
+            <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
                 <li>
-                  <span>{{ participant.studentName ?? 'Ученик' }}</span>
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    participant.studentName ?? 'Ученик' | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ participant.studentName ?? 'Ученик' }}</span>
+                  </div>
                   @if (participant.attendance !== 'EXPECTED') {
-                    <p-tag
-                      [value]="attendance[participant.attendance].label"
-                      [severity]="attendance[participant.attendance].severity"
-                    />
+                    <div class="tb-list__trail">
+                      <p-tag
+                        [value]="attendance[participant.attendance].label"
+                        [severity]="attendance[participant.attendance].severity"
+                      />
+                    </div>
                   }
                 </li>
               }

@@ -66,7 +66,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
         <p-table [value]="assignments()" dataKey="id" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Задание</th>
+              <th class="tb-col-main">Задание</th>
               <th>Срок</th>
               <th>Учеников</th>
               <th>На проверке</th>

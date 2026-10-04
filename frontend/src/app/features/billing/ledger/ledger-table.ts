@@ -28,7 +28,7 @@ import { EmptyState } from '@shared/ui/empty-state';
       <ng-template #header>
         <tr>
           <th>Дата</th>
-          <th>Операция</th>
+          <th class="tb-col-main">Операция</th>
           <th>Подробности</th>
           <th class="tb-amount">Сумма</th>
           @if (editable()) {

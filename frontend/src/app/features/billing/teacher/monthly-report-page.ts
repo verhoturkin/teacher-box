@@ -25,11 +25,13 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: income and lessons of a month. */
 @Component({
   selector: 'tb-monthly-report-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     LoadStateView,
     DatePipe,
@@ -95,7 +97,7 @@ import { HelpButton } from '@features/help/parts';
             <p-table [value]="report.students" dataKey="studentId" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th>Ученик</th>
+                  <th class="tb-col-main">Ученик</th>
                   <th>Занятий</th>
                   <th class="tb-amount">Начислено</th>
                   <th class="tb-amount">Оплачено</th>
@@ -142,7 +144,7 @@ import { HelpButton } from '@features/help/parts';
               <ng-template #header>
                 <tr>
                   <th>Дата</th>
-                  <th>Ученик</th>
+                  <th class="tb-col-main">Ученик</th>
                   <th>Тема</th>
                   <th>Итог</th>
                   <th class="tb-amount">Стоимость</th>
@@ -151,7 +153,16 @@ import { HelpButton } from '@features/help/parts';
               <ng-template #body let-entry [tbRowType]="report.lessons">
                 <tr [class.tb-inactive]="entry.lesson.status === 'CANCELLED'">
                   <td data-label="Дата">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
-                  <td data-label="Ученик">{{ entry.studentName }}</td>
+                  <td data-label="Ученик">
+                    <div class="tb-person">
+                      <span class="tb-avatar" aria-hidden="true">{{
+                        entry.studentName | initials
+                      }}</span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ entry.studentName }}</span>
+                      </div>
+                    </div>
+                  </td>
                   <td data-label="Тема">{{ entry.lesson.topic ?? '' }}</td>
                   <td data-label="Итог">
                     <p-tag
@@ -183,7 +194,7 @@ import { HelpButton } from '@features/help/parts';
               <ng-template #header>
                 <tr>
                   <th>Дата</th>
-                  <th>Ученик</th>
+                  <th class="tb-col-main">Ученик</th>
                   <th>Комментарий</th>
                   <th class="tb-amount">Сумма</th>
                 </tr>
@@ -191,7 +202,16 @@ import { HelpButton } from '@features/help/parts';
               <ng-template #body let-entry [tbRowType]="report.payments">
                 <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
                   <td data-label="Дата">{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
-                  <td data-label="Ученик">{{ entry.studentName }}</td>
+                  <td data-label="Ученик">
+                    <div class="tb-person">
+                      <span class="tb-avatar" aria-hidden="true">{{
+                        entry.studentName | initials
+                      }}</span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ entry.studentName }}</span>
+                      </div>
+                    </div>
+                  </td>
                   <td data-label="Комментарий">{{ entry.payment.comment ?? '' }}</td>
                   <td data-label="Сумма" class="tb-amount">
                     {{ entry.payment.amount | money: report.currency }}

@@ -2020,3 +2020,62 @@ a.p-menu-item-link:hover {
   text-align: right;
   white-space: nowrap;
 }
+
+/* The buttons of the rows of the student's lessons start at one place: «Войти в урок» does not jump
+   to the right when a row has «Отозвать» (ADR-0021) */
+.tb-schedule-list > li > .tb-list__trail {
+  justify-content: flex-start;
+
+  .p-button-danger.p-button-text {
+    min-width: 8.5rem;
+  }
+}
+
+/* «Занятий нет» of the calendar: a compact empty state, not a grey frame (ADR-0018) */
+.tb-calendar-empty {
+  border: 0;
+  background: none;
+}
+
+.tb-calendar-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-2) 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-l);
+
+  &::before {
+    content: 'e927';
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+    font-family: primeicons;
+    font-size: 1.25rem;
+  }
+}
+
+/* On a phone the titles of the lessons are cut with an ellipsis, not in the middle of a word */
+@media (width <= 48em) {
+  .fc .fc-event-title,
+  .fc .fc-list-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* the dots of the month on a phone have a key under the calendar */
+  tb-schedule-calendar::after {
+    content: '● — занятие';
+    display: block;
+    margin-top: var(--tb-space-2);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-s);
+  }
+}

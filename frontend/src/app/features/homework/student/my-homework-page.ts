@@ -45,7 +45,7 @@ import { PageHeader } from '@shared/ui/page-header';
         <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Задание</th>
+              <th class="tb-col-main">Задание</th>
               <th>Срок</th>
               <th>Статус</th>
             </tr>

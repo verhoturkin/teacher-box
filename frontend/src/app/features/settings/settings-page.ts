@@ -59,35 +59,40 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     <div class="tb-stack tb-stack--narrow">
       <tb-portal-settings-card />
       <p-card header="Интеграции">
-        <ul class="tb-integrations">
+        <ul class="tb-list">
           @for (messenger of messengers; track messenger.type) {
             @let state = messengerStatus(messenger.type);
             <li>
-              <span>{{ messenger.name }}</span>
-              @switch (state?.connection) {
-                @case ('OK') {
-                  <p-tag value="Работает" severity="success" />
+              <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
+              <div class="tb-list__text">
+                <span class="tb-list__title">{{ messenger.name }}</span>
+              </div>
+              <div class="tb-list__trail">
+                @switch (state?.connection) {
+                  @case ('OK') {
+                    <p-tag value="Работает" severity="success" />
+                  }
+                  @case ('PENDING') {
+                    <p-tag value="Подключается" severity="info" />
+                  }
+                  @case ('ERROR') {
+                    <p-tag value="Нет связи" severity="danger" />
+                  }
+                  @default {
+                    <p-tag value="Не настроен" severity="secondary" />
+                    <a
+                      routerLink="/teacher/notifications"
+                      [queryParams]="{ open: 'messengers' }"
+                      fragment="notifications-messengers"
+                      >подключить</a
+                    >
+                  }
                 }
-                @case ('PENDING') {
-                  <p-tag value="Подключается" severity="info" />
-                }
-                @case ('ERROR') {
-                  <p-tag value="Нет связи" severity="danger" />
-                }
-                @default {
-                  <p-tag value="Не настроен" severity="secondary" />
-                  <a
-                    routerLink="/teacher/notifications"
-                    [queryParams]="{ open: 'messengers' }"
-                    fragment="notifications-messengers"
-                    >подключить</a
-                  >
-                }
-              }
+              </div>
             </li>
             @if (state?.connection === 'ERROR') {
               <li class="tb-integration-error">
-                <small>
+                <small class="tb-list__supporting">
                   {{ state?.error }}
                   @if (messenger.type === 'TELEGRAM') {
                     <br />Если Telegram заблокирован в сети сервера, попросите администратора
@@ -98,13 +103,18 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
             }
           }
           <li>
-            <span>ИИ-помощник</span>
-            @if (aiModel(); as model) {
-              <p-tag [value]="model" severity="success" />
-            } @else {
-              <p-tag value="Не настроен" severity="secondary" />
-            }
-            <a routerLink="/teacher/ai">подробнее</a>
+            <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-sparkles"></i></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">ИИ-помощник</span>
+            </div>
+            <div class="tb-list__trail">
+              @if (aiModel(); as model) {
+                <p-tag [value]="model" severity="success" />
+              } @else {
+                <p-tag value="Не настроен" severity="secondary" />
+              }
+              <a routerLink="/teacher/ai">подробнее</a>
+            </div>
           </li>
         </ul>
         <small class="tb-hint">

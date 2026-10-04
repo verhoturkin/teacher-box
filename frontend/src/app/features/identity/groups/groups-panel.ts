@@ -98,7 +98,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         >
           <ng-template #header>
             <tr>
-              <th>Группа</th>
+              <th class="tb-col-main">Группа</th>
               <th>Ученики</th>
               <th>Цена занятия</th>
               <th>Видеовстреча</th>
