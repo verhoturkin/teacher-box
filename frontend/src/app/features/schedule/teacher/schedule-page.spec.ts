@@ -235,7 +235,7 @@ describe('SchedulePage', () => {
       .query(By.directive(OffTimeDialog))
       .injector.get(OffTimeDialog);
 
-    buttonByText(hostElement(fixture), 'Нерабочее время').click();
+    buttonByText(hostElement(fixture), 'Добавить нерабочее время').click();
     await fixture.whenStable();
     expect(dialog.visible()).toBe(true);
     expect(dialog.offTime()).toBeNull();
@@ -406,7 +406,7 @@ describe('SchedulePage', () => {
 
   it('plans, changes and stops regular lessons', async () => {
     await render();
-    buttonByText(hostElement(fixture), 'Регулярные занятия').click();
+    buttonByText(hostElement(fixture), 'Добавить регулярные занятия').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Дни недели');
 

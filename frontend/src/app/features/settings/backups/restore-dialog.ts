@@ -20,6 +20,7 @@ import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
 
@@ -38,6 +39,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
     Password,
     PasswordToggle,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -63,7 +65,13 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
               вернуться. Портал перезапустится и примерно минуту будет недоступен; войти потом нужно
               с паролем, который действовал на момент копии.
             </p>
-            <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="restore()">
+            <form
+              tbFieldErrors
+              id="restore-form"
+              class="tb-form"
+              [formGroup]="form"
+              (ngSubmit)="restore()"
+            >
               <div class="tb-field">
                 <label for="restore-password">Ваш пароль</label>
                 <p-password
@@ -81,20 +89,6 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
-              <div class="tb-actions">
-                <p-button
-                  label="Отмена"
-                  severity="secondary"
-                  [text]="true"
-                  (onClick)="visible.set(false)"
-                />
-                <p-button
-                  type="submit"
-                  label="Восстановить"
-                  severity="danger"
-                  [loading]="pending()"
-                />
-              </div>
             </form>
           }
           @case ('restarting') {
@@ -113,9 +107,6 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
             <p-message severity="success" styleClass="tb-form-message">
               Копия восстановлена. Войдите снова — с паролем, который действовал на момент копии.
             </p-message>
-            <div class="tb-actions">
-              <p-button label="Войти снова" icon="pi pi-sign-in" (onClick)="signInAgain()" />
-            </div>
           }
           @case ('failed') {
             <p-message severity="error" styleClass="tb-form-message">
@@ -133,6 +124,28 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
           }
         }
       }
+      <ng-template #footer>
+        @switch (stage()) {
+          @case ('confirm') {
+            <p-button
+              label="Отмена"
+              severity="secondary"
+              [text]="true"
+              (onClick)="visible.set(false)"
+            />
+            <p-button
+              type="submit"
+              tbSubmitFor="restore-form"
+              label="Восстановить"
+              severity="danger"
+              [loading]="pending()"
+            />
+          }
+          @case ('done') {
+            <p-button label="Войти снова" icon="pi pi-sign-in" (onClick)="signInAgain()" />
+          }
+        }
+      </ng-template>
     </p-dialog>
   `,
 })

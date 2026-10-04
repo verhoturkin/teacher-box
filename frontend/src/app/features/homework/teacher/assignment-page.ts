@@ -35,6 +35,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -183,6 +184,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               label="Выдать"
               severity="success"
               [disabled]="selectedToAssign().length === 0"
+              [loading]="busy.is('assign')"
               (onClick)="assign()"
             />
           </div>
@@ -208,6 +210,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class AssignmentPage implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -318,10 +321,12 @@ export class AssignmentPage implements OnInit {
     if (assignment === null || studentIds.length === 0) {
       return;
     }
-    this.api.assignStudents(assignment.id, studentIds).subscribe((updated) => {
-      this.details.set(updated);
-      this.toAssign.setValue([]);
-      this.snackbar.success('Задание выдано');
-    });
+    this.busy
+      .guard('assign', this.api.assignStudents(assignment.id, studentIds))
+      .subscribe((updated) => {
+        this.details.set(updated);
+        this.toAssign.setValue([]);
+        this.snackbar.success('Задание выдано');
+      });
   }
 }

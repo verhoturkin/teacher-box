@@ -29,17 +29,21 @@ import { Snackbar } from '@core/snackbar/snackbar';
         <p-card header="Профиль">
           <div class="tb-stack">
             @if (isTeacher()) {
-              <form class="tb-field" [formGroup]="nameForm" (ngSubmit)="rename()">
-                <label for="account-name">Имя</label>
-                <div class="tb-copy-row">
+              <form class="tb-form" [formGroup]="nameForm" (ngSubmit)="rename()">
+                <div class="tb-field">
+                  <label for="account-name">Имя</label>
                   <input
                     pInputText
                     id="account-name"
                     formControlName="name"
                     aria-label="Имя"
                     maxlength="100"
-                    class="tb-grow"
                   />
+                  <small class="tb-hint"
+                    >Так вас видят ученики в портале и в сообщениях бота.</small
+                  >
+                </div>
+                <div class="tb-form-actions">
                   <p-button
                     class="tb-tonal"
                     type="submit"
@@ -52,7 +56,6 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     [loading]="renaming()"
                   />
                 </div>
-                <small class="tb-hint">Так вас видят ученики в портале и в сообщениях бота.</small>
               </form>
             }
             <dl class="tb-details">

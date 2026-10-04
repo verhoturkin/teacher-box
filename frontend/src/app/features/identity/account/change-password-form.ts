@@ -80,13 +80,15 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
-      <p-button
-        type="submit"
-        [label]="submitLabel()"
-        [severity]="proceeds() ? 'primary' : 'success'"
-        [class.tb-tonal]="tonal()"
-        [loading]="pending()"
-      />
+      <div class="tb-form-actions">
+        <p-button
+          type="submit"
+          [label]="submitLabel()"
+          [severity]="proceeds() ? 'primary' : 'success'"
+          [class.tb-tonal]="tonal()"
+          [loading]="pending()"
+        />
+      </div>
       <small class="tb-hint">После смены пароля все остальные устройства выйдут из аккаунта.</small>
     </form>
   `,

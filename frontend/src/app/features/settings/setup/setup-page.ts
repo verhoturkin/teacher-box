@@ -134,7 +134,7 @@ const STEPS: readonly Step[] = [
                   календаре.
                 </small>
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
@@ -157,7 +157,7 @@ const STEPS: readonly Step[] = [
                   </p-message>
                 }
               }
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
@@ -187,7 +187,7 @@ const STEPS: readonly Step[] = [
                   [fluid]="true"
                 />
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
@@ -221,7 +221,7 @@ const STEPS: readonly Step[] = [
               </li>
             </ul>
             <p>Начните с главного: добавьте ученика и запланируйте первое занятие.</p>
-            <div class="tb-actions">
+            <div class="tb-form-actions">
               <p-button label="Назад" severity="secondary" (onClick)="back()" />
               <p-button
                 label="Перейти на главную"

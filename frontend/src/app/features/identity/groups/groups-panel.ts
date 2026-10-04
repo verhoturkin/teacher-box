@@ -39,6 +39,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Busy } from '@shared/ui/busy';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -167,6 +168,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
                     [rounded]="true"
                     pTooltip="Вернуть из архива"
                     [ariaLabel]="'Вернуть из архива: ' + group.name"
+                    [loading]="busy.is('restore-' + group.id)"
                     (onClick)="restore(group)"
                   />
                 } @else {
@@ -236,6 +238,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
   styles: ``,
 })
 export class GroupsPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -373,7 +376,7 @@ export class GroupsPanel implements OnInit {
   }
 
   protected restore(group: StudentGroup): void {
-    this.api.restoreGroup(group.id).subscribe((saved) => {
+    this.busy.guard('restore-' + group.id, this.api.restoreGroup(group.id)).subscribe((saved) => {
       this.replace(saved);
     });
   }

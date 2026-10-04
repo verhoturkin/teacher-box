@@ -19,6 +19,7 @@ import { describeError } from '@core/http/error-messages';
 import { AiApi } from './data-access/ai-api';
 import { HomeworkDraft } from './data-access/ai.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** Asks the AI assistant for a draft of homework; the result goes to the assignment editor. */
 @Component({
@@ -32,6 +33,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
     Message,
     Textarea,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -42,7 +44,13 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
       [style]="{ width: '34rem' }"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="generate()">
+      <form
+        tbFieldErrors
+        id="homework-draft-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="generate()"
+      >
         <div class="tb-field">
           <label for="ai-topic">Тема</label>
           <input
@@ -102,7 +110,8 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
           label="Сгенерировать"
           icon="pi pi-sparkles"
           [loading]="pending()"
-          (onClick)="generate()"
+          type="submit"
+          tbSubmitFor="homework-draft-form"
         />
       </ng-template>
     </p-dialog>

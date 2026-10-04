@@ -24,6 +24,7 @@ import { toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingStudent, Payment } from '../data-access/billing.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** Registers a payment from a student. */
 @Component({
@@ -38,6 +39,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
     Message,
     Select,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -48,7 +50,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
       [style]="{ width: '30rem' }"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="payment-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="payment-student">Ученик</label>
           <p-select
@@ -106,7 +108,13 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="payment-form"
+        />
       </ng-template>
     </p-dialog>
   `,

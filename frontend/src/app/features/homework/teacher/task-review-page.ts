@@ -109,7 +109,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   rows="4"
                 ></textarea>
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 @if (task.status === 'SUBMITTED') {
                   <p-button
                     severity="success"

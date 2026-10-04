@@ -19,11 +19,21 @@ import { describeError } from '@core/http/error-messages';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** Creates a student (when `student` is null) or edits an existing one. */
 @Component({
   selector: 'tb-student-form-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Textarea, FieldErrors],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputText,
+    Message,
+    Textarea,
+    FieldErrors,
+    SubmitFor,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -33,7 +43,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
       [style]="{ width: '32rem' }"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="student-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="displayName">Имя и фамилия</label>
           <input pInputText id="displayName" formControlName="displayName" autocomplete="off" />
@@ -61,7 +71,13 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="student-form"
+        />
       </ng-template>
     </p-dialog>
   `,

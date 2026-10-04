@@ -60,6 +60,7 @@ export const LOG_LIMIT = 200;
     </tb-page-header>
     <div class="tb-stack">
       <p-card>
+        <h2 class="tb-sr-only">Поиск по журналу</h2>
         <form class="tb-log-filters" [formGroup]="form" (ngSubmit)="search()">
           <!-- every filter has its label on the outline: it stays when the field is filled (ADR-0024) -->
           <div class="tb-field">
@@ -109,6 +110,7 @@ export const LOG_LIMIT = 200;
 
       @if (result(); as result) {
         <p-card>
+          <h2 class="tb-sr-only">Записи журнала</h2>
           @if (!result.available) {
             <p-message severity="warn">
               Журнал не пишется в файл (параметр logging.file.name пуст) — искать негде.

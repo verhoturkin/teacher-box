@@ -18,19 +18,26 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
-      <p-card header="Архив для разработчика">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Архив для разработчика</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Скачать архив"
+                severity="secondary"
+                icon="pi pi-download"
+                [loading]="pending()"
+                (onClick)="download()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <p>
           В архиве — последние файлы журнала (до 20 МБ), настройки портала с полностью скрытыми
           паролями, токенами и ключами, состояние и версии. Данных учеников в нём нет, но в журнале
           могут встречаться логины и идентификаторы.
         </p>
-        <p-button
-          label="Скачать архив"
-          severity="secondary"
-          icon="pi pi-download"
-          [loading]="pending()"
-          (onClick)="download()"
-        />
       </p-card>
       <p-card header="Что отправить вместе с архивом">
         <ol class="tb-send-list">

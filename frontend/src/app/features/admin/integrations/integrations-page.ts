@@ -40,20 +40,25 @@ import { LoadStateView } from '@shared/ui/load-state-view';
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
-      <p-card header="Проверка связи">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Проверка связи</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Проверить"
+                severity="secondary"
+                icon="pi pi-refresh"
+                [loading]="checking()"
+                (onClick)="check()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <p class="tb-muted">
           Портал обращается к каждому сервису так же, как при работе (через настроенный прокси). ИИ
           проверяется без расхода токенов.
         </p>
-        <div class="tb-actions">
-          <p-button
-            label="Проверить"
-            severity="secondary"
-            icon="pi pi-refresh"
-            [loading]="checking()"
-            (onClick)="check()"
-          />
-        </div>
         @if (error(); as message) {
           <p-message severity="error">{{ message }}</p-message>
         }

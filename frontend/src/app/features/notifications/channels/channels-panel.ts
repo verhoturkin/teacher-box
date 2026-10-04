@@ -22,6 +22,7 @@ import { ChannelState, ChannelType, LinkCode } from '../data-access/notification
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -83,6 +84,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                       [rounded]="true"
                       severity="danger"
                       [ariaLabel]="'Отключить ' + names[channel.channel]"
+                      [loading]="busy.is('unlink-' + channel.channel)"
                       (onClick)="unlink(channel.channel)"
                     />
                   } @else {
@@ -126,6 +128,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
   `,
 })
 export class ChannelsPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;
@@ -181,7 +184,7 @@ export class ChannelsPanel implements OnInit {
   }
 
   unlink(channel: ChannelType): void {
-    this.api.unlink(channel).subscribe(() => {
+    this.busy.guard('unlink-' + channel, this.api.unlink(channel)).subscribe(() => {
       this.snackbar.info(`${CHANNEL_NAMES[channel]} отключён`);
       this.reload();
       this.changed.emit();

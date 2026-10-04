@@ -90,7 +90,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   // Eight days ahead is always a later week.
   await planLesson(page, 8, 10, 'Дальняя');
 
-  await page.getByRole('button', { name: /Нерабочее время$/ }).click();
+  await page.getByRole('button', { name: 'Добавить нерабочее время' }).click();
   const dialog = page.getByRole('dialog', { name: 'Нерабочее время' });
   await expect(dialog.getByRole('button', { name: 'Один раз' })).toHaveAttribute(
     'aria-pressed',

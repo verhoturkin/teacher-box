@@ -18,6 +18,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /**
  * Subscription to the schedule from Google, Apple or Yandex Calendar by a secret link. The link is
@@ -69,7 +70,13 @@ import { Snackbar } from '@core/snackbar/snackbar';
               (onClick)="create()"
             />
             @if (feed.enabled) {
-              <p-button label="Отключить" severity="danger" [text]="true" (onClick)="disable()" />
+              <p-button
+                label="Отключить"
+                severity="danger"
+                [text]="true"
+                [loading]="busy.is('disable')"
+                (onClick)="disable()"
+              />
             }
           </div>
         }
@@ -88,6 +95,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class CalendarFeedPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
   private readonly clipboard = inject(Clipboard);
@@ -129,7 +137,7 @@ export class CalendarFeedPanel implements OnInit {
   }
 
   disable(): void {
-    this.api.disableFeed().subscribe(() => {
+    this.busy.guard('disable', this.api.disableFeed()).subscribe(() => {
       this.feed.set({ enabled: false, createdAt: null, path: null });
     });
   }

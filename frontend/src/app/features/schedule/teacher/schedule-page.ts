@@ -63,6 +63,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -100,18 +101,6 @@ const CLICK_SELECTION_MINUTES = 30;
   template: `
     <tb-page-header title="Расписание">
       <tb-help-button help topic="teacher/schedule" />
-      <p-button
-        label="Регулярные занятия"
-        icon="pi pi-replay"
-        severity="secondary"
-        (onClick)="newSeries()"
-      />
-      <p-button
-        label="Нерабочее время"
-        icon="pi pi-moon"
-        severity="secondary"
-        (onClick)="newOffTime()"
-      />
       <p-button class="tb-page-fab" label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
     </tb-page-header>
     @if (localTimeHint(); as hint) {
@@ -189,6 +178,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [rounded]="true"
                       severity="success"
                       [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'CONDUCTED')"
                     />
                     <p-button
@@ -198,6 +188,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [rounded]="true"
                       severity="danger"
                       [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'MISSED')"
                     />
                   }
@@ -230,7 +221,21 @@ const CLICK_SELECTION_MINUTES = 30;
         />
       </p-card>
 
-      <p-card header="Регулярные занятия">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Регулярные занятия</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Добавить"
+                icon="pi pi-plus"
+                severity="secondary"
+                ariaLabel="Добавить регулярные занятия"
+                (onClick)="newSeries()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <tb-load-state
           [state]="seriesState"
           what="регулярные занятия"
@@ -275,7 +280,21 @@ const CLICK_SELECTION_MINUTES = 30;
         </tb-load-state>
       </p-card>
 
-      <p-card header="Нерабочее время">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Нерабочее время</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Добавить"
+                icon="pi pi-plus"
+                severity="secondary"
+                ariaLabel="Добавить нерабочее время"
+                (onClick)="newOffTime()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <tb-load-state
           [state]="offTimesState"
           what="нерабочее время"
@@ -372,6 +391,7 @@ const CLICK_SELECTION_MINUTES = 30;
   `,
 })
 export class SchedulePage implements OnInit {
+  protected readonly marks = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -524,7 +544,7 @@ export class SchedulePage implements OnInit {
   }
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
-    this.api.setOutcome(lesson.id, outcome).subscribe(() => {
+    this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
       this.reload();
     });
   }

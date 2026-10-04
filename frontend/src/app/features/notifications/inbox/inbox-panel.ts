@@ -14,6 +14,7 @@ import { KIND_ICONS } from '../notification-labels';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { Busy } from '@shared/ui/busy';
 
 export const PAGE_SIZE = 20;
 
@@ -38,6 +39,7 @@ export const PAGE_SIZE = 20;
             icon="pi pi-check"
             severity="secondary"
             [disabled]="unread() === 0"
+            [loading]="busy.is('all')"
             (onClick)="markAllRead()"
           />
         </div>
@@ -75,6 +77,7 @@ export const PAGE_SIZE = 20;
                         [rounded]="true"
                         severity="secondary"
                         ariaLabel="Отметить прочитанным"
+                        [loading]="busy.is('read-' + item.id)"
                         (onClick)="markRead(item)"
                       />
                     }
@@ -125,6 +128,7 @@ export const PAGE_SIZE = 20;
   `,
 })
 export class InboxPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly unreadCounter = inject(UnreadNotifications);
   private readonly router = inject(Router);
@@ -160,7 +164,7 @@ export class InboxPanel implements OnInit {
   }
 
   markRead(item: NotificationItem): void {
-    this.api.markRead(item.id).subscribe(() => {
+    this.busy.guard('read-' + item.id, this.api.markRead(item.id)).subscribe(() => {
       this.items.update(
         (items) =>
           items?.map((other) => (other.id === item.id ? { ...other, read: true } : other)) ?? null,
@@ -170,7 +174,7 @@ export class InboxPanel implements OnInit {
   }
 
   markAllRead(): void {
-    this.api.markAllRead().subscribe(() => {
+    this.busy.guard('all', this.api.markAllRead()).subscribe(() => {
       this.items.update((items) => items?.map((item) => ({ ...item, read: true })) ?? null);
       this.unreadCounter.set(0);
     });

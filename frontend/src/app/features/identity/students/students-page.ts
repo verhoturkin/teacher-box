@@ -50,6 +50,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { InitialsPipe } from '@shared/ui/initials';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -96,6 +97,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 
     <div class="tb-stack">
       <p-card>
+        <h2 class="tb-sr-only">Список учеников</h2>
         <div class="tb-toolbar">
           <p-iconfield>
             <p-inputicon styleClass="pi pi-search" />
@@ -210,6 +212,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                       [rounded]="true"
                       pTooltip="Вернуть доступ"
                       [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                      [loading]="busy.is('reactivate-' + student.id)"
                       (onClick)="reactivate(student)"
                     />
                   } @else {
@@ -224,6 +227,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                           : 'Новая ссылка-приглашение'
                       "
                       [ariaLabel]="'Ссылка: ' + student.displayName"
+                      [loading]="busy.is('invite-' + student.id)"
                       (onClick)="reissueInvite(student)"
                     />
                     <p-button
@@ -296,6 +300,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class StudentsPage implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -439,13 +444,15 @@ export class StudentsPage implements OnInit {
   }
 
   protected reissueInvite(student: Student): void {
-    this.api.reissueInvite(student.id).subscribe((invite) => {
-      this.replace({
-        ...student,
-        pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt },
+    this.busy
+      .guard('invite-' + student.id, this.api.reissueInvite(student.id))
+      .subscribe((invite) => {
+        this.replace({
+          ...student,
+          pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt },
+        });
+        this.showInvite(student, invite);
       });
-      this.showInvite(student, invite);
-    });
   }
 
   protected confirmDeactivate(student: Student): void {
@@ -465,9 +472,11 @@ export class StudentsPage implements OnInit {
   }
 
   protected reactivate(student: Student): void {
-    this.api.reactivate(student.id).subscribe((saved) => {
-      this.replace(saved);
-    });
+    this.busy
+      .guard('reactivate-' + student.id, this.api.reactivate(student.id))
+      .subscribe((saved) => {
+        this.replace(saved);
+      });
   }
 
   private showInvite(student: Student, invite: IssuedInvite): void {

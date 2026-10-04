@@ -28,6 +28,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
   SCHEDULED: 'по расписанию',
@@ -131,6 +132,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                       [rounded]="true"
                       severity="secondary"
                       [ariaLabel]="'Скачать ' + backup.name"
+                      [loading]="busy.is('download-' + backup.name)"
                       (onClick)="download(backup)"
                     />
                     <p-button
@@ -161,6 +163,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
   `,
 })
 export class BackupsCard implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(BackupsApi);
   private readonly fileSaver = inject(FileSaver);
   private readonly confirmation = inject(ConfirmationService);
@@ -210,7 +213,7 @@ export class BackupsCard implements OnInit {
   }
 
   download(backup: BackupInfo): void {
-    this.api.download(backup.name).subscribe((blob) => {
+    this.busy.guard('download-' + backup.name, this.api.download(backup.name)).subscribe((blob) => {
       this.fileSaver.save(blob, backup.name);
     });
   }

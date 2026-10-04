@@ -92,7 +92,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
-              <div>
+              <div class="tb-form-actions">
                 <p-button
                   severity="success"
                   label="Отправить на проверку"

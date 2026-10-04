@@ -33,6 +33,7 @@ import { MeetingPreferences } from '../telemost';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -100,7 +101,13 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
             <p-tag value="Яндекс подключён" severity="success" />
             <span class="tb-muted">с {{ status.connectedAt | date: 'dd.MM.yyyy HH:mm' }}</span>
           </div>
-          <p-button label="Отключить" severity="danger" [text]="true" (onClick)="disconnect()" />
+          <p-button
+            label="Отключить"
+            severity="danger"
+            [text]="true"
+            [loading]="busy.is('disconnect')"
+            (onClick)="disconnect()"
+          />
         } @else {
           @if (status.status === 'NEEDS_RECONNECT') {
             <p-message severity="warn" styleClass="tb-form-message">
@@ -255,6 +262,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
   `,
 })
 export class MeetingsSettingsPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(MeetingsApi);
   private readonly navigation = inject(ExternalNavigation);
   private readonly portal = inject(Portal);
@@ -325,7 +333,7 @@ export class MeetingsSettingsPanel implements OnInit {
   }
 
   disconnect(): void {
-    this.api.disconnect().subscribe(() => {
+    this.busy.guard('disconnect', this.api.disconnect()).subscribe(() => {
       this.resultCode.set(null);
       this.load();
     });

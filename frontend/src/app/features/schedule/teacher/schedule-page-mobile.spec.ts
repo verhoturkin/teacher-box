@@ -52,7 +52,7 @@ describe('SchedulePage on a phone', () => {
       Array.from(host.querySelectorAll('.tb-page-header .tb-actions button')).map((b) =>
         b.textContent.trim(),
       ),
-    ).toEqual(['Регулярные занятия', 'Нерабочее время', 'Занятие']);
+    ).toEqual(['Занятие']);
 
     // The main action is the same button: on a phone it is the extended FAB (ADR-0018)
     requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();

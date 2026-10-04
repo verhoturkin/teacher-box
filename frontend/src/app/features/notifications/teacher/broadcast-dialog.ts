@@ -19,6 +19,7 @@ import { describeError } from '@core/http/error-messages';
 import { GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A student the teacher can write to. */
 export interface Recipient {
@@ -39,6 +40,7 @@ export interface Recipient {
     MultiSelect,
     Textarea,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -49,7 +51,13 @@ export interface Recipient {
       [style]="{ width: '36rem' }"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="send()">
+      <form
+        tbFieldErrors
+        id="broadcast-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="send()"
+      >
         <div class="tb-field">
           <label for="broadcast-students">Кому</label>
           <p-multiselect
@@ -95,7 +103,8 @@ export interface Recipient {
           label="Отправить"
           icon="pi pi-send"
           [loading]="pending()"
-          (onClick)="send()"
+          type="submit"
+          tbSubmitFor="broadcast-form"
         />
       </ng-template>
     </p-dialog>

@@ -27,6 +27,7 @@ import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A student that can receive homework. */
 export interface StudentOption {
@@ -52,6 +53,7 @@ export interface StudentOption {
     ToBoardDialog,
     MarkdownView,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -62,7 +64,13 @@ export interface StudentOption {
       [style]="{ width: '44rem' }"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="assignment-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="save()"
+      >
         <div class="tb-field">
           <label for="assignment-title">Название</label>
           <input pInputText id="assignment-title" formControlName="title" autocomplete="off" />
@@ -164,7 +172,8 @@ export interface StudentOption {
           severity="success"
           [label]="assignment() === null ? 'Выдать' : 'Сохранить'"
           [loading]="pending()"
-          (onClick)="save()"
+          type="submit"
+          tbSubmitFor="assignment-form"
         />
       </ng-template>
     </p-dialog>

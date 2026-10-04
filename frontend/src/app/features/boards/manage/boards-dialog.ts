@@ -108,16 +108,16 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
-        <div class="tb-actions">
+        <div class="tb-form-actions">
+          @if (editing() !== null) {
+            <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
+          }
           <p-button
             severity="success"
             type="submit"
             [label]="editing() === null ? 'Добавить доску' : 'Сохранить'"
             [loading]="pending()"
           />
-          @if (editing() !== null) {
-            <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
-          }
         </div>
       </form>
     </p-dialog>

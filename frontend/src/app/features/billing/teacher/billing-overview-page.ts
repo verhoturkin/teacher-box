@@ -108,6 +108,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </div>
 
         <p-card>
+          <h2 class="tb-sr-only">Балансы учеников</h2>
           <div class="tb-toolbar">
             <label class="tb-switch" for="only-debtors">
               <p-toggleswitch inputId="only-debtors" [formControl]="onlyDebtors" />

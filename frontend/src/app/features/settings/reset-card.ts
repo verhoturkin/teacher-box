@@ -13,6 +13,7 @@ import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 import { Snackbar } from '@core/snackbar/snackbar';
 
 /** The word the teacher types to confirm the reset. */
@@ -32,6 +33,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
     Password,
     PasswordToggle,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -71,7 +73,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
         Все ученики, занятия, оплаты и задания будут удалены. Копия перед сбросом останется в
         «Резервных копиях».
       </p>
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
+      <form tbFieldErrors id="reset-form" class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
         <div class="tb-field">
           <label for="reset-password">Ваш пароль</label>
           <p-password
@@ -93,22 +95,23 @@ export const RESET_WORD = 'СБРОСИТЬ';
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
-        <div class="tb-actions">
-          <p-button
-            label="Отмена"
-            severity="secondary"
-            [text]="true"
-            (onClick)="visible.set(false)"
-          />
-          <p-button
-            type="submit"
-            label="Сбросить"
-            severity="danger"
-            [disabled]="!confirmed()"
-            [loading]="pending()"
-          />
-        </div>
       </form>
+      <ng-template #footer>
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          type="submit"
+          tbSubmitFor="reset-form"
+          label="Сбросить"
+          severity="danger"
+          [disabled]="!confirmed()"
+          [loading]="pending()"
+        />
+      </ng-template>
     </p-dialog>
   `,
 })
