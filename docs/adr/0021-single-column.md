@@ -2,6 +2,7 @@
 
 - Статус: принято, уточнено [ADR-0022](0022-expressive-fields-menus-sheets.md) (кнопки занятия
   на телефоне)
+- Действующие правила: [docs/design-system.md](../design-system.md) — сводка решений; при расхождении верна она
 - Дата: 2026-09-29
 - Уточняет: [ADR-0015](0015-design-system-and-mobile.md) (раскладка), [ADR-0018](0018-component-rules.md)
   (заголовок страницы, широкие списки), [ADR-0020](0020-lists-in-cards.md) (строки списков)

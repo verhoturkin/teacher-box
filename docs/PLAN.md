@@ -1,26 +1,38 @@
 # Teacher Box plan
 
-Active plan only. Written in English. Completed releases live in
-[`plan-archive/`](plan-archive/README.md) — do not read it unless the task needs history.
+Active plan only, in English. Completed releases — [`archive/plans/`](archive/plans/README.md); don't read them
+unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section: goals (2–5 lines), new/changed ADRs, then stages.
-- Stages are numbered globally, continuing from the archive (last: **83**). Substeps: `84.1`, `84.2`, …
+- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5 lines),
+  new/changed ADRs, then stages.
+- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, …
   Tags: **B** backend, **F** frontend, **D** docker/infra.
 - Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
 - Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next release).
-- **Archiving:** in the release commit (last stage: help, E2E, `CHANGELOG.md`, version), move the whole
-  release section to `plan-archive/v<version>.md`, add a row to `plan-archive/README.md`, and move
-  unfinished items to Backlog. This file keeps only unreleased work and the Backlog.
+- **Archiving** (skill `release`): in the release commit move the whole section to
+  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
+  keeps only unreleased work and the Backlog.
 
-## Current release
+## Next release
 
-_None planned. Add the next release here (start at stage 84)._
+### Stage 84. Documentation for agents
+
+Goal: less context per task and one current source per topic. No product changes.
+
+- [x] 84.1 Nested `backend/AGENTS.md` and `frontend/AGENTS.md` (+ `CLAUDE.md` → `@AGENTS.md`); root `AGENTS.md`
+      keeps the core and a "what to read" map.
+- [x] 84.2 `docs/adr/README.md` — ADR index with status; design ADRs point to the spec.
+- [x] 84.3 `docs/design-system.md` — current UI rules consolidated from ADR-0015, 0017–0027 and checked
+      against the code.
+- [x] 84.4 `docs/modules/*.md` — one page per module (rules, contract, data, REST, frontend).
+- [x] 84.5 Skills `release`, `new-module`, `new-setting` in `.claude/skills/`.
+- [x] 84.6 `docs/archive/` — completed plans and the 2026-09-29 design audit.
 
 ## Backlog
 
-Carried over from 1.6.13 (design audit 2026-09-29, `docs/audit/`):
+Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):
 - Shared `tb-steps` and `tb-copy-field` components.
 - `cssLayer` instead of `::ng-deep` / `!important`.
 - CI check for unused design tokens.
