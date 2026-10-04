@@ -87,17 +87,11 @@ test('sections lie on the page and the phone navigation has five even sections',
   const phone = await (await browser.newContext({ baseURL: BASE_URL, viewport: PHONE })).newPage();
   await signIn(phone, 'teacher', TEACHER_PASSWORD);
   const nav = phone.locator('nav.tb-bottom-nav');
-  await expect(nav.getByRole('link')).toHaveText([
-    'Главная',
-    'Расписание',
-    'Ученики',
-    'Задания',
-    'Оплаты',
-  ]);
+  await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Ученики', 'Задания']);
   const widths = await nav
     .locator('.tb-bottom-nav__item')
     .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().width)));
-  expect(widths).toHaveLength(6);
+  expect(widths).toHaveLength(5);
   expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
   await phone.context().close();
 });
@@ -117,7 +111,7 @@ test('a student signs up and a payment is recorded without a method', async ({ p
   await student.context().close();
 
   await page.goto('/teacher/billing');
-  await page.getByRole('button', { name: `Оплата: ${STUDENT}` }).click();
+  await page.getByRole('button', { name: `Записать оплату: ${STUDENT}` }).click();
   const dialog = page.getByRole('dialog', { name: 'Оплата' });
   await expect(dialog).not.toContainText('Способ');
   await page.locator('#payment-amount').pressSequentially('2000');
@@ -133,7 +127,8 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   const card = page.getByRole('dialog', { name: 'Занятие' });
 
   await event.click();
-  await card.getByRole('button', { name: 'Отменить', exact: true }).click();
+  await card.getByRole('button', { name: 'Другие действия' }).click();
+  await page.getByRole('menuitem', { name: 'Отменить занятие…' }).click();
   await card.getByRole('button', { name: 'Отменить занятие' }).click();
   await expect(card).toBeHidden();
 
@@ -144,7 +139,8 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
 
   await event.click();
   await expect(card).toContainText('Запланировано');
-  await card.getByRole('button', { name: /Удалить$/ }).click();
+  await card.getByRole('button', { name: 'Другие действия' }).click();
+  await page.getByRole('menuitem', { name: 'Удалить…' }).click();
   await card.getByRole('button', { name: 'Удалить занятие' }).click();
   await expect(card).toBeHidden();
   await expect(event).toHaveCount(0);

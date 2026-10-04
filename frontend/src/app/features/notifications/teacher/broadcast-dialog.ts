@@ -19,6 +19,7 @@ import { describeError } from '@core/http/error-messages';
 import { GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A student the teacher can write to. */
 export interface Recipient {
@@ -39,6 +40,7 @@ export interface Recipient {
     MultiSelect,
     Textarea,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -46,10 +48,16 @@ export interface Recipient {
       header="Сообщение ученикам"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '36rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="send()">
+      <form
+        tbFieldErrors
+        id="broadcast-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="send()"
+      >
         <div class="tb-field">
           <label for="broadcast-students">Кому</label>
           <p-multiselect
@@ -84,13 +92,19 @@ export interface Recipient {
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
         <p-button
           severity="success"
           label="Отправить"
           icon="pi pi-send"
           [loading]="pending()"
-          (onClick)="send()"
+          type="submit"
+          tbSubmitFor="broadcast-form"
         />
       </ng-template>
     </p-dialog>

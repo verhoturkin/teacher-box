@@ -17,6 +17,7 @@ import {
 } from '@testing/schedule-fixtures';
 import { OffTime, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
+import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog } from './lesson-dialog';
 import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
@@ -177,8 +178,13 @@ describe('SchedulePage', () => {
     expect(text).toContain('Группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
     await fixture.whenStable();
+    expect(bodyText()).toContain('Кто был на занятии');
     expect(bodyText()).toContain('Мария');
-    expect(bodyText()).toContain('Отметить посещаемость');
+    // the attendance opens at once, not through the details of the lesson (ADR-0026)
+    const details = fixture.debugElement
+      .query(By.directive(LessonDetailsDialog))
+      .injector.get(LessonDetailsDialog);
+    expect(details.visible()).toBe(false);
   });
 
   it('shows busy times from the teacher’s Google Calendar', async () => {
@@ -229,7 +235,7 @@ describe('SchedulePage', () => {
       .query(By.directive(OffTimeDialog))
       .injector.get(OffTimeDialog);
 
-    buttonByText(hostElement(fixture), 'Нерабочее время').click();
+    buttonByText(hostElement(fixture), 'Добавить нерабочее время').click();
     await fixture.whenStable();
     expect(dialog.visible()).toBe(true);
     expect(dialog.offTime()).toBeNull();
@@ -381,12 +387,29 @@ describe('SchedulePage', () => {
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome');
     expect(request.request.body).toEqual({ outcome: 'CONDUCTED' });
     request.flush(scheduledLesson({ status: 'CONDUCTED' }));
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Занятие отмечено' }),
+    );
     await flushReload([scheduledLesson({ id: 'l-9' })]);
 
     buttonByText(hostElement(fixture), 'Пропуск: Иван Петров').click();
     expect(backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome').request.body).toEqual({
       outcome: 'MISSED',
     });
+  });
+
+  it('tells that a lesson was saved: the new lesson may be out of the screen', async () => {
+    await render();
+
+    fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog)
+      .saved.emit(scheduledLesson());
+    await flushReload([]);
+
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Занятие сохранено' }),
+    );
   });
 
   it('opens a request for an answer', async () => {
@@ -400,11 +423,11 @@ describe('SchedulePage', () => {
 
   it('plans, changes and stops regular lessons', async () => {
     await render();
-    buttonByText(hostElement(fixture), 'Регулярные занятия').click();
+    buttonByText(hostElement(fixture), 'Добавить регулярные занятия').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Дни недели');
 
-    buttonByText(hostElement(fixture), 'Изменить расписание: Иван Петров').click();
+    buttonByText(hostElement(fixture), 'Изменить регулярные занятия: Иван Петров').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Изменить регулярные занятия');
 
@@ -414,7 +437,7 @@ describe('SchedulePage', () => {
     );
     await flushReload();
 
-    buttonByText(hostElement(fixture), 'Завершить расписание: Иван Петров').click();
+    buttonByText(hostElement(fixture), 'Завершить регулярные занятия: Иван Петров').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Завершить').click();
     const stop = backend.expectOne('/api/teacher/schedule/series/sr-1/stop');

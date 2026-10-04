@@ -175,7 +175,9 @@ describe('StudentsPage', () => {
     await loadStudents([]);
     expect(host.textContent).toContain('Учеников пока нет');
 
-    requireElement(host, 'tb-empty-state button', HTMLButtonElement).click();
+    // the first action is the FAB of the page, not a second button in the empty state (ADR-0018)
+    expect(host.querySelector('tb-empty-state button')).toBeNull();
+    requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Новый ученик');
   });
@@ -201,7 +203,7 @@ describe('StudentsPage', () => {
   it('edits a student', async () => {
     await loadStudents([MARIA]);
 
-    buttonByText(host, 'Редактировать: Мария').click();
+    buttonByText(host, 'Изменить: Мария').click();
     await fixture.whenStable();
     typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Мария Иванова');
     await fixture.whenStable();
@@ -217,7 +219,7 @@ describe('StudentsPage', () => {
   it('issues a new link', async () => {
     await loadStudents([MARIA]);
 
-    buttonByText(host, 'Ссылка: Мария').click();
+    buttonByText(host, 'Ссылка для сброса пароля: Мария').click();
     backend.expectOne('/api/teacher/students/m/invite').flush({
       token: 'reset-token',
       purpose: 'PASSWORD_RESET',

@@ -62,7 +62,7 @@ test('the teacher notifications are cards: the inbox and the messages open, the 
   await expect(page.locator('#notifications-students')).toContainText('Подключили мессенджер');
 });
 
-test('confirming buttons are green, cancelling red, and the dialog is white like a card', async ({
+test('confirming buttons are green, cancelling neutral, and the dialog is white like a card', async ({
   page,
 }) => {
   await signIn(page);
@@ -73,7 +73,7 @@ test('confirming buttons are green, cancelling red, and the dialog is white like
 
   await expect(dialog.getByRole('button', { name: 'Сохранить' })).toHaveClass(/p-button-success/);
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
-  await expect(cancel).toHaveClass(/p-button-danger/);
+  await expect(cancel).toHaveClass(/p-button-secondary/);
   await expect(cancel).toHaveClass(/p-button-text/);
   expect(await style(page, '.p-dialog', 'background-color')).toBe(
     await style(page, 'main .p-card', 'background-color'),
@@ -132,7 +132,9 @@ test('a weekly schedule ends with a bin, red like deleting off time', async ({ p
 
   await signIn(page);
   await page.goto('/teacher/schedule');
-  const end = page.getByRole('button', { name: 'Завершить расписание: Ученик серии 1.6.6' });
+  const end = page.getByRole('button', {
+    name: 'Завершить регулярные занятия: Ученик серии 1.6.6',
+  });
   await expect(end).toBeVisible();
   await expect(end).toHaveClass(/p-button-danger/);
   await expect(end.locator('.pi-trash')).toHaveCount(1);

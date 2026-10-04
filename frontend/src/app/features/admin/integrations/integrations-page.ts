@@ -16,11 +16,13 @@ import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { CountPipe } from '@shared/text/plural';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
   selector: 'tb-integrations-page',
   imports: [
+    CountPipe,
     DatePipe,
     DecimalPipe,
     Button,
@@ -40,20 +42,25 @@ import { LoadStateView } from '@shared/ui/load-state-view';
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
-      <p-card header="Проверка связи">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Проверка связи</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Проверить"
+                severity="secondary"
+                icon="pi pi-refresh"
+                [loading]="checking()"
+                (onClick)="check()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <p class="tb-muted">
           Портал обращается к каждому сервису так же, как при работе (через настроенный прокси). ИИ
           проверяется без расхода токенов.
         </p>
-        <div class="tb-actions">
-          <p-button
-            label="Проверить"
-            severity="secondary"
-            icon="pi pi-refresh"
-            [loading]="checking()"
-            (onClick)="check()"
-          />
-        </div>
         @if (error(); as message) {
           <p-message severity="error">{{ message }}</p-message>
         }
@@ -65,7 +72,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 <p-tag [value]="tags[check.state].label" [severity]="tags[check.state].severity" />
                 <span class="tb-checks__detail">{{ check.detail }}</span>
                 @if (check.state !== 'NOT_CONFIGURED') {
-                  <small class="tb-muted">{{ check.millis }} мс</small>
+                  <small class="tb-muted">{{ check.millis }}&nbsp;мс</small>
                 }
               </li>
             }
@@ -79,7 +86,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
             @if (ai.enabled) {
               <p>
                 {{ ai.provider }} · {{ ai.model }} · в этом месяце
-                {{ ai.usedThisMonth | number }} токенов
+                {{ ai.usedThisMonth | count: 'токен' : 'токена' : 'токенов' }}
                 @if (ai.monthlyTokenLimit > 0) {
                   из {{ ai.monthlyTokenLimit | number }}
                 }
@@ -90,15 +97,15 @@ import { LoadStateView } from '@shared/ui/load-state-view';
           }
           @if (usage(); as usage) {
             @if (usage.recent.length === 0) {
-              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было." />
+              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было" />
             } @else {
-              <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
+              <p-table [value]="usage.recent" styleClass="tb-cards">
                 <ng-template #header>
                   <tr>
                     <th>Когда</th>
                     <th>Что</th>
                     <th>Итог</th>
-                    <th>Токены</th>
+                    <th class="tb-num">Токены</th>
                     <th>Время</th>
                   </tr>
                 </ng-template>
@@ -107,12 +114,15 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                     <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
                     <td data-label="Что">{{ request.feature }}</td>
                     <td data-label="Итог">
-                      {{ request.status }}
+                      <p-tag
+                        [value]="requestStatus(request.status).label"
+                        [severity]="requestStatus(request.status).severity"
+                      />
                       @if (request.error !== null) {
                         <small class="tb-negative">{{ request.error }}</small>
                       }
                     </td>
-                    <td data-label="Токены">
+                    <td data-label="Токены" class="tb-num">
                       {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
                     </td>
                     <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
@@ -166,6 +176,23 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   `,
 })
 export class IntegrationsPage implements OnInit {
+  /** The result of a request to the AI as a tag, not the raw name of the status. */
+  protected requestStatus(status: string): {
+    label: string;
+    severity: 'success' | 'danger' | 'warn' | 'secondary';
+  } {
+    switch (status) {
+      case 'SUCCEEDED':
+        return { label: 'Готово', severity: 'success' };
+      case 'FAILED':
+        return { label: 'Ошибка', severity: 'danger' };
+      case 'REFUSED':
+        return { label: 'Отказ модели', severity: 'warn' };
+      default:
+        return { label: status, severity: 'secondary' };
+    }
+  }
+
   private readonly api = inject(AdminApi);
 
   protected readonly tags = INTEGRATION_TAGS;

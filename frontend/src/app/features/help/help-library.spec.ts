@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { ADMIN_ARTICLES } from './articles/admin';
 import { STUDENT_ARTICLES } from './articles/student';
 import { TEACHER_ARTICLES } from './articles/teacher';
-import { HelpLibrary, searchArticles } from './help-library';
+import { HelpLibrary, searchArticles, searchable } from './help-library';
 import { HelpArticleText } from './help.models';
-import { HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';
+import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';
 
 const TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
   teacher: TEACHER_ARTICLES,
@@ -30,6 +30,16 @@ describe('HelpLibrary', () => {
       }
     }
     expect(Object.keys(TEXTS.teacher).sort()).toEqual([...HELP_TOPICS.teacher].sort());
+  });
+
+  it('names the help buttons by the titles of the articles', () => {
+    expect(Object.keys(HELP_TITLES)).toHaveLength(
+      Object.values(HELP_TOPICS).reduce((count, topics) => count + topics.length, 0),
+    );
+    for (const [topic, title] of Object.entries(HELP_TITLES)) {
+      const [area, id] = topic.split('/');
+      expect(isHelpArea(area) ? TEXTS[area][id ?? '']?.title : undefined, topic).toBe(title);
+    }
   });
 
   it('links inside the articles lead to existing articles', () => {
@@ -68,5 +78,22 @@ describe('HelpLibrary', () => {
       'groups',
     );
     expect(searchArticles(articles, 'абракадабра')).toEqual([]);
+  });
+
+  it('does not tell «е» from «ё» and does not search the addresses of the links', async () => {
+    const articles = await library.articles('teacher');
+
+    // the article «Оформление и телефон» has «Тёмная тема» and «цвет»; people write «темная»
+    expect(searchArticles(articles, 'темная тема').map((article) => article.id)).toContain(
+      'appearance',
+    );
+    expect(searchArticles(articles, 'тёмная тема').map((article) => article.id)).toContain(
+      'appearance',
+    );
+    expect(
+      searchable('[Видеовстречи](/teacher/help/meetings) **Ёлка**').split(/\s+/).filter(Boolean),
+    ).toEqual(['видеовстречи', 'елка']);
+    // an address of a link is not text: «help» is in every address and in no word
+    expect(searchArticles(articles, 'teacher/help')).toEqual([]);
   });
 });

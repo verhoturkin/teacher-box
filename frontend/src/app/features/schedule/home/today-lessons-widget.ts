@@ -10,11 +10,14 @@ import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/
 import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
 import { InitialsPipe } from '@shared/ui/initials';
 import { AttendanceDialog } from '../teacher/attendance-dialog';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
   selector: 'tb-today-lessons-widget',
   imports: [
+    EmptyState,
     RouterLink,
     Button,
     Card,
@@ -29,7 +32,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
     <p-card header="Сегодня">
       @let lessons = summary().today;
       @if (lessons.length === 0) {
-        <p class="tb-muted">Сегодня занятий нет.</p>
+        <tb-empty-state [compact]="true" icon="pi-calendar" title="Сегодня занятий нет" />
       } @else {
         <ul class="tb-list tb-today">
           @for (lesson of lessons; track lesson.id) {
@@ -69,6 +72,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                     <p-button
                       label="Отметить"
                       icon="pi pi-users"
+                      severity="success"
                       [text]="true"
                       [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
                       (onClick)="openAttendance(lesson)"
@@ -110,7 +114,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="attendanceLesson()"
-      (saved)="changed.emit()"
+      (saved)="done('Посещаемость сохранена')"
     />
   `,
   styles: `
@@ -125,6 +129,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
   `,
 })
 export class TodayLessonsWidget {
+  private readonly snackbar = inject(Snackbar);
   private readonly api = inject(ScheduleApi);
 
   readonly summary = input.required<ScheduleSummary>();
@@ -147,6 +152,11 @@ export class TodayLessonsWidget {
     return new Date(lesson.startsAt).getTime() <= this.now().getTime();
   }
 
+  protected done(message: string): void {
+    this.snackbar.success(message);
+    this.changed.emit();
+  }
+
   openAttendance(lesson: ScheduledLesson): void {
     this.attendanceLesson.set(lesson);
     this.attendanceVisible.set(true);
@@ -157,7 +167,7 @@ export class TodayLessonsWidget {
     this.api.setOutcome(lesson.id, outcome).subscribe({
       next: () => {
         this.pending.set(null);
-        this.changed.emit();
+        this.done('Занятие отмечено');
       },
       error: () => {
         this.pending.set(null);

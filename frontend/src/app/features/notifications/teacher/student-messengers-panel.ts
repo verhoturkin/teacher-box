@@ -18,11 +18,12 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
   selector: 'tb-student-messengers-panel',
-  imports: [EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
+  imports: [InitialsPipe, EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Мессенджеры учеников">
@@ -41,7 +42,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
                 "
                 icon="pi pi-bell"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 [disabled]="notConnected().length === 0"
                 [loading]="pending()"
                 (onClick)="remind()"
@@ -52,12 +54,12 @@ import { Snackbar } from '@core/snackbar/snackbar';
               dataKey="studentId"
               [selection]="selection()"
               (selectionChange)="onSelection($event)"
-              styleClass="tb-cards p-datatable-sm"
+              styleClass="tb-cards"
             >
               <ng-template #header>
                 <tr>
                   <th class="tb-check-column"><p-tableHeaderCheckbox /></th>
-                  <th>Ученик</th>
+                  <th class="tb-col-main">Ученик</th>
                   <th>Мессенджеры</th>
                   <th>Доставка</th>
                 </tr>
@@ -65,7 +67,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <ng-template #body let-row [tbRowType]="students">
                 <tr>
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
-                  <td data-label="Ученик">{{ row.displayName }}</td>
+                  <td data-label="Ученик">
+                    <div class="tb-person">
+                      <span class="tb-avatar" aria-hidden="true">{{
+                        row.displayName | initials
+                      }}</span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ row.displayName }}</span>
+                      </div>
+                    </div>
+                  </td>
                   <td data-label="Мессенджеры">
                     @if (row.channels.length === 0) {
                       <span class="tb-muted">не подключены</span>

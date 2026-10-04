@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { MenuItem } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { Tooltip } from 'primeng/tooltip';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost';
 
@@ -12,7 +14,7 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
  */
 @Component({
   selector: 'tb-join-lesson-button',
-  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Menu],
+  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Menu, Tooltip, ButtonAttributes],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (inApp()) {
@@ -33,7 +35,12 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
           styleClass="tb-split__more"
           icon="pi pi-chevron-down"
           [severity]="tonal() ? 'secondary' : 'primary'"
+          pTooltip="Другие способы открыть встречу"
           ariaLabel="Другие способы открыть встречу"
+          [tbAttributes]="{
+            'aria-haspopup': 'menu',
+            'aria-expanded': menuOpen() ? 'true' : 'false',
+          }"
           (onClick)="menu.toggle($event)"
         />
         <p-menu

@@ -28,6 +28,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 const KINDS: Readonly<Record<BackupKind, string>> = {
   SCHEDULED: 'по расписанию',
@@ -68,7 +69,8 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
           <div class="tb-card-title__actions">
             <p-button
               label="Создать копию сейчас"
-              severity="secondary"
+              class="tb-tonal"
+              severity="success"
               icon="pi pi-database"
               [loading]="creating()"
               (onClick)="create()"
@@ -87,7 +89,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
         @if (backups().length === 0) {
           <tb-empty-state icon="pi-database" title="Копий пока нет" />
         } @else {
-          <p-table [value]="backups()" styleClass="tb-cards p-datatable-sm">
+          <p-table [value]="backups()" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Создана</th>
@@ -130,6 +132,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                       [rounded]="true"
                       severity="secondary"
                       [ariaLabel]="'Скачать ' + backup.name"
+                      [loading]="busy.is('download-' + backup.name)"
                       (onClick)="download(backup)"
                     />
                     <p-button
@@ -160,6 +163,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
   `,
 })
 export class BackupsCard implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(BackupsApi);
   private readonly fileSaver = inject(FileSaver);
   private readonly confirmation = inject(ConfirmationService);
@@ -209,7 +213,7 @@ export class BackupsCard implements OnInit {
   }
 
   download(backup: BackupInfo): void {
-    this.api.download(backup.name).subscribe((blob) => {
+    this.busy.guard('download-' + backup.name, this.api.download(backup.name)).subscribe((blob) => {
       this.fileSaver.save(blob, backup.name);
     });
   }
@@ -220,7 +224,6 @@ export class BackupsCard implements OnInit {
         header: 'Удалить копию?',
         message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.delete(backup.name).subscribe(() => {
             this.reload();

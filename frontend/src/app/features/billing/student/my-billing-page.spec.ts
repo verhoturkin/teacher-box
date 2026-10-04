@@ -24,7 +24,7 @@ describe('MyBillingPage', () => {
 
     expect(text).toContain('долг 1 500 ₽');
     expect(text).toContain('Столько нужно оплатить');
-    expect(text).toContain('Стоимость занятия 1 500 ₽');
+    expect(text).toContain('Цена занятия 1 500 ₽');
     expect(text).not.toContain('Отменить занятие');
   });
 

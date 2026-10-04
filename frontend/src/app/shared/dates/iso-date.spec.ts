@@ -1,4 +1,4 @@
-import { fromIsoDate, fromIsoMonth, toIsoDate, toIsoMonth } from './iso-date';
+import { fromIsoDate, fromIsoMonth, toIsoDate, toIsoMonth, monthLabel } from './iso-date';
 
 describe('iso dates', () => {
   it('formats local dates without time zone shifts', () => {
@@ -15,5 +15,11 @@ describe('iso dates', () => {
   it('defaults missing month and day to the first', () => {
     expect(toIsoDate(fromIsoDate('2026-9'))).toBe('2026-09-01');
     expect(toIsoDate(fromIsoDate('2026'))).toBe('2026-01-01');
+  });
+
+  it('names a month in words', () => {
+    expect(monthLabel('2026-09')).toBe('сентябрь 2026 г.');
+    expect(monthLabel('2026-01')).toContain('январь');
+    expect(monthLabel('bad')).toBe('bad');
   });
 });

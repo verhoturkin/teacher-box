@@ -28,6 +28,7 @@ import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { LessonStudent, MEETING_URL_PATTERN } from './lesson-dialog';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 export const INTERVAL_OPTIONS = [
   { label: 'Каждую неделю', value: 1 },
@@ -53,6 +54,7 @@ export const INTERVAL_OPTIONS = [
     Select,
     SelectButton,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -60,10 +62,10 @@ export const INTERVAL_OPTIONS = [
       [header]="series() === null ? 'Регулярные занятия' : 'Изменить регулярные занятия'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="series-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="series-student">С кем</label>
           <p-select
@@ -191,8 +193,19 @@ export const INTERVAL_OPTIONS = [
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="series-form"
+        />
       </ng-template>
     </p-dialog>
   `,

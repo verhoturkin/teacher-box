@@ -26,6 +26,7 @@ import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/sc
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { fromTime, toTime } from './series-dialog';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 const KIND_OPTIONS: readonly { label: string; value: OffTimeKind }[] = [
   { label: 'Один раз', value: 'ONCE' },
@@ -51,6 +52,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
     Message,
     SelectButton,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -58,10 +60,10 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
       [header]="offTime() === null ? 'Нерабочее время' : 'Изменить нерабочее время'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="off-time-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <p class="tb-hint">
           Ученики увидят это время занятым и не смогут попросить перенести занятие на него.
         </p>
@@ -196,8 +198,19 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="off-time-form"
+        />
       </ng-template>
     </p-dialog>
   `,

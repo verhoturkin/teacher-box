@@ -29,6 +29,7 @@ import {
 import { TimeZoneOption, timeZoneOptions } from './time-zones';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { SubmitFor } from '@shared/ui/submit-for';
 import { PageHeader } from '@shared/ui/page-header';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
@@ -77,6 +78,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
     InputText,
     Message,
     Select,
+    SubmitFor,
     Tag,
     PageHeader,
     LoadStateView,
@@ -169,6 +171,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
                   @if (setting.source === 'ADMIN' && setting.access === 'EDITABLE') {
                     <p-button
                       label="Вернуть как в .env"
+                      severity="danger"
                       [text]="true"
                       (onClick)="revert(setting)"
                     />
@@ -186,12 +189,12 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
       [(visible)]="confirmVisible"
       [modal]="true"
       [closable]="stage() !== 'restarting'"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
     >
       @switch (stage()) {
         @case ('confirm') {
-          <div class="tb-form">
+          <form id="settings-confirm" class="tb-form" (ngSubmit)="save()">
             <p>
               Изменится настроек: {{ changes() }}. После сохранения портал перезапустится — на
               минуту он будет недоступен всем.
@@ -202,6 +205,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
                 pInputText
                 id="settings-password"
                 type="password"
+                name="password"
                 autocomplete="current-password"
                 [(ngModel)]="password"
               />
@@ -209,7 +213,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
             @if (error(); as message) {
               <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
             }
-          </div>
+          </form>
         }
         @case ('restarting') {
           <p>Портал перезапускается, чтобы применить настройки…</p>
@@ -235,7 +239,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
         @if (stage() === 'confirm') {
           <p-button
             label="Отмена"
-            severity="danger"
+            severity="secondary"
             [text]="true"
             (onClick)="confirmVisible.set(false)"
           />
@@ -244,7 +248,8 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
             label="Сохранить"
             [loading]="pending()"
             [disabled]="password().trim() === ''"
-            (onClick)="save()"
+            type="submit"
+            tbSubmitFor="settings-confirm"
           />
         } @else if (stage() !== 'restarting') {
           <p-button label="Готово" (onClick)="confirmVisible.set(false)" />

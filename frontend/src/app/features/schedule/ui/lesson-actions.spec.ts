@@ -13,6 +13,7 @@ describe('LessonActions', () => {
     group?: boolean;
     requests?: boolean;
     stacked?: boolean;
+    inRow?: boolean;
   }): Promise<HTMLElement> {
     TestBed.configureTestingModule({ imports: [LessonActions], providers: testProviders() });
     fixture = TestBed.createComponent(LessonActions);
@@ -38,6 +39,21 @@ describe('LessonActions', () => {
     buttonByText(host, 'Отменить').click();
     expect(asked).toEqual(['RESCHEDULE', 'CANCEL']);
     expect(host.querySelector('p-button.tb-button-steady')).not.toBeNull();
+  });
+
+  it('has the filled meeting button in the hero and the sheet, a tonal one in a row of a list', async () => {
+    const hero = await render({ joinUrl: 'https://telemost.yandex.ru/j/1' });
+    expect(requireElement(hero, 'a.p-button', HTMLAnchorElement).className).not.toContain(
+      'p-button-secondary',
+    );
+    fixture.destroy();
+    TestBed.resetTestingModule();
+
+    const row = await render({ joinUrl: 'https://telemost.yandex.ru/j/1', inRow: true });
+    expect(requireElement(row, 'a.p-button', HTMLAnchorElement).className).toContain(
+      'p-button-secondary',
+    );
+    expect(buttonByText(row, 'Перенести').className).toContain('p-button-text');
   });
 
   it('says «Не приду» for a group lesson and hides the requests when they are not allowed', async () => {

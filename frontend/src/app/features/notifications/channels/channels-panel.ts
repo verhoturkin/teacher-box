@@ -22,6 +22,8 @@ import { ChannelState, ChannelType, LinkCode } from '../data-access/notification
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -29,20 +31,32 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 /** Messengers of the current user: connect with a one-time code, pause, disconnect. */
 @Component({
   selector: 'tb-channels-panel',
-  imports: [DatePipe, FormsModule, Button, Card, Dialog, LinkCodeView, ToggleSwitch, Tooltip],
+  imports: [
+    EmptyState,
+    DatePipe,
+    FormsModule,
+    Button,
+    Card,
+    Dialog,
+    LinkCodeView,
+    ToggleSwitch,
+    Tooltip,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="header()">
       @if (channels(); as channels) {
         @if (channels.length === 0) {
-          <p class="tb-muted">
-            @if (teacher()) {
-              Боты мессенджеров ещё не подключены. Подключите бота выше — и сможете получать
-              уведомления сами и присылать их ученикам.
-            } @else {
-              Уведомления приходят в личный кабинет. Мессенджеры пока не подключены учителем.
-            }
-          </p>
+          <tb-empty-state
+            [compact]="true"
+            icon="pi-comments"
+            [title]="teacher() ? 'Боты мессенджеров не подключены' : 'Мессенджеры не подключены'"
+            [hint]="
+              teacher()
+                ? 'Подключите бота выше — и сможете получать уведомления сами и присылать их ученикам.'
+                : 'Уведомления приходят в личный кабинет; мессенджеры подключает учитель.'
+            "
+          />
         } @else {
           <p class="tb-muted">Уведомления будут дублироваться в подключённые мессенджеры.</p>
           <ul class="tb-list tb-channels">
@@ -83,6 +97,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                       [rounded]="true"
                       severity="danger"
                       [ariaLabel]="'Отключить ' + names[channel.channel]"
+                      [loading]="busy.is('unlink-' + channel.channel)"
                       (onClick)="unlink(channel.channel)"
                     />
                   } @else {
@@ -90,6 +105,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                       label="Подключить"
                       icon="pi pi-link"
                       severity="secondary"
+                      [text]="true"
                       (onClick)="connect(channel.channel)"
                     />
                   }
@@ -107,7 +123,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       (visibleChange)="onLinkVisibleChange($event)"
       [modal]="true"
       appendTo="body"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
     >
       @if (linkCode(); as code) {
@@ -125,6 +141,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
   `,
 })
 export class ChannelsPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;
@@ -180,7 +197,7 @@ export class ChannelsPanel implements OnInit {
   }
 
   unlink(channel: ChannelType): void {
-    this.api.unlink(channel).subscribe(() => {
+    this.busy.guard('unlink-' + channel, this.api.unlink(channel)).subscribe(() => {
       this.snackbar.info(`${CHANNEL_NAMES[channel]} отключён`);
       this.reload();
       this.changed.emit();

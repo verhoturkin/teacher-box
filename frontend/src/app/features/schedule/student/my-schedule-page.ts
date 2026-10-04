@@ -41,6 +41,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -115,8 +116,8 @@ export function nextMonday(date: Date): Date {
                   } @else {
                     <div class="tb-list__trail">
                       <tb-lesson-actions
+                        [inRow]="true"
                         [joinUrl]="joinUrl(lesson)"
-                        joinLabel="Подключиться"
                         [requests]="canAsk(lesson)"
                         [group]="lesson.groupId !== null"
                         (ask)="ask(lesson, $event)"
@@ -127,6 +128,7 @@ export function nextMonday(date: Date): Date {
                           label="Отозвать"
                           [text]="true"
                           [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
+                          [loading]="actions.is('withdraw-' + request.id)"
                           (onClick)="withdraw(request)"
                         />
                       }
@@ -207,7 +209,6 @@ export function nextMonday(date: Date): Date {
         <tb-lesson-actions
           [stacked]="true"
           [joinUrl]="joinUrl(lesson)"
-          joinLabel="Подключиться"
           [requests]="canAsk(lesson)"
           [group]="lesson.groupId !== null"
           rescheduleIcon="pi pi-calendar"
@@ -220,7 +221,8 @@ export function nextMonday(date: Date): Date {
             label="Отозвать запрос"
             icon="pi pi-undo"
             [fluid]="true"
-            (onClick)="closeSheet(); withdraw(request)"
+            [loading]="actions.is('withdraw-' + request.id)"
+            (onClick)="withdraw(request)"
           />
         }
       }
@@ -237,6 +239,7 @@ export function nextMonday(date: Date): Date {
   `,
 })
 export class MySchedulePage implements OnInit {
+  protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
 
@@ -324,7 +327,9 @@ export class MySchedulePage implements OnInit {
   }
 
   withdraw(request: ChangeRequest): void {
-    this.api.withdraw(request.id).subscribe(() => {
+    this.actions.guard('withdraw-' + request.id, this.api.withdraw(request.id)).subscribe(() => {
+      this.closeSheet();
+      this.snackbar.success('Запрос отозван');
       this.reload();
     });
   }

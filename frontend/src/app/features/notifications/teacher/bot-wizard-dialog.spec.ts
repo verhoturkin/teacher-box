@@ -158,7 +158,7 @@ describe('BotWizardDialog', () => {
     expect(text()).toContain('Чтобы уведомления приходили и вам');
     fixture.componentInstance.go(2);
     await settle();
-    expect(text()).toContain('задан в переменных окружения сервера');
+    expect(text()).toContain('задан администратором портала');
 
     fixture.componentInstance.go(3);
     await settle();
@@ -198,7 +198,7 @@ describe('BotWizardDialog', () => {
     fixture.componentInstance.go(3);
     await settle();
     expect(text()).toContain('Ваш аккаунт Telegram уже подключён');
-    buttonByText(document.body, 'Дальше').click();
+    buttonByText(document.body, 'Далее').click();
     await settle();
 
     fixture.componentInstance.sendTest();

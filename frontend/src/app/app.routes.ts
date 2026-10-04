@@ -43,7 +43,7 @@ export const routes: Routes = [
       },
       {
         path: 'homework',
-        title: 'Домашние задания',
+        title: 'Задания',
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
       },
       {
@@ -108,6 +108,11 @@ export const routes: Routes = [
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
+      {
+        path: '**',
+        title: 'Страница не найдена',
+        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+      },
     ],
   },
   {
@@ -117,7 +122,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        title: 'Личный кабинет',
+        title: 'Главная',
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
       },
       {
@@ -127,7 +132,7 @@ export const routes: Routes = [
       },
       {
         path: 'homework',
-        title: 'Домашние задания',
+        title: 'Задания',
         loadComponent: () => import('@features/homework').then((m) => m.MyHomeworkPage),
       },
       {
@@ -162,6 +167,11 @@ export const routes: Routes = [
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
+      {
+        path: '**',
+        title: 'Страница не найдена',
+        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+      },
     ],
   },
   {
@@ -192,7 +202,7 @@ export const routes: Routes = [
       },
       {
         path: 'backups',
-        title: 'Резервные копии',
+        title: 'Копии',
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
@@ -222,11 +232,16 @@ export const routes: Routes = [
         title: 'Мой аккаунт',
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
+      {
+        path: '**',
+        title: 'Страница не найдена',
+        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+      },
     ],
   },
   {
     path: '**',
     title: 'Страница не найдена',
-    loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+    loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFoundPage),
   },
 ];

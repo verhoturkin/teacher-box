@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { switchMap, timer } from 'rxjs';
 import { UnreadNotifications } from './unread-notifications';
 
@@ -11,7 +12,7 @@ export const UNREAD_POLL_INTERVAL_MS = 60_000;
 /** Bell with the number of unread notifications; opens the notifications page. */
 @Component({
   selector: 'tb-notification-bell',
-  imports: [Button],
+  imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-button
@@ -21,6 +22,7 @@ export const UNREAD_POLL_INTERVAL_MS = 60_000;
       severity="secondary"
       [badge]="badge()"
       badgeSeverity="danger"
+      [pTooltip]="label()"
       [ariaLabel]="label()"
       (onClick)="open()"
     />

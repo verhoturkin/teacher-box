@@ -44,6 +44,15 @@
   --tb-type-label-l: 500 0.875rem/1.25rem var(--tb-font);
   --tb-type-label-m: 500 0.75rem/1rem var(--tb-font);
   --tb-type-label-s: 500 0.6875rem/1rem var(--tb-font);
+  /* the tracking of the roles of M3 (the `font` shorthand has none): use it next to `font` */
+  --tb-tracking-body-l: 0.03125rem;
+  --tb-tracking-body-m: 0.015625rem;
+  --tb-tracking-body-s: 0.025rem;
+  --tb-tracking-label-m: 0.03125rem;
+  --tb-tracking-title-m: 0.009375rem;
+  --tb-tracking-label-l: 0.00625rem;
+  --tb-font-mono:
+    ui-monospace, 'Roboto Mono', 'Cascadia Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   /* Shape scale */
   --tb-shape-xs: 4px;
@@ -136,6 +145,43 @@ body {
 body {
   background: var(--p-md-surface-container);
   color: var(--p-text-color);
+  letter-spacing: var(--tb-tracking-body-l);
+}
+
+/* The roles of the type that PrimeNG sets by size and weight only (no line height): ADR-0019 */
+.p-card-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+.p-dialog .p-dialog-title {
+  font: var(--tb-type-headline-s-emphasized);
+}
+
+.p-drawer .p-drawer-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+.p-tooltip .p-tooltip-text {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
+}
+
+.p-menu .p-menu-item-label,
+.p-select-overlay .p-select-option,
+.p-multiselect-overlay .p-multiselect-option {
+  font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
+}
+
+/* The weekdays of the date picker are Body Large, not bold */
+.p-datepicker .p-datepicker-weekday {
+  font: var(--tb-type-body-l);
+}
+
+small,
+.tb-hint {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
 }
 
 :root.tb-dark {
@@ -937,6 +983,11 @@ a.p-menu-item-link:hover {
   gap: var(--tb-space-1);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-l);
+
+  /* the details of a figure: Body Small, not the Label Large the browser would shrink */
+  small {
+    font: var(--tb-type-body-s);
+  }
 }
 
 .tb-stat__value {
@@ -1425,11 +1476,15 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * A cell of a table with columns may break a long word when the columns do not fit otherwise (a
- * tablet): the table does not go out of the screen. Cards, lists and titles break between words.
+ * Cells break between words; only codes and wide cells may break inside a word (ADR-0021).
  */
 .p-datatable .p-datatable-tbody > tr > td,
 .p-datatable .p-datatable-tbody > tr > td :is(.tb-list__title, .tb-list__supporting) {
+  overflow-wrap: break-word;
+}
+
+/* only codes, addresses and wide cells (a path, an error) may break inside a word */
+.p-datatable .p-datatable-tbody > tr > td:is(.tb-cell-wide, .tb-mono) {
   overflow-wrap: anywhere;
 }
 
@@ -1451,7 +1506,9 @@ a.p-menu-item-link:hover {
     background: transparent;
   }
 
+  /* a row is at least 56 px high (ADR-0020) */
   .p-datatable-tbody > tr > td {
+    height: 3.5rem;
     border: 0;
     background: var(--tb-list-item);
     transition: background var(--tb-spring-fast-effects);
@@ -1563,11 +1620,7 @@ a.p-menu-item-link:hover {
         grid-column: 2;
       }
 
-      /* every line is as high as a line with a button; the text button starts where the text does */
-      .p-button-text {
-        height: 2rem;
-      }
-
+      /* the text button starts where the text does; a button is 40 px high everywhere (ADR-0026) */
       p-button:first-child .p-button-text {
         margin-inline-start: calc(-1 * var(--tb-space-3));
         padding-inline: var(--tb-space-3);
@@ -1597,7 +1650,7 @@ a.p-menu-item-link:hover {
 
 /* The week on a phone: the title fits in one line */
 .tb-calendar-title {
-  font-size: 1.125rem;
+  font: var(--tb-type-title-m);
 }
 
 /*
@@ -1719,11 +1772,29 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
- * bottom, fields are full width. Confirmations stay small.
+ * The width of a dialog is a class, not a style of the place (ADR-0026): `tb-dialog` 32 rem,
+ * `tb-dialog--wide` 40 rem; a confirmation is up to 35 rem. A dialog is never nearer than 1 rem to
+ * the edge of the screen.
+ */
+.p-dialog.tb-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+}
+
+.p-dialog.tb-dialog.tb-dialog--wide {
+  width: min(40rem, calc(100vw - 2rem));
+}
+
+.p-dialog.p-confirmdialog {
+  width: min(35rem, calc(100vw - 2rem));
+}
+
+/*
+ * Dialogs with a form on a phone take the whole screen (ADR-0015, ADR-0026): the content scrolls,
+ * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
+ * or none: a password, a link) stay ordinary windows in the middle of the screen.
  */
 @media (width <= 48em) {
-  .p-dialog:not(.p-confirmdialog) {
+  .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
     width: 100vw !important;
     max-width: 100vw;
     height: 100dvh;
@@ -1756,6 +1827,14 @@ a.p-menu-item-link:hover {
     .p-inputnumber,
     .p-multiselect,
     .p-autocomplete {
+      width: 100%;
+    }
+  }
+
+  .p-dialog.tb-dialog--short {
+    .tb-field > *,
+    .p-password,
+    .p-inputtext {
       width: 100%;
     }
   }
@@ -1822,17 +1901,31 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
- * other; stacked (a phone) the meeting takes the whole width and the requests are an M3 Expressive
- * connected button group under it: two halves 2 px apart, the inner corners small (ADR-0022).
+ * An M3 Expressive connected button group (ADR-0022): the buttons 2 px apart, the inner corners small,
+ * the outer ones round; pressed, a button squares as usual.
  */
 .tb-button-group {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--tb-space-1);
+  gap: 2px;
+
+  > p-button:not(:last-child) .p-button:not(:active) {
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  > p-button:not(:first-child) .p-button:not(:active) {
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
 }
 
+/*
+ * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a connected button
+ * group under it, two halves of the width.
+ */
 .tb-lesson-actions--stacked {
   flex-direction: column;
   gap: var(--tb-space-2);
@@ -1845,8 +1938,6 @@ a.p-menu-item-link:hover {
 
   .tb-button-group {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 2px;
 
     > p-button {
       flex: 1;
@@ -1854,16 +1945,6 @@ a.p-menu-item-link:hover {
 
     .p-button {
       width: 100%;
-    }
-
-    > p-button:first-child .p-button:not(:active) {
-      border-start-end-radius: var(--tb-shape-sm);
-      border-end-end-radius: var(--tb-shape-sm);
-    }
-
-    > p-button:last-child .p-button:not(:active) {
-      border-start-start-radius: var(--tb-shape-sm);
-      border-end-start-radius: var(--tb-shape-sm);
     }
   }
 }
@@ -1895,7 +1976,7 @@ a.p-menu-item-link:hover {
   }
 
   .p-drawer-title {
-    font: var(--tb-type-title-l);
+    font: var(--tb-type-title-l-emphasized);
   }
 
   .p-drawer-content {
@@ -1923,8 +2004,78 @@ a.p-menu-item-link:hover {
   color: var(--p-md-error);
 }
 
-/* «Ещё» opens at the right edge: in six columns of 62.5 px its computed place sticks out by a pixel. */
+/* «Ещё» opens at the right edge: in five columns its computed place may stick out by a pixel. */
 .tb-more-menu.p-menu-overlay {
   right: var(--tb-space-2) !important;
   left: auto !important;
+}
+
+/* A dialog without buttons in its footer (a stage that only informs) has no footer (ADR-0026) */
+.p-dialog-footer:not(:has(button, a)) {
+  display: none;
+}
+
+/* The numbers of a table (a count, a size, tokens) stand on the right, like amounts (ADR-0018) */
+.p-datatable .tb-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The buttons of the rows of the student's lessons start at one place: «Войти в урок» does not jump
+   to the right when a row has «Отозвать» (ADR-0021) */
+.tb-schedule-list > li > .tb-list__trail {
+  justify-content: flex-start;
+
+  .p-button-danger.p-button-text {
+    min-width: 8.5rem;
+  }
+}
+
+/* «Занятий нет» of the calendar: a compact empty state, not a grey frame (ADR-0018) */
+.tb-calendar-empty {
+  border: 0;
+  background: none;
+}
+
+.tb-calendar-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-2) 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-l);
+
+  &::before {
+    content: 'e927';
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+    font-family: primeicons;
+    font-size: 1.25rem;
+  }
+}
+
+/* On a phone the titles of the lessons are cut with an ellipsis, not in the middle of a word */
+@media (width <= 48em) {
+  .fc .fc-event-title,
+  .fc .fc-list-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* the dots of the month on a phone have a key under the calendar */
+  tb-schedule-calendar::after {
+    content: '● — занятие';
+    display: block;
+    margin-top: var(--tb-space-2);
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-s);
+  }
 }

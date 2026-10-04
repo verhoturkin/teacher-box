@@ -12,11 +12,13 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
   selector: 'tb-review-queue-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     DatePipe,
     RouterLink,
@@ -31,7 +33,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="На проверку" back="/teacher/homework" backLabel="Все задания">
+    <tb-page-header title="На проверку" back="/teacher/homework" backLabel="Задания">
       <tb-help-button help topic="teacher/homework" />
     </tb-page-header>
     <p-card>
@@ -39,7 +41,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
         <p-table [value]="items()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Ученик</th>
+              <th class="tb-col-main">Ученик</th>
               <th>Задание</th>
               <th>Сдано</th>
               <th>Срок</th>
@@ -48,7 +50,16 @@ import { LoadStateView } from '@shared/ui/load-state-view';
           </ng-template>
           <ng-template #body let-item [tbRowType]="items()">
             <tr>
-              <td data-label="Ученик">{{ item.studentName }}</td>
+              <td data-label="Ученик">
+                <div class="tb-person">
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    item.studentName | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ item.studentName }}</span>
+                  </div>
+                </div>
+              </td>
               <td data-label="Задание">{{ item.title }}</td>
               <td data-label="Сдано">
                 {{ item.submittedAt ? (item.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
@@ -57,7 +68,12 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 {{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
               </td>
               <td class="tb-actions-column">
-                <a pButton [routerLink]="['/teacher/homework/tasks', item.taskId]" [text]="true">
+                <a
+                  pButton
+                  [routerLink]="['/teacher/homework/tasks', item.taskId]"
+                  [text]="true"
+                  [attr.aria-label]="'Проверить: ' + item.studentName + ', ' + item.title"
+                >
                   <span pButtonLabel>Проверить</span>
                 </a>
               </td>

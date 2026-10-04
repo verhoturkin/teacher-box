@@ -86,7 +86,7 @@ describe('SetupPage', () => {
     );
     await fixture.whenStable();
 
-    expect(readableText(host)).toContain('Стоимость занятия');
+    expect(readableText(host)).toContain('Цена занятия');
     fixture.componentInstance.price.setValue({ price: 1500 });
     buttonByText(host, 'Далее').click();
     const price = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/default-price' });
@@ -172,7 +172,7 @@ describe('SetupPage', () => {
     typeInto(requireElement(host, '#next', HTMLInputElement), 'my-own-password');
     typeInto(requireElement(host, '#confirm', HTMLInputElement), 'my-own-password');
     await fixture.whenStable();
-    buttonByText(host, 'Сохранить и продолжить').click();
+    buttonByText(host, 'Далее').click();
     backend.expectOne('/api/me/password').flush(authResponse('TEACHER', 900, 'renewed'));
     await fixture.whenStable();
 

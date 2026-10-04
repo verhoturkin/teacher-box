@@ -14,7 +14,7 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/teacher/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/teacher/billing' },
   { label: 'Уведомления', icon: 'pi pi-bell', routerLink: '/teacher/notifications' },
-  { label: 'ИИ', icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
+  { label: 'ИИ-помощник', icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
 ];
 
 /** The teacher's user menu: instance settings next to the account. */

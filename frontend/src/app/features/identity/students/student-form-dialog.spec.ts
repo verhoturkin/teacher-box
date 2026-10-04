@@ -75,11 +75,22 @@ describe('StudentFormDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
+  it('submits from a field: the button of the footer belongs to the form (Enter)', async () => {
+    await open(null);
+    typeInto(field('displayName'), 'Пётр');
+    await fixture.whenStable();
+
+    expect(buttonByText(document.body, 'Сохранить').form?.id).toBe('student-form');
+    requireElement(document.body, '#student-form', HTMLFormElement).requestSubmit();
+
+    backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
+  });
+
   it('edits a student with its version', async () => {
     const updated: Student[] = [];
     fixture.componentInstance.updated.subscribe((value) => updated.push(value));
     await open(STUDENT);
-    expect(bodyText()).toContain('Редактирование');
+    expect(bodyText()).toContain('Изменить ученика');
     expect(field('displayName').value).toBe('Мария');
     expect(requireElement(document.body, '#note', HTMLTextAreaElement).value).toBe('5 класс');
 

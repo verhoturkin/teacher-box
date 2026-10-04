@@ -7,7 +7,7 @@ import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary } from './help-library';
 import { HelpArticle } from './help.models';
-import { HelpTopic, helpUrl } from './help-topics';
+import { HELP_TITLES, HelpTopic, helpUrl } from './help-topics';
 
 /**
  * «?» (or «Подробнее») next to a heading: opens the help article in a side panel without leaving
@@ -24,10 +24,10 @@ import { HelpTopic, helpUrl } from './help-topics';
       <p-button
         icon="pi pi-question-circle"
         [text]="true"
-        pTooltip="Справка"
+        [pTooltip]="name()"
         [rounded]="true"
         severity="secondary"
-        ariaLabel="Справка"
+        [ariaLabel]="name()"
         (onClick)="open()"
       />
     }
@@ -70,6 +70,8 @@ export class HelpButton {
   readonly visible = signal(false);
   protected readonly article = signal<HelpArticle | null>(null);
   protected readonly url = computed(() => helpUrl(this.topic()));
+  /** «Справка: Расписание и запросы»: the buttons of a page are told apart (ADR-0026). */
+  protected readonly name = computed(() => `Справка: ${HELP_TITLES[this.topic()]}`);
 
   async open(): Promise<void> {
     this.article.set(await this.library.article(this.topic()));

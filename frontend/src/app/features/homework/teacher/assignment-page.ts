@@ -35,11 +35,15 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
+import { pageDetail } from '@core/routing/page-detail';
+import { InitialsPipe } from '@shared/ui/initials';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
   selector: 'tb-assignment-page',
   imports: [
+    InitialsPipe,
     EmptyState,
     DatePipe,
     ReactiveFormsModule,
@@ -67,7 +71,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
-      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Все задания">
+      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Задания">
         <tb-help-button help topic="teacher/homework" />
         <span meta>
           {{
@@ -84,7 +88,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
           (onClick)="boardVisible.set(true)"
         />
         <p-button
-          label="Редактировать"
+          label="Изменить"
           icon="pi pi-pencil"
           severity="secondary"
           (onClick)="editVisible.set(true)"
@@ -110,7 +114,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
             @if (newFiles().length > 0) {
               <p-button
                 label="Загрузить"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 icon="pi pi-upload"
                 [loading]="uploading()"
                 (onClick)="upload()"
@@ -123,7 +128,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
           <p-table [value]="assignment.tasks" dataKey="taskId" styleClass="tb-cards">
             <ng-template #header>
               <tr>
-                <th>Ученик</th>
+                <th class="tb-col-main">Ученик</th>
                 <th>Статус</th>
                 <th>Сдано</th>
                 <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -131,7 +136,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
             </ng-template>
             <ng-template #body let-task [tbRowType]="assignment.tasks">
               <tr>
-                <td data-label="Ученик">{{ task.studentName }}</td>
+                <td data-label="Ученик">
+                  <div class="tb-person">
+                    <span class="tb-avatar" aria-hidden="true">{{
+                      task.studentName | initials
+                    }}</span>
+                    <div class="tb-list__text">
+                      <span class="tb-list__title">{{ task.studentName }}</span>
+                    </div>
+                  </div>
+                </td>
                 <td data-label="Статус">
                   <tb-task-status
                     [status]="task.status"
@@ -143,7 +157,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </td>
                 <td class="tb-actions-column">
-                  <a pButton [routerLink]="['/teacher/homework/tasks', task.taskId]" [text]="true">
+                  <a
+                    pButton
+                    [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                    [text]="true"
+                    [attr.aria-label]="
+                      (task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть') +
+                      ': ' +
+                      task.studentName
+                    "
+                  >
                     <span pButtonLabel>{{
                       task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть'
                     }}</span>
@@ -182,6 +205,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               label="Выдать"
               severity="success"
               [disabled]="selectedToAssign().length === 0"
+              [loading]="busy.is('assign')"
               (onClick)="assign()"
             />
           </div>
@@ -200,13 +224,14 @@ import { Snackbar } from '@core/snackbar/snackbar';
         [ownerIds]="taskStudents(assignment)"
       />
     } @else {
-      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Все задания" />
+      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Задания" />
       <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
     <p-confirmdialog />
   `,
 })
 export class AssignmentPage implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -217,6 +242,10 @@ export class AssignmentPage implements OnInit {
   readonly assignmentId = input.required<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
+
+  constructor() {
+    pageDetail(() => this.details()?.title);
+  }
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
   protected readonly newFiles = signal<File[]>([]);
@@ -291,7 +320,6 @@ export class AssignmentPage implements OnInit {
         header: 'Удалить файл?',
         message: `Файл «${file.filename}» будет удалён без возможности восстановления.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
             this.details.set({
@@ -318,10 +346,12 @@ export class AssignmentPage implements OnInit {
     if (assignment === null || studentIds.length === 0) {
       return;
     }
-    this.api.assignStudents(assignment.id, studentIds).subscribe((updated) => {
-      this.details.set(updated);
-      this.toAssign.setValue([]);
-      this.snackbar.success('Задание выдано');
-    });
+    this.busy
+      .guard('assign', this.api.assignStudents(assignment.id, studentIds))
+      .subscribe((updated) => {
+        this.details.set(updated);
+        this.toAssign.setValue([]);
+        this.snackbar.success('Задание выдано');
+      });
   }
 }

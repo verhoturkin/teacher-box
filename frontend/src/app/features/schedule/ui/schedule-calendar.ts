@@ -122,6 +122,8 @@ export class ScheduleCalendar {
       navLinkHint: (dateText: string) => `Открыть ${dateText}`,
       moreLinkHint: (count: number) => `Ещё занятий: ${String(count)}`,
       noEventsText: this.loaded() ? 'Занятий нет' : 'Загрузка…',
+      // styled as the compact empty state of the widgets (styles.scss, ADR-0018)
+      noEventsClass: 'tb-calendar-empty',
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,

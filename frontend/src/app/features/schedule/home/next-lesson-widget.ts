@@ -20,11 +20,13 @@ import {
 } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith, requestKindLabel } from '../schedule-labels';
 import { ChangeRequestDialog } from '../student/change-request-dialog';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Student's home: the nearest lesson with the lesson link and a request to move or cancel it. */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [RouterLink, Card, ChangeRequestDialog, LessonActions],
+  imports: [EmptyState, RouterLink, Card, ChangeRequestDialog, LessonActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Ближайшее занятие" styleClass="tb-hero">
@@ -54,7 +56,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
           </div>
         </div>
       } @else {
-        <p class="tb-muted">Ближайших занятий нет.</p>
+        <tb-empty-state [compact]="true" icon="pi-calendar" title="Ближайших занятий нет" />
       }
       <div class="tb-widget-footer">
         <span class="tb-muted">Занятий на неделе: {{ summary().weekLessons }}</span>
@@ -67,7 +69,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
       [lesson]="summary().next"
       [kind]="requestKind()"
       [lateCancellationMinutes]="settings()?.lateCancellationMinutes ?? 0"
-      (sent)="changed.emit()"
+      (sent)="onSent()"
     />
   `,
   styles: `
@@ -83,6 +85,7 @@ import { ChangeRequestDialog } from '../student/change-request-dialog';
   `,
 })
 export class NextLessonWidget implements OnInit {
+  private readonly snackbar = inject(Snackbar);
   protected readonly mobile = injectMobile();
   private readonly api = inject(ScheduleApi);
 
@@ -95,6 +98,11 @@ export class NextLessonWidget implements OnInit {
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly requestVisible = signal(false);
   protected readonly requestKind = signal<ChangeKind>('RESCHEDULE');
+
+  protected onSent(): void {
+    this.snackbar.success('Учитель получит ваш запрос');
+    this.changed.emit();
+  }
 
   ngOnInit(): void {
     this.api.settings().subscribe((settings) => {

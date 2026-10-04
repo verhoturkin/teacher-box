@@ -108,6 +108,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </div>
 
         <p-card>
+          <h2 class="tb-sr-only">Балансы учеников</h2>
           <div class="tb-toolbar">
             <label class="tb-switch" for="only-debtors">
               <p-toggleswitch inputId="only-debtors" [formControl]="onlyDebtors" />
@@ -119,7 +120,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <tr>
                 <th class="tb-col-main">Ученик</th>
                 <th class="tb-amount">Цена занятия</th>
-                <th>Занятий</th>
+                <th class="tb-num">Занятий</th>
                 <th>Последнее</th>
                 <th class="tb-amount">Баланс</th>
                 <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -147,7 +148,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                 <td data-label="Цена занятия" class="tb-amount">
                   {{ row.lessonPrice | money: overview.currency }}
                 </td>
-                <td data-label="Занятий">{{ row.chargedLessons }}</td>
+                <td data-label="Занятий" class="tb-num">{{ row.chargedLessons }}</td>
                 <td data-label="Последнее">
                   {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
                 </td>
@@ -160,8 +161,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    pTooltip="Принять оплату"
-                    [ariaLabel]="'Оплата: ' + row.displayName"
+                    [pTooltip]="'Записать оплату: ' + row.displayName"
+                    [ariaLabel]="'Записать оплату: ' + row.displayName"
                     (onClick)="openPayment(row.studentId)"
                   />
                 </td>

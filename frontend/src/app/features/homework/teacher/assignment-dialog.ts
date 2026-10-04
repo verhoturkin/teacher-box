@@ -27,6 +27,7 @@ import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A student that can receive homework. */
 export interface StudentOption {
@@ -52,6 +53,7 @@ export interface StudentOption {
     ToBoardDialog,
     MarkdownView,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -59,10 +61,16 @@ export interface StudentOption {
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '44rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="assignment-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="save()"
+      >
         <div class="tb-field">
           <label for="assignment-title">Название</label>
           <input pInputText id="assignment-title" formControlName="title" autocomplete="off" />
@@ -154,12 +162,18 @@ export interface StudentOption {
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
         <p-button
           severity="success"
           [label]="assignment() === null ? 'Выдать' : 'Сохранить'"
           [loading]="pending()"
-          (onClick)="save()"
+          type="submit"
+          tbSubmitFor="assignment-form"
         />
       </ng-template>
     </p-dialog>
@@ -189,7 +203,7 @@ export class AssignmentDialog {
   readonly saved = output<AssignmentDetails>();
 
   protected readonly title = computed(() =>
-    this.assignment() === null ? 'Новое задание' : 'Редактирование задания',
+    this.assignment() === null ? 'Новое задание' : 'Изменить задание',
   );
   protected readonly modes = [
     { label: 'Текст', value: 'edit' },

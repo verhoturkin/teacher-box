@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
@@ -8,14 +9,18 @@ import {
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
+import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
+import { Tooltip } from 'primeng/tooltip';
 import { OwnerBoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { describeError } from '@core/http/error-messages';
@@ -31,6 +36,7 @@ import {
   lessonWith,
   requestKindLabel,
 } from '../schedule-labels';
+import { InitialsPipe } from '@shared/ui/initials';
 import { AttendanceDialog } from './attendance-dialog';
 
 /**
@@ -42,13 +48,16 @@ import { AttendanceDialog } from './attendance-dialog';
 @Component({
   selector: 'tb-lesson-details-dialog',
   imports: [
+    InitialsPipe,
     FormsModule,
     Button,
     Checkbox,
     Dialog,
+    Menu,
     Message,
     Tag,
     Textarea,
+    Tooltip,
     AttendanceDialog,
     JoinLessonButton,
     OwnerBoardLinks,
@@ -56,12 +65,46 @@ import { AttendanceDialog } from './attendance-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Занятие"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
+      [focusOnShow]="false"
+      (onShow)="focusTitle()"
     >
+      <ng-template #header let-labelledBy="ariaLabelledBy">
+        <div class="tb-dialog-head">
+          <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">Занятие</span>
+          @if (lesson(); as lesson) {
+            <span class="tb-dialog-head__actions">
+              @if (lesson.status === 'SCHEDULED') {
+                <p-button
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Изменить занятие"
+                  ariaLabel="Изменить занятие"
+                  (onClick)="editLesson()"
+                />
+              }
+              @if (menuItems().length > 0) {
+                <p-button
+                  icon="pi pi-ellipsis-v"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Другие действия"
+                  ariaLabel="Другие действия"
+                  aria-haspopup="menu"
+                  (onClick)="menu.toggle($event)"
+                />
+                <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+              }
+            </span>
+          }
+        </div>
+      </ng-template>
       @if (lesson(); as lesson) {
         <div class="tb-lesson-details">
           <div class="tb-lesson-details__head">
@@ -77,7 +120,12 @@ import { AttendanceDialog } from './attendance-dialog';
           }
           @if (lesson.joinUrl; as url) {
             <div>
-              <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" />
+              <tb-join-lesson-button
+                [url]="url"
+                label="Начать урок"
+                [teacher]="true"
+                [tonal]="true"
+              />
             </div>
           }
           @if (visible()) {
@@ -87,15 +135,22 @@ import { AttendanceDialog } from './attendance-dialog';
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>
           }
           @if (lesson.groupId !== null) {
-            <ul class="tb-lesson-details__participants">
+            <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
                 <li>
-                  <span>{{ participant.studentName ?? 'Ученик' }}</span>
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    participant.studentName ?? 'Ученик' | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ participant.studentName ?? 'Ученик' }}</span>
+                  </div>
                   @if (participant.attendance !== 'EXPECTED') {
-                    <p-tag
-                      [value]="attendance[participant.attendance].label"
-                      [severity]="attendance[participant.attendance].severity"
-                    />
+                    <div class="tb-list__trail">
+                      <p-tag
+                        [value]="attendance[participant.attendance].label"
+                        [severity]="attendance[participant.attendance].severity"
+                      />
+                    </div>
                   }
                 </li>
               }
@@ -174,7 +229,7 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (lesson(); as lesson) {
           @if (deleting()) {
             <p-button
-              label="Назад"
+              label="Отмена"
               severity="secondary"
               [text]="true"
               (onClick)="deleting.set(false)"
@@ -187,7 +242,7 @@ import { AttendanceDialog } from './attendance-dialog';
             />
           } @else if (cancelling()) {
             <p-button
-              label="Назад"
+              label="Отмена"
               severity="secondary"
               [text]="true"
               (onClick)="cancelling.set(false)"
@@ -198,50 +253,23 @@ import { AttendanceDialog } from './attendance-dialog';
               [loading]="pending()"
               (onClick)="cancel()"
             />
-          } @else {
-            @if (deletable()) {
-              <p-button
-                label="Удалить"
-                icon="pi pi-trash"
-                severity="danger"
-                [text]="true"
-                (onClick)="deleting.set(true)"
-              />
-            }
-            @if (lesson.status === 'CANCELLED') {
-              <p-button
-                severity="success"
-                label="Восстановить"
-                icon="pi pi-replay"
-                [loading]="pending()"
-                (onClick)="restore()"
-              />
-            }
-            @if (lesson.status === 'SCHEDULED') {
-              <p-button
-                label="Отменить"
-                severity="danger"
-                [text]="true"
-                (onClick)="cancelling.set(true)"
-              />
-              <p-button label="Изменить" severity="secondary" (onClick)="editLesson()" />
-            }
-            @if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
-              <p-button
-                label="Снять отметку"
-                severity="danger"
-                [text]="true"
-                [loading]="pending()"
-                (onClick)="reopen()"
-              />
-            }
-            @if (started() && lesson.status !== 'CANCELLED' && lesson.groupId !== null) {
-              <p-button
-                label="Отметить посещаемость"
-                icon="pi pi-users"
-                (onClick)="attendanceVisible.set(true)"
-              />
-            } @else if (started() && lesson.status !== 'CANCELLED') {
+          } @else if (lesson.status === 'CANCELLED') {
+            <p-button
+              severity="success"
+              label="Восстановить"
+              icon="pi pi-replay"
+              [loading]="pending()"
+              (onClick)="restore()"
+            />
+          } @else if (started() && lesson.groupId !== null) {
+            <p-button
+              label="Отметить посещаемость"
+              icon="pi pi-users"
+              severity="success"
+              (onClick)="markAttendance()"
+            />
+          } @else if (started()) {
+            <span class="tb-button-group" role="group" aria-label="Итог занятия">
               @if (lesson.status !== 'MISSED') {
                 <p-button
                   class="tb-tonal"
@@ -259,7 +287,14 @@ import { AttendanceDialog } from './attendance-dialog';
                   (onClick)="mark('CONDUCTED')"
                 />
               }
-            }
+            </span>
+          } @else {
+            <p-button
+              label="Закрыть"
+              severity="secondary"
+              [text]="true"
+              (onClick)="visible.set(false)"
+            />
           }
         }
       </ng-template>
@@ -272,6 +307,20 @@ import { AttendanceDialog } from './attendance-dialog';
     />
   `,
   styles: `
+    .tb-dialog-head {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
+      min-width: 0;
+    }
+
+    .tb-dialog-head__actions {
+      display: inline-flex;
+      gap: var(--tb-space-1);
+    }
+
     .tb-lesson-details {
       display: flex;
       flex-direction: column;
@@ -327,6 +376,8 @@ export class LessonDetailsDialog {
   protected readonly kind = requestKindLabel;
   protected readonly with = lessonWith;
   protected readonly attendance = ATTENDANCE_LABELS;
+  private readonly title = viewChild<ElementRef<HTMLElement>>('title');
+
   protected readonly attendanceVisible = signal(false);
   protected readonly pending = signal(false);
   protected readonly cancelling = signal(false);
@@ -341,6 +392,43 @@ export class LessonDetailsDialog {
       (lesson.status === 'SCHEDULED' || lesson.status === 'CANCELLED') &&
       lesson.participants.every((participant) => participant.attendance !== 'MISSED')
     );
+  });
+  /** The actions with consequences are in the menu of the header, away from the footer (ADR-0026). */
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const lesson = this.lesson();
+    if (lesson === null) {
+      return [];
+    }
+    const items: MenuItem[] = [];
+    if (lesson.status === 'SCHEDULED') {
+      items.push({
+        label: 'Отменить занятие…',
+        icon: 'pi pi-times-circle',
+        command: () => {
+          this.cancelling.set(true);
+        },
+      });
+    }
+    if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
+      items.push({
+        label: 'Снять отметку',
+        icon: 'pi pi-undo',
+        command: () => {
+          this.reopen();
+        },
+      });
+    }
+    if (this.deletable()) {
+      items.push({
+        label: 'Удалить…',
+        icon: 'pi pi-trash',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.deleting.set(true);
+        },
+      });
+    }
+    return items;
   });
   protected readonly reason = signal('');
   protected readonly byStudent = signal(false);
@@ -371,6 +459,11 @@ export class LessonDetailsDialog {
     });
   }
 
+  /** The first thing under the hand is the title, not a button: Enter starts or deletes nothing. */
+  focusTitle(): void {
+    this.title()?.nativeElement.focus();
+  }
+
   protected start(iso: string): string {
     return formatLessonStart(iso);
   }
@@ -381,6 +474,12 @@ export class LessonDetailsDialog {
       this.visible.set(false);
       this.edit.emit(lesson);
     }
+  }
+
+  /** The attendance replaces the details: a window does not open over a window (ADR-0026). */
+  markAttendance(): void {
+    this.visible.set(false);
+    this.attendanceVisible.set(true);
   }
 
   mark(outcome: LessonOutcome): void {

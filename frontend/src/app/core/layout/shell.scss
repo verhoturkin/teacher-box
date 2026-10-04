@@ -90,7 +90,7 @@
   );
 }
 
-/* M3 navigation bar: the icon in the pill indicator, the label under it */
+/* M3 navigation bar: the icon in the pill indicator, the label under it (four sections and «Ещё», ADR-0027) */
 .tb-bottom-nav {
   position: fixed;
   inset: auto 0 0;
@@ -125,8 +125,8 @@
     text-decoration: none;
   }
 
-  &:hover .tb-bottom-nav__icon {
-    background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+  &:hover .tb-bottom-nav__icon::after {
+    opacity: 0.08;
   }
 
   /* the focus: the ring around the indicator and the state layer over it (ADR-0024) */
@@ -137,11 +137,16 @@
   &:focus-visible .tb-bottom-nav__icon {
     outline: 3px solid var(--p-md-secondary);
     outline-offset: 2px;
-    background: color-mix(in srgb, var(--p-md-on-surface) 10%, transparent);
+
+    &::after {
+      opacity: 0.1;
+    }
   }
 }
 
 .tb-bottom-nav__icon {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,16 +154,36 @@
   max-width: 100%;
   height: 2rem;
   border-radius: var(--tb-shape-full);
-  transition: background var(--tb-duration-short) var(--tb-motion-standard);
+
+  /* the indicator of the active section springs out from its middle (ADR-0027) and the state layer
+     of hover and focus lies over it */
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    transition:
+      transform var(--tb-spring-default-spatial),
+      opacity var(--tb-spring-fast-effects);
+  }
+
+  &::before {
+    z-index: -2;
+    background: var(--p-md-secondary-container);
+    opacity: 0;
+    transform: scaleX(0.4);
+  }
+
+  &::after {
+    z-index: -1;
+    background: currentColor;
+    opacity: 0;
+  }
 
   i {
     font-size: 1.25rem;
   }
-}
-
-/* Six items (the teacher's five sections and «Ещё») leave 65 px on a 390 px phone: Label Small fits */
-.tb-bottom-nav:has(> :nth-child(6)) .tb-bottom-nav__item {
-  font: var(--tb-type-label-s);
 }
 
 .tb-bottom-nav__label {
@@ -173,23 +198,11 @@
   color: var(--p-md-on-surface);
 
   .tb-bottom-nav__icon {
-    background: var(--p-md-secondary-container);
     color: var(--p-md-on-secondary-container);
-  }
 
-  &:hover .tb-bottom-nav__icon {
-    background: color-mix(
-      in srgb,
-      var(--p-md-on-secondary-container) 8%,
-      var(--p-md-secondary-container)
-    );
-  }
-
-  &:focus-visible .tb-bottom-nav__icon {
-    background: color-mix(
-      in srgb,
-      var(--p-md-on-secondary-container) 10%,
-      var(--p-md-secondary-container)
-    );
+    &::before {
+      opacity: 1;
+      transform: none;
+    }
   }
 }

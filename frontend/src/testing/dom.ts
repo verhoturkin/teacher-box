@@ -34,6 +34,17 @@ export function buttonByText(container: ParentNode, text: string): HTMLButtonEle
   return button;
 }
 
+/** An item of an open menu (a popup menu is appended to the body) with the given text. */
+export function menuItemByText(text: string): HTMLElement {
+  const item = Array.from(
+    document.body.querySelectorAll<HTMLElement>('.p-menu .p-menu-item-link'),
+  ).find((candidate) => candidate.textContent.includes(text));
+  if (item === undefined) {
+    throw new Error(`Menu item "${text}" not found`);
+  }
+  return item;
+}
+
 /** Types a value into an input the way a user would (fires the `input` event). */
 export function typeInto(input: HTMLInputElement | HTMLTextAreaElement, value: string): void {
   input.value = value;

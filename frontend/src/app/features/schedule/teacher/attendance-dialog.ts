@@ -44,7 +44,7 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
       header="Кто был на занятии"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (lesson(); as lesson) {
@@ -74,7 +74,12 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
         }
       }
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
         <p-button
           severity="success"
           label="Сохранить"

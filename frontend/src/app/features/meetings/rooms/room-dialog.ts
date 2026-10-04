@@ -21,6 +21,7 @@ import { describeError } from '@core/http/error-messages';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** An http(s) address; spaces around it are trimmed when it is saved. */
 export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
@@ -31,14 +32,14 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
  */
 @Component({
   selector: 'tb-room-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Tooltip],
+  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, Tooltip, SubmitFor],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (owner(); as owner) {
@@ -60,7 +61,8 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               <p-button
                 [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
                 icon="pi pi-send"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 [loading]="pending()"
                 (onClick)="share(room)"
               />
@@ -92,35 +94,42 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             />
             <small class="tb-hint">Или вставьте ссылку сами:</small>
           }
-          <div class="tb-field">
-            <label for="room-link">Ссылка на встречу</label>
-            <div class="tb-inline">
+          <form id="room-form" class="tb-form" (submit)="submitLink($event)">
+            <div class="tb-field">
+              <label for="room-link">Ссылка на встречу</label>
               <input
                 pInputText
                 id="room-link"
                 [formControl]="link"
                 placeholder="https://telemost.yandex.ru/j/..."
                 autocomplete="off"
-                class="tb-grow"
               />
-              <p-button
-                class="tb-tonal"
-                label="Сохранить"
-                severity="success"
-                [disabled]="link.invalid || link.value.trim() === ''"
-                [loading]="pending()"
-                (onClick)="save()"
-              />
+              @if (link.invalid) {
+                <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
+              }
             </div>
-            @if (link.invalid) {
-              <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
-            }
-          </div>
+          </form>
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
         </div>
       }
+      <ng-template #footer>
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          type="submit"
+          tbSubmitFor="room-form"
+          label="Сохранить"
+          severity="success"
+          [disabled]="link.invalid || link.value.trim() === ''"
+          [loading]="pending()"
+        />
+      </ng-template>
     </p-dialog>
   `,
   styles: `
@@ -172,6 +181,11 @@ export class RoomDialog {
         this.changed.emit(room);
       });
     }
+  }
+
+  protected submitLink(event: Event): void {
+    event.preventDefault();
+    this.save();
   }
 
   save(): void {

@@ -219,6 +219,6 @@ describe('PortalSettingsCard', () => {
     );
 
     expect(requireElement(host, '#portal-address', HTMLInputElement).readOnly).toBe(true);
-    expect(readableText(host)).toContain('TEACHERBOX_PUBLIC_URL');
+    expect(readableText(host)).toContain('попросите администратора');
   });
 });

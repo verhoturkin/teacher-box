@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { buttonByText, hostElement } from '@testing/dom';
+import { hostElement, requireElement } from '@testing/dom';
 import { Lesson, Payment } from '../data-access/billing.models';
 import { BalanceAmount } from './balance-amount';
 import { ledgerEntries } from './ledger-entries';
@@ -95,8 +95,16 @@ describe('LedgerTable', () => {
     fixture.componentRef.setInput('editable', true);
     await fixture.whenStable();
 
-    buttonByText(hostElement(fixture), 'Отменить занятие').click();
-    buttonByText(hostElement(fixture), 'Аннулировать оплату').click();
+    requireElement(
+      hostElement(fixture),
+      'button[aria-label^="Снять начисление за "]',
+      HTMLButtonElement,
+    ).click();
+    requireElement(
+      hostElement(fixture),
+      'button[aria-label^="Аннулировать оплату от "]',
+      HTMLButtonElement,
+    ).click();
 
     expect(cancelled.map((value) => value.id)).toEqual(['l-1']);
     expect(voided.map((value) => value.id)).toEqual(['p-1']);
@@ -128,6 +136,6 @@ describe('BalanceAmount', () => {
 
     fixture.componentRef.setInput('balance', 0);
     await fixture.whenStable();
-    expect(hostElement(fixture).querySelector('.tb-muted')?.textContent.trim()).toBe('0');
+    expect(hostElement(fixture).querySelector('.tb-muted')?.textContent.trim()).toBe('0 ₽');
   });
 });

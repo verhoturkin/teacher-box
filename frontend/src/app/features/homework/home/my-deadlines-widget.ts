@@ -4,17 +4,18 @@ import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
 import { MyHomeworkSummary } from '../data-access/homework.models';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** Student's home: open tasks, the nearest deadline first. */
 @Component({
   selector: 'tb-my-deadlines-widget',
-  imports: [DatePipe, RouterLink, Card, Tag],
+  imports: [EmptyState, DatePipe, RouterLink, Card, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let homework = summary();
     <p-card header="Домашние задания">
       @if (homework.upcoming.length === 0) {
-        <p class="tb-muted">Открытых заданий нет.</p>
+        <tb-empty-state [compact]="true" icon="pi-book" title="Открытых заданий нет" />
       } @else {
         <ul class="tb-list tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
@@ -33,7 +34,7 @@ import { MyHomeworkSummary } from '../data-access/homework.models';
                 >
                 <span class="tb-list__supporting">
                   @if (task.dueAt !== null) {
-                    до {{ task.dueAt | date: 'dd.MM, HH:mm' }}
+                    до {{ task.dueAt | date: 'dd.MM.yyyy HH:mm' }}
                   } @else {
                     без срока
                   }

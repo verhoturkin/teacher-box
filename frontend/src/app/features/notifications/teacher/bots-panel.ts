@@ -43,8 +43,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <span class="tb-list__supporting tb-bot__error">
                     {{ bot.connection.error }}
                     @if (bot.channel === 'TELEGRAM') {
-                      Если Telegram заблокирован в сети сервера, укажите прокси в
-                      TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
+                      Если Telegram заблокирован в сети сервера, попросите администратора указать
+                      прокси в его настройках.
                     }
                   </span>
                 }
@@ -60,6 +60,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
                   icon="pi pi-cog"
                   severity="secondary"
+                  [text]="true"
                   (onClick)="open(bot)"
                 />
                 @if (!bot.fromEnvironment) {
@@ -151,7 +152,6 @@ export class BotsPanel implements OnInit {
         header: 'Отключить бота?',
         message: `Уведомления перестанут приходить в ${CHANNEL_NAMES[channel]}. Подключения учеников сохранятся и заработают снова, если подключить этого же бота.`,
         acceptLabel: 'Отключить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.removeBot(channel).subscribe(() => {
             this.snackbar.info(`Бот ${CHANNEL_NAMES[channel]} отключён`);

@@ -30,6 +30,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { pageDetail } from '@core/routing/page-detail';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -109,7 +110,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   rows="4"
                 ></textarea>
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 @if (task.status === 'SUBMITTED') {
                   <p-button
                     severity="success"
@@ -178,6 +179,10 @@ export class TaskReviewPage implements OnInit {
   readonly taskId = input.required<string>();
 
   protected readonly task = signal<TaskDetails | null>(null);
+
+  constructor() {
+    pageDetail(() => this.task()?.studentName);
+  }
   protected readonly pending = signal(false);
   protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
   protected readonly drafting = signal(false);

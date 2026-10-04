@@ -24,3 +24,15 @@ export function toIsoMonth(date: Date): string {
 export function fromIsoMonth(value: string): Date {
   return fromIsoDate(`${value}-01`);
 }
+
+/** «2026-09» → «сентябрь 2026»: the month of a report in words (the server sends `YearMonth`). */
+export function monthLabel(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  if (year === undefined || month === undefined || Number.isNaN(year) || Number.isNaN(month)) {
+    return yearMonth;
+  }
+  return new Date(year, month - 1, 1).toLocaleDateString('ru-RU', {
+    month: 'long',
+    year: 'numeric',
+  });
+}

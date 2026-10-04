@@ -50,6 +50,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { InitialsPipe } from '@shared/ui/initials';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -96,6 +97,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 
     <div class="tb-stack">
       <p-card>
+        <h2 class="tb-sr-only">Список учеников</h2>
         <div class="tb-toolbar">
           <p-iconfield>
             <p-inputicon styleClass="pi pi-search" />
@@ -198,8 +200,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     [text]="true"
                     severity="secondary"
                     [rounded]="true"
-                    pTooltip="Редактировать"
-                    [ariaLabel]="'Редактировать: ' + student.displayName"
+                    [pTooltip]="'Изменить: ' + student.displayName"
+                    [ariaLabel]="'Изменить: ' + student.displayName"
                     (onClick)="openEdit(student)"
                   />
                   @if (student.status === 'DEACTIVATED') {
@@ -208,8 +210,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
                       [text]="true"
                       severity="secondary"
                       [rounded]="true"
-                      pTooltip="Вернуть доступ"
+                      [pTooltip]="'Вернуть доступ: ' + student.displayName"
                       [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                      [loading]="busy.is('reactivate-' + student.id)"
                       (onClick)="reactivate(student)"
                     />
                   } @else {
@@ -218,12 +221,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
                       [text]="true"
                       severity="secondary"
                       [rounded]="true"
-                      [pTooltip]="
-                        student.status === 'ACTIVE'
-                          ? 'Ссылка для сброса пароля'
-                          : 'Новая ссылка-приглашение'
-                      "
-                      [ariaLabel]="'Ссылка: ' + student.displayName"
+                      [pTooltip]="linkLabel(student)"
+                      [ariaLabel]="linkLabel(student)"
+                      [loading]="busy.is('invite-' + student.id)"
                       (onClick)="reissueInvite(student)"
                     />
                     <p-button
@@ -231,7 +231,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Отключить доступ"
+                      [pTooltip]="'Отключить доступ: ' + student.displayName"
                       [ariaLabel]="'Отключить доступ: ' + student.displayName"
                       (onClick)="confirmDeactivate(student)"
                     />
@@ -246,17 +246,14 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     <tb-empty-state
                       icon="pi-user-plus"
                       title="Учеников пока нет"
-                      hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
-                    >
-                      <p-button
-                        label="Добавить ученика"
-                        icon="pi pi-user-plus"
-                        severity="secondary"
-                        (onClick)="openCreate()"
-                      />
-                    </tb-empty-state>
+                      hint="Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение"
+                    />
                   } @else {
-                    <tb-empty-state icon="pi-search" title="Никого не найдено" />
+                    <tb-empty-state
+                      icon="pi-search"
+                      title="Никого не найдено"
+                      hint="Измените запрос или включите показ отключённых учеников"
+                    />
                   }
                 </td>
               </tr>
@@ -296,6 +293,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class StudentsPage implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -438,14 +436,23 @@ export class StudentsPage implements OnInit {
     this.snackbar.success(`Сохранено: ${student.displayName}`);
   }
 
+  /** The name and the tooltip of the link button: what the link is for and whose it is. */
+  protected linkLabel(student: Student): string {
+    const purpose =
+      student.status === 'ACTIVE' ? 'Ссылка для сброса пароля' : 'Новая ссылка-приглашение';
+    return `${purpose}: ${student.displayName}`;
+  }
+
   protected reissueInvite(student: Student): void {
-    this.api.reissueInvite(student.id).subscribe((invite) => {
-      this.replace({
-        ...student,
-        pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt },
+    this.busy
+      .guard('invite-' + student.id, this.api.reissueInvite(student.id))
+      .subscribe((invite) => {
+        this.replace({
+          ...student,
+          pendingInvite: { purpose: invite.purpose, expiresAt: invite.expiresAt },
+        });
+        this.showInvite(student, invite);
       });
-      this.showInvite(student, invite);
-    });
   }
 
   protected confirmDeactivate(student: Student): void {
@@ -455,7 +462,6 @@ export class StudentsPage implements OnInit {
         message: `${student.displayName} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Отключить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.deactivate(student.id).subscribe((saved) => {
             this.replace(saved);
@@ -466,9 +472,11 @@ export class StudentsPage implements OnInit {
   }
 
   protected reactivate(student: Student): void {
-    this.api.reactivate(student.id).subscribe((saved) => {
-      this.replace(saved);
-    });
+    this.busy
+      .guard('reactivate-' + student.id, this.api.reactivate(student.id))
+      .subscribe((saved) => {
+        this.replace(saved);
+      });
   }
 
   private showInvite(student: Student, invite: IssuedInvite): void {

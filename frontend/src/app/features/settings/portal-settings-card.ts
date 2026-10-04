@@ -31,6 +31,7 @@ import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** The largest logo the server takes, bytes. */
 const MAX_LOGO_SIZE = 1024 * 1024;
@@ -181,7 +182,13 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 (onClick)="logoFile.click()"
               />
               @if (settings.logo !== null) {
-                <p-button label="Убрать" severity="danger" [text]="true" (onClick)="removeLogo()" />
+                <p-button
+                  label="Убрать"
+                  severity="danger"
+                  [text]="true"
+                  [loading]="busy.is('logo')"
+                  (onClick)="removeLogo()"
+                />
               }
             </div>
             <small class="tb-hint">
@@ -254,7 +261,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     .tb-own-color__sample {
       padding: var(--tb-space-2) var(--tb-space-3);
       border-radius: var(--p-border-radius-md);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .tb-logo-row {
@@ -266,6 +273,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
   `,
 })
 export class PortalSettingsCard implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
   private readonly snackbar = inject(Snackbar);
@@ -377,7 +385,7 @@ export class PortalSettingsCard implements OnInit {
   }
 
   removeLogo(): void {
-    this.api.removeLogo().subscribe((settings) => {
+    this.busy.guard('logo', this.api.removeLogo()).subscribe((settings) => {
       this.settings.set(settings);
       this.portal.set(settings);
     });

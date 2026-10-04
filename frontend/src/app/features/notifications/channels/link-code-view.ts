@@ -58,7 +58,7 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
       border-radius: var(--tb-shape-sm);
       background: var(--p-md-surface-container-highest);
       color: var(--p-md-on-surface);
-      font-family: monospace;
+      font-family: var(--tb-font-mono);
       font-size: 1.75rem;
       letter-spacing: 0.15em;
       user-select: all;

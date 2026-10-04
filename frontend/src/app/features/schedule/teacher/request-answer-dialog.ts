@@ -35,7 +35,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
       header="Запрос ученика"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (request(); as request) {

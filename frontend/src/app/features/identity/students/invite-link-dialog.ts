@@ -25,7 +25,7 @@ import { IssuedInvite } from '../data-access/identity.models';
       [header]="header()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '36rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
       (onShow)="copied.set(false)"
     >

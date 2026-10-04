@@ -4,6 +4,7 @@ import { Card } from 'primeng/card';
 import type { HomeworkSummary } from '@features/homework/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
+import { EmptyState } from '@shared/ui/empty-state';
 
 interface AttentionItem {
   readonly icon: string;
@@ -16,12 +17,12 @@ interface AttentionItem {
 /** Teacher's home: what is waiting for the teacher across the modules. */
 @Component({
   selector: 'tb-attention-card',
-  imports: [RouterLink, Card],
+  imports: [EmptyState, RouterLink, Card],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Требует внимания">
       @if (items().length === 0) {
-        <p class="tb-muted">Срочных дел нет.</p>
+        <tb-empty-state [compact]="true" icon="pi-check-circle" title="Срочных дел нет" />
       } @else {
         <ul class="tb-list tb-attention">
           @for (item of items(); track item.text) {

@@ -95,7 +95,7 @@ describe('MySchedulePage', () => {
 
     expect(text).toContain('Ближайшие занятия');
     expect(text).toContain('Дроби');
-    expect(text).toContain('Подключиться');
+    expect(text).toContain('Войти в урок');
     expect(text).toContain('Отменено');
     expect(
       requireElement(hostElement(fixture), 'a[href="https://zoom.us/j/1"]', HTMLAnchorElement),
@@ -252,7 +252,7 @@ describe('MySchedulePage', () => {
     rows[0]?.click();
     await fixture.whenStable();
     const sheet = requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement);
-    expect(readableText(sheet)).toContain('Подключиться');
+    expect(readableText(sheet)).toContain('Войти в урок');
     expect(sheet.querySelector('a[href="https://zoom.us/j/1"]')).not.toBeNull();
     buttonByText(sheet, 'Перенести').click();
     await fixture.whenStable();

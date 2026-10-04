@@ -35,7 +35,7 @@ describe('AiUsagePage', () => {
     const text = await render(aiStatus({ enabled: false, provider: null, model: null }));
 
     expect(text).toContain('ИИ-помощник не настроен');
-    expect(text).toContain('TEACHERBOX_AI_PROVIDER');
+    expect(text).toContain('попросите его подключить ИИ-помощника');
   });
 
   it('names Gemini', async () => {
@@ -54,9 +54,9 @@ describe('AiUsagePage', () => {
     const text = await render(aiStatus(), usageReport());
 
     expect(text).toContain('Модель claude-opus-5 Anthropic (Claude)');
-    expect(text).toContain('Использование за 2026-09');
+    expect(text).toContain('Использование за сентябрь 2026');
     expect(text).toMatch(/Токенов: 500.000 из 2.000.000/);
-    expect(text).toMatch(/Черновики заданий: 3 запр., 3.000 токенов/);
+    expect(text).toMatch(/Черновики заданий: 3 запроса, 3.000 токенов/);
     expect(text).toContain('Готово');
     expect(text).toContain('Ошибка Anthropic API 529: Overloaded');
     expect(text).toMatch(/12.5 с/);

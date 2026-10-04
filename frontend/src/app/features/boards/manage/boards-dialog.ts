@@ -21,6 +21,7 @@ import { describeError } from '@core/http/error-messages';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board, BoardOwnerRef } from '../data-access/boards.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { EmptyState } from '@shared/ui/empty-state';
 
 export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
@@ -36,6 +37,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
     Message,
     Tooltip,
     FieldErrors,
+    EmptyState,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -43,7 +45,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '36rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <tb-help-button topic="teacher/boards" label="Подробнее" />
@@ -76,10 +78,12 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           }
         </ul>
       } @else {
-        <p class="tb-muted">
-          Создайте доску в Холсте (app.holst.so), откройте к ней доступ по ссылке и вставьте ссылку
-          сюда — ученик увидит доску в своём кабинете.
-        </p>
+        <tb-empty-state
+          [compact]="true"
+          icon="pi-th-large"
+          title="Досок пока нет"
+          hint="Создайте доску в Холсте (app.holst.so), откройте к ней доступ по ссылке и вставьте ссылку сюда — ученик увидит доску в своём кабинете."
+        />
       }
       <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
@@ -108,16 +112,16 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
-        <div class="tb-actions">
+        <div class="tb-form-actions">
+          @if (editing() !== null) {
+            <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
+          }
           <p-button
             severity="success"
             type="submit"
             [label]="editing() === null ? 'Добавить доску' : 'Сохранить'"
             [loading]="pending()"
           />
-          @if (editing() !== null) {
-            <p-button label="Отмена" severity="danger" [text]="true" (onClick)="cancelEdit()" />
-          }
         </div>
       </form>
     </p-dialog>

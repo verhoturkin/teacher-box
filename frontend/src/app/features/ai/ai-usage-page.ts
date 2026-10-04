@@ -24,6 +24,8 @@ import {
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
+import { CountPipe } from '@shared/text/plural';
+import { monthLabel } from '@shared/dates/iso-date';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = {
   HOMEWORK_DRAFT: 'Черновики заданий',
@@ -53,6 +55,7 @@ const STATUS_LABELS: Record<
     HelpButton,
     DatePipe,
     DecimalPipe,
+    CountPipe,
     Card,
     ProgressBar,
     TableModule,
@@ -72,8 +75,8 @@ const STATUS_LABELS: Record<
         <p-card>
           <tb-empty-state
             icon="pi-sparkles"
-            title="ИИ-помощник не настроен."
-            hint="Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера: TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY и при необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и перезапустите портал."
+            title="ИИ-помощник не настроен"
+            hint="Это настраивает администратор портала. Чтобы получать черновики заданий и проверок, попросите его подключить ИИ-помощника."
           />
         </p-card>
       } @else {
@@ -86,7 +89,7 @@ const STATUS_LABELS: Record<
             </div>
           </p-card>
           @if (report(); as report) {
-            <p-card [header]="'Использование за ' + report.month">
+            <p-card [header]="'Использование за ' + monthName(report.month)">
               <p>
                 Токенов: {{ report.usedTokens | number }}
                 @if (report.monthlyTokenLimit > 0) {
@@ -106,23 +109,31 @@ const STATUS_LABELS: Record<
               <ul class="tb-usage-features">
                 @for (feature of report.features; track feature.feature) {
                   <li>
-                    {{ featureLabels[feature.feature] }}: {{ feature.requests }} запр.,
-                    {{ feature.inputTokens + feature.outputTokens | number }} токенов
+                    {{ featureLabels[feature.feature] }}:
+                    {{ feature.requests | count: 'запрос' : 'запроса' : 'запросов' }},
+                    {{
+                      feature.inputTokens + feature.outputTokens
+                        | count: 'токен' : 'токена' : 'токенов'
+                    }}
                   </li>
                 }
               </ul>
             </p-card>
             <p-card header="Последние запросы">
               @if (report.recent.length === 0) {
-                <p class="tb-muted">Запросов в этом месяце не было.</p>
+                <tb-empty-state
+                  [compact]="true"
+                  icon="pi-sparkles"
+                  title="Запросов в этом месяце не было"
+                />
               } @else {
-                <p-table [value]="report.recent" styleClass="tb-cards p-datatable-sm">
+                <p-table [value]="report.recent" styleClass="tb-cards">
                   <ng-template #header>
                     <tr>
                       <th>Когда</th>
                       <th>Что</th>
                       <th>Результат</th>
-                      <th>Токены</th>
+                      <th class="tb-num">Токены</th>
                       <th>Время</th>
                     </tr>
                   </ng-template>
@@ -139,7 +150,9 @@ const STATUS_LABELS: Record<
                           <small class="tb-muted tb-usage-error">{{ row.error }}</small>
                         }
                       </td>
-                      <td data-label="Токены">{{ row.inputTokens + row.outputTokens | number }}</td>
+                      <td data-label="Токены" class="tb-num">
+                        {{ row.inputTokens + row.outputTokens | number }}
+                      </td>
                       <td data-label="Время">{{ row.durationMs / 1000 | number: '1.0-1' }} с</td>
                     </tr>
                   </ng-template>
@@ -168,6 +181,7 @@ export class AiUsagePage implements OnInit {
   private readonly api = inject(AiApi);
 
   protected readonly featureLabels = FEATURE_LABELS;
+  protected readonly monthName = monthLabel;
   protected readonly status = signal<AiStatus | null>(null);
   protected readonly report = signal<UsageReport | null>(null);
   protected readonly percent = computed(() => {

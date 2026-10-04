@@ -12,7 +12,7 @@ import { TASK_STATUS_LABELS, TASK_STATUS_SEVERITIES } from '../homework-labels';
     <span class="tb-inline">
       <p-tag [value]="labels[status()]" [severity]="severities[status()]" />
       @if (overdue()) {
-        <p-tag value="Просрочено" severity="danger" [rounded]="true" />
+        <p-tag value="Просрочено" severity="danger" />
       }
       @if (grade(); as grade) {
         <span class="tb-strong">Оценка: {{ grade }}</span>

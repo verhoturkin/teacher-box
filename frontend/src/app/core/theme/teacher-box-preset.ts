@@ -409,7 +409,8 @@ export const TeacherBoxPreset = definePreset(Aura, {
         roundedBorderRadius: BUTTON_SHAPE,
         gap: '0.5rem',
         paddingX: '1.5rem',
-        paddingY: '0.625rem',
+        // 9 + the line of 20 + 9 + the border of 1 on both sides: 40 px (M3, ADR-0018)
+        paddingY: '0.5625rem',
         iconOnlyWidth: '2.5rem',
         sm: {
           fontSize: '0.8125rem',
@@ -546,6 +547,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       css: `
         .p-togglebutton {
           font-size: 0.875rem;
+          line-height: 1.25rem;
           transition: ${shapeTransition('togglebutton')};
         }
         .p-togglebutton:not(:disabled):active {

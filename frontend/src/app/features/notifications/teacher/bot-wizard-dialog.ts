@@ -73,7 +73,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       [(visible)]="visible"
       [modal]="true"
       appendTo="body"
-      [style]="{ width: '40rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <tb-help-button topic="teacher/notifications" label="Подробнее о ботах" />
@@ -167,8 +167,8 @@ function describeMessengerError(error: unknown, fallback: string): string {
           @if (step() === 2 && bot()?.fromEnvironment === true) {
             <div class="tb-wizard__body">
               <p class="tb-muted">
-                Этот бот задан в переменных окружения сервера (TEACHERBOX_NOTIFICATIONS_*), токен
-                меняется там.
+                Этот бот задан администратором портала — токен меняется в его настройках: попросите
+                администратора.
               </p>
             </div>
           } @else if (step() === 2) {
@@ -255,7 +255,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p>Ваш аккаунт {{ name() }} уже подключён — уведомления будут приходить и вам.</p>
                 <div class="tb-actions">
                   <p-button
-                    label="Дальше"
+                    label="Далее"
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     (onClick)="go(4)"
@@ -310,17 +310,13 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   label="Отправить тестовое сообщение"
                   icon="pi pi-send"
-                  [severity]="tested() ? 'secondary' : 'primary'"
+                  class="tb-tonal"
+                  severity="success"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />
                 @if (tested()) {
-                  <p-button
-                    severity="success"
-                    label="Готово"
-                    icon="pi pi-check"
-                    (onClick)="close()"
-                  />
+                  <p-button label="Готово" icon="pi pi-check" (onClick)="close()" />
                 }
               </div>
             </div>
@@ -370,7 +366,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
 
     .tb-wizard__step--active .tb-wizard__header {
       color: var(--p-text-color);
-      font-weight: 600;
+      font-weight: 500;
 
       .tb-wizard__number {
         border-color: var(--p-primary-color);

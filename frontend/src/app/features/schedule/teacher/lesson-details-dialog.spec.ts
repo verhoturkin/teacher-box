@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
+import { bodyText, buttonByText, menuItemByText, requireElement, typeInto } from '@testing/dom';
 import { aBoard } from '@testing/boards-fixtures';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import type { Board } from '@features/boards/parts';
@@ -51,6 +51,14 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
   }
 
+  /** Picks an action from the menu of the header. */
+  async function choose(action: string): Promise<void> {
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+    menuItemByText(action).click();
+    await fixture.whenStable();
+  }
+
   it('shows the lesson and the student’s request', async () => {
     await open(
       scheduledLesson({
@@ -75,7 +83,7 @@ describe('LessonDetailsDialog', () => {
   it('hands a planned lesson over for editing', async () => {
     await open(scheduledLesson());
 
-    buttonByText(document.body, 'Изменить').click();
+    buttonByText(document.body, 'Изменить занятие').click();
 
     expect(edited.map((lesson) => lesson.id)).toEqual(['l-1']);
     expect(fixture.componentInstance.visible()).toBe(false);
@@ -102,7 +110,7 @@ describe('LessonDetailsDialog', () => {
       .flush(scheduledLesson({ status: 'MISSED' }));
 
     await open(scheduledLesson({ status: 'MISSED' }), new Date(2026, 9, 2));
-    buttonByText(document.body, 'Снять отметку').click();
+    await choose('Снять отметку');
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/outcome' })
       .flush(scheduledLesson());
@@ -112,8 +120,7 @@ describe('LessonDetailsDialog', () => {
 
   it('cancels on the student’s behalf and charges it', async () => {
     await open(scheduledLesson());
-    buttonByText(document.body, 'Отменить').click();
-    await fixture.whenStable();
+    await choose('Отменить занятие…');
     typeInto(
       requireElement(document.body, '#lesson-cancel-reason', HTMLTextAreaElement),
       '  Заболел ',
@@ -133,12 +140,10 @@ describe('LessonDetailsDialog', () => {
 
   it('cancels by the teacher and can go back', async () => {
     await open(scheduledLesson());
-    buttonByText(document.body, 'Отменить').click();
+    await choose('Отменить занятие…');
+    buttonByText(document.body, 'Отмена').click();
     await fixture.whenStable();
-    buttonByText(document.body, 'Назад').click();
-    await fixture.whenStable();
-    buttonByText(document.body, 'Отменить').click();
-    await fixture.whenStable();
+    await choose('Отменить занятие…');
 
     buttonByText(document.body, 'Отменить занятие').click();
 
@@ -152,15 +157,13 @@ describe('LessonDetailsDialog', () => {
     const deleted: string[] = [];
     fixture.componentInstance.deleted.subscribe((id) => deleted.push(id));
     await open(scheduledLesson());
-    buttonByText(document.body, 'Удалить').click();
-    await fixture.whenStable();
+    await choose('Удалить…');
     expect(bodyText()).toContain('Ученику придёт уведомление, что занятие отменено');
-    buttonByText(document.body, 'Назад').click();
+    buttonByText(document.body, 'Отмена').click();
     await fixture.whenStable();
     expect(bodyText()).not.toContain('Ученику придёт уведомление');
 
-    buttonByText(document.body, 'Удалить').click();
-    await fixture.whenStable();
+    await choose('Удалить…');
     buttonByText(document.body, 'Удалить занятие').click();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1' }).flush(null);
     await fixture.whenStable();
@@ -171,8 +174,7 @@ describe('LessonDetailsDialog', () => {
 
   it('keeps the lesson when deleting fails and offers no deleting of a charged one', async () => {
     await open(scheduledLesson({ status: 'CANCELLED' }), new Date(2026, 9, 2));
-    buttonByText(document.body, 'Удалить').click();
-    await fixture.whenStable();
+    await choose('Удалить…');
     expect(bodyText()).not.toContain('Ученику придёт уведомление');
     buttonByText(document.body, 'Удалить занятие').click();
     backend
@@ -187,7 +189,9 @@ describe('LessonDetailsDialog', () => {
         participants: [{ studentId: 's-1', studentName: 'Иван Петров', attendance: 'MISSED' }],
       }),
     );
-    expect(() => buttonByText(document.body, 'Удалить')).toThrow();
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+    expect(() => menuItemByText('Удалить')).toThrow();
     fixture.componentRef.setInput('lesson', null);
     fixture.componentInstance.deleteLesson();
     fixture.componentInstance.restore();
@@ -216,6 +220,36 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
     expect(changed).toHaveLength(1);
     expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('keeps one red button in the footer and the dangerous actions in the menu', async () => {
+    await open(scheduledLesson(), new Date(2026, 9, 1, 18, 30));
+
+    const footer = requireElement(document.body, '.p-dialog-footer', HTMLElement);
+    expect(footer.querySelectorAll('.p-button-danger:not(.p-button-text)')).toHaveLength(1);
+    expect(footer.querySelectorAll('.p-button-danger.p-button-text')).toHaveLength(0);
+    expect(footer.textContent).not.toContain('Удалить');
+    expect(footer.textContent).not.toContain('Отменить');
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+    expect(menuItemByText('Удалить…').closest('li')?.className).toContain('tb-menu-item--danger');
+  });
+
+  it('takes its width from a class, not from a style of the place (ADR-0026)', async () => {
+    await open(scheduledLesson());
+
+    const dialog = requireElement(document.body, '.p-dialog', HTMLElement);
+    expect(dialog.classList).toContain('tb-dialog');
+    expect(dialog.style.width).toBe('');
+  });
+
+  it('puts the focus on the title, not on a button', async () => {
+    await open(scheduledLesson({ joinUrl: 'https://zoom.us/j/1' }));
+
+    const title = requireElement(document.body, '.p-dialog-title', HTMLElement);
+    expect(title.getAttribute('tabindex')).toBe('-1');
+    fixture.componentInstance.focusTitle();
+    expect(document.activeElement).toBe(title);
   });
 
   it('shows a cancelled lesson without actions', async () => {
@@ -265,8 +299,7 @@ describe('LessonDetailsDialog', () => {
   it('cancels a group lesson only on behalf of the teacher', async () => {
     await open(groupLesson());
 
-    buttonByText(document.body, 'Отменить').click();
-    await fixture.whenStable();
+    await choose('Отменить занятие…');
 
     expect(document.body.querySelector('#lesson-cancel-by-student')).toBeNull();
   });

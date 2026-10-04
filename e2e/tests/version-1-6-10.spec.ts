@@ -173,12 +173,12 @@ test('on a phone an upcoming lesson opens its actions in the bottom sheet', asyn
   const row = page.locator('ul.tb-list > li').first();
   await expect(row.locator('.tb-list__lead .pi-video')).toBeVisible();
   await expect(row.getByRole('button', { name: 'Перенести' })).toHaveCount(0);
-  await expect(row.getByRole('link', { name: /Подключиться/ })).toHaveCount(0);
+  await expect(row.getByRole('link', { name: /Войти в урок/ })).toHaveCount(0);
 
   await row.click();
   const sheet = page.locator('.p-drawer.tb-sheet');
   await expect(sheet).toBeVisible();
-  await expect(sheet.getByRole('link', { name: /Подключиться/ })).toHaveAttribute('href', MEETING);
+  await expect(sheet.getByRole('link', { name: /Войти в урок/ })).toHaveAttribute('href', MEETING);
   const halves = await sheet.locator('.tb-button-group .p-button').evaluateAll((buttons) =>
     buttons.map((button) => {
       const box = button.getBoundingClientRect();

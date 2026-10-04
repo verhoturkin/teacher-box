@@ -28,23 +28,27 @@ describe('errorMessage', () => {
 
   it('falls back to the HTTP status for unknown codes', () => {
     expect(errorMessage(httpError(409, { status: 409, code: 'something.new' }))).toBe(
-      'Конфликт данных',
+      'Данные изменились. Обновите страницу и повторите',
     );
   });
 
   it('falls back to the HTTP status for problems without code and non-problem bodies', () => {
-    expect(errorMessage(httpError(404, { status: 404 }))).toBe('Не найдено');
+    expect(errorMessage(httpError(404, { status: 404 }))).toBe(
+      'Не найдено: возможно, это уже удалили. Обновите страницу',
+    );
     expect(errorMessage(httpError(0, 'network down'))).toBe(
       'Сервер недоступен. Проверьте подключение',
     );
   });
 
   it('uses a generic message for unexpected statuses', () => {
-    expect(errorMessage(httpError(503))).toBe('Произошла ошибка. Попробуйте позже');
+    expect(errorMessage(httpError(503))).toBe(
+      'Что-то пошло не так. Попробуйте ещё раз или чуть позже',
+    );
   });
 
   it('exposes code lookup', () => {
-    expect(messageForCode('internal.error')).toBe('Внутренняя ошибка сервера');
+    expect(messageForCode('internal.error')).toBe('Ошибка на сервере. Попробуйте позже');
     expect(messageForCode('nope')).toBeUndefined();
   });
 });
@@ -56,12 +60,14 @@ describe('request codes in messages', () => {
       error: { status: 500, code: 'internal.error', requestId: 'k3m9x2ab7c' },
     });
 
-    expect(errorMessage(failure)).toBe('Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c');
+    expect(errorMessage(failure)).toBe(
+      'Ошибка на сервере. Попробуйте позже. Код ошибки: k3m9x2ab7c',
+    );
     expect(errorMessage(httpError(503, { status: 503, requestId: 'q1' }))).toBe(
-      'Произошла ошибка. Попробуйте позже. Код ошибки: q1',
+      'Что-то пошло не так. Попробуйте ещё раз или чуть позже. Код ошибки: q1',
     );
     expect(describeError(failure, 'Не удалось сохранить')).toBe(
-      'Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c',
+      'Ошибка на сервере. Попробуйте позже. Код ошибки: k3m9x2ab7c',
     );
     expect(
       describeError(httpError(502, { status: 502, requestId: 'g1' }), 'Не удалось сохранить'),
@@ -69,7 +75,11 @@ describe('request codes in messages', () => {
   });
 
   it('keeps other messages short', () => {
-    expect(errorMessage(httpError(404, { status: 404, requestId: 'r1' }))).toBe('Не найдено');
-    expect(errorMessage(httpError(503))).toBe('Произошла ошибка. Попробуйте позже');
+    expect(errorMessage(httpError(404, { status: 404, requestId: 'r1' }))).toBe(
+      'Не найдено: возможно, это уже удалили. Обновите страницу',
+    );
+    expect(errorMessage(httpError(503))).toBe(
+      'Что-то пошло не так. Попробуйте ещё раз или чуть позже',
+    );
   });
 });

@@ -155,8 +155,9 @@ class EventNotificationsIntegrationTests {
         UUID cancelled = directory.addStudent("Отмена");
         InboxNotification cancelledLesson = single(scenario, cancelled,
                 new LessonCancelled(UUID.randomUUID(), cancelled, date, rub(0), Instant.now()));
-        assertThat(cancelledLesson.title()).isEqualTo("Занятие 24.09.2026 отменено");
-        assertThat(cancelledLesson.body()).isEqualTo("Оплата за него не списывается. Баланс: 0 ₽");
+        // the charge was taken off: the lesson is not told as «cancelled» (the schedule does that)
+        assertThat(cancelledLesson.title()).isEqualTo("Начисление за занятие 24.09.2026 снято");
+        assertThat(cancelledLesson.body()).isEqualTo("Занятие не оплачивается. Баланс: 0 ₽");
     }
 
     @Test

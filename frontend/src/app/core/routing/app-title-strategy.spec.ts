@@ -5,6 +5,7 @@ import { TitleStrategy, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { DEFAULT_PORTAL_NAME, Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from './app-title-strategy';
+import { PageDetail } from './page-detail';
 import { testProvidersWithRouter } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
 
@@ -48,5 +49,18 @@ describe('AppTitleStrategy', () => {
     TestBed.tick();
 
     expect(TestBed.inject(Title).getTitle()).toBe('Оплаты — Английский с Марией');
+  });
+
+  it('puts the detail of a nested page before its title', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/titled');
+
+    TestBed.inject(PageDetail).value.set('Алиса Соловьёва');
+    TestBed.tick();
+    expect(TestBed.inject(Title).getTitle()).toBe('Алиса Соловьёва — Оплаты — Teacher Box');
+
+    TestBed.inject(PageDetail).value.set(null);
+    TestBed.tick();
+    expect(TestBed.inject(Title).getTitle()).toBe('Оплаты — Teacher Box');
   });
 });

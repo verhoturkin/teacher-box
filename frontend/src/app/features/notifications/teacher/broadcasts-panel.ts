@@ -30,7 +30,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
       </div>
       @if (history(); as history) {
         @if (history.length === 0) {
-          <tb-empty-state icon="pi-send" title="Вы ещё не отправляли сообщений." />
+          <tb-empty-state icon="pi-send" title="Вы ещё не отправляли сообщений" />
         } @else {
           <ul class="tb-list tb-broadcasts">
             @for (item of history; track item.id) {

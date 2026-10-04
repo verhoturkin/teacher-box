@@ -10,7 +10,15 @@ const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pas
 const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:8091';
 const PHONE = { width: 390, height: 844 };
 const TABLET = { width: 900, height: 1000 };
-const SECTIONS = ['Главная', 'Расписание', 'Ученики', 'Задания', 'Оплаты', 'Уведомления', 'ИИ'];
+const SECTIONS = [
+  'Главная',
+  'Расписание',
+  'Ученики',
+  'Задания',
+  'Оплаты',
+  'Уведомления',
+  'ИИ-помощник',
+];
 
 async function signIn(page: Page): Promise<void> {
   await page.goto('/login');

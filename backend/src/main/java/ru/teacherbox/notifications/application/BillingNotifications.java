@@ -31,11 +31,16 @@ class BillingNotifications {
                 LINK);
     }
 
+    /**
+     * The charge of a lesson was taken off: the teacher corrected a wrong mark or the outcome in the
+     * schedule was withdrawn. It is not a cancelled lesson (that one is told by the schedule), so the
+     * student is told about the money only.
+     */
     @ApplicationModuleListener
     void on(LessonCancelled event) {
         notifications.notify(event.studentId(), NotificationKind.LESSON_CANCELLED,
-                "Занятие " + texts.date(event.lessonDate()) + " отменено",
-                "Оплата за него не списывается. " + texts.balance(event.balanceAfter()),
+                "Начисление за занятие " + texts.date(event.lessonDate()) + " снято",
+                "Занятие не оплачивается. " + texts.balance(event.balanceAfter()),
                 LINK);
     }
 

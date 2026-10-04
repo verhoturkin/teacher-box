@@ -80,13 +80,15 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
-      <p-button
-        type="submit"
-        [label]="submitLabel()"
-        severity="success"
-        [class.tb-tonal]="tonal()"
-        [loading]="pending()"
-      />
+      <div class="tb-form-actions">
+        <p-button
+          type="submit"
+          [label]="submitLabel()"
+          [severity]="proceeds() ? 'primary' : 'success'"
+          [class.tb-tonal]="tonal()"
+          [loading]="pending()"
+        />
+      </div>
       <small class="tb-hint">После смены пароля все остальные устройства выйдут из аккаунта.</small>
     </form>
   `,
@@ -99,6 +101,8 @@ export class ChangePasswordForm {
   readonly submitLabel = input('Сменить пароль');
   /** A section of a page (the account) rather than the main step (the first setup): tonal. */
   readonly tonal = input(false);
+  /** A step of the wizard: a transition in the colour of the portal, not a green confirmation (ADR-0026). */
+  readonly proceeds = input(false);
   /** The password has been changed. */
   readonly changed = output();
 

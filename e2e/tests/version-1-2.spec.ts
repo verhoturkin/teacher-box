@@ -201,11 +201,8 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
   await expect(page.locator('p-card').filter({ hasText: 'Регулярные занятия' })).toContainText(
     GROUP,
   );
+  // the attendance opens at once, not through the details of the lesson (ADR-0026)
   await page.getByRole('button', { name: new RegExp(`Отметить посещаемость: .*${GROUP}`) }).click();
-  await page
-    .getByRole('dialog', { name: 'Занятие' })
-    .getByRole('button', { name: /Отметить посещаемость/ })
-    .click();
   const attendance = page.getByRole('dialog', { name: 'Кто был на занятии' });
   await attendance
     .locator('li')

@@ -37,7 +37,7 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Домашние задания">
+    <tb-page-header title="Задания">
       <tb-help-button help topic="cabinet/homework" />
     </tb-page-header>
     <p-card>
@@ -45,7 +45,7 @@ import { PageHeader } from '@shared/ui/page-header';
         <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Задание</th>
+              <th class="tb-col-main">Задание</th>
               <th>Срок</th>
               <th>Статус</th>
             </tr>
@@ -73,7 +73,7 @@ import { PageHeader } from '@shared/ui/page-header';
                 <tb-empty-state
                   icon="pi-book"
                   title="Заданий пока нет"
-                  hint="Здесь появятся задания от преподавателя"
+                  hint="Здесь появятся задания от учителя"
                 />
               </td>
             </tr>

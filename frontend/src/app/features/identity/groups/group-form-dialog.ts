@@ -23,6 +23,7 @@ import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A saved group with its lesson price (minor units). */
 export interface SavedGroup {
@@ -42,6 +43,7 @@ export interface SavedGroup {
     Message,
     MultiSelect,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -49,10 +51,10 @@ export interface SavedGroup {
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="group-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="group-name">Название</label>
           <input
@@ -100,8 +102,19 @@ export interface SavedGroup {
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="group-form"
+        />
       </ng-template>
     </p-dialog>
   `,

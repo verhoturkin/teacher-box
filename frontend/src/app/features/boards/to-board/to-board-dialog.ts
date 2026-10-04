@@ -16,6 +16,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { BoardClipboard } from './board-clipboard';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** How the material was put on the clipboard. */
 export type CopyMode = 'text' | 'image';
@@ -32,21 +33,23 @@ export interface Copied {
  */
 @Component({
   selector: 'tb-to-board-dialog',
-  imports: [FormsModule, Button, Dialog, Message, RadioButton],
+  imports: [EmptyState, FormsModule, Button, Dialog, Message, RadioButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
       header="На доску"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (loaded() && boards().length === 0) {
-        <p class="tb-muted">
-          Досок пока нет. Добавьте ссылку на доску ученика или группы в разделе «Ученики» (колонка
-          «Доски»).
-        </p>
+        <tb-empty-state
+          [compact]="true"
+          icon="pi-th-large"
+          title="Досок пока нет"
+          hint="Добавьте ссылку на доску ученика или группы в разделе «Ученики» (колонка «Доски»)."
+        />
       } @else {
         <p class="tb-muted">
           Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V.

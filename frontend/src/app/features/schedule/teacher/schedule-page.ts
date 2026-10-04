@@ -48,6 +48,7 @@ import {
   ScheduleCalendar,
   SlotSelection,
 } from '../ui/schedule-calendar';
+import { AttendanceDialog } from './attendance-dialog';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
@@ -62,6 +63,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -83,6 +85,7 @@ const CLICK_SELECTION_MINUTES = 30;
     Tag,
     CalendarFeedPanel,
     LessonDetailsDialog,
+    AttendanceDialog,
     LessonDialog,
     OffTimeDialog,
     RequestAnswerDialog,
@@ -98,18 +101,6 @@ const CLICK_SELECTION_MINUTES = 30;
   template: `
     <tb-page-header title="Расписание">
       <tb-help-button help topic="teacher/schedule" />
-      <p-button
-        label="Регулярные занятия"
-        icon="pi pi-replay"
-        severity="secondary"
-        (onClick)="newSeries()"
-      />
-      <p-button
-        label="Нерабочее время"
-        icon="pi pi-moon"
-        severity="secondary"
-        (onClick)="newOffTime()"
-      />
       <p-button class="tb-page-fab" label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
     </tb-page-header>
     @if (localTimeHint(); as hint) {
@@ -151,7 +142,12 @@ const CLICK_SELECTION_MINUTES = 30;
                   </span>
                 </div>
                 <div class="tb-list__trail">
-                  <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
+                  <p-button
+                    label="Ответить"
+                    [text]="true"
+                    [ariaLabel]="'Ответить: ' + (request.studentName ?? 'ученик')"
+                    (onClick)="answer(request)"
+                  />
                 </div>
               </li>
             }
@@ -174,9 +170,10 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       label="Отметить"
                       icon="pi pi-users"
+                      severity="success"
                       [text]="true"
                       [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
-                      (onClick)="openLesson(lesson)"
+                      (onClick)="markAttendance(lesson)"
                     />
                   } @else {
                     <p-button
@@ -186,6 +183,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [rounded]="true"
                       severity="success"
                       [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'CONDUCTED')"
                     />
                     <p-button
@@ -195,6 +193,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       [rounded]="true"
                       severity="danger"
                       [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'MISSED')"
                     />
                   }
@@ -227,7 +226,21 @@ const CLICK_SELECTION_MINUTES = 30;
         />
       </p-card>
 
-      <p-card header="Регулярные занятия">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Регулярные занятия</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Добавить"
+                icon="pi pi-plus"
+                severity="secondary"
+                ariaLabel="Добавить регулярные занятия"
+                (onClick)="newSeries()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <tb-load-state
           [state]="seriesState"
           what="регулярные занятия"
@@ -235,7 +248,11 @@ const CLICK_SELECTION_MINUTES = 30;
           (retry)="loadSeries()"
         >
           @if (series().length === 0) {
-            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
+            <tb-empty-state
+              icon="pi-replay"
+              title="Нет регулярных занятий"
+              hint="Нажмите «Добавить», чтобы запланировать занятия на каждую неделю"
+            />
           } @else {
             <ul class="tb-list">
               @for (item of series(); track item.id) {
@@ -249,19 +266,19 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      [pTooltip]="'Изменить расписание: ' + with(item)"
+                      [pTooltip]="'Изменить регулярные занятия: ' + with(item)"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="'Изменить расписание: ' + with(item)"
+                      [ariaLabel]="'Изменить регулярные занятия: ' + with(item)"
                       (onClick)="editSeries(item)"
                     />
                     <p-button
-                      icon="pi pi-trash"
+                      icon="pi pi-stop-circle"
                       [text]="true"
-                      [pTooltip]="'Завершить расписание: ' + with(item)"
+                      [pTooltip]="'Завершить регулярные занятия: ' + with(item)"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Завершить расписание: ' + with(item)"
+                      [ariaLabel]="'Завершить регулярные занятия: ' + with(item)"
                       (onClick)="stopSeries(item)"
                     />
                   </div>
@@ -272,7 +289,21 @@ const CLICK_SELECTION_MINUTES = 30;
         </tb-load-state>
       </p-card>
 
-      <p-card header="Нерабочее время">
+      <p-card>
+        <ng-template #title>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text">Нерабочее время</span>
+            <div class="tb-card-title__actions">
+              <p-button
+                label="Добавить"
+                icon="pi pi-plus"
+                severity="secondary"
+                ariaLabel="Добавить нерабочее время"
+                (onClick)="newOffTime()"
+              />
+            </div>
+          </div>
+        </ng-template>
         <tb-load-state
           [state]="offTimesState"
           what="нерабочее время"
@@ -331,14 +362,19 @@ const CLICK_SELECTION_MINUTES = 30;
       [lesson]="editing()"
       [slot]="slot()"
       [defaultDuration]="defaultDuration()"
-      (saved)="reload()"
+      (saved)="done('Занятие сохранено')"
     />
     <tb-lesson-details-dialog
       [(visible)]="detailsVisible"
       [lesson]="selected()"
-      (changed)="reload()"
-      (deleted)="reload()"
+      (changed)="done('Занятие обновлено')"
+      (deleted)="done('Занятие удалено')"
       (edit)="editLesson($event)"
+    />
+    <tb-attendance-dialog
+      [(visible)]="attendanceVisible"
+      [lesson]="selected()"
+      (saved)="done('Посещаемость сохранена')"
     />
     <tb-series-dialog
       [(visible)]="seriesDialogVisible"
@@ -358,12 +394,13 @@ const CLICK_SELECTION_MINUTES = 30;
     <tb-request-answer-dialog
       [(visible)]="answerVisible"
       [request]="answering()"
-      (answered)="reload()"
+      (answered)="done('Ответ отправлен')"
     />
     <p-confirmdialog />
   `,
 })
 export class SchedulePage implements OnInit {
+  protected readonly marks = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -396,6 +433,7 @@ export class SchedulePage implements OnInit {
   protected readonly editing = signal<ScheduledLesson | null>(null);
   protected readonly slot = signal<LessonSlot | null>(null);
   protected readonly detailsVisible = signal(false);
+  protected readonly attendanceVisible = signal(false);
   protected readonly selected = signal<ScheduledLesson | null>(null);
   protected readonly seriesDialogVisible = signal(false);
   protected readonly editingSeries = signal<LessonSeries | null>(null);
@@ -477,6 +515,18 @@ export class SchedulePage implements OnInit {
     this.detailsVisible.set(true);
   }
 
+  /** The result of a frequent action is told at once: the lesson may be out of the screen (ADR-0026). */
+  protected done(message: string): void {
+    this.snackbar.success(message);
+    this.reload();
+  }
+
+  /** The attendance of a group lesson opens at once, not through the details of the lesson (ADR-0026). */
+  markAttendance(lesson: ScheduledLesson): void {
+    this.selected.set(lesson);
+    this.attendanceVisible.set(true);
+  }
+
   editLesson(lesson: ScheduledLesson): void {
     this.editing.set(lesson);
     this.slot.set(null);
@@ -509,8 +559,8 @@ export class SchedulePage implements OnInit {
   }
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
-    this.api.setOutcome(lesson.id, outcome).subscribe(() => {
-      this.reload();
+    this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
+      this.done('Занятие отмечено');
     });
   }
 
@@ -540,7 +590,6 @@ export class SchedulePage implements OnInit {
         header: 'Завершить регулярные занятия?',
         message: `Занятия «${this.weekly(series)}» с сегодняшнего дня будут удалены из расписания. Перенесённые отдельно занятия останутся.`,
         acceptLabel: 'Завершить',
-        rejectLabel: 'Назад',
         accept: () => {
           this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
             this.reload();
@@ -572,7 +621,6 @@ export class SchedulePage implements OnInit {
         header: 'Удалить нерабочее время?',
         message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Назад',
         accept: () => {
           this.api.deleteOffTime(offTime.id).subscribe(() => {
             this.loadOffTimes();
@@ -605,7 +653,6 @@ export class SchedulePage implements OnInit {
         header: 'Время занято',
         message: 'В это время уже есть другое занятие. Всё равно перенести?',
         acceptLabel: 'Перенести',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.onMove(move, true);
         },

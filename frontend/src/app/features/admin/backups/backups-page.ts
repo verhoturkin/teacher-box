@@ -9,7 +9,7 @@ import { HelpButton } from '@features/help/parts';
   imports: [BackupsCard, PageHeader, HelpButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Резервные копии">
+    <tb-page-header title="Копии">
       <tb-help-button help topic="admin/backups" />
     </tb-page-header>
     <tb-backups-card area="admin" />

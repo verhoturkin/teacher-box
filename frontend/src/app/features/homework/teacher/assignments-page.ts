@@ -45,7 +45,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Домашние задания">
+    <tb-page-header title="Задания">
       <tb-help-button help topic="teacher/homework" />
       <a pButton routerLink="review" severity="secondary">
         <span pButtonLabel>На проверку</span>
@@ -66,7 +66,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
         <p-table [value]="assignments()" dataKey="id" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th>Задание</th>
+              <th class="tb-col-main">Задание</th>
               <th>Срок</th>
               <th>Учеников</th>
               <th>На проверке</th>
@@ -94,15 +94,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 <tb-empty-state
                   icon="pi-book"
                   title="Заданий пока нет"
-                  hint="Создайте первое задание и выдайте его ученикам"
-                >
-                  <p-button
-                    label="Новое задание"
-                    severity="secondary"
-                    icon="pi pi-plus"
-                    (onClick)="openCreate()"
-                  />
-                </tb-empty-state>
+                  hint="Нажмите «Новое задание» и выдайте его ученикам"
+                />
               </td>
             </tr>
           </ng-template>

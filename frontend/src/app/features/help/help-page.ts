@@ -14,11 +14,13 @@ import { Card } from 'primeng/card';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
+import { pageDetail } from '@core/routing/page-detail';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
 import { PageHeader } from '@shared/ui/page-header';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /**
  * The help of an area (`/<area>/help/<topic>`): the contents with search on top, the chosen article
@@ -27,6 +29,7 @@ import { PageHeader } from '@shared/ui/page-header';
 @Component({
   selector: 'tb-help-page',
   imports: [
+    EmptyState,
     ReactiveFormsModule,
     RouterLink,
     Card,
@@ -65,7 +68,14 @@ import { PageHeader } from '@shared/ui/page-header';
               </li>
             } @empty {
               @if (loaded()) {
-                <li class="tb-muted">Ничего не нашлось. Попробуйте другие слова.</li>
+                <li>
+                  <tb-empty-state
+                    [compact]="true"
+                    icon="pi-search"
+                    title="Ничего не нашлось"
+                    hint="Попробуйте другие слова"
+                  />
+                </li>
               }
             }
           </ul>
@@ -123,7 +133,7 @@ import { PageHeader } from '@shared/ui/page-header';
 
     .tb-help__title {
       margin: 0;
-      font: var(--tb-type-headline-s);
+      font: var(--tb-type-headline-s-emphasized);
     }
 
     .tb-help__summary {
@@ -160,6 +170,7 @@ export class HelpPage {
   });
 
   constructor() {
+    pageDetail(() => this.current()?.title);
     effect(() => {
       const area = this.area();
       void this.library.articles(area).then((articles) => {

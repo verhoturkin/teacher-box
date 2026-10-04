@@ -28,6 +28,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { pageDetail } from '@core/routing/page-detail';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
@@ -51,10 +52,10 @@ import { Snackbar } from '@core/snackbar/snackbar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!state.ready()) {
-      <tb-page-header title="Ученик" back="/teacher/billing" backLabel="Все ученики" />
+      <tb-page-header title="Ученик" back="/teacher/billing" backLabel="Оплаты" />
       <tb-load-state [state]="state" what="историю оплат" (retry)="reload()" />
     } @else if (ledger(); as ledger) {
-      <tb-page-header [title]="ledger.displayName" back="/teacher/billing" backLabel="Все ученики">
+      <tb-page-header [title]="ledger.displayName" back="/teacher/billing" backLabel="Оплаты">
         <tb-help-button help topic="teacher/billing" />
         <p-button
           class="tb-page-fab"
@@ -104,7 +105,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <div class="tb-form-actions">
                 <p-button
                   label="Отмена"
-                  severity="danger"
+                  severity="secondary"
                   [text]="true"
                   (onClick)="cancelPrice()"
                 />
@@ -168,6 +169,10 @@ export class StudentLedgerPage implements OnInit {
   readonly studentId = input.required<string>();
 
   protected readonly ledger = signal<StudentLedger | null>(null);
+
+  constructor() {
+    pageDetail(() => this.ledger()?.displayName);
+  }
   protected readonly student = computed<BillingStudent[]>(() => {
     const ledger = this.ledger();
     return ledger === null ? [] : [ledger];
@@ -236,10 +241,9 @@ export class StudentLedgerPage implements OnInit {
     const ledger = this.ledger();
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Отменить занятие?',
+        header: 'Снять начисление?',
         message: `Начисление ${ledger === null ? '' : formatMoney(lesson.price, ledger.currency)} будет снято. Запись останется в истории.`,
-        acceptLabel: 'Отменить занятие',
-        rejectLabel: 'Назад',
+        acceptLabel: 'Снять начисление',
         accept: () => {
           this.api.cancelLesson(lesson.id, null).subscribe(() => {
             this.reload();
@@ -256,7 +260,6 @@ export class StudentLedgerPage implements OnInit {
         header: 'Аннулировать оплату?',
         message: `Оплата ${ledger === null ? '' : formatMoney(payment.amount, ledger.currency)} перестанет учитываться. Запись останется в истории.`,
         acceptLabel: 'Аннулировать',
-        rejectLabel: 'Назад',
         accept: () => {
           this.api.voidPayment(payment.id, null).subscribe(() => {
             this.reload();

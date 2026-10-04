@@ -28,7 +28,7 @@ import { EmptyState } from '@shared/ui/empty-state';
       <ng-template #header>
         <tr>
           <th>Дата</th>
-          <th>Операция</th>
+          <th class="tb-col-main">Операция</th>
           <th>Подробности</th>
           <th class="tb-amount">Сумма</th>
           @if (editable()) {
@@ -74,8 +74,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Отменить занятие"
-                      ariaLabel="Отменить занятие"
+                      [pTooltip]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [ariaLabel]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
                       (onClick)="cancelLesson.emit(entry.lesson)"
                     />
                   }
@@ -106,8 +106,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Аннулировать оплату"
-                      ariaLabel="Аннулировать оплату"
+                      [pTooltip]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [ariaLabel]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
                       (onClick)="voidPayment.emit(entry.payment)"
                     />
                   }

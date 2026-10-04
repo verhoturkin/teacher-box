@@ -25,6 +25,7 @@ import { ScheduledLesson } from '../data-access/schedule.models';
 import { optionalText } from '../schedule-labels';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { SubmitFor } from '@shared/ui/submit-for';
 
 /** A student the teacher can plan a lesson with. */
 export interface LessonStudent {
@@ -56,6 +57,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     Message,
     Select,
     FieldErrors,
+    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -63,10 +65,10 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
       [header]="lesson() === null ? 'Новое занятие' : 'Изменить занятие'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
-      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="schedule-lesson-student">С кем</label>
           <p-select
@@ -148,8 +150,19 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
         }
       </form>
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
+        <p-button
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          severity="success"
+          label="Сохранить"
+          [loading]="pending()"
+          type="submit"
+          tbSubmitFor="lesson-form"
+        />
       </ng-template>
     </p-dialog>
   `,

@@ -7,8 +7,8 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'access.denied': 'Недостаточно прав для этого действия',
   'validation.failed': 'Проверьте правильность заполнения полей',
   'concurrent.modification': 'Данные изменились. Обновите страницу и повторите',
-  'request.invalid': 'Некорректный запрос',
-  'internal.error': 'Внутренняя ошибка сервера',
+  'request.invalid': 'Не удалось выполнить запрос. Проверьте, что всё заполнено верно',
+  'internal.error': 'Ошибка на сервере. Попробуйте позже',
   'file.not-found': 'Файл не найден',
   // identity
   'auth.invalid-credentials': 'Неверный логин или пароль',
@@ -36,6 +36,15 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'group.not-archived': 'Группа не в архиве',
   'account.already-deactivated': 'Доступ ученика уже отключён',
   'account.not-deactivated': 'Доступ ученика не был отключён',
+  'account.not-active': 'Доступ ученика не активирован: он ещё не принял приглашение или отключён',
+  'account.not-invited': 'Ссылка-приглашение уже использована',
+  'account.not-student': 'Это действие доступно только ученикам',
+  'account.not-administrator': 'Это действие доступно только администратору',
+  'user.not-found': 'Пользователь не найден',
+  'billing.students-only': 'История оплат есть только у учеников',
+  'boards.students-only': 'Доски в личном кабинете есть только у учеников',
+  'homework.students-only': 'Задания в личном кабинете есть только у учеников',
+  'meetings.students-only': 'Видеовстречи в личном кабинете есть только у учеников',
   // billing
   'lesson.not-found': 'Занятие не найдено',
   'lesson.already-cancelled': 'Занятие уже отменено',
@@ -44,10 +53,19 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'payment.not-found': 'Оплата не найдена',
   'payment.already-voided': 'Оплата уже аннулирована',
   'payment.amount-invalid': 'Сумма оплаты должна быть больше нуля',
+  'payment.comment-invalid': 'Комментарий к оплате слишком длинный',
+  'payment.reason-invalid': 'Причина аннулирования слишком длинная',
+  'lesson.reason-invalid': 'Причина отмены слишком длинная',
+  'lesson.status-invalid': 'Занятие можно записать только проведённым или пропущенным',
+  'lesson.topic-invalid': 'Тема занятия слишком длинная',
   'account.price-invalid': 'Цена занятия не может быть отрицательной',
   // homework
   'assignment.not-found': 'Задание не найдено',
   'assignment.title-invalid': 'Название задания — от 1 до 200 символов',
+  'assignment.description-invalid': 'Текст задания слишком длинный',
+  'task.grade-invalid': 'Оценка слишком длинная — не больше 20 символов',
+  'task.comment-invalid': 'Комментарий к работе слишком длинный',
+  'submission.text-invalid': 'Текст ответа слишком длинный',
   'student.deactivated': 'Нельзя выдать задание ученику с отключённым доступом',
   'task.not-found': 'Задание не найдено',
   'task.already-accepted': 'Работа уже принята учителем',
@@ -65,7 +83,7 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
   'notifications.channel-not-linked': 'Мессенджер не подключён',
   'notifications.channel-from-environment':
-    'Этот бот задан в переменных окружения сервера — измените его там',
+    'Этот бот задан администратором портала — чтобы изменить его, попросите администратора',
   'notifications.channel-check-failed':
     'Мессенджер не принял токен. Проверьте его и попробуйте снова',
   'notifications.test-failed': 'Не удалось отправить тестовое сообщение',
@@ -130,8 +148,7 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.request-resolved': 'На запрос уже ответили',
   'schedule.students-only': 'Раздел доступен только ученикам',
   'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
-  'schedule.google-client-from-environment':
-    'OAuth-клиент Google задан в переменных окружения сервера',
+  'schedule.google-client-from-environment': 'OAuth-клиент Google задан администратором портала',
   'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
   'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
   'meetings.not-connected':
@@ -144,7 +161,7 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'meetings.no-recipients':
     'Ссылку некому отправить: у ученика нет доступа или в группе никого нет',
   'meetings.client-missing': 'Сначала укажите ClientID и Client secret приложения',
-  'meetings.client-from-environment': 'Приложение Яндекса задано в переменных окружения сервера',
+  'meetings.client-from-environment': 'Приложение Яндекса задано администратором портала',
   'meetings.origin-invalid': 'Не удалось определить адрес портала',
   'meetings.student-not-found': 'Ученик не найден или отключён',
   'meetings.group-not-found': 'Группа не найдена или в архиве',
@@ -157,23 +174,26 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'boards.board-not-found': 'Такой доски уже нет',
   'boards.owner-invalid': 'Выберите ученика или группу',
   // administrator
+  'settings.unknown': 'Такой настройки нет',
+  'settings.read-only': 'Эта настройка меняется только в файле .env на сервере',
+  'settings.invalid': 'Недопустимое значение настройки',
   'admin.logger-invalid': 'Некорректное имя раздела журнала',
   'admin.duration-invalid': 'Время — от 1 минуты до 24 часов',
 };
 
 const STATUS_MESSAGES: Readonly<Record<number, string>> = {
   0: 'Сервер недоступен. Проверьте подключение',
-  400: 'Некорректный запрос',
+  400: 'Не удалось выполнить запрос. Проверьте, что всё заполнено верно',
   401: 'Требуется вход в систему',
   403: 'Недостаточно прав для этого действия',
-  404: 'Не найдено',
-  409: 'Конфликт данных',
+  404: 'Не найдено: возможно, это уже удалили. Обновите страницу',
+  409: 'Данные изменились. Обновите страницу и повторите',
   413: 'Слишком большой файл',
-  422: 'Операция невозможна',
+  422: 'Это действие сейчас недоступно. Обновите страницу и проверьте данные',
   429: 'Слишком много запросов. Попробуйте позже',
 };
 
-const FALLBACK = 'Произошла ошибка. Попробуйте позже';
+const FALLBACK = 'Что-то пошло не так. Попробуйте ещё раз или чуть позже';
 
 export function messageForCode(code: string): string | undefined {
   return CODE_MESSAGES[code];

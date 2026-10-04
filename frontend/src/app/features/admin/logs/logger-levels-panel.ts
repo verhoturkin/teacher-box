@@ -12,6 +12,7 @@ import { LogLevelName, LoggerLevel } from '../data-access/admin.models';
 import { LEVELS, levelSeverity } from '../admin-labels';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 export const DURATIONS: readonly { readonly label: string; readonly minutes: number }[] = [
   { label: '15 минут', minutes: 15 },
@@ -82,7 +83,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
           [loading]="pending()"
         />
       </form>
-      <p-table [value]="loggers()" styleClass="tb-cards p-datatable-sm">
+      <p-table [value]="loggers()" styleClass="tb-cards">
         <ng-template #header>
           <tr>
             <th>Раздел</th>
@@ -102,7 +103,14 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
             </td>
             <td class="tb-row-actions">
               @if (logger.revertAt !== null) {
-                <p-button label="Вернуть" [text]="true" (onClick)="revert(logger.name)" />
+                <p-button
+                  label="Вернуть"
+                  severity="danger"
+                  [text]="true"
+                  [ariaLabel]="'Вернуть: ' + logger.name"
+                  [loading]="busy.is(logger.name)"
+                  (onClick)="revert(logger.name)"
+                />
               }
             </td>
           </tr>
@@ -126,7 +134,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
 
     .tb-logger-name {
       overflow-wrap: anywhere;
-      font-family: monospace;
+      font-family: var(--tb-font-mono);
     }
 
     .tb-row-actions {
@@ -135,6 +143,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
   `,
 })
 export class LoggerLevelsPanel implements OnInit {
+  protected readonly busy = new Busy();
   private readonly api = inject(AdminApi);
   private readonly snackbar = inject(Snackbar);
 
@@ -180,7 +189,7 @@ export class LoggerLevelsPanel implements OnInit {
   }
 
   revert(name: string): void {
-    this.api.revertLevel(name).subscribe(() => {
+    this.busy.guard(name, this.api.revertLevel(name)).subscribe(() => {
       this.reload();
     });
   }

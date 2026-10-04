@@ -100,7 +100,8 @@ const STEPS: readonly Step[] = [
             </p>
             <tb-change-password-form
               currentLabel="Пароль, с которым вы вошли"
-              submitLabel="Сохранить и продолжить"
+              submitLabel="Далее"
+              [proceeds]="true"
               (changed)="next()"
             />
           }
@@ -133,7 +134,7 @@ const STEPS: readonly Step[] = [
                   календаре.
                 </small>
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
@@ -151,19 +152,18 @@ const STEPS: readonly Step[] = [
                 @if (zone !== browserZone) {
                   <p-message severity="warn" styleClass="tb-form-message">
                     На этом компьютере другой часовой пояс ({{ browserZone }}). Время занятий портал
-                    считает по часовому поясу портала; поменять его можно на сервере
-                    (TEACHERBOX_TIMEZONE).
+                    считает по часовому поясу портала; поменять его может администратор портала.
                   </p-message>
                 }
               }
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
             </form>
           }
           @case ('price') {
-            <h2 class="tb-setup-title">Стоимость занятия</h2>
+            <h2 class="tb-setup-title">Цена занятия</h2>
             <p>
               Проведённые занятия списываются с баланса ученика по этой цене. Она достаётся новым
               ученикам и группам; у каждого ученика цену можно поменять отдельно.
@@ -186,7 +186,7 @@ const STEPS: readonly Step[] = [
                   [fluid]="true"
                 />
               </div>
-              <div class="tb-actions">
+              <div class="tb-form-actions">
                 <p-button label="Назад" severity="secondary" (onClick)="back()" />
                 <p-button type="submit" label="Далее" [loading]="pending()" />
               </div>
@@ -220,7 +220,7 @@ const STEPS: readonly Step[] = [
               </li>
             </ul>
             <p>Начните с главного: добавьте ученика и запланируйте первое занятие.</p>
-            <div class="tb-actions">
+            <div class="tb-form-actions">
               <p-button label="Назад" severity="secondary" (onClick)="back()" />
               <p-button
                 label="Перейти на главную"
@@ -300,7 +300,7 @@ const STEPS: readonly Step[] = [
 
     .tb-setup-title {
       margin-top: 0;
-      font: var(--tb-type-title-l);
+      font: var(--tb-type-title-l-emphasized);
     }
 
     .tb-setup-later {

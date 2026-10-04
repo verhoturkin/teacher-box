@@ -50,7 +50,7 @@ describe('LoadStateView', () => {
     const host = hostElement(fixture);
 
     expect(readableText(host)).toContain(
-      'Не удалось загрузить задания Произошла ошибка. Попробуйте позже Повторить',
+      'Не удалось загрузить задания Что-то пошло не так. Попробуйте ещё раз или чуть позже Повторить',
     );
     expect(host.querySelector('[role="alert"]')).not.toBeNull();
     expect(host.querySelector('.content')).toBeNull();

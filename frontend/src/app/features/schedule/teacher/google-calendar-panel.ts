@@ -32,6 +32,7 @@ import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { Busy } from '@shared/ui/busy';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -120,6 +121,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 label="Отключить"
                 severity="danger"
                 [text]="true"
+                [loading]="actions.is('disconnect')"
                 (onClick)="disconnect()"
               />
             </div>
@@ -226,7 +228,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   @if (status.clientConfigured) {
                     <p-button
                       label="Отмена"
-                      severity="danger"
+                      severity="secondary"
                       [text]="true"
                       (onClick)="editingClient.set(false)"
                     />
@@ -278,6 +280,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   `,
 })
 export class GoogleCalendarPanel implements OnInit {
+  protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly navigation = inject(ExternalNavigation);
   private readonly portal = inject(Portal);
@@ -363,7 +366,7 @@ export class GoogleCalendarPanel implements OnInit {
   }
 
   disconnect(): void {
-    this.api.disconnectGoogle().subscribe(() => {
+    this.actions.guard('disconnect', this.api.disconnectGoogle()).subscribe(() => {
       this.resultCode.set(null);
       this.load();
     });
