@@ -1947,7 +1947,7 @@ a.p-menu-item-link:hover {
   color: var(--p-md-error);
 }
 
-/* «Ещё» opens at the right edge: in six columns of 62.5 px its computed place sticks out by a pixel. */
+/* «Ещё» opens at the right edge: in five columns its computed place may stick out by a pixel. */
 .tb-more-menu.p-menu-overlay {
   right: var(--tb-space-2) !important;
   left: auto !important;

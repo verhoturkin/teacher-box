@@ -41,7 +41,6 @@ describe('Shell on a phone', () => {
       'Расписание',
       'Ученики',
       'Задания',
-      'Оплаты',
     ]);
     expect(host.querySelector('tb-side-nav')).toBeNull();
     expect(
@@ -53,9 +52,11 @@ describe('Shell on a phone', () => {
     more.click();
     await fixture.whenStable();
     expect(more.getAttribute('aria-expanded')).toBe('true');
+    // four sections and «Ещё» (ADR-0027): the rest of the sections are in the menu
+    expect(bodyText()).toContain('Оплаты');
     expect(bodyText()).toContain('Уведомления');
     expect(bodyText()).toContain('ИИ');
-    expect(nav.children).toHaveLength(6);
+    expect(nav.children).toHaveLength(5);
   });
 
   it('marks «Ещё» when the page is a section from it', async () => {
@@ -66,6 +67,13 @@ describe('Shell on a phone', () => {
     const more = requireElement(host, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
     expect(more.classList).toContain('tb-bottom-nav__item--active');
     expect(more.getAttribute('aria-current')).toBe('page');
+
+    // the chosen section stands out in the menu
+    more.click();
+    await fixture.whenStable();
+    const chosen = document.body.querySelector('.p-menu .tb-menu-item--selected');
+    expect(chosen?.textContent).toContain('Уведомления');
+    expect(document.body.querySelectorAll('.p-menu .tb-menu-item--selected')).toHaveLength(1);
   });
 
   it('has no «Ещё» when all sections fit', async () => {

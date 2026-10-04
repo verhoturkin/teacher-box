@@ -19,8 +19,8 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
   { choice: 'system', label: 'Тема как в системе', icon: 'pi pi-desktop' },
 ];
 
-/** Sections in the bottom navigation; the others are under «Ещё». */
-const NAV_ITEMS = 5;
+/** Sections in the bottom navigation: four and «Ещё» (ADR-0027); the others are under «Ещё». */
+const NAV_ITEMS = 4;
 
 /**
  * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the portal, the
@@ -151,7 +151,6 @@ export class Shell {
   readonly notifications = input(true);
 
   protected readonly navItems = computed(() => this.items().slice(0, NAV_ITEMS));
-  protected readonly moreItems = computed(() => this.items().slice(NAV_ITEMS));
   protected readonly userOpen = signal(false);
   protected readonly moreOpen = signal(false);
   private readonly router = inject(Router);
@@ -162,14 +161,21 @@ export class Shell {
     ),
     { initialValue: this.router.url },
   );
-  /** The current page is a section from «Ещё». */
-  protected readonly moreActive = computed(() => {
+  /** The sections under «Ещё»; the current one is chosen in the menu (ADR-0027, ADR-0022). */
+  protected readonly moreItems = computed<MenuItem[]>(() => {
     const url = this.url().split(/[?#]/)[0] ?? '';
-    return this.moreItems().some((item) => {
-      const link: unknown = item.routerLink;
-      return typeof link === 'string' && (url === link || url.startsWith(`${link}/`));
-    });
+    return this.items()
+      .slice(NAV_ITEMS)
+      .map((item) => {
+        const link: unknown = item.routerLink;
+        const current = typeof link === 'string' && (url === link || url.startsWith(`${link}/`));
+        return current ? { ...item, styleClass: 'tb-menu-item--selected' } : item;
+      });
   });
+  /** The current page is a section from «Ещё». */
+  protected readonly moreActive = computed(() =>
+    this.moreItems().some((item) => item.styleClass === 'tb-menu-item--selected'),
+  );
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
