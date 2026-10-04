@@ -92,7 +92,7 @@ export class StudentFormDialog {
   readonly updated = output<Student>();
 
   protected readonly title = computed(() =>
-    this.student() === null ? 'Новый ученик' : 'Редактирование',
+    this.student() === null ? 'Новый ученик' : 'Изменить ученика',
   );
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ADMIN_ARTICLES } from './articles/admin';
 import { STUDENT_ARTICLES } from './articles/student';
 import { TEACHER_ARTICLES } from './articles/teacher';
-import { HelpLibrary, searchArticles } from './help-library';
+import { HelpLibrary, searchArticles, searchable } from './help-library';
 import { HelpArticleText } from './help.models';
 import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';
 
@@ -78,5 +78,22 @@ describe('HelpLibrary', () => {
       'groups',
     );
     expect(searchArticles(articles, 'абракадабра')).toEqual([]);
+  });
+
+  it('does not tell «е» from «ё» and does not search the addresses of the links', async () => {
+    const articles = await library.articles('teacher');
+
+    // the article «Оформление и телефон» has «Тёмная тема» and «цвет»; people write «темная»
+    expect(searchArticles(articles, 'темная тема').map((article) => article.id)).toContain(
+      'appearance',
+    );
+    expect(searchArticles(articles, 'тёмная тема').map((article) => article.id)).toContain(
+      'appearance',
+    );
+    expect(
+      searchable('[Видеовстречи](/teacher/help/meetings) **Ёлка**').split(/\s+/).filter(Boolean),
+    ).toEqual(['видеовстречи', 'елка']);
+    // an address of a link is not text: «help» is in every address and in no word
+    expect(searchArticles(articles, 'teacher/help')).toEqual([]);
   });
 });

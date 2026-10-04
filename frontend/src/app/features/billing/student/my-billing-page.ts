@@ -41,7 +41,7 @@ import { PageHeader } from '@shared/ui/page-header';
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Стоимость занятия</span>
+              <span class="tb-muted">Цена занятия</span>
               <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
             </div>
           </p-card>

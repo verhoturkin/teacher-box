@@ -67,7 +67,7 @@ describe('PortalAddressField', () => {
 
     const host = hostElement(fixture);
     expect(requireElement(host, '#portal-address', HTMLInputElement).readOnly).toBe(true);
-    expect(readableText(host)).toContain('TEACHERBOX_PUBLIC_URL');
+    expect(readableText(host)).toContain('попросите администратора');
     expect(host.querySelector('p-button')).toBeNull();
   });
 });

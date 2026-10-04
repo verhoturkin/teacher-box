@@ -43,7 +43,7 @@ export const LATEST_COUNT = 5;
                       {{ item.title }}
                     </button>
                     <span class="tb-list__supporting">{{
-                      item.createdAt | date: 'dd.MM HH:mm'
+                      item.createdAt | date: 'dd.MM.yyyy HH:mm'
                     }}</span>
                   </div>
                 </li>

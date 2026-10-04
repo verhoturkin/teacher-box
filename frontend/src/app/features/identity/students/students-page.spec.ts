@@ -203,7 +203,7 @@ describe('StudentsPage', () => {
   it('edits a student', async () => {
     await loadStudents([MARIA]);
 
-    buttonByText(host, 'Редактировать: Мария').click();
+    buttonByText(host, 'Изменить: Мария').click();
     await fixture.whenStable();
     typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Мария Иванова');
     await fixture.whenStable();

@@ -33,10 +33,13 @@ import { PortalAddressWarnings } from './portal-address-warnings';
           <p-button label="Как в браузере" severity="secondary" (onClick)="useOpenedAt()" />
         }
       </div>
-      @if (fromEnvironment()) {
+      @if (fromEnvironment() && administrator()) {
         <small class="tb-hint">
-          Адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL) — поменять его может тот, кто
-          настраивал сервер.
+          Адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL) — поменять его можно там.
+        </small>
+      } @else if (fromEnvironment()) {
+        <small class="tb-hint">
+          Адрес задан администратором портала — чтобы его поменять, попросите администратора.
         </small>
       } @else {
         <small class="tb-hint">
@@ -58,6 +61,8 @@ export class PortalAddressField {
 
   readonly control = input.required<FormControl<string>>();
   readonly fromEnvironment = input(false);
+  /** The administrator reads the name of the variable; the teacher is told to ask the administrator. */
+  readonly administrator = input(false);
   readonly inputId = input('portal-address');
 
   protected readonly maxLength = MAX_ADDRESS_LENGTH;

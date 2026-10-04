@@ -13,7 +13,7 @@ import { MoneyPipe } from '@shared/money/money.pipe';
       } @else if (balance() > 0) {
         аванс {{ balance() | money: currency() }}
       } @else {
-        0
+        {{ 0 | money: currency() }}
       }
     </span>
   `,

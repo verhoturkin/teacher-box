@@ -132,7 +132,9 @@ test('a weekly schedule ends with a bin, red like deleting off time', async ({ p
 
   await signIn(page);
   await page.goto('/teacher/schedule');
-  const end = page.getByRole('button', { name: 'Завершить расписание: Ученик серии 1.6.6' });
+  const end = page.getByRole('button', {
+    name: 'Завершить регулярные занятия: Ученик серии 1.6.6',
+  });
   await expect(end).toBeVisible();
   await expect(end).toHaveClass(/p-button-danger/);
   await expect(end.locator('.pi-trash')).toHaveCount(1);

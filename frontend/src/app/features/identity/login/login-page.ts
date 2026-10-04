@@ -44,7 +44,7 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
       >
         @if (sessionExpired()) {
           <p-message severity="info" styleClass="tb-form-message"
-            >Сессия истекла. Войдите снова.</p-message
+            >Сессия истекла. Войдите снова</p-message
           >
         }
         <form class="tb-form" [formGroup]="form" (ngSubmit)="submit()">

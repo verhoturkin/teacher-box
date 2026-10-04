@@ -266,19 +266,19 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      [pTooltip]="'Изменить расписание: ' + with(item)"
+                      [pTooltip]="'Изменить регулярные занятия: ' + with(item)"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="'Изменить расписание: ' + with(item)"
+                      [ariaLabel]="'Изменить регулярные занятия: ' + with(item)"
                       (onClick)="editSeries(item)"
                     />
                     <p-button
                       icon="pi pi-stop-circle"
                       [text]="true"
-                      [pTooltip]="'Завершить расписание: ' + with(item)"
+                      [pTooltip]="'Завершить регулярные занятия: ' + with(item)"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Завершить расписание: ' + with(item)"
+                      [ariaLabel]="'Завершить регулярные занятия: ' + with(item)"
                       (onClick)="stopSeries(item)"
                     />
                   </div>

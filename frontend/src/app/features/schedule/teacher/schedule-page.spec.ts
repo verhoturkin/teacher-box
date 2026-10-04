@@ -427,7 +427,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Дни недели');
 
-    buttonByText(hostElement(fixture), 'Изменить расписание: Иван Петров').click();
+    buttonByText(hostElement(fixture), 'Изменить регулярные занятия: Иван Петров').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Изменить регулярные занятия');
 
@@ -437,7 +437,7 @@ describe('SchedulePage', () => {
     );
     await flushReload();
 
-    buttonByText(hostElement(fixture), 'Завершить расписание: Иван Петров').click();
+    buttonByText(hostElement(fixture), 'Завершить регулярные занятия: Иван Петров').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Завершить').click();
     const stop = backend.expectOne('/api/teacher/schedule/series/sr-1/stop');

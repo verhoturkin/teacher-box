@@ -132,7 +132,7 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await page.getByRole('button', { name: `Принять оплату: ${STUDENT_NAME}` }).click();
+  await page.getByRole('button', { name: `Записать оплату: ${STUDENT_NAME}` }).click();
   await page.locator('#payment-amount').pressSequentially('3000');
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('3 000');

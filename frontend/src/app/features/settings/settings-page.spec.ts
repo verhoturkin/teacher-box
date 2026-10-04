@@ -119,7 +119,7 @@ describe('SettingsPage', () => {
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Telegram Нет связи Telegram getUpdates: Connection timed out');
-    expect(text).toContain('укажите прокси в TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY');
+    expect(text).toContain('попросите администратора');
     expect(text).toContain('ВКонтакте Нет связи VK: 5 User authorization failed MAX');
   });
 

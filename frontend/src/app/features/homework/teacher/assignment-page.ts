@@ -86,7 +86,7 @@ import { pageDetail } from '@core/routing/page-detail';
           (onClick)="boardVisible.set(true)"
         />
         <p-button
-          label="Редактировать"
+          label="Изменить"
           icon="pi pi-pencil"
           severity="secondary"
           (onClick)="editVisible.set(true)"

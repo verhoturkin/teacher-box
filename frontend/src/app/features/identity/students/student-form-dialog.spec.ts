@@ -90,7 +90,7 @@ describe('StudentFormDialog', () => {
     const updated: Student[] = [];
     fixture.componentInstance.updated.subscribe((value) => updated.push(value));
     await open(STUDENT);
-    expect(bodyText()).toContain('Редактирование');
+    expect(bodyText()).toContain('Изменить ученика');
     expect(field('displayName').value).toBe('Мария');
     expect(requireElement(document.body, '#note', HTMLTextAreaElement).value).toBe('5 класс');
 

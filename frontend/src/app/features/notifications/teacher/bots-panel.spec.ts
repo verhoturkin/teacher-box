@@ -60,7 +60,7 @@ describe('BotsPanel', () => {
     expect(text).toContain('Telegram @school_bot');
     expect(text).toContain('Нет связи');
     expect(text).toContain('Connection timed out');
-    expect(text).toContain('TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY');
+    expect(text).toContain('попросите администратора');
     expect(text).toContain('ВКонтакте бот из настроек сервера · ваш аккаунт не подключён');
     expect(text).toContain('Работает');
     expect(text).toContain('MAX не подключён');

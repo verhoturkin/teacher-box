@@ -34,17 +34,28 @@ export class HelpLibrary {
   }
 }
 
-/** Articles whose title, summary or text contains every word of the query. */
-export function searchArticles(articles: readonly HelpArticle[], query: string): HelpArticle[] {
-  const words = query
+/**
+ * The text for searching: lower case, «ё» as «е» (most people write without it), the marks of the
+ * Markdown (links, bold, headings) removed, so that the search does not find the addresses.
+ */
+export function searchable(text: string): string {
+  return text
+    .replace(/\]\([^)]*\)/g, ']')
+    .replace(/[*#`[\]_>]/g, ' ')
     .toLocaleLowerCase('ru')
+    .replaceAll('ё', 'е');
+}
+
+/** Articles whose title, summary or text contains every word of the query («ё» and «е» are the same). */
+export function searchArticles(articles: readonly HelpArticle[], query: string): HelpArticle[] {
+  const words = searchable(query)
     .split(/\s+/)
     .filter((word) => word !== '');
   if (words.length === 0) {
     return [...articles];
   }
   return articles.filter((article) => {
-    const text = `${article.title} ${article.summary} ${article.body}`.toLocaleLowerCase('ru');
+    const text = searchable(`${article.title} ${article.summary} ${article.body}`);
     return words.every((word) => text.includes(word));
   });
 }

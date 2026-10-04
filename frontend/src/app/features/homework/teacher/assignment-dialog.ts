@@ -203,7 +203,7 @@ export class AssignmentDialog {
   readonly saved = output<AssignmentDetails>();
 
   protected readonly title = computed(() =>
-    this.assignment() === null ? 'Новое задание' : 'Редактирование задания',
+    this.assignment() === null ? 'Новое задание' : 'Изменить задание',
   );
   protected readonly modes = [
     { label: 'Текст', value: 'edit' },

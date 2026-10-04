@@ -118,7 +118,6 @@ export function nextMonday(date: Date): Date {
                       <tb-lesson-actions
                         [inRow]="true"
                         [joinUrl]="joinUrl(lesson)"
-                        joinLabel="Подключиться"
                         [requests]="canAsk(lesson)"
                         [group]="lesson.groupId !== null"
                         (ask)="ask(lesson, $event)"
@@ -210,7 +209,6 @@ export function nextMonday(date: Date): Date {
         <tb-lesson-actions
           [stacked]="true"
           [joinUrl]="joinUrl(lesson)"
-          joinLabel="Подключиться"
           [requests]="canAsk(lesson)"
           [group]="lesson.groupId !== null"
           rescheduleIcon="pi pi-calendar"

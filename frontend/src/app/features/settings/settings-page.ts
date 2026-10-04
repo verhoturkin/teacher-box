@@ -90,8 +90,8 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
                 <small>
                   {{ state?.error }}
                   @if (messenger.type === 'TELEGRAM') {
-                    <br />Если Telegram заблокирован в сети сервера, укажите прокси в
-                    TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
+                    <br />Если Telegram заблокирован в сети сервера, попросите администратора
+                    указать прокси в его настройках.
                   }
                 </small>
               </li>
@@ -114,7 +114,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
             [queryParams]="{ open: 'messengers' }"
             fragment="notifications-messengers"
             >«Уведомления» → «Мессенджеры»</a
-          >. ИИ-помощник настраивается переменными окружения сервера (см. .env.example).
+          >. ИИ-помощник настраивает администратор портала.
         </small>
       </p-card>
 

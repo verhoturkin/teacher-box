@@ -124,7 +124,7 @@ describe('MeetingsSettingsPanel', () => {
       yandexStatus({ tokenFromEnvironment: true, status: 'CONNECTED' }),
       'unknown',
     );
-    expect(text).toContain('токеном из переменных окружения сервера');
+    expect(text).toContain('токеном, который задал администратор портала');
 
     fixture.componentInstance.connect();
     backend

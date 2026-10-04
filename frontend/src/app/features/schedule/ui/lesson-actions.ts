@@ -4,7 +4,7 @@ import { JoinLessonButton } from '@features/meetings/parts';
 import { ChangeKind } from '../data-access/schedule.models';
 
 /**
- * The student's buttons of a lesson: «Подключиться» when the lesson has a meeting, «Перенести» and
+ * The student's buttons of a lesson: «Войти в урок» when the lesson has a meeting, «Перенести» and
  * «Отменить» («Не приду» in a group). In a row (a computer) they are items of the row they stand
  * in. Stacked (a phone: the bottom sheet of a lesson, the nearest lesson on the home page) the
  * meeting takes the whole width and the requests are an M3 Expressive connected button group of
@@ -44,7 +44,7 @@ import { ChangeKind } from '../data-access/schedule.models';
   `,
 })
 export class LessonActions {
-  /** The link of the lesson's meeting; none: no «Подключиться». */
+  /** The link of the lesson's meeting; none: no «Войти в урок». */
   readonly joinUrl = input<string | null>(null);
   readonly joinLabel = input('Войти в урок');
   /** Whether the student may ask to move or cancel the lesson. */
@@ -54,7 +54,7 @@ export class LessonActions {
   /** One under another across the width (a phone), not in a row. */
   readonly stacked = input(false);
   /**
-   * The buttons stand in a row of a list: «Подключиться» is tonal and «Перенести» text, there is one
+   * The buttons stand in a row of a list: «Войти в урок» is tonal and «Перенести» text, there is one
    * filled button only in the hero of the home page and in the bottom sheet (ADR-0026).
    */
   readonly inRow = input(false);

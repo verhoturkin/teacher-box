@@ -27,6 +27,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <tb-portal-address-field
+            [administrator]="true"
             [control]="form.controls.address"
             [fromEnvironment]="settings.addressFromEnvironment"
           />

@@ -136,6 +136,6 @@ describe('BalanceAmount', () => {
 
     fixture.componentRef.setInput('balance', 0);
     await fixture.whenStable();
-    expect(hostElement(fixture).querySelector('.tb-muted')?.textContent.trim()).toBe('0');
+    expect(hostElement(fixture).querySelector('.tb-muted')?.textContent.trim()).toBe('0 ₽');
   });
 });

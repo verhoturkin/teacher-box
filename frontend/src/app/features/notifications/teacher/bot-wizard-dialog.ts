@@ -167,8 +167,8 @@ function describeMessengerError(error: unknown, fallback: string): string {
           @if (step() === 2 && bot()?.fromEnvironment === true) {
             <div class="tb-wizard__body">
               <p class="tb-muted">
-                Этот бот задан в переменных окружения сервера (TEACHERBOX_NOTIFICATIONS_*), токен
-                меняется там.
+                Этот бот задан администратором портала — токен меняется в его настройках: попросите
+                администратора.
               </p>
             </div>
           } @else if (step() === 2) {
@@ -255,7 +255,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p>Ваш аккаунт {{ name() }} уже подключён — уведомления будут приходить и вам.</p>
                 <div class="tb-actions">
                   <p-button
-                    label="Дальше"
+                    label="Далее"
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     (onClick)="go(4)"

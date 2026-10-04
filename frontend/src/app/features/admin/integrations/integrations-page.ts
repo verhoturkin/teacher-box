@@ -16,11 +16,13 @@ import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { CountPipe } from '@shared/text/plural';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
   selector: 'tb-integrations-page',
   imports: [
+    CountPipe,
     DatePipe,
     DecimalPipe,
     Button,
@@ -70,7 +72,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 <p-tag [value]="tags[check.state].label" [severity]="tags[check.state].severity" />
                 <span class="tb-checks__detail">{{ check.detail }}</span>
                 @if (check.state !== 'NOT_CONFIGURED') {
-                  <small class="tb-muted">{{ check.millis }} мс</small>
+                  <small class="tb-muted">{{ check.millis }}&nbsp;мс</small>
                 }
               </li>
             }
@@ -84,7 +86,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
             @if (ai.enabled) {
               <p>
                 {{ ai.provider }} · {{ ai.model }} · в этом месяце
-                {{ ai.usedThisMonth | number }} токенов
+                {{ ai.usedThisMonth | count: 'токен' : 'токена' : 'токенов' }}
                 @if (ai.monthlyTokenLimit > 0) {
                   из {{ ai.monthlyTokenLimit | number }}
                 }

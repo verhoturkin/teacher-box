@@ -32,7 +32,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               [min]="0"
               [fluid]="true"
             />
-            <small class="tb-hint">Цена каждого ученика меняется в его строке</small>
+            <small class="tb-hint">Цена каждого ученика меняется в его истории оплат</small>
           </div>
           <div class="tb-form-actions">
             <p-button

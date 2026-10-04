@@ -178,9 +178,7 @@ test('students are cards with their buttons next to the name, words are whole', 
   await expect(card).toBeVisible();
   await expect(page.locator('.p-datatable.tb-cards--wide thead').first()).toBeHidden();
   const cardBox = await card.boundingBox();
-  const edit = await card
-    .getByRole('button', { name: `Редактировать: ${LONG_NAME}` })
-    .boundingBox();
+  const edit = await card.getByRole('button', { name: `Изменить: ${LONG_NAME}` }).boundingBox();
   const name = await card.locator('.tb-list__title').boundingBox();
   // the button is inside the card, on the line of the name
   expect((edit?.x ?? 0) + (edit?.width ?? 0)).toBeLessThanOrEqual(

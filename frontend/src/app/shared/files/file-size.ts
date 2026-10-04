@@ -1,7 +1,7 @@
 /** «2,5 МБ» for a size in bytes. */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) {
-    return `${String(bytes)} Б`;
+    return `${String(bytes)}\u00A0Б`;
   }
   const units = ['КБ', 'МБ', 'ГБ'];
   let value = bytes / 1024;
@@ -10,5 +10,5 @@ export function formatFileSize(bytes: number): string {
     value /= 1024;
     unit++;
   }
-  return `${value.toLocaleString('ru-RU', { maximumFractionDigits: 1 })} ${units[unit] ?? ''}`;
+  return `${value.toLocaleString('ru-RU', { maximumFractionDigits: 1 })}\u00A0${units[unit] ?? ''}`;
 }

@@ -200,8 +200,8 @@ import { Busy } from '@shared/ui/busy';
                     [text]="true"
                     severity="secondary"
                     [rounded]="true"
-                    [pTooltip]="'Редактировать: ' + student.displayName"
-                    [ariaLabel]="'Редактировать: ' + student.displayName"
+                    [pTooltip]="'Изменить: ' + student.displayName"
+                    [ariaLabel]="'Изменить: ' + student.displayName"
                     (onClick)="openEdit(student)"
                   />
                   @if (student.status === 'DEACTIVATED') {

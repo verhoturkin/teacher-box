@@ -34,7 +34,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 >
                 <span class="tb-list__supporting">
                   @if (task.dueAt !== null) {
-                    до {{ task.dueAt | date: 'dd.MM, HH:mm' }}
+                    до {{ task.dueAt | date: 'dd.MM.yyyy HH:mm' }}
                   } @else {
                     без срока
                   }

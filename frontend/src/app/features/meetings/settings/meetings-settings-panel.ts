@@ -94,7 +94,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
         @if (status.tokenFromEnvironment) {
           <div class="tb-meetings-state">
             <p-tag value="Подключён" severity="success" />
-            <span class="tb-muted">токеном из переменных окружения сервера</span>
+            <span class="tb-muted">токеном, который задал администратор портала</span>
           </div>
         } @else if (status.status === 'CONNECTED') {
           <div class="tb-meetings-state">

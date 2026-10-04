@@ -101,7 +101,7 @@ describe('AssignmentDialog', () => {
 
   it('edits an existing assignment with its version', async () => {
     const dialog = await open(assignmentDetails({ version: 3, dueAt: null, description: null }));
-    expect(bodyText()).toContain('Редактирование задания');
+    expect(bodyText()).toContain('Изменить задание');
     expect(dialog.form.controls.title.value).toBe('Дроби');
     expect(document.body.querySelector('#assignment-students')).toBeNull();
 

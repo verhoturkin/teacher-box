@@ -152,8 +152,7 @@ const STEPS: readonly Step[] = [
                 @if (zone !== browserZone) {
                   <p-message severity="warn" styleClass="tb-form-message">
                     На этом компьютере другой часовой пояс ({{ browserZone }}). Время занятий портал
-                    считает по часовому поясу портала; поменять его можно на сервере
-                    (TEACHERBOX_TIMEZONE).
+                    считает по часовому поясу портала; поменять его может администратор портала.
                   </p-message>
                 }
               }
@@ -164,7 +163,7 @@ const STEPS: readonly Step[] = [
             </form>
           }
           @case ('price') {
-            <h2 class="tb-setup-title">Стоимость занятия</h2>
+            <h2 class="tb-setup-title">Цена занятия</h2>
             <p>
               Проведённые занятия списываются с баланса ученика по этой цене. Она достаётся новым
               ученикам и группам; у каждого ученика цену можно поменять отдельно.

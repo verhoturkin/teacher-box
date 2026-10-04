@@ -49,7 +49,7 @@ describe('LoadState', () => {
       .subscribe({ error: () => (failed = true) });
 
     expect(state.status()).toBe('error');
-    expect(state.error()).toBe('Внутренняя ошибка сервера. Код ошибки: k3m9x2ab7c');
+    expect(state.error()).toBe('Ошибка на сервере. Попробуйте позже. Код ошибки: k3m9x2ab7c');
     expect(failed).toBe(false);
   });
 
@@ -58,7 +58,7 @@ describe('LoadState', () => {
       .pipe(state.track())
       .subscribe();
 
-    expect(state.error()).toBe('Произошла ошибка. Попробуйте позже');
+    expect(state.error()).toBe('Что-то пошло не так. Попробуйте ещё раз или чуть позже');
 
     const retry = new Subject<number>();
     retry.pipe(state.track()).subscribe();

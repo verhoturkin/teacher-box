@@ -43,8 +43,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <span class="tb-list__supporting tb-bot__error">
                     {{ bot.connection.error }}
                     @if (bot.channel === 'TELEGRAM') {
-                      Если Telegram заблокирован в сети сервера, укажите прокси в
-                      TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY.
+                      Если Telegram заблокирован в сети сервера, попросите администратора указать
+                      прокси в его настройках.
                     }
                   </span>
                 }
