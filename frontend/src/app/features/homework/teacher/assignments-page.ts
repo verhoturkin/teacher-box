@@ -94,15 +94,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 <tb-empty-state
                   icon="pi-book"
                   title="Заданий пока нет"
-                  hint="Создайте первое задание и выдайте его ученикам"
-                >
-                  <p-button
-                    label="Новое задание"
-                    severity="secondary"
-                    icon="pi pi-plus"
-                    (onClick)="openCreate()"
-                  />
-                </tb-empty-state>
+                  hint="Нажмите «Новое задание» и выдайте его ученикам"
+                />
               </td>
             </tr>
           </ng-template>

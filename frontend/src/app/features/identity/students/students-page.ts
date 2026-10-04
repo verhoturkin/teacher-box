@@ -246,17 +246,14 @@ import { Busy } from '@shared/ui/busy';
                     <tb-empty-state
                       icon="pi-user-plus"
                       title="Учеников пока нет"
-                      hint="Добавьте первого ученика и отправьте ему ссылку-приглашение"
-                    >
-                      <p-button
-                        label="Добавить ученика"
-                        icon="pi pi-user-plus"
-                        severity="secondary"
-                        (onClick)="openCreate()"
-                      />
-                    </tb-empty-state>
+                      hint="Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение"
+                    />
                   } @else {
-                    <tb-empty-state icon="pi-search" title="Никого не найдено" />
+                    <tb-empty-state
+                      icon="pi-search"
+                      title="Никого не найдено"
+                      hint="Измените запрос или включите показ отключённых учеников"
+                    />
                   }
                 </td>
               </tr>

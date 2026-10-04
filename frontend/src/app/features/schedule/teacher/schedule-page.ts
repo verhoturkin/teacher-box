@@ -248,7 +248,11 @@ const CLICK_SELECTION_MINUTES = 30;
           (retry)="loadSeries()"
         >
           @if (series().length === 0) {
-            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
+            <tb-empty-state
+              icon="pi-replay"
+              title="Нет регулярных занятий"
+              hint="Нажмите «Добавить», чтобы запланировать занятия на каждую неделю"
+            />
           } @else {
             <ul class="tb-list">
               @for (item of series(); track item.id) {
@@ -358,19 +362,19 @@ const CLICK_SELECTION_MINUTES = 30;
       [lesson]="editing()"
       [slot]="slot()"
       [defaultDuration]="defaultDuration()"
-      (saved)="reload()"
+      (saved)="done('Занятие сохранено')"
     />
     <tb-lesson-details-dialog
       [(visible)]="detailsVisible"
       [lesson]="selected()"
-      (changed)="reload()"
-      (deleted)="reload()"
+      (changed)="done('Занятие обновлено')"
+      (deleted)="done('Занятие удалено')"
       (edit)="editLesson($event)"
     />
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="selected()"
-      (saved)="reload()"
+      (saved)="done('Посещаемость сохранена')"
     />
     <tb-series-dialog
       [(visible)]="seriesDialogVisible"
@@ -390,7 +394,7 @@ const CLICK_SELECTION_MINUTES = 30;
     <tb-request-answer-dialog
       [(visible)]="answerVisible"
       [request]="answering()"
-      (answered)="reload()"
+      (answered)="done('Ответ отправлен')"
     />
     <p-confirmdialog />
   `,
@@ -511,6 +515,12 @@ export class SchedulePage implements OnInit {
     this.detailsVisible.set(true);
   }
 
+  /** The result of a frequent action is told at once: the lesson may be out of the screen (ADR-0026). */
+  protected done(message: string): void {
+    this.snackbar.success(message);
+    this.reload();
+  }
+
   /** The attendance of a group lesson opens at once, not through the details of the lesson (ADR-0026). */
   markAttendance(lesson: ScheduledLesson): void {
     this.selected.set(lesson);
@@ -550,7 +560,7 @@ export class SchedulePage implements OnInit {
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
     this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
-      this.reload();
+      this.done('Занятие отмечено');
     });
   }
 

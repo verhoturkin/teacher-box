@@ -387,12 +387,29 @@ describe('SchedulePage', () => {
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome');
     expect(request.request.body).toEqual({ outcome: 'CONDUCTED' });
     request.flush(scheduledLesson({ status: 'CONDUCTED' }));
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Занятие отмечено' }),
+    );
     await flushReload([scheduledLesson({ id: 'l-9' })]);
 
     buttonByText(hostElement(fixture), 'Пропуск: Иван Петров').click();
     expect(backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome').request.body).toEqual({
       outcome: 'MISSED',
     });
+  });
+
+  it('tells that a lesson was saved: the new lesson may be out of the screen', async () => {
+    await render();
+
+    fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog)
+      .saved.emit(scheduledLesson());
+    await flushReload([]);
+
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Занятие сохранено' }),
+    );
   });
 
   it('opens a request for an answer', async () => {

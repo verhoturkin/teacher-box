@@ -15,6 +15,7 @@ import { LogEntry, LogLevelName, LogResult } from '../data-access/admin.models';
 import { levelSeverity, shortLogger } from '../admin-labels';
 import { LoggerLevelsPanel } from './logger-levels-panel';
 import { PageHeader } from '@shared/ui/page-header';
+import { EmptyState } from '@shared/ui/empty-state';
 
 export const PERIODS: readonly { readonly label: string; readonly minutes: number | null }[] = [
   { label: 'Последний час', minutes: 60 },
@@ -39,6 +40,7 @@ export const LOG_LIMIT = 200;
 @Component({
   selector: 'tb-log-page',
   imports: [
+    EmptyState,
     HelpButton,
     DatePipe,
     ReactiveFormsModule,
@@ -116,7 +118,7 @@ export const LOG_LIMIT = 200;
               Журнал не пишется в файл (параметр logging.file.name пуст) — искать негде.
             </p-message>
           } @else if (result.entries.length === 0) {
-            <p class="tb-muted">Ничего не найдено.</p>
+            <tb-empty-state [compact]="true" icon="pi-search" title="Ничего не найдено" />
           } @else {
             @if (result.truncated) {
               <p class="tb-muted">

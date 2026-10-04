@@ -331,6 +331,7 @@ export class MySchedulePage implements OnInit {
   withdraw(request: ChangeRequest): void {
     this.actions.guard('withdraw-' + request.id, this.api.withdraw(request.id)).subscribe(() => {
       this.closeSheet();
+      this.snackbar.success('Запрос отозван');
       this.reload();
     });
   }

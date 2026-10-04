@@ -175,7 +175,9 @@ describe('StudentsPage', () => {
     await loadStudents([]);
     expect(host.textContent).toContain('Учеников пока нет');
 
-    requireElement(host, 'tb-empty-state button', HTMLButtonElement).click();
+    // the first action is the FAB of the page, not a second button in the empty state (ADR-0018)
+    expect(host.querySelector('tb-empty-state button')).toBeNull();
+    requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Новый ученик');
   });

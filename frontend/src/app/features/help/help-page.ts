@@ -20,6 +20,7 @@ import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
 import { PageHeader } from '@shared/ui/page-header';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /**
  * The help of an area (`/<area>/help/<topic>`): the contents with search on top, the chosen article
@@ -28,6 +29,7 @@ import { PageHeader } from '@shared/ui/page-header';
 @Component({
   selector: 'tb-help-page',
   imports: [
+    EmptyState,
     ReactiveFormsModule,
     RouterLink,
     Card,
@@ -66,7 +68,14 @@ import { PageHeader } from '@shared/ui/page-header';
               </li>
             } @empty {
               @if (loaded()) {
-                <li class="tb-muted">Ничего не нашлось. Попробуйте другие слова.</li>
+                <li>
+                  <tb-empty-state
+                    [compact]="true"
+                    icon="pi-search"
+                    title="Ничего не нашлось"
+                    hint="Попробуйте другие слова"
+                  />
+                </li>
               }
             }
           </ul>

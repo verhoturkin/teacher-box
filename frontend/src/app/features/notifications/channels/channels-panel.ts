@@ -23,6 +23,7 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { EmptyState } from '@shared/ui/empty-state';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -30,20 +31,32 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 /** Messengers of the current user: connect with a one-time code, pause, disconnect. */
 @Component({
   selector: 'tb-channels-panel',
-  imports: [DatePipe, FormsModule, Button, Card, Dialog, LinkCodeView, ToggleSwitch, Tooltip],
+  imports: [
+    EmptyState,
+    DatePipe,
+    FormsModule,
+    Button,
+    Card,
+    Dialog,
+    LinkCodeView,
+    ToggleSwitch,
+    Tooltip,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="header()">
       @if (channels(); as channels) {
         @if (channels.length === 0) {
-          <p class="tb-muted">
-            @if (teacher()) {
-              Боты мессенджеров ещё не подключены. Подключите бота выше — и сможете получать
-              уведомления сами и присылать их ученикам.
-            } @else {
-              Уведомления приходят в личный кабинет. Мессенджеры пока не подключены учителем.
-            }
-          </p>
+          <tb-empty-state
+            [compact]="true"
+            icon="pi-comments"
+            [title]="teacher() ? 'Боты мессенджеров не подключены' : 'Мессенджеры не подключены'"
+            [hint]="
+              teacher()
+                ? 'Подключите бота выше — и сможете получать уведомления сами и присылать их ученикам.'
+                : 'Уведомления приходят в личный кабинет; мессенджеры подключает учитель.'
+            "
+          />
         } @else {
           <p class="tb-muted">Уведомления будут дублироваться в подключённые мессенджеры.</p>
           <ul class="tb-list tb-channels">

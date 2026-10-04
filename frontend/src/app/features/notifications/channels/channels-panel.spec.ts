@@ -36,7 +36,7 @@ describe('ChannelsPanel', () => {
   it('explains to a student that messengers are not configured', async () => {
     await render([]);
 
-    expect(readableText(hostElement(fixture))).toContain('Мессенджеры пока не подключены учителем');
+    expect(readableText(hostElement(fixture))).toContain('мессенджеры подключает учитель');
   });
 
   it('tells the teacher how to configure bots', async () => {

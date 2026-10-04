@@ -11,6 +11,7 @@ import { EmptyState } from './empty-state';
       <button type="button">Добавить</button>
     </tb-empty-state>
     <tb-empty-state title="Пусто" />
+    <tb-empty-state title="Занятий нет" [compact]="true" />
   `,
 })
 class Host {}
@@ -19,7 +20,9 @@ describe('EmptyState', () => {
   it('shows the icon, what is missing, a hint and the first action', async () => {
     const fixture = TestBed.createComponent(Host);
     await fixture.whenStable();
-    const [full, bare] = Array.from(hostElement(fixture).querySelectorAll('tb-empty-state'));
+    const [full, bare, compact] = Array.from(
+      hostElement(fixture).querySelectorAll('tb-empty-state'),
+    );
 
     expect(full?.querySelector('i')?.className).toContain('pi-users');
     expect(full?.querySelector('.tb-empty-state__title')?.textContent).toBe('Учеников пока нет');
@@ -29,5 +32,7 @@ describe('EmptyState', () => {
     ).toBe('Добавить');
     expect(bare?.querySelector('i')?.className).toContain('pi-inbox');
     expect(bare?.querySelector('.tb-empty-state__hint')).toBeNull();
+    expect(bare?.classList).not.toContain('tb-empty-state--compact');
+    expect(compact?.classList).toContain('tb-empty-state--compact');
   });
 });

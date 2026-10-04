@@ -200,7 +200,7 @@ import { HelpButton } from '@features/help/parts';
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="5"><tb-empty-state icon="pi-wallet" title="Оплат нет" /></td>
+                  <td colspan="4"><tb-empty-state icon="pi-wallet" title="Оплат нет" /></td>
                 </tr>
               </ng-template>
             </p-table>

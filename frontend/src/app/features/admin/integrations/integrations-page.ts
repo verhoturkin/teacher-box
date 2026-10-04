@@ -95,7 +95,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
           }
           @if (usage(); as usage) {
             @if (usage.recent.length === 0) {
-              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было." />
+              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было" />
             } @else {
               <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
                 <ng-template #header>

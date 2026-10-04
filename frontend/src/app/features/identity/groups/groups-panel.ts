@@ -40,6 +40,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Busy } from '@shared/ui/busy';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -192,17 +193,14 @@ import { Busy } from '@shared/ui/busy';
                   <tb-empty-state
                     icon="pi-users"
                     title="Групп пока нет"
-                    hint="Создайте группу, если занимаетесь с несколькими учениками сразу"
-                  >
-                    <p-button
-                      label="Создать группу"
-                      severity="secondary"
-                      icon="pi pi-users"
-                      (onClick)="openCreate()"
-                    />
-                  </tb-empty-state>
+                    hint="Нажмите «Создать группу», если занимаетесь с несколькими учениками сразу"
+                  />
                 } @else {
-                  <tb-empty-state icon="pi-box" title="Все группы в архиве" />
+                  <tb-empty-state
+                    icon="pi-box"
+                    title="Все группы в архиве"
+                    hint="Вернуть группу из архива можно кнопкой в её строке"
+                  />
                 }
               </td>
             </tr>
@@ -238,6 +236,7 @@ import { Busy } from '@shared/ui/busy';
   styles: ``,
 })
 export class GroupsPanel implements OnInit {
+  private readonly snackbar = inject(Snackbar);
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
@@ -352,6 +351,7 @@ export class GroupsPanel implements OnInit {
   }
 
   protected onSaved({ group, lessonPrice }: SavedGroup): void {
+    this.snackbar.success('Группа сохранена');
     this.replace(group);
     if (lessonPrice !== null) {
       this.prices.update((prices) => new Map(prices).set(group.id, lessonPrice));

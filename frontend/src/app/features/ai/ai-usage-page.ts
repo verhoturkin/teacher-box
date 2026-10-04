@@ -72,7 +72,7 @@ const STATUS_LABELS: Record<
         <p-card>
           <tb-empty-state
             icon="pi-sparkles"
-            title="ИИ-помощник не настроен."
+            title="ИИ-помощник не настроен"
             hint="Чтобы получать черновики заданий и проверок, укажите провайдера в настройках сервера: TEACHERBOX_AI_PROVIDER (anthropic, gemini или openai-compatible), TEACHERBOX_AI_API_KEY и при необходимости TEACHERBOX_AI_MODEL, TEACHERBOX_AI_BASE_URL, TEACHERBOX_AI_PROXY — и перезапустите портал."
           />
         </p-card>
@@ -114,7 +114,11 @@ const STATUS_LABELS: Record<
             </p-card>
             <p-card header="Последние запросы">
               @if (report.recent.length === 0) {
-                <p class="tb-muted">Запросов в этом месяце не было.</p>
+                <tb-empty-state
+                  [compact]="true"
+                  icon="pi-sparkles"
+                  title="Запросов в этом месяце не было"
+                />
               } @else {
                 <p-table [value]="report.recent" styleClass="tb-cards p-datatable-sm">
                   <ng-template #header>

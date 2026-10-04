@@ -60,7 +60,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </p>
         <tb-load-state [state]="eventsState" what="события" (retry)="loadEvents()">
           @if (events().length === 0) {
-            <tb-empty-state icon="pi-check-circle" title="Всё обработано." />
+            <tb-empty-state icon="pi-check-circle" title="Всё обработано" />
           } @else {
             <p-table [value]="events()" styleClass="tb-cards p-datatable-sm">
               <ng-template #header>
@@ -116,7 +116,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </ng-template>
         <tb-load-state [state]="deliveriesState" what="доставки" (retry)="loadDeliveries()">
           @if (deliveries().length === 0) {
-            <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены." />
+            <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены" />
           } @else {
             <p-table [value]="deliveries()" styleClass="tb-cards p-datatable-sm">
               <ng-template #header>
