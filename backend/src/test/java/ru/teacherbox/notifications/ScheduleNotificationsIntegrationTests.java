@@ -46,6 +46,8 @@ class ScheduleNotificationsIntegrationTests {
     private static final Instant START = Instant.parse("2026-10-01T15:00:00Z");
     /** Friday, 02.10.2026 19:30 in Moscow. */
     private static final Instant LATER = Instant.parse("2026-10-02T16:30:00Z");
+    /** A moment before both lessons: only upcoming lessons are announced. */
+    private static final Instant EARLIER = Instant.parse("2026-09-30T09:00:00Z");
 
     @Autowired
     InboxRepository inbox;
@@ -128,20 +130,20 @@ class ScheduleNotificationsIntegrationTests {
     void aDeletedLessonIsCancelledForTheStudentsAndARestoredOneIsBack(Scenario scenario) {
         UUID student = directory.addStudent("Удалено");
         InboxNotification deleted = latest(scenario, student,
-                new LessonDeleted(UUID.randomUUID(), null, List.of(student), START, true, Instant.now()));
+                new LessonDeleted(UUID.randomUUID(), null, List.of(student), START, true, EARLIER));
         assertThat(deleted.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_CANCELLED);
         assertThat(deleted.title()).isEqualTo("Занятие четверг, 01.10 в 18:00 отменено");
         assertThat(deleted.body()).isNull();
 
         UUID back = directory.addStudent("Снова в расписании");
         InboxNotification restored = latest(scenario, back,
-                new LessonRestored(UUID.randomUUID(), null, List.of(back), LATER, 60, Instant.now()));
+                new LessonRestored(UUID.randomUUID(), null, List.of(back), LATER, 60, EARLIER));
         assertThat(restored.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_PLANNED);
         assertThat(restored.title()).isEqualTo("Занятие пятница, 02.10 в 19:30 снова в расписании");
         assertThat(restored.body()).isEqualTo("Отмена занятия снята.");
 
         UUID quiet = directory.addStudent("Не узнает");
-        scenario.publish(new LessonDeleted(UUID.randomUUID(), null, List.of(quiet), START, false, Instant.now()))
+        scenario.publish(new LessonDeleted(UUID.randomUUID(), null, List.of(quiet), START, false, EARLIER))
                 .andWaitForEventOfType(LessonDeleted.class).toArrive();
         scenario.publish(new LessonDeleted(UUID.randomUUID(), null, List.of(quiet), START, true, LATER))
                 .andWaitForEventOfType(LessonDeleted.class).toArrive();
