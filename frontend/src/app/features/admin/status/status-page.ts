@@ -92,6 +92,9 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 size(status.diskFree)
               }}</span>
               <small class="tb-muted">из {{ size(status.diskTotal) }}</small>
+              @if (lowDisk()) {
+                <p-tag severity="danger" icon="pi pi-exclamation-triangle" value="Мало места" />
+              }
             </div>
           </p-card>
           <p-card>

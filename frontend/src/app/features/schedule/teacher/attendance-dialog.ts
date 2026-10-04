@@ -61,7 +61,6 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
                 [ngModel]="marks()[participant.studentId]"
                 (ngModelChange)="set(participant.studentId, $event)"
                 [ariaLabel]="'Посещаемость: ' + (participant.studentName ?? 'ученик')"
-                size="small"
               />
             </li>
           }

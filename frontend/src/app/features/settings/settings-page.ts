@@ -211,11 +211,6 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     .tb-error-cell {
       overflow-wrap: anywhere;
     }
-
-    .tb-row-actions {
-      text-align: right;
-      white-space: nowrap;
-    }
   `,
 })
 export class SettingsPage implements OnInit {

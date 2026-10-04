@@ -361,7 +361,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       width: 2rem;
       height: 2rem;
       border: 1px solid var(--p-content-border-color);
-      border-radius: 50%;
+      border-radius: var(--tb-shape-full);
     }
 
     .tb-wizard__step--active .tb-wizard__header {

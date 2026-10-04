@@ -13,7 +13,7 @@
 
     <groupId>ru.teacherbox</groupId>
     <artifactId>teacher-box-backend</artifactId>
-    <version>1.6.12</version>
+    <version>1.6.13</version>
     <name>Teacher Box Backend</name>
     <description>Self-hosted teacher portal: modular monolith backend</description>
 

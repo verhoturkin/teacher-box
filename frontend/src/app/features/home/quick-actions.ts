@@ -15,7 +15,7 @@ const ACTIONS = [
   imports: [RouterLink, ButtonDirective, ButtonIcon, ButtonLabel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="tb-quick-actions" aria-label="Быстрые действия">
+    <div class="tb-quick-actions" role="group" aria-label="Быстрые действия">
       @for (action of actions; track action.create) {
         <a
           pButton
@@ -27,7 +27,7 @@ const ACTIONS = [
           <span pButtonLabel>{{ action.label }}</span>
         </a>
       }
-    </nav>
+    </div>
   `,
   styles: `
     .tb-quick-actions {

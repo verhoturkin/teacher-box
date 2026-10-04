@@ -67,7 +67,9 @@ test('secondary buttons are tonal: no outlined, small, orange or blue buttons', 
   for (const path of PAGES) {
     await open(page, path);
     await expect(
-      page.locator('.p-button-outlined, .p-button-sm, .p-button-warn, .p-button-info'),
+      page.locator(
+        '.p-button-outlined, .p-button-sm, .p-togglebutton-sm, .p-button-warn, .p-button-info',
+      ),
     ).toHaveCount(0);
     // One filled button on a page at most: its main action (a split button is one button).
     const filled = await page
