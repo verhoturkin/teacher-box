@@ -226,7 +226,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   @if (status.clientConfigured) {
                     <p-button
                       label="Отмена"
-                      severity="danger"
+                      severity="secondary"
                       [text]="true"
                       (onClick)="editingClient.set(false)"
                     />

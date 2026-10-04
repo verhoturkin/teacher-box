@@ -48,6 +48,7 @@ import {
   ScheduleCalendar,
   SlotSelection,
 } from '../ui/schedule-calendar';
+import { AttendanceDialog } from './attendance-dialog';
 import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
@@ -83,6 +84,7 @@ const CLICK_SELECTION_MINUTES = 30;
     Tag,
     CalendarFeedPanel,
     LessonDetailsDialog,
+    AttendanceDialog,
     LessonDialog,
     OffTimeDialog,
     RequestAnswerDialog,
@@ -176,7 +178,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       icon="pi pi-users"
                       [text]="true"
                       [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
-                      (onClick)="openLesson(lesson)"
+                      (onClick)="markAttendance(lesson)"
                     />
                   } @else {
                     <p-button
@@ -340,6 +342,11 @@ const CLICK_SELECTION_MINUTES = 30;
       (deleted)="reload()"
       (edit)="editLesson($event)"
     />
+    <tb-attendance-dialog
+      [(visible)]="attendanceVisible"
+      [lesson]="selected()"
+      (saved)="reload()"
+    />
     <tb-series-dialog
       [(visible)]="seriesDialogVisible"
       [students]="students()"
@@ -396,6 +403,7 @@ export class SchedulePage implements OnInit {
   protected readonly editing = signal<ScheduledLesson | null>(null);
   protected readonly slot = signal<LessonSlot | null>(null);
   protected readonly detailsVisible = signal(false);
+  protected readonly attendanceVisible = signal(false);
   protected readonly selected = signal<ScheduledLesson | null>(null);
   protected readonly seriesDialogVisible = signal(false);
   protected readonly editingSeries = signal<LessonSeries | null>(null);
@@ -477,6 +485,12 @@ export class SchedulePage implements OnInit {
     this.detailsVisible.set(true);
   }
 
+  /** The attendance of a group lesson opens at once, not through the details of the lesson (ADR-0026). */
+  markAttendance(lesson: ScheduledLesson): void {
+    this.selected.set(lesson);
+    this.attendanceVisible.set(true);
+  }
+
   editLesson(lesson: ScheduledLesson): void {
     this.editing.set(lesson);
     this.slot.set(null);
@@ -540,7 +554,6 @@ export class SchedulePage implements OnInit {
         header: 'Завершить регулярные занятия?',
         message: `Занятия «${this.weekly(series)}» с сегодняшнего дня будут удалены из расписания. Перенесённые отдельно занятия останутся.`,
         acceptLabel: 'Завершить',
-        rejectLabel: 'Назад',
         accept: () => {
           this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
             this.reload();
@@ -572,7 +585,6 @@ export class SchedulePage implements OnInit {
         header: 'Удалить нерабочее время?',
         message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Назад',
         accept: () => {
           this.api.deleteOffTime(offTime.id).subscribe(() => {
             this.loadOffTimes();
@@ -605,7 +617,6 @@ export class SchedulePage implements OnInit {
         header: 'Время занято',
         message: 'В это время уже есть другое занятие. Всё равно перенести?',
         acceptLabel: 'Перенести',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.onMove(move, true);
         },

@@ -363,7 +363,6 @@ export class GroupsPanel implements OnInit {
         message: `Регулярные занятия группы «${group.name}» остановятся, будущие занятия отменятся. Проведённые занятия и оплаты сохранятся.`,
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'В архив',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.archiveGroup(group.id).subscribe((saved) => {
             this.replace(saved);

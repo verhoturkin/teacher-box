@@ -91,7 +91,7 @@ describe('StudentLedgerPage', () => {
   });
 
   it('cancels a lesson after confirmation and reloads', async () => {
-    buttonByText(host, 'Отменить занятие').click();
+    buttonByText(host, 'Снять начисление').click();
 
     const request = backend.expectOne('/api/teacher/billing/lessons/l-1/cancel');
     expect(request.request.body).toEqual({ reason: null });

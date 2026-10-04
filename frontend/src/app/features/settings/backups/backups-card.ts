@@ -220,7 +220,6 @@ export class BackupsCard implements OnInit {
         header: 'Удалить копию?',
         message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.delete(backup.name).subscribe(() => {
             this.reload();

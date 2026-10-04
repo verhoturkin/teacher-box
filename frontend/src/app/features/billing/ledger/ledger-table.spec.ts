@@ -95,7 +95,7 @@ describe('LedgerTable', () => {
     fixture.componentRef.setInput('editable', true);
     await fixture.whenStable();
 
-    buttonByText(hostElement(fixture), 'Отменить занятие').click();
+    buttonByText(hostElement(fixture), 'Снять начисление').click();
     buttonByText(hostElement(fixture), 'Аннулировать оплату').click();
 
     expect(cancelled.map((value) => value.id)).toEqual(['l-1']);

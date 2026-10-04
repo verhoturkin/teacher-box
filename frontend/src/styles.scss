@@ -1822,17 +1822,31 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
- * other; stacked (a phone) the meeting takes the whole width and the requests are an M3 Expressive
- * connected button group under it: two halves 2 px apart, the inner corners small (ADR-0022).
+ * An M3 Expressive connected button group (ADR-0022): the buttons 2 px apart, the inner corners small,
+ * the outer ones round; pressed, a button squares as usual.
  */
 .tb-button-group {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--tb-space-1);
+  gap: 2px;
+
+  > p-button:not(:last-child) .p-button:not(:active) {
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  > p-button:not(:first-child) .p-button:not(:active) {
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
 }
 
+/*
+ * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a connected button
+ * group under it, two halves of the width.
+ */
 .tb-lesson-actions--stacked {
   flex-direction: column;
   gap: var(--tb-space-2);
@@ -1845,8 +1859,6 @@ a.p-menu-item-link:hover {
 
   .tb-button-group {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 2px;
 
     > p-button {
       flex: 1;
@@ -1854,16 +1866,6 @@ a.p-menu-item-link:hover {
 
     .p-button {
       width: 100%;
-    }
-
-    > p-button:first-child .p-button:not(:active) {
-      border-start-end-radius: var(--tb-shape-sm);
-      border-end-end-radius: var(--tb-shape-sm);
-    }
-
-    > p-button:last-child .p-button:not(:active) {
-      border-start-start-radius: var(--tb-shape-sm);
-      border-end-start-radius: var(--tb-shape-sm);
     }
   }
 }

@@ -291,7 +291,6 @@ export class AssignmentPage implements OnInit {
         header: 'Удалить файл?',
         message: `Файл «${file.filename}» будет удалён без возможности восстановления.`,
         acceptLabel: 'Удалить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
             this.details.set({

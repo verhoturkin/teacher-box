@@ -17,6 +17,7 @@ import {
 } from '@testing/schedule-fixtures';
 import { OffTime, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
+import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog } from './lesson-dialog';
 import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
@@ -177,8 +178,13 @@ describe('SchedulePage', () => {
     expect(text).toContain('Группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
     await fixture.whenStable();
+    expect(bodyText()).toContain('Кто был на занятии');
     expect(bodyText()).toContain('Мария');
-    expect(bodyText()).toContain('Отметить посещаемость');
+    // the attendance opens at once, not through the details of the lesson (ADR-0026)
+    const details = fixture.debugElement
+      .query(By.directive(LessonDetailsDialog))
+      .injector.get(LessonDetailsDialog);
+    expect(details.visible()).toBe(false);
   });
 
   it('shows busy times from the teacher’s Google Calendar', async () => {

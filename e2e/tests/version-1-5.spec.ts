@@ -133,7 +133,8 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   const card = page.getByRole('dialog', { name: 'Занятие' });
 
   await event.click();
-  await card.getByRole('button', { name: 'Отменить', exact: true }).click();
+  await card.getByRole('button', { name: 'Другие действия' }).click();
+  await page.getByRole('menuitem', { name: 'Отменить занятие…' }).click();
   await card.getByRole('button', { name: 'Отменить занятие' }).click();
   await expect(card).toBeHidden();
 
@@ -144,7 +145,8 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
 
   await event.click();
   await expect(card).toContainText('Запланировано');
-  await card.getByRole('button', { name: /Удалить$/ }).click();
+  await card.getByRole('button', { name: 'Другие действия' }).click();
+  await page.getByRole('menuitem', { name: 'Удалить…' }).click();
   await card.getByRole('button', { name: 'Удалить занятие' }).click();
   await expect(card).toBeHidden();
   await expect(event).toHaveCount(0);

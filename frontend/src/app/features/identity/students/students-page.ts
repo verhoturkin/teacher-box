@@ -455,7 +455,6 @@ export class StudentsPage implements OnInit {
         message: `${student.displayName} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Отключить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.deactivate(student.id).subscribe((saved) => {
             this.replace(saved);

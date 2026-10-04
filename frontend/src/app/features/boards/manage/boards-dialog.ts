@@ -116,7 +116,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             [loading]="pending()"
           />
           @if (editing() !== null) {
-            <p-button label="Отмена" severity="danger" [text]="true" (onClick)="cancelEdit()" />
+            <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancelEdit()" />
           }
         </div>
       </form>

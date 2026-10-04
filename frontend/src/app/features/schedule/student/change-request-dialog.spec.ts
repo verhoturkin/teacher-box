@@ -108,7 +108,9 @@ describe('ChangeRequestDialog', () => {
     expect(bodyText()).toContain('Отменить занятие');
     expect(bodyText()).toContain('учитель может засчитать его как пропуск');
 
-    buttonByText(document.body, 'Отправить учителю').click();
+    const send = buttonByText(document.body, 'Попросить отменить');
+    expect(send.className).toContain('p-button-danger');
+    send.click();
 
     const request = backend.expectOne('/api/me/schedule/lessons/l-1/requests');
     expect(request.request.body).toEqual({ kind: 'CANCEL', proposedStartsAt: null, comment: null });

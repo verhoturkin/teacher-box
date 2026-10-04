@@ -74,8 +74,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Отменить занятие"
-                      ariaLabel="Отменить занятие"
+                      pTooltip="Снять начисление"
+                      ariaLabel="Снять начисление"
                       (onClick)="cancelLesson.emit(entry.lesson)"
                     />
                   }

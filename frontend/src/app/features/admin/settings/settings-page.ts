@@ -235,7 +235,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
         @if (stage() === 'confirm') {
           <p-button
             label="Отмена"
-            severity="danger"
+            severity="secondary"
             [text]="true"
             (onClick)="confirmVisible.set(false)"
           />

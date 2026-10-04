@@ -94,10 +94,15 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
         </div>
       }
       <ng-template #footer>
-        <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
         <p-button
-          severity="success"
-          [label]="absence() && !late() ? 'Предупредить учителя' : 'Отправить учителю'"
+          label="Отмена"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          [severity]="cancelsOwnLesson() ? 'danger' : 'success'"
+          [label]="sendLabel()"
           [loading]="pending()"
           [disabled]="kind() === 'RESCHEDULE' && (proposed() === null || busyAt())"
           (onClick)="send()"
@@ -128,6 +133,14 @@ export class ChangeRequestDialog {
   protected readonly absence = computed(
     () => this.kind() === 'CANCEL' && (this.lesson()?.groupId ?? null) !== null,
   );
+  /** Asking to cancel a lesson of one's own: the one red button of the dialog (ADR-0026). */
+  protected readonly cancelsOwnLesson = computed(() => this.kind() === 'CANCEL' && !this.absence());
+  protected readonly sendLabel = computed(() => {
+    if (this.cancelsOwnLesson()) {
+      return 'Попросить отменить';
+    }
+    return this.absence() && !this.late() ? 'Предупредить учителя' : 'Отправить учителю';
+  });
   protected readonly title = computed(() => {
     if (this.kind() === 'RESCHEDULE') {
       return 'Перенести занятие';

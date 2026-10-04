@@ -37,7 +37,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
           <div class="tb-form-actions">
             <p-button
               label="Отмена"
-              severity="danger"
+              severity="secondary"
               [text]="true"
               (onClick)="editing.set(false)"
             />

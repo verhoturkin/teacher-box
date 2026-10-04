@@ -151,7 +151,6 @@ export class BotsPanel implements OnInit {
         header: 'Отключить бота?',
         message: `Уведомления перестанут приходить в ${CHANNEL_NAMES[channel]}. Подключения учеников сохранятся и заработают снова, если подключить этого же бота.`,
         acceptLabel: 'Отключить',
-        rejectLabel: 'Отмена',
         accept: () => {
           this.api.removeBot(channel).subscribe(() => {
             this.snackbar.info(`Бот ${CHANNEL_NAMES[channel]} отключён`);
