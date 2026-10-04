@@ -47,7 +47,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
       header="Оплата"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="payment-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

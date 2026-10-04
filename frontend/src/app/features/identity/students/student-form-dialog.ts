@@ -40,7 +40,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="student-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

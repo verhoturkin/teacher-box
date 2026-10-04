@@ -39,7 +39,7 @@ export interface Copied {
       header="На доску"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (loaded() && boards().length === 0) {

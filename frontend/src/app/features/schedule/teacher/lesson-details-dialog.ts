@@ -65,7 +65,7 @@ import { AttendanceDialog } from './attendance-dialog';
     <p-dialog
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
       [focusOnShow]="false"
       (onShow)="focusTitle()"

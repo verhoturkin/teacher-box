@@ -1719,11 +1719,29 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
- * bottom, fields are full width. Confirmations stay small.
+ * The width of a dialog is a class, not a style of the place (ADR-0026): `tb-dialog` 32 rem,
+ * `tb-dialog--wide` 40 rem; a confirmation is up to 35 rem. A dialog is never nearer than 1 rem to
+ * the edge of the screen.
+ */
+.p-dialog.tb-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+}
+
+.p-dialog.tb-dialog.tb-dialog--wide {
+  width: min(40rem, calc(100vw - 2rem));
+}
+
+.p-dialog.p-confirmdialog {
+  width: min(35rem, calc(100vw - 2rem));
+}
+
+/*
+ * Dialogs with a form on a phone take the whole screen (ADR-0015, ADR-0026): the content scrolls,
+ * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
+ * or none: a password, a link) stay ordinary windows in the middle of the screen.
  */
 @media (width <= 48em) {
-  .p-dialog:not(.p-confirmdialog) {
+  .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
     width: 100vw !important;
     max-width: 100vw;
     height: 100dvh;
@@ -1756,6 +1774,14 @@ a.p-menu-item-link:hover {
     .p-inputnumber,
     .p-multiselect,
     .p-autocomplete {
+      width: 100%;
+    }
+  }
+
+  .p-dialog.tb-dialog--short {
+    .tb-field > *,
+    .p-password,
+    .p-inputtext {
       width: 100%;
     }
   }

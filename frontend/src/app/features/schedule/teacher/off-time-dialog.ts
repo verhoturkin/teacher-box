@@ -60,7 +60,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
       [header]="offTime() === null ? 'Нерабочее время' : 'Изменить нерабочее время'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="off-time-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

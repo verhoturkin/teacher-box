@@ -65,7 +65,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
       [header]="lesson() === null ? 'Новое занятие' : 'Изменить занятие'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

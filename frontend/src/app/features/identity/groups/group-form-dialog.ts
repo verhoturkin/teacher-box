@@ -51,7 +51,7 @@ export interface SavedGroup {
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="group-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

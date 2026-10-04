@@ -48,7 +48,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
       [(visible)]="visible"
       [modal]="true"
       [closable]="stage() !== 'restarting'"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
       (onHide)="reset()"
     >

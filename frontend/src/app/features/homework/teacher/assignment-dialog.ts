@@ -61,7 +61,7 @@ export interface StudentOption {
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '44rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <form

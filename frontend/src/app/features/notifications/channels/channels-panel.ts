@@ -110,7 +110,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       (visibleChange)="onLinkVisibleChange($event)"
       [modal]="true"
       appendTo="body"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
     >
       @if (linkCode(); as code) {

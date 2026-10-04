@@ -43,7 +43,7 @@ export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '36rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <tb-help-button topic="teacher/boards" label="Подробнее" />

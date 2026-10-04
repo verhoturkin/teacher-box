@@ -235,6 +235,14 @@ describe('LessonDetailsDialog', () => {
     expect(menuItemByText('Удалить…').closest('li')?.className).toContain('tb-menu-item--danger');
   });
 
+  it('takes its width from a class, not from a style of the place (ADR-0026)', async () => {
+    await open(scheduledLesson());
+
+    const dialog = requireElement(document.body, '.p-dialog', HTMLElement);
+    expect(dialog.classList).toContain('tb-dialog');
+    expect(dialog.style.width).toBe('');
+  });
+
   it('puts the focus on the title, not on a button', async () => {
     await open(scheduledLesson({ joinUrl: 'https://zoom.us/j/1' }));
 

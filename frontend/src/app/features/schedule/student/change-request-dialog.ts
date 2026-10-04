@@ -33,7 +33,7 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (lesson(); as lesson) {

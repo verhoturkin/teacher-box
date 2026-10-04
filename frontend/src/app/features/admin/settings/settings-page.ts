@@ -189,7 +189,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
       [(visible)]="confirmVisible"
       [modal]="true"
       [closable]="stage() !== 'restarting'"
-      [style]="{ width: '30rem' }"
+      styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
     >
       @switch (stage()) {

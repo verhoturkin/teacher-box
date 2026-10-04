@@ -39,7 +39,7 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
       [header]="title()"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (owner(); as owner) {

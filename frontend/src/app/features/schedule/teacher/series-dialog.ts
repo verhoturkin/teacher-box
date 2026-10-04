@@ -62,7 +62,7 @@ export const INTERVAL_OPTIONS = [
       [header]="series() === null ? 'Регулярные занятия' : 'Изменить регулярные занятия'"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="series-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">

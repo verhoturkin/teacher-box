@@ -44,7 +44,7 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
       header="Кто был на занятии"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (lesson(); as lesson) {

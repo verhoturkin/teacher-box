@@ -48,7 +48,7 @@ export interface Recipient {
       header="Сообщение ученикам"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '36rem' }"
+      styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <form

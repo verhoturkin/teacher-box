@@ -41,7 +41,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
       header="Черновик задания с ИИ"
       [(visible)]="visible"
       [modal]="true"
-      [style]="{ width: '34rem' }"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <form
