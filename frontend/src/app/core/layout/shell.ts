@@ -42,8 +42,9 @@ const NAV_ITEMS = 4;
     SideNav,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(window:scroll)': 'onScroll()' },
   template: `
-    <header class="tb-shell__header">
+    <header class="tb-shell__header" [class.tb-shell__header--scrolled]="scrolled()">
       <a class="tb-shell__brand" [routerLink]="homeLink()">
         <tb-portal-logo size="1.75rem" />
         <span>{{ portalName() }}</span>
@@ -151,6 +152,8 @@ export class Shell {
   readonly notifications = input(true);
 
   protected readonly navItems = computed(() => this.items().slice(0, NAV_ITEMS));
+  /** The page is scrolled: the top bar rises (M3 top app bar on scroll). */
+  protected readonly scrolled = signal(false);
   protected readonly userOpen = signal(false);
   protected readonly moreOpen = signal(false);
   private readonly router = inject(Router);
@@ -176,6 +179,10 @@ export class Shell {
   protected readonly moreActive = computed(() =>
     this.moreItems().some((item) => item.styleClass === 'tb-menu-item--selected'),
   );
+  protected onScroll(): void {
+    this.scrolled.set(window.scrollY > 0);
+  }
+
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),

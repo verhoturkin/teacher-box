@@ -99,7 +99,6 @@ export interface StudentOption {
                 [formControl]="mode"
                 optionLabel="label"
                 optionValue="value"
-                size="small"
                 ariaLabel="Режим редактора"
               />
             </div>

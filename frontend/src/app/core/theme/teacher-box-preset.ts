@@ -12,9 +12,12 @@ import { ColorScheme, Shades, auraPalette, colorScheme } from './color-scheme';
  * tokens `md.*` (CSS variables `--p-md-*`); the PrimeNG tokens refer to them.
  */
 
-/** Content over a background: the M3 state layer (hover 8 %, pressed 12 %). */
-function layer(content: string, background: string, percent: number): string {
-  return `color-mix(in srgb, ${content} ${String(percent)}%, ${background})`;
+/** The opacity of a state layer: the tokens `--tb-state-*` of styles.scss are the one source. */
+type State = 'hover' | 'focus' | 'pressed' | 'disabled' | 'disabled-content';
+
+/** Content over a background: the M3 state layer. */
+function layer(content: string, background: string, state: State): string {
+  return `color-mix(in srgb, ${content} var(--tb-state-${state}), ${background})`;
 }
 
 /**
@@ -29,21 +32,21 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     primary: {
       color: '{md.primary}',
       contrastColor: '{md.on.primary}',
-      hoverColor: layer('{md.on.primary}', '{md.primary}', 8),
-      activeColor: layer('{md.on.primary}', '{md.primary}', 12),
+      hoverColor: layer('{md.on.primary}', '{md.primary}', 'hover'),
+      activeColor: layer('{md.on.primary}', '{md.primary}', 'pressed'),
     },
     highlight: {
       background: '{md.secondary.container}',
-      focusBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 12),
+      focusBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 'pressed'),
       color: '{md.on.secondary.container}',
       focusColor: '{md.on.secondary.container}',
     },
     mask: { background: '{md.scrim}', color: '{md.on.surface}' },
     formField: {
       background: 'transparent',
-      disabledBackground: 'color-mix(in srgb, {md.on.surface} 4%, transparent)',
+      disabledBackground: 'transparent',
       filledBackground: '{md.surface.container.highest}',
-      filledHoverBackground: layer('{md.on.surface}', '{md.surface.container.highest}', 8),
+      filledHoverBackground: layer('{md.on.surface}', '{md.surface.container.highest}', 'hover'),
       filledFocusBackground: '{md.surface.container.highest}',
       borderColor: '{md.outline}',
       hoverBorderColor: '{md.on.surface}',
@@ -68,7 +71,7 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     },
     content: {
       background: card,
-      hoverBackground: layer('{md.on.surface}', card, 8),
+      hoverBackground: layer('{md.on.surface}', card, 'hover'),
       borderColor: '{md.outline.variant}',
       color: '{md.on.surface}',
       hoverColor: '{md.on.surface}',
@@ -80,9 +83,13 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     },
     list: {
       option: {
-        focusBackground: 'color-mix(in srgb, {md.on.surface} 8%, transparent)',
+        focusBackground: over('{md.on.surface}', 'hover'),
         selectedBackground: '{md.tertiary.container}',
-        selectedFocusBackground: layer('{md.on.tertiary.container}', '{md.tertiary.container}', 12),
+        selectedFocusBackground: layer(
+          '{md.on.tertiary.container}',
+          '{md.tertiary.container}',
+          'pressed',
+        ),
         color: '{md.on.surface}',
         focusColor: '{md.on.surface}',
         selectedColor: '{md.on.tertiary.container}',
@@ -93,8 +100,8 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     },
     navigation: {
       item: {
-        focusBackground: 'color-mix(in srgb, {md.on.surface} 8%, transparent)',
-        activeBackground: 'color-mix(in srgb, {md.on.surface} 12%, transparent)',
+        focusBackground: over('{md.on.surface}', 'hover'),
+        activeBackground: over('{md.on.surface}', 'pressed'),
         color: '{md.on.surface}',
         focusColor: '{md.on.surface}',
         activeColor: '{md.on.surface}',
@@ -131,15 +138,17 @@ export function schemeTokens(colors: ColorScheme): Record<string, unknown> {
 /** The scheme of the default color (indigo) until the portal tells its own. */
 export const DEFAULT_SCHEME = colorScheme(auraPalette('indigo'));
 
-const ELEVATION_2 = '0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%)';
-const ELEVATION_3 = '0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%)';
-const PILL = '999px';
+// the values live in styles.scss (--tb-*): the preset only refers to them (ADR-0015)
+const ELEVATION_1 = 'var(--tb-elevation-1)';
+const ELEVATION_2 = 'var(--tb-elevation-2)';
+const ELEVATION_3 = 'var(--tb-elevation-3)';
+const PILL = 'var(--tb-shape-full)';
 /** Half the height of a 40 px button: round, and its corners can morph when pressed (Expressive). */
-const BUTTON_SHAPE = '1.25rem';
+const BUTTON_SHAPE = 'var(--tb-shape-button)';
 
 /** A state layer of the content color over a transparent background. */
-function over(content: string, percent: number): string {
-  return `color-mix(in srgb, ${content} ${String(percent)}%, transparent)`;
+function over(content: string, state: State): string {
+  return `color-mix(in srgb, ${content} var(--tb-state-${state}), transparent)`;
 }
 
 /** A filled button of a role: confirming (success) or cancelling and deleting (error), ADR-0019. */
@@ -148,11 +157,11 @@ function filled(role: 'success' | 'error'): Record<string, unknown> {
   const color = `{md.${role}}`;
   return {
     background: color,
-    hoverBackground: layer(on, color, 8),
-    activeBackground: layer(on, color, 12),
+    hoverBackground: layer(on, color, 'hover'),
+    activeBackground: layer(on, color, 'pressed'),
     borderColor: color,
-    hoverBorderColor: layer(on, color, 8),
-    activeBorderColor: layer(on, color, 12),
+    hoverBorderColor: layer(on, color, 'hover'),
+    activeBorderColor: layer(on, color, 'pressed'),
     color: on,
     hoverColor: on,
     activeColor: on,
@@ -163,8 +172,8 @@ function filled(role: 'success' | 'error'): Record<string, unknown> {
 /** A text (or outlined) button of a role: the color of the role over the state layer. */
 function plain(role: string): Record<string, unknown> {
   return {
-    hoverBackground: over(`{md.${role}}`, 8),
-    activeBackground: over(`{md.${role}}`, 12),
+    hoverBackground: over(`{md.${role}}`, 'hover'),
+    activeBackground: over(`{md.${role}}`, 'pressed'),
     borderColor: '{md.outline}',
     color: `{md.${role}}`,
   };
@@ -178,11 +187,15 @@ const BUTTON_SCHEME = {
   root: {
     secondary: {
       background: '{md.secondary.container}',
-      hoverBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 8),
-      activeBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 12),
+      hoverBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 'hover'),
+      activeBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 'pressed'),
       borderColor: '{md.secondary.container}',
-      hoverBorderColor: layer('{md.on.secondary.container}', '{md.secondary.container}', 8),
-      activeBorderColor: layer('{md.on.secondary.container}', '{md.secondary.container}', 12),
+      hoverBorderColor: layer('{md.on.secondary.container}', '{md.secondary.container}', 'hover'),
+      activeBorderColor: layer(
+        '{md.on.secondary.container}',
+        '{md.secondary.container}',
+        'pressed',
+      ),
       color: '{md.on.secondary.container}',
       hoverColor: '{md.on.secondary.container}',
       activeColor: '{md.on.secondary.container}',
@@ -191,19 +204,12 @@ const BUTTON_SCHEME = {
     success: filled('success'),
     danger: filled('error'),
   },
-  outlined: {
-    primary: plain('primary'),
-    secondary: plain('on.surface.variant'),
-    success: plain('success'),
-    danger: plain('error'),
-  },
   text: {
     primary: plain('primary'),
     secondary: plain('on.surface.variant'),
     success: plain('success'),
     danger: plain('error'),
   },
-  link: { color: '{md.primary}', hoverColor: '{md.primary}', activeColor: '{md.primary}' },
 };
 
 /** Snackbar: every severity on the inverse surface. */
@@ -215,7 +221,7 @@ function snackbar(): Record<string, unknown> {
     detailColor: '{md.inverse.on.surface}',
     shadow: ELEVATION_3,
     closeButton: {
-      hoverBackground: over('{md.inverse.on.surface}', 8),
+      hoverBackground: over('{md.inverse.on.surface}', 'hover'),
       focusRing: { color: '{md.inverse.primary}', shadow: 'none' },
     },
   };
@@ -256,7 +262,7 @@ function message(role: keyof typeof CONTAINERS): Record<string, unknown> {
     color,
     shadow: 'none',
     closeButton: {
-      hoverBackground: `color-mix(in srgb, ${color} 8%, transparent)`,
+      hoverBackground: over(color, 'hover'),
       focusRing: { color: '{md.secondary}', shadow: 'none' },
     },
     outlined: { color, borderColor: color },
@@ -289,7 +295,7 @@ const TOGGLE_SCHEME = {
   root: {
     background: '{md.secondary.container}',
     checkedBackground: '{md.primary}',
-    hoverBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 8),
+    hoverBackground: layer('{md.on.secondary.container}', '{md.secondary.container}', 'hover'),
     borderColor: 'transparent',
     color: '{md.on.secondary.container}',
     hoverColor: '{md.on.secondary.container}',
@@ -318,8 +324,10 @@ const SWITCH_SCHEME = {
     hoverBackground: '{md.surface.container.highest}',
     checkedBackground: '{md.primary}',
     checkedHoverBackground: '{md.primary}',
+    disabledBackground: over('{md.on.surface}', 'disabled'),
   },
   handle: {
+    disabledBackground: over('{md.on.surface}', 'disabled-content'),
     background: '{md.outline}',
     hoverBackground: '{md.on.surface.variant}',
     checkedBackground: '{md.on.primary}',
@@ -335,24 +343,51 @@ const SWITCH_SCHEME = {
 const DATE_BUTTON_SCHEME = {
   dropdown: {
     background: 'transparent',
-    hoverBackground: over('{md.on.surface}', 8),
-    activeBackground: over('{md.on.surface}', 12),
+    hoverBackground: over('{md.on.surface}', 'hover'),
+    activeBackground: over('{md.on.surface}', 'pressed'),
     color: '{md.on.surface.variant}',
     hoverColor: '{md.on.surface}',
     activeColor: '{md.on.surface}',
   },
-  today: { background: '{md.primary.container}', color: '{md.on.primary.container}' },
+  today: { background: 'transparent', color: '{md.primary}' },
+};
+
+const CHIP_SCHEME = {
+  root: { background: '{md.secondary.container}', color: '{md.on.secondary.container}' },
+  icon: { color: '{md.on.secondary.container}' },
+  removeIcon: { color: '{md.on.secondary.container}' },
+};
+
+/** The panel of the color picker is a popover like the others, not Aura's dark one. */
+const COLORPICKER_SCHEME = {
+  panel: { background: '{overlay.popover.background}', borderColor: '{md.outline.variant}' },
+  handle: { color: '{md.on.surface}' },
+};
+
+/** The step buttons of a number field: a trailing icon of the outlined field. */
+const NUMBER_BUTTON_SCHEME = {
+  button: {
+    background: 'transparent',
+    hoverBackground: over('{md.on.surface}', 'hover'),
+    activeBackground: over('{md.on.surface}', 'pressed'),
+    borderColor: '{form.field.border.color}',
+    hoverBorderColor: '{form.field.border.color}',
+    activeBorderColor: '{form.field.border.color}',
+    color: '{md.on.surface.variant}',
+    hoverColor: '{md.on.surface}',
+    activeColor: '{md.on.surface}',
+  },
 };
 
 export const TeacherBoxPreset = definePreset(Aura, {
   primitive: {
     borderRadius: {
       none: '0',
-      xs: '4px',
-      sm: '8px',
-      md: '12px',
-      lg: '16px',
-      xl: '28px',
+      xs: 'var(--tb-shape-xs)',
+      sm: 'var(--tb-shape-sm)',
+      md: 'var(--tb-shape-md)',
+      lg: 'var(--tb-shape-lg)',
+      xl: 'var(--tb-shape-xl)',
     },
   },
   semantic: {
@@ -386,13 +421,13 @@ export const TeacherBoxPreset = definePreset(Aura, {
       padding: '0.25rem',
       gap: '2px',
       header: { padding: '0.75rem 1rem 0.5rem' },
-      option: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}' },
+      option: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}' },
       optionGroup: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
     },
     content: { borderRadius: '{border.radius.md}' },
     navigation: {
       list: { padding: '0.25rem', gap: '2px' },
-      item: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}', gap: '0.75rem' },
+      item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
       submenuLabel: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
     },
     overlay: {
@@ -412,20 +447,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
         // 9 + the line of 20 + 9 + the border of 1 on both sides: 40 px (M3, ADR-0018)
         paddingY: '0.5625rem',
         iconOnlyWidth: '2.5rem',
-        sm: {
-          fontSize: '0.8125rem',
-          paddingX: '1rem',
-          paddingY: '0.375rem',
-          iconOnlyWidth: '2rem',
-        },
-        lg: {
-          fontSize: '1rem',
-          paddingX: '1.75rem',
-          paddingY: '0.875rem',
-          iconOnlyWidth: '3.5rem',
-        },
         label: { fontWeight: '500' },
-        raisedShadow: '0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%)',
       },
       colorScheme: { light: BUTTON_SCHEME, dark: BUTTON_SCHEME },
       // Pressed, a button squares its corners and springs back (Expressive shape morph)
@@ -436,12 +458,22 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-button:not(:disabled):active {
           border-radius: var(--tb-shape-md);
         }
+        /* disabled (M3): the container is on-surface 12 %, the content 38 %, whatever the severity */
+        .p-button:disabled {
+          opacity: 1;
+          border-color: transparent;
+          background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled), transparent);
+          color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
+        }
+        .p-button.p-button-text:disabled {
+          background: transparent;
+        }
       `,
     },
     card: {
       root: {
         background: '{content.background}',
-        borderRadius: '1.25rem',
+        borderRadius: 'var(--tb-shape-lg-plus)',
         shadow: 'none',
       },
       body: { padding: '1.25rem 1.5rem', gap: '0.75rem' },
@@ -456,7 +488,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       footer: { padding: '1.5rem', gap: '0.5rem' },
     },
     drawer: {
-      root: { background: '{content.background}', borderColor: 'transparent' },
+      root: { background: '{content.background}', borderColor: 'transparent', shadow: ELEVATION_1 },
       title: { fontSize: '1.375rem', fontWeight: '400' },
     },
     menu: {
@@ -467,40 +499,23 @@ export const TeacherBoxPreset = definePreset(Aura, {
         shadow: ELEVATION_2,
       },
       list: { padding: '0.25rem', gap: '2px' },
-      item: { padding: '0.75rem 1rem', borderRadius: '{border.radius.md}', gap: '0.75rem' },
+      item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
       separator: { borderColor: '{md.outline.variant}' },
-    },
-    tabs: {
-      tablist: {
-        background: 'transparent',
-        borderColor: '{md.surface.container.highest}',
-      },
-      tab: {
-        background: 'transparent',
-        hoverBackground: over('{md.on.surface}', 8),
-        activeBackground: 'transparent',
-        color: '{md.on.surface.variant}',
-        hoverColor: '{md.on.surface}',
-        activeColor: '{md.primary}',
-        padding: '0.875rem 1rem',
-        fontWeight: '500',
-      },
-      tabpanel: {
-        background: 'transparent',
-        padding: '1rem 0 0 0',
-      },
-      navButton: {
-        background: 'transparent',
-      },
-      activeBar: {
-        height: '3px',
-        bottom: '-1px',
-        background: '{md.primary}',
-      },
-      colorScheme: {
-        light: { navButton: { shadow: 'none' } },
-        dark: { navButton: { shadow: 'none' } },
-      },
+      // M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px
+      css: `
+        .p-menu .p-menu-item:first-child > .p-menu-item-content {
+          border-start-start-radius: var(--tb-shape-md);
+          border-start-end-radius: var(--tb-shape-md);
+        }
+        .p-menu .p-menu-item:last-child > .p-menu-item-content {
+          border-end-start-radius: var(--tb-shape-md);
+          border-end-end-radius: var(--tb-shape-md);
+        }
+        .p-select-option-selected,
+        .p-multiselect-option.p-multiselect-option-selected {
+          border-radius: var(--tb-shape-md);
+        }
+      `,
     },
     tag: {
       root: {
@@ -537,8 +552,31 @@ export const TeacherBoxPreset = definePreset(Aura, {
         checkedBorderColor: '{md.primary}',
         checkedHoverBorderColor: '{md.primary}',
       },
-      handle: { borderRadius: PILL, size: '1.25rem' },
+      handle: { borderRadius: PILL, size: '1rem' },
       colorScheme: { light: SWITCH_SCHEME, dark: SWITCH_SCHEME },
+      // M3: the handle is 16 px off and 24 px on (the track is 52 x 32, its outline 2 px)
+      css: `
+        .p-toggleswitch-handle {
+          transition:
+            background var(--tb-spring-fast-effects),
+            inset-inline-start var(--tb-spring-fast-spatial),
+            width var(--tb-spring-fast-spatial),
+            height var(--tb-spring-fast-spatial),
+            margin-block-start var(--tb-spring-fast-spatial);
+        }
+        .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-handle {
+          width: 1.5rem;
+          height: 1.5rem;
+          margin-block-start: -0.75rem;
+          inset-inline-start: 1.375rem;
+        }
+        .p-toggleswitch.p-disabled.p-toggleswitch-checked .p-toggleswitch-slider {
+          border-color: transparent;
+        }
+        .p-toggleswitch.p-disabled.p-toggleswitch-checked .p-toggleswitch-handle {
+          background: var(--p-md-surface);
+        }
+      `,
     },
     togglebutton: {
       root: { padding: '0', borderRadius: BUTTON_SHAPE, fontWeight: '500' },
@@ -596,6 +634,18 @@ export const TeacherBoxPreset = definePreset(Aura, {
           background: var(--p-md-primary);
           animation: tb-loading-morph 1.6s linear infinite;
         }
+        @media (prefers-reduced-motion: reduce) {
+          .p-progressspinner::after {
+            border-radius: 50%;
+            animation: tb-loading-pulse 2s ease-in-out infinite !important;
+            animation-iteration-count: infinite !important;
+            animation-duration: 2s !important;
+          }
+        }
+        @keyframes tb-loading-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
         @keyframes tb-loading-morph {
           0% { border-radius: 50%; transform: rotate(0deg) scale(1); }
           25% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(90deg) scale(0.9); }
@@ -605,16 +655,52 @@ export const TeacherBoxPreset = definePreset(Aura, {
         }
       `,
     },
+    // M3: a 2 px outline, the label is the touch target
     checkbox: {
       root: {
         borderRadius: '2px',
         width: '1.125rem',
         height: '1.125rem',
         borderColor: '{md.on.surface.variant}',
+        disabledBackground: 'transparent',
+        checkedDisabledBorderColor: over('{md.on.surface}', 'disabled-content'),
       },
+      css: `
+        .p-checkbox-box {
+          border-width: 2px;
+        }
+        .p-checkbox.p-disabled .p-checkbox-box {
+          border-color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
+        }
+        .p-checkbox-checked.p-disabled .p-checkbox-box {
+          background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
+        }
+      `,
     },
+    // M3: a ring and a dot of the primary color, not a filled disc with a white dot
     radiobutton: {
-      root: { borderColor: '{md.on.surface.variant}' },
+      root: {
+        borderColor: '{md.on.surface.variant}',
+        checkedBackground: 'transparent',
+        checkedHoverBackground: 'transparent',
+        disabledBackground: 'transparent',
+        checkedDisabledBorderColor: over('{md.on.surface}', 'disabled-content'),
+        checkedHoverBorderColor: '{md.primary}',
+      },
+      icon: {
+        size: '0.625rem',
+        checkedColor: '{md.primary}',
+        checkedHoverColor: '{md.primary}',
+        disabledColor: over('{md.on.surface}', 'disabled-content'),
+      },
+      css: `
+        .p-radiobutton-box {
+          border-width: 2px;
+        }
+        .p-radiobutton.p-disabled .p-radiobutton-box {
+          border-color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
+        }
+      `,
     },
     datatable: {
       headerCell: {
@@ -626,7 +712,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       // a row is a tile of a segmented list (ADR-0020): hover tints the tile
       row: {
         background: 'transparent',
-        hoverBackground: 'color-mix(in srgb, {md.on.surface} 4%, var(--tb-list-item))',
+        hoverBackground: layer('{md.on.surface}', 'var(--tb-list-item)', 'hover'),
         color: '{md.on.surface}',
       },
       bodyCell: { borderColor: '{md.outline.variant}' },
@@ -660,6 +746,52 @@ export const TeacherBoxPreset = definePreset(Aura, {
         height: '0.25rem',
       },
       value: { background: '{md.primary}' },
+      // M3: a 4 px gap between the value and the track, a 4 px stop indicator at its end
+      css: `
+        .p-progressbar {
+          position: relative;
+          overflow: visible;
+        }
+        .p-progressbar .p-progressbar-value {
+          border-inline-end: 4px solid transparent;
+          background-clip: padding-box;
+          border-radius: var(--tb-shape-full);
+        }
+        .p-progressbar-determinate::after {
+          content: '';
+          position: absolute;
+          inset-inline-end: 0;
+          top: 0;
+          width: 0.25rem;
+          height: 0.25rem;
+          border-radius: 50%;
+          background: var(--p-md-primary);
+        }
+      `,
+    },
+    colorpicker: {
+      preview: { width: '2rem', height: '2rem' },
+      colorScheme: {
+        light: COLORPICKER_SCHEME,
+        dark: COLORPICKER_SCHEME,
+      },
+    },
+    paginator: {
+      root: { background: 'transparent' },
+      navButton: {
+        hoverBackground: over('{md.on.surface}', 'hover'),
+        selectedBackground: '{md.secondary.container}',
+        color: '{md.on.surface.variant}',
+        hoverColor: '{md.on.surface}',
+        selectedColor: '{md.on.secondary.container}',
+      },
+    },
+    chip: {
+      root: { borderRadius: '{border.radius.sm}', paddingX: '0.75rem', paddingY: '0.375rem' },
+      colorScheme: { light: CHIP_SCHEME, dark: CHIP_SCHEME },
+    },
+    inputnumber: {
+      colorScheme: { light: NUMBER_BUTTON_SCHEME, dark: NUMBER_BUTTON_SCHEME },
     },
     datepicker: {
       panel: { background: '{content.background}', borderRadius: '{border.radius.lg}' },
@@ -675,6 +807,9 @@ export const TeacherBoxPreset = definePreset(Aura, {
       // M3 text field with a trailing icon (ADR-0022): one outline around the input and the
       // calendar button, the focus is the outline of the whole field
       css: `
+        .p-datepicker-today > .p-datepicker-day:not(.p-datepicker-day-selected) {
+          box-shadow: inset 0 0 0 1px var(--p-md-primary);
+        }
         .p-datepicker:has(.p-datepicker-dropdown) {
           border: 1px solid dt('form.field.border.color');
           border-radius: dt('form.field.border.radius');

@@ -4,9 +4,9 @@
 /*
  * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
  * a 4 px grid (--tb-space-N = N x 4 px), the M3 type scale, shape, elevation, state layers and
- * motion (springs), the width of the
- * content, the height of the top app bar. Colors come from the roles of the PrimeNG preset
- * (core/theme, --p-md-*), so that components and PrimeNG widgets match.
+ * motion (springs), the width of the content, the height of the bars. They are the one source: the
+ * PrimeNG preset (core/theme) refers to them by var(). Colors are the roles of the preset
+ * (--p-md-*), so that components and PrimeNG widgets match.
  */
 :root {
   --tb-space-1: 0.25rem;
@@ -28,8 +28,6 @@
   --tb-font:
     'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
     sans-serif;
-  --tb-type-headline-l: 400 2rem/2.5rem var(--tb-font);
-  --tb-type-headline-m: 400 1.75rem/2.25rem var(--tb-font);
   --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
   --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
   /* Emphasized roles (Expressive): the titles of pages, cards and dialogs */
@@ -37,7 +35,6 @@
   --tb-type-headline-s-emphasized: 500 1.5rem/2rem var(--tb-font);
   --tb-type-title-l-emphasized: 500 1.375rem/1.75rem var(--tb-font);
   --tb-type-title-m: 500 1rem/1.5rem var(--tb-font);
-  --tb-type-title-s: 500 0.875rem/1.25rem var(--tb-font);
   --tb-type-body-l: 400 1rem/1.5rem var(--tb-font);
   --tb-type-body-m: 400 0.875rem/1.25rem var(--tb-font);
   --tb-type-body-s: 400 0.75rem/1rem var(--tb-font);
@@ -66,7 +63,6 @@
   --tb-shape-full: 999px;
   /* A 40 px button: half its height, so that pressing it can morph the corners (Expressive) */
   --tb-shape-button: 1.25rem;
-  --tb-radius: var(--tb-shape-md);
 
   /* Rows of lists in cards (ADR-0020): a tile a tone lighter than the card */
   --tb-list-item: var(--p-md-surface-container-low);
@@ -82,12 +78,13 @@
   --tb-state-hover: 8%;
   --tb-state-focus: 10%;
   --tb-state-pressed: 10%;
+  /* disabled: the container 12 %, the content 38 % */
+  --tb-state-disabled: 12%;
+  --tb-state-disabled-content: 38%;
 
   /* Motion */
   --tb-motion-standard: cubic-bezier(0.2, 0, 0, 1);
-  --tb-motion-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
   --tb-duration-short: 150ms;
-  --tb-duration-medium: 300ms;
 
   /*
    * Springs of M3 Expressive (damping / stiffness): spatial ones overshoot and are for position,
@@ -110,23 +107,13 @@
       0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
       1.006, 1.004, 1.003, 1.002, 1.002, 1
     );
-  /* 0.8 / 200: the same curve, slower */
-  /* prettier-ignore */
-  --tb-spring-slow-spatial: 595ms
-    linear(
-      0, 0.03, 0.104, 0.203, 0.312, 0.423, 0.528, 0.623, 0.707, 0.778, 0.838, 0.886, 0.924, 0.953,
-      0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
-      1.006, 1.004, 1.003, 1.002, 1.002, 1
-    );
-  /* critically damped (1 / 3800, 1 / 1600, 1 / 800): one curve, three durations */
+  /* critically damped (1 / 3800): the curve of the effects springs, here the fast one */
   /* prettier-ignore */
   --tb-spring-effects-curve: linear(
     0, 0.099, 0.286, 0.472, 0.625, 0.742, 0.826, 0.885, 0.924, 0.951, 0.968, 0.98, 0.987, 0.992,
     0.995, 0.997, 1
   );
   --tb-spring-fast-effects: 140ms var(--tb-spring-effects-curve);
-  --tb-spring-default-effects: 210ms var(--tb-spring-effects-curve);
-  --tb-spring-slow-effects: 300ms var(--tb-spring-effects-curve);
 }
 
 :root {
@@ -141,7 +128,7 @@ body {
   padding: 0;
 }
 
-/* The page is a container; cards lie on it (ADR-0017) */
+/* The page is the surface container; cards lie on it (ADR-0017) */
 body {
   background: var(--p-md-surface-container);
   color: var(--p-text-color);
@@ -193,14 +180,14 @@ small,
   }
 }
 
-/* Fields: Body Large with its line height, 48 px high like selects (PrimeNG's styles come later) */
+/* Fields: Body Large with its line height, 56 px high (ADR-0022; PrimeNG's styles come later) */
 input.p-inputtext,
 textarea.p-textarea {
   line-height: 1.5rem;
 }
 
-/* Buttons: Label Large (M3), 40 px high; PrimeNG's styles come later, hence the :not */
-.p-button:not(.p-button-sm, .p-button-lg) {
+/* Buttons: Label Large (M3), 40 px high */
+.p-button {
   font-size: 0.875rem;
   line-height: 1.25rem;
   letter-spacing: 0.00625rem;
@@ -221,10 +208,18 @@ textarea.p-textarea {
       border-color: var(--p-md-#{$role}-container);
       background: color-mix(
         in srgb,
-        var(--p-md-on-#{$role}-container) 8%,
+        var(--p-md-on-#{$role}-container) var(--tb-state-hover),
         var(--p-md-#{$role}-container)
       );
       color: var(--p-md-on-#{$role}-container);
+    }
+
+    &:not(:disabled):active {
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-#{$role}-container) var(--tb-state-pressed),
+        var(--p-md-#{$role}-container)
+      );
     }
   }
 }
@@ -497,7 +492,11 @@ textarea.p-textarea {
 
   &:enabled:hover {
     border-color: transparent;
-    background: color-mix(in srgb, var(--p-md-on-surface) 8%, var(--p-md-surface-container-high));
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--p-md-surface-container-high)
+    );
   }
 
   &:enabled:focus {
@@ -541,23 +540,6 @@ textarea.p-textarea {
     outline: 2px solid var(--p-md-primary);
     outline-offset: -2px;
   }
-}
-
-/* A group of fields or settings with its title (Title Medium) */
-.tb-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-3);
-
-  & + & {
-    padding-top: var(--tb-space-5);
-    border-top: 1px solid var(--p-md-outline-variant);
-  }
-}
-
-.tb-section__title {
-  margin: 0;
-  font: var(--tb-type-title-m);
 }
 
 /*
@@ -717,7 +699,11 @@ p-button.tb-list__stretched .p-button {
   cursor: pointer;
 
   &:hover {
-    background: color-mix(in srgb, var(--p-md-on-surface) 8%, var(--tb-list-item));
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--tb-list-item)
+    );
   }
 }
 
@@ -933,14 +919,14 @@ a.p-menu-item-link:hover {
 
   > :first-child:is(.p-card),
   > :first-child .p-card {
-    border-start-start-radius: var(--p-card-border-radius);
-    border-start-end-radius: var(--p-card-border-radius);
+    border-start-start-radius: var(--tb-list-outer);
+    border-start-end-radius: var(--tb-list-outer);
   }
 
   > :last-child:is(.p-card),
   > :last-child .p-card {
-    border-end-start-radius: var(--p-card-border-radius);
-    border-end-end-radius: var(--p-card-border-radius);
+    border-end-start-radius: var(--tb-list-outer);
+    border-end-end-radius: var(--tb-list-outer);
   }
 
   .p-card-body {
@@ -1264,13 +1250,18 @@ a.p-menu-item-link:hover {
   &:hover:not(:disabled) {
     background: color-mix(
       in srgb,
-      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-on-secondary-container) var(--tb-state-hover),
       var(--p-md-secondary-container)
     );
   }
 
   &:active:not(:disabled) {
     border-radius: var(--tb-shape-md);
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) var(--tb-state-pressed),
+      var(--p-md-secondary-container)
+    );
   }
 
   &:focus-visible {
@@ -1540,8 +1531,12 @@ a.p-menu-item-link:hover {
     border-end-end-radius: var(--tb-list-outer);
   }
 
-  .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td {
-    background: color-mix(in srgb, var(--p-md-on-surface) 4%, var(--tb-list-item));
+  .p-datatable-hoverable .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--tb-list-item)
+    );
   }
 
   .p-datatable-tbody > tr.p-datatable-row-selected > td {
@@ -1679,7 +1674,17 @@ a.p-menu-item-link:hover {
         border-color: var(--p-md-primary-container);
         background: color-mix(
           in srgb,
-          var(--p-md-on-primary-container) 8%,
+          var(--p-md-on-primary-container) var(--tb-state-hover),
+          var(--p-md-primary-container)
+        );
+        color: var(--p-md-on-primary-container);
+      }
+
+      &:not(:disabled):active {
+        border-color: var(--p-md-primary-container);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) var(--tb-state-pressed),
           var(--p-md-primary-container)
         );
         color: var(--p-md-on-primary-container);
@@ -1757,7 +1762,11 @@ a.p-menu-item-link:hover {
   cursor: pointer;
 
   &:hover {
-    background: color-mix(in srgb, var(--p-md-inverse-on-surface) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--p-md-inverse-on-surface) var(--tb-state-hover),
+      transparent
+    );
   }
 
   &:focus-visible {
@@ -1910,14 +1919,25 @@ a.p-menu-item-link:hover {
   align-items: center;
   gap: 2px;
 
-  > p-button:not(:last-child) .p-button:not(:active) {
+  > p-button:not(:last-child) .p-button {
     border-start-end-radius: var(--tb-shape-sm);
     border-end-end-radius: var(--tb-shape-sm);
   }
 
-  > p-button:not(:first-child) .p-button:not(:active) {
+  > p-button:not(:first-child) .p-button {
     border-start-start-radius: var(--tb-shape-sm);
     border-end-start-radius: var(--tb-shape-sm);
+  }
+
+  /* pressed, the inner corners narrow to 4 px, the outer ones square as usual (M3E) */
+  > p-button:not(:last-child) .p-button:not(:disabled):active {
+    border-start-end-radius: var(--tb-shape-xs);
+    border-end-end-radius: var(--tb-shape-xs);
+  }
+
+  > p-button:not(:first-child) .p-button:not(:disabled):active {
+    border-start-start-radius: var(--tb-shape-xs);
+    border-end-start-radius: var(--tb-shape-xs);
   }
 }
 

@@ -71,6 +71,7 @@ describe('StatusPage', () => {
     expect(text).toContain('Проверки DOWN');
     expect(text).toContain('Версия разработка');
     expect(hostElement(fixture).querySelector('.tb-negative')).not.toBeNull();
+    expect(text).toContain('Мало места');
 
     buttonByText(hostElement(fixture), 'Обновить').click();
     backend.expectOne('/api/admin/status').flush(systemStatus({ diskTotal: 0 }));

@@ -17,14 +17,21 @@
   height: var(--tb-header-height);
   padding: 0 var(--tb-space-3) 0 var(--tb-space-6);
   background: var(--p-md-surface-container);
+  transition: background var(--tb-spring-fast-effects);
 
   :host-context(.tb-dark) & {
     background: var(--p-md-surface);
   }
 
+  /* the content is scrolled under the bar: the bar takes the tone of the raised container (M3) */
+  &.tb-shell__header--scrolled,
+  :host-context(.tb-dark) &.tb-shell__header--scrolled {
+    background: var(--p-md-surface-container-high);
+  }
+
   @media (width <= 48em) {
     padding-left: var(--tb-space-4);
-    box-shadow: 0 1px 0 var(--p-md-outline-variant);
+    border-block-end: 1px solid var(--p-md-outline-variant);
   }
 
   /* a low window (a phone on its side, 400 % zoom): the bar does not take the room of the page */
@@ -100,7 +107,7 @@
   grid-auto-flow: column;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--p-md-surface-container);
-  box-shadow: 0 -1px 0 var(--p-md-outline-variant);
+  border-block-start: 1px solid var(--p-md-outline-variant);
 }
 
 .tb-bottom-nav__item {

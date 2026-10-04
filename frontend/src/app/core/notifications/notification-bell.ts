@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
-import { Button } from 'primeng/button';
+import { RouterLink } from '@angular/router';
+import { ButtonDirective, ButtonIcon } from 'primeng/button';
+import { OverlayBadge } from 'primeng/overlaybadge';
 import { Tooltip } from 'primeng/tooltip';
 import { switchMap, timer } from 'rxjs';
 import { UnreadNotifications } from './unread-notifications';
@@ -9,28 +10,32 @@ import { UnreadNotifications } from './unread-notifications';
 /** How often the unread counter is refreshed. */
 export const UNREAD_POLL_INTERVAL_MS = 60_000;
 
-/** Bell with the number of unread notifications; opens the notifications page. */
+/**
+ * Bell with the number of unread notifications; a link to the notifications page (it opens in a new
+ * tab too). The badge sits on the corner of the icon button (M3), it does not widen the button.
+ */
 @Component({
   selector: 'tb-notification-bell',
-  imports: [Button, Tooltip],
+  imports: [ButtonDirective, ButtonIcon, OverlayBadge, RouterLink, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-button
-      icon="pi pi-bell"
-      [text]="true"
-      [rounded]="true"
-      severity="secondary"
-      [badge]="badge()"
-      badgeSeverity="danger"
-      [pTooltip]="label()"
-      [ariaLabel]="label()"
-      (onClick)="open()"
-    />
+    <p-overlaybadge [value]="badge()" [badgeDisabled]="badge() === undefined" severity="danger">
+      <a
+        pButton
+        [routerLink]="link()"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        [pTooltip]="label()"
+        [attr.aria-label]="label()"
+      >
+        <i pButtonIcon class="pi pi-bell" aria-hidden="true"></i>
+      </a>
+    </p-overlaybadge>
   `,
 })
 export class NotificationBell {
   private readonly unread = inject(UnreadNotifications);
-  private readonly router = inject(Router);
 
   /** Route of the notifications page. */
   readonly link = input.required<string>();
@@ -54,9 +59,5 @@ export class NotificationBell {
         takeUntilDestroyed(),
       )
       .subscribe();
-  }
-
-  open(): void {
-    void this.router.navigateByUrl(this.link());
   }
 }

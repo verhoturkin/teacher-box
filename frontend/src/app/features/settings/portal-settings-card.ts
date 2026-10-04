@@ -220,10 +220,10 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 3rem;
+      height: 3rem;
       border: 2px solid transparent;
-      border-radius: 50%;
+      border-radius: var(--tb-shape-full);
       color: #fff;
       cursor: pointer;
 
@@ -260,7 +260,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-own-color__sample {
       padding: var(--tb-space-2) var(--tb-space-3);
-      border-radius: var(--p-border-radius-md);
+      border-radius: var(--tb-shape-md);
       font-weight: 500;
     }
 

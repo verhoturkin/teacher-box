@@ -352,7 +352,7 @@ import { AttendanceDialog } from './attendance-dialog';
 
     .tb-lesson-details__request {
       padding: var(--tb-space-2) var(--tb-space-3);
-      border-radius: var(--p-border-radius-md);
+      border-radius: var(--tb-shape-md);
       background: var(--p-highlight-background);
     }
 

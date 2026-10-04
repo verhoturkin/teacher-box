@@ -32,13 +32,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <form class="tb-form" [formGroup]="nameForm" (ngSubmit)="rename()">
                 <div class="tb-field">
                   <label for="account-name">Имя</label>
-                  <input
-                    pInputText
-                    id="account-name"
-                    formControlName="name"
-                    aria-label="Имя"
-                    maxlength="100"
-                  />
+                  <input pInputText id="account-name" formControlName="name" maxlength="100" />
                   <small class="tb-hint"
                     >Так вас видят ученики в портале и в сообщениях бота.</small
                   >

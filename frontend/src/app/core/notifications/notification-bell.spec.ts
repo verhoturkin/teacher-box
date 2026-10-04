@@ -1,11 +1,11 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
-import { buttonByText, hostElement } from '@testing/dom';
+import { hostElement, requireElement } from '@testing/dom';
 import { NotificationBell, UNREAD_POLL_INTERVAL_MS } from './notification-bell';
 import { UnreadNotifications } from './unread-notifications';
 
@@ -36,6 +36,10 @@ describe('NotificationBell', () => {
     vi.useRealTimers();
   });
 
+  function bell(label: string): Element | null {
+    return hostElement(fixture).querySelector(`a[aria-label="${label}"]`);
+  }
+
   async function tick(ms: number): Promise<void> {
     await vi.advanceTimersByTimeAsync(ms);
     fixture.detectChanges();
@@ -46,9 +50,8 @@ describe('NotificationBell', () => {
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 3 });
     await tick(0);
 
-    expect(
-      buttonByText(hostElement(fixture), 'Уведомления, непрочитанных: 3').textContent,
-    ).toContain('3');
+    expect(bell('Уведомления, непрочитанных: 3')).not.toBeNull();
+    expect(hostElement(fixture).querySelector('.p-badge')?.textContent).toContain('3');
 
     await tick(UNREAD_POLL_INTERVAL_MS);
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 150 });
@@ -58,7 +61,10 @@ describe('NotificationBell', () => {
     await tick(UNREAD_POLL_INTERVAL_MS);
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 0 });
     await tick(0);
-    expect(buttonByText(hostElement(fixture), 'Уведомления').textContent.trim()).toBe('');
+    expect(bell('Уведомления')).not.toBeNull();
+    expect(requireElement(hostElement(fixture), '.p-badge', HTMLElement).style.display).toBe(
+      'none',
+    );
   });
 
   it('keeps the last value quietly when the request fails', async () => {
@@ -74,14 +80,13 @@ describe('NotificationBell', () => {
     expect(messages).not.toHaveBeenCalled();
   });
 
-  it('opens the notifications page', async () => {
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+  it('is a link to the notifications page', async () => {
     await tick(0);
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 0 });
 
-    buttonByText(hostElement(fixture), 'Уведомления').click();
-
-    expect(navigate).toHaveBeenCalledWith('/cabinet/notifications');
+    expect(requireElement(hostElement(fixture), 'a', HTMLAnchorElement).getAttribute('href')).toBe(
+      '/cabinet/notifications',
+    );
   });
 
   it('never shows a negative counter', () => {

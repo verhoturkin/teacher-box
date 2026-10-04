@@ -53,9 +53,9 @@ describe('AccountPage', () => {
 
   it('shows the profile', () => {
     const text = hostElement(fixture).textContent;
-    expect(
-      requireElement(hostElement(fixture), 'input[aria-label="Имя"]', HTMLInputElement).value,
-    ).toBe('Анна Сергеевна');
+    expect(requireElement(hostElement(fixture), '#account-name', HTMLInputElement).value).toBe(
+      'Анна Сергеевна',
+    );
     expect(text).toContain('anna@example.com');
     expect(text).toContain('teacher');
   });
@@ -66,7 +66,7 @@ describe('AccountPage', () => {
     const save = buttonByText(host, 'Сохранить');
     expect(save.disabled).toBe(true);
 
-    typeInto(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement), ' Мария Ивановна ');
+    typeInto(requireElement(host, '#account-name', HTMLInputElement), ' Мария Ивановна ');
     await fixture.whenStable();
     buttonByText(host, 'Сохранить').click();
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/profile' });
@@ -84,12 +84,12 @@ describe('AccountPage', () => {
     await fixture.whenStable();
 
     expect(hostElement(fixture).textContent).toContain('Иван Петров');
-    expect(hostElement(fixture).querySelector('input[aria-label="Имя"]')).toBeNull();
+    expect(hostElement(fixture).querySelector('#account-name')).toBeNull();
   });
 
   it('keeps the name when saving it fails', async () => {
     const host = hostElement(fixture);
-    typeInto(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement), 'Мария');
+    typeInto(requireElement(host, '#account-name', HTMLInputElement), 'Мария');
     await fixture.whenStable();
     fixture.componentInstance.rename();
     fixture.componentInstance.rename();
@@ -98,7 +98,7 @@ describe('AccountPage', () => {
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(requireElement(host, 'input[aria-label="Имя"]', HTMLInputElement).value).toBe('Мария');
+    expect(requireElement(host, '#account-name', HTMLInputElement).value).toBe('Мария');
   });
 
   it('changes the password and keeps the new session', async () => {
