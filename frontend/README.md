@@ -14,6 +14,6 @@ npm run build         # production-сборка в dist/teacher-box/browser
 
 - `core/` — инфраструктура приложения: HTTP, локаль, тема, layout'ы, маршрутизация;
 - `shared/` — переиспользуемые UI-компоненты;
-- `features/<module>/` — фичи, зеркалят модули бекенда; наружу — только через `index.ts`.
+- `features/<module>/` — фичи, зеркалят модули бекенда; наружу — только через `index.ts` (страницы) и `parts.ts` (виджеты, API, типы).
 
 Алиасы импортов: `@core/*`, `@shared/*`, `@features/*`, `@testing/*` (только в тестах).

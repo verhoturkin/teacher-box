@@ -1,7 +1,7 @@
 # Plan archive
 
 Completed plans, one file per release. Read only when a task needs history (e.g. why a stage was done
-a certain way); the active plan is [`../PLAN.md`](../PLAN.md). Files up to v1.6.13 are in Russian.
+a certain way); the active plan is [`docs/PLAN.md`](../../PLAN.md). Files up to v1.6.13 are in Russian.
 
 Legend: **B** — backend, **F** — frontend, **D** — docker/infrastructure.
 
