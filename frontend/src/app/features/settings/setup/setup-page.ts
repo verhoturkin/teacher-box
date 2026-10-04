@@ -100,7 +100,8 @@ const STEPS: readonly Step[] = [
             </p>
             <tb-change-password-form
               currentLabel="Пароль, с которым вы вошли"
-              submitLabel="Сохранить и продолжить"
+              submitLabel="Далее"
+              [proceeds]="true"
               (changed)="next()"
             />
           }

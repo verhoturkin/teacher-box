@@ -63,7 +63,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
             <p-button
               [label]="feed.enabled ? 'Новая ссылка' : 'Получить ссылку'"
               icon="pi pi-link"
-              severity="secondary"
+              class="tb-tonal"
+              severity="success"
               [loading]="pending()"
               (onClick)="create()"
             />

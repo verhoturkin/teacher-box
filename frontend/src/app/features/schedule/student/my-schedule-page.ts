@@ -115,6 +115,7 @@ export function nextMonday(date: Date): Date {
                   } @else {
                     <div class="tb-list__trail">
                       <tb-lesson-actions
+                        [inRow]="true"
                         [joinUrl]="joinUrl(lesson)"
                         joinLabel="Подключиться"
                         [requests]="canAsk(lesson)"

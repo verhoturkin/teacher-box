@@ -41,7 +41,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
                 "
                 icon="pi pi-bell"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 [disabled]="notConnected().length === 0"
                 [loading]="pending()"
                 (onClick)="remind()"

@@ -256,6 +256,7 @@ import { AttendanceDialog } from './attendance-dialog';
             <p-button
               label="Отметить посещаемость"
               icon="pi pi-users"
+              severity="success"
               (onClick)="markAttendance()"
             />
           } @else if (started()) {

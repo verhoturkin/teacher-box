@@ -60,7 +60,8 @@ export const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               <p-button
                 [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
                 icon="pi pi-send"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 [loading]="pending()"
                 (onClick)="share(room)"
               />

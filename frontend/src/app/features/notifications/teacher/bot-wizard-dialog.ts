@@ -310,17 +310,13 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   label="Отправить тестовое сообщение"
                   icon="pi pi-send"
-                  [severity]="tested() ? 'secondary' : 'primary'"
+                  class="tb-tonal"
+                  severity="success"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />
                 @if (tested()) {
-                  <p-button
-                    severity="success"
-                    label="Готово"
-                    icon="pi pi-check"
-                    (onClick)="close()"
-                  />
+                  <p-button label="Готово" icon="pi pi-check" (onClick)="close()" />
                 }
               </div>
             </div>

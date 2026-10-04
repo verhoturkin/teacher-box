@@ -68,7 +68,8 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
           <div class="tb-card-title__actions">
             <p-button
               label="Создать копию сейчас"
-              severity="secondary"
+              class="tb-tonal"
+              severity="success"
               icon="pi pi-database"
               [loading]="creating()"
               (onClick)="create()"

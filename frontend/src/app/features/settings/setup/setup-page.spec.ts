@@ -172,7 +172,7 @@ describe('SetupPage', () => {
     typeInto(requireElement(host, '#next', HTMLInputElement), 'my-own-password');
     typeInto(requireElement(host, '#confirm', HTMLInputElement), 'my-own-password');
     await fixture.whenStable();
-    buttonByText(host, 'Сохранить и продолжить').click();
+    buttonByText(host, 'Далее').click();
     backend.expectOne('/api/me/password').flush(authResponse('TEACHER', 900, 'renewed'));
     await fixture.whenStable();
 

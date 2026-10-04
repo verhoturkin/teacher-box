@@ -48,7 +48,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <p-button
                 label="Повторить все"
                 icon="pi pi-replay"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 (onClick)="resubmit([])"
               />
             </div>
@@ -89,7 +90,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <p-button
                 label="Отправить все повторно"
                 icon="pi pi-replay"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 (onClick)="retry([])"
               />
             </div>

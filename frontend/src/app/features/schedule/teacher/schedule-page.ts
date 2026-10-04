@@ -176,6 +176,7 @@ const CLICK_SELECTION_MINUTES = 30;
                     <p-button
                       label="Отметить"
                       icon="pi pi-users"
+                      severity="success"
                       [text]="true"
                       [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
                       (onClick)="markAttendance(lesson)"

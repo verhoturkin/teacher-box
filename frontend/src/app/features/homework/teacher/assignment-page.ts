@@ -110,7 +110,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
             @if (newFiles().length > 0) {
               <p-button
                 label="Загрузить"
-                severity="secondary"
+                class="tb-tonal"
+                severity="success"
                 icon="pi pi-upload"
                 [loading]="uploading()"
                 (onClick)="upload()"

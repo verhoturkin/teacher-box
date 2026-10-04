@@ -60,6 +60,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
                   icon="pi pi-cog"
                   severity="secondary"
+                  [text]="true"
                   (onClick)="open(bot)"
                 />
                 @if (!bot.fromEnvironment) {

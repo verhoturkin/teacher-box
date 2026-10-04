@@ -20,7 +20,7 @@ import { ChangeKind } from '../data-access/schedule.models';
   },
   template: `
     @if (joinUrl(); as url) {
-      <tb-join-lesson-button [url]="url" [label]="joinLabel()" />
+      <tb-join-lesson-button [url]="url" [label]="joinLabel()" [tonal]="inRow()" />
     }
     @if (requests()) {
       <div class="tb-button-group" role="group" aria-label="Перенести или отменить">
@@ -28,6 +28,7 @@ import { ChangeKind } from '../data-access/schedule.models';
           label="Перенести"
           [icon]="rescheduleIcon()"
           severity="secondary"
+          [text]="inRow()"
           (onClick)="ask.emit('RESCHEDULE')"
         />
         <p-button
@@ -52,6 +53,11 @@ export class LessonActions {
   readonly group = input(false);
   /** One under another across the width (a phone), not in a row. */
   readonly stacked = input(false);
+  /**
+   * The buttons stand in a row of a list: «Подключиться» is tonal and «Перенести» text, there is one
+   * filled button only in the hero of the home page and in the bottom sheet (ADR-0026).
+   */
+  readonly inRow = input(false);
   readonly rescheduleIcon = input<string | undefined>(undefined);
   readonly ask = output<ChangeKind>();
 

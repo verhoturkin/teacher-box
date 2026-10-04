@@ -90,6 +90,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                       label="Подключить"
                       icon="pi pi-link"
                       severity="secondary"
+                      [text]="true"
                       (onClick)="connect(channel.channel)"
                     />
                   }

@@ -69,6 +69,7 @@ import { AttendanceDialog } from '../teacher/attendance-dialog';
                     <p-button
                       label="Отметить"
                       icon="pi pi-users"
+                      severity="success"
                       [text]="true"
                       [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
                       (onClick)="openAttendance(lesson)"

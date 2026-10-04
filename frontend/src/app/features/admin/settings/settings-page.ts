@@ -169,6 +169,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
                   @if (setting.source === 'ADMIN' && setting.access === 'EDITABLE') {
                     <p-button
                       label="Вернуть как в .env"
+                      severity="danger"
                       [text]="true"
                       (onClick)="revert(setting)"
                     />
