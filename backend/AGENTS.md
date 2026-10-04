@@ -67,9 +67,8 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 
 ## Tests
 
-Stack: JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo. Gate (`./mvnw clean verify`): lines ≥ 90 %, branches ≥ 80 %.
-`clean` is required: after
-`-Pbundle-frontend` the SPA stays in `target/classes/static`.
+Stack: JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo. Gate (`./mvnw clean verify`): lines ≥ 90 %,
+branches ≥ 80 %. `clean` is required: after `-Pbundle-frontend` the SPA stays in `target/classes/static`.
 
 - **Unit** — domain and application (Mockito for ports).
 - **Module** — `@<Module>IntegrationTest` (`@ApplicationModuleTest` + MockMvc + `testing.MutableClock`): only the
@@ -85,6 +84,7 @@ Stack: JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo. Gate (
 
 ```bash
 ./mvnw clean verify                     # everything
-./mvnw test -Dtest=ModularityTests      # one test
+./mvnw -q test -Dtest=LedgerIntegrationTests            # one class while iterating (no coverage gate)
+./mvnw -q test -Dtest='Ledger*,ModularityTests'         # several
 ./mvnw spring-boot:run                  # run, data in ./data
 ```

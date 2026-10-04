@@ -1,0 +1,4 @@
+# Left out of ripgrep searches (and Claude Code Grep/Glob) to keep results short.
+# Search them explicitly: rg --no-ignore <pattern> docs/archive
+docs/archive/
+**/package-lock.json

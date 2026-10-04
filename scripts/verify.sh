@@ -8,57 +8,84 @@
 #   scripts/verify.sh docker     # compose files are valid (and images build if the daemon is up)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
 #
+# Each step writes its full output to .verify-logs/<step>.log and prints one line; a failed step prints
+# the end of its log. VERIFY_VERBOSE=1 streams the full output, VERIFY_TAIL=<n> sets how many lines of a
+# failed log are printed (default 80).
+#
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="$ROOT/.verify-logs"
+mkdir -p "$LOG_DIR"
 
 step() {
     printf '\n==> %s\n' "$*"
 }
 
+# run <name> <dir> <command...>: runs the command in the directory, its output goes to the step's log.
+run() {
+    local name="$1" dir="$2"
+    shift 2
+    local log="$LOG_DIR/$name.log" start=$SECONDS status=0
+    if [ "${VERIFY_VERBOSE:-0}" = 1 ]; then
+        (cd "$dir" && "$@") 2>&1 | tee "$log" || status=$?
+    else
+        (cd "$dir" && NO_COLOR=1 FORCE_COLOR=0 "$@") >"$log" 2>&1 || status=$?
+    fi
+    if [ "$status" -eq 0 ]; then
+        printf '    %-30s ok (%ss)\n' "$name" $((SECONDS - start))
+        return 0
+    fi
+    printf '    %-30s FAILED (%ss), full log: %s\n' "$name" $((SECONDS - start)) "${log#"$ROOT"/}"
+    if [ "${VERIFY_VERBOSE:-0}" != 1 ]; then
+        printf -- '---- last %s lines ----\n' "${VERIFY_TAIL:-80}"
+        tail -n "${VERIFY_TAIL:-80}" "$log" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g'
+        printf -- '----\n'
+    fi
+    exit "$status"
+}
+
+npm_install() {
+    # npm >= 11 is required (ADR-0007); npx fetches it when the local npm is older.
+    if [ ! -d "$2/node_modules" ]; then
+        run "$1-install" "$2" npx -y npm@11 ci --no-audit --no-fund
+    fi
+}
+
 verify_backend() {
-    step "backend: mvnw clean verify"
-    (cd "$ROOT/backend" && ./mvnw -B -q clean verify)
+    step "backend"
+    run backend-verify "$ROOT/backend" ./mvnw -B -q clean verify
 }
 
 verify_frontend() {
-    step "frontend: lint, test, build"
-    cd "$ROOT/frontend"
-    if [ ! -d node_modules ]; then
-        # npm >= 11 is required (ADR-0007); npx fetches it when the local npm is older.
-        npx -y npm@11 ci --no-audit --no-fund
-    fi
-    npm run lint
-    npm test
-    npm run build
+    step "frontend"
+    npm_install frontend "$ROOT/frontend"
+    run frontend-lint "$ROOT/frontend" npm run lint
+    run frontend-test "$ROOT/frontend" npm test
+    run frontend-build "$ROOT/frontend" npm run build
 }
 
 verify_docker() {
-    step "docker: compose configuration"
+    step "docker"
     if ! command -v docker >/dev/null 2>&1; then
-        echo "docker CLI not found, skipping"
+        echo "    docker CLI not found, skipping"
         return 0
     fi
     for file in compose.split.yaml compose.single.yaml; do
-        docker compose -f "$ROOT/$file" config --quiet
-        echo "$file: OK"
+        run "docker-config-${file%.yaml}" "$ROOT" docker compose -f "$file" config --quiet
     done
     if docker info >/dev/null 2>&1; then
-        step "docker: build images"
-        docker compose -f "$ROOT/compose.split.yaml" build
-        docker compose -f "$ROOT/compose.single.yaml" build
+        run docker-build-split "$ROOT" docker compose -f compose.split.yaml build
+        run docker-build-single "$ROOT" docker compose -f compose.single.yaml build
     else
-        echo "docker daemon is not running, image build skipped"
+        echo "    docker daemon is not running, image build skipped"
     fi
 }
 
 verify_e2e() {
-    step "e2e: typecheck"
-    cd "$ROOT/e2e"
-    if [ ! -d node_modules ]; then
-        npx -y npm@11 ci --no-audit --no-fund
-    fi
-    npm run typecheck
+    step "e2e"
+    npm_install e2e "$ROOT/e2e"
+    run e2e-typecheck "$ROOT/e2e" npm run typecheck
 }
 
 target="${1:-all}"

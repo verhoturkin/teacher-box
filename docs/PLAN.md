@@ -9,6 +9,8 @@ unless the task needs history.
   new/changed ADRs, then stages.
 - Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, …
   Tags: **B** backend, **F** frontend, **D** docker/infra.
+- A substep names its entry points — files, classes, endpoints, routes (`schedule/teacher/lesson-details-dialog.ts`,
+  `ScheduleService.cancel`) — so the work starts there instead of a repository search.
 - Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
 - Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next release).
 - **Archiving** (skill `release`): in the release commit move the whole section to
@@ -29,6 +31,19 @@ Goal: less context per task and one current source per topic. No product changes
 - [x] 84.4 `docs/modules/*.md` — one page per module (rules, contract, data, REST, frontend).
 - [x] 84.5 Skills `release`, `new-module`, `new-setting` in `.claude/skills/`.
 - [x] 84.6 `docs/archive/` — completed plans and the 2026-09-29 design audit.
+
+### Stage 85. Less output and fewer wasted turns for agents
+
+Goal: shorter tool output in agent sessions. No product changes.
+
+- [x] 85.1 **D** `scripts/verify.sh`: full output to `.verify-logs/<step>.log`, one line per step, the log tail
+      on failure (`VERIFY_VERBOSE`, `VERIFY_TAIL`).
+- [x] 85.2 Targeted tests while iterating: `npm run test:only -- <path>` (frontend), `./mvnw -q test -Dtest=…`
+      (backend); the rule in `AGENTS.md` §5.
+- [x] 85.3 `.claude/settings.json`: lockfiles not readable; `.ignore` keeps `docs/archive/` and lockfiles out of
+      searches.
+- [x] 85.4 PostToolUse hook `.claude/hooks/format.mjs`: Prettier on edited frontend and e2e files.
+- [x] 85.5 Plan substeps name their entry points; "Context economy" in `CLAUDE.md`.
 
 ## Backlog
 

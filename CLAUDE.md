@@ -21,6 +21,16 @@ CLAUDE.md → AGENTS.md, loaded when you work there.
 6. Keep docs current in the same commit: `docs/modules/<m>.md` for module behaviour, `docs/design-system.md`
    for UI rules, ADR index for new ADRs.
 
+## Context economy
+
+- Read the part of a file you need (`offset`/`limit`, Grep with context) rather than whole large files
+  (`styles.scss`, `teacher-box-preset.ts`, help articles, CHANGELOG).
+- Broad searches across many files ("where is X used", "how do modules do Y") — delegate to the Explore subagent
+  and take its conclusion, not the file dumps.
+- Targeted tests while iterating, `verify.sh` once before the commit (AGENTS.md §5). Don't run `npm run format`
+  for files you edited: the PostToolUse hook in `.claude/settings.json` formats them.
+- `package-lock.json` files are not readable (`permissions.deny`); check versions with `npm ls <pkg>`.
+
 ## Developer environment
 
 - Windows 11, PowerShell 5.1 (no `&&` — use `;` and `if ($?)`); Git Bash for `*.sh`.
