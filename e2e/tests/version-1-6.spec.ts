@@ -109,12 +109,12 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   await rename(`${current} М3`);
   await rename(current);
 
-  // A filled button is the primary role: the shade 600 of the portal color in the light theme.
+  // A filled button is the primary role: a tone of the portal color readable on white (ADR-0023).
   await page.goto('/teacher/students');
   await expect(page.getByRole('button', { name: 'Добавить ученика' }).first()).toBeVisible();
   const [button, shade] = await page.evaluate(() => {
     const probe = document.createElement('div');
-    probe.style.color = 'var(--p-primary-600)';
+    probe.style.color = 'var(--p-md-primary)';
     document.body.append(probe);
     const color = getComputedStyle(probe).color;
     probe.remove();

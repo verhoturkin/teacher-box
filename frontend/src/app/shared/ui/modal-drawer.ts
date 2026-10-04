@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { unblockBodyScroll } from 'primeng/dom';
 import { Drawer } from 'primeng/drawer';
 
 const FOCUSABLE =
@@ -21,6 +22,8 @@ export class ModalDrawer {
   private readonly document = inject(DOCUMENT);
   private readonly titleId = `tb-drawer-title-${String(nextId++)}`;
   private opener: HTMLElement | null = null;
+  /** The shade of the open drawer (PrimeNG puts it into the body). */
+  private shade: HTMLElement | null = null;
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -34,6 +37,14 @@ export class ModalDrawer {
     this.drawer.visibleChange.pipe(takeUntilDestroyed(destroyRef)).subscribe((visible) => {
       if (!visible) {
         this.closed();
+      }
+    });
+    // a page left while the drawer closes (a link in the help): its shade must not stay behind
+    destroyRef.onDestroy(() => {
+      const shade = this.shade;
+      if (shade?.isConnected === true) {
+        shade.remove();
+        unblockBodyScroll();
       }
     });
   }
@@ -51,6 +62,7 @@ export class ModalDrawer {
     ) {
       this.opener = active;
     }
+    this.shade = this.drawer.mask ?? null;
     container.setAttribute('role', 'dialog');
     container.setAttribute('aria-modal', 'true');
     const title = container.querySelector('.p-drawer-title');

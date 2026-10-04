@@ -46,4 +46,17 @@ describe('ModalDrawer', () => {
     drawer.hide();
     fixture.destroy();
   });
+
+  it('takes its shade away when the page is left while it closes', async () => {
+    TestBed.configureTestingModule({ providers: testProviders() });
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(document.body.querySelector('.p-drawer-mask')).not.toBeNull();
+
+    fixture.componentInstance.open.set(false);
+    fixture.destroy();
+
+    expect(document.body.querySelector('.p-drawer-mask')).toBeNull();
+  });
 });

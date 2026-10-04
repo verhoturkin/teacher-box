@@ -13,7 +13,7 @@ test('the administrator searches the log and checks the instance', async ({ page
   await page.locator('#password').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Войти' }).click();
   await expect(page).toHaveURL(/\/admin\/logs$/);
-  await expect(page.getByRole('heading', { name: 'Журнал' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Журнал', level: 1 })).toBeVisible();
 
   await page.getByLabel('Текст').fill('role=ADMIN');
   await page.getByRole('button', { name: 'Найти' }).click();

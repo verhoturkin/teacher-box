@@ -54,7 +54,7 @@ test('the administrator makes a backup', async ({ page }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Копии' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Резервные копии' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Резервные копии', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Создать копию сейчас' }).click();
   const row = page.getByRole('row').filter({ hasText: 'вручную' }).first();
   await expect(row).toBeVisible();

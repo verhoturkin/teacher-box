@@ -1,5 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
-import { laterThisWeek } from './this-week';
+import { laterThisWeek, saveLesson } from './this-week';
 
 /**
  * The main scenario of the portal, from the teacher's first sign-in to the student's inbox:
@@ -51,8 +51,7 @@ async function planLesson(
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
   await page.locator('#schedule-lesson-topic').fill(topic);
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
+  await saveLesson(page);
 }
 
 async function studentPage(browser: Browser): Promise<Page> {

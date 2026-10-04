@@ -1,5 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
-import { laterThisWeek } from './this-week';
+import { laterThisWeek, saveLesson } from './this-week';
 
 /**
  * Version 1.5: tabs on the page and five sections in the phone navigation, payments without a
@@ -63,8 +63,7 @@ async function planLesson(
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
   await page.locator('#schedule-lesson-topic').fill(topic);
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
+  await saveLesson(page);
 }
 
 async function studentPage(browser: Browser): Promise<Page> {

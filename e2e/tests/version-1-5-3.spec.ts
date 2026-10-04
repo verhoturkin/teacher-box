@@ -1,5 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
-import { laterThisWeek } from './this-week';
+import { laterThisWeek, saveLesson } from './this-week';
 
 /**
  * Version 1.5.3: groups under the students, the student's upcoming lessons of this week only, the
@@ -42,8 +42,7 @@ async function planLesson(page: Page, daysFromToday: number, hours: number, topi
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
   await page.locator('#schedule-lesson-topic').fill(topic);
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
+  await saveLesson(page);
 }
 
 async function studentPage(browser: Browser): Promise<Page> {
