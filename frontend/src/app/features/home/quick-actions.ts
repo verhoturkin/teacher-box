@@ -35,7 +35,7 @@ const ACTIONS = [
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--tb-space-2);
 
-      @media (max-width: 480px) {
+      @media (width <= 30em) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }

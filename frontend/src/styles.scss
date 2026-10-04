@@ -20,7 +20,9 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  --tb-header-height: 4rem;
+  /* The frame in px: a larger font grows the text, not the bars (ADR-0024) */
+  --tb-header-height: 64px;
+  --tb-bottom-nav-height: 80px;
 
   /* Type scale: `font: var(--tb-type-title-l)` */
   --tb-font:
@@ -197,7 +199,7 @@ textarea.p-textarea {
   margin: 0 0 var(--tb-space-4);
   font: var(--tb-type-headline-m-emphasized);
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     font: var(--tb-type-headline-s-emphasized);
   }
 }
@@ -317,7 +319,7 @@ textarea.p-textarea {
     gap: var(--tb-space-4);
     padding: var(--tb-space-8) var(--tb-space-8) var(--tb-space-7);
 
-    @media (max-width: 480px) {
+    @media (width <= 30em) {
       padding: var(--tb-space-6) var(--tb-space-5);
     }
   }
@@ -547,7 +549,7 @@ textarea.p-textarea {
   justify-content: flex-end;
   gap: var(--tb-space-2);
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     > p-button,
     > .p-button {
       flex: 1 1 auto;
@@ -765,7 +767,7 @@ p-button.tb-list__stretched .p-button {
 }
 
 /* The main column of a list (a name, a title) is not squeezed by the others on a computer */
-@media (min-width: 1200px) {
+@media (width >= 75em) {
   .tb-col-main {
     min-width: 13rem;
   }
@@ -998,7 +1000,7 @@ a.p-menu-item-link:hover {
     min-width: 16rem;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     flex-direction: column;
     align-items: stretch;
 
@@ -1501,7 +1503,7 @@ a.p-menu-item-link:hover {
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
  * action buttons are at the bottom of the card.
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   /* Search fills the width of the toolbar */
   .tb-toolbar > p-iconfield,
   .tb-toolbar > p-iconfield input {
@@ -1522,7 +1524,7 @@ a.p-menu-item-link:hover {
 }
 
 /* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
-@media (min-width: 769px) and (max-width: 1199px) {
+@media (48em < width < 75em) {
   .p-datatable .p-datatable-thead > tr > th,
   .p-datatable .p-datatable-tbody > tr > td {
     padding-inline: var(--tb-space-2);
@@ -1535,7 +1537,7 @@ a.p-menu-item-link:hover {
  * under another (ADR-0021); a card is wide, so the name of a field is in a column on the left and
  * the value — a text or a button — is next to it, in the middle of its line.
  */
-@media (min-width: 769px) {
+@media (width > 48em) {
   .p-datatable.tb-cards.tb-cards--wide {
     @include row-cards;
 
@@ -1602,11 +1604,11 @@ a.p-menu-item-link:hover {
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
  * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   p-button.tb-page-fab {
     position: fixed;
     right: var(--tb-space-4);
-    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+    bottom: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4));
     z-index: 900;
 
     .p-button {
@@ -1654,16 +1656,19 @@ a.p-menu-item-link:hover {
  * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
  */
 .p-toast.p-toast-bottom-center {
-  @media (max-width: 768px) {
-    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-2)) !important;
+  @media (width <= 48em) {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2)
+    ) !important;
     width: calc(100vw - 2rem);
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 48em) {
   body:has(p-button.tb-page-fab) .p-toast.p-toast-bottom-center {
     bottom: calc(
-      5rem + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem + var(--tb-space-2)
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
+        var(--tb-space-2)
     ) !important;
   }
 }
@@ -1717,7 +1722,7 @@ a.p-menu-item-link:hover {
  * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
  * bottom, fields are full width. Confirmations stay small.
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   .p-dialog:not(.p-confirmdialog) {
     width: 100vw !important;
     max-width: 100vw;
@@ -1757,7 +1762,7 @@ a.p-menu-item-link:hover {
 }
 
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   .tb-page-header {
     gap: var(--tb-space-3);
 
