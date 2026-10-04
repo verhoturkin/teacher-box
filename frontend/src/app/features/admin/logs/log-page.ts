@@ -189,7 +189,7 @@ export const LOG_LIMIT = 200;
     }
 
     .tb-log-logger {
-      font-family: monospace;
+      font-family: var(--tb-font-mono);
       font-size: 0.85rem;
       overflow-wrap: anywhere;
     }

@@ -366,7 +366,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
 
     .tb-wizard__step--active .tb-wizard__header {
       color: var(--p-text-color);
-      font-weight: 600;
+      font-weight: 500;
 
       .tb-wizard__number {
         border-color: var(--p-primary-color);

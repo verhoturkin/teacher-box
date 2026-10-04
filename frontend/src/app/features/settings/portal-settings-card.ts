@@ -261,7 +261,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     .tb-own-color__sample {
       padding: var(--tb-space-2) var(--tb-space-3);
       border-radius: var(--p-border-radius-md);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .tb-logo-row {

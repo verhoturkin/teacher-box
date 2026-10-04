@@ -155,7 +155,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
   styles: `
     .tb-mono {
-      font-family: monospace;
+      font-family: var(--tb-font-mono);
       font-size: 0.85rem;
       overflow-wrap: anywhere;
     }

@@ -301,7 +301,7 @@ const STEPS: readonly Step[] = [
 
     .tb-setup-title {
       margin-top: 0;
-      font: var(--tb-type-title-l);
+      font: var(--tb-type-title-l-emphasized);
     }
 
     .tb-setup-later {

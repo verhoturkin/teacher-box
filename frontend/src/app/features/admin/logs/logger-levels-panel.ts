@@ -134,7 +134,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
 
     .tb-logger-name {
       overflow-wrap: anywhere;
-      font-family: monospace;
+      font-family: var(--tb-font-mono);
     }
 
     .tb-row-actions {

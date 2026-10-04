@@ -133,7 +133,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 
     .tb-help__title {
       margin: 0;
-      font: var(--tb-type-headline-s);
+      font: var(--tb-type-headline-s-emphasized);
     }
 
     .tb-help__summary {

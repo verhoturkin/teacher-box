@@ -44,6 +44,15 @@
   --tb-type-label-l: 500 0.875rem/1.25rem var(--tb-font);
   --tb-type-label-m: 500 0.75rem/1rem var(--tb-font);
   --tb-type-label-s: 500 0.6875rem/1rem var(--tb-font);
+  /* the tracking of the roles of M3 (the `font` shorthand has none): use it next to `font` */
+  --tb-tracking-body-l: 0.03125rem;
+  --tb-tracking-body-m: 0.015625rem;
+  --tb-tracking-body-s: 0.025rem;
+  --tb-tracking-label-m: 0.03125rem;
+  --tb-tracking-title-m: 0.009375rem;
+  --tb-tracking-label-l: 0.00625rem;
+  --tb-font-mono:
+    ui-monospace, 'Roboto Mono', 'Cascadia Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   /* Shape scale */
   --tb-shape-xs: 4px;
@@ -136,6 +145,43 @@ body {
 body {
   background: var(--p-md-surface-container);
   color: var(--p-text-color);
+  letter-spacing: var(--tb-tracking-body-l);
+}
+
+/* The roles of the type that PrimeNG sets by size and weight only (no line height): ADR-0019 */
+.p-card-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+.p-dialog .p-dialog-title {
+  font: var(--tb-type-headline-s-emphasized);
+}
+
+.p-drawer .p-drawer-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+.p-tooltip .p-tooltip-text {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
+}
+
+.p-menu .p-menu-item-label,
+.p-select-overlay .p-select-option,
+.p-multiselect-overlay .p-multiselect-option {
+  font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
+}
+
+/* The weekdays of the date picker are Body Large, not bold */
+.p-datepicker .p-datepicker-weekday {
+  font: var(--tb-type-body-l);
+}
+
+small,
+.tb-hint {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
 }
 
 :root.tb-dark {
@@ -937,6 +983,11 @@ a.p-menu-item-link:hover {
   gap: var(--tb-space-1);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-l);
+
+  /* the details of a figure: Body Small, not the Label Large the browser would shrink */
+  small {
+    font: var(--tb-type-body-s);
+  }
 }
 
 .tb-stat__value {
@@ -1593,7 +1644,7 @@ a.p-menu-item-link:hover {
 
 /* The week on a phone: the title fits in one line */
 .tb-calendar-title {
-  font-size: 1.125rem;
+  font: var(--tb-type-title-m);
 }
 
 /*
@@ -1919,7 +1970,7 @@ a.p-menu-item-link:hover {
   }
 
   .p-drawer-title {
-    font: var(--tb-type-title-l);
+    font: var(--tb-type-title-l-emphasized);
   }
 
   .p-drawer-content {
