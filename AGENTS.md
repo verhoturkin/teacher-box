@@ -1,336 +1,307 @@
 # AGENTS.md — Teacher Box
 
-Единый источник правил для любых AI-агентов и людей, работающих с репозиторием
-(Claude Code, Codex, Cursor, Copilot и т.д.). `CLAUDE.md` импортирует этот файл.
+Single source of rules for AI agents and humans (Claude Code, Codex, Cursor, Copilot…).
+`CLAUDE.md` imports this file.
 
-## 1. Что это за проект
+## 1. Project
 
-**Teacher Box** — self-hosted портал для репетитора/учителя.
+**Teacher Box** — self-hosted portal for a tutor/teacher.
 
-- **Один инстанс = один учитель.** Учитель создаётся при первом запуске из переменных окружения
-  и существует всегда в единственном экземпляре. Регистрации «с улицы» нет.
-- **Ученики — много.** Учитель заводит ученика и выдаёт ему ссылку-приглашение; ученик сам
-  задаёт логин и пароль и попадает в личный кабинет (ЛК).
-- Подсистемы бекенда (модули):
-  1. `identity` — аутентификация учителя и учеников (приглашения, логин, JWT, refresh-токены),
-     группы учеников.
-  2. `billing` — учёт занятий и оплат, баланс ученика, отчёты.
-  3. `homework` — домашние задания: выдача, сдача, проверка, вложения.
-  4. `notifications` — уведомления: ЛК (inbox), Telegram-бот, ЛС мессенджеров (VK, MAX).
-  5. `ai` — интеграция с LLM: генерация заданий, черновик проверки работы.
-  6. `schedule` — расписание: занятия и еженедельные серии (с учеником или группой), посещаемость,
-     запросы учеников на перенос/отмену, напоминания, подписка на календарь (ICS).
-  7. `meetings` — видеовстречи: постоянные комнаты учеников и групп в Яндекс Телемосте.
-  8. `boards` — интерактивные доски (Холст) учеников и групп по ссылкам.
+- **One instance = one teacher**, created on first start from env vars; always exactly one. No public sign-up.
+- **Many students.** The teacher adds a student and gives an invite link; the student sets login and
+  password and gets a personal cabinet (ЛК).
+- Backend modules:
+  1. `identity` — auth for teacher and students (invites, login, JWT, refresh tokens), student groups.
+  2. `billing` — lessons and payments, student balance, reports.
+  3. `homework` — assign, submit, review, attachments.
+  4. `notifications` — cabinet inbox, Telegram bot, messenger DMs (VK, MAX).
+  5. `ai` — LLM: task generation, draft review of submissions.
+  6. `schedule` — lessons and weekly series (student or group), attendance, student reschedule/cancel
+     requests, reminders, calendar feed (ICS).
+  7. `meetings` — permanent Yandex Telemost rooms for students and groups.
+  8. `boards` — interactive boards (Холст) for students and groups via links.
 
-Пошаговый план — [`docs/PLAN.md`](docs/PLAN.md). Архитектурные решения — [`docs/adr/`](docs/adr).
+Plan — [`docs/PLAN.md`](docs/PLAN.md) (active only; `docs/plan-archive/` — don't read unless history is
+needed). ADRs — [`docs/adr/`](docs/adr).
 
-## 2. Технологии
+## 2. Stack
 
-| Слой | Технология | Версия |
+| Layer | Technology | Version |
 |---|---|---|
 | Backend | Java | 25 (LTS) |
-| | Spring Boot | 4.1.x |
-| | Spring Modulith | 2.1.x |
-| | Spring JDBC (`JdbcClient`, явный SQL) + Flyway | managed by Boot |
+| | Spring Boot / Spring Modulith | 4.1.x / 2.1.x |
+| | Spring JDBC (`JdbcClient`, explicit SQL) + Flyway | managed by Boot |
 | | Spring Security 7 (OAuth2 Resource Server, JWT HS256) | managed by Boot |
-| | БД | H2 2.x, file mode, schema-per-module ([ADR-0002](docs/adr/0002-embedded-database.md)) |
-| | Сборка | Maven (через `mvnw`) |
-| | Тесты | JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo |
+| | DB | H2 2.x, file mode, schema-per-module ([ADR-0002](docs/adr/0002-embedded-database.md)) |
+| | Build | Maven (via `mvnw`) |
+| | Tests | JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo |
 | Frontend | Angular (standalone, signals, zoneless) | 21.2 LTS ([ADR-0007](docs/adr/0007-frontend-stack-licensing.md)) |
-| | PrimeNG (MIT) + @primeuix/themes 2 (Aura → Material 3 Expressive, [ADR-0017](docs/adr/0017-material-design-3.md), [ADR-0019](docs/adr/0019-material-3-expressive.md)) + primeicons 7, шрифт Roboto | 21.1.x |
+| | PrimeNG (MIT) + @primeuix/themes 2 (Aura → Material 3 Expressive, [ADR-0017](docs/adr/0017-material-design-3.md), [ADR-0019](docs/adr/0019-material-3-expressive.md)) + primeicons 7, Roboto font | 21.1.x |
 | | TypeScript | 5.9.x, `strict` |
-| | Тесты | Vitest (через `ng test`), jsdom |
-| | Линтер | ESLint + angular-eslint + typescript-eslint (type-checked) |
-| Поставка | Docker, Docker Compose | 2 варианта: split и single |
+| | Tests | Vitest (via `ng test`), jsdom |
+| | Lint | ESLint + angular-eslint + typescript-eslint (type-checked) |
+| Delivery | Docker, Docker Compose | 2 variants: split and single |
 
-## 3. Структура репозитория
+## 3. Repository layout
 
 ```
 teacher-box/
-├── AGENTS.md, CLAUDE.md, README.md
+├── AGENTS.md, CLAUDE.md, README.md, CHANGELOG.md
 ├── docs/
-│   ├── PLAN.md                  # пошаговый план с чекбоксами
-│   └── adr/                     # Architecture Decision Records
-├── backend/                     # Spring Boot приложение (Maven)
-│   └── src/main/java/ru/teacherbox/
-│       ├── TeacherBoxApplication.java
-│       ├── shared/              # shared kernel (OPEN-модуль): Ids, Money, CurrentUser, ошибки, HTTP-клиенты, Portal
-│       ├── platform/            # инфраструктура: security, ошибки HTTP, миграции, бэкапы, SPA, настройки портала
-│       ├── identity/            # 1. аутентификация и группы учеников
-│       ├── billing/             # 2. оплата занятий
-│       ├── homework/            # 3. домашние задания
-│       ├── notifications/       # 4. уведомления
-│       ├── ai/                  # 5. интеграция с ИИ
-│       ├── schedule/            # 6. расписание занятий
-│       ├── meetings/            # 7. видеовстречи (Телемост)
-│       └── boards/              # 8. доски (Холст)
-├── frontend/                    # Angular приложение
-│   └── src/app/
-│       ├── core/                # auth, interceptors, guards, layout, конфиг
-│       ├── shared/              # переиспользуемые UI-компоненты, pipes
-│       └── features/<module>/   # зеркало модулей бекенда: data-access + teacher/ + student/ + home/
-├── docker/                      # Dockerfile (targets: backend, frontend, single) и nginx
-├── compose.split.yaml           # вариант 1: backend + frontend в разных контейнерах
-├── compose.single.yaml          # вариант 2: один контейнер
-├── .env.example                 # все настраиваемые переменные окружения
-├── .githooks/pre-commit         # тесты перед коммитом
-├── .github/workflows/ci.yml     # CI: backend, frontend, образы обоих вариантов, e2e
-├── e2e/                         # E2E-тесты (Playwright) против запущенного инстанса
-├── scripts/e2e.sh               # запуск E2E на свежем single-контейнере
-└── scripts/verify.sh            # полная проверка (то же, что в pre-commit и CI)
+│   ├── PLAN.md                  # active plan (English)
+│   ├── plan-archive/            # completed plans by release — read only when needed
+│   ├── adr/                     # Architecture Decision Records
+│   ├── audit/                   # design audits (large) — read only the parts a task cites
+│   └── glossary.md              # UI wording
+├── backend/src/main/java/ru/teacherbox/
+│   ├── TeacherBoxApplication.java
+│   ├── shared/                  # shared kernel (OPEN module): Ids, Money, CurrentUser, errors, HTTP clients, Portal
+│   ├── platform/                # infra: security, HTTP errors, migrations, backups, SPA, portal settings
+│   └── identity/ billing/ homework/ notifications/ ai/ schedule/ meetings/ boards/
+├── frontend/src/app/
+│   ├── core/                    # auth, interceptors, guards, layout, config
+│   ├── shared/                  # reusable UI components, pipes
+│   └── features/<module>/       # mirrors backend modules: data-access + teacher/ + student/ + home/
+├── docker/                      # Dockerfile (targets: backend, frontend, single) and nginx
+├── compose.split.yaml           # variant 1: backend + frontend containers
+├── compose.single.yaml          # variant 2: one container
+├── .env.example                 # all env vars
+├── .githooks/pre-commit         # tests before commit
+├── .github/workflows/ci.yml     # CI: backend, frontend, both images, e2e
+├── e2e/                         # Playwright E2E against a running instance
+└── scripts/                     # verify.sh (all checks = pre-commit = CI), e2e.sh (E2E on fresh single container)
 ```
 
-## 4. Архитектура и изоляция подсистем
+## 4. Architecture and module isolation
 
-Бекенд — **модульный монолит** на Spring Modulith ([ADR-0001](docs/adr/0001-modular-monolith.md)).
-Каждый бизнес-модуль — прямой подпакет `ru.teacherbox`.
+Backend is a **modular monolith** on Spring Modulith ([ADR-0001](docs/adr/0001-modular-monolith.md)).
+Each business module is a direct subpackage of `ru.teacherbox`.
 
-### 4.1 Структура модуля
+### 4.1 Module structure
 
 ```
 <module>/
-├── package-info.java      # @ApplicationModule(allowedDependencies = {...}) + @NullMarked
-├── api/                   # ПУБЛИЧНЫЙ контракт (@NamedInterface("api")):
-│                          #   фасады (interfaces), DTO (records), доменные события (records)
-├── domain/                # агрегаты, value objects, правила. Чистая Java, без Spring
-├── application/           # use-case сервисы (@Service, @Transactional), реализуют api-фасады
-├── persistence/           # репозитории на JdbcClient: явный SQL только к своей схеме
-├── web/                   # REST-контроллеры и их request/response DTO
-└── <adapter>/             # внешние интеграции модуля (telegram/, vk/, llm/ ...)
+├── package-info.java   # @ApplicationModule(allowedDependencies = {...}) + @NullMarked
+├── api/                # PUBLIC contract (@NamedInterface("api")): facades (interfaces), DTOs and domain events (records)
+├── domain/             # aggregates, value objects, rules. Plain Java, no Spring
+├── application/        # use-case services (@Service, @Transactional) implementing api facades
+├── persistence/        # JdbcClient repositories: explicit SQL to own schema only
+├── web/                # REST controllers and their request/response DTOs
+└── <adapter>/          # external integrations (telegram/, vk/, llm/ ...)
 ```
 
-### 4.2 Правила изоляции (проверяются тестами — нарушение = красная сборка)
+### 4.2 Isolation rules (enforced by tests — violation = red build)
 
-1. **Код:** модуль обращается к другому модулю **только** через его пакет `api`.
-   Всё, кроме `api`, — internal. Циклы между модулями запрещены.
-   Проверка: `ModularityTests` (`ApplicationModules.verify()`) + ArchUnit-правила.
-2. **Разрешённые зависимости** (задаются в `package-info.java`):
+1. **Code:** a module uses another module **only** via its `api` package; everything else is internal.
+   No cycles. Checked by `ModularityTests` (`ApplicationModules.verify()`) + ArchUnit.
+2. **Allowed dependencies** (declared in `package-info.java`):
 
-   | Модуль | Может зависеть от |
+   | Module | May depend on |
    |---|---|
    | `shared` | — |
    | `platform` | `shared` |
    | `identity` | `shared` |
-   | `billing` | `shared`, `identity::api`, `schedule::api` (только события: итог занятия → начисление) |
+   | `billing` | `shared`, `identity::api`, `schedule::api` (events only: lesson outcome → charge) |
    | `homework` | `shared`, `identity::api` |
-   | `notifications` | `shared`, `identity::api` (события и фасады), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (только события) |
+   | `notifications` | `shared`, `identity::api` (events and facades), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (events only) |
    | `ai` | `shared` |
-   | `schedule` | `shared`, `identity::api`, `meetings::api` (ссылки комнат) |
+   | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
    | `meetings` | `shared`, `identity::api` |
    | `boards` | `shared`, `identity::api` |
 
-   Бизнес-модули **не зависят** от `platform`; `platform` не знает о бизнес-модулях.
-3. **Данные:** у каждого модуля своя схема БД (`identity`, `billing`, `homework`,
-   `notifications`, `ai`, `schedule`, `meetings`, `boards`; у `platform` — `platform` для настроек портала),
-   свои Flyway-миграции в `db/migration/<module>/` и своя таблица истории миграций. **Запрещены** SQL-запросы к чужой схеме, внешние ключи между
-   схемами и JOIN между схемами. Между модулями передаются только идентификаторы (UUID).
-4. **Взаимодействие:**
-   - синхронно — вызов фасада из `api` другого модуля (только чтение/проверки);
-   - асинхронно — доменные события (`record` в `api`), публикуемые через
-     `ApplicationEventPublisher` и обрабатываемые `@ApplicationModuleListener`.
-     События хранятся в Event Publication Registry (переотправка после рестарта).
-   - Производители событий ничего не знают о потребителях (например, `homework` не знает
-     про `notifications`).
-5. **Файлы:** модуль пишет файлы только в свой namespace хранилища (`FileStorage`, `/data/files/<module>/`).
-6. **Frontend** повторяет границы: `features/<module>/` не импортирует внутренности другой
-   фичи, только её публичные входы: `@features/<name>` (`index.ts` — страницы для ленивых
-   маршрутов) и `@features/<name>/parts` (`parts.ts` — виджеты, панели, API и типы для
-   встраивания; страниц там нет, чтобы они не попадали в чужие бандлы). Общие вещи — только из
-   `core/` и `shared/` (правило ESLint `no-restricted-imports`). Виджеты главной живут в своих
-   фичах, `features/home` только собирает их.
+   Business modules **do not** depend on `platform`; `platform` knows nothing of business modules.
+3. **Data:** each module has its own DB schema (`identity`, `billing`, `homework`, `notifications`, `ai`,
+   `schedule`, `meetings`, `boards`; `platform` — `platform` for portal settings), its own Flyway
+   migrations in `db/migration/<module>/` and its own migration history table. **Forbidden:** SQL to
+   another schema, cross-schema foreign keys and JOINs. Only IDs (UUID) cross module boundaries.
+4. **Interaction:**
+   - sync — call another module's `api` facade (reads/checks only);
+   - async — domain events (`record` in `api`) published via `ApplicationEventPublisher`, handled by
+     `@ApplicationModuleListener`, stored in the Event Publication Registry (resent after restart);
+   - producers know nothing about consumers (e.g. `homework` doesn't know `notifications`).
+5. **Files:** a module writes only to its own storage namespace (`FileStorage`, `/data/files/<module>/`).
+6. **Frontend** mirrors the boundaries: `features/<module>/` imports another feature only via its public
+   entries — `@features/<name>` (`index.ts`: pages for lazy routes) and `@features/<name>/parts`
+   (`parts.ts`: widgets, panels, API and types to embed; no pages, so they don't leak into other
+   bundles). Shared things — only from `core/` and `shared/` (ESLint `no-restricted-imports`). Home
+   widgets live in their features; `features/home` only assembles them.
 
-### 4.3 Роли и доступ
+### 4.3 Roles and access
 
-- `TEACHER` — полный доступ ко всем данным своего инстанса.
-- `STUDENT` — только к собственным данным. Любой endpoint, отдающий данные ученика, обязан
-  проверять, что `studentId` == текущий пользователь (или роль `TEACHER`). Для каждого такого
-  endpoint'а обязателен тест «чужой ученик получает 403/404».
-- `ADMIN` — техническая учётная запись ([ADR-0010](docs/adr/0010-administrator-and-diagnostics.md)):
-  только `/api/admin/**` и свой аккаунт, **без доступа к данным учеников**. Эндпоинты
-  администратора отдают идентификаторы и технические данные, но не имена и тексты.
-- REST-префиксы: `/api/auth/**` (публичные), `/api/public/**` (без входа, доступ по секретной
-  ссылке — например, лента календаря), `/api/teacher/**` (TEACHER), `/api/admin/**` (ADMIN;
-  данные модуля — `/api/admin/<module>/**` в самом модуле), `/api/me/**` (учитель и ученик: ЛК;
-  администратору — только `/api/me` и `/api/me/password`), `/api/<module>/**` — по правилам модуля.
-- Журнал не должен содержать персональных данных: в сообщениях — идентификаторы, не имена и
-  тексты. Действия администратора и изменения учителя через бота — через
-  `shared.diagnostics.AuditLog`; проверки внешних сервисов модули отдают через SPI
-  `shared.diagnostics.IntegrationCheck`.
-- Полный сброс — SPI `shared.reset.DataReset`: каждый модуль очищает свои таблицы. **Новая таблица
-  модуля добавляется в его `DataReset.tables()` и `erase()`** — иначе `ResetIntegrationTest`
-  падает.
-- Опасные действия (восстановление копии, полный сброс) подтверждаются паролем пользователя
-  через `shared.security.PasswordConfirmation` (реализует `identity`, использует `platform`).
-- Название и адрес портала — `shared.portal.Portal` ([ADR-0014](docs/adr/0014-portal-settings-reset-and-restore.md)):
-  абсолютные ссылки (сообщения, приглашения, календари, адреса возврата OAuth) строятся только от
-  `Portal.link(...)`, не от адреса запроса.
-- Действия ботов мессенджеров — SPI `shared.chat.ChatAction` ([ADR-0013](docs/adr/0013-bot-dialogs.md)):
-  модуль объявляет бин, движок в `notifications` показывает его в меню. Действие проверяет права
-  как REST-эндпоинт и меняет только данные своего модуля.
+- `TEACHER` — full access to all data of the instance.
+- `STUDENT` — own data only. Every endpoint returning student data must check `studentId` == current
+  user (or role `TEACHER`), with a mandatory test "another student gets 403/404".
+- `ADMIN` — technical account ([ADR-0010](docs/adr/0010-administrator-and-diagnostics.md)): only
+  `/api/admin/**` and own account, **no access to student data**; admin endpoints return IDs and
+  technical data, never names or texts.
+- REST prefixes: `/api/auth/**` (public), `/api/public/**` (no login, secret link — e.g. calendar feed),
+  `/api/teacher/**` (TEACHER), `/api/admin/**` (ADMIN; module data at `/api/admin/<module>/**` in the
+  module), `/api/me/**` (teacher and student: cabinet; admin — only `/api/me` and `/api/me/password`),
+  `/api/<module>/**` — per module rules.
+- Logs hold no personal data: IDs, not names or texts. Admin actions and teacher changes via bot →
+  `shared.diagnostics.AuditLog`; external service checks → SPI `shared.diagnostics.IntegrationCheck`.
+- Full reset — SPI `shared.reset.DataReset`: each module clears its own tables. **Every new module table
+  goes into its `DataReset.tables()` and `erase()`**, otherwise `ResetIntegrationTest` fails.
+- Dangerous actions (backup restore, full reset) are confirmed with the user's password via
+  `shared.security.PasswordConfirmation` (implemented by `identity`, used by `platform`).
+- Portal name and URL — `shared.portal.Portal` ([ADR-0014](docs/adr/0014-portal-settings-reset-and-restore.md)):
+  absolute links (messages, invites, calendars, OAuth redirect URIs) are built only via
+  `Portal.link(...)`, never from the request address.
+- Messenger bot actions — SPI `shared.chat.ChatAction` ([ADR-0013](docs/adr/0013-bot-dialogs.md)): a
+  module declares a bean, the engine in `notifications` shows it in the menu. The action checks rights
+  like a REST endpoint and changes only its own module's data.
 
-## 5. Команды
+## 5. Commands
 
-Все команды — из корня репозитория, если не указано иное.
+From the repo root unless noted.
 
 ```bash
 # Backend
-cd backend && ./mvnw clean verify      # сборка + все тесты + JaCoCo-пороги + Modulith verify
-cd backend && ./mvnw spring-boot:run   # запуск (данные в ./backend/data)
+cd backend && ./mvnw clean verify      # build + all tests + JaCoCo gates + Modulith verify
+cd backend && ./mvnw spring-boot:run   # run (data in ./backend/data)
 cd backend && ./mvnw test -Dtest=ModularityTests
 
 # Frontend
-cd frontend && npx -y npm@11 ci     # установка: нужен npm >= 11 (ADR-0007)
-cd frontend && npm run lint            # ESLint (no any, границы фич)
-cd frontend && npm test                # Vitest + coverage-пороги (однократный прогон)
-cd frontend && npm start               # dev-сервер :4200, прокси /api -> :8080
-cd frontend && npm run build           # production-сборка
+cd frontend && npx -y npm@11 ci        # install: needs npm >= 11 (ADR-0007)
+cd frontend && npm run lint            # ESLint (no any, feature boundaries), Prettier, knip
+cd frontend && npm test                # Vitest + coverage gates (single run)
+cd frontend && npm start               # dev server :4200, proxy /api -> :8080
+cd frontend && npm run build           # production build
 
-# Всё сразу (то же делает pre-commit и CI)
-./scripts/verify.sh                    # все проверки
-./scripts/verify.sh backend|frontend   # только одна часть
+# Everything (same as pre-commit and CI)
+./scripts/verify.sh                    # all checks
+./scripts/verify.sh backend|frontend   # one part
 
-# E2E (Playwright) на свежем single-контейнере (порт 8091, данные удаляются после прогона)
-./scripts/e2e.sh                       # в CI; локально можно E2E_BROWSER_CHANNEL=chrome
+# E2E (Playwright) on a fresh single container (port 8091, data removed afterwards)
+./scripts/e2e.sh                       # in CI; locally E2E_BROWSER_CHANNEL=chrome works
 
 # Docker
-docker compose -f compose.split.yaml up -d --build    # вариант 1: два контейнера
-docker compose -f compose.single.yaml up -d --build   # вариант 2: один контейнер
+docker compose -f compose.split.yaml up -d --build    # variant 1: two containers
+docker compose -f compose.single.yaml up -d --build   # variant 2: one container
 ```
 
-На Windows `./mvnw` → `mvnw.cmd`, bash-скрипты запускаются через Git Bash.
+Windows: `./mvnw` → `mvnw.cmd`; bash scripts via Git Bash.
 
-## 6. Соглашения по коду
+## 6. Code conventions
 
-### 6.1 Общие
-- Код, идентификаторы, комментарии в коде, commit-сообщения — **на английском**.
-  Документация (`docs/`, README) и тексты UI — **на русском**; слова интерфейса — по [`docs/glossary.md`](docs/glossary.md).
-- Никаких секретов в репозитории. Все настройки — через переменные окружения
-  (`TEACHERBOX_*`), каждая новая переменная документируется в `.env.example` и добавляется в
-  каталог настроек администратора `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)).
-- Время хранится в UTC (`Instant`); часовой пояс учителя — настройка `TEACHERBOX_TIMEZONE`.
-- Деньги — целые минорные единицы (`long` копеек) + валюта инстанса. Никаких `double`.
+### 6.1 General
+- English: code, identifiers, code comments, commit messages, `AGENTS.md`, `CLAUDE.md`, `docs/PLAN.md`.
+  Russian: other docs (`docs/adr`, `docs/audit`, README, CHANGELOG, help) and UI texts; UI wording per
+  [`docs/glossary.md`](docs/glossary.md).
+- No secrets in the repo. All settings via env vars (`TEACHERBOX_*`); each new one is documented in
+  `.env.example` and added to the admin settings catalog `platform.settings.SettingsCatalog`
+  ([ADR-0016](docs/adr/0016-admin-settings.md)).
+- Time stored in UTC (`Instant`); teacher time zone — `TEACHERBOX_TIMEZONE`.
+- Money — integer minor units (`long` kopecks) + instance currency. Never `double`.
 
 ### 6.2 Backend (Java)
-- Java 25: `record` для DTO/событий/value objects, `sealed` для закрытых иерархий,
-  pattern matching в `switch`. Lombok не используется.
-- Только constructor injection; поля `private final`. Никакого `@Autowired` на полях.
-- Null-safety: `@NullMarked` (JSpecify) в `package-info.java` каждого пакета; nullable — явно `@Nullable`.
-- Идентификаторы — `UUID` (v7, генерируются через `shared.Ids`).
-- Доступ к БД — `JdbcClient` с явным SQL; имена таблиц всегда с префиксом схемы модуля
-  (`billing.payments`), без кавычек. Изменяемые таблицы имеют колонку `version`
-  (оптимистическая блокировка: `UPDATE ... WHERE id = ? AND version = ?`).
-- Миграции модуля: бин `ModuleMigrations.initializer(dataSource, "<module>")` в конфигурации модуля,
-  скрипты — `src/main/resources/db/migration/<module>/V<n>__<описание>.sql`.
-- Инфраструктура `platform` регистрируется как auto-configuration
-  (`META-INF/spring/...AutoConfiguration.imports`); `shared` и `platform` объявлены
-  shared-модулями (`@Modulithic(sharedModules = ...)`), поэтому поднимаются в каждом
-  изолированном `@ApplicationModuleTest`. Бизнес-модули получают инфраструктуру только через
-  типы Spring/`shared` (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
-- Модульные тесты: мета-аннотация `@<Module>IntegrationTest` (`@ApplicationModuleTest` +
-  MockMvc + `MutableClock`), зависимости на другие модули — через `@MockitoBean` их `api`-фасадов.
-- Ошибки: доменные исключения из `shared.error` → `ProblemDetail` (RFC 9457) в `platform`.
-- Внешние HTTP API — `RestClient` с фабрикой `shared.http.OutboundHttp` (HTTP/1.1, буферизация
-  тела, прокси). Прокси — своя переменная у каждой интеграции (`TEACHERBOX_<MODULE>_..._PROXY`,
-  разбор через `OutboundProxy.setting`), российские сервисы ходят напрямую ([ADR-0009](docs/adr/0009-external-integrations.md)).
-- Валидация входных DTO — Jakarta Validation на уровне `web`.
-- `domain` не импортирует Spring (проверяется ArchUnit).
-- Конфигурация модуля — типизированные `@ConfigurationProperties` records с префиксом
-  `teacherbox.<module>`.
+- Java 25: `record` for DTOs/events/value objects, `sealed` for closed hierarchies, pattern matching in
+  `switch`. No Lombok.
+- Constructor injection only; `private final` fields; no field `@Autowired`.
+- Null-safety: `@NullMarked` (JSpecify) in every package's `package-info.java`; nullable — explicit `@Nullable`.
+- IDs — `UUID` v7 via `shared.Ids`.
+- DB — `JdbcClient` with explicit SQL; table names always schema-prefixed (`billing.payments`), unquoted.
+  Mutable tables have a `version` column (optimistic locking: `UPDATE ... WHERE id = ? AND version = ?`).
+- Migrations: bean `ModuleMigrations.initializer(dataSource, "<module>")` in the module config, scripts
+  in `src/main/resources/db/migration/<module>/V<n>__<description>.sql`.
+- `platform` infra is registered as auto-configuration (`META-INF/spring/...AutoConfiguration.imports`);
+  `shared` and `platform` are shared modules (`@Modulithic(sharedModules = ...)`), so they start in every
+  isolated `@ApplicationModuleTest`. Business modules get infra only via Spring/`shared` types
+  (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
+- Module tests: meta-annotation `@<Module>IntegrationTest` (`@ApplicationModuleTest` + MockMvc +
+  `MutableClock`); other modules — `@MockitoBean` of their `api` facades.
+- Errors: domain exceptions from `shared.error` → `ProblemDetail` (RFC 9457) in `platform`.
+- External HTTP APIs — `RestClient` from the `shared.http.OutboundHttp` factory (HTTP/1.1, body
+  buffering, proxy). Each integration has its own proxy variable (`TEACHERBOX_<MODULE>_..._PROXY`, parsed
+  by `OutboundProxy.setting`); Russian services go direct ([ADR-0009](docs/adr/0009-external-integrations.md)).
+- Input DTO validation — Jakarta Validation in `web`.
+- `domain` doesn't import Spring (ArchUnit).
+- Module config — typed `@ConfigurationProperties` records with prefix `teacherbox.<module>`.
 
 ### 6.3 Frontend (TypeScript/Angular)
-- `tsconfig`: `strict: true` + `noImplicitOverride`, `noImplicitReturns`,
-  `noFallthroughCasesInSwitch`, `noPropertyAccessFromIndexSignature`, `noUncheckedIndexedAccess`;
-  `angularCompilerOptions.strictTemplates: true`.
-- **`any` запрещён** в любом виде (`: any`, `as any`, `<any>`, неявный any). Для неизвестных
-  данных — `unknown` + type guard. ESLint: `@typescript-eslint/no-explicit-any` и все
-  `no-unsafe-*` — `error`. `// eslint-disable` для этих правил запрещён.
-- Только standalone-компоненты, `ChangeDetectionStrategy.OnPush`, signals, `inject()`,
-  новый control flow (`@if`, `@for`), `input()`/`output()`.
-- Компоненты UI — PrimeNG. Собственные компоненты — только если в PrimeNG нет подходящего.
-- Вид кнопок, главного действия (FAB), заголовка страницы, секций и списков — по единым правилам
-  [ADR-0018](docs/adr/0018-component-rules.md): главное действие — filled `tb-page-fab`,
-  второстепенные — tonal (`severity="secondary"`), без `outlined` и `size="small"`; заголовок —
-  `tb-page-header` из `@shared/ui`. Цвет кнопки — смысл ([ADR-0019](docs/adr/0019-material-3-expressive.md),
-  [ADR-0026](docs/adr/0026-decision-buttons-and-dialogs.md)): подтверждение — `success` (зелёная),
-  удаление, отмена занятия и отказ с последствиями — `danger` (красная); закрыть окно без последствий —
-  нейтральная text-кнопка «Отмена»; в окне не больше одной красной кнопки; подтверждения в диалогах —
-  `dangerConfirmation` / `safeConfirmation` из `@shared/ui/confirmation`. Кнопка отправки окна —
-  `type="submit" [attr.form]` в подвале, у действий с запросом — `[loading]`; ширина окна — классом
-  `tb-dialog`, не inline-стилем. Нижняя панель — четыре раздела и «Ещё»
+- `tsconfig`: `strict` + `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noPropertyAccessFromIndexSignature`, `noUncheckedIndexedAccess`; `strictTemplates: true`.
+- **`any` is forbidden** in any form (`: any`, `as any`, `<any>`, implicit). Unknown data — `unknown` +
+  type guard. ESLint `no-explicit-any` and all `no-unsafe-*` are `error`; `eslint-disable` for them is forbidden.
+- Standalone components only, `OnPush`, signals, `inject()`, new control flow (`@if`, `@for`),
+  `input()`/`output()`.
+- UI components — PrimeNG; custom ones only when PrimeNG has nothing suitable.
+- Buttons, FAB, page header, sections, lists — [ADR-0018](docs/adr/0018-component-rules.md): main action —
+  filled `tb-page-fab`; secondary — tonal (`severity="secondary"`), no `outlined` or `size="small"`;
+  header — `tb-page-header` from `@shared/ui`. Button colour = meaning
+  ([ADR-0019](docs/adr/0019-material-3-expressive.md), [ADR-0026](docs/adr/0026-decision-buttons-and-dialogs.md)):
+  confirm — `success` (green); delete, lesson cancel, refusal with consequences — `danger` (red); close
+  without consequences — neutral text button «Отмена»; max one red button per dialog; dialog
+  confirmations — `dangerConfirmation` / `safeConfirmation` from `@shared/ui/confirmation`. Dialog submit
+  — `type="submit" [attr.form]` in the footer, `[loading]` for request actions; dialog width — class
+  `tb-dialog`, not inline style. Bottom bar — four sections and «Ещё»
   ([ADR-0027](docs/adr/0027-bottom-navigation.md)).
-- Списки внутри карточек — сегментированные ([ADR-0020](docs/adr/0020-lists-in-cards.md)):
-  `ul.tb-list` со строками `tb-list__lead` / `tb-list__text` / `tb-list__trail`, таблицы —
-  `styleClass="tb-cards"`; инициалы — `tb-avatar` и pipe `initials` из `@shared/ui/initials`.
-- Раздел — одна колонка карточек на любом экране ([ADR-0021](docs/adr/0021-single-column.md)):
-  блоки один под другим (`tb-stack`), без сеток из карточек; показатели — `tb-stats`, широкие
-  списки — `tb-cards--wide`; текст переносится между словами (`overflow-wrap: break-word`).
-- Поля, меню и телефонные действия — по M3 Expressive ([ADR-0022](docs/adr/0022-expressive-fields-menus-sheets.md)):
-  поле — `.tb-field` с `label` первым (подпись ложится на рамку сама), поиск — `p-iconfield` с
-  `pi-search`; действия строки, не помещающиеся на телефоне, — в нижнем листе (`p-drawer`
-  снизу, `styleClass="tb-sheet"`), пары действий — `tb-button-group`, кнопка с запасным способом —
-  split button `tb-split`.
-- Цвет — только роли `--p-md-*` ([ADR-0023](docs/adr/0023-status-colors-and-contrast.md)): палитры
-  `--p-surface-N` / `--p-<цвет>-N` и прозрачность для приглушения в стилях не используются; статус —
-  severity по таблице ADR-0023 (`warn` — роль warning, `info` — tertiary); контраст текста ≥ 4,5 : 1.
-- Доступность — по [ADR-0024](docs/adr/0024-accessibility.md): заголовок секции — `h2` (`tb-card-title`),
-  ошибка поля — текстом под полем (`<form tbFieldErrors>`), обязательное поле отмечено, кнопка отправки не отключается из-за
-  неверных полей; окно возвращает фокус; медиазапросы — в `em` диапазонами (`width <= 48em`).
-- Загрузка данных раздела — `LoadState` и `tb-load-state` ([ADR-0025](docs/adr/0025-page-states.md)):
-  загрузка, ошибка с «Повторить», пустое состояние только после ответа.
-- HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
-  зеркалят DTO бекенда 1:1.
-- Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),
-  `/login`, `/invite/:token`.
+- Lists in cards are segmented ([ADR-0020](docs/adr/0020-lists-in-cards.md)): `ul.tb-list` with rows
+  `tb-list__lead` / `tb-list__text` / `tb-list__trail`; tables — `styleClass="tb-cards"`; initials —
+  `tb-avatar` and pipe `initials` from `@shared/ui/initials`.
+- A section is one column of cards on any screen ([ADR-0021](docs/adr/0021-single-column.md)): blocks
+  stacked (`tb-stack`), no card grids; metrics — `tb-stats`; wide lists — `tb-cards--wide`; text wraps
+  between words (`overflow-wrap: break-word`).
+- Fields, menus, phone actions — M3 Expressive ([ADR-0022](docs/adr/0022-expressive-fields-menus-sheets.md)):
+  field — `.tb-field` with `label` first (label sits on the outline); search — `p-iconfield` with
+  `pi-search`; row actions that don't fit on a phone — bottom sheet (`p-drawer` bottom,
+  `styleClass="tb-sheet"`); action pairs — `tb-button-group`; button with a fallback — split button `tb-split`.
+- Colour — only `--p-md-*` roles ([ADR-0023](docs/adr/0023-status-colors-and-contrast.md)): no
+  `--p-surface-N` / `--p-<colour>-N` palettes or opacity for dimming in styles; status — severity per the
+  ADR-0023 table (`warn` — warning role, `info` — tertiary); text contrast ≥ 4.5:1.
+- Accessibility — [ADR-0024](docs/adr/0024-accessibility.md): section title — `h2` (`tb-card-title`);
+  field error — text under the field (`<form tbFieldErrors>`); required fields marked; submit isn't
+  disabled for invalid fields; dialogs return focus; media queries in `em` ranges (`width <= 48em`).
+- Section data loading — `LoadState` and `tb-load-state` ([ADR-0025](docs/adr/0025-page-states.md)):
+  loading, error with «Повторить», empty state only after a response.
+- HTTP models — `interface`/`type` in `features/<module>/data-access/*.models.ts`, 1:1 with backend DTOs.
+- Lazy routing: `/teacher/**` (teacher), `/cabinet/**` (student cabinet), `/admin/**` (admin), `/login`,
+  `/invite/:token`.
 
-## 7. Тестирование
+## 7. Testing
 
-**Весь код покрывается тестами.** Сборка падает при недостаточном покрытии.
+**All code is tested.** The build fails on insufficient coverage.
 
-| Часть | Инструмент | Порог |
+| Part | Tool | Gate |
 |---|---|---|
 | Backend | JaCoCo (`mvnw verify`) | lines ≥ 90%, branches ≥ 80% |
 | Frontend | Vitest coverage (`npm test`) | lines/statements/functions ≥ 90%, branches ≥ 80% |
 
-Обязательные виды тестов backend:
-- **Unit** — domain и application (Mockito для портов).
-- **Module tests** — `@ApplicationModuleTest` на каждый модуль: поднимается только модуль
-  и его разрешённые зависимости (проверка изоляции в рантайме), события — через `Scenario`.
-- **Web** — MockMvc/`MockMvcTester`: коды ответов, валидация, авторизация по ролям,
-  доступ ученика только к своим данным.
-- **Persistence** — репозитории на H2 in-memory с реальными Flyway-миграциями модуля
-  (`@JdbcTest` + `@Import` конфигурации модуля или `@ApplicationModuleTest`).
-- **Изоляция данных** — `SchemaIsolationTests` запрещает SQL-ссылки на чужие схемы.
-- **Architecture** — `ModularityTests` (Modulith verify + генерация документации) и ArchUnit.
-- **Adapters** — внешние HTTP API (Telegram, VK, MAX, LLM) — через `MockRestServiceServer`
-  (или локальный HTTP-сервер для клиентов не на `RestClient`, например Anthropic SDK),
-  без реальных сетевых вызовов.
+Backend — required test kinds:
+- **Unit** — domain and application (Mockito for ports).
+- **Module** — `@ApplicationModuleTest` per module: only the module and its allowed dependencies start
+  (runtime isolation check); events via `Scenario`.
+- **Web** — MockMvc/`MockMvcTester`: status codes, validation, role auth, students see only own data.
+- **Persistence** — repositories on in-memory H2 with the module's real Flyway migrations (`@JdbcTest` +
+  `@Import` of the module config, or `@ApplicationModuleTest`).
+- **Data isolation** — `SchemaIsolationTests` forbids SQL references to other schemas.
+- **Architecture** — `ModularityTests` (Modulith verify + docs generation) and ArchUnit.
+- **Adapters** — external HTTP APIs (Telegram, VK, MAX, LLM) via `MockRestServiceServer` (or a local HTTP
+  server for non-`RestClient` clients, e.g. the Anthropic SDK); no real network calls.
 
-Обязательные виды тестов frontend:
-- Компоненты — `TestBed` + Vitest, взаимодействие через DOM.
-- Сервисы — `HttpTestingController`.
-- Guards/interceptors — отдельные тесты.
-- Общая настройка — `testProviders(...)` из `@testing/setup` (HTTP с `HttpTestingController`, роутер,
-  PrimeNG, `MessageService`), фикстуры — `@testing/*-fixtures`, работа с DOM — `@testing/dom`.
-- Фронтенд проверяется `npm run lint`: ESLint, форматирование Prettier и knip (мёртвый код).
+Frontend — required test kinds:
+- Components — `TestBed` + Vitest, interaction via DOM.
+- Services — `HttpTestingController`.
+- Guards/interceptors — separate tests.
+- Common setup — `testProviders(...)` from `@testing/setup` (HTTP with `HttpTestingController`, router,
+  PrimeNG, `MessageService`); fixtures — `@testing/*-fixtures`; DOM helpers — `@testing/dom`.
+- `npm run lint` runs ESLint, Prettier formatting and knip (dead code).
 
-Тест пишется вместе с кодом (или до него), а не «потом».
+Tests are written with (or before) the code, never "later".
 
-## 8. Коммиты
+## 8. Commits
 
-1. **Перед каждым коммитом проходят тесты** затронутых частей: `./scripts/verify.sh`.
-   Git-hook `.githooks/pre-commit` делает это автоматически
-   (включить: `git config core.hooksPath .githooks`). `--no-verify` не использовать.
-2. Формат — Conventional Commits: `feat(billing): record lesson payments`,
-   `fix(identity): ...`, `test(...)`, `docs(...)`, `build(...)`, `chore(...)`.
-   Scope — имя модуля или `frontend`, `docker`, `platform`.
-3. Один коммит — одна логически завершённая единица (обычно подэтап плана).
-4. После завершения подэтапа отметить чекбокс в `docs/PLAN.md` в том же коммите.
+1. **Tests of touched parts pass before every commit**: `./scripts/verify.sh`. The hook
+   `.githooks/pre-commit` does it (enable: `git config core.hooksPath .githooks`). Never `--no-verify`.
+2. Conventional Commits: `feat(billing): record lesson payments`, `fix(identity): ...`, `test(...)`,
+   `docs(...)`, `build(...)`, `chore(...)`. Scope — module name or `frontend`, `docker`, `platform`.
+3. One commit = one complete logical unit (usually a plan substep).
+4. Tick the substep's checkbox in `docs/PLAN.md` in the same commit; archive the release per `docs/PLAN.md`.
 
-## 9. Definition of Done (для любой задачи)
+## 9. Definition of Done
 
-- [ ] Код соответствует правилам изоляции (раздел 4) и соглашениям (раздел 6).
-- [ ] Тесты написаны, `./scripts/verify.sh` зелёный, пороги покрытия соблюдены.
-- [ ] Новые переменные окружения — в `.env.example` и README.
-- [ ] Изменение архитектуры — новый ADR в `docs/adr/`.
-- [ ] Чекбокс в `docs/PLAN.md` отмечен.
+- [ ] Code follows isolation rules (§4) and conventions (§6).
+- [ ] Tests written, `./scripts/verify.sh` green, coverage gates met.
+- [ ] New env vars — in `.env.example` and README.
+- [ ] Architecture change — new ADR in `docs/adr/`.
+- [ ] Checkbox in `docs/PLAN.md` ticked.
