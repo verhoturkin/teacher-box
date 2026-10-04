@@ -217,7 +217,7 @@ describe('StudentsPage', () => {
   it('issues a new link', async () => {
     await loadStudents([MARIA]);
 
-    buttonByText(host, 'Ссылка: Мария').click();
+    buttonByText(host, 'Ссылка для сброса пароля: Мария').click();
     backend.expectOne('/api/teacher/students/m/invite').flush({
       token: 'reset-token',
       purpose: 'PASSWORD_RESET',

@@ -107,6 +107,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
                   label="Вернуть"
                   severity="danger"
                   [text]="true"
+                  [ariaLabel]="'Вернуть: ' + logger.name"
                   [loading]="busy.is(logger.name)"
                   (onClick)="revert(logger.name)"
                 />

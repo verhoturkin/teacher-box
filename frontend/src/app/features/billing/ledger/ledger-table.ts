@@ -74,8 +74,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Снять начисление"
-                      ariaLabel="Снять начисление"
+                      [pTooltip]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [ariaLabel]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
                       (onClick)="cancelLesson.emit(entry.lesson)"
                     />
                   }
@@ -106,8 +106,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Аннулировать оплату"
-                      ariaLabel="Аннулировать оплату"
+                      [pTooltip]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [ariaLabel]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
                       (onClick)="voidPayment.emit(entry.payment)"
                     />
                   }

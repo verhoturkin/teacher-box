@@ -156,7 +156,7 @@ import { Busy } from '@shared/ui/busy';
                   [text]="true"
                   severity="secondary"
                   [rounded]="true"
-                  pTooltip="Изменить"
+                  [pTooltip]="'Изменить группу: ' + group.name"
                   [ariaLabel]="'Изменить группу: ' + group.name"
                   (onClick)="openEdit(group)"
                 />
@@ -166,7 +166,7 @@ import { Busy } from '@shared/ui/busy';
                     [text]="true"
                     severity="secondary"
                     [rounded]="true"
-                    pTooltip="Вернуть из архива"
+                    [pTooltip]="'Вернуть из архива: ' + group.name"
                     [ariaLabel]="'Вернуть из архива: ' + group.name"
                     [loading]="busy.is('restore-' + group.id)"
                     (onClick)="restore(group)"
@@ -177,7 +177,7 @@ import { Busy } from '@shared/ui/busy';
                     [text]="true"
                     severity="danger"
                     [rounded]="true"
-                    pTooltip="В архив"
+                    [pTooltip]="'В архив: ' + group.name"
                     [ariaLabel]="'В архив: ' + group.name"
                     (onClick)="confirmArchive(group)"
                   />

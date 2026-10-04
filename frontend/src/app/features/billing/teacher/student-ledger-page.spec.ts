@@ -91,7 +91,7 @@ describe('StudentLedgerPage', () => {
   });
 
   it('cancels a lesson after confirmation and reloads', async () => {
-    buttonByText(host, 'Снять начисление').click();
+    requireElement(host, 'button[aria-label^="Снять начисление за "]', HTMLButtonElement).click();
 
     const request = backend.expectOne('/api/teacher/billing/lessons/l-1/cancel');
     expect(request.request.body).toEqual({ reason: null });
@@ -105,7 +105,11 @@ describe('StudentLedgerPage', () => {
   });
 
   it('voids a payment after confirmation and reloads', async () => {
-    buttonByText(host, 'Аннулировать оплату').click();
+    requireElement(
+      host,
+      'button[aria-label^="Аннулировать оплату от "]',
+      HTMLButtonElement,
+    ).click();
 
     backend
       .expectOne('/api/teacher/billing/payments/p-1/void')

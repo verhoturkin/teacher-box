@@ -67,7 +67,12 @@ export const PAGE_SIZE = 20;
                   </div>
                   <div class="tb-list__trail">
                     @if (item.link !== null) {
-                      <p-button label="Открыть" [text]="true" (onClick)="open(item)" />
+                      <p-button
+                        label="Открыть"
+                        [text]="true"
+                        [ariaLabel]="'Открыть: ' + item.title"
+                        (onClick)="open(item)"
+                      />
                     }
                     @if (!item.read) {
                       <p-button

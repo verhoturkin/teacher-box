@@ -57,7 +57,12 @@ import { LoadStateView } from '@shared/ui/load-state-view';
                 {{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
               </td>
               <td class="tb-actions-column">
-                <a pButton [routerLink]="['/teacher/homework/tasks', item.taskId]" [text]="true">
+                <a
+                  pButton
+                  [routerLink]="['/teacher/homework/tasks', item.taskId]"
+                  [text]="true"
+                  [attr.aria-label]="'Проверить: ' + item.studentName + ', ' + item.title"
+                >
                   <span pButtonLabel>Проверить</span>
                 </a>
               </td>

@@ -117,7 +117,7 @@ test('a student signs up and a payment is recorded without a method', async ({ p
   await student.context().close();
 
   await page.goto('/teacher/billing');
-  await page.getByRole('button', { name: `Оплата: ${STUDENT}` }).click();
+  await page.getByRole('button', { name: `Принять оплату: ${STUDENT}` }).click();
   const dialog = page.getByRole('dialog', { name: 'Оплата' });
   await expect(dialog).not.toContainText('Способ');
   await page.locator('#payment-amount').pressSequentially('2000');

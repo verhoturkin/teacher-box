@@ -145,7 +145,16 @@ import { Busy } from '@shared/ui/busy';
                   {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </td>
                 <td class="tb-actions-column">
-                  <a pButton [routerLink]="['/teacher/homework/tasks', task.taskId]" [text]="true">
+                  <a
+                    pButton
+                    [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                    [text]="true"
+                    [attr.aria-label]="
+                      (task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть') +
+                      ': ' +
+                      task.studentName
+                    "
+                  >
                     <span pButtonLabel>{{
                       task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть'
                     }}</span>

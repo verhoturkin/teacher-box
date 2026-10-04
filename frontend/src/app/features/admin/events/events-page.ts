@@ -84,6 +84,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     <p-button
                       label="Повторить"
                       [text]="true"
+                      [ariaLabel]="'Повторить: ' + event.eventType"
                       [loading]="busy.is('event-' + event.id)"
                       (onClick)="resubmit([event.id])"
                     />
@@ -139,6 +140,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     <p-button
                       label="Повторить"
                       [text]="true"
+                      [ariaLabel]="'Повторить: ' + delivery.channel + ', ' + delivery.recipientId"
                       [loading]="busy.is('delivery-' + delivery.id)"
                       (onClick)="retry([delivery.id])"
                     />

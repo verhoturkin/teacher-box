@@ -161,8 +161,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    pTooltip="Принять оплату"
-                    [ariaLabel]="'Оплата: ' + row.displayName"
+                    [pTooltip]="'Принять оплату: ' + row.displayName"
+                    [ariaLabel]="'Принять оплату: ' + row.displayName"
                     (onClick)="openPayment(row.studentId)"
                   />
                 </td>

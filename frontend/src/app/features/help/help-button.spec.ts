@@ -22,7 +22,7 @@ describe('HelpButton', () => {
   });
 
   it('opens the article in a side panel', async () => {
-    buttonByText(hostElement(fixture), 'Справка').click();
+    buttonByText(hostElement(fixture), 'Справка: Группы').click();
     await fixture.componentInstance.open();
     await fixture.whenStable();
 

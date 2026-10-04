@@ -200,7 +200,7 @@ import { Busy } from '@shared/ui/busy';
                     [text]="true"
                     severity="secondary"
                     [rounded]="true"
-                    pTooltip="Редактировать"
+                    [pTooltip]="'Редактировать: ' + student.displayName"
                     [ariaLabel]="'Редактировать: ' + student.displayName"
                     (onClick)="openEdit(student)"
                   />
@@ -210,7 +210,7 @@ import { Busy } from '@shared/ui/busy';
                       [text]="true"
                       severity="secondary"
                       [rounded]="true"
-                      pTooltip="Вернуть доступ"
+                      [pTooltip]="'Вернуть доступ: ' + student.displayName"
                       [ariaLabel]="'Вернуть доступ: ' + student.displayName"
                       [loading]="busy.is('reactivate-' + student.id)"
                       (onClick)="reactivate(student)"
@@ -221,12 +221,8 @@ import { Busy } from '@shared/ui/busy';
                       [text]="true"
                       severity="secondary"
                       [rounded]="true"
-                      [pTooltip]="
-                        student.status === 'ACTIVE'
-                          ? 'Ссылка для сброса пароля'
-                          : 'Новая ссылка-приглашение'
-                      "
-                      [ariaLabel]="'Ссылка: ' + student.displayName"
+                      [pTooltip]="linkLabel(student)"
+                      [ariaLabel]="linkLabel(student)"
                       [loading]="busy.is('invite-' + student.id)"
                       (onClick)="reissueInvite(student)"
                     />
@@ -235,7 +231,7 @@ import { Busy } from '@shared/ui/busy';
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      pTooltip="Отключить доступ"
+                      [pTooltip]="'Отключить доступ: ' + student.displayName"
                       [ariaLabel]="'Отключить доступ: ' + student.displayName"
                       (onClick)="confirmDeactivate(student)"
                     />
@@ -441,6 +437,13 @@ export class StudentsPage implements OnInit {
   protected onUpdated(student: Student): void {
     this.replace(student);
     this.snackbar.success(`Сохранено: ${student.displayName}`);
+  }
+
+  /** The name and the tooltip of the link button: what the link is for and whose it is. */
+  protected linkLabel(student: Student): string {
+    const purpose =
+      student.status === 'ACTIVE' ? 'Ссылка для сброса пароля' : 'Новая ссылка-приглашение';
+    return `${purpose}: ${student.displayName}`;
   }
 
   protected reissueInvite(student: Student): void {

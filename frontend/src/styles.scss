@@ -1563,11 +1563,7 @@ a.p-menu-item-link:hover {
         grid-column: 2;
       }
 
-      /* every line is as high as a line with a button; the text button starts where the text does */
-      .p-button-text {
-        height: 2rem;
-      }
-
+      /* the text button starts where the text does; a button is 40 px high everywhere (ADR-0026) */
       p-button:first-child .p-button-text {
         margin-inline-start: calc(-1 * var(--tb-space-3));
         padding-inline: var(--tb-space-3);

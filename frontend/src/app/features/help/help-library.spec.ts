@@ -4,7 +4,7 @@ import { STUDENT_ARTICLES } from './articles/student';
 import { TEACHER_ARTICLES } from './articles/teacher';
 import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticleText } from './help.models';
-import { HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';
+import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';
 
 const TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
   teacher: TEACHER_ARTICLES,
@@ -30,6 +30,16 @@ describe('HelpLibrary', () => {
       }
     }
     expect(Object.keys(TEXTS.teacher).sort()).toEqual([...HELP_TOPICS.teacher].sort());
+  });
+
+  it('names the help buttons by the titles of the articles', () => {
+    expect(Object.keys(HELP_TITLES)).toHaveLength(
+      Object.values(HELP_TOPICS).reduce((count, topics) => count + topics.length, 0),
+    );
+    for (const [topic, title] of Object.entries(HELP_TITLES)) {
+      const [area, id] = topic.split('/');
+      expect(isHelpArea(area) ? TEXTS[area][id ?? '']?.title : undefined, topic).toBe(title);
+    }
   });
 
   it('links inside the articles lead to existing articles', () => {

@@ -124,7 +124,7 @@ describe('BillingOverviewPage', () => {
 
     dialog.visible.set(false);
     await fixture.whenStable();
-    buttonByText(host, 'Оплата: Мария').click();
+    buttonByText(host, 'Принять оплату: Мария').click();
     await fixture.whenStable();
     expect(dialog.form.controls.studentId.value).toBe('s-2');
 

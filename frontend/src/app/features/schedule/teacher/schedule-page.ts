@@ -142,7 +142,12 @@ const CLICK_SELECTION_MINUTES = 30;
                   </span>
                 </div>
                 <div class="tb-list__trail">
-                  <p-button label="Ответить" [text]="true" (onClick)="answer(request)" />
+                  <p-button
+                    label="Ответить"
+                    [text]="true"
+                    [ariaLabel]="'Ответить: ' + (request.studentName ?? 'ученик')"
+                    (onClick)="answer(request)"
+                  />
                 </div>
               </li>
             }
@@ -264,7 +269,7 @@ const CLICK_SELECTION_MINUTES = 30;
                       (onClick)="editSeries(item)"
                     />
                     <p-button
-                      icon="pi pi-trash"
+                      icon="pi pi-stop-circle"
                       [text]="true"
                       [pTooltip]="'Завершить расписание: ' + with(item)"
                       [rounded]="true"
