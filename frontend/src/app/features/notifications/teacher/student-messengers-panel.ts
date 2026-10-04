@@ -53,7 +53,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               dataKey="studentId"
               [selection]="selection()"
               (selectionChange)="onSelection($event)"
-              styleClass="tb-cards p-datatable-sm"
+              styleClass="tb-cards"
             >
               <ng-template #header>
                 <tr>

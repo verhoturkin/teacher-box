@@ -127,13 +127,13 @@ const STATUS_LABELS: Record<
                   title="Запросов в этом месяце не было"
                 />
               } @else {
-                <p-table [value]="report.recent" styleClass="tb-cards p-datatable-sm">
+                <p-table [value]="report.recent" styleClass="tb-cards">
                   <ng-template #header>
                     <tr>
                       <th>Когда</th>
                       <th>Что</th>
                       <th>Результат</th>
-                      <th>Токены</th>
+                      <th class="tb-num">Токены</th>
                       <th>Время</th>
                     </tr>
                   </ng-template>
@@ -150,7 +150,9 @@ const STATUS_LABELS: Record<
                           <small class="tb-muted tb-usage-error">{{ row.error }}</small>
                         }
                       </td>
-                      <td data-label="Токены">{{ row.inputTokens + row.outputTokens | number }}</td>
+                      <td data-label="Токены" class="tb-num">
+                        {{ row.inputTokens + row.outputTokens | number }}
+                      </td>
                       <td data-label="Время">{{ row.durationMs / 1000 | number: '1.0-1' }} с</td>
                     </tr>
                   </ng-template>

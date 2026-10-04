@@ -89,7 +89,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
         @if (backups().length === 0) {
           <tb-empty-state icon="pi-database" title="Копий пока нет" />
         } @else {
-          <p-table [value]="backups()" styleClass="tb-cards p-datatable-sm">
+          <p-table [value]="backups()" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Создана</th>

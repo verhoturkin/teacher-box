@@ -120,7 +120,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <tr>
                 <th class="tb-col-main">Ученик</th>
                 <th class="tb-amount">Цена занятия</th>
-                <th>Занятий</th>
+                <th class="tb-num">Занятий</th>
                 <th>Последнее</th>
                 <th class="tb-amount">Баланс</th>
                 <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -148,7 +148,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                 <td data-label="Цена занятия" class="tb-amount">
                   {{ row.lessonPrice | money: overview.currency }}
                 </td>
-                <td data-label="Занятий">{{ row.chargedLessons }}</td>
+                <td data-label="Занятий" class="tb-num">{{ row.chargedLessons }}</td>
                 <td data-label="Последнее">
                   {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
                 </td>

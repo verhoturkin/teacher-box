@@ -99,13 +99,13 @@ import { CountPipe } from '@shared/text/plural';
             @if (usage.recent.length === 0) {
               <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было" />
             } @else {
-              <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
+              <p-table [value]="usage.recent" styleClass="tb-cards">
                 <ng-template #header>
                   <tr>
                     <th>Когда</th>
                     <th>Что</th>
                     <th>Итог</th>
-                    <th>Токены</th>
+                    <th class="tb-num">Токены</th>
                     <th>Время</th>
                   </tr>
                 </ng-template>
@@ -114,12 +114,15 @@ import { CountPipe } from '@shared/text/plural';
                     <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
                     <td data-label="Что">{{ request.feature }}</td>
                     <td data-label="Итог">
-                      {{ request.status }}
+                      <p-tag
+                        [value]="requestStatus(request.status).label"
+                        [severity]="requestStatus(request.status).severity"
+                      />
                       @if (request.error !== null) {
                         <small class="tb-negative">{{ request.error }}</small>
                       }
                     </td>
-                    <td data-label="Токены">
+                    <td data-label="Токены" class="tb-num">
                       {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
                     </td>
                     <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
@@ -173,6 +176,23 @@ import { CountPipe } from '@shared/text/plural';
   `,
 })
 export class IntegrationsPage implements OnInit {
+  /** The result of a request to the AI as a tag, not the raw name of the status. */
+  protected requestStatus(status: string): {
+    label: string;
+    severity: 'success' | 'danger' | 'warn' | 'secondary';
+  } {
+    switch (status) {
+      case 'SUCCEEDED':
+        return { label: 'Готово', severity: 'success' };
+      case 'FAILED':
+        return { label: 'Ошибка', severity: 'danger' };
+      case 'REFUSED':
+        return { label: 'Отказ модели', severity: 'warn' };
+      default:
+        return { label: status, severity: 'secondary' };
+    }
+  }
+
   private readonly api = inject(AdminApi);
 
   protected readonly tags = INTEGRATION_TAGS;

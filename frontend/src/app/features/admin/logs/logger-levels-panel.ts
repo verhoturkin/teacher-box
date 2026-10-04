@@ -83,7 +83,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
           [loading]="pending()"
         />
       </form>
-      <p-table [value]="loggers()" styleClass="tb-cards p-datatable-sm">
+      <p-table [value]="loggers()" styleClass="tb-cards">
         <ng-template #header>
           <tr>
             <th>Раздел</th>

@@ -125,7 +125,7 @@ export const LOG_LIMIT = 200;
                 Показаны последние {{ result.entries.length }} записей — уточните поиск.
               </p>
             }
-            <p-table [value]="result.entries" styleClass="tb-cards p-datatable-sm tb-log-table">
+            <p-table [value]="result.entries" styleClass="tb-cards tb-log-table">
               <ng-template #header>
                 <tr>
                   <th>Время</th>

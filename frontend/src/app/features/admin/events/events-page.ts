@@ -62,13 +62,13 @@ import { Snackbar } from '@core/snackbar/snackbar';
           @if (events().length === 0) {
             <tb-empty-state icon="pi-check-circle" title="Всё обработано" />
           } @else {
-            <p-table [value]="events()" styleClass="tb-cards p-datatable-sm">
+            <p-table [value]="events()" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
                   <th>Когда</th>
                   <th>Событие</th>
                   <th>Обработчик</th>
-                  <th>Попыток</th>
+                  <th class="tb-num">Попыток</th>
                   <th></th>
                 </tr>
               </ng-template>
@@ -79,7 +79,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <td data-label="Обработчик" class="tb-mono" [title]="event.listener">
                     {{ short(event.listener) }}
                   </td>
-                  <td data-label="Попыток">{{ event.attempts }}</td>
+                  <td data-label="Попыток" class="tb-num">{{ event.attempts }}</td>
                   <td class="tb-row-actions">
                     <p-button
                       label="Повторить"
@@ -118,7 +118,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
           @if (deliveries().length === 0) {
             <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены" />
           } @else {
-            <p-table [value]="deliveries()" styleClass="tb-cards p-datatable-sm">
+            <p-table [value]="deliveries()" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
                   <th>Когда</th>
@@ -131,7 +131,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <ng-template #body let-delivery [tbRowType]="deliveries()">
                 <tr>
                   <td data-label="Когда">{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
-                  <td data-label="Мессенджер">{{ delivery.channel }}</td>
+                  <td data-label="Мессенджер">{{ channelName(delivery.channel) }}</td>
                   <td data-label="Получатель" class="tb-mono">{{ delivery.recipientId }}</td>
                   <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
                     {{ delivery.error ?? '—' }}
@@ -170,6 +170,11 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class EventsPage implements OnInit {
+  protected channelName(channel: string): string {
+    const names: Record<string, string> = { TELEGRAM: 'Telegram', VK: 'ВКонтакте', MAX: 'MAX' };
+    return names[channel] ?? channel;
+  }
+
   private readonly api = inject(AdminApi);
   private readonly snackbar = inject(Snackbar);
 

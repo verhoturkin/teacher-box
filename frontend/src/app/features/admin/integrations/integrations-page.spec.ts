@@ -67,8 +67,8 @@ describe('IntegrationsPage', () => {
     expect(text).toContain('ИИ (anthropic) Ошибка Anthropic API 401: invalid x-api-key 300 мс');
     expect(text).toContain('MAX Не подключено Бот не подключён Запросы к ИИ');
     expect(text).toContain('anthropic · claude-opus-5 · в этом месяце 12');
-    expect(text).toMatch(/HOMEWORK_DRAFT SUCCEEDED 420 \/ 180 1[.,]5 с/);
-    expect(text).toContain('FAILED Anthropic API 529: Overloaded');
+    expect(text).toMatch(/HOMEWORK_DRAFT Готово 420 \/ 180 1[.,]5 с/);
+    expect(text).toContain('Ошибка Anthropic API 529: Overloaded');
   });
 
   it('explains when AI is off and shows a failed check', async () => {

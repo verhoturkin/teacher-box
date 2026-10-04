@@ -126,7 +126,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
         @if (failed().length === 0) {
           <tb-empty-state icon="pi-check-circle" title="Все уведомления доставлены" />
         } @else {
-          <p-table [value]="failed()" styleClass="tb-cards p-datatable-sm">
+          <p-table [value]="failed()" styleClass="tb-cards">
             <ng-template #header>
               <tr>
                 <th>Когда</th>

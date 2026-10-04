@@ -103,7 +103,7 @@ describe('EventsPage', () => {
   it('sends failed deliveries again', async () => {
     await render([], [failedDelivery(), failedDelivery({ id: 'd-2', error: null })]);
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('TELEGRAM s-1 Forbidden: bot was blocked by the user');
+    expect(text).toContain('Telegram s-1 Forbidden: bot was blocked by the user');
     expect(text).toContain('—');
 
     buttonByText(hostElement(fixture), 'Отправить все повторно').click();

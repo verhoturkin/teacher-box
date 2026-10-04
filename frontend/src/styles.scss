@@ -1502,7 +1502,9 @@ a.p-menu-item-link:hover {
     background: transparent;
   }
 
+  /* a row is at least 56 px high (ADR-0020) */
   .p-datatable-tbody > tr > td {
+    height: 3.5rem;
     border: 0;
     background: var(--tb-list-item);
     transition: background var(--tb-spring-fast-effects);
@@ -2007,4 +2009,10 @@ a.p-menu-item-link:hover {
 /* A dialog without buttons in its footer (a stage that only informs) has no footer (ADR-0026) */
 .p-dialog-footer:not(:has(button, a)) {
   display: none;
+}
+
+/* The numbers of a table (a count, a size, tokens) stand on the right, like amounts (ADR-0018) */
+.p-datatable .tb-num {
+  text-align: right;
+  white-space: nowrap;
 }
