@@ -251,9 +251,14 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
 - Вид кнопок, главного действия (FAB), заголовка страницы, секций и списков — по единым правилам
   [ADR-0018](docs/adr/0018-component-rules.md): главное действие — filled `tb-page-fab`,
   второстепенные — tonal (`severity="secondary"`), без `outlined` и `size="small"`; заголовок —
-  `tb-page-header` из `@shared/ui`. Цвет кнопки — смысл ([ADR-0019](docs/adr/0019-material-3-expressive.md)):
-  подтверждение — `success` (зелёная), отмена, удаление и отказ — `danger` (красная);
-  подтверждения в диалогах — `dangerConfirmation` / `safeConfirmation` из `@shared/ui/confirmation`.
+  `tb-page-header` из `@shared/ui`. Цвет кнопки — смысл ([ADR-0019](docs/adr/0019-material-3-expressive.md),
+  [ADR-0026](docs/adr/0026-decision-buttons-and-dialogs.md)): подтверждение — `success` (зелёная),
+  удаление, отмена занятия и отказ с последствиями — `danger` (красная); закрыть окно без последствий —
+  нейтральная text-кнопка «Отмена»; в окне не больше одной красной кнопки; подтверждения в диалогах —
+  `dangerConfirmation` / `safeConfirmation` из `@shared/ui/confirmation`. Кнопка отправки окна —
+  `type="submit" [attr.form]` в подвале, у действий с запросом — `[loading]`; ширина окна — классом
+  `tb-dialog`, не inline-стилем. Нижняя панель — четыре раздела и «Ещё»
+  ([ADR-0027](docs/adr/0027-bottom-navigation.md)).
 - Списки внутри карточек — сегментированные ([ADR-0020](docs/adr/0020-lists-in-cards.md)):
   `ul.tb-list` со строками `tb-list__lead` / `tb-list__text` / `tb-list__trail`, таблицы —
   `styleClass="tb-cards"`; инициалы — `tb-avatar` и pipe `initials` из `@shared/ui/initials`.
