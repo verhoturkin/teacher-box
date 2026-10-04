@@ -1,5 +1,6 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
@@ -13,6 +14,8 @@ import { INTEGRATION_TAGS } from '../admin-labels';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
@@ -29,6 +32,7 @@ import { EmptyState } from '@shared/ui/empty-state';
     PageHeader,
     HelpButton,
     EmptyState,
+    LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -70,52 +74,54 @@ import { EmptyState } from '@shared/ui/empty-state';
       </p-card>
 
       <p-card header="Запросы к ИИ">
-        @if (ai(); as ai) {
-          @if (ai.enabled) {
-            <p>
-              {{ ai.provider }} · {{ ai.model }} · в этом месяце
-              {{ ai.usedThisMonth | number }} токенов
-              @if (ai.monthlyTokenLimit > 0) {
-                из {{ ai.monthlyTokenLimit | number }}
-              }
-            </p>
-          } @else {
-            <p class="tb-muted">ИИ-помощник не настроен (TEACHERBOX_AI_PROVIDER).</p>
+        <tb-load-state [state]="aiState" what="запросы к ИИ" (retry)="loadAi()">
+          @if (ai(); as ai) {
+            @if (ai.enabled) {
+              <p>
+                {{ ai.provider }} · {{ ai.model }} · в этом месяце
+                {{ ai.usedThisMonth | number }} токенов
+                @if (ai.monthlyTokenLimit > 0) {
+                  из {{ ai.monthlyTokenLimit | number }}
+                }
+              </p>
+            } @else {
+              <p class="tb-muted">ИИ-помощник не настроен (TEACHERBOX_AI_PROVIDER).</p>
+            }
           }
-        }
-        @if (usage(); as usage) {
-          @if (usage.recent.length === 0) {
-            <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было." />
-          } @else {
-            <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
-              <ng-template #header>
-                <tr>
-                  <th>Когда</th>
-                  <th>Что</th>
-                  <th>Итог</th>
-                  <th>Токены</th>
-                  <th>Время</th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-request [tbRowType]="usage.recent">
-                <tr>
-                  <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
-                  <td data-label="Что">{{ request.feature }}</td>
-                  <td data-label="Итог">
-                    {{ request.status }}
-                    @if (request.error !== null) {
-                      <small class="tb-negative">{{ request.error }}</small>
-                    }
-                  </td>
-                  <td data-label="Токены">
-                    {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
-                  </td>
-                  <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
-                </tr>
-              </ng-template>
-            </p-table>
+          @if (usage(); as usage) {
+            @if (usage.recent.length === 0) {
+              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было." />
+            } @else {
+              <p-table [value]="usage.recent" styleClass="tb-cards p-datatable-sm">
+                <ng-template #header>
+                  <tr>
+                    <th>Когда</th>
+                    <th>Что</th>
+                    <th>Итог</th>
+                    <th>Токены</th>
+                    <th>Время</th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-request [tbRowType]="usage.recent">
+                  <tr>
+                    <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
+                    <td data-label="Что">{{ request.feature }}</td>
+                    <td data-label="Итог">
+                      {{ request.status }}
+                      @if (request.error !== null) {
+                        <small class="tb-negative">{{ request.error }}</small>
+                      }
+                    </td>
+                    <td data-label="Токены">
+                      {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
+                    </td>
+                    <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            }
           }
-        }
+        </tb-load-state>
       </p-card>
     </div>
   `,
@@ -169,14 +175,20 @@ export class IntegrationsPage implements OnInit {
   protected readonly ai = signal<AiStatus | null>(null);
   protected readonly usage = signal<AiUsage | null>(null);
 
+  protected readonly aiState = new LoadState();
+
   ngOnInit(): void {
     this.check();
-    this.api.aiStatus().subscribe((status) => {
-      this.ai.set(status);
-    });
-    this.api.aiUsage().subscribe((usage) => {
-      this.usage.set(usage);
-    });
+    this.loadAi();
+  }
+
+  protected loadAi(): void {
+    forkJoin({ status: this.api.aiStatus(), usage: this.api.aiUsage() })
+      .pipe(this.aiState.track())
+      .subscribe(({ status, usage }) => {
+        this.ai.set(status);
+        this.usage.set(usage);
+      });
   }
 
   check(): void {

@@ -11,7 +11,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -32,6 +32,9 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -58,6 +61,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
     ToBoardDialog,
     PageHeader,
     HelpButton,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -156,18 +160,22 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
             </ng-template>
           </p-table>
           <div class="tb-inline tb-assign">
-            <p-multiselect
-              [options]="unassigned()"
-              [formControl]="toAssign"
-              optionLabel="displayName"
-              optionValue="id"
-              placeholder="Выдать ещё ученикам"
-              [filter]="true"
-              display="chip"
-              appendTo="body"
-              ariaLabel="Выдать ещё ученикам"
-              styleClass="tb-grow"
-            />
+            <div class="tb-field tb-grow">
+              <label for="assign-students">Выдать ещё ученикам</label>
+              <p-multiselect
+                inputId="assign-students"
+                [options]="unassigned()"
+                [formControl]="toAssign"
+                optionLabel="displayName"
+                optionValue="id"
+                [filter]="true"
+                filterPlaceHolder="Поиск"
+                ariaFilterLabel="Поиск"
+                display="chip"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button
               class="tb-tonal"
@@ -191,6 +199,9 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
         [markdown]="assignment.description ?? ''"
         [ownerIds]="taskStudents(assignment)"
       />
+    } @else {
+      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Все задания" />
+      <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
     <p-confirmdialog />
   `,
@@ -199,7 +210,7 @@ export class AssignmentPage implements OnInit {
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
 
   /** Route parameter. */
@@ -220,10 +231,10 @@ export class AssignmentPage implements OnInit {
     return this.students().filter((student) => !assigned.has(student.id));
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.api.assignment(this.assignmentId()).subscribe((assignment) => {
-      this.details.set(assignment);
-    });
+    this.load();
     this.identity.listStudents().subscribe((students) => {
       this.students.set(
         students
@@ -231,6 +242,15 @@ export class AssignmentPage implements OnInit {
           .map((student) => ({ id: student.id, displayName: student.displayName })),
       );
     });
+  }
+
+  protected load(): void {
+    this.api
+      .assignment(this.assignmentId())
+      .pipe(this.state.track())
+      .subscribe((assignment) => {
+        this.details.set(assignment);
+      });
   }
 
   protected taskStudents(assignment: AssignmentDetails): string[] {
@@ -301,7 +321,7 @@ export class AssignmentPage implements OnInit {
     this.api.assignStudents(assignment.id, studentIds).subscribe((updated) => {
       this.details.set(updated);
       this.toAssign.setValue([]);
-      this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Задание выдано' });
+      this.snackbar.success('Задание выдано');
     });
   }
 }

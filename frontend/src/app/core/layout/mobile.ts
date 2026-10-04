@@ -3,11 +3,15 @@ import { Signal, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
-/** Phones and small tablets: the bottom navigation, cards, the day list (ADR-0015). */
-export const MOBILE_QUERY = '(max-width: 768px)';
+/**
+ * Phones and small tablets: the bottom navigation, cards, the day list (ADR-0015). The bounds are in
+ * em and ranges without gaps, the same as in the styles (ADR-0024): 768 and 1200 px at the usual
+ * font, a larger font moves the layout to the rail or the phone.
+ */
+export const MOBILE_QUERY = '(width <= 48em)';
 
 /** Tablets and small laptops: the navigation rail (ADR-0017). */
-export const MEDIUM_QUERY = '(min-width: 769px) and (max-width: 1199.98px)';
+export const MEDIUM_QUERY = '(48em < width < 75em)';
 
 /** M3 window size classes: bottom navigation, rail or drawer (ADR-0017). */
 export type WindowSize = 'compact' | 'medium' | 'expanded';

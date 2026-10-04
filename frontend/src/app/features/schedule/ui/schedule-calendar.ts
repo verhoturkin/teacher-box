@@ -69,6 +69,8 @@ export class ScheduleCalendar {
   readonly busyTitle = input<string | null>(null);
   /** The teacher's off time (the teacher's calendar): hatched in the week, day and month. */
   readonly offTime = input<readonly OffTimePeriod[]>([]);
+  /** Whether the lessons are loaded: until then an empty week is not «Занятий нет» (ADR-0025). */
+  readonly loaded = input(true);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -109,7 +111,17 @@ export class ScheduleCalendar {
         button.buttonGroup?.hasSelection === true ? 'tb-fc-segment' : 'tb-fc-button',
       buttonGroupClass: (group: ButtonGroupInfo) => (group.hasSelection ? 'tb-fc-segments' : ''),
       listText: 'Список',
-      noEventsText: 'Занятий нет',
+      // hints for screen readers in Russian (ADR-0024)
+      eventsHint: 'Занятия',
+      timedText: 'Занятия по времени',
+      closeHint: 'Закрыть',
+      prevHint: 'Назад',
+      nextHint: 'Вперёд',
+      todayHint: 'Сегодня',
+      viewHint: (text: string) => `Вид: ${text}`,
+      navLinkHint: (dateText: string) => `Открыть ${dateText}`,
+      moreLinkHint: (count: number) => `Ещё занятий: ${String(count)}`,
+      noEventsText: this.loaded() ? 'Занятий нет' : 'Загрузка…',
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,

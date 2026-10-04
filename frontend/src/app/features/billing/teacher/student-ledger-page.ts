@@ -8,9 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tooltip } from 'primeng/tooltip';
@@ -23,9 +22,12 @@ import { BillingStudent, Lesson, Payment, StudentLedger } from '../data-access/b
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerTable } from '../ledger/ledger-table';
 import { PaymentDialog } from './payment-dialog';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
@@ -43,11 +45,15 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
     PageHeader,
     HelpButton,
     Tooltip,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (ledger(); as ledger) {
+    @if (!state.ready()) {
+      <tb-page-header title="Ученик" back="/teacher/billing" backLabel="Все ученики" />
+      <tb-load-state [state]="state" what="историю оплат" (retry)="reload()" />
+    } @else if (ledger(); as ledger) {
       <tb-page-header [title]="ledger.displayName" back="/teacher/billing" backLabel="Все ученики">
         <tb-help-button help topic="teacher/billing" />
         <p-button
@@ -80,38 +86,42 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
           </div>
         </p-card>
         <p-card>
-          <div class="tb-stat">
-            <label class="tb-muted" for="lesson-price-input">Цена занятия</label>
-            @if (editingPrice()) {
-              <div class="tb-copy-row">
+          @if (editingPrice()) {
+            <!-- the field under its label across the card, the buttons under it (ADR-0018) -->
+            <form class="tb-form" [formGroup]="priceForm" (ngSubmit)="savePrice()">
+              <div class="tb-field">
+                <label for="lesson-price-input">Цена занятия</label>
                 <p-inputnumber
                   inputId="lesson-price-input"
-                  [formControl]="price"
+                  formControlName="price"
                   mode="currency"
                   [currency]="ledger.currency"
                   locale="ru-RU"
                   [min]="0"
                   [fluid]="true"
-                  styleClass="tb-grow"
-                />
-                <p-button
-                  severity="success"
-                  icon="pi pi-check"
-                  ariaLabel="Сохранить цену"
-                  [disabled]="price.invalid || !priceChanged()"
-                  (onClick)="savePrice()"
-                />
-                <p-button
-                  icon="pi pi-times"
-                  severity="danger"
-                  [text]="true"
-                  [rounded]="true"
-                  pTooltip="Отменить"
-                  ariaLabel="Отменить"
-                  (onClick)="cancelPrice()"
                 />
               </div>
-            } @else {
+              <div class="tb-form-actions">
+                <p-button
+                  label="Отмена"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="cancelPrice()"
+                />
+                <p-button
+                  class="tb-tonal"
+                  type="submit"
+                  severity="success"
+                  label="Сохранить"
+                  icon="pi pi-check"
+                  [disabled]="price.invalid || !priceChanged()"
+                  [loading]="savingPrice()"
+                />
+              </div>
+            </form>
+          } @else {
+            <div class="tb-stat">
+              <span class="tb-muted">Цена занятия</span>
               <span class="tb-stat__value">
                 {{ ledger.lessonPrice | money: ledger.currency }}
                 <p-button
@@ -124,8 +134,8 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
                   (onClick)="editingPrice.set(true)"
                 />
               </span>
-            }
-          </div>
+            </div>
+          }
         </p-card>
       </div>
 
@@ -152,7 +162,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 export class StudentLedgerPage implements OnInit {
   private readonly api = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** Route parameter. */
   readonly studentId = input.required<string>();
@@ -165,6 +175,7 @@ export class StudentLedgerPage implements OnInit {
   protected readonly paymentVisible = signal(false);
   protected readonly editingPrice = signal(false);
   readonly price = new FormControl<number | null>(null, [Validators.required, Validators.min(0)]);
+  protected readonly priceForm = new FormGroup({ price: this.price });
   private readonly priceValue = toSignal(this.price.valueChanges, { initialValue: null });
   protected readonly priceChanged = computed(() => {
     const ledger = this.ledger();
@@ -176,34 +187,41 @@ export class StudentLedgerPage implements OnInit {
     );
   });
 
+  protected readonly savingPrice = signal(false);
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
     this.reload();
   }
 
   reload(): void {
-    this.api.ledger(this.studentId()).subscribe((ledger) => {
-      this.ledger.set(ledger);
-      this.price.setValue(toMajorUnits(ledger.lessonPrice, ledger.currency));
-    });
+    this.api
+      .ledger(this.studentId())
+      .pipe(this.state.track())
+      .subscribe((ledger) => {
+        this.ledger.set(ledger);
+        this.price.setValue(toMajorUnits(ledger.lessonPrice, ledger.currency));
+      });
   }
 
   protected savePrice(): void {
     const ledger = this.ledger();
     const value = this.price.value;
-    if (ledger === null || value === null) {
+    if (ledger === null || value === null || this.price.invalid || this.savingPrice()) {
       return;
     }
-    this.api
-      .changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency))
-      .subscribe((saved) => {
+    this.savingPrice.set(true);
+    this.api.changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency)).subscribe({
+      next: (saved) => {
+        this.savingPrice.set(false);
         this.ledger.set({ ...ledger, lessonPrice: saved });
         this.editingPrice.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Сохранено',
-          detail: 'Цена занятия изменена',
-        });
-      });
+        this.snackbar.success('Цена занятия изменена');
+      },
+      error: () => {
+        this.savingPrice.set(false);
+      },
+    });
   }
 
   protected cancelPrice(): void {

@@ -141,14 +141,16 @@ import { AttendanceDialog } from './attendance-dialog';
         }
         @if (cancelling()) {
           <div class="tb-form tb-lesson-details__cancel">
-            <label for="lesson-cancel-reason">Причина</label>
-            <textarea
-              pTextarea
-              id="lesson-cancel-reason"
-              rows="2"
-              [(ngModel)]="reason"
-              maxlength="500"
-            ></textarea>
+            <div class="tb-field">
+              <label for="lesson-cancel-reason">Причина</label>
+              <textarea
+                pTextarea
+                id="lesson-cancel-reason"
+                rows="2"
+                [(ngModel)]="reason"
+                maxlength="500"
+              ></textarea>
+            </div>
             @if (lesson.groupId === null) {
               <label class="tb-switch" for="lesson-cancel-by-student">
                 <p-checkbox

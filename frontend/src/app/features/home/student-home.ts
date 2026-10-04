@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
 import { MyBoardsCard } from '@features/boards/parts';
@@ -9,6 +10,8 @@ import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notif
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /**
@@ -26,6 +29,7 @@ import { PageHeader } from '@shared/ui/page-header';
     MyDeadlinesWidget,
     NextLessonWidget,
     StudentWelcomeCard,
+    LoadStateView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,8 +38,12 @@ import { PageHeader } from '@shared/ui/page-header';
       <tb-help-button help topic="cabinet/lesson" />
     </tb-page-header>
     <div class="tb-stack">
-      @if (schedule(); as schedule) {
-        <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />
+      @if (state.ready()) {
+        @if (schedule(); as schedule) {
+          <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />
+        }
+      } @else {
+        <tb-load-state [state]="state" what="занятия, задания и баланс" (retry)="load()" />
       }
       <tb-student-welcome-card />
       <tb-connect-messenger-card />
@@ -58,21 +66,33 @@ export class StudentHome implements OnInit {
   protected readonly schedule = signal<MyScheduleSummary | null>(null);
   protected readonly homework = signal<MyHomeworkSummary | null>(null);
   protected readonly billing = signal<MyBillingSummary | null>(null);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.loadSchedule();
-    this.homeworkApi.mySummary().subscribe((summary) => {
-      this.homework.set(summary);
-    });
-    this.billingApi.mySummary().subscribe((summary) => {
-      this.billing.set(summary);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    forkJoin({
+      schedule: this.scheduleApi.mySummary(),
+      homework: this.homeworkApi.mySummary(),
+      billing: this.billingApi.mySummary(),
+    })
+      .pipe(this.state.track())
+      .subscribe(({ schedule, homework, billing }) => {
+        this.schedule.set(schedule);
+        this.homework.set(homework);
+        this.billing.set(billing);
+      });
   }
 
   /** Reloads the nearest lesson (e.g. after a request was sent). */
   loadSchedule(): void {
-    this.scheduleApi.mySummary().subscribe((summary) => {
-      this.schedule.set(summary);
-    });
+    this.scheduleApi
+      .mySummary()
+      .pipe(this.state.track())
+      .subscribe((summary) => {
+        this.schedule.set(summary);
+      });
   }
 }

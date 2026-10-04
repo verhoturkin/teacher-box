@@ -20,7 +20,9 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  --tb-header-height: 4rem;
+  /* The frame in px: a larger font grows the text, not the bars (ADR-0024) */
+  --tb-header-height: 64px;
+  --tb-bottom-nav-height: 80px;
 
   /* Type scale: `font: var(--tb-type-title-l)` */
   --tb-font:
@@ -197,7 +199,7 @@ textarea.p-textarea {
   margin: 0 0 var(--tb-space-4);
   font: var(--tb-type-headline-m-emphasized);
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     font: var(--tb-type-headline-s-emphasized);
   }
 }
@@ -317,7 +319,7 @@ textarea.p-textarea {
     gap: var(--tb-space-4);
     padding: var(--tb-space-8) var(--tb-space-8) var(--tb-space-7);
 
-    @media (max-width: 480px) {
+    @media (width <= 30em) {
       padding: var(--tb-space-6) var(--tb-space-5);
     }
   }
@@ -421,6 +423,23 @@ textarea.p-textarea {
 }
 
 /*
+ * The error of a field (M3 supporting text, ADR-0024): Body Small in the error color under the
+ * field; it takes the place of the hint. A required field has «*» after its label.
+ */
+.tb-field__error {
+  color: var(--p-md-error);
+  font: var(--tb-type-body-s);
+}
+
+.tb-field:has(> .tb-field__error) > :is(.tb-hint, small:not(.tb-field__error)) {
+  display: none;
+}
+
+.tb-field--required > label:first-child::after {
+  content: ' *';
+}
+
+/*
  * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
  * magnifier at its start; the focus is the primary ring.
  */
@@ -444,6 +463,23 @@ textarea.p-textarea {
 
 .p-iconfield:has(> .pi-search, > .p-inputicon.pi-search) > .p-inputicon {
   inset-inline-start: 1.25rem;
+}
+
+/*
+ * A dropdown list is never wider than the screen (ADR-0022): a long name breaks between words
+ * instead of widening the list and the page on a phone.
+ */
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay {
+  max-width: calc(100vw - 2rem);
+}
+
+.p-select-option,
+.p-multiselect-option,
+.p-autocomplete-option {
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 /* The filter of a dropdown list is the search bar too, a size smaller (48 px) */
@@ -513,7 +549,7 @@ textarea.p-textarea {
   justify-content: flex-end;
   gap: var(--tb-space-2);
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     > p-button,
     > .p-button {
       flex: 1 1 auto;
@@ -731,7 +767,7 @@ p-button.tb-list__stretched .p-button {
 }
 
 /* The main column of a list (a name, a title) is not squeezed by the others on a computer */
-@media (min-width: 1200px) {
+@media (width >= 75em) {
   .tb-col-main {
     min-width: 13rem;
   }
@@ -809,7 +845,7 @@ a {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--p-md-primary);
+    outline: 3px solid var(--p-md-secondary);
     outline-offset: 2px;
   }
 }
@@ -818,6 +854,15 @@ a.p-button,
 a.p-button:hover,
 a.p-menu-item-link:hover {
   text-decoration: none;
+}
+
+/*
+ * A link inside text (a paragraph, a list, an article of the help, a hint) is always underlined: it
+ * differs from the text not by its color alone (WCAG 1.4.1, ADR-0024)
+ */
+:is(p, .tb-markdown, .tb-hint, small, ul.tb-muted) a:not(.p-button, .tb-link) {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .tb-row {
@@ -921,15 +966,12 @@ a.p-menu-item-link:hover {
 }
 
 .tb-positive {
-  color: var(--p-green-700);
-
-  :root.tb-dark & {
-    color: var(--p-green-300);
-  }
+  color: var(--p-md-success);
 }
 
+/* Muted data (a voided payment, a cancelled lesson) is on-surface-variant, not transparent (ADR-0023) */
 .tb-inactive td {
-  opacity: 0.55;
+  color: var(--p-md-on-surface-variant);
   text-decoration: line-through;
 }
 
@@ -958,7 +1000,7 @@ a.p-menu-item-link:hover {
     min-width: 16rem;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     flex-direction: column;
     align-items: stretch;
 
@@ -1030,7 +1072,7 @@ a.p-menu-item-link:hover {
 }
 
 .tb-submission--old {
-  opacity: 0.75;
+  color: var(--p-md-on-surface-variant);
 }
 
 .tb-preview {
@@ -1082,7 +1124,7 @@ a.p-menu-item-link:hover {
 
   .tb-muted,
   .tb-hint {
-    color: color-mix(in srgb, var(--p-md-on-primary-container) 80%, transparent);
+    color: var(--p-md-on-primary-container);
   }
 }
 
@@ -1126,7 +1168,7 @@ a.p-menu-item-link:hover {
   --fc-classic-primary-foreground: var(--p-md-on-primary);
   --fc-classic-event: var(--p-md-primary-container);
   --fc-classic-event-contrast: var(--p-md-on-primary-container);
-  --fc-classic-background-event: var(--p-green-500);
+  --fc-classic-background-event: var(--p-md-success);
   --fc-classic-background-event-opacity: 15%;
   --fc-classic-background-event-foreground-opacity: 50%;
   --fc-classic-highlight: color-mix(in srgb, var(--p-md-primary) 12%, transparent);
@@ -1181,7 +1223,7 @@ a.p-menu-item-link:hover {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--p-md-primary);
+    outline: 3px solid var(--p-md-secondary);
     outline-offset: 2px;
   }
 
@@ -1233,44 +1275,45 @@ a.p-menu-item-link:hover {
   --fc-classic-event-contrast: var(--p-md-on-tertiary-container);
 }
 
+/* The containers of the roles (ADR-0023): conducted — success, missed — warning */
 .tb-lesson--conducted {
-  --fc-classic-event: var(--p-green-600);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-success-container);
+  --fc-classic-event-contrast: var(--p-md-on-success-container);
 }
 
 .tb-lesson--missed {
-  --fc-classic-event: var(--p-orange-500);
-  --fc-classic-event-contrast: #fff;
+  --fc-classic-event: var(--p-md-warning-container);
+  --fc-classic-event-contrast: var(--p-md-on-warning-container);
 }
 
 .tb-lesson--cancelled {
   --fc-classic-event: var(--p-md-surface-container-highest);
   --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
-  opacity: 0.7;
 }
 
+/* A request waits for an answer: the outline of the warning role, 3:1 to the card */
 .tb-lesson--request {
-  outline: 2px dashed var(--p-orange-500);
+  outline: 2px dashed var(--p-md-warning);
   outline-offset: 1px;
 }
 
 /* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
-  --fc-classic-background-event: var(--p-surface-500);
+  --fc-classic-background-event: var(--p-md-outline);
   /* The «Занято» caption of the student's calendar stays readable on the grey */
   --fc-classic-background-event-foreground-opacity: 80%;
 }
 
 /* The teacher's own off time: hatched, with its caption */
 .tb-off-time {
-  --fc-classic-background-event: var(--p-surface-400);
+  --fc-classic-background-event: var(--p-md-outline-variant);
   --fc-classic-background-event-foreground-opacity: 80%;
 
   background-image: repeating-linear-gradient(
     -45deg,
     transparent 0 6px,
-    color-mix(in srgb, var(--p-surface-500) 35%, transparent) 6px 8px
+    color-mix(in srgb, var(--p-md-outline) 35%, transparent) 6px 8px
   );
 }
 
@@ -1460,7 +1503,7 @@ a.p-menu-item-link:hover {
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
  * action buttons are at the bottom of the card.
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   /* Search fills the width of the toolbar */
   .tb-toolbar > p-iconfield,
   .tb-toolbar > p-iconfield input {
@@ -1481,7 +1524,7 @@ a.p-menu-item-link:hover {
 }
 
 /* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
-@media (min-width: 769px) and (max-width: 1199px) {
+@media (48em < width < 75em) {
   .p-datatable .p-datatable-thead > tr > th,
   .p-datatable .p-datatable-tbody > tr > td {
     padding-inline: var(--tb-space-2);
@@ -1494,7 +1537,7 @@ a.p-menu-item-link:hover {
  * under another (ADR-0021); a card is wide, so the name of a field is in a column on the left and
  * the value — a text or a button — is next to it, in the middle of its line.
  */
-@media (min-width: 769px) {
+@media (width > 48em) {
   .p-datatable.tb-cards.tb-cards--wide {
     @include row-cards;
 
@@ -1561,11 +1604,11 @@ a.p-menu-item-link:hover {
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
  * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   p-button.tb-page-fab {
     position: fixed;
     right: var(--tb-space-4);
-    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+    bottom: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4));
     z-index: 900;
 
     .p-button {
@@ -1608,11 +1651,65 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* Snackbar (M3): at the bottom in the middle, above the bottom navigation on a phone */
+/*
+ * Snackbar (M3, ADR-0024): at the bottom in the middle, above the bottom navigation on a phone and
+ * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
+ */
 .p-toast.p-toast-bottom-center {
-  @media (max-width: 768px) {
-    bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-2)) !important;
+  @media (width <= 48em) {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2)
+    ) !important;
     width: calc(100vw - 2rem);
+  }
+}
+
+@media (width <= 48em) {
+  body:has(p-button.tb-page-fab) .p-toast.p-toast-bottom-center {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
+        var(--tb-space-2)
+    ) !important;
+  }
+}
+
+.tb-snackbar {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-height: 3rem;
+  padding: 0 var(--tb-space-1) 0 var(--tb-space-4);
+  color: var(--p-md-inverse-on-surface);
+  font: var(--tb-type-body-m);
+}
+
+.tb-snackbar__text {
+  flex: 1;
+  padding-block: var(--tb-space-3);
+  overflow-wrap: break-word;
+}
+
+.tb-snackbar__close {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-inverse-on-surface) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-inverse-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -1625,7 +1722,7 @@ a.p-menu-item-link:hover {
  * Dialogs on a phone take the whole screen (ADR-0015): the content scrolls, the buttons stay at the
  * bottom, fields are full width. Confirmations stay small.
  */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   .p-dialog:not(.p-confirmdialog) {
     width: 100vw !important;
     max-width: 100vw;
@@ -1665,7 +1762,7 @@ a.p-menu-item-link:hover {
 }
 
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
-@media (max-width: 768px) {
+@media (width <= 48em) {
   .tb-page-header {
     gap: var(--tb-space-3);
 
@@ -1806,6 +1903,17 @@ a.p-menu-item-link:hover {
     flex-direction: column;
     gap: var(--tb-space-4);
     padding: 0 var(--tb-space-6) var(--tb-space-6);
+  }
+}
+
+/* The chosen item of a menu (the theme in the user menu): the tertiary container (ADR-0022) */
+.p-menu .tb-menu-item--selected > .p-menu-item-content {
+  background: var(--p-md-tertiary-container);
+  color: var(--p-md-on-tertiary-container);
+
+  .p-menu-item-link,
+  .p-menu-item-icon {
+    color: inherit;
   }
 }
 

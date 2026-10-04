@@ -39,6 +39,26 @@ describe('IntegrationsPage', () => {
     backend.verify();
   });
 
+  it('shows a failed load of the AI requests with «Повторить»', async () => {
+    TestBed.configureTestingModule({ imports: [IntegrationsPage], providers: testProviders() });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(IntegrationsPage);
+    fixture.detectChanges();
+    backend.expectOne('/api/admin/integrations/check').flush([]);
+    backend.expectOne('/api/admin/ai/usage').flush(aiUsage());
+    backend.expectOne('/api/admin/ai/status').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить запросы к ИИ');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/admin/ai/status').flush(aiStatus());
+    backend.expectOne('/api/admin/ai/usage').flush(aiUsage());
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('anthropic · claude-opus-5');
+  });
+
   it('checks the integrations and shows the AI requests', async () => {
     await render(aiStatus(), aiUsage());
 

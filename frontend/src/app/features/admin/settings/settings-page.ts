@@ -27,6 +27,8 @@ import {
   SettingSource,
 } from '../data-access/admin.models';
 import { TimeZoneOption, timeZoneOptions } from './time-zones';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
@@ -77,6 +79,7 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
     Select,
     Tag,
     PageHeader,
+    LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -100,72 +103,82 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
           Сохранённые настройки применятся после перезапуска портала.
         </p-message>
       }
-      @for (group of groups(); track group.name) {
-        <p-card [header]="group.name">
-          <div class="tb-settings">
-            @for (setting of group.settings; track setting.name) {
-              <div class="tb-setting">
-                <div class="tb-setting__head">
-                  <label [for]="'setting-' + setting.name">{{ setting.title }}</label>
-                  <p-tag
-                    [value]="sources[setting.source]"
-                    [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
-                  />
-                  @if (edited(setting)) {
-                    <p-tag value="изменено" severity="warn" />
+      <tb-load-state [state]="state" what="настройки" (retry)="load()">
+        @for (group of groups(); track group.name) {
+          <p-card [header]="group.name">
+            <div class="tb-settings">
+              @for (setting of group.settings; track setting.name) {
+                <div class="tb-setting">
+                  <div class="tb-setting__head">
+                    <!-- a value that cannot be changed is text, not a field: the label is for fields only -->
+                    <label
+                      [attr.for]="setting.access === 'EDITABLE' ? 'setting-' + setting.name : null"
+                      >{{ setting.title }}</label
+                    >
+                    <p-tag
+                      [value]="sources[setting.source]"
+                      [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
+                    />
+                    @if (edited(setting)) {
+                      <p-tag value="изменено" severity="warn" />
+                    }
+                  </div>
+                  <code class="tb-setting__name">{{ setting.name }}</code>
+                  @if (setting.access !== 'EDITABLE') {
+                    <span class="tb-setting__value" [id]="'setting-' + setting.name">{{
+                      shown(setting)
+                    }}</span>
+                  } @else if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
+                    <p-select
+                      [inputId]="'setting-' + setting.name"
+                      [options]="options(setting)"
+                      optionLabel="label"
+                      optionValue="value"
+                      [ngModel]="current(setting)"
+                      (ngModelChange)="change(setting, $event)"
+                      appendTo="body"
+                    />
+                  } @else if (setting.kind === 'TIME_ZONE') {
+                    <p-select
+                      [inputId]="'setting-' + setting.name"
+                      [options]="timeZones()"
+                      optionLabel="label"
+                      optionValue="value"
+                      [filter]="true"
+                      filterBy="label"
+                      filterPlaceholder="Город или смещение, например Moscow"
+                      [placeholder]="placeholder(setting)"
+                      [ngModel]="current(setting)"
+                      (ngModelChange)="change(setting, $event)"
+                      appendTo="body"
+                    />
+                  } @else {
+                    <input
+                      pInputText
+                      [id]="'setting-' + setting.name"
+                      [type]="setting.secret ? 'password' : 'text'"
+                      autocomplete="off"
+                      [value]="current(setting)"
+                      [placeholder]="placeholder(setting)"
+                      (input)="type(setting, $event)"
+                    />
+                  }
+                  @if (setting.hint !== '') {
+                    <small class="tb-muted">{{ setting.hint }}</small>
+                  }
+                  @if (setting.source === 'ADMIN' && setting.access === 'EDITABLE') {
+                    <p-button
+                      label="Вернуть как в .env"
+                      [text]="true"
+                      (onClick)="revert(setting)"
+                    />
                   }
                 </div>
-                <code class="tb-setting__name">{{ setting.name }}</code>
-                @if (setting.access !== 'EDITABLE') {
-                  <span class="tb-setting__value" [id]="'setting-' + setting.name">{{
-                    shown(setting)
-                  }}</span>
-                } @else if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
-                  <p-select
-                    [inputId]="'setting-' + setting.name"
-                    [options]="options(setting)"
-                    optionLabel="label"
-                    optionValue="value"
-                    [ngModel]="current(setting)"
-                    (ngModelChange)="change(setting, $event)"
-                    appendTo="body"
-                  />
-                } @else if (setting.kind === 'TIME_ZONE') {
-                  <p-select
-                    [inputId]="'setting-' + setting.name"
-                    [options]="timeZones()"
-                    optionLabel="label"
-                    optionValue="value"
-                    [filter]="true"
-                    filterBy="label"
-                    filterPlaceholder="Город или смещение, например Moscow"
-                    [placeholder]="placeholder(setting)"
-                    [ngModel]="current(setting)"
-                    (ngModelChange)="change(setting, $event)"
-                    appendTo="body"
-                  />
-                } @else {
-                  <input
-                    pInputText
-                    [id]="'setting-' + setting.name"
-                    [type]="setting.secret ? 'password' : 'text'"
-                    autocomplete="off"
-                    [value]="current(setting)"
-                    [placeholder]="placeholder(setting)"
-                    (input)="type(setting, $event)"
-                  />
-                }
-                @if (setting.hint !== '') {
-                  <small class="tb-muted">{{ setting.hint }}</small>
-                }
-                @if (setting.source === 'ADMIN' && setting.access === 'EDITABLE') {
-                  <p-button label="Вернуть как в .env" [text]="true" (onClick)="revert(setting)" />
-                }
-              </div>
-            }
-          </div>
-        </p-card>
-      }
+              }
+            </div>
+          </p-card>
+        }
+      </tb-load-state>
     </div>
 
     <p-dialog
@@ -283,6 +296,7 @@ export class SettingsPage implements OnInit {
 
   protected readonly sources = SOURCE_LABELS;
   protected readonly settings = signal<AdminSettings | null>(null);
+  protected readonly state = new LoadState();
   /** Changed values by variable name; `null`: back to `.env`. */
   protected readonly edits = signal<Readonly<Record<string, string | null>>>({});
   protected readonly changes = computed(() => Object.keys(this.edits()).length);
@@ -442,10 +456,13 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  private load(): void {
-    this.api.settings().subscribe((settings) => {
-      this.settings.set(settings);
-    });
+  protected load(): void {
+    this.api
+      .settings()
+      .pipe(this.state.track())
+      .subscribe((settings) => {
+        this.settings.set(settings);
+      });
   }
 
   private stopPolling(): void {

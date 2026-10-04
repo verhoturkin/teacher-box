@@ -1,3 +1,5 @@
+import { type Page, expect } from '@playwright/test';
+
 /** The browser's time zone in the tests (playwright.config.ts). */
 const ZONE = 'Europe/Moscow';
 const DAY_MS = 86_400_000;
@@ -17,4 +19,20 @@ export function laterThisWeek(hours: number): { days: number; hours: number } {
 
 function midnight(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+/**
+ * Saves the lesson dialog. On Sundays the lessons of this week share the last hour, so a lesson of
+ * another scenario may take the time: the teacher then saves anyway.
+ */
+export async function saveLesson(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Сохранить' }).click();
+  const anyway = page.getByRole('button', { name: 'Всё равно сохранить' });
+  const dialog = page.getByRole('dialog');
+  await expect(async () => {
+    if (await anyway.isVisible()) {
+      await anyway.click();
+    }
+    await expect(dialog).toBeHidden({ timeout: 1000 });
+  }).toPass();
 }

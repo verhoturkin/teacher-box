@@ -1,8 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
@@ -16,8 +14,11 @@ import { AttachmentList } from '../ui/attachment-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Student: an assignment, the teacher's feedback and handing in an answer. */
 @Component({
@@ -34,6 +35,7 @@ import { HelpButton } from '@features/help/parts';
     FilePicker,
     SubmissionList,
     TaskStatusTag,
+    LoadStateView,
     PageHeader,
     HelpButton,
   ],
@@ -107,12 +109,15 @@ import { HelpButton } from '@features/help/parts';
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </p-card>
       </div>
+    } @else {
+      <tb-page-header title="Задание" back="/cabinet/homework" backLabel="Все задания" />
+      <tb-load-state [state]="state" what="задание" (retry)="load()" />
     }
   `,
 })
 export class MyTaskPage implements OnInit {
   private readonly api = inject(HomeworkApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
 
   /** Route parameter. */
@@ -126,11 +131,19 @@ export class MyTaskPage implements OnInit {
   readonly files = signal<File[]>([]);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.api.myTask(this.taskId()).subscribe((task) => {
-      this.task.set(task);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .myTask(this.taskId())
+      .pipe(this.state.track())
+      .subscribe((task) => {
+        this.task.set(task);
+      });
   }
 
   submit(): void {
@@ -150,11 +163,7 @@ export class MyTaskPage implements OnInit {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Отправлено',
-          detail: 'Ответ отправлен учителю',
-        });
+        this.snackbar.success('Ответ отправлен учителю');
       },
       error: (error: unknown) => {
         this.pending.set(false);

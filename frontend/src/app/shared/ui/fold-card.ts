@@ -2,8 +2,11 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   TemplateRef,
+  afterEveryRender,
   computed,
+  inject,
   contentChild,
   input,
   model,
@@ -107,7 +110,7 @@ let nextId = 0;
       cursor: pointer;
 
       &:focus-visible {
-        outline: 2px solid var(--p-md-primary);
+        outline: 3px solid var(--p-md-secondary);
         outline-offset: 2px;
       }
 
@@ -164,8 +167,12 @@ let nextId = 0;
       padding: 0 var(--tb-space-6) var(--tb-space-5);
     }
 
+    /*
+     * Only the start of the animation is filled (backwards): an element with a transform left after
+     * its animation would hold the dialogs of the section like a frame instead of the screen.
+     */
     :host(.tb-fold-card--collapsible) .tb-fold-card__body {
-      animation: tb-fold-in var(--tb-spring-default-spatial) both;
+      animation: tb-fold-in var(--tb-spring-default-spatial) backwards;
     }
 
     @keyframes tb-fold-in {
@@ -175,7 +182,7 @@ let nextId = 0;
       }
     }
 
-    @media (max-width: 768px) {
+    @media (width <= 48em) {
       .tb-fold-card__heading,
       :host(.tb-fold-card--collapsible) .tb-fold-card__heading {
         padding-inline: var(--tb-space-4) var(--tb-space-2);
@@ -230,6 +237,18 @@ export class FoldCard {
   protected readonly content = contentChild.required(TemplateRef);
   protected readonly expanded = computed(() => !this.collapsible() || this.open());
   protected readonly bodyId = `tb-fold-card-${String(nextId++)}`;
+
+  constructor() {
+    // the cards of the content are sections of this one: their titles are one level lower (ADR-0024)
+    const host = inject<ElementRef<HTMLElement>>(ElementRef);
+    afterEveryRender(() => {
+      for (const title of host.nativeElement.querySelectorAll(
+        '.tb-fold-card__body .p-card-title[aria-level="2"]',
+      )) {
+        title.setAttribute('aria-level', '3');
+      }
+    });
+  }
 
   protected toggle(): void {
     this.open.update((open) => !open);

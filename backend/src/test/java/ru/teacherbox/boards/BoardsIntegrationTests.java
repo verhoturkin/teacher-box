@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
 import java.io.UnsupportedEncodingException;
+import java.time.Duration;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
+import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 /** Boards of students and groups through the teacher's and the student's API. */
@@ -30,6 +32,9 @@ class BoardsIntegrationTests {
     @Autowired
     FakeStudentGroups groups;
 
+    @Autowired
+    MutableClock clock;
+
     @Test
     void theTeacherLinksBoardsToStudentsAndGroups() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
@@ -43,6 +48,8 @@ class BoardsIntegrationTests {
             assertThat(json).extractingPath("$.ownerType").isEqualTo("STUDENT");
             assertThat(json).extractingPath("$.holst").isEqualTo(true);
         });
+        // boards are listed in the order they were added
+        clock.advance(Duration.ofMinutes(1));
         assertThat(post("{\"groupId\":\"%s\",\"url\":\"https://miro.com/b/2\"}".formatted(group)))
                 .hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.title").isEqualTo("Доска");
 

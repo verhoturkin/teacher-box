@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
@@ -30,6 +29,9 @@ import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
+import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -67,6 +69,8 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     Password,
     Tag,
     Tooltip,
+    PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -195,7 +199,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 </li>
                 <li>Скопируйте Client ID и Client secret сюда.</li>
               </ol>
-              <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
+              <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
                 <div class="tb-field">
                   <label for="google-client-id">Client ID</label>
                   <input
@@ -213,7 +217,10 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     [feedback]="false"
                     [toggleMask]="true"
                     [fluid]="true"
-                  />
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
                 </div>
                 <div class="tb-form-actions">
                   @if (status.clientConfigured) {
@@ -229,7 +236,6 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                     type="submit"
                     label="Сохранить"
                     severity="success"
-                    [disabled]="form.invalid"
                     [loading]="pending()"
                   />
                 </div>
@@ -278,7 +284,7 @@ export class GoogleCalendarPanel implements OnInit {
 
   protected readonly portalName = this.portal.name;
   private readonly clipboard = inject(Clipboard);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly status = signal<GoogleCalendarStatus | null>(null);
@@ -312,7 +318,7 @@ export class GoogleCalendarPanel implements OnInit {
   }
 
   saveClient(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();
@@ -347,11 +353,7 @@ export class GoogleCalendarPanel implements OnInit {
     this.api.syncGoogle().subscribe({
       next: (response) => {
         this.pending.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Готово',
-          detail: `Изменено событий: ${String(response.changed)}`,
-        });
+        this.snackbar.success(`Изменено событий: ${String(response.changed)}`);
         this.load();
       },
       error: () => {
@@ -369,11 +371,7 @@ export class GoogleCalendarPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Адрес в буфере обмена',
-      });
+      this.snackbar.success('Адрес в буфере обмена');
     }
   }
 

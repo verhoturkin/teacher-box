@@ -41,11 +41,11 @@ describe('FirstRunChecklist', () => {
     expect(text()).toContain('С чего начать');
     expect(text()).toContain('Сделано 2 из 4');
     expect(text()).not.toContain('Добавьте ученика');
-    expect(
-      requireElement(hostElement(fixture), '[role="progressbar"]', HTMLElement).getAttribute(
-        'aria-valuenow',
-      ),
-    ).toBe('50');
+    const bar = requireElement(hostElement(fixture), '[role="progressbar"]', HTMLElement);
+    expect(bar.getAttribute('aria-valuenow')).toBe('50');
+    // named, and without the aria-level a progress bar may not have (axe, ADR-0024)
+    expect(bar.getAttribute('aria-label')).toBe('Сделано 2 из 4');
+    expect(bar.hasAttribute('aria-level')).toBe(false);
     const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );

@@ -22,6 +22,7 @@ import { authInterceptor } from '@core/auth/auth.interceptor';
 import { ReportingErrorHandler } from '@core/errors/reporting-error-handler';
 import { AuthService } from '@core/auth/auth.service';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
+import { PASS_THROUGH } from '@core/a11y/pass-through';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
 import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
@@ -49,6 +50,7 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       theme: { preset: TeacherBoxPreset, options: { darkModeSelector: `.${DARK_CLASS}` } },
       translation: PRIMENG_RU,
+      pt: PASS_THROUGH,
       ripple: true,
     }),
     MessageService,

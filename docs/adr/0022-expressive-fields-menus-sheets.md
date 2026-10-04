@@ -1,6 +1,7 @@
 # ADR-0022. Поля, меню, split button и нижний лист по M3 Expressive
 
-- Статус: принято
+- Статус: принято, уточнено [ADR-0024](0024-accessibility.md) (ошибки и обязательные поля, модальный
+  нижний лист)
 - Дата: 2026-09-29
 - Уточняет: [ADR-0019](0019-material-3-expressive.md) (Material 3 Expressive),
   [ADR-0021](0021-single-column.md) (кнопки занятия на телефоне)

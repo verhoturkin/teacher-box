@@ -7,7 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -58,6 +58,10 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { InitialsPipe } from '@shared/ui/initials';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
+import { forkJoin } from 'rxjs';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -87,6 +91,7 @@ const CLICK_SELECTION_MINUTES = 30;
     Tooltip,
     PageHeader,
     EmptyState,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,6 +117,16 @@ const CLICK_SELECTION_MINUTES = 30;
     }
 
     <div class="tb-stack">
+      @if (attentionState.status() === 'error') {
+        <p-card header="Запросы учеников и прошедшие занятия">
+          <tb-load-state
+            [state]="attentionState"
+            what="запросы и прошедшие занятия"
+            [compact]="true"
+            (retry)="loadAttention()"
+          />
+        </p-card>
+      }
       @if (requests().length > 0) {
         <p-card header="Запросы учеников">
           <ul class="tb-list">
@@ -191,10 +206,19 @@ const CLICK_SELECTION_MINUTES = 30;
       }
 
       <p-card>
+        @if (calendarState.status() === 'error') {
+          <tb-load-state
+            [state]="calendarState"
+            what="занятия"
+            [compact]="true"
+            (retry)="loadLessons()"
+          />
+        }
         <tb-schedule-calendar
           [lessons]="lessons()"
           [busy]="busy()"
           [offTime]="offTimePeriods()"
+          [loaded]="calendarState.ready()"
           [editable]="true"
           (rangeChange)="onRange($event)"
           (lessonClick)="openLesson($event)"
@@ -204,83 +228,97 @@ const CLICK_SELECTION_MINUTES = 30;
       </p-card>
 
       <p-card header="Регулярные занятия">
-        @if (series().length === 0) {
-          <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
-        } @else {
-          <ul class="tb-list">
-            @for (item of series(); track item.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
-                <div class="tb-list__text">
-                  <span class="tb-list__title">{{ with(item) }}</span>
-                  <span class="tb-list__supporting">{{ weekly(item) }}</span>
-                </div>
-                <div class="tb-list__trail">
-                  <p-button
-                    icon="pi pi-pencil"
-                    [text]="true"
-                    [pTooltip]="'Изменить расписание: ' + with(item)"
-                    [rounded]="true"
-                    severity="secondary"
-                    [ariaLabel]="'Изменить расписание: ' + with(item)"
-                    (onClick)="editSeries(item)"
-                  />
-                  <p-button
-                    icon="pi pi-trash"
-                    [text]="true"
-                    [pTooltip]="'Завершить расписание: ' + with(item)"
-                    [rounded]="true"
-                    severity="danger"
-                    [ariaLabel]="'Завершить расписание: ' + with(item)"
-                    (onClick)="stopSeries(item)"
-                  />
-                </div>
-              </li>
-            }
-          </ul>
-        }
+        <tb-load-state
+          [state]="seriesState"
+          what="регулярные занятия"
+          [compact]="true"
+          (retry)="loadSeries()"
+        >
+          @if (series().length === 0) {
+            <tb-empty-state icon="pi-replay" title="Нет регулярных занятий" />
+          } @else {
+            <ul class="tb-list">
+              @for (item of series(); track item.id) {
+                <li>
+                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ with(item) }}</span>
+                    <span class="tb-list__supporting">{{ weekly(item) }}</span>
+                  </div>
+                  <div class="tb-list__trail">
+                    <p-button
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      [pTooltip]="'Изменить расписание: ' + with(item)"
+                      [rounded]="true"
+                      severity="secondary"
+                      [ariaLabel]="'Изменить расписание: ' + with(item)"
+                      (onClick)="editSeries(item)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      [pTooltip]="'Завершить расписание: ' + with(item)"
+                      [rounded]="true"
+                      severity="danger"
+                      [ariaLabel]="'Завершить расписание: ' + with(item)"
+                      (onClick)="stopSeries(item)"
+                    />
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </tb-load-state>
       </p-card>
 
       <p-card header="Нерабочее время">
-        @if (offTimes().length === 0) {
-          <tb-empty-state
-            icon="pi-moon"
-            title="Нерабочее время не отмечено"
-            hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
-          />
-        } @else {
-          <ul class="tb-list">
-            @for (item of offTimes(); track item.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
-                <div class="tb-list__text">
-                  <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
-                  <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
-                </div>
-                <div class="tb-list__trail">
-                  <p-button
-                    icon="pi pi-pencil"
-                    [text]="true"
-                    [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
-                    [rounded]="true"
-                    severity="secondary"
-                    [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
-                    (onClick)="editOffTime(item)"
-                  />
-                  <p-button
-                    icon="pi pi-trash"
-                    [text]="true"
-                    [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
-                    [rounded]="true"
-                    severity="danger"
-                    [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
-                    (onClick)="deleteOffTime(item)"
-                  />
-                </div>
-              </li>
-            }
-          </ul>
-        }
+        <tb-load-state
+          [state]="offTimesState"
+          what="нерабочее время"
+          [compact]="true"
+          (retry)="loadOffTimes()"
+        >
+          @if (offTimes().length === 0) {
+            <tb-empty-state
+              icon="pi-moon"
+              title="Нерабочее время не отмечено"
+              hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
+            />
+          } @else {
+            <ul class="tb-list">
+              @for (item of offTimes(); track item.id) {
+                <li>
+                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
+                    <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
+                  </div>
+                  <div class="tb-list__trail">
+                    <p-button
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      [rounded]="true"
+                      severity="secondary"
+                      [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      (onClick)="editOffTime(item)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      [rounded]="true"
+                      severity="danger"
+                      [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      (onClick)="deleteOffTime(item)"
+                    />
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </tb-load-state>
       </p-card>
 
       <tb-calendar-feed-panel />
@@ -329,7 +367,7 @@ export class SchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly mobile = injectMobile();
   protected readonly kind = requestKindLabel;
@@ -368,6 +406,11 @@ export class SchedulePage implements OnInit {
 
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();
+
+  protected readonly calendarState = new LoadState();
+  protected readonly attentionState = new LoadState();
+  protected readonly seriesState = new LoadState();
+  protected readonly offTimesState = new LoadState();
 
   private range: CalendarRange | null = null;
   private busyEnabled = false;
@@ -459,11 +502,7 @@ export class SchedulePage implements OnInit {
             this.confirmOverlap(move);
           } else {
             move.revert();
-            this.messages.add({
-              severity: 'error',
-              summary: 'Ошибка',
-              detail: describeError(error, 'Не удалось перенести занятие'),
-            });
+            this.snackbar.error(describeError(error, 'Не удалось перенести занятие'));
           }
         },
       });
@@ -491,11 +530,7 @@ export class SchedulePage implements OnInit {
   }
 
   onSeriesSaved(planned: SeriesPlanned): void {
-    this.messages.add({
-      severity: 'success',
-      summary: 'Расписание сохранено',
-      detail: `Запланировано занятий: ${String(planned.lessons)}`,
-    });
+    this.snackbar.success(`Расписание сохранено, занятий: ${String(planned.lessons)}`);
     this.reload();
   }
 
@@ -526,7 +561,7 @@ export class SchedulePage implements OnInit {
   }
 
   onOffTimeSaved(): void {
-    this.messages.add({ severity: 'success', summary: 'Нерабочее время сохранено' });
+    this.snackbar.success('Нерабочее время сохранено');
     this.loadOffTimes();
     this.loadOffTimePeriods();
   }
@@ -581,15 +616,18 @@ export class SchedulePage implements OnInit {
     );
   }
 
-  private loadLessons(): void {
+  protected loadLessons(): void {
     const range = this.range;
     if (range === null) {
       return;
     }
     const widened = widen(range);
-    this.api.lessons(widened.from, widened.to).subscribe((lessons) => {
-      this.lessons.set(lessons);
-    });
+    this.api
+      .lessons(widened.from, widened.to)
+      .pipe(this.calendarState.track())
+      .subscribe((lessons) => {
+        this.lessons.set(lessons);
+      });
   }
 
   /** Busy times of the teacher's Google calendars, if the teacher allowed reading them. */
@@ -622,22 +660,37 @@ export class SchedulePage implements OnInit {
       });
   }
 
-  private loadOffTimes(): void {
-    this.api.offTimes().subscribe((offTimes) => {
-      this.offTimes.set(offTimes);
-    });
+  protected loadOffTimes(): void {
+    this.api
+      .offTimes()
+      .pipe(this.offTimesState.track())
+      .subscribe((offTimes) => {
+        this.offTimes.set(offTimes);
+      });
+  }
+
+  /** Requests of students and lessons to mark: shown only when there are some. */
+  protected loadAttention(): void {
+    forkJoin({ requests: this.api.pendingRequests(), unmarked: this.api.unmarked() })
+      .pipe(this.attentionState.track())
+      .subscribe(({ requests, unmarked }) => {
+        this.requests.set(requests);
+        this.unmarked.set(unmarked);
+      });
+  }
+
+  protected loadSeries(): void {
+    this.api
+      .series()
+      .pipe(this.seriesState.track())
+      .subscribe((series) => {
+        this.series.set(series);
+      });
   }
 
   private loadSidePanels(): void {
     this.loadOffTimes();
-    this.api.pendingRequests().subscribe((requests) => {
-      this.requests.set(requests);
-    });
-    this.api.unmarked().subscribe((lessons) => {
-      this.unmarked.set(lessons);
-    });
-    this.api.series().subscribe((series) => {
-      this.series.set(series);
-    });
+    this.loadAttention();
+    this.loadSeries();
   }
 }

@@ -6,57 +6,69 @@ import { BillingApi } from '../data-access/billing-api';
 import { StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerTable } from '../ledger/ledger-table';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /** Student: own balance and history of lessons and payments. */
 @Component({
   selector: 'tb-my-billing-page',
-  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable, PageHeader],
+  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Оплаты">
       <tb-help-button help topic="cabinet/billing" />
     </tb-page-header>
-    @if (ledger(); as ledger) {
-      <div class="tb-stats">
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Баланс</span>
-            <span class="tb-stat__value"
-              ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
-            /></span>
-            <small class="tb-muted">
-              @if (ledger.balance < 0) {
-                Столько нужно оплатить за прошедшие занятия.
-              } @else if (ledger.balance > 0) {
-                Эта сумма пойдёт в счёт следующих занятий.
-              } @else {
-                Всё оплачено.
-              }
-            </small>
-          </div>
+    <tb-load-state [state]="state" what="оплаты" (retry)="load()">
+      @if (ledger(); as ledger) {
+        <div class="tb-stats">
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Баланс</span>
+              <span class="tb-stat__value"
+                ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
+              /></span>
+              <small class="tb-muted">
+                @if (ledger.balance < 0) {
+                  Столько нужно оплатить за прошедшие занятия.
+                } @else if (ledger.balance > 0) {
+                  Эта сумма пойдёт в счёт следующих занятий.
+                } @else {
+                  Всё оплачено.
+                }
+              </small>
+            </div>
+          </p-card>
+          <p-card>
+            <div class="tb-stat">
+              <span class="tb-muted">Стоимость занятия</span>
+              <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
+            </div>
+          </p-card>
+        </div>
+        <p-card header="История">
+          <tb-ledger-table [ledger]="ledger" />
         </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">Стоимость занятия</span>
-            <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
-          </div>
-        </p-card>
-      </div>
-      <p-card header="История">
-        <tb-ledger-table [ledger]="ledger" />
-      </p-card>
-    }
+      }
+    </tb-load-state>
   `,
 })
 export class MyBillingPage implements OnInit {
   private readonly api = inject(BillingApi);
 
   protected readonly ledger = signal<StudentLedger | null>(null);
+  protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.api.myLedger().subscribe((ledger) => {
-      this.ledger.set(ledger);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .myLedger()
+      .pipe(this.state.track())
+      .subscribe((ledger) => {
+        this.ledger.set(ledger);
+      });
   }
 }

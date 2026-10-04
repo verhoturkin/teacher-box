@@ -41,6 +41,34 @@ describe('EventsPage', () => {
     backend.verify();
   });
 
+  it('shows failed loads with «Повторить», not «everything is fine»', async () => {
+    TestBed.configureTestingModule({ imports: [EventsPage], providers: testProviders() });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(EventsPage);
+    fixture.detectChanges();
+    backend.expectOne('/api/admin/events').flush(null, { status: 500, statusText: 'Error' });
+    backend
+      .expectOne('/api/admin/notifications/deliveries')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Не удалось загрузить события');
+    expect(text).toContain('Не удалось загрузить доставки');
+    expect(text).not.toContain('Всё обработано');
+
+    for (const button of Array.from(
+      hostElement(fixture).querySelectorAll<HTMLButtonElement>('.tb-load-state__error button'),
+    )) {
+      button.click();
+    }
+    backend.expectOne('/api/admin/events').flush([]);
+    backend.expectOne('/api/admin/notifications/deliveries').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Всё обработано');
+  });
+
   it('says when everything is processed and delivered', async () => {
     await render([], []);
 
@@ -67,7 +95,9 @@ describe('EventsPage', () => {
     all.flush({ resubmitted: 1 });
     backend.expectOne('/api/admin/events').flush([]);
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Событий: 1' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Отправлено повторно событий: 1' }),
+    );
   });
 
   it('sends failed deliveries again', async () => {
@@ -82,7 +112,9 @@ describe('EventsPage', () => {
     retry.flush({ retried: 2 });
     backend.expectOne('/api/admin/notifications/deliveries').flush([]);
 
-    expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Сообщений: 2' }));
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Отправлено повторно сообщений: 2' }),
+    );
     fixture.componentInstance.retry(['d-1']);
     backend.expectOne('/api/admin/notifications/deliveries/retry').flush({ retried: 1 });
     backend.expectOne('/api/admin/notifications/deliveries').flush([]);

@@ -194,7 +194,10 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
   });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Расписание' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Расписание' })
+    .click();
   await expect(page.locator('p-card').filter({ hasText: 'Регулярные занятия' })).toContainText(
     GROUP,
   );
@@ -217,7 +220,10 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
   await attendance.getByRole('button', { name: 'Сохранить' }).click();
   await expect(attendance).toBeHidden();
 
-  await page.getByRole('menuitem', { name: 'Оплаты' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Оплаты' })
+    .click();
   await expect(page.getByRole('row', { name: new RegExp(ANNA) })).toContainText('800');
   await expect(page.getByRole('row', { name: new RegExp(BORIS) })).toContainText('800');
 });
@@ -233,7 +239,10 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Ученики' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Ученики' })
+    .click();
   await page.getByRole('button', { name: `Добавить видеовстречу: ${ANNA}` }).click();
   await page.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
   // Anna's own row: the row of her group has her name too
@@ -258,7 +267,10 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await expect(
     student.locator('tb-my-boards-card').getByRole('link', { name: /Алгебра/ }),
   ).toHaveAttribute('href', 'https://app.holst.so/board/e2e');
-  await student.getByRole('menuitem', { name: 'Расписание' }).click();
+  await student
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Расписание' })
+    .click();
   await expect(student.getByRole('link', { name: /Войти в урок/ }).first()).toHaveAttribute(
     'href',
     /^https:\/\/telemost\.yandex\.ru\/j\/\d+/,
@@ -380,7 +392,10 @@ test('the student asks to move a lesson in Telegram and the teacher accepts it w
 
 test('the help opens from a section', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Расписание' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Расписание' })
+    .click();
   // the home page has its «?» too: the click waits for the schedule
   await expect(page).toHaveURL(/\/teacher\/schedule$/);
   await page.locator('.tb-page-heading').getByRole('button', { name: 'Справка' }).click();

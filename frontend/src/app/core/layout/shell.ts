@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { MenuItem } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
@@ -28,7 +30,9 @@ const NAV_ITEMS = 5;
 @Component({
   selector: 'tb-shell',
   imports: [
-    Button,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
     Menu,
     NotificationBell,
     RouterOutlet,
@@ -48,16 +52,32 @@ const NAV_ITEMS = 5;
         @if (notifications()) {
           <tb-notification-bell [link]="homeLink() + '/notifications'" />
         }
-        <p-button
-          [label]="compact() ? undefined : userName()"
-          icon="pi pi-user"
+        <!-- the visible name is the start of the accessible one (WCAG 2.5.3, ADR-0024) -->
+        <button
+          pButton
+          type="button"
+          class="tb-shell__user-button"
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          ariaLabel="Меню пользователя"
-          (onClick)="userMenu.toggle($event)"
+          [attr.aria-label]="compact() ? 'Меню пользователя' : userName() + ': меню пользователя'"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="userOpen()"
+          (click)="userMenu.toggle($event)"
+        >
+          <i pButtonIcon class="pi pi-user" aria-hidden="true"></i>
+          @if (!compact()) {
+            <span pButtonLabel>{{ userName() }}</span>
+          }
+        </button>
+        <p-menu
+          #userMenu
+          [model]="userItems()"
+          [popup]="true"
+          appendTo="body"
+          (onShow)="userOpen.set(true)"
+          (onHide)="userOpen.set(false)"
         />
-        <p-menu #userMenu [model]="userItems()" [popup]="true" appendTo="body" />
       </div>
     </header>
     <div class="tb-shell__body">
@@ -75,6 +95,7 @@ const NAV_ITEMS = 5;
             class="tb-bottom-nav__item"
             [routerLink]="item.routerLink"
             routerLinkActive="tb-bottom-nav__item--active"
+            ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="item.routerLinkActiveOptions ?? { exact: false }"
           >
             <span class="tb-bottom-nav__icon"><i [class]="item.icon" aria-hidden="true"></i></span>
@@ -82,10 +103,15 @@ const NAV_ITEMS = 5;
           </a>
         }
         @if (moreItems().length > 0) {
+          <!-- a section from «Ещё» marks «Ещё» (ADR-0024) -->
           <button
             type="button"
             class="tb-bottom-nav__item"
+            [class.tb-bottom-nav__item--active]="moreActive()"
             aria-label="Ещё разделы"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="moreOpen()"
+            [attr.aria-current]="moreActive() ? 'page' : null"
             (click)="moreMenu.toggle($event)"
           >
             <span class="tb-bottom-nav__icon"
@@ -102,6 +128,8 @@ const NAV_ITEMS = 5;
         [popup]="true"
         appendTo="body"
         styleClass="tb-more-menu"
+        (onShow)="moreOpen.set(true)"
+        (onHide)="moreOpen.set(false)"
       />
     }
   `,
@@ -124,6 +152,24 @@ export class Shell {
 
   protected readonly navItems = computed(() => this.items().slice(0, NAV_ITEMS));
   protected readonly moreItems = computed(() => this.items().slice(NAV_ITEMS));
+  protected readonly userOpen = signal(false);
+  protected readonly moreOpen = signal(false);
+  private readonly router = inject(Router);
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+  /** The current page is a section from «Ещё». */
+  protected readonly moreActive = computed(() => {
+    const url = this.url().split(/[?#]/)[0] ?? '';
+    return this.moreItems().some((item) => {
+      const link: unknown = item.routerLink;
+      return typeof link === 'string' && (url === link || url.startsWith(`${link}/`));
+    });
+  });
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
@@ -131,9 +177,12 @@ export class Shell {
     { label: 'Мой аккаунт', icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.
+    // the chosen theme: its icon stays, the item is highlighted and says that it is chosen (ADR-0024)
     ...THEMES.map(({ choice, label, icon }) => ({
-      label,
-      icon: this.theme.choice() === choice ? 'pi pi-check' : icon,
+      icon,
+      ...(this.theme.choice() === choice
+        ? { label: `${label} (выбрана)`, styleClass: 'tb-menu-item--selected' }
+        : { label }),
       command: () => {
         this.theme.choose(choice);
       },

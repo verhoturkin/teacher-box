@@ -25,16 +25,20 @@ describe('SideNav', () => {
     fixture.destroy();
   });
 
-  it('lists every section of the role as menu items and marks the current one', async () => {
+  it('lists every section of the role as links and marks the current page (ADR-0024)', async () => {
     const host = await render(false);
 
     expect(host.getAttribute('role')).toBe('navigation');
     expect(host.getAttribute('aria-label')).toBe('Разделы');
-    const items = Array.from(host.querySelectorAll('[role="menuitem"]'));
-    expect(items.map((item) => item.textContent.trim())).toEqual(
+    expect(host.querySelector('[role="menu"], [role="menuitem"]')).toBeNull();
+    const links = Array.from(host.querySelectorAll('a'));
+    expect(links.map((link) => link.textContent.trim())).toEqual(
       TEACHER_MENU.map((item) => item.label),
     );
-    expect(host.querySelector('.p-menu-item-link-active')?.textContent).toContain('Ученики');
+    const current = host.querySelector('a[aria-current="page"]');
+    expect(current?.textContent).toContain('Ученики');
+    expect(current?.classList).toContain('tb-side-nav__item--active');
+    expect(host.querySelectorAll('a[aria-current]')).toHaveLength(1);
     expect(host.classList).not.toContain('tb-side-nav--rail');
   });
 
@@ -42,6 +46,6 @@ describe('SideNav', () => {
     const host = await render(true);
 
     expect(host.classList).toContain('tb-side-nav--rail');
-    expect(host.querySelectorAll('[role="menuitem"]')).toHaveLength(TEACHER_MENU.length);
+    expect(host.querySelectorAll('a')).toHaveLength(TEACHER_MENU.length);
   });
 });

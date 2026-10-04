@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
-import { phoneScreen, testProviders } from '@testing/setup';
+import { phoneScreen, testProvidersWithRouter } from '@testing/setup';
 import { Shell } from './shell';
 import { STUDENT_MENU } from './student-layout';
 import { TEACHER_MENU } from './teacher-layout';
@@ -14,7 +15,10 @@ describe('Shell on a phone', () => {
   async function render(items: MenuItem[]): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: testProviders(phoneScreen()),
+      providers: testProvidersWithRouter(
+        provideRouter([{ path: '**', children: [] }]),
+        phoneScreen(),
+      ),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     fixture = TestBed.createComponent(Shell);
@@ -44,11 +48,24 @@ describe('Shell on a phone', () => {
       requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement).textContent,
     ).not.toContain('Анна');
 
-    requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement).click();
+    const more = requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
+    expect(more.getAttribute('aria-haspopup')).toBe('menu');
+    more.click();
     await fixture.whenStable();
+    expect(more.getAttribute('aria-expanded')).toBe('true');
     expect(bodyText()).toContain('Уведомления');
     expect(bodyText()).toContain('ИИ');
     expect(nav.children).toHaveLength(6);
+  });
+
+  it('marks «Ещё» when the page is a section from it', async () => {
+    const host = await render(TEACHER_MENU);
+    await TestBed.inject(Router).navigateByUrl('/teacher/notifications?open=messengers');
+    await fixture.whenStable();
+
+    const more = requireElement(host, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
+    expect(more.classList).toContain('tb-bottom-nav__item--active');
+    expect(more.getAttribute('aria-current')).toBe('page');
   });
 
   it('has no «Ещё» when all sections fit', async () => {

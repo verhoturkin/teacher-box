@@ -42,7 +42,8 @@ describe('HelpButton', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     await fixture.componentInstance.open();
     await fixture.whenStable();
-    expect(document.body.querySelector('.p-drawer-mask')).toBeNull();
+    // the panel is modal (ADR-0024)
+    expect(document.body.querySelector('.p-drawer-mask')).not.toBeNull();
 
     document.body
       .querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]')

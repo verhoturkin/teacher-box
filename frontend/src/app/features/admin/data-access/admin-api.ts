@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import { PortalSettings } from '@core/portal/portal';
 import {
   AdminSettings,
@@ -66,11 +66,11 @@ export class AdminApi {
   }
 
   status(): Observable<SystemStatus> {
-    return this.http.get<SystemStatus>(`${ADMIN}/status`);
+    return this.http.get<SystemStatus>(`${ADMIN}/status`, { context: quietContext() });
   }
 
   events(): Observable<EventPublication[]> {
-    return this.http.get<EventPublication[]>(`${ADMIN}/events`);
+    return this.http.get<EventPublication[]>(`${ADMIN}/events`, { context: quietContext() });
   }
 
   /** @param ids empty: all incomplete events */
@@ -81,7 +81,9 @@ export class AdminApi {
   }
 
   failedDeliveries(): Observable<FailedDelivery[]> {
-    return this.http.get<FailedDelivery[]>(`${ADMIN}/notifications/deliveries`);
+    return this.http.get<FailedDelivery[]>(`${ADMIN}/notifications/deliveries`, {
+      context: quietContext(),
+    });
   }
 
   /** @param ids empty: all the latest failed deliveries */
@@ -99,11 +101,11 @@ export class AdminApi {
   }
 
   aiStatus(): Observable<AiStatus> {
-    return this.http.get<AiStatus>(`${ADMIN}/ai/status`);
+    return this.http.get<AiStatus>(`${ADMIN}/ai/status`, { context: quietContext() });
   }
 
   aiUsage(): Observable<AiUsage> {
-    return this.http.get<AiUsage>(`${ADMIN}/ai/usage`);
+    return this.http.get<AiUsage>(`${ADMIN}/ai/usage`, { context: quietContext() });
   }
 
   diagnostics(): Observable<Blob> {
@@ -112,7 +114,7 @@ export class AdminApi {
 
   /** Every setting of the portal with its value and where it comes from (ADR-0016). */
   settings(): Observable<AdminSettings> {
-    return this.http.get<AdminSettings>(`${ADMIN}/settings`);
+    return this.http.get<AdminSettings>(`${ADMIN}/settings`, { context: quietContext() });
   }
 
   /**

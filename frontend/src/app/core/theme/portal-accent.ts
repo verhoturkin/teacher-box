@@ -1,8 +1,18 @@
-import { palette, updatePrimaryPalette } from '@primeuix/themes';
+import { palette, updatePreset, updatePrimaryPalette } from '@primeuix/themes';
+import { difference } from './color';
+import {
+  ColorScheme,
+  SHADES,
+  Shades,
+  auraPalette,
+  colorScheme,
+  lowestContrast,
+} from './color-scheme';
+import { schemeTokens } from './teacher-box-preset';
 
 /**
- * Colors of the portal (ADR-0015): PrimeNG palettes that keep contrast in both themes, or the
- * teacher's own color `#rrggbb` whose shades are built here.
+ * Colors of the portal (ADR-0015, ADR-0023): PrimeNG palettes or the teacher's own color `#rrggbb`
+ * whose shades are built here. The roles are tones with the contrast 4.5:1 in both themes.
  */
 export const ACCENTS = [
   { value: 'indigo', label: 'Индиго' },
@@ -20,16 +30,19 @@ export const DEFAULT_ACCENT: Accent = 'indigo';
 /** The own color offered first: a calm dark green. */
 export const DEFAULT_OWN_COLOR = '#0f766e';
 
-/** Contrast of the text on buttons below this is poorly readable (WCAG 2.2 for large text and UI). */
-export const MIN_CONTRAST = 3;
+/** Text is readable from this contrast on (WCAG 2.2, 1.4.3: text of normal size). */
+export const MIN_CONTRAST = 4.5;
 
-const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
-const OWN_COLOR = /^#[0-9a-f]{6}$/i;
+/** Colors closer than this look alike (the difference in OKLab × 100, ADR-0023). */
+export const ALIKE = 12;
+
 /**
- * The roles of a filled button (ADR-0017): in the light theme white text on the shade 600, in the
- * dark one the shade 900 on the shade 200.
+ * The primary role differs from the chosen color this much or more: the teacher is told that the
+ * color was made darker (lighter in the dark theme) to stay readable.
  */
-const LIGHT_BUTTON_TEXT = '#ffffff';
+const ADJUSTED = 10;
+
+const OWN_COLOR = /^#[0-9a-f]{6}$/i;
 
 export function isAccent(value: string): value is Accent {
   return ACCENTS.some((accent) => accent.value === value);
@@ -40,83 +53,74 @@ export function isOwnColor(value: string): boolean {
   return OWN_COLOR.test(value);
 }
 
-/**
- * Paints buttons, links and highlights in the color of the portal; an unknown color is the default.
- *
- * @return the primary palette now in use, e.g. `{ 500: '{emerald.500}', ... }` or `{ 500: '#0f766e', ... }`
- */
-export function applyAccent(accent: string): Record<string, string> {
-  const shades = isOwnColor(accent) ? ownShades(accent) : namedShades(accent);
-  updatePrimaryPalette(shades);
-  return shades;
+/** The shades 50–950 of a color of the portal as `#rrggbb`; an unknown color is the default. */
+export function accentShades(accent: string): Shades {
+  if (isOwnColor(accent)) {
+    return ownShades(accent);
+  }
+  return auraPalette(isAccent(accent) ? accent : DEFAULT_ACCENT);
 }
 
-/** How readable the text on buttons of the own color is in the light and the dark theme. */
-export function ownColorContrast(color: string): { readonly light: number; readonly dark: number } {
-  const shades = ownShades(color);
+/** The scheme of a color of the portal (ADR-0023). */
+export function accentScheme(accent: string): ColorScheme {
+  return colorScheme(accentShades(accent));
+}
+
+/**
+ * Paints the portal in its color: the roles of both themes are computed here and handed to the
+ * theme as ready colors (ADR-0023).
+ *
+ * @return the scheme now in use
+ */
+export function applyAccent(accent: string): ColorScheme {
+  const scheme = accentScheme(accent);
+  // the palette first: it also sets up the theme with its options if there is none yet (tests)
+  updatePrimaryPalette(scheme.primary);
+  updatePreset({ semantic: schemeTokens(scheme) });
+  return scheme;
+}
+
+/** What the teacher should know about a color of the portal (the settings, ADR-0023). */
+export interface AccentAdvice {
+  /** The lowest contrast of a text of the portal in the light and the dark theme. */
+  readonly light: number;
+  readonly dark: number;
+  /** Buttons and links are darker (or lighter) than the color itself, to stay readable. */
+  readonly adjusted: boolean;
+  /** The main buttons would look like the green confirming ones. */
+  readonly likeSuccess: boolean;
+  /** The main buttons would look like the red cancelling and deleting ones. */
+  readonly likeError: boolean;
+}
+
+export function accentAdvice(accent: string): AccentAdvice {
+  const shades = accentShades(accent);
+  const scheme = colorScheme(shades);
+  const alike = (role: 'success' | 'error'): boolean =>
+    difference(scheme.light.primary, scheme.light[role]) < ALIKE ||
+    difference(scheme.dark.primary, scheme.dark[role]) < ALIKE;
   return {
-    light: contrast(LIGHT_BUTTON_TEXT, shades['600'] ?? color),
-    dark: contrast(shades['900'] ?? color, shades['200'] ?? color),
+    light: lowestContrast(scheme.light),
+    dark: lowestContrast(scheme.dark),
+    adjusted:
+      difference(scheme.light.primary, shades['600'] ?? scheme.light.primary) >= ADJUSTED ||
+      difference(scheme.dark.primary, shades['200'] ?? scheme.dark.primary) >= ADJUSTED,
+    likeSuccess: alike('success'),
+    likeError: alike('error'),
   };
 }
 
-/**
- * Whether the color of the portal looks like the green of confirming buttons (ADR-0019): the
- * emerald palette or an own color of a green hue (75–165°) that is not greyish.
- */
-export function isGreenAccent(accent: string): boolean {
-  if (accent === 'emerald') {
-    return true;
-  }
-  if (!isOwnColor(accent)) {
-    return false;
-  }
-  const [red = 0, green = 0, blue = 0] = [1, 3, 5].map(
-    (start) => parseInt(accent.slice(start, start + 2), 16) / 255,
-  );
-  const max = Math.max(red, green, blue);
-  const min = Math.min(red, green, blue);
-  const lightness = (max + min) / 2;
-  const chroma = max - min;
-  const saturation = chroma === 0 ? 0 : chroma / (1 - Math.abs(2 * lightness - 1));
-  if (max !== green || saturation < 0.25) {
-    return false;
-  }
-  const hue = 60 * ((blue - red) / chroma + 2);
-  return hue >= 75 && hue <= 165;
-}
-
 /** Shades 50–950 of the own color (the color itself is 500). */
-export function ownShades(color: string): Record<string, string> {
+export function ownShades(color: string): Shades {
   const scale: unknown = palette(color.toLowerCase());
   if (typeof scale !== 'object' || scale === null) {
-    return namedShades(DEFAULT_ACCENT);
+    return auraPalette(DEFAULT_ACCENT);
   }
   const shades = Object.fromEntries(
     Object.entries(scale).filter(
       (entry): entry is [string, string] =>
-        SHADES.includes(Number(entry[0])) && typeof entry[1] === 'string',
+        SHADES.includes(entry[0]) && typeof entry[1] === 'string' && OWN_COLOR.test(entry[1]),
     ),
   );
-  return Object.keys(shades).length === SHADES.length ? shades : namedShades(DEFAULT_ACCENT);
-}
-
-function namedShades(accent: string): Record<string, string> {
-  const name = isAccent(accent) ? accent : DEFAULT_ACCENT;
-  return Object.fromEntries(SHADES.map((shade) => [String(shade), `{${name}.${String(shade)}}`]));
-}
-
-/** WCAG contrast ratio of two `#rrggbb` colors, from 1 to 21. */
-export function contrast(first: string, second: string): number {
-  const [lighter, darker] = [luminance(first), luminance(second)].sort((a, b) => b - a);
-  return ((lighter ?? 0) + 0.05) / ((darker ?? 0) + 0.05);
-}
-
-function luminance(color: string): number {
-  const channels = [1, 3, 5].map((start) => {
-    const value = parseInt(color.slice(start, start + 2), 16) / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  const [red = 0, green = 0, blue = 0] = channels;
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  return Object.keys(shades).length === SHADES.length ? shades : auraPalette(DEFAULT_ACCENT);
 }

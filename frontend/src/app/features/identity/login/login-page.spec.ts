@@ -40,11 +40,28 @@ describe('LoginPage', () => {
     const button = buttonByText(hostElement(fixture), 'Войти');
     expect(button.disabled).toBe(false);
 
+    document.body.append(hostElement(fixture));
     button.click();
     await fixture.whenStable();
 
     expect(hostElement(fixture).textContent).toContain('Введите логин и пароль');
+    expect(document.activeElement?.id).toBe('login');
+    hostElement(fixture).remove();
     backend.expectNone('/api/auth/login');
+  });
+
+  it('shows the password with a named button (ADR-0024)', async () => {
+    const host = hostElement(fixture);
+    const password = requireElement(host, '#password', HTMLInputElement);
+    expect(password.type).toBe('password');
+
+    const show = buttonByText(host, 'Показать пароль');
+    expect(show.getAttribute('aria-pressed')).toBe('false');
+    show.click();
+    await fixture.whenStable();
+
+    expect(password.type).toBe('text');
+    expect(buttonByText(host, 'Скрыть пароль').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('signs in and opens the start page of the role', async () => {
@@ -75,7 +92,8 @@ describe('LoginPage', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/cabinet');
   });
 
-  it('explains why sign-in failed', async () => {
+  it('explains why sign-in failed and puts the focus in the password', async () => {
+    document.body.append(hostElement(fixture));
     await signIn('teacher', 'wrong-password');
 
     backend
@@ -85,6 +103,8 @@ describe('LoginPage', () => {
 
     expect(hostElement(fixture).textContent).toContain('Слишком много неудачных попыток');
     expect(router.navigateByUrl).not.toHaveBeenCalled();
+    expect(document.activeElement?.id).toBe('password');
+    hostElement(fixture).remove();
   });
 
   it('shows a generic message for unexpected errors', async () => {

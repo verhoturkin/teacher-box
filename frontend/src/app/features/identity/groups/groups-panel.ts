@@ -33,7 +33,10 @@ import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 
@@ -58,6 +61,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
     RoomCell,
     RoomDialog,
     HelpButton,
+    LoadStateView,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -83,125 +87,126 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
         </label>
       </div>
 
-      <p-table
-        [value]="visibleGroups()"
-        [loading]="loading()"
-        dataKey="id"
-        [rowHover]="true"
-        styleClass="tb-cards tb-cards--wide"
-      >
-        <ng-template #header>
-          <tr>
-            <th>Группа</th>
-            <th>Ученики</th>
-            <th>Цена занятия</th>
-            <th>Видеовстреча</th>
-            <th>Доски</th>
-            <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-group [tbRowType]="visibleGroups()">
-          <tr>
-            <td data-label="Группа">
-              <div class="tb-person">
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
-                <span class="tb-list__title">
-                  {{ group.name }}
-                  @if (group.archivedAt) {
-                    <p-tag value="В архиве" severity="secondary" />
-                  }
-                </span>
-              </div>
-            </td>
-            <td data-label="Ученики">
-              @if (group.members.length === 0) {
-                <span class="tb-muted">Пока никого</span>
-              } @else {
-                {{ memberNames(group) }}
-              }
-            </td>
-            <td data-label="Цена занятия">
-              @if (priceOf(group.id); as price) {
-                {{ price | money: currency() }}
-              } @else {
-                <span class="tb-muted">—</span>
-              }
-            </td>
-            <td data-label="Видеовстреча">
-              @if (!group.archivedAt) {
-                <tb-room-cell
-                  [room]="roomOf(group.id)"
-                  [name]="group.name"
-                  (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
-                />
-              }
-            </td>
-            <td data-label="Доски">
-              @if (!group.archivedAt) {
-                <tb-board-cell
-                  [boards]="boards.of(group.id)"
-                  [name]="group.name"
-                  (edit)="boards.open({ type: 'GROUP', id: group.id, name: group.name })"
-                />
-              }
-            </td>
-            <td class="tb-actions-column">
-              <p-button
-                icon="pi pi-pencil"
-                [text]="true"
-                severity="secondary"
-                [rounded]="true"
-                pTooltip="Изменить"
-                [ariaLabel]="'Изменить группу: ' + group.name"
-                (onClick)="openEdit(group)"
-              />
-              @if (group.archivedAt) {
+      <tb-load-state [state]="state" what="группы" (retry)="load()">
+        <p-table
+          [value]="visibleGroups()"
+          dataKey="id"
+          [rowHover]="true"
+          styleClass="tb-cards tb-cards--wide"
+        >
+          <ng-template #header>
+            <tr>
+              <th>Группа</th>
+              <th>Ученики</th>
+              <th>Цена занятия</th>
+              <th>Видеовстреча</th>
+              <th>Доски</th>
+              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-group [tbRowType]="visibleGroups()">
+            <tr>
+              <td data-label="Группа">
+                <div class="tb-person">
+                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
+                  <span class="tb-list__title">
+                    {{ group.name }}
+                    @if (group.archivedAt) {
+                      <p-tag value="В архиве" severity="secondary" />
+                    }
+                  </span>
+                </div>
+              </td>
+              <td data-label="Ученики">
+                @if (group.members.length === 0) {
+                  <span class="tb-muted">Пока никого</span>
+                } @else {
+                  {{ memberNames(group) }}
+                }
+              </td>
+              <td data-label="Цена занятия">
+                @if (priceOf(group.id); as price) {
+                  {{ price | money: currency() }}
+                } @else {
+                  <span class="tb-muted">—</span>
+                }
+              </td>
+              <td data-label="Видеовстреча">
+                @if (!group.archivedAt) {
+                  <tb-room-cell
+                    [room]="roomOf(group.id)"
+                    [name]="group.name"
+                    (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
+                  />
+                }
+              </td>
+              <td data-label="Доски">
+                @if (!group.archivedAt) {
+                  <tb-board-cell
+                    [boards]="boards.of(group.id)"
+                    [name]="group.name"
+                    (edit)="boards.open({ type: 'GROUP', id: group.id, name: group.name })"
+                  />
+                }
+              </td>
+              <td class="tb-actions-column">
                 <p-button
-                  icon="pi pi-replay"
+                  icon="pi pi-pencil"
                   [text]="true"
                   severity="secondary"
                   [rounded]="true"
-                  pTooltip="Вернуть из архива"
-                  [ariaLabel]="'Вернуть из архива: ' + group.name"
-                  (onClick)="restore(group)"
+                  pTooltip="Изменить"
+                  [ariaLabel]="'Изменить группу: ' + group.name"
+                  (onClick)="openEdit(group)"
                 />
-              } @else {
-                <p-button
-                  icon="pi pi-inbox"
-                  [text]="true"
-                  severity="danger"
-                  [rounded]="true"
-                  pTooltip="В архив"
-                  [ariaLabel]="'В архив: ' + group.name"
-                  (onClick)="confirmArchive(group)"
-                />
-              }
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="6">
-              @if (groups().length === 0) {
-                <tb-empty-state
-                  icon="pi-users"
-                  title="Групп пока нет"
-                  hint="Создайте группу, если занимаетесь с несколькими учениками сразу"
-                >
+                @if (group.archivedAt) {
                   <p-button
-                    label="Создать группу"
+                    icon="pi pi-replay"
+                    [text]="true"
                     severity="secondary"
-                    icon="pi pi-users"
-                    (onClick)="openCreate()"
+                    [rounded]="true"
+                    pTooltip="Вернуть из архива"
+                    [ariaLabel]="'Вернуть из архива: ' + group.name"
+                    (onClick)="restore(group)"
                   />
-                </tb-empty-state>
-              } @else {
-                <tb-empty-state icon="pi-box" title="Все группы в архиве" />
-              }
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+                } @else {
+                  <p-button
+                    icon="pi pi-inbox"
+                    [text]="true"
+                    severity="danger"
+                    [rounded]="true"
+                    pTooltip="В архив"
+                    [ariaLabel]="'В архив: ' + group.name"
+                    (onClick)="confirmArchive(group)"
+                  />
+                }
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="6">
+                @if (groups().length === 0) {
+                  <tb-empty-state
+                    icon="pi-users"
+                    title="Групп пока нет"
+                    hint="Создайте группу, если занимаетесь с несколькими учениками сразу"
+                  >
+                    <p-button
+                      label="Создать группу"
+                      severity="secondary"
+                      icon="pi pi-users"
+                      (onClick)="openCreate()"
+                    />
+                  </tb-empty-state>
+                } @else {
+                  <tb-empty-state icon="pi-box" title="Все группы в архиве" />
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </tb-load-state>
     </p-card>
 
     <tb-group-form-dialog
@@ -244,7 +249,7 @@ export class GroupsPanel implements OnInit {
   protected readonly groups = signal<StudentGroup[]>([]);
   private readonly prices = signal<ReadonlyMap<string, number>>(new Map());
   protected readonly currency = signal('RUB');
-  protected readonly loading = signal(true);
+  protected readonly state = new LoadState();
   protected readonly showArchived = new FormControl(false, { nonNullable: true });
   private readonly includeArchived = toSignal(this.showArchived.valueChanges, {
     initialValue: false,
@@ -273,22 +278,22 @@ export class GroupsPanel implements OnInit {
   });
 
   ngOnInit(): void {
+    this.load();
+    this.loadRooms();
+    this.boards.load();
+  }
+
+  protected load(): void {
     forkJoin({
-      groups: this.api.listGroups(),
-      prices: this.billing.groupPrices(),
-    }).subscribe({
-      next: ({ groups, prices }) => {
+      groups: this.api.listGroups(quietContext()),
+      prices: this.billing.groupPrices(quietContext()),
+    })
+      .pipe(this.state.track())
+      .subscribe(({ groups, prices }) => {
         this.groups.set(groups);
         this.currency.set(prices.currency);
         this.prices.set(new Map(prices.prices.map((price) => [price.groupId, price.lessonPrice])));
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
-    this.loadRooms();
-    this.boards.load();
+      });
   }
 
   protected roomOf(ownerId: string): MeetingRoom | null {

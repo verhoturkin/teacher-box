@@ -21,6 +21,8 @@ import { AssignmentDetails, AssignmentSummary } from '../data-access/homework.mo
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
 
 /** Teacher: all assignments with progress. */
 @Component({
@@ -39,6 +41,7 @@ import { PageHeader } from '@shared/ui/page-header';
     RowType,
     AssignmentDialog,
     PageHeader,
+    LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -59,56 +62,52 @@ import { PageHeader } from '@shared/ui/page-header';
     </tb-page-header>
 
     <p-card>
-      <p-table
-        [value]="assignments()"
-        dataKey="id"
-        [rowHover]="true"
-        [loading]="loading()"
-        styleClass="tb-cards"
-      >
-        <ng-template #header>
-          <tr>
-            <th>Задание</th>
-            <th>Срок</th>
-            <th>Учеников</th>
-            <th>На проверке</th>
-            <th>Принято</th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-row [tbRowType]="assignments()">
-          <tr>
-            <td data-label="Задание">
-              <a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a>
-            </td>
-            <td data-label="Срок">
-              {{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
-            </td>
-            <td data-label="Учеников">{{ row.totalTasks }}</td>
-            <td data-label="На проверке" [class.tb-strong]="row.submitted > 0">
-              {{ row.submitted }}
-            </td>
-            <td data-label="Принято">{{ row.accepted }} из {{ row.totalTasks }}</td>
-          </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="5">
-              <tb-empty-state
-                icon="pi-book"
-                title="Заданий пока нет"
-                hint="Создайте первое задание и выдайте его ученикам"
-              >
-                <p-button
-                  label="Новое задание"
-                  severity="secondary"
-                  icon="pi pi-plus"
-                  (onClick)="openCreate()"
-                />
-              </tb-empty-state>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+      <tb-load-state [state]="state" what="задания" (retry)="load()">
+        <p-table [value]="assignments()" dataKey="id" [rowHover]="true" styleClass="tb-cards">
+          <ng-template #header>
+            <tr>
+              <th>Задание</th>
+              <th>Срок</th>
+              <th>Учеников</th>
+              <th>На проверке</th>
+              <th>Принято</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-row [tbRowType]="assignments()">
+            <tr>
+              <td data-label="Задание">
+                <a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a>
+              </td>
+              <td data-label="Срок">
+                {{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
+              </td>
+              <td data-label="Учеников">{{ row.totalTasks }}</td>
+              <td data-label="На проверке" [class.tb-strong]="row.submitted > 0">
+                {{ row.submitted }}
+              </td>
+              <td data-label="Принято">{{ row.accepted }} из {{ row.totalTasks }}</td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="5">
+                <tb-empty-state
+                  icon="pi-book"
+                  title="Заданий пока нет"
+                  hint="Создайте первое задание и выдайте его ученикам"
+                >
+                  <p-button
+                    label="Новое задание"
+                    severity="secondary"
+                    icon="pi pi-plus"
+                    (onClick)="openCreate()"
+                  />
+                </tb-empty-state>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </tb-load-state>
     </p-card>
 
     <tb-assignment-dialog
@@ -124,7 +123,7 @@ export class AssignmentsPage implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly assignments = signal<AssignmentSummary[]>([]);
-  protected readonly loading = signal(true);
+  protected readonly state = new LoadState();
   protected readonly toReview = computed(() =>
     this.assignments().reduce((sum, assignment) => sum + assignment.submitted, 0),
   );
@@ -137,15 +136,16 @@ export class AssignmentsPage implements OnInit {
     if (this.create() === 'assignment') {
       this.openCreate();
     }
-    this.api.assignments().subscribe({
-      next: (assignments) => {
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .assignments()
+      .pipe(this.state.track())
+      .subscribe((assignments) => {
         this.assignments.set(assignments);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+      });
   }
 
   protected openCreate(): void {

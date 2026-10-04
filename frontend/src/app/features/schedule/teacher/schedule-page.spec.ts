@@ -120,6 +120,51 @@ describe('SchedulePage', () => {
     expect(text).not.toContain('часовому поясу этого устройства');
   });
 
+  it('shows failed loads of each section with «Повторить», not «nothing here»', async () => {
+    fixture.detectChanges();
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/teacher/students').flush([]);
+    backend.expectOne('/api/teacher/groups').flush([]);
+    const failure = { status: 500, statusText: 'Error' };
+    backend.expectOne('/api/teacher/schedule/off-times').flush(null, failure);
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
+    backend.expectOne('/api/teacher/schedule/requests').flush(null, failure);
+    backend.expectOne('/api/teacher/schedule/series').flush(null, failure);
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    backend
+      .expectOne('/api/teacher/schedule/google')
+      .flush({ status: 'NOT_CONNECTED', busyEnabled: false });
+    await fixture.whenStable();
+    lessonsRequest().flush(null, failure);
+    await fixture.whenStable();
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Не удалось загрузить запросы и прошедшие занятия');
+    expect(text).toContain('Не удалось загрузить занятия');
+    expect(text).toContain('Не удалось загрузить регулярные занятия');
+    expect(text).toContain('Не удалось загрузить нерабочее время');
+    expect(text).not.toContain('Нет регулярных занятий');
+    const calendar = fixture.debugElement
+      .query(By.directive(ScheduleCalendar))
+      .injector.get(ScheduleCalendar);
+    expect(calendar.loaded()).toBe(false);
+
+    for (const button of Array.from(
+      hostElement(fixture).querySelectorAll<HTMLButtonElement>('.tb-load-state__error button'),
+    )) {
+      button.click();
+    }
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
+    lessonsRequest().flush([]);
+    backend.expectOne('/api/teacher/schedule/series').flush([]);
+    backend.expectOne('/api/teacher/schedule/off-times').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Нет регулярных занятий');
+    expect(calendar.loaded()).toBe(true);
+  });
+
   it('offers groups with students and marks a group lesson in its card', async () => {
     const text = await render(scheduleSettings(), [
       groupLesson({ id: 'gl-9', startsAt: at(2026, 9, 1, 18), endsAt: at(2026, 9, 1, 19, 30) }),
@@ -202,7 +247,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Перерыв');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ summary: 'Нерабочее время сохранено' }),
+      expect.objectContaining({ detail: 'Нерабочее время сохранено' }),
     );
 
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);
@@ -365,7 +410,7 @@ describe('SchedulePage', () => {
 
     page.onSeriesSaved({ series: lessonSeries(), lessons: 12 });
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Запланировано занятий: 12' }),
+      expect.objectContaining({ detail: 'Расписание сохранено, занятий: 12' }),
     );
     await flushReload();
 

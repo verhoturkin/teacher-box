@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -31,6 +30,9 @@ import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { YandexStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
+import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -64,6 +66,8 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
     Tag,
     ToggleSwitch,
     Tooltip,
+    PasswordToggle,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -152,7 +156,7 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
               </li>
               <li>Скопируйте сюда ClientID и Client secret приложения.</li>
             </ol>
-            <form class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
+            <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
               <div class="tb-field">
                 <label for="yandex-client-id">ClientID</label>
                 <input
@@ -170,7 +174,10 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   [feedback]="false"
                   [toggleMask]="true"
                   [fluid]="true"
-                />
+                >
+                  <ng-template #showicon><tb-password-toggle /></ng-template>
+                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                </p-password>
               </div>
               <div class="tb-form-actions">
                 @if (status.clientConfigured) {
@@ -186,7 +193,6 @@ export const YANDEX_RESULTS: Readonly<Record<string, { severity: Severity; text:
                   type="submit"
                   label="Сохранить"
                   severity="success"
-                  [disabled]="form.invalid"
                   [loading]="pending()"
                 />
               </div>
@@ -253,7 +259,7 @@ export class MeetingsSettingsPanel implements OnInit {
   private readonly navigation = inject(ExternalNavigation);
   private readonly portal = inject(Portal);
   private readonly clipboard = inject(Clipboard);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
   private readonly preferences = inject(MeetingPreferences);
 
@@ -288,7 +294,7 @@ export class MeetingsSettingsPanel implements OnInit {
   }
 
   saveClient(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();
@@ -337,11 +343,7 @@ export class MeetingsSettingsPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'Скопировано',
-        detail: 'Адрес в буфере обмена',
-      });
+      this.snackbar.success('Адрес в буфере обмена');
     }
   }
 

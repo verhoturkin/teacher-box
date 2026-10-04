@@ -10,12 +10,16 @@ import {
   Weekday,
 } from './data-access/schedule.models';
 
-export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
+/**
+ * A status is a role (ADR-0023): `null` — the primary container (the default of `p-tag`: planned),
+ * warn — waits for an action.
+ */
+export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | null;
 
 export const STATUS_LABELS: Readonly<
   Record<ScheduleLessonStatus, { label: string; severity: TagSeverity }>
 > = {
-  SCHEDULED: { label: 'Запланировано', severity: 'info' },
+  SCHEDULED: { label: 'Запланировано', severity: null },
   CONDUCTED: { label: 'Проведено', severity: 'success' },
   MISSED: { label: 'Пропуск', severity: 'warn' },
   CANCELLED: { label: 'Отменено', severity: 'secondary' },
@@ -29,7 +33,7 @@ export const KIND_LABELS: Readonly<Record<ChangeKind, string>> = {
 export const ATTENDANCE_LABELS: Readonly<
   Record<Attendance, { label: string; severity: TagSeverity }>
 > = {
-  EXPECTED: { label: 'Ожидается', severity: 'info' },
+  EXPECTED: { label: 'Ожидается', severity: null },
   ATTENDED: { label: 'Был', severity: 'success' },
   MISSED: { label: 'Пропуск', severity: 'warn' },
   EXCUSED: { label: 'Предупредил', severity: 'secondary' },
@@ -38,7 +42,7 @@ export const ATTENDANCE_LABELS: Readonly<
 export const REQUEST_STATUS_LABELS: Readonly<
   Record<RequestStatus, { label: string; severity: TagSeverity }>
 > = {
-  PENDING: { label: 'Ждёт ответа', severity: 'info' },
+  PENDING: { label: 'Ждёт ответа', severity: 'warn' },
   APPROVED: { label: 'Согласовано', severity: 'success' },
   DECLINED: { label: 'Отклонено', severity: 'danger' },
   WITHDRAWN: { label: 'Отозвано', severity: 'secondary' },

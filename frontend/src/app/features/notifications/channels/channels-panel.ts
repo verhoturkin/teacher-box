@@ -11,7 +11,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Dialog } from 'primeng/dialog';
@@ -22,6 +21,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState, ChannelType, LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -57,6 +57,9 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                     <span class="tb-list__supporting">
                       {{ channel.displayName ?? 'подключён' }}, с
                       {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
+                      @if (!channel.enabled) {
+                        · на паузе
+                      }
                     </span>
                   } @else {
                     <span class="tb-list__supporting">не подключён</span>
@@ -64,11 +67,15 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                 </div>
                 <div class="tb-list__trail">
                   @if (channel.linked) {
-                    <p-toggleswitch
-                      [ngModel]="channel.enabled"
-                      (ngModelChange)="setEnabled(channel.channel, $event)"
-                      [ariaLabel]="'Получать уведомления в ' + names[channel.channel]"
-                    />
+                    <!-- the switch has its visible label (ADR-0024) -->
+                    <label class="tb-switch" [for]="'channel-enabled-' + channel.channel">
+                      <p-toggleswitch
+                        [inputId]="'channel-enabled-' + channel.channel"
+                        [ngModel]="channel.enabled"
+                        (ngModelChange)="setEnabled(channel.channel, $event)"
+                      />
+                      Присылать
+                    </label>
                     <p-button
                       icon="pi pi-times"
                       [text]="true"
@@ -99,6 +106,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       [visible]="linkCode() !== null"
       (visibleChange)="onLinkVisibleChange($event)"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: '30rem' }"
       [draggable]="false"
     >
@@ -118,7 +126,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
 })
 export class ChannelsPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;
 
   /** The teacher sees how to configure bots instead of a hint for students. */
@@ -173,11 +181,7 @@ export class ChannelsPanel implements OnInit {
 
   unlink(channel: ChannelType): void {
     this.api.unlink(channel).subscribe(() => {
-      this.messages.add({
-        severity: 'info',
-        summary: 'Отключено',
-        detail: `${CHANNEL_NAMES[channel]} отключён`,
-      });
+      this.snackbar.info(`${CHANNEL_NAMES[channel]} отключён`);
       this.reload();
       this.changed.emit();
     });
@@ -199,11 +203,7 @@ export class ChannelsPanel implements OnInit {
         this.channels.set(channels);
         if (channels.some((state) => state.channel === channel && state.linked)) {
           this.closeLink();
-          this.messages.add({
-            severity: 'success',
-            summary: 'Готово',
-            detail: `${CHANNEL_NAMES[channel]} подключён`,
-          });
+          this.snackbar.success(`${CHANNEL_NAMES[channel]} подключён`);
           this.changed.emit();
         }
       });

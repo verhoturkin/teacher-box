@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -16,6 +15,7 @@ import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { ChangePasswordForm } from './change-password-form';
 import { PageHeader } from '@shared/ui/page-header';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Own account of the teacher or a student: profile data and password change. */
 @Component({
@@ -79,7 +79,7 @@ import { PageHeader } from '@shared/ui/page-header';
 export class AccountPage implements OnInit {
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly account = signal<Account | null>(null);
   protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
@@ -108,7 +108,7 @@ export class AccountPage implements OnInit {
         this.renaming.set(false);
         this.show(account);
         this.auth.renamed(account.displayName);
-        this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Имя сохранено' });
+        this.snackbar.success('Имя сохранено');
       },
       error: () => {
         this.renaming.set(false);
@@ -117,7 +117,7 @@ export class AccountPage implements OnInit {
   }
 
   protected passwordChanged(): void {
-    this.messages.add({ severity: 'success', summary: 'Готово', detail: 'Пароль изменён' });
+    this.snackbar.success('Пароль изменён');
   }
 
   private show(account: Account): void {

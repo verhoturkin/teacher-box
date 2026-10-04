@@ -27,6 +27,7 @@ import { LessonSeries, SeriesPlanned, Weekday } from '../data-access/schedule.mo
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { LessonStudent, MEETING_URL_PATTERN } from './lesson-dialog';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 export const INTERVAL_OPTIONS = [
   { label: 'Каждую неделю', value: 1 },
@@ -51,6 +52,7 @@ export const INTERVAL_OPTIONS = [
     Message,
     Select,
     SelectButton,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -61,7 +63,7 @@ export const INTERVAL_OPTIONS = [
       [style]="{ width: '34rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="series-student">С кем</label>
           <p-select
@@ -75,6 +77,8 @@ export const INTERVAL_OPTIONS = [
             optionValue="value"
             placeholder="Выберите ученика или группу"
             [filter]="true"
+            filterPlaceholder="Поиск"
+            ariaFilterLabel="Поиск"
             appendTo="body"
             [fluid]="true"
           />
@@ -188,13 +192,7 @@ export const INTERVAL_OPTIONS = [
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -261,7 +259,7 @@ export class SeriesDialog {
   save(allowOverlap = false): void {
     const value = this.form.getRawValue();
     if (
-      this.form.invalid ||
+      !revealErrors(this.form) ||
       this.pending() ||
       value.owner === null ||
       value.startTime === null ||

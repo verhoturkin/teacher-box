@@ -75,6 +75,23 @@ describe('TeacherHome', () => {
     ]);
   });
 
+  it('shows a failed load once with «Повторить» instead of the widgets', async () => {
+    fixture.detectChanges();
+    backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
+    backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
+    backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
+    backend
+      .expectOne('/api/teacher/schedule/summary')
+      .flush(null, { status: 500, statusText: 'Error' });
+    fixture.detectChanges();
+    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    await fixture.whenStable();
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Не удалось загрузить занятия, задания, уведомления и финансы');
+    expect(text).not.toContain('Требует внимания');
+  });
+
   it('reloads the day after a lesson was marked', async () => {
     fixture.detectChanges();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary({ unmarked: 1 }));

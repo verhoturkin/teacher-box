@@ -50,8 +50,11 @@ test('the portal has its name and gives out links with its address', async ({ pa
 
 test('the administrator makes a backup', async ({ page }) => {
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Копии' }).click();
-  await expect(page.getByRole('heading', { name: 'Резервные копии' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Копии' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Резервные копии', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Создать копию сейчас' }).click();
   const row = page.getByRole('row').filter({ hasText: 'вручную' }).first();
   await expect(row).toBeVisible();
@@ -89,7 +92,10 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
 test('the administrator restores the backup and the data comes back', async ({ page }) => {
   test.setTimeout(240_000);
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Копии' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Копии' })
+    .click();
   await page.getByRole('button', { name: backupRow, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Восстановление из копии' });
   await dialog.locator('#restore-password').fill(ADMIN_PASSWORD);

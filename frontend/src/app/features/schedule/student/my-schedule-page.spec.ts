@@ -136,6 +136,56 @@ describe('MySchedulePage', () => {
     ]);
   });
 
+  it('shows a failed load with «Повторить», not «no lessons»', async () => {
+    fixture.detectChanges();
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    backend.expectOne('/api/me/boards').flush([]);
+    await fixture.whenStable();
+    for (const request of lessonRequests()) {
+      request.flush([]);
+    }
+    backend
+      .expectOne('/api/me/schedule/settings')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Не удалось загрузить ближайшие занятия');
+    expect(text).not.toContain('На этой неделе занятий больше нет');
+
+    buttonByText(hostElement(fixture), 'Повторить').click();
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    for (const request of lessonRequests()) {
+      request.flush([]);
+    }
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('На этой неделе занятий больше нет');
+  });
+
+  it('shows a failed calendar with «Повторить» and no «Занятий нет» before the answer', async () => {
+    await render([]);
+    const calendar = fixture.debugElement
+      .query(By.directive(ScheduleCalendar))
+      .injector.get(ScheduleCalendar);
+    expect(calendar.loaded()).toBe(true);
+
+    fixture.componentInstance.onRange({ from: '2026-10-05', to: '2026-10-12' });
+    await fixture.whenStable();
+    for (const request of busyRequests()) {
+      request.flush([]);
+    }
+    for (const request of lessonRequests()) {
+      request.flush(null, { status: 500, statusText: 'Error' });
+    }
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить календарь');
+    expect(calendar.loaded()).toBe(false);
+  });
+
   it('asks the teacher to move a lesson', async () => {
     await render([scheduledLesson({ ...future(72) })]);
 
@@ -145,6 +195,7 @@ describe('MySchedulePage', () => {
 
     fixture.componentInstance.onSent();
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush([]);
     for (const request of lessonRequests()) {
       request.flush([]);
@@ -175,6 +226,7 @@ describe('MySchedulePage', () => {
 
     buttonByText(hostElement(fixture), 'Отозвать').click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }).flush(null);
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush([]);
     for (const request of lessonRequests()) {
       request.flush([]);
@@ -214,6 +266,7 @@ describe('MySchedulePage', () => {
       'Отозвать запрос',
     ).click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }).flush(null);
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush([]);
     for (const request of lessonRequests()) {
       request.flush([]);

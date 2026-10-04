@@ -69,9 +69,9 @@ test('secondary buttons are tonal: no outlined, small, orange or blue buttons', 
     await expect(
       page.locator('.p-button-outlined, .p-button-sm, .p-button-warn, .p-button-info'),
     ).toHaveCount(0);
-    // One filled button on a page at most: its main action.
+    // One filled button on a page at most: its main action (a split button is one button).
     const filled = await page
-      .locator('main .p-button')
+      .locator('main .p-button:not(.tb-split__more)')
       .evaluateAll(
         (buttons) =>
           buttons.filter(
@@ -87,7 +87,7 @@ test('secondary buttons are tonal: no outlined, small, orange or blue buttons', 
 test('a nested page has «back» as an arrow next to its title', async ({ page }) => {
   await signIn(page);
   await open(page, '/teacher/billing/report');
-  const back = page.getByRole('link', { name: 'Оплаты', exact: true });
+  const back = page.locator('main').getByRole('link', { name: 'Оплаты', exact: true });
   await expect(back).toBeVisible();
   await expect(back).toHaveText('');
   await back.click();

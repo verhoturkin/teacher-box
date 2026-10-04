@@ -60,6 +60,28 @@ describe('BackupsCard', () => {
     fixture.destroy();
   });
 
+  it('shows a failed load with «Повторить», not «no backups»', async () => {
+    TestBed.configureTestingModule({
+      imports: [BackupsCard],
+      providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(BackupsCard);
+    fixture.detectChanges();
+    backend.expectOne('/api/teacher/backups').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('Не удалось загрузить список копий');
+    expect(readableText(host)).not.toContain('Копий пока нет');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/teacher/backups').flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('Копий пока нет');
+  });
+
   it('lists the backups with why they were made', async () => {
     const host = await render();
 

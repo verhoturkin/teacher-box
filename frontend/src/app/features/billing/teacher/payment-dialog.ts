@@ -23,6 +23,7 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingStudent, Payment } from '../data-access/billing.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** Registers a payment from a student. */
 @Component({
@@ -36,6 +37,7 @@ import { BillingStudent, Payment } from '../data-access/billing.models';
     InputText,
     Message,
     Select,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -46,7 +48,7 @@ import { BillingStudent, Payment } from '../data-access/billing.models';
       [style]="{ width: '30rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="payment-student">Ученик</label>
           <p-select
@@ -57,6 +59,8 @@ import { BillingStudent, Payment } from '../data-access/billing.models';
             optionValue="value"
             placeholder="Выберите ученика"
             [filter]="true"
+            filterPlaceholder="Поиск"
+            ariaFilterLabel="Поиск"
             appendTo="body"
             [fluid]="true"
           />
@@ -97,13 +101,7 @@ import { BillingStudent, Payment } from '../data-access/billing.models';
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -149,7 +147,12 @@ export class PaymentDialog {
 
   save(): void {
     const value = this.form.getRawValue();
-    if (this.form.invalid || this.pending() || value.studentId === null || value.amount === null) {
+    if (
+      !revealErrors(this.form) ||
+      this.pending() ||
+      value.studentId === null ||
+      value.amount === null
+    ) {
       return;
     }
     this.pending.set(true);

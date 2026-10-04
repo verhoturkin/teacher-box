@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Dialog } from 'primeng/dialog';
@@ -12,6 +11,9 @@ import { describeError } from '@core/http/error-messages';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
+import { PasswordToggle } from '@shared/ui/password-toggle';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** The word the teacher types to confirm the reset. */
 export const RESET_WORD = 'СБРОСИТЬ';
@@ -19,7 +21,18 @@ export const RESET_WORD = 'СБРОСИТЬ';
 /** Teacher: deleting all data of the portal after a backup (ADR-0014). */
 @Component({
   selector: 'tb-reset-card',
-  imports: [ReactiveFormsModule, Button, Card, Dialog, HelpButton, InputText, Message, Password],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Card,
+    Dialog,
+    HelpButton,
+    InputText,
+    Message,
+    Password,
+    PasswordToggle,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="reset">
@@ -58,7 +71,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
         Все ученики, занятия, оплаты и задания будут удалены. Копия перед сбросом останется в
         «Резервных копиях».
       </p>
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
         <div class="tb-field">
           <label for="reset-password">Ваш пароль</label>
           <p-password
@@ -68,7 +81,10 @@ export const RESET_WORD = 'СБРОСИТЬ';
             [feedback]="false"
             [toggleMask]="true"
             [fluid]="true"
-          />
+          >
+            <ng-template #showicon><tb-password-toggle /></ng-template>
+            <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+          </p-password>
         </div>
         <div class="tb-field">
           <label for="reset-word">Напишите «{{ word }}»</label>
@@ -88,7 +104,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
             type="submit"
             label="Сбросить"
             severity="danger"
-            [disabled]="form.invalid || !confirmed()"
+            [disabled]="!confirmed()"
             [loading]="pending()"
           />
         </div>
@@ -100,7 +116,7 @@ export class ResetCard {
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
   private readonly router = inject(Router);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   protected readonly word = RESET_WORD;
   protected readonly visible = signal(false);
@@ -123,7 +139,7 @@ export class ResetCard {
   }
 
   reset(): void {
-    if (this.form.invalid || !this.confirmed() || this.pending()) {
+    if (!revealErrors(this.form) || !this.confirmed() || this.pending()) {
       return;
     }
     this.pending.set(true);
@@ -132,18 +148,10 @@ export class ResetCard {
       next: (result) => {
         this.pending.set(false);
         this.visible.set(false);
-        this.messages.add({
-          severity: 'success',
-          summary: 'Данные удалены',
-          detail: `Копия перед сбросом: ${result.backup}`,
-        });
+        this.snackbar.success(`Данные удалены. Копия перед сбросом: ${result.backup}`);
         for (const hint of result.hints) {
-          this.messages.add({
-            severity: 'warn',
-            summary: 'Остался шаг',
-            detail: hint,
-            sticky: true,
-          });
+          // a step left to do after the reset stays until it is read
+          this.snackbar.notice(hint);
         }
         this.portal.setSetupCompleted(false);
         void this.portal.load().then(() => this.router.navigateByUrl('/teacher/setup'));

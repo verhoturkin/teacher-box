@@ -181,7 +181,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
       }
 
       /* On a phone the name keeps its line: the states at the right edge, the link before them */
-      @media (max-width: 480px) {
+      @media (width <= 30em) {
         li > span:first-child {
           flex: 1;
           min-width: 0;
@@ -195,7 +195,7 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 
     .tb-integration-error {
       overflow-wrap: anywhere;
-      color: var(--p-red-500);
+      color: var(--p-md-error);
     }
 
     .tb-error-cell {

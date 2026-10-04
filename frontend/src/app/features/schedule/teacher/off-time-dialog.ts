@@ -25,6 +25,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { fromTime, toTime } from './series-dialog';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 const KIND_OPTIONS: readonly { label: string; value: OffTimeKind }[] = [
   { label: 'Один раз', value: 'ONCE' },
@@ -41,7 +42,16 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
  */
 @Component({
   selector: 'tb-off-time-dialog',
-  imports: [ReactiveFormsModule, Button, DatePicker, Dialog, InputText, Message, SelectButton],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    DatePicker,
+    Dialog,
+    InputText,
+    Message,
+    SelectButton,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -51,7 +61,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
       [style]="{ width: '34rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <p class="tb-hint">
           Ученики увидят это время занятым и не смогут попросить перенести занятие на него.
         </p>
@@ -187,13 +197,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -251,7 +255,7 @@ export class OffTimeDialog {
   }
 
   save(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

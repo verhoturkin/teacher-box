@@ -1,5 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
-import { laterThisWeek } from './this-week';
+import { laterThisWeek, saveLesson } from './this-week';
 
 /**
  * The main scenario of the portal, from the teacher's first sign-in to the student's inbox:
@@ -40,7 +40,10 @@ async function planLesson(
   hours: number,
   topic: string,
 ): Promise<void> {
-  await page.getByRole('menuitem', { name: 'Расписание' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Расписание' })
+    .click();
   // The accessible name starts with the icon glyph.
   await page.getByRole('button', { name: /Занятие$/ }).click();
   await page.locator('p-select:has(#schedule-lesson-student)').click();
@@ -48,8 +51,7 @@ async function planLesson(
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
   await page.locator('#schedule-lesson-topic').fill(topic);
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
+  await saveLesson(page);
 }
 
 async function studentPage(browser: Browser): Promise<Page> {
@@ -64,7 +66,10 @@ test('the teacher signs in and invites a student', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await expect(page).toHaveURL(/\/teacher$/);
 
-  await page.getByRole('menuitem', { name: 'Ученики' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Ученики' })
+    .click();
   // The empty list offers the same button: the one in the page header.
   await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
   await page.getByLabel('Имя и фамилия').fill(STUDENT_NAME);
@@ -90,7 +95,10 @@ test('the student accepts the invitation', async ({ browser }) => {
 
 test('the teacher gives homework and the student hands it in', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Задания' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Задания' })
+    .click();
   // The main action of the page; the empty list offers the same button
   await page.locator('tb-page-header').getByRole('button', { name: 'Новое задание' }).click();
   await page.locator('#assignment-title').fill(HOMEWORK_TITLE);
@@ -105,7 +113,10 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   await expect(studentRow).toContainText('Выдано');
 
   const student = await studentPage(browser);
-  await student.getByRole('menuitem', { name: 'Задания' }).click();
+  await student
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Задания' })
+    .click();
   await student.getByRole('link', { name: HOMEWORK_TITLE }).click();
   await student.locator('#answer-text').fill('1/2 + 1/3 = 5/6');
   await student.getByRole('button', { name: 'Отправить на проверку' }).click();
@@ -117,7 +128,10 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
 
 test('a payment reaches the student inbox', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.getByRole('menuitem', { name: 'Оплаты' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Оплаты' })
+    .click();
   await page.getByRole('button', { name: `Оплата: ${STUDENT_NAME}` }).click();
   await page.locator('#payment-amount').pressSequentially('3000');
   await page.getByRole('button', { name: 'Сохранить' }).click();
@@ -137,7 +151,10 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
   await page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` }).click();
   await expect(page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` })).toBeHidden();
 
-  await page.getByRole('menuitem', { name: 'Оплаты' }).click();
+  await page
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Оплаты' })
+    .click();
   await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('1 500');
   await page.getByRole('link', { name: STUDENT_NAME }).click();
   await expect(page.getByText('Повторение')).toBeVisible();
@@ -150,7 +167,10 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
   await planLesson(page, lesson.days, lesson.hours, 'Проценты');
 
   const student = await studentPage(browser);
-  await student.getByRole('menuitem', { name: 'Расписание' }).click();
+  await student
+    .getByRole('navigation', { name: 'Разделы' })
+    .getByRole('link', { name: 'Расписание' })
+    .click();
   // the home page has «Перенести» too: the click waits for the schedule
   await expect(student).toHaveURL(/\/cabinet\/schedule$/);
   await student.getByRole('button', { name: 'Перенести' }).click();

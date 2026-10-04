@@ -91,7 +91,17 @@ describe('InvitePage', () => {
     await fill({ login: '', password: 'alice-password', confirm: 'other-password' });
 
     expect(text()).toContain('Пароли не совпадают');
-    expect(buttonByText(hostElement(fixture), 'Создать аккаунт').disabled).toBe(true);
+    // the button is not disabled: it shows what is wrong at the fields (ADR-0024)
+    const create = buttonByText(hostElement(fixture), 'Создать аккаунт');
+    expect(create.disabled).toBe(false);
+    create.click();
+    await fixture.whenStable();
+
+    backend.expectNone('/api/auth/invites/tok-en/accept');
+    expect(text()).toContain('Заполните поле');
+    const login = hostElement(fixture).querySelector('[aria-invalid="true"]');
+    expect(login?.getAttribute('aria-describedby')).toMatch(/^tb-field-error-/);
+    expect(login?.getAttribute('aria-required')).toBe('true');
   });
 
   it('shows backend validation errors', async () => {

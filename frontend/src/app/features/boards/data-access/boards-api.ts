@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { Board, BoardOwnerRef, MyBoard } from './boards.models';
 
 /** HTTP client of the boards module. */
@@ -33,6 +34,6 @@ export class BoardsApi {
   }
 
   myBoards(): Observable<MyBoard[]> {
-    return this.http.get<MyBoard[]>('/api/me/boards');
+    return this.http.get<MyBoard[]>('/api/me/boards', { context: quietContext() });
   }
 }

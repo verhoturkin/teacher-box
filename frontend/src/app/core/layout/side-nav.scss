@@ -1,6 +1,7 @@
 /*
  * The expanded navigation rail (M3 Expressive, ADR-0019): 280 px, items 56 px high and 4 px apart,
- * the pill indicator of the active section springs out from its middle
+ * the pill indicator of the active section springs out from its middle. The state layer of hover
+ * and focus lies over the indicator, the focus ring is around the item (ADR-0024).
  */
 :host {
   position: sticky;
@@ -8,130 +9,184 @@
   display: block;
   flex: none;
   box-sizing: border-box;
-  width: 17.5rem;
+  width: 280px;
   height: calc(100vh - var(--tb-header-height));
   padding: var(--tb-space-2) var(--tb-space-3);
   overflow-y: auto;
 }
 
-:host ::ng-deep {
-  .tb-side-nav__menu {
-    min-width: 0;
-    border: 0;
-    background: transparent;
+.tb-side-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tb-side-nav__item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  min-height: 56px;
+  padding: 0 var(--tb-space-6) 0 var(--tb-space-4);
+  border-radius: var(--tb-shape-full);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-l);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
   }
 
-  .p-menu-list {
+  /* the indicator of the active section */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: inherit;
+    background: var(--p-md-secondary-container);
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition:
+      transform var(--tb-spring-default-spatial),
+      opacity var(--tb-spring-fast-effects);
+  }
+
+  /* the state layer of hover and focus, over the indicator */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--tb-spring-fast-effects);
+  }
+
+  &:hover::after {
+    opacity: 0.08;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
+  }
+
+  &:focus-visible::after {
+    opacity: 0.1;
+  }
+}
+
+.tb-side-nav__icon {
+  display: flex;
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.tb-side-nav__item--active {
+  color: var(--p-md-on-secondary-container);
+
+  &::before {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The rail: 88 px (long Russian labels), the label under the icon, the indicator around the icon */
+:host(.tb-side-nav--rail) {
+  width: 88px;
+  padding: var(--tb-space-2) 0;
+
+  .tb-side-nav__list {
+    gap: var(--tb-space-3);
+  }
+
+  .tb-side-nav__item {
+    flex-direction: column;
     gap: var(--tb-space-1);
-    padding: 0;
+    min-height: 0;
+    padding: 0 2px;
+    border-radius: 0;
+    font: var(--tb-type-label-m);
+    text-align: center;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
   }
 
-  .p-menu-item-content {
+  .tb-side-nav__icon {
     position: relative;
     isolation: isolate;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 32px;
     border-radius: var(--tb-shape-full);
-    transition: background var(--tb-spring-fast-effects);
 
-    &::before {
+    &::before,
+    &::after {
       content: '';
       position: absolute;
       inset: 0;
-      z-index: -1;
       border-radius: inherit;
-      background: var(--p-md-secondary-container);
-      opacity: 0;
-      transform: scaleX(0.4);
       transition:
         transform var(--tb-spring-default-spatial),
         opacity var(--tb-spring-fast-effects);
     }
-  }
 
-  .p-menu-item-link {
-    min-height: 3.5rem;
-    padding: 0 var(--tb-space-6) 0 var(--tb-space-4);
-    color: var(--p-md-on-surface-variant);
-    font: var(--tb-type-label-l);
-    text-decoration: none;
+    &::before {
+      z-index: -2;
+      background: var(--p-md-secondary-container);
+      opacity: 0;
+      transform: scaleX(0.4);
+    }
 
-    &:hover {
-      text-decoration: none;
+    &::after {
+      z-index: -1;
+      background: currentColor;
+      opacity: 0;
     }
   }
 
-  .p-menu-item-icon {
-    color: inherit;
-    font-size: 1.25rem;
+  .tb-side-nav__item:hover .tb-side-nav__icon::after {
+    opacity: 0.08;
   }
 
-  .p-menu-item-content:has(.p-menu-item-link-active) {
+  .tb-side-nav__item:focus-visible .tb-side-nav__icon {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
+
+    &::after {
+      opacity: 0.1;
+    }
+  }
+
+  .tb-side-nav__item--active .tb-side-nav__icon {
+    color: var(--p-md-on-secondary-container);
+
     &::before {
       opacity: 1;
       transform: none;
     }
-
-    .p-menu-item-link {
-      color: var(--p-md-on-secondary-container);
-      font-weight: 600;
-    }
   }
-}
 
-/* The rail: 88 px (long Russian labels), the label under the icon, the indicator around the icon (M3 navigation rail) */
-:host(.tb-side-nav--rail) {
-  width: 5.5rem;
-  padding: var(--tb-space-2) 0;
-
-  ::ng-deep {
-    .p-menu-list {
-      gap: var(--tb-space-3);
-    }
-
-    .p-menu-item-content,
-    .p-menu-item.p-focus > .p-menu-item-content,
-    .p-menu-item-content:has(.p-menu-item-link-active) {
-      background: transparent;
-
-      &::before {
-        display: none;
-      }
-    }
-
-    .p-menu-item-link {
-      flex-direction: column;
-      gap: var(--tb-space-1);
-      min-height: 0;
-      padding: 0 2px;
-      font: var(--tb-type-label-s);
-      text-align: center;
-    }
-
-    .p-menu-item-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 3.5rem;
-      height: 2rem;
-      margin: 0;
-      border-radius: var(--tb-shape-full);
-      transition: background var(--tb-spring-fast-effects);
-    }
-
-    .p-menu-item-link:hover .p-menu-item-icon,
-    .p-menu-item.p-focus .p-menu-item-icon {
-      background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
-    }
-
-    .p-menu-item-link-active .p-menu-item-icon {
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
-    }
-
-    .p-menu-item-label {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  .tb-side-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

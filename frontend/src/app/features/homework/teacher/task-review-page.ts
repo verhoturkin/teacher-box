@@ -10,8 +10,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -28,6 +26,10 @@ import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -47,6 +49,8 @@ import { HelpButton } from '@features/help/parts';
     ToBoardDialog,
     PageHeader,
     HelpButton,
+    LoadStateView,
+    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -67,7 +71,7 @@ import { HelpButton } from '@features/help/parts';
 
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
           <p-card header="Проверка">
-            <form class="tb-form tb-form--narrow" [formGroup]="form">
+            <form tbFieldErrors class="tb-form tb-form--narrow" [formGroup]="form">
               @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
                 <div>
                   <p-button
@@ -112,7 +116,6 @@ import { HelpButton } from '@features/help/parts';
                     label="Принять"
                     icon="pi pi-check"
                     [loading]="pending()"
-                    [disabled]="form.invalid"
                     (onClick)="review('ACCEPT')"
                   />
                 }
@@ -122,7 +125,6 @@ import { HelpButton } from '@features/help/parts';
                   icon="pi pi-replay"
                   severity="danger"
                   [loading]="pending()"
-                  [disabled]="form.invalid"
                   (onClick)="review('RETURN')"
                 />
                 <p-button
@@ -156,12 +158,19 @@ import { HelpButton } from '@features/help/parts';
         [markdown]="reviewText()"
         [ownerIds]="[task.studentId]"
       />
+    } @else {
+      <tb-page-header
+        title="Проверка работы"
+        back="/teacher/homework/review"
+        backLabel="На проверку"
+      />
+      <tb-load-state [state]="state" what="работу" (retry)="load()" />
     }
   `,
 })
 export class TaskReviewPage implements OnInit {
   private readonly api = inject(HomeworkApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly ai = inject(AiApi);
 
@@ -195,15 +204,24 @@ export class TaskReviewPage implements OnInit {
 ${this.commentValue()}`;
   });
 
+  protected readonly state = new LoadState();
+
   ngOnInit(): void {
-    this.api.task(this.taskId()).subscribe((task) => {
-      this.show(task);
-    });
+    this.load();
+  }
+
+  protected load(): void {
+    this.api
+      .task(this.taskId())
+      .pipe(this.state.track())
+      .subscribe((task) => {
+        this.show(task);
+      });
   }
 
   protected review(decision: ReviewDecision): void {
     const task = this.task();
-    if (task === null || this.form.invalid || this.pending()) {
+    if (task === null || !revealErrors(this.form) || this.pending()) {
       return;
     }
     const { grade, comment } = this.form.getRawValue();
@@ -219,11 +237,9 @@ ${this.commentValue()}`;
         next: (reviewed) => {
           this.pending.set(false);
           this.show(reviewed);
-          this.messages.add({
-            severity: 'success',
-            summary: 'Готово',
-            detail: decision === 'ACCEPT' ? 'Работа принята' : 'Работа возвращена на доработку',
-          });
+          this.snackbar.success(
+            decision === 'ACCEPT' ? 'Работа принята' : 'Работа возвращена на доработку',
+          );
         },
         error: () => {
           this.pending.set(false);

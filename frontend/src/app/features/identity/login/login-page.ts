@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -11,15 +19,29 @@ import { safeReturnUrl } from '@core/auth/return-url';
 import { describeError } from '@core/http/error-messages';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 @Component({
   selector: 'tb-login-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Password, PortalLogo],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Card,
+    InputText,
+    Message,
+    Password,
+    PortalLogo,
+    PasswordToggle,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
       <tb-portal-logo size="3rem" />
-      <p-card [header]="'Вход в ' + portalName()" styleClass="tb-auth-card">
+      <p-card
+        [header]="'Вход в ' + portalName()"
+        styleClass="tb-auth-card"
+        [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
+      >
         @if (sessionExpired()) {
           <p-message severity="info" styleClass="tb-form-message"
             >Сессия истекла. Войдите снова.</p-message
@@ -39,7 +61,10 @@ import { PortalLogo } from '@core/portal/portal-logo';
               [feedback]="false"
               [toggleMask]="true"
               [fluid]="true"
-            />
+            >
+              <ng-template #showicon><tb-password-toggle /></ng-template>
+              <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+            </p-password>
           </div>
           @if (error(); as message) {
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
@@ -60,6 +85,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
 export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly host = inject(ElementRef);
 
   protected readonly portalName = inject(Portal).name;
 
@@ -82,6 +108,7 @@ export class LoginPage {
     }
     if (this.form.invalid) {
       this.error.set('Введите логин и пароль');
+      this.focus(this.form.controls.login.invalid ? 'login' : 'password');
       return;
     }
     const { login, password } = this.form.getRawValue();
@@ -94,7 +121,16 @@ export class LoginPage {
       error: (error: unknown) => {
         this.pending.set(false);
         this.error.set(describeError(error, 'Не удалось войти. Попробуйте позже'));
+        // after a wrong password the focus is in the password, not lost on the page (ADR-0024)
+        this.focus('password');
       },
     });
+  }
+
+  private focus(id: string): void {
+    const host: unknown = this.host.nativeElement;
+    if (host instanceof HTMLElement) {
+      host.querySelector<HTMLInputElement>(`#${id}`)?.focus();
+    }
   }
 }

@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { monthlyReport } from '@testing/billing-fixtures';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { MonthlyReportPage } from './monthly-report-page';
 import { testProviders } from '@testing/setup';
 
@@ -60,5 +60,18 @@ describe('MonthlyReportPage', () => {
     expect(text()).toContain('В этом месяце не было ни занятий, ни оплат');
     expect(text()).toContain('Занятий нет');
     expect(text()).toContain('Оплат нет');
+  });
+
+  it('shows a failed load with «Повторить»', async () => {
+    backend.expectOne(() => true).flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(text()).toContain('Не удалось загрузить отчёт');
+
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne(() => true).flush(monthlyReport());
+    await fixture.whenStable();
+
+    expect(text()).toContain('Поступления 5 000 ₽');
   });
 });

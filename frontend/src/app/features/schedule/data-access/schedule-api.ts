@@ -26,7 +26,7 @@ import {
   SeriesRequest,
 } from './schedule.models';
 
-/** Requests whose errors (e.g. an overlap) the dialog shows itself. */
+/** Requests whose errors the dialog (e.g. an overlap) or the page (a failed load, ADR-0025) shows itself. */
 const QUIET = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
 
 /** HTTP client of the schedule module. */
@@ -35,12 +35,13 @@ export class ScheduleApi {
   private readonly http = inject(HttpClient);
 
   settings(): Observable<ScheduleSettings> {
-    return this.http.get<ScheduleSettings>('/api/me/schedule/settings');
+    return this.http.get<ScheduleSettings>('/api/me/schedule/settings', QUIET);
   }
 
   /** Lessons that start on days `[from, to)` (`yyyy-MM-dd`). */
   lessons(from: string, to: string): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', {
+      ...QUIET,
       params: range(from, to),
     });
   }
@@ -100,11 +101,11 @@ export class ScheduleApi {
 
   /** Lessons that have ended without a marked outcome. */
   unmarked(): Observable<ScheduledLesson[]> {
-    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked');
+    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked', QUIET);
   }
 
   series(): Observable<LessonSeries[]> {
-    return this.http.get<LessonSeries[]>('/api/teacher/schedule/series');
+    return this.http.get<LessonSeries[]>('/api/teacher/schedule/series', QUIET);
   }
 
   planSeries(request: SeriesRequest): Observable<SeriesPlanned> {
@@ -121,7 +122,7 @@ export class ScheduleApi {
   }
 
   pendingRequests(): Observable<ChangeRequest[]> {
-    return this.http.get<ChangeRequest[]>('/api/teacher/schedule/requests');
+    return this.http.get<ChangeRequest[]>('/api/teacher/schedule/requests', QUIET);
   }
 
   approve(requestId: string, request: ApproveRequest): Observable<ScheduledLesson> {
@@ -142,6 +143,7 @@ export class ScheduleApi {
 
   myLessons(from: string, to: string): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/me/schedule/lessons', {
+      ...QUIET,
       params: range(from, to),
     });
   }
@@ -155,7 +157,7 @@ export class ScheduleApi {
   }
 
   myRequests(): Observable<ChangeRequest[]> {
-    return this.http.get<ChangeRequest[]>('/api/me/schedule/requests');
+    return this.http.get<ChangeRequest[]>('/api/me/schedule/requests', QUIET);
   }
 
   withdraw(requestId: string): Observable<unknown> {
@@ -163,7 +165,7 @@ export class ScheduleApi {
   }
 
   feed(): Observable<CalendarFeed> {
-    return this.http.get<CalendarFeed>('/api/me/schedule/feed');
+    return this.http.get<CalendarFeed>('/api/me/schedule/feed', QUIET);
   }
 
   /** A new calendar link; the previous one stops working. */
@@ -211,7 +213,7 @@ export class ScheduleApi {
 
   /** The teacher's off time that is not over: weekly first, then once by its start. */
   offTimes(): Observable<OffTime[]> {
-    return this.http.get<OffTime[]>('/api/teacher/schedule/off-times');
+    return this.http.get<OffTime[]>('/api/teacher/schedule/off-times', QUIET);
   }
 
   createOffTime(request: OffTimeRequest): Observable<OffTime> {
@@ -238,16 +240,17 @@ export class ScheduleApi {
   /** For a student: when the teacher is busy in `[from, to)` (ISO instants), without whose lessons. */
   teacherBusy(from: string, to: string): Observable<BusyTime[]> {
     return this.http.get<BusyTime[]>('/api/me/schedule/busy', {
+      ...QUIET,
       params: new HttpParams().set('from', from).set('to', to),
     });
   }
 
   summary(): Observable<ScheduleSummary> {
-    return this.http.get<ScheduleSummary>('/api/teacher/schedule/summary');
+    return this.http.get<ScheduleSummary>('/api/teacher/schedule/summary', QUIET);
   }
 
   mySummary(): Observable<MyScheduleSummary> {
-    return this.http.get<MyScheduleSummary>('/api/me/schedule/summary');
+    return this.http.get<MyScheduleSummary>('/api/me/schedule/summary', QUIET);
   }
 }
 

@@ -22,6 +22,7 @@ import { BillingApi } from '@features/billing/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 
 /** A saved group with its lesson price (minor units). */
 export interface SavedGroup {
@@ -32,7 +33,16 @@ export interface SavedGroup {
 /** Creates a group (when `group` is null) or edits one: name, members and lesson price. */
 @Component({
   selector: 'tb-group-form-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputNumber, InputText, Message, MultiSelect],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputNumber,
+    InputText,
+    Message,
+    MultiSelect,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -42,7 +52,7 @@ export interface SavedGroup {
       [style]="{ width: '34rem' }"
       [draggable]="false"
     >
-      <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
           <label for="group-name">Название</label>
           <input
@@ -63,6 +73,8 @@ export interface SavedGroup {
             optionValue="id"
             placeholder="Кто занимается в группе"
             [filter]="true"
+            filterPlaceHolder="Поиск"
+            ariaFilterLabel="Поиск"
             display="chip"
             appendTo="body"
             [fluid]="true"
@@ -89,13 +101,7 @@ export interface SavedGroup {
       </form>
       <ng-template #footer>
         <p-button label="Отмена" severity="danger" [text]="true" (onClick)="visible.set(false)" />
-        <p-button
-          severity="success"
-          label="Сохранить"
-          [loading]="pending()"
-          [disabled]="form.invalid"
-          (onClick)="save()"
-        />
+        <p-button severity="success" label="Сохранить" [loading]="pending()" (onClick)="save()" />
       </ng-template>
     </p-dialog>
   `,
@@ -149,7 +155,7 @@ export class GroupFormDialog {
   }
 
   save(): void {
-    if (this.form.invalid || this.pending()) {
+    if (!revealErrors(this.form) || this.pending()) {
       return;
     }
     const value = this.form.getRawValue();

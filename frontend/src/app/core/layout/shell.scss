@@ -22,9 +22,14 @@
     background: var(--p-md-surface);
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     padding-left: var(--tb-space-4);
     box-shadow: 0 1px 0 var(--p-md-outline-variant);
+  }
+
+  /* a low window (a phone on its side, 400 % zoom): the bar does not take the room of the page */
+  @media (height <= 30em) {
+    position: static;
   }
 }
 
@@ -47,7 +52,7 @@
     text-overflow: ellipsis;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     font: var(--tb-type-title-m);
   }
 }
@@ -73,14 +78,16 @@
   padding: var(--tb-space-2) var(--tb-space-6) var(--tb-space-8);
   box-sizing: border-box;
 
-  @media (max-width: 768px) {
+  @media (width <= 48em) {
     padding: var(--tb-space-4) var(--tb-space-3);
   }
 }
 
 /* Room for the bottom navigation */
 .tb-shell__content--nav {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom) + var(--tb-space-4));
+  padding-bottom: calc(
+    var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4)
+  );
 }
 
 /* M3 navigation bar: the icon in the pill indicator, the label under it */
@@ -103,7 +110,7 @@
   justify-content: center;
   gap: var(--tb-space-1);
   min-width: 0;
-  min-height: 5rem;
+  min-height: var(--tb-bottom-nav-height);
   padding: var(--tb-space-3) 2px var(--tb-space-4);
   box-sizing: border-box;
   border: 0;
@@ -118,13 +125,19 @@
     text-decoration: none;
   }
 
-  &:hover .tb-bottom-nav__icon,
-  &:focus-visible .tb-bottom-nav__icon {
+  &:hover .tb-bottom-nav__icon {
     background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
   }
 
+  /* the focus: the ring around the indicator and the state layer over it (ADR-0024) */
   &:focus-visible {
     outline: none;
+  }
+
+  &:focus-visible .tb-bottom-nav__icon {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--p-md-on-surface) 10%, transparent);
   }
 }
 
@@ -159,9 +172,24 @@
 .tb-bottom-nav__item--active {
   color: var(--p-md-on-surface);
 
-  .tb-bottom-nav__icon,
-  &:hover .tb-bottom-nav__icon {
+  .tb-bottom-nav__icon {
     background: var(--p-md-secondary-container);
     color: var(--p-md-on-secondary-container);
+  }
+
+  &:hover .tb-bottom-nav__icon {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 8%,
+      var(--p-md-secondary-container)
+    );
+  }
+
+  &:focus-visible .tb-bottom-nav__icon {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-secondary-container) 10%,
+      var(--p-md-secondary-container)
+    );
   }
 }

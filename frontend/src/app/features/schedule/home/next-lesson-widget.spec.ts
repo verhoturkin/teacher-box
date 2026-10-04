@@ -86,7 +86,14 @@ describe('NextLessonWidget', () => {
   });
 
   it('lets a group member say they will not come', async () => {
-    await render(myScheduleSummary({ next: groupLesson() }));
+    // days ahead: not a late warning, whatever today is
+    const start = new Date(Date.now() + 3 * 86_400_000);
+    const end = new Date(start.getTime() + 90 * 60_000);
+    await render(
+      myScheduleSummary({
+        next: groupLesson({ startsAt: start.toISOString(), endsAt: end.toISOString() }),
+      }),
+    );
 
     expect(readableText(hostElement(fixture))).toContain('Группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Не приду').click();

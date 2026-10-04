@@ -32,12 +32,12 @@ test('on a computer the sections are in the drawer and the current one is marked
 }) => {
   await signIn(page);
   const drawer = page.getByRole('navigation', { name: 'Разделы' });
-  await expect(drawer.getByRole('menuitem')).toHaveText(SECTIONS);
+  await expect(drawer.getByRole('link')).toHaveText(SECTIONS);
   await expect(page.locator('nav.tb-bottom-nav')).toHaveCount(0);
 
-  await drawer.getByRole('menuitem', { name: 'Ученики' }).click();
+  await drawer.getByRole('link', { name: 'Ученики' }).click();
   await expect(page).toHaveURL(/\/teacher\/students$/);
-  await expect(drawer.locator('.p-menu-item-link-active')).toHaveText('Ученики');
+  await expect(drawer.locator('a[aria-current="page"]')).toHaveText('Ученики');
   // The page is a container and the cards lie on it lighter (M3 surfaces).
   const [page_, card] = await Promise.all([
     page.evaluate(() => getComputedStyle(document.body).backgroundColor),
@@ -56,9 +56,9 @@ test('on a tablet the sections are in the rail', async ({ browser }) => {
   await signIn(page);
 
   const rail = page.locator('tb-side-nav.tb-side-nav--rail');
-  await expect(rail.getByRole('menuitem')).toHaveText(SECTIONS);
+  await expect(rail.getByRole('link')).toHaveText(SECTIONS);
   expect((await rail.boundingBox())?.width).toBeLessThan(100);
-  await rail.getByRole('menuitem', { name: 'Оплаты' }).click();
+  await rail.getByRole('link', { name: 'Оплаты' }).click();
   await expect(page).toHaveURL(/\/teacher\/billing$/);
   await expectNoSideScroll(page);
   await context.close();
@@ -109,12 +109,12 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   await rename(`${current} М3`);
   await rename(current);
 
-  // A filled button is the primary role: the shade 600 of the portal color in the light theme.
+  // A filled button is the primary role: a tone of the portal color readable on white (ADR-0023).
   await page.goto('/teacher/students');
   await expect(page.getByRole('button', { name: 'Добавить ученика' }).first()).toBeVisible();
   const [button, shade] = await page.evaluate(() => {
     const probe = document.createElement('div');
-    probe.style.color = 'var(--p-primary-600)';
+    probe.style.color = 'var(--p-md-primary)';
     document.body.append(probe);
     const color = getComputedStyle(probe).color;
     probe.remove();

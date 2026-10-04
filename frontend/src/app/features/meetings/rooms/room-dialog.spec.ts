@@ -82,7 +82,9 @@ describe('RoomDialog', () => {
     expect(copy).toHaveBeenCalledWith(room.joinUrl);
     buttonByText(document.body, 'Отправить ученику').click();
     backend.expectOne('/api/teacher/meetings/rooms/s-1/share').flush({ recipients: 1 });
-    expect(add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Получателей: 1' }));
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Ссылка отправлена, получателей: 1' }),
+    );
     expect(fixture.componentInstance.visible()).toBe(true);
 
     buttonByText(document.body, 'Удалить').click();

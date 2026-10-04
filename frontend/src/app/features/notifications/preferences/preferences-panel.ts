@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
@@ -19,6 +18,7 @@ import { describeError } from '@core/http/error-messages';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationPreferences, NotificationTopic } from '../data-access/notifications.models';
 import { MUTABLE_TOPICS } from '../notification-labels';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Every half hour of the day: `00:00`, `00:30` … `23:30`. */
 export const QUIET_TIMES: readonly string[] = Array.from({ length: 48 }, (_, index) => {
@@ -78,20 +78,24 @@ function shortTime(time: string | null, fallback: string): string {
             </label>
             @if (form.controls.quiet.value) {
               <div class="tb-quiet__times">
-                <label for="quiet-from">с</label>
-                <p-select
-                  inputId="quiet-from"
-                  formControlName="quietFrom"
-                  [options]="times"
-                  appendTo="body"
-                />
-                <label for="quiet-to">до</label>
-                <p-select
-                  inputId="quiet-to"
-                  formControlName="quietTo"
-                  [options]="times"
-                  appendTo="body"
-                />
+                <div class="tb-field">
+                  <label for="quiet-from">С</label>
+                  <p-select
+                    inputId="quiet-from"
+                    formControlName="quietFrom"
+                    [options]="times"
+                    appendTo="body"
+                  />
+                </div>
+                <div class="tb-field">
+                  <label for="quiet-to">До</label>
+                  <p-select
+                    inputId="quiet-to"
+                    formControlName="quietTo"
+                    [options]="times"
+                    appendTo="body"
+                  />
+                </div>
               </div>
               <small class="tb-hint"
                 >Уведомления за это время придут в мессенджер, когда тихие часы закончатся.</small
@@ -147,14 +151,14 @@ function shortTime(time: string | null, fallback: string): string {
     .tb-quiet__times {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       gap: var(--tb-space-2);
     }
   `,
 })
 export class PreferencesPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
-  private readonly messages = inject(MessageService);
+  private readonly snackbar = inject(Snackbar);
 
   /** The teacher also gets notifications about students and the calendar. */
   readonly teacher = input(false);
@@ -211,11 +215,7 @@ export class PreferencesPanel implements OnInit {
         next: (saved) => {
           this.pending.set(false);
           this.fill(saved);
-          this.messages.add({
-            severity: 'success',
-            summary: 'Сохранено',
-            detail: 'Настройки уведомлений сохранены',
-          });
+          this.snackbar.success('Настройки уведомлений сохранены');
         },
         error: (error: unknown) => {
           this.pending.set(false);

@@ -88,7 +88,7 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   await signIn(page);
   await page.goto('/teacher/students');
 
-  const items = page.locator('tb-side-nav .p-menu-item');
+  const items = page.locator('tb-side-nav li');
   const first = await items.nth(0).boundingBox();
   const second = await items.nth(1).boundingBox();
   expect(first).not.toBeNull();
@@ -97,7 +97,8 @@ test('the frame: room between the sections, no name of the area, Expressive shap
 
   const header = page.locator('header.tb-shell__header');
   await expect(header).not.toContainText('Кабинет учителя');
-  await expect(header).toContainText('Teacher Box');
+  // the name of the portal (other scenarios rename it)
+  await expect(header.locator('.tb-shell__brand')).not.toBeEmpty();
 
   expect(await style(page, 'main .p-card', 'border-radius')).toBe('20px');
   expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');

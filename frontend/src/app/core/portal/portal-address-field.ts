@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Portal } from './portal';
 import { MAX_ADDRESS_LENGTH } from './portal-address';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { PortalAddressWarnings } from './portal-address-warnings';
 
 /**
@@ -12,10 +13,10 @@ import { PortalAddressWarnings } from './portal-address-warnings';
  */
 @Component({
   selector: 'tb-portal-address-field',
-  imports: [ReactiveFormsModule, Button, InputText, PortalAddressWarnings],
+  imports: [ReactiveFormsModule, Button, InputText, PortalAddressWarnings, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-field">
+    <div class="tb-field" tbFieldErrors>
       <label [for]="inputId()">Адрес портала</label>
       <div class="tb-copy-row">
         <input

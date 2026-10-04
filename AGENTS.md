@@ -265,6 +265,14 @@ docker compose -f compose.single.yaml up -d --build   # вариант 2: оди
   `pi-search`; действия строки, не помещающиеся на телефоне, — в нижнем листе (`p-drawer`
   снизу, `styleClass="tb-sheet"`), пары действий — `tb-button-group`, кнопка с запасным способом —
   split button `tb-split`.
+- Цвет — только роли `--p-md-*` ([ADR-0023](docs/adr/0023-status-colors-and-contrast.md)): палитры
+  `--p-surface-N` / `--p-<цвет>-N` и прозрачность для приглушения в стилях не используются; статус —
+  severity по таблице ADR-0023 (`warn` — роль warning, `info` — tertiary); контраст текста ≥ 4,5 : 1.
+- Доступность — по [ADR-0024](docs/adr/0024-accessibility.md): заголовок секции — `h2` (`tb-card-title`),
+  ошибка поля — текстом под полем (`<form tbFieldErrors>`), обязательное поле отмечено, кнопка отправки не отключается из-за
+  неверных полей; окно возвращает фокус; медиазапросы — в `em` диапазонами (`width <= 48em`).
+- Загрузка данных раздела — `LoadState` и `tb-load-state` ([ADR-0025](docs/adr/0025-page-states.md)):
+  загрузка, ошибка с «Повторить», пустое состояние только после ответа.
 - HTTP-модели — `interface`/`type` в `features/<module>/data-access/*.models.ts`,
   зеркалят DTO бекенда 1:1.
 - Роутинг ленивый: `/teacher/**` (учитель), `/cabinet/**` (ЛК ученика), `/admin/**` (администратор),

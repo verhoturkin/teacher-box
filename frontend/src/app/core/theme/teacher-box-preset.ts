@@ -1,111 +1,21 @@
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
+import { ColorScheme, Shades, auraPalette, colorScheme } from './color-scheme';
 
 /**
- * Material 3 Expressive on top of Aura (ADR-0017, ADR-0019).
+ * Material 3 Expressive on top of Aura (ADR-0017, ADR-0019, ADR-0023).
  *
- * The color of the portal is the seed: its shades 50–950 (indigo by default, replaced by
- * `applyAccent`) give the primary roles, and the neutral, secondary and tertiary tones are derived
- * from its hue in the browser (`oklch(from ...)`), so the whole scheme follows the portal color.
- * The M3 roles are the tokens `md.*` (CSS variables `--p-md-*`); the PrimeNG tokens refer to them.
+ * The color of the portal is the seed: its shades 50–950 give the primary roles, and the neutral,
+ * secondary and tertiary tones are tones of its hue. They are computed in the app
+ * (`color-scheme.ts`) as ready colors, so the scheme does not depend on `oklch(from …)` in the
+ * browser, and every text color has the contrast 4.5:1 to what it stands on. The M3 roles are the
+ * tokens `md.*` (CSS variables `--p-md-*`); the PrimeNG tokens refer to them.
  */
-
-/** A tone of the seed's hue: lightness and chroma fixed, the hue of the portal color. */
-function tone(lightness: number, chroma: number, hueShift = 0): string {
-  const hue = hueShift === 0 ? 'h' : `calc(h + ${String(hueShift)})`;
-  return `oklch(from {primary.500} ${String(lightness)} ${String(chroma)} ${hue})`;
-}
 
 /** Content over a background: the M3 state layer (hover 8 %, pressed 12 %). */
 function layer(content: string, background: string, percent: number): string {
   return `color-mix(in srgb, ${content} ${String(percent)}%, ${background})`;
 }
-
-/** Neutral tones with a hint of the portal color: surfaces, text and outlines of both schemes. */
-const NEUTRAL = {
-  0: tone(0.995, 0.002),
-  50: tone(0.978, 0.006),
-  100: tone(0.955, 0.009),
-  200: tone(0.925, 0.011),
-  300: tone(0.87, 0.013),
-  400: tone(0.71, 0.016),
-  500: tone(0.56, 0.018),
-  600: tone(0.46, 0.018),
-  700: tone(0.37, 0.016),
-  800: tone(0.28, 0.013),
-  900: tone(0.215, 0.01),
-  950: tone(0.16, 0.008),
-};
-
-const LIGHT_ROLES = {
-  primary: '{primary.600}',
-  onPrimary: '#ffffff',
-  primaryContainer: '{primary.100}',
-  onPrimaryContainer: '{primary.900}',
-  secondary: tone(0.48, 0.04),
-  secondaryContainer: tone(0.91, 0.05),
-  onSecondaryContainer: tone(0.28, 0.05),
-  tertiary: tone(0.48, 0.09, 60),
-  tertiaryContainer: tone(0.915, 0.06, 60),
-  onTertiaryContainer: tone(0.3, 0.06, 60),
-  error: '{red.600}',
-  onError: '#ffffff',
-  errorContainer: '{red.100}',
-  onErrorContainer: '{red.900}',
-  success: '{green.700}',
-  onSuccess: '#ffffff',
-  successContainer: '{green.100}',
-  onSuccessContainer: '{green.900}',
-  surface: '{surface.50}',
-  surfaceContainerLowest: '{surface.0}',
-  surfaceContainerLow: tone(0.965, 0.007),
-  surfaceContainer: '{surface.100}',
-  surfaceContainerHigh: tone(0.94, 0.01),
-  surfaceContainerHighest: '{surface.200}',
-  onSurface: '{surface.900}',
-  onSurfaceVariant: '{surface.600}',
-  outline: '{surface.500}',
-  outlineVariant: '{surface.300}',
-  inverseSurface: '{surface.800}',
-  inverseOnSurface: '{surface.100}',
-  inversePrimary: '{primary.200}',
-  scrim: 'rgb(0 0 0 / 32%)',
-};
-
-const DARK_ROLES = {
-  primary: '{primary.200}',
-  onPrimary: '{primary.900}',
-  primaryContainer: '{primary.800}',
-  onPrimaryContainer: '{primary.100}',
-  secondary: tone(0.82, 0.035),
-  secondaryContainer: tone(0.35, 0.05),
-  onSecondaryContainer: tone(0.91, 0.035),
-  tertiary: tone(0.82, 0.07, 60),
-  tertiaryContainer: tone(0.37, 0.075, 60),
-  onTertiaryContainer: tone(0.92, 0.04, 60),
-  error: '{red.300}',
-  onError: '{red.900}',
-  errorContainer: '{red.800}',
-  onErrorContainer: '{red.100}',
-  success: '{green.300}',
-  onSuccess: '{green.950}',
-  successContainer: '{green.800}',
-  onSuccessContainer: '{green.100}',
-  surface: '{surface.950}',
-  surfaceContainerLowest: tone(0.13, 0.006),
-  surfaceContainerLow: tone(0.19, 0.009),
-  surfaceContainer: '{surface.900}',
-  surfaceContainerHigh: tone(0.25, 0.011),
-  surfaceContainerHighest: '{surface.800}',
-  onSurface: '{surface.200}',
-  onSurfaceVariant: '{surface.300}',
-  outline: tone(0.62, 0.016),
-  outlineVariant: '{surface.700}',
-  inverseSurface: '{surface.200}',
-  inverseOnSurface: '{surface.800}',
-  inversePrimary: '{primary.600}',
-  scrim: 'rgb(0 0 0 / 50%)',
-};
 
 /**
  * The PrimeNG meanings of the roles, the same in both schemes except the background of cards:
@@ -113,9 +23,9 @@ const DARK_ROLES = {
  * container, dark: the container on the surface). Dialogs, menus and lists that pop up have the
  * background of cards and stand out by their shadow (ADR-0019).
  */
-function scheme(card: string): Record<string, unknown> {
+function scheme(card: string, neutral: Shades): Record<string, unknown> {
   return {
-    surface: NEUTRAL,
+    surface: neutral,
     primary: {
       color: '{md.primary}',
       contrastColor: '{md.on.primary}',
@@ -204,6 +114,23 @@ function scheme(card: string): Record<string, unknown> {
   };
 }
 
+/**
+ * The tokens that follow the color of the portal: the primary palette, the neutral palette and the
+ * roles of both themes (`updatePreset` with them repaints the portal, ADR-0023).
+ */
+export function schemeTokens(colors: ColorScheme): Record<string, unknown> {
+  return {
+    primary: colors.primary,
+    colorScheme: {
+      light: { ...scheme('{md.surface.container.lowest}', colors.neutral), md: colors.light },
+      dark: { ...scheme('{md.surface.container}', colors.neutral), md: colors.dark },
+    },
+  };
+}
+
+/** The scheme of the default color (indigo) until the portal tells its own. */
+export const DEFAULT_SCHEME = colorScheme(auraPalette('indigo'));
+
 const ELEVATION_2 = '0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%)';
 const ELEVATION_3 = '0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%)';
 const PILL = '999px';
@@ -229,7 +156,7 @@ function filled(role: 'success' | 'error'): Record<string, unknown> {
     color: on,
     hoverColor: on,
     activeColor: on,
-    focusRing: { color, shadow: 'none' },
+    focusRing: { color: '{md.secondary}', shadow: 'none' },
   };
 }
 
@@ -259,7 +186,7 @@ const BUTTON_SCHEME = {
       color: '{md.on.secondary.container}',
       hoverColor: '{md.on.secondary.container}',
       activeColor: '{md.on.secondary.container}',
-      focusRing: { color: '{md.primary}', shadow: 'none' },
+      focusRing: { color: '{md.secondary}', shadow: 'none' },
     },
     success: filled('success'),
     danger: filled('error'),
@@ -303,12 +230,58 @@ function snackbar(): Record<string, unknown> {
   };
 }
 
-/** Chips of statuses: the containers of the roles. */
-const TAG_SCHEME = {
+/**
+ * A severity is a role, not an Aura palette (ADR-0023): info — tertiary, warn — the warning role,
+ * danger and error — error.
+ */
+const CONTAINERS = {
   primary: { background: '{md.primary.container}', color: '{md.on.primary.container}' },
   secondary: { background: '{md.secondary.container}', color: '{md.on.secondary.container}' },
   success: { background: '{md.success.container}', color: '{md.on.success.container}' },
+  info: { background: '{md.tertiary.container}', color: '{md.on.tertiary.container}' },
+  warn: { background: '{md.warning.container}', color: '{md.on.warning.container}' },
   danger: { background: '{md.error.container}', color: '{md.on.error.container}' },
+  contrast: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' },
+};
+
+/** Chips of statuses: the containers of the roles. */
+const TAG_SCHEME = CONTAINERS;
+
+/** A message (`p-message`) is a container of its role without an outline or a shadow. */
+function message(role: keyof typeof CONTAINERS): Record<string, unknown> {
+  const { background, color } = CONTAINERS[role];
+  return {
+    background,
+    borderColor: 'transparent',
+    color,
+    shadow: 'none',
+    closeButton: {
+      hoverBackground: `color-mix(in srgb, ${color} 8%, transparent)`,
+      focusRing: { color: '{md.secondary}', shadow: 'none' },
+    },
+    outlined: { color, borderColor: color },
+    simple: { color },
+  };
+}
+
+const MESSAGE_SCHEME = {
+  info: message('info'),
+  success: message('success'),
+  warn: message('warn'),
+  error: message('danger'),
+  secondary: message('secondary'),
+  contrast: message('contrast'),
+};
+
+/** A badge (a counter) is error / on-error (M3 badge); warn — warning, secondary — calm. */
+const BADGE_SCHEME = {
+  primary: { background: '{md.error}', color: '{md.on.error}' },
+  secondary: { background: '{md.secondary.container}', color: '{md.on.secondary.container}' },
+  success: { background: '{md.success}', color: '{md.on.success}' },
+  info: { background: '{md.tertiary}', color: '{md.on.primary}' },
+  warn: { background: '{md.warning}', color: '{md.on.warning}' },
+  danger: { background: '{md.error}', color: '{md.on.error}' },
+  contrast: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' },
 };
 
 /** Buttons of a connected button group (Expressive): tonal, the selected one primary. */
@@ -383,23 +356,12 @@ export const TeacherBoxPreset = definePreset(Aura, {
     },
   },
   semantic: {
-    primary: {
-      50: '{indigo.50}',
-      100: '{indigo.100}',
-      200: '{indigo.200}',
-      300: '{indigo.300}',
-      400: '{indigo.400}',
-      500: '{indigo.500}',
-      600: '{indigo.600}',
-      700: '{indigo.700}',
-      800: '{indigo.800}',
-      900: '{indigo.900}',
-      950: '{indigo.950}',
-    },
+    ...schemeTokens(DEFAULT_SCHEME),
+    // the M3 focus indicator: 3 px of secondary, 2 px from the element (ADR-0024)
     focusRing: {
-      width: '2px',
+      width: '3px',
       style: 'solid',
-      color: '{md.primary}',
+      color: '{md.secondary}',
       offset: '2px',
       shadow: 'none',
     },
@@ -438,10 +400,6 @@ export const TeacherBoxPreset = definePreset(Aura, {
       popover: { borderRadius: '{border.radius.lg}', padding: '1rem', shadow: ELEVATION_2 },
       modal: { borderRadius: '{border.radius.xl}', padding: '1.5rem', shadow: ELEVATION_3 },
       navigation: { shadow: ELEVATION_2 },
-    },
-    colorScheme: {
-      light: { ...scheme('{md.surface.container.lowest}'), md: LIGHT_ROLES },
-      dark: { ...scheme('{md.surface.container}'), md: DARK_ROLES },
     },
   },
   components: {
@@ -562,7 +520,9 @@ export const TeacherBoxPreset = definePreset(Aura, {
       colorScheme: { light: snackbar(), dark: snackbar() },
     },
     message: {
-      root: { borderRadius: '{border.radius.md}' },
+      root: { borderRadius: '{border.radius.md}', borderWidth: '0' },
+      text: { fontSize: '0.875rem', fontWeight: '400' },
+      colorScheme: { light: MESSAGE_SCHEME, dark: MESSAGE_SCHEME },
     },
     toggleswitch: {
       root: {
@@ -689,10 +649,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
         minWidth: '1rem',
         height: '1rem',
       },
-      colorScheme: {
-        light: { danger: { background: '{md.error}', color: '{md.on.error}' } },
-        dark: { danger: { background: '{md.error}', color: '{md.on.error}' } },
-      },
+      colorScheme: { light: BADGE_SCHEME, dark: BADGE_SCHEME },
     },
     progressbar: {
       root: {

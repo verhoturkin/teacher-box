@@ -24,15 +24,17 @@ import { StudentGroup } from '../data-access/identity.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (groups().length > 0) {
-      <p-select
-        [inputId]="inputId()"
-        [formControl]="choice"
-        [options]="groups()"
-        optionLabel="name"
-        placeholder="Добавить группу"
-        ariaLabel="Добавить учеников группы"
-        appendTo="body"
-      />
+      <div class="tb-field">
+        <label [for]="inputId()">Добавить группу</label>
+        <p-select
+          [inputId]="inputId()"
+          [formControl]="choice"
+          [options]="groups()"
+          optionLabel="name"
+          appendTo="body"
+          [fluid]="true"
+        />
+      </div>
     }
   `,
 })

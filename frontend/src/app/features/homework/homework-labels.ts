@@ -8,9 +8,10 @@ export const TASK_STATUS_LABELS: Readonly<Record<TaskStatus, string>> = {
 };
 
 export const TASK_STATUS_SEVERITIES: Readonly<
-  Record<TaskStatus, 'info' | 'warn' | 'danger' | 'success'>
+  Record<TaskStatus, 'warn' | 'danger' | 'success' | null>
 > = {
-  ASSIGNED: 'info',
+  // null: the primary container, the default of p-tag (ADR-0023)
+  ASSIGNED: null,
   SUBMITTED: 'warn',
   RETURNED: 'danger',
   ACCEPTED: 'success',
