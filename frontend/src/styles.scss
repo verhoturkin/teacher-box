@@ -1476,11 +1476,15 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * A cell of a table with columns may break a long word when the columns do not fit otherwise (a
- * tablet): the table does not go out of the screen. Cards, lists and titles break between words.
+ * Cells break between words; only codes and wide cells may break inside a word (ADR-0021).
  */
 .p-datatable .p-datatable-tbody > tr > td,
 .p-datatable .p-datatable-tbody > tr > td :is(.tb-list__title, .tb-list__supporting) {
+  overflow-wrap: break-word;
+}
+
+/* only codes, addresses and wide cells (a path, an error) may break inside a word */
+.p-datatable .p-datatable-tbody > tr > td:is(.tb-cell-wide, .tb-mono) {
   overflow-wrap: anywhere;
 }
 
