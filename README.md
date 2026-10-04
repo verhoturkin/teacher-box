@@ -434,7 +434,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 - Поставка: Docker Compose — один контейнер или два
 
 Правила и архитектура — [AGENTS.md](AGENTS.md), решения — [docs/adr](docs/adr),
-план — [docs/PLAN.md](docs/PLAN.md).
+план — [docs/PLAN.md](docs/PLAN.md) (выполненные — в [docs/plan-archive](docs/plan-archive/README.md)).
 
 ```bash
 cd backend && ./mvnw spring-boot:run          # API на :8080, данные в backend/data
