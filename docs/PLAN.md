@@ -188,7 +188,7 @@ Goal: a board opens full screen and returns to the menu without losing changes. 
 
 ### Stage 92. Docs: no Холст API
 
-- [ ] 92.1 README («Доски» instead of «Доски (Холст)»: Excalidraw boards, external boards by link — Холст as an
+- [x] 92.1 README («Доски» instead of «Доски (Холст)»: Excalidraw boards, external boards by link — Холст as an
       example; new `TEACHERBOX_BOARDS_*` settings), `docs/operations.md` (board copies, restore),
       `docs/glossary.md`, help articles `features/help/articles/{teacher,student}.ts`, `boards/package-info.java`,
       `docs/modules/boards.md`. `rg -i "holst|холст"` leaves only external-link examples and ADR history.
