@@ -1,7 +1,7 @@
 # boards
 
 Interactive boards (Холст) of students and groups, as links. Depends on: `shared`, `identity::api`. Schema
-`boards`. ADR: [0012](../adr/0012-meetings-and-boards.md).
+`boards`. ADR: [0012](../adr/0012-meetings-and-boards.md), [0028](../adr/0028-excalidraw-boards.md) (Excalidraw boards, 1.7.0).
 
 ## Rules
 
@@ -18,3 +18,8 @@ No `api` package. Table `boards`. `/api/teacher/boards/**`, `/api/me/boards`. Bo
 ## Frontend
 
 `features/boards/`: `manage/` (boards dialog), `student/`, `to-board/` (copy to board); via `parts.ts`.
+`editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
+Excalidraw), `excalidraw-loader.ts` (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`,
+`self-hosted-fonts.ts` drops Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with
+its owner), `board-canvas.ts` (`tb-board-canvas`: inputs `scene`, `theme`; output `sceneChange`; loading and
+error states). Tests use `@testing/excalidraw-fake`, never React.

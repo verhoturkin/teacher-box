@@ -38,6 +38,9 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - **Never upgrade PrimeNG / @primeuix/themes / primeicons to 22 / 3 / 8** (commercial PrimeUI licence,
   [ADR-0007](../docs/adr/0007-frontend-stack-licensing.md)); Angular — 21.x only. Install with
   `npx -y npm@11 ci|install` (npm ≥ 11).
+- **React island** ([ADR-0028](../docs/adr/0028-excalidraw-boards.md)): React and Excalidraw are imported only in
+  `features/boards/editor/` (ESLint): `excalidraw-island.ts`, loaded lazily by `excalidraw-loader.ts`; tests
+  use `@testing/excalidraw-fake`.
 - Section data — `LoadState` + `tb-load-state`, load requests via `quietContext()`; confirmations —
   `dangerConfirmation` / `safeConfirmation`; request actions — `[loading]` (`shared/ui/busy.ts`).
 

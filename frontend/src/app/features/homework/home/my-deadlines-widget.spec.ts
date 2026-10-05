@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
@@ -46,8 +47,10 @@ describe('MyDeadlinesWidget', () => {
     );
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Вчера до 10.09.2026 15:00 Просрочено');
-    expect(text).toContain('Доработать до 10.09.2026 15:00 На доработку');
+    // Deadlines are shown in the browser's time zone.
+    const due = formatDate('2026-09-10T15:00:00Z', 'dd.MM.yyyy HH:mm', 'en-US');
+    expect(text).toContain(`Вчера до ${due} Просрочено`);
+    expect(text).toContain(`Доработать до ${due} На доработку`);
     expect(text).toContain('Когда-нибудь без срока');
     expect(text).toContain('Открыто: 3, просрочено: 1');
     expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(

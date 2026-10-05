@@ -72,27 +72,30 @@ Goal: the CI E2E job passes again; the scenarios follow the UI of 1.6.12–1.6.1
 
 Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle nothing. Decision recorded first.
 
-- [ ] 87.1 ADR-0028 (Russian) `docs/adr/0028-excalidraw-boards.md`: board kinds `EXCALIDRAW` / `LINK`, members
+- [x] 87.1 ADR-0028 (Russian) `docs/adr/0028-excalidraw-boards.md`: board kinds `EXCALIDRAW` / `LINK`, members
       (students and groups, many-to-many), scene in the `boards` schema + images in `FileStorage`, board backups
       (daily and manual), co-editing by polling with per-element merge (no real time), React island via dynamic
       `import()` (alternatives: Vite-built web component, iframe mini-app, Angular↔React wrapper libs — why
       rejected). Row in `docs/adr/README.md`; ADR-0012 status →
       «boards part superseded by 0028».
-- [ ] 87.2 **F** Dependencies `react`, `react-dom`, `@excalidraw/excalidraw` (`npx -y npm@11 install`; check
+- [x] 87.2 **F** Dependencies `react`, `react-dom`, `@excalidraw/excalidraw` (`npx -y npm@11 install`; check
       the current Excalidraw API in docs first). `features/boards/editor/excalidraw-loader.ts` — the only place
       with `await import('react-dom/client')` / `import('@excalidraw/excalidraw')`; `excalidraw-host.ts` —
       `createRoot`, `root.render(createElement(Excalidraw, props))` without JSX (no tsconfig change), unmount on
       `DestroyRef`. ESLint `no-restricted-imports`: `react*` and `@excalidraw/*` only under
       `features/boards/editor/**`.
-- [ ] 87.3 **F** `angular.json`: Excalidraw CSS as a non-injected style bundle (`inject: false`,
+- [x] 87.3 **F** `angular.json`: Excalidraw CSS as a non-injected style bundle (`inject: false`,
       `bundleName: 'excalidraw'`) loaded by the loader via `<link>`; fonts copied to `excalidraw-assets/`
       (assets glob) + `window.EXCALIDRAW_ASSET_PATH` — no CDN. Measure: initial bundle before/after (must be
       unchanged), lazy chunks raw/gzip → ADR-0028. `initial` budget stays as is.
-- [ ] 87.4 **F** `features/boards/editor/board-canvas.ts` (standalone, signals): inputs `scene`, `theme`;
+- [x] 87.4 **F** `features/boards/editor/board-canvas.ts` (standalone, signals): inputs `scene`, `theme`;
       output `sceneChange`; loading/error states (ADR-0025). Tests mock the loader (no React in jsdom); coverage
       gates hold.
-- [ ] 87.5 **D** `docker/nginx/security-headers.conf`: check the board in the single container — fonts, export
+- [x] 87.5 **D** `docker/nginx/security-headers.conf`: check the board in the single container — fonts, export
       to PNG/SVG (workers / wasm); widen CSP only as far as needed (`worker-src`, `'wasm-unsafe-eval'`), note why.
+      *Done: CSP unchanged (SVG glyph subsetting needs `'unsafe-eval'` — skipped by Excalidraw, whole fonts
+      embedded); `self-hosted-fonts.ts` drops Excalidraw's CDN font source; `excalidraw-island.ts` imports React
+      statically (dynamic `import()` of CommonJS gave only `default`). Initial +3 kB (`tslib`) — re-measure in 90.1.*
 
 ### Stage 88. Boards model v2 (backend)
 
@@ -156,7 +159,9 @@ Goal: a board opens full screen and returns to the menu without losing changes. 
       (full screen, same guards) → `editor/board-page.ts`: top bar «← Доски» / «← Мои доски», title, save
       status; Excalidraw `MainMenu` item «Вернуться к доскам» (teacher: also «Резервные копии»); portal theme,
       `langCode="ru-RU"`, embeds off (`validateEmbeddable`). External boards are not routed — they open in a new
-      tab.
+      tab. Excalidraw's own menu items (GitHub, Discord, «Follow us») removed; headings of its dialogs use only
+      `Assistant` (no Cyrillic → serif) — give `.excalidraw` headings the portal font fallback (global styles, the
+      dialogs are portalled to `body`). Re-measure the initial bundle (ADR-0028).
 - [ ] 90.2 **F** Autosave: debounce on `sceneChange` (only when the elements changed), flush on «назад»,
       `visibilitychange` and `canDeactivate`; status «Сохранено» / «Сохранение…» / «Нет связи — повторим»;
       the merged scene from the response applied to the canvas; new images uploaded once by `fileId`, loaded back

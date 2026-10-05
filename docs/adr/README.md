@@ -25,7 +25,7 @@ commit.
 | [0009](0009-external-integrations.md) | Outbound proxy, integration settings | active | backend |
 | [0010](0010-administrator-and-diagnostics.md) | ADMIN role, logs, request id, diagnostics | active | [platform](../modules/platform.md) |
 | [0011](0011-groups-and-group-lessons.md) | Student groups and group lessons | active | identity, schedule, billing |
-| [0012](0012-meetings-and-boards.md) | Telemost rooms; Холст boards | active | [meetings](../modules/meetings.md), [boards](../modules/boards.md) |
+| [0012](0012-meetings-and-boards.md) | Telemost rooms; Холст boards | boards part superseded by 0028 | [meetings](../modules/meetings.md), [boards](../modules/boards.md) |
 | [0013](0013-bot-dialogs.md) | Messenger bot dialogs (`ChatAction` SPI) | active | [notifications](../modules/notifications.md) |
 | [0014](0014-portal-settings-reset-and-restore.md) | Portal name/URL, first-run setup, restore, full reset | active | [platform](../modules/platform.md) |
 | [0015](0015-design-system-and-mobile.md) | Tokens, themes, portal colour, mobile, logo | partly superseded | design-system |
@@ -41,3 +41,4 @@ commit.
 | [0025](0025-page-states.md) | Page states: loading, error, empty, feedback | active | design-system |
 | [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | active | design-system |
 | [0027](0027-bottom-navigation.md) | Bottom bar: four sections and «Ещё» | active | design-system |
+| [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active | [boards](../modules/boards.md) |

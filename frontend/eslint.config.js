@@ -17,23 +17,34 @@ const NO_DEEP_RELATIVE = {
   message: 'Use the @core/*, @shared/* or @features/* aliases instead of deep relative imports.',
 };
 
-/** Builds no-restricted-imports options: the global rule plus area-specific patterns. */
+/** React and Excalidraw are a lazy island (ADR-0028): only the board editor may import them. */
+const NO_REACT = {
+  regex: '^(react|react-dom)(/|$)|^@excalidraw/',
+  message: 'React and Excalidraw are imported only in features/boards/editor/ (ADR-0028).',
+};
+
+/** The board editor folder: the only place allowed to import React and Excalidraw. */
+const BOARD_EDITOR_FILES = ['src/app/features/boards/editor/**/*.ts'];
+
+/** Builds no-restricted-imports options: the global rules plus area-specific patterns. */
 function restrictImports(...patterns) {
-  return ['error', { patterns: [NO_DEEP_RELATIVE, ...patterns] }];
+  return ['error', { patterns: [NO_DEEP_RELATIVE, NO_REACT, ...patterns] }];
 }
 
 /**
  * Feature boundaries (AGENTS.md §4.2 rule 6): other features only via their public entries —
  * @features/<name> (pages) and @features/<name>/parts (widgets, panels, data access).
  */
+function featureBoundary(feature) {
+  return {
+    regex: `^@features/(?!${feature}/)[^/]+/(?!parts$)`,
+    message: 'Import other features only through their public API: @features/<name> or @features/<name>/parts.',
+  };
+}
+
 const featureBoundaries = features.map((feature) => ({
   files: [`src/app/features/${feature}/**/*.ts`],
-  rules: {
-    'no-restricted-imports': restrictImports({
-      regex: `^@features/(?!${feature}/)[^/]+/(?!parts$)`,
-      message: 'Import other features only through their public API: @features/<name> or @features/<name>/parts.',
-    }),
-  },
+  rules: { 'no-restricted-imports': restrictImports(featureBoundary(feature)) },
 }));
 
 module.exports = defineConfig([
@@ -95,6 +106,12 @@ module.exports = defineConfig([
     },
   },
   ...featureBoundaries,
+  {
+    files: BOARD_EDITOR_FILES,
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [NO_DEEP_RELATIVE, featureBoundary('boards')] }],
+    },
+  },
   {
     files: ['**/*.spec.ts'],
     rules: {

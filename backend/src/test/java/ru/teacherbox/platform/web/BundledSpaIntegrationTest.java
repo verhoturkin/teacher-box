@@ -41,6 +41,15 @@ class BundledSpaIntegrationTest {
     }
 
     @Test
+    void namedStyleBundlesAreRevalidated() {
+        // excalidraw.css keeps its name across builds (ADR-0028), so it must not be cached forever.
+        assertThat(mvc.get().uri("/excalidraw.css"))
+                .hasStatusOk()
+                .hasHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .bodyText().contains("excalidraw-styles");
+    }
+
+    @Test
     void mediaFilesAreServedAndCachedForever() {
         assertThat(mvc.get().uri("/media/icons-XYZ789.woff2"))
                 .hasStatusOk()

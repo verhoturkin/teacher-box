@@ -30,12 +30,22 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*.woff2",
+                "input": "node_modules/@excalidraw/excalidraw/dist/prod/fonts",
+                "output": "excalidraw-assets/fonts"
               }
             ],
             "styles": [
               "node_modules/@fullcalendar/angular/skeleton.css",
               "node_modules/@fullcalendar/angular/themes/classic/theme.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              {
+                "input": "node_modules/@excalidraw/excalidraw/dist/prod/index.css",
+                "bundleName": "excalidraw",
+                "inject": false
+              }
             ]
           },
           "configurations": {

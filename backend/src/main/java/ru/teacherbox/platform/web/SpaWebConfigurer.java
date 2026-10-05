@@ -14,6 +14,9 @@ final class SpaWebConfigurer implements WebMvcConfigurer {
 
     private static final String[] HASHED_BUNDLES = {"/*.js", "/*.css"};
 
+    /** Style bundles loaded on demand by name (angular.json `inject: false`): not hashed, so revalidated. */
+    private static final String[] NAMED_BUNDLES = {"/excalidraw.css"};
+
     private final String location;
 
     SpaWebConfigurer(String location) {
@@ -29,6 +32,9 @@ final class SpaWebConfigurer implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         CacheControl forever = CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable();
+        registry.addResourceHandler(NAMED_BUNDLES)
+                .addResourceLocations(location)
+                .setCacheControl(CacheControl.noCache());
         registry.addResourceHandler(HASHED_BUNDLES)
                 .addResourceLocations(location)
                 .setCacheControl(forever);

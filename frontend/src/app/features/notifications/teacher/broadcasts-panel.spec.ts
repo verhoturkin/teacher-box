@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
@@ -41,9 +42,9 @@ describe('BroadcastsPanel', () => {
     ]);
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain(
-      'Каникулы Занятий не будет до 10 января 24.09.2026 10:00 · получателей: 3',
-    );
+    // The date is shown in the browser's time zone.
+    const sent = formatDate('2026-09-24T10:00:00Z', 'dd.MM.yyyy HH:mm', 'en-US');
+    expect(text).toContain(`Каникулы Занятий не будет до 10 января ${sent} · получателей: 3`);
     expect(text).toContain('Без текста');
   });
 
