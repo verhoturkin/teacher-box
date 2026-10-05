@@ -8,9 +8,15 @@ import {
 import type { RemoteExcalidrawElement } from '@excalidraw/excalidraw/data/reconcile';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
-import { createElement, useMemo, useState } from 'react';
+import { type ReactNode, createElement, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { BoardEditorProps, BoardLibrary, ExcalidrawModules } from './excalidraw-loader';
+import type {
+  BoardEditorProps,
+  BoardLibrary,
+  BoardMenuItem,
+  BoardMenuSetting,
+  ExcalidrawModules,
+} from './excalidraw-loader';
 
 /**
  * React, ReactDOM and Excalidraw for the board editor (ADR-0028). Loaded only through `ExcalidrawLoader`
@@ -21,19 +27,11 @@ export const EXCALIDRAW_MODULES: ExcalidrawModules = {
   createRoot: (container) => createRoot(container),
   createElement: (type, props) => createElement(type, props),
   Excalidraw: BoardExcalidraw,
-  mainMenu: (items) =>
+  mainMenu: (items, settings) =>
     createElement(
       MainMenu,
       null,
-      ...items.map((item) =>
-        createElement(MainMenu.Item, {
-          key: item.label,
-          onSelect: () => {
-            item.onSelect();
-          },
-          children: item.label,
-        }),
-      ),
+      ...items.map((item) => menuItem(item)),
       createElement(MainMenu.Separator, { key: 'separator' }),
       createElement(MainMenu.DefaultItems.SaveAsImage, { key: 'image' }),
       createElement(MainMenu.DefaultItems.Export, { key: 'export' }),
@@ -41,12 +39,48 @@ export const EXCALIDRAW_MODULES: ExcalidrawModules = {
       createElement(MainMenu.DefaultItems.ChangeCanvasBackground, { key: 'background' }),
       createElement(MainMenu.DefaultItems.ClearCanvas, { key: 'clear' }),
       createElement(MainMenu.DefaultItems.Help, { key: 'help' }),
+      ...(settings.length > 0
+        ? [createElement(MainMenu.Separator, { key: 'settings' }), ...settings.map(menuSetting)]
+        : []),
     ),
   reconcileElements: (local, remote, appState) =>
     isRemote(remote) ? reconcileElements(local, remote, appState) : [...local],
   convertToExcalidrawElements: (skeletons) =>
     convertToExcalidrawElements([...skeletons], { regenerateIds: true }),
 };
+
+function menuSetting(setting: BoardMenuSetting): ReactNode {
+  return 'items' in setting
+    ? createElement(MainMenu.Group, {
+        key: setting.title,
+        title: setting.title,
+        children: setting.items.map((item) => menuItem(item, 'menuitemradio')),
+      })
+    : menuItem(setting, 'menuitemcheckbox');
+}
+
+/** An item of the menu; a setting shows a check mark when on and tells it to screen readers. */
+function menuItem(item: BoardMenuItem, role?: 'menuitemradio' | 'menuitemcheckbox'): ReactNode {
+  const setting = role !== undefined;
+  return createElement(MainMenu.Item, {
+    key: item.label,
+    onSelect: () => {
+      item.onSelect();
+    },
+    children: item.label,
+    ...(setting
+      ? {
+          role,
+          'aria-checked': item.checked === true,
+          selected: item.checked === true,
+          icon: createElement('i', {
+            className: item.checked === true ? 'pi pi-check' : 'pi',
+            'aria-hidden': true,
+          }),
+        }
+      : {}),
+  });
+}
 
 /**
  * Excalidraw with the user's library: loaded when the editor mounts, saved on every change. Libraries

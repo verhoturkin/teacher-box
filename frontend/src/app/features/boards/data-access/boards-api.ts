@@ -75,6 +75,13 @@ export class BoardsApi {
   }
 
   /** The drawing when it changed after `since`; `null` while it did not. */
+  /** A one-time ticket to the board's live channel (ADR-0029); quiet — the editor retries by itself. */
+  liveTicket(boardId: string): Observable<string> {
+    return this.http
+      .post<{ ticket: string }>(`/api/boards/${boardId}/live`, null, { context: quietContext() })
+      .pipe(map((answer) => answer.ticket));
+  }
+
   changes(boardId: string, since: number): Observable<BoardScene | null> {
     return this.http
       .get<BoardScene>(`/api/boards/${boardId}/scene`, {

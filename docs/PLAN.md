@@ -33,7 +33,7 @@ queue; filter chips instead of toggles.
 
 Future:
 - Two-way Google Calendar sync.
-- Live board collaboration (WebSocket, cursors), Excalidraw libraries, board templates / duplicating.
+- Board templates / duplicating.
 - Lesson packages/subscriptions, online payment.
 - Telegram login, 2FA for teacher and administrator.
 - WhatsApp and e-mail channels.

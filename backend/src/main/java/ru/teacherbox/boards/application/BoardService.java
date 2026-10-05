@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.boards.domain.Board;
@@ -64,15 +65,17 @@ public class BoardService {
     private final UserDirectory users;
     private final StudentGroups groups;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     public BoardService(BoardRepository boards, SceneRepository scenes, FileStorage storage, UserDirectory users,
-            StudentGroups groups, Clock clock) {
+            StudentGroups groups, Clock clock, ApplicationEventPublisher events) {
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
         this.users = users;
         this.groups = groups;
         this.clock = clock;
+        this.events = events;
     }
 
     /**
@@ -123,6 +126,7 @@ public class BoardService {
         boards.findMembers(boardId).forEach(added::remove);
         requireCurrent(added);
         Board saved = boards.update(board.changed(title, url, clock.instant()), members);
+        events.publishEvent(new BoardAccessChanged(boardId));
         return views(List.of(saved)).getFirst();
     }
 
@@ -134,6 +138,7 @@ public class BoardService {
             throw notFound();
         }
         files.forEach(file -> storage.delete(NAMESPACE, file.fileKey()));
+        events.publishEvent(new BoardAccessChanged(boardId));
     }
 
     /**
@@ -143,15 +148,26 @@ public class BoardService {
     @Transactional(readOnly = true)
     public Board requireAccess(CurrentUser user, UUID boardId) {
         Board board = find(boardId);
-        if (user.isTeacher()) {
-            return board;
-        }
-        Set<UUID> memberIds = boards.findMembers(boardId).stream().map(BoardMember::id).collect(Collectors.toSet());
-        if (memberIds.contains(user.id())
-                || groups.groupsOf(user.id()).stream().anyMatch(group -> memberIds.contains(group.id()))) {
+        if (mayAccess(user, board)) {
             return board;
         }
         throw notFound();
+    }
+
+    /** Like {@link #requireAccess} without an exception (it would mark the caller's transaction for rollback). */
+    @Transactional(readOnly = true)
+    public boolean mayAccess(CurrentUser user, UUID boardId) {
+        return boards.findById(boardId).map(board -> mayAccess(user, board)).orElse(false);
+    }
+
+    private boolean mayAccess(CurrentUser user, Board board) {
+        if (user.isTeacher()) {
+            return true;
+        }
+        Set<UUID> memberIds = boards.findMembers(board.id()).stream().map(BoardMember::id)
+                .collect(Collectors.toSet());
+        return memberIds.contains(user.id())
+                || groups.groupsOf(user.id()).stream().anyMatch(group -> memberIds.contains(group.id()));
     }
 
     /** The student's own boards and the boards of their current groups, newest change first. */

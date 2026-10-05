@@ -9,15 +9,25 @@ import type {
 import { Observable, firstValueFrom } from 'rxjs';
 import { BoardScene } from '../data-access/boards.models';
 import type { ExcalidrawModules } from './excalidraw-loader';
-import { binaryFile, dataUrlToBlob, elementsOf, sharedAppState } from './excalidraw-data';
+import {
+  binaryFile,
+  dataUrlToBlob,
+  elementsOf,
+  isSyncable,
+  sharedAppState,
+} from './excalidraw-data';
 
 /** How the drawing is kept: saved, being saved, or waiting for the server. */
 export type SaveStatus = 'saved' | 'saving' | 'offline';
 
 /** A pause in drawing before the save. */
 export const SAVE_DELAY_MS = 1000;
-/** How often an open board asks for the others' changes (ADR-0028: polling, no real time). */
+/** How often an open board asks for the others' changes without the live channel (ADR-0028). */
 export const POLL_INTERVAL_MS = 5000;
+/** With the live channel the others' changes come as they draw; polling only covers gaps (ADR-0029). */
+export const LIVE_POLL_INTERVAL_MS = 30000;
+/** Changed elements go to the others this soon after a change. */
+export const BROADCAST_DELAY_MS = 100;
 /** A failed save is tried again after this. */
 export const RETRY_DELAY_MS = 5000;
 
@@ -33,6 +43,13 @@ export interface BoardServer {
   file(fileId: string): Observable<Blob>;
 }
 
+/** The live channel as the sync uses it (`BoardLive`). */
+export interface LiveOutlet {
+  connected(): boolean;
+  /** @returns whether the elements went out */
+  elements(elements: readonly unknown[]): boolean;
+}
+
 /** The editor's API the sync uses. */
 export type SceneAccess = Pick<
   ExcalidrawImperativeAPI,
@@ -42,7 +59,9 @@ export type SceneAccess = Pick<
 /**
  * Keeps an open Excalidraw board and the server in step (ADR-0028): saves the changed elements after a
  * pause, applies the merged drawing from the answer, asks for the others' changes every few seconds while
- * the tab is visible, uploads new images once and fetches the missing ones.
+ * the tab is visible, uploads new images once and fetches the missing ones. With the live channel
+ * (ADR-0029) it also sends the changed elements to the others at once, applies theirs without saving them
+ * again, and asks for the scene when the server says it has a new version.
  */
 export class BoardSync {
   readonly status = signal<SaveStatus>('saved');
@@ -52,6 +71,13 @@ export class BoardSync {
   private sceneVersion: number;
   /** Element versions the server has. */
   private readonly known = new Map<string, number>();
+  /** Element versions another editor sent live (they save them themselves). */
+  private readonly relayed = new Map<string, number>();
+  /** Element versions this editor sent live. */
+  private readonly sent = new Map<string, number>();
+  private live: LiveOutlet | undefined;
+  private broadcastTimer: ReturnType<typeof setTimeout> | undefined;
+  private lastPoll = 0;
   /** Images the server has. */
   private readonly uploaded = new Set<string>();
   private sharedState: string;
@@ -77,14 +103,43 @@ export class BoardSync {
     this.reconcile = modules.reconcileElements;
     void this.fetchMissingFiles(access.getSceneElementsIncludingDeleted());
     this.pollTimer = setInterval(() => {
+      if (this.live?.connected() && Date.now() - this.lastPoll < LIVE_POLL_INTERVAL_MS) return;
       void this.poll();
     }, POLL_INTERVAL_MS);
+  }
+
+  /** The live channel of the board: changes go out through it, polling slows down while it is open. */
+  useLive(live: LiveOutlet): void {
+    this.live = live;
+  }
+
+  /** Elements another editor sent live: merged into the drawing, not saved again by this editor. */
+  received(elements: unknown): void {
+    const access = this.access;
+    const reconcile = this.reconcile;
+    const remote = Array.isArray(elements) ? elementsOf(elements) : [];
+    if (this.stopped || access === undefined || reconcile === undefined || remote.length === 0)
+      return;
+    for (const element of remote) this.relayed.set(element.id, element.version);
+    const merged = reconcile(
+      access.getSceneElementsIncludingDeleted(),
+      remote,
+      access.getAppState(),
+    );
+    access.updateScene({ elements: merged, captureUpdate: 'NEVER' });
+    void this.fetchMissingFiles(remote);
+  }
+
+  /** The server has a new scene version: fetch it unless it is this editor's own save. */
+  saved(sceneVersion: number): void {
+    if (sceneVersion > this.sceneVersion) void this.poll();
   }
 
   /** Excalidraw changed something: save after a pause if elements or the shared appState changed. */
   changed(elements: readonly OrderedExcalidrawElement[], appState: AppState): void {
     if (this.stopped) return;
-    const newElements = elements.some((element) => this.known.get(element.id) !== element.version);
+    const newElements = elements.some((element) => this.mine(element));
+    if (newElements) this.scheduleBroadcast();
     if (!newElements && sharedState(appState) === this.sharedState) return;
     this.dirty = true;
     this.status.set('saving');
@@ -103,6 +158,7 @@ export class BoardSync {
   async poll(): Promise<void> {
     if (this.stopped || this.polling || this.dirty || this.running !== null || hidden()) return;
     this.polling = true;
+    this.lastPoll = Date.now();
     try {
       const scene = await firstValueFrom(this.server.changes(this.sceneVersion));
       if (scene !== null && !this.busy()) this.apply(scene);
@@ -126,7 +182,41 @@ export class BoardSync {
   stop(): void {
     this.stopped = true;
     clearTimeout(this.saveTimer);
+    clearTimeout(this.broadcastTimer);
     clearInterval(this.pollTimer);
+  }
+
+  /** Changed here: neither the server nor another editor has this version. */
+  private mine(element: OrderedExcalidrawElement): boolean {
+    return (
+      this.known.get(element.id) !== element.version &&
+      this.relayed.get(element.id) !== element.version
+    );
+  }
+
+  private scheduleBroadcast(): void {
+    if (this.live === undefined || this.broadcastTimer !== undefined) return;
+    this.broadcastTimer = setTimeout(() => {
+      this.broadcastTimer = undefined;
+      this.broadcast();
+    }, BROADCAST_DELAY_MS);
+  }
+
+  /** Sends the elements changed here since the last time; a closed channel leaves them to the save. */
+  private broadcast(): void {
+    const access = this.access;
+    const live = this.live;
+    if (access === undefined || live === undefined || this.stopped) return;
+    const changed = access
+      .getSceneElementsIncludingDeleted()
+      .filter(
+        (element) =>
+          this.mine(element) &&
+          this.sent.get(element.id) !== element.version &&
+          isSyncable(element),
+      );
+    if (changed.length === 0 || !live.elements(changed)) return;
+    for (const element of changed) this.sent.set(element.id, element.version);
   }
 
   private schedule(delay: number): void {
@@ -150,7 +240,9 @@ export class BoardSync {
     this.status.set('saving');
     const elements = access.getSceneElementsIncludingDeleted();
     const appState = access.getAppState();
-    const changed = elements.filter((element) => this.known.get(element.id) !== element.version);
+    const changed = elements.filter(
+      (element) => this.known.get(element.id) !== element.version && isSyncable(element),
+    );
     try {
       await this.uploadFiles(changed, access.getFiles());
       const scene = await firstValueFrom(

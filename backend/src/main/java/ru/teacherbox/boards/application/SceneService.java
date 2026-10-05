@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.boards.domain.Board;
@@ -61,14 +62,16 @@ public class SceneService {
     private final FileStorage storage;
     private final JsonMapper json;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     public SceneService(BoardService boards, SceneRepository scenes, FileStorage storage, JsonMapper json,
-            Clock clock) {
+            Clock clock, ApplicationEventPublisher events) {
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
         this.json = json;
         this.clock = clock;
+        this.events = events;
     }
 
     @Transactional(readOnly = true)
@@ -115,6 +118,7 @@ public class SceneService {
         BoardScene saved = new BoardScene(boardId, text, json.writeValueAsString(state), stored.version() + 1,
                 clock.instant(), user.id());
         scenes.update(saved);
+        events.publishEvent(new SceneSaved(boardId, saved.version()));
         return view(saved);
     }
 

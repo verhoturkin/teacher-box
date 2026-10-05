@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.teacherbox.boards.application.LiveTickets;
 import ru.teacherbox.boards.application.SceneService;
 import ru.teacherbox.boards.application.SceneService.BoardContent;
 import ru.teacherbox.boards.application.SceneService.FileDownload;
@@ -41,15 +43,27 @@ class BoardsController {
     record SaveRequest(@NotNull JsonNode elements, @Nullable JsonNode appState, @NotNull Long baseVersion) {
     }
 
-    private final SceneService scenes;
+    /** A one-time ticket to the board's live channel ({@code /api/public/boards/live?ticket=}). */
+    record LiveTicket(String ticket) {
+    }
 
-    BoardsController(SceneService scenes) {
+    private final SceneService scenes;
+    private final LiveTickets tickets;
+
+    BoardsController(SceneService scenes, LiveTickets tickets) {
         this.scenes = scenes;
+        this.tickets = tickets;
     }
 
     @GetMapping
     BoardContent open(CurrentUser user, @PathVariable UUID id) {
         return scenes.open(user, id);
+    }
+
+    /** The editor opens the live channel with it (ADR-0029); valid once, for a minute. */
+    @PostMapping("/live")
+    LiveTicket live(CurrentUser user, @PathVariable UUID id) {
+        return new LiveTicket(tickets.issue(user, id));
     }
 
     @PutMapping("/scene")

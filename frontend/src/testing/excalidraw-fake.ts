@@ -1,5 +1,9 @@
 import type { SceneAccess } from '@features/boards/editor/board-sync';
-import type { ExcalidrawModules } from '@features/boards/editor/excalidraw-loader';
+import type {
+  BoardMenuItem,
+  BoardMenuSetting,
+  ExcalidrawModules,
+} from '@features/boards/editor/excalidraw-loader';
 
 /** The props Excalidraw was rendered with (`ExcalidrawProps`, named through the island contract). */
 export type RenderedProps = Parameters<ExcalidrawModules['createElement']>[1];
@@ -37,7 +41,11 @@ export interface FakeIsland {
   readonly rendered: unknown[];
   readonly props: RenderedProps[];
   /** The portal's items of the main menu, as last built. */
-  menu: readonly { readonly label: string; readonly onSelect: () => void }[];
+  menu: readonly BoardMenuItem[];
+  /** The editor's settings at the end of the main menu, as last built. */
+  settings: readonly BoardMenuSetting[];
+  /** A setting or a choice of a group by its label. */
+  setting(label: string): BoardMenuItem;
   unmounted: number;
   /** The props of the last render. */
   last(): RenderedProps;
@@ -50,6 +58,14 @@ export function fakeExcalidraw(): FakeIsland {
     rendered: [],
     props: [],
     menu: [],
+    settings: [],
+    setting: (label) => {
+      const found = island.settings
+        .flatMap((setting) => ('items' in setting ? setting.items : [setting]))
+        .find((item) => item.label === label);
+      if (!found) throw new Error(`No setting ${label}`);
+      return found;
+    },
     unmounted: 0,
     last: () => {
       const props = island.props.at(-1);
@@ -73,8 +89,9 @@ export function fakeExcalidraw(): FakeIsland {
         return { type, props, key: null };
       },
       Excalidraw: () => null,
-      mainMenu: (items) => {
+      mainMenu: (items, settings) => {
         island.menu = items;
+        island.settings = settings;
         return null;
       },
       // The higher version wins, local elements keep their order (like Excalidraw, without the edge cases).

@@ -5,9 +5,11 @@ import {
   DOCUMENT,
   OnInit,
   computed,
+  effect,
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import type { ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
@@ -17,7 +19,8 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Message } from 'primeng/message';
 import { CanLeave } from '@core/routing/can-leave.guard';
-import { ThemeMode } from '@core/theme/theme-mode';
+import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-settings';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -26,11 +29,27 @@ import { BoardContent } from '../data-access/boards.models';
 import { BoardBackupsDialog } from '../teacher/board-backups-dialog';
 import { BoardClipboard } from '../to-board/board-clipboard';
 import { BoardInsert } from '../to-board/board-insert';
-import { BoardCanvas, BoardCanvasChange, BoardCanvasReady } from './board-canvas';
+import { BoardCanvas, BoardCanvasChange, BoardCanvasReady, BoardWheel } from './board-canvas';
+import { BoardLive, LIVE_SOCKET } from './board-live';
+import { collaborators } from './board-presence';
 import { BoardSync, SaveStatus } from './board-sync';
-import type { BoardLibrary, BoardMenuItem } from './excalidraw-loader';
+import type { BoardLibrary, BoardMenuItem, BoardMenuSetting } from './excalidraw-loader';
 import { elementsOf, libraryItemsOf, sharedAppState } from './excalidraw-data';
 import { insertMaterial } from './material-insert';
+
+/** Device setting: what the mouse wheel does on boards. */
+export const WHEEL_KEY = 'tb.board.wheel';
+
+const THEMES: readonly { readonly choice: ThemeChoice; readonly label: string }[] = [
+  { choice: 'light', label: 'Светлая' },
+  { choice: 'dark', label: 'Тёмная' },
+  { choice: 'system', label: 'Как в системе' },
+];
+
+const WHEELS: readonly { readonly wheel: BoardWheel; readonly label: string }[] = [
+  { wheel: 'zoom', label: 'Масштаб' },
+  { wheel: 'scroll', label: 'Прокрутка (тачпад)' },
+];
 
 const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
   saved: 'Сохранено',
@@ -84,6 +103,10 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
                 [scene]="initialScene()"
                 [theme]="theme()"
                 [menu]="menu()"
+                [settings]="settings()"
+                [wheel]="wheel()"
+                [collaborating]="live()?.connected() ?? false"
+                (pointerMove)="live()?.pointer($event)"
                 [library]="library"
                 (ready)="attach($event)"
                 (sceneChange)="changed($event)"
@@ -184,6 +207,8 @@ export class BoardPage implements OnInit, CanLeave {
   private readonly clipboard = inject(BoardClipboard);
   private readonly insert = inject(BoardInsert);
   private readonly document = inject(DOCUMENT);
+  private readonly openSocket = inject(LIVE_SOCKET);
+  private editor: BoardCanvasReady['api'] | undefined;
 
   /** The board (route parameter). */
   readonly id = input.required<string>();
@@ -194,6 +219,8 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly state = new LoadState();
   protected readonly content = signal<BoardContent | null>(null);
   protected readonly sync = signal<BoardSync | null>(null);
+  /** The live channel of the open board (ADR-0029). */
+  protected readonly live = signal<BoardLive | null>(null);
   protected readonly backupsVisible = signal(false);
   protected readonly teacher = computed(() => this.area() === 'teacher');
   protected readonly backLink = computed(() =>
@@ -231,6 +258,45 @@ export class BoardPage implements OnInit, CanLeave {
       : []),
   ]);
 
+  /** Whether the board shows its grid (the board's own setting, shared with everyone on it). */
+  protected readonly grid = signal(false);
+  protected readonly wheel = signal<BoardWheel>(
+    readDeviceSetting(WHEEL_KEY) === 'scroll' ? 'scroll' : 'zoom',
+  );
+  protected readonly settings = computed<BoardMenuSetting[]>(() => [
+    {
+      title: 'Тема',
+      items: THEMES.map(({ choice, label }) => ({
+        label,
+        checked: this.themeMode.choice() === choice,
+        onSelect: () => {
+          this.themeMode.choose(choice);
+        },
+      })),
+    },
+    {
+      label: 'Сетка',
+      checked: this.grid(),
+      onSelect: () => {
+        this.editor?.updateScene({
+          appState: { gridModeEnabled: !this.grid() },
+          captureUpdate: 'EVENTUALLY',
+        });
+      },
+    },
+    {
+      title: 'Колесо мыши',
+      items: WHEELS.map(({ wheel, label }) => ({
+        label,
+        checked: this.wheel() === wheel,
+        onSelect: () => {
+          this.wheel.set(wheel);
+          writeDeviceSetting(WHEEL_KEY, wheel);
+        },
+      })),
+    },
+  ]);
+
   /** The user's own library of shapes, kept on the server for all their boards. */
   protected readonly library: BoardLibrary = {
     load: async () => libraryItemsOf(await firstValueFrom(this.api.library())),
@@ -249,6 +315,14 @@ export class BoardPage implements OnInit, CanLeave {
     inject(DestroyRef).onDestroy(() => {
       this.document.removeEventListener('visibilitychange', this.visibility);
       this.sync()?.stop();
+      this.live()?.stop();
+    });
+    // The others on the board and their cursors.
+    effect(() => {
+      const peers = this.live()?.peerList() ?? [];
+      untracked(() => {
+        this.editor?.updateScene({ collaborators: collaborators(peers) });
+      });
     });
   }
 
@@ -262,6 +336,8 @@ export class BoardPage implements OnInit, CanLeave {
       .pipe(this.state.track())
       .subscribe((content) => {
         this.sync()?.stop();
+        this.live()?.stop();
+        this.live.set(null);
         this.sync.set(
           content.kind === 'EXCALIDRAW'
             ? new BoardSync(
@@ -305,7 +381,25 @@ export class BoardPage implements OnInit, CanLeave {
   protected attach(ready: BoardCanvasReady): void {
     const sync = this.sync();
     if (sync === null) return;
+    this.editor = ready.api;
     sync.attach(ready.api, ready.modules);
+    const live = new BoardLive(
+      {
+        ticket: () => firstValueFrom(this.api.liveTicket(this.id())),
+        open: this.openSocket,
+      },
+      {
+        elements: (elements) => {
+          sync.received(elements);
+        },
+        saved: (sceneVersion) => {
+          sync.saved(sceneVersion);
+        },
+      },
+    );
+    sync.useLive(live);
+    this.live.set(live);
+    live.start();
     const material = this.insert.take(this.id());
     if (material !== null) {
       void insertMaterial(ready.api, ready.modules, material, this.clipboard).catch(
@@ -315,6 +409,7 @@ export class BoardPage implements OnInit, CanLeave {
   }
 
   protected changed(change: BoardCanvasChange): void {
+    this.grid.set(change.appState.gridModeEnabled);
     this.sync()?.changed(change.elements, change.appState);
   }
 

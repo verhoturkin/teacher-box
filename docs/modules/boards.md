@@ -2,7 +2,7 @@
 
 Boards of the portal: our own Excalidraw boards and external boards by link, bound to any number of students and
 groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../adr/0028-excalidraw-boards.md)
-(supersedes the boards part of [0012](../adr/0012-meetings-and-boards.md)).
+(supersedes the boards part of [0012](../adr/0012-meetings-and-boards.md)), [0029](../adr/0029-live-boards.md) (real time).
 
 ## Rules
 
@@ -20,6 +20,16 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   (`boards.scene-too-large`).
 - Polling: `GET /api/boards/{id}/scene?since=<version>` → 204 while unchanged. An external board has no scene →
   409 `boards.no-scene`.
+- Live channel (ADR-0029): `POST /api/boards/{id}/live` → `{ticket}` (after `requireAccess`, Excalidraw boards
+  only; one-time, 1 min, kept in memory as a hash — `LiveTickets`), then a WebSocket to
+  `/api/public/boards/live?ticket=` (no ticket, a used or expired one → 403). `live/LiveRooms` keeps the editors of
+  each board in memory (one instance): a peer has an id, the user's name and the smallest free colour index;
+  `welcome` / `joined` / `left`; relays `pointer` (x, y, tool, button — checked) and `elements` (checked by
+  `SceneElements.valid`) to the others; answers `ping` with `pong`; sends `saved` with the version after a scene
+  save or a restored copy (`SceneSaved`, after commit). Nothing is stored. Access is checked again
+  (`BoardService.mayAccess`) when the board changes or is deleted (`BoardAccessChanged`), a group changes or is
+  archived; a deactivated student's channels close — closed with 1008. Messages ≤ 1 M characters; a slow
+  receiver loses old messages (the scene still comes by save and poll).
 - Images: `PUT|GET /api/boards/{id}/files/{fileId}` — raw body, png/jpeg/webp/gif checked by magic bytes (no SVG),
   ≤ 20 MB; stored once per `fileId` in the `boards` namespace of `FileStorage` (keys in `board_files`; a namespace
   cannot have sub-folders, so not `boards/<boardId>/`); served `private, max-age=1y, immutable`, `nosniff`.
@@ -43,7 +53,8 @@ Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 chara
 |---|---|
 | `GET /api/teacher/boards?studentId=|groupId=`, `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
-| `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}` | teacher, member student |
+| `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
+| WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
 | `GET|PUT /api/boards/library` — the current user's own library (an array of items with `id` and `elements`) | teacher, student |
 | `GET /api/me/boards` (kind, `groupNames`, `updatedAt`, newest first) | student |
 
@@ -69,21 +80,36 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
   (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`, `self-hosted-fonts.ts` drops
   Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with its owner), `board-canvas.ts`
-  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`, `library`; outputs `sceneChange`, `ready` with the API; loading and
-  error states; no file load/save, no theme switch, no embeds).
+  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`, `settings`, `wheel`, `library`; outputs `sceneChange`, `ready` with
+  the API; loading and error states; no file load/save, no Excalidraw theme switch, no embeds). In the `zoom` wheel mode
+  a plain wheel over the canvas is handed to Excalidraw again as Ctrl + wheel (lines and pages turned into pixels);
+  Ctrl, ⌘ and Shift keep Excalidraw's meaning.
   - `board-page.ts` — routes `/teacher/boards/:id`, `/cabinet/boards/:id` outside the shell (full screen, same
     guards, `canLeaveGuard`): bar «← Доски» / «← Мои доски», title, save status «Сохранено» / «Сохранение…» /
-    «Нет связи — повторим»; menu «Вернуться к доскам» (+ the teacher's «Резервные копии» — only there); portal
-    theme, `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
+    «Нет связи — повторим»; menu «Вернуться к доскам» (+ the teacher's «Резервные копии» — only there), then
+    Excalidraw's items, then the settings: «Тема» («Светлая» / «Тёмная» / «Как в системе» — the portal's own
+    `ThemeMode`), «Сетка» (the board's `gridModeEnabled`, shared and saved), «Колесо мыши» («Масштаб» by default /
+    «Прокрутка (тачпад)», device setting `tb.board.wheel`); `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
   - `board-sync.ts` — saves the changed elements 1 s after the last change (and on leaving, on a hidden tab),
     applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
-    tab is visible and nothing is being saved, retries a failed save every 5 s, uploads new images once and fetches
-    missing ones. `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs.
+    tab is visible and nothing is being saved (every 30 s while the live channel is open), retries a failed save
+    every 5 s, uploads new images once and fetches missing ones. Shapes still too small to see (no size, a line
+    with one point) never leave the editor — Excalidraw drops them without a tombstone. With the live channel it
+    sends the elements changed here 100 ms after a change (each version once; a closed channel leaves them to the
+    save), merges the others' elements without saving them again, and polls when `saved` brings a newer version.
+    `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs, `isSyncable`.
+  - `board-live.ts` — `BoardLive` (ADR-0029): ticket (`BoardsApi.liveTicket`), socket (`LIVE_SOCKET`, a fake in
+    tests), the others (`peers`, with cursors), the cursor out at most every 50 ms, `ping` every 30 s, reconnects
+    after 1, 2, 5, 10, 30 s (not after 1008 — the board was taken away). `board-presence.ts` — the others as
+    Excalidraw collaborators (name, colour by the server's number, cursor); `board-page.ts` puts them into the scene,
+    `tb-board-canvas` gets `collaborating` (`isCollaborating`) and reports `pointerMove` (`onPointerUpdate`).
   - Library: the island's `Excalidraw` wraps Excalidraw with `useHandleLibrary` and a `BoardLibrary` adapter
     (`board-page.ts` → `GET|PUT /api/boards/library`); library URLs (`#addLibrary`) are refused and
     «Просмотреть библиотеки» is hidden — libraries.excalidraw.com is outside the CSP (ADR-0028); a
     `.excalidrawlib` file opens via «Открыть».
-  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts.
+  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
+    Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
+    in both themes; the canvas background stays the board's.
 - `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard

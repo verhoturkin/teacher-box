@@ -24,6 +24,18 @@ export function isElements(
   );
 }
 
+/**
+ * Whether an element may leave the editor: not one still too small to see (a shape without size, a line
+ * without a second point). Excalidraw drops such a shape without a tombstone when the drawing ends, so
+ * the others and the server would keep it forever (Excalidraw's own collaboration skips them too).
+ */
+export function isSyncable(element: OrderedExcalidrawElement): boolean {
+  if (element.isDeleted) return true;
+  return 'points' in element
+    ? element.points.length >= 2
+    : element.width !== 0 || element.height !== 0;
+}
+
 /** The elements of a stored drawing; nothing when the JSON is not a drawing. */
 export function elementsOf(values: readonly unknown[]): readonly OrderedExcalidrawElement[] {
   return isElements(values) ? values : [];
