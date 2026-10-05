@@ -56,6 +56,8 @@ describe('BoardsPage', () => {
     expect(host.querySelector('a[href$="/board-1"]')).not.toBeNull();
     expect(host.querySelector('a[href="https://app.holst.so/board/1"]')).not.toBeNull();
     expect(host.querySelectorAll('[aria-label^="Резервные копии"]')).toHaveLength(1);
+    expect(host.querySelector('p-select')).toBeNull();
+    expect(text).not.toContain('Все доски');
   });
 
   it('filters by a student from the URL and creates a board for them', async () => {
@@ -63,6 +65,7 @@ describe('BoardsPage', () => {
     backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);
     await fixture.whenStable();
     expect(text()).toContain('У них досок пока нет');
+    expect(text()).toContain('Доски ученика: Мария');
 
     buttonByText(host, 'Новая доска').click();
     await fixture.whenStable();
@@ -78,19 +81,14 @@ describe('BoardsPage', () => {
     expect(text()).toContain('Алгебра');
   });
 
-  it('changes the filter in the URL', async () => {
+  it('names the group of the filter and drops the filter with «Все доски»', async () => {
     await render({ group: 'g-1' });
     backend.expectOne('/api/teacher/boards?groupId=g-1').flush([]);
     await fixture.whenStable();
+    expect(text()).toContain('Доски группы: ОГЭ');
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const page = fixture.componentInstance;
 
-    page.applyFilter('student:s-1');
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { student: 's-1', group: null },
-      queryParamsHandling: 'merge',
-    });
-    page.applyFilter(null);
+    buttonByText(host, 'Все доски').click();
     expect(navigate).toHaveBeenLastCalledWith([], {
       queryParams: { student: null, group: null },
       queryParamsHandling: 'merge',

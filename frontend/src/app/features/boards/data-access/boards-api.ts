@@ -62,6 +62,18 @@ export class BoardsApi {
     );
   }
 
+  /** The current user's Excalidraw library (plain JSON items; empty before the first save). */
+  library(): Observable<readonly unknown[]> {
+    return this.http.get<readonly unknown[]>('/api/boards/library', { context: quietContext() });
+  }
+
+  /** Replaces the current user's library; Excalidraw reports a failure itself. */
+  saveLibrary(items: readonly unknown[]): Observable<void> {
+    return this.http
+      .put('/api/boards/library', items, { context: quietContext() })
+      .pipe(map(() => undefined));
+  }
+
   /** The drawing when it changed after `since`; `null` while it did not. */
   changes(boardId: string, since: number): Observable<BoardScene | null> {
     return this.http

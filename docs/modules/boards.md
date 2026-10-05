@@ -35,13 +35,16 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 
 ## Contract, data, REST
 
-No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_backups`.
+No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_backups`, `board_libraries` (the
+Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 characters; `boards.library-invalid`,
+`boards.library-too-large`).
 
 | Endpoint | Who |
 |---|---|
 | `GET /api/teacher/boards?studentId=|groupId=`, `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
 | `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}` | teacher, member student |
+| `GET|PUT /api/boards/library` — the current user's own library (an array of items with `id` and `elements`) | teacher, student |
 | `GET /api/me/boards` (kind, `groupNames`, `updatedAt`, newest first) | student |
 
 Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board → `Portal.link("/cabinet/boards/<id>")`
@@ -51,9 +54,10 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
-- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards,
-  filter «Ученик или группа» in the URL (`?student=`, `?group=`; a student's filter includes their groups' boards),
-  a new board starts with the filter's member; row actions — copies (Excalidraw only), change, delete
+- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards;
+  `BoardsLink` opens it filtered in the URL (`?student=`, `?group=`; a student's filter includes their groups'
+  boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
+  with the filter's member; row actions — copies (Excalidraw only), change, delete
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
   confirmation step inside the dialog (no dialog on top).
@@ -65,16 +69,20 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
   (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`, `self-hosted-fonts.ts` drops
   Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with its owner), `board-canvas.ts`
-  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`; outputs `sceneChange`, `ready` with the API; loading and
+  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`, `library`; outputs `sceneChange`, `ready` with the API; loading and
   error states; no file load/save, no theme switch, no embeds).
   - `board-page.ts` — routes `/teacher/boards/:id`, `/cabinet/boards/:id` outside the shell (full screen, same
     guards, `canLeaveGuard`): bar «← Доски» / «← Мои доски», title, save status «Сохранено» / «Сохранение…» /
-    «Нет связи — повторим», teacher's «Резервные копии»; menu «Вернуться к доскам» (+ «Резервные копии»); portal
+    «Нет связи — повторим»; menu «Вернуться к доскам» (+ the teacher's «Резервные копии» — only there); portal
     theme, `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
   - `board-sync.ts` — saves the changed elements 1 s after the last change (and on leaving, on a hidden tab),
     applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
     tab is visible and nothing is being saved, retries a failed save every 5 s, uploads new images once and fetches
     missing ones. `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs.
+  - Library: the island's `Excalidraw` wraps Excalidraw with `useHandleLibrary` and a `BoardLibrary` adapter
+    (`board-page.ts` → `GET|PUT /api/boards/library`); library URLs (`#addLibrary`) are refused and
+    «Просмотреть библиотеки» is hidden — libraries.excalidraw.com is outside the CSP (ADR-0028); a
+    `.excalidrawlib` file opens via «Открыть».
   - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts.
 - `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,

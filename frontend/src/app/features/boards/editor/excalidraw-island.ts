@@ -3,12 +3,14 @@ import {
   MainMenu,
   convertToExcalidrawElements,
   reconcileElements,
+  useHandleLibrary,
 } from '@excalidraw/excalidraw';
 import type { RemoteExcalidrawElement } from '@excalidraw/excalidraw/data/reconcile';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import { createElement } from 'react';
+import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import { createElement, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { ExcalidrawModules } from './excalidraw-loader';
+import type { BoardEditorProps, BoardLibrary, ExcalidrawModules } from './excalidraw-loader';
 
 /**
  * React, ReactDOM and Excalidraw for the board editor (ADR-0028). Loaded only through `ExcalidrawLoader`
@@ -18,7 +20,7 @@ import type { ExcalidrawModules } from './excalidraw-loader';
 export const EXCALIDRAW_MODULES: ExcalidrawModules = {
   createRoot: (container) => createRoot(container),
   createElement: (type, props) => createElement(type, props),
-  Excalidraw,
+  Excalidraw: BoardExcalidraw,
   mainMenu: (items) =>
     createElement(
       MainMenu,
@@ -45,6 +47,40 @@ export const EXCALIDRAW_MODULES: ExcalidrawModules = {
   convertToExcalidrawElements: (skeletons) =>
     convertToExcalidrawElements([...skeletons], { regenerateIds: true }),
 };
+
+/**
+ * Excalidraw with the user's library: loaded when the editor mounts, saved on every change. Libraries
+ * from libraries.excalidraw.com are not installed: CSP keeps the portal on its own domain (ADR-0028).
+ */
+function BoardExcalidraw({ library, excalidrawAPI, ...props }: BoardEditorProps) {
+  const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
+  const adapter = useMemo(() => (library ? libraryAdapter(library) : undefined), [library]);
+  useHandleLibrary({
+    excalidrawAPI: adapter ? api : null,
+    adapter: adapter ?? libraryAdapter(NO_LIBRARY),
+    validateLibraryUrl: () => false,
+  });
+  return createElement(Excalidraw, {
+    ...props,
+    excalidrawAPI: (ready) => {
+      setApi(ready);
+      excalidrawAPI?.(ready);
+    },
+  });
+}
+
+const NO_LIBRARY: BoardLibrary = {
+  load: () => Promise.resolve([]),
+  save: () => Promise.resolve(),
+};
+
+function libraryAdapter(library: BoardLibrary) {
+  return {
+    load: async () => ({ libraryItems: await library.load() }),
+    save: ({ libraryItems }: { libraryItems: Parameters<BoardLibrary['save']>[0] }) =>
+      library.save(libraryItems),
+  };
+}
 
 /** Elements from the server are what Excalidraw calls remote: the brand only marks where they came from. */
 function isRemote(
