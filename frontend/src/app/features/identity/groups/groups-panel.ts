@@ -20,7 +20,7 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
-import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
+import { BoardsLink, MemberBoards } from '@features/boards/parts';
 import {
   MeetingRoom,
   MeetingsApi,
@@ -57,8 +57,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
     Tooltip,
     MoneyPipe,
     RowType,
-    BoardCell,
-    BoardsDialog,
+    BoardsLink,
     GroupFormDialog,
     RoomCell,
     RoomDialog,
@@ -144,10 +143,10 @@ import { Snackbar } from '@core/snackbar/snackbar';
               </td>
               <td data-label="Доски">
                 @if (!group.archivedAt) {
-                  <tb-board-cell
-                    [boards]="boards.of(group.id)"
+                  <tb-boards-link
+                    [count]="boards.count([group.id])"
                     [name]="group.name"
-                    (edit)="boards.open({ type: 'GROUP', id: group.id, name: group.name })"
+                    [groupId]="group.id"
                   />
                 }
               </td>
@@ -224,13 +223,6 @@ import { Snackbar } from '@core/snackbar/snackbar';
       [canCreate]="canCreateRooms()"
       (changed)="onRoomChanged($event)"
     />
-    <tb-boards-dialog
-      [(visible)]="boards.visible"
-      [owner]="boards.owner()"
-      [boards]="boards.ownerBoards()"
-      (saved)="boards.saved($event)"
-      (removed)="boards.removed($event)"
-    />
     <p-confirmdialog key="groups" />
   `,
   styles: ``,
@@ -259,13 +251,13 @@ export class GroupsPanel implements OnInit {
   protected readonly visibleGroups = computed(() => {
     // New rows when the rooms or boards arrive: the table re-renders the columns only for a new value.
     this.rooms();
-    this.boards.byOwner();
+    this.boards.byMember();
     return this.groups().filter((group) => this.includeArchived() || group.archivedAt === null);
   });
 
   protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
   protected readonly canCreateRooms = signal(false);
-  protected readonly boards = new OwnerBoards();
+  protected readonly boards = new MemberBoards();
   protected readonly roomVisible = signal(false);
   protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
   protected readonly ownerRoom = computed(() => {

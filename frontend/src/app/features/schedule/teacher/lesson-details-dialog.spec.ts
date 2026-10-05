@@ -45,7 +45,7 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
-    for (const request of backend.match('/api/teacher/boards')) {
+    for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
       request.flush(boards);
     }
     await fixture.whenStable();
@@ -306,11 +306,9 @@ describe('LessonDetailsDialog', () => {
 
   it('links the boards of the lesson', async () => {
     await open(groupLesson(), new Date(2026, 8, 30, 12), [
-      aBoard({ ownerType: 'GROUP', ownerId: 'g-1', title: 'Доска группы' }),
-      aBoard({ id: 'board-2', ownerId: 's-1', title: 'Личная доска' }),
+      aBoard({ title: 'Доска группы', members: [{ type: 'GROUP', id: 'g-1', name: 'ОГЭ' }] }),
     ]);
 
     expect(bodyText()).toContain('Доска группы');
-    expect(bodyText()).not.toContain('Личная доска');
   });
 });

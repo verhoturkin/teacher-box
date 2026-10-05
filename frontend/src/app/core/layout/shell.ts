@@ -19,7 +19,10 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
   { choice: 'system', label: 'Тема как в системе', icon: 'pi pi-desktop' },
 ];
 
-/** Sections in the bottom navigation: four and «Ещё» (ADR-0027); the others are under «Ещё». */
+/**
+ * Sections in the bottom navigation: four and «Ещё» (ADR-0027); the others are under «Ещё». Five
+ * sections fit without «Ещё» (M3: up to five destinations).
+ */
 const NAV_ITEMS = 4;
 
 /**
@@ -151,7 +154,11 @@ export class Shell {
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
 
-  protected readonly navItems = computed(() => this.items().slice(0, NAV_ITEMS));
+  /** How many sections the bottom bar shows. */
+  private readonly shown = computed(() =>
+    this.items().length <= NAV_ITEMS + 1 ? this.items().length : NAV_ITEMS,
+  );
+  protected readonly navItems = computed(() => this.items().slice(0, this.shown()));
   /** The page is scrolled: the top bar rises (M3 top app bar on scroll). */
   protected readonly scrolled = signal(false);
   protected readonly userOpen = signal(false);
@@ -168,7 +175,7 @@ export class Shell {
   protected readonly moreItems = computed<MenuItem[]>(() => {
     const url = this.url().split(/[?#]/)[0] ?? '';
     return this.items()
-      .slice(NAV_ITEMS)
+      .slice(this.shown())
       .map((item) => {
         const link: unknown = item.routerLink;
         const current = typeof link === 'string' && (url === link || url.startsWith(`${link}/`));

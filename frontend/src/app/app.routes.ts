@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
+import { canLeaveGuard } from '@core/routing/can-leave.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: redirectToHome },
@@ -14,6 +15,23 @@ export const routes: Routes = [
     path: 'invite/:token',
     title: 'Приглашение',
     loadComponent: () => import('@features/identity').then((m) => m.InvitePage),
+  },
+  {
+    // The board editor takes the whole screen: outside the shell, same guards (ADR-0028).
+    path: 'teacher/boards/:id',
+    title: 'Доска',
+    canActivate: [roleGuard('TEACHER'), setupGuard],
+    canDeactivate: [canLeaveGuard],
+    data: { area: 'teacher' },
+    loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
+  },
+  {
+    path: 'cabinet/boards/:id',
+    title: 'Доска',
+    canActivate: [roleGuard('STUDENT')],
+    canDeactivate: [canLeaveGuard],
+    data: { area: 'cabinet' },
+    loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
   },
   {
     path: 'teacher',
@@ -75,6 +93,11 @@ export const routes: Routes = [
         path: 'billing/students/:studentId',
         title: 'История оплат',
         loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
+      },
+      {
+        path: 'boards',
+        title: 'Доски',
+        loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
       {
         path: 'settings',
@@ -144,6 +167,11 @@ export const routes: Routes = [
         path: 'billing',
         title: 'Оплаты',
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
+      },
+      {
+        path: 'boards',
+        title: 'Мои доски',
+        loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
         path: 'notifications',

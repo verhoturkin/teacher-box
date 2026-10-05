@@ -1,15 +1,17 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { aBoard } from '@testing/boards-fixtures';
+import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
 import { bodyText } from '@testing/dom';
-import { BoardClipboard } from './board-clipboard';
-import { ToBoardDialog } from './to-board-dialog';
 import { testProviders } from '@testing/setup';
+import { BoardClipboard } from './board-clipboard';
+import { BoardInsert } from './board-insert';
+import { ToBoardDialog } from './to-board-dialog';
 
 describe('ToBoardDialog', () => {
   let fixture: ComponentFixture<ToBoardDialog>;
   let backend: HttpTestingController;
   let clipboard: BoardClipboard;
+  let insert: BoardInsert;
   let open: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -19,6 +21,7 @@ describe('ToBoardDialog', () => {
     });
     backend = TestBed.inject(HttpTestingController);
     clipboard = TestBed.inject(BoardClipboard);
+    insert = TestBed.inject(BoardInsert);
     open = vi.spyOn(window, 'open').mockReturnValue(null);
   });
 
@@ -33,51 +36,61 @@ describe('ToBoardDialog', () => {
     fixture = TestBed.createComponent(ToBoardDialog);
     fixture.componentRef.setInput('title', 'Дроби');
     fixture.componentRef.setInput('markdown', 'Решите');
-    fixture.componentRef.setInput('ownerIds', ['student-2']);
+    fixture.componentRef.setInput('ownerIds', ['group-1']);
     fixture.componentInstance.visible.set(true);
     await fixture.whenStable();
     return fixture.componentInstance;
   }
 
-  it('copies the material as text and opens the board', async () => {
+  it('opens an Excalidraw board with the material on it', async () => {
     const dialog = await show();
-    const mine = aBoard({
-      id: 'board-2',
-      ownerId: 'student-2',
-      ownerName: 'Иван',
-      title: 'Физика',
-      url: 'https://app.holst.so/board/2',
+    backend.expectOne('/api/teacher/boards').flush([aBoard({ title: 'Физика' })]);
+    await fixture.whenStable();
+    const put = vi.spyOn(insert, 'put');
+
+    expect(bodyText()).toContain('материал появится в центре');
+    await dialog.place('image');
+    await fixture.whenStable();
+
+    expect(put).toHaveBeenCalledWith('board-1', {
+      title: 'Дроби',
+      markdown: 'Решите',
+      mode: 'image',
     });
-    backend.expectOne('/api/teacher/boards').flush([aBoard(), mine]);
+    expect(open).toHaveBeenCalledWith('/teacher/boards/board-1', '_blank', 'noopener');
+    expect(bodyText()).toContain('материал уже на ней');
+    expect(bodyText()).toContain('Открыть доску «Физика»');
+  });
+
+  it('copies the material for an external board and opens it, its students first', async () => {
+    const dialog = await show();
+    backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
     await fixture.whenStable();
 
     const labels = Array.from(document.body.querySelectorAll('.tb-to-board label')).map(
       (label) => label.textContent,
     );
-    expect(labels[0]).toContain('Физика');
-    expect(labels[1]).toContain('Алгебра');
+    expect(labels[0]).toContain('Холст');
+    expect(labels[0]).toContain('Внешняя доска, группа «ОГЭ»');
     expect(dialog.chosen()).toBe('board-2');
+    expect(bodyText()).toContain('нажмите на ней Ctrl+V');
     const copyText = vi.spyOn(clipboard, 'copyText').mockResolvedValue();
 
-    await dialog.copy('text');
+    await dialog.place('text');
     await fixture.whenStable();
 
     expect(copyText).toHaveBeenCalledWith('Дроби', 'Решите');
-    expect(open).toHaveBeenCalledWith('https://app.holst.so/board/2', '_blank', 'noopener');
+    expect(open).toHaveBeenCalledWith('https://app.holst.so/board/1', '_blank', 'noopener');
     expect(bodyText()).toContain('Текст в буфере обмена');
-    expect(bodyText()).toContain('Открыть доску «Физика»');
   });
 
-  it('copies a picture to the chosen board', async () => {
+  it('copies a picture for an external board', async () => {
     const dialog = await show();
-    backend
-      .expectOne('/api/teacher/boards')
-      .flush([aBoard(), aBoard({ id: 'board-2', title: 'Физика' })]);
+    backend.expectOne('/api/teacher/boards').flush([aLinkBoard()]);
     await fixture.whenStable();
     const copyImage = vi.spyOn(clipboard, 'copyImage').mockResolvedValue();
 
-    dialog.chosen.set('board-2');
-    await dialog.copy('image');
+    await dialog.place('image');
     await fixture.whenStable();
 
     expect(copyImage).toHaveBeenCalledWith('Дроби', 'Решите');
@@ -86,25 +99,25 @@ describe('ToBoardDialog', () => {
 
   it('explains when the browser refuses to copy', async () => {
     const dialog = await show(false);
-    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
+    backend.expectOne('/api/teacher/boards').flush([aLinkBoard()]);
     await fixture.whenStable();
     expect(bodyText()).toContain('только когда портал открыт по https');
     vi.spyOn(clipboard, 'copyText').mockRejectedValue(new Error('denied'));
 
-    await dialog.copy('text');
+    await dialog.place('text');
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Браузер не дал скопировать материал');
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('tells where to add boards when there are none', async () => {
+  it('tells where to create boards when there are none', async () => {
     const dialog = await show();
     backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
-    expect(bodyText()).toContain('Досок пока нет');
-    await dialog.copy('text');
+    expect(bodyText()).toContain('Создайте доску в разделе «Доски»');
+    await dialog.place('text');
     expect(open).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
 /**
- * Boards: links to the interactive boards (Holst) of students and groups (ADR-0012). Holst has no
- * server API for boards, so materials get there through the clipboard.
+ * Boards (ADR-0028): our own Excalidraw boards (scene, images and copies in the portal) and external
+ * boards by link, bound to any number of students and groups.
  */
 @ApplicationModule(displayName = "Boards", allowedDependencies = {"shared", "identity :: api"})
 @NullMarked

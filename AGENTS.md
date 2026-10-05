@@ -18,7 +18,7 @@ student sets login and password and gets a cabinet (ЛК). An `ADMIN` account is
 | `ai` | LLM drafts of tasks and reviews | [ai](docs/modules/ai.md) |
 | `schedule` | lessons, series, attendance, requests, reminders, ICS, Google Calendar | [schedule](docs/modules/schedule.md) |
 | `meetings` | permanent Yandex Telemost rooms | [meetings](docs/modules/meetings.md) |
-| `boards` | Холст boards by link | [boards](docs/modules/boards.md) |
+| `boards` | Excalidraw boards (scene, images, copies) and external boards by link | [boards](docs/modules/boards.md) |
 | `platform` / `shared` | infrastructure / shared kernel | [platform](docs/modules/platform.md), [backend](backend/AGENTS.md) |
 
 Stack: Java 25, Spring Boot 4.1, Spring Modulith 2.1, Spring Security 7, `JdbcClient` + Flyway, H2 (file,

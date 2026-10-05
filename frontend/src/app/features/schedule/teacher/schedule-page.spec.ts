@@ -41,7 +41,7 @@ describe('SchedulePage', () => {
 
   afterEach(() => {
     // Boards of the lesson in its card (covered by the card's own tests).
-    for (const request of backend.match('/api/teacher/boards')) {
+    for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
       request.flush([]);
     }
     for (const request of offTimePeriodRequests()) {

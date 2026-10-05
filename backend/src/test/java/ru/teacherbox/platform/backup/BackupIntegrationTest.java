@@ -2,6 +2,7 @@ package ru.teacherbox.platform.backup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jayway.jsonpath.JsonPath;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.platform.core.PlatformProperties;
@@ -157,6 +159,40 @@ class BackupIntegrationTest {
             assertThat(teachers.getInt(1)).isEqualTo(1);
         }
         assertThat(target.resolve("files/homework/ab/material.txt")).hasContent("условие");
+    }
+
+    @Test
+    void aBoardKeepsItsSceneCopiesAndImagesThroughABackup(@TempDir Path target) throws IOException, SQLException {
+        MvcTestResult created = mvc.post().uri("/api/teacher/boards").with(TestUsers.teacher(TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"kind\":\"EXCALIDRAW\",\"title\":\"Доска\"}").exchange();
+        String board = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0, 0, 0, 13};
+        assertThat(mvc.put().uri("/api/boards/" + board + "/files/img1").with(TestUsers.teacher(TEACHER))
+                .contentType("image/png").content(png)).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.put().uri("/api/boards/" + board + "/scene").with(TestUsers.teacher(TEACHER))
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                        {"elements":[{"id":"i","type":"image","fileId":"img1","version":1,"versionNonce":1}],
+                         "baseVersion":0}""")).hasStatusOk();
+        assertThat(mvc.post().uri("/api/teacher/boards/" + board + "/backups").with(TestUsers.teacher(TEACHER)))
+                .hasStatus(HttpStatus.CREATED);
+        Path archive = platform.dataDir().resolve("backups").resolve(backups.create().name());
+        Files.createDirectories(target.resolve("restore"));
+        Files.copy(archive, target.resolve("restore").resolve(archive.getFileName()));
+        String url = "jdbc:h2:file:" + target.resolve("db/teacherbox").toAbsolutePath();
+
+        assertThat(PendingRestore.restore(target, url, "sa", "", Instant.now())).isPresent();
+
+        try (Connection connection = DriverManager.getConnection(url, "sa", "");
+                ResultSet rows = connection.createStatement().executeQuery("""
+                        select s.elements, (select count(*) from boards.board_backups b where b.board_id = s.board_id),
+                            (select f.file_key from boards.board_files f where f.board_id = s.board_id)
+                        from boards.board_scenes s where s.board_id = '%s'""".formatted(board))) {
+            assertThat(rows.next()).isTrue();
+            assertThat(rows.getString(1)).contains("\"fileId\":\"img1\"");
+            assertThat(rows.getInt(2)).isEqualTo(1);
+            assertThat(target.resolve("files/boards").resolve(rows.getString(3))).hasBinaryContent(png);
+        }
     }
 
     private static Map<String, String> unzip(byte[] bytes) throws IOException {

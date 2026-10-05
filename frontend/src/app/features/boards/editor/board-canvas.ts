@@ -16,6 +16,7 @@ import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/ty
 import type {
   AppState,
   BinaryFiles,
+  ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
   ExcalidrawProps,
 } from '@excalidraw/excalidraw/types';
@@ -23,7 +24,7 @@ import { defer } from 'rxjs';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ExcalidrawHost } from './excalidraw-host';
-import { ExcalidrawLoader } from './excalidraw-loader';
+import { BoardMenuItem, ExcalidrawLoader, ExcalidrawModules } from './excalidraw-loader';
 
 /** The portal theme the canvas follows. */
 export type BoardTheme = 'light' | 'dark';
@@ -34,6 +35,17 @@ export interface BoardCanvasChange {
   readonly appState: AppState;
   readonly files: BinaryFiles;
 }
+
+/** The mounted editor: its imperative API and the island's functions (merge, new elements). */
+export interface BoardCanvasReady {
+  readonly api: ExcalidrawImperativeAPI;
+  readonly modules: ExcalidrawModules;
+}
+
+/** Excalidraw's own actions the portal does not use: files on disk and its theme switch. */
+const UI_OPTIONS: ExcalidrawProps['UIOptions'] = {
+  canvasActions: { loadScene: false, saveToActiveFile: false, toggleTheme: null },
+};
 
 /**
  * Excalidraw as an Angular component: the border of the React island (ADR-0028). The scene is read once,
@@ -75,13 +87,18 @@ export class BoardCanvas {
   /** The scene to start with; read when the editor mounts. */
   readonly scene = input<ExcalidrawInitialDataState | null>(null);
   readonly theme = input<BoardTheme>('light');
+  /** The portal's items of the main menu (e.g. «Вернуться к доскам»). */
+  readonly menu = input<readonly BoardMenuItem[]>([]);
   readonly sceneChange = output<BoardCanvasChange>();
+  /** The editor is mounted: its API arrives once. */
+  readonly ready = output<BoardCanvasReady>();
 
   protected readonly state = new LoadState();
   private readonly loader = inject(ExcalidrawLoader);
   private readonly destroyRef = inject(DestroyRef);
   private readonly surface = viewChild.required<ElementRef<HTMLElement>>('surface');
   private host: ExcalidrawHost | undefined;
+  private modules: ExcalidrawModules | undefined;
   private initialData: ExcalidrawInitialDataState | null = null;
 
   constructor() {
@@ -90,6 +107,7 @@ export class BoardCanvas {
     });
     effect(() => {
       this.theme();
+      this.menu();
       untracked(() => {
         this.render();
       });
@@ -101,6 +119,7 @@ export class BoardCanvas {
       .pipe(this.state.track(), takeUntilDestroyed(this.destroyRef))
       .subscribe((modules) => {
         this.initialData = this.scene();
+        this.modules = modules;
         this.host = new ExcalidrawHost(modules, this.surface().nativeElement, this.destroyRef);
         this.render();
       });
@@ -111,13 +130,21 @@ export class BoardCanvas {
   }
 
   private props(): ExcalidrawProps {
+    const modules = this.modules;
     return {
       initialData: this.initialData,
       theme: this.theme(),
       langCode: 'ru-RU',
+      UIOptions: UI_OPTIONS,
+      // No embedded web pages on a board: a link stays a link.
+      validateEmbeddable: () => false,
       onChange: (elements, appState, files) => {
         this.sceneChange.emit({ elements, appState, files });
       },
+      excalidrawAPI: (api) => {
+        if (modules) this.ready.emit({ api, modules });
+      },
+      children: modules?.mainMenu(this.menu()),
     };
   }
 }

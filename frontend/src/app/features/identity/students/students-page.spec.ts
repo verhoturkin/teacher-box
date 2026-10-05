@@ -6,7 +6,7 @@ import { ConfirmationService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
-import { Board, BoardsDialog } from '@features/boards/parts';
+import { Board } from '@features/boards/parts';
 import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
 import { aBoard } from '@testing/boards-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
@@ -83,7 +83,7 @@ describe('StudentsPage', () => {
     for (const request of backend.match('/api/teacher/meetings/yandex')) {
       request.flush(yandexStatus());
     }
-    for (const request of backend.match('/api/teacher/boards')) {
+    for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
       request.flush(boards);
     }
     await fixture.whenStable();
@@ -328,23 +328,19 @@ describe('StudentsPage', () => {
     expect(rowsText()[1]).toContain('Ссылка');
   });
 
-  it('shows the boards of a student and edits them', async () => {
-    await loadStudents([MARIA, BORIS], [], [], [aBoard({ ownerId: 'm' })]);
+  it('links the boards of a student, with the boards of their groups', async () => {
+    await loadStudents(
+      [MARIA, BORIS],
+      [aGroup({ id: 'g1', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] })],
+      [],
+      [
+        aBoard({ members: [{ type: 'STUDENT', id: 'm', name: 'Мария' }] }),
+        aBoard({ id: 'board-2', members: [{ type: 'GROUP', id: 'g1', name: 'ОГЭ' }] }),
+      ],
+    );
 
-    expect(rowsText()[0]).toContain('Алгебра');
-    buttonByText(host, 'Доски: Мария').click();
-    await fixture.whenStable();
-    const dialog = own(BoardsDialog);
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.owner()).toEqual({ type: 'STUDENT', id: 'm', name: 'Мария' });
-    expect(dialog.boards()).toEqual([aBoard({ ownerId: 'm' })]);
-
-    buttonByText(host, 'Добавить доску: Борис').click();
-    dialog.saved.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
-    await fixture.whenStable();
-    expect(rowsText()[1]).toContain('Физика');
-    dialog.removed.emit(aBoard({ id: 'board-2', ownerId: 'b', title: 'Физика' }));
-    await fixture.whenStable();
-    expect(rowsText()[1]).not.toContain('Физика');
+    expect(rowsText()[0]).toContain('Доски (2)');
+    expect(rowsText()[1]).toContain('Доски (0)');
+    expect(host.querySelector('a[href="/teacher/boards?student=m"]')).not.toBeNull();
   });
 });

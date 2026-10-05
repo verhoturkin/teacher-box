@@ -1,7 +1,7 @@
 package ru.teacherbox.boards.domain;
 
-/** Whose board it is. */
-public enum BoardOwner {
+/** Who a board is bound to. */
+public enum MemberType {
     STUDENT,
     GROUP
 }

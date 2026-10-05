@@ -1,5 +1,7 @@
 import { DOCUMENT, Injectable, InjectionToken, inject } from '@angular/core';
-import type { ExcalidrawProps } from '@excalidraw/excalidraw/types';
+import type { ExcalidrawElementSkeleton } from '@excalidraw/excalidraw/data/transform';
+import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
+import type { AppState, ExcalidrawProps } from '@excalidraw/excalidraw/types';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
 import { selfHostFonts } from './self-hosted-fonts';
 
@@ -7,6 +9,12 @@ import { selfHostFonts } from './self-hosted-fonts';
 export interface IslandRoot {
   render(node: ReactNode): void;
   unmount(): void;
+}
+
+/** An item of the portal in Excalidraw's main menu. */
+export interface BoardMenuItem {
+  readonly label: string;
+  readonly onSelect: () => void;
 }
 
 /**
@@ -20,6 +28,18 @@ export interface ExcalidrawModules {
     props: ExcalidrawProps,
   ) => ReactElement;
   readonly Excalidraw: ComponentType<ExcalidrawProps>;
+  /** Excalidraw's main menu: the portal's items, then Excalidraw's own (no links to its socials). */
+  readonly mainMenu: (items: readonly BoardMenuItem[]) => ReactNode;
+  /** Excalidraw's merge of the local and the remote elements (keeps what is being drawn). */
+  readonly reconcileElements: (
+    local: readonly OrderedExcalidrawElement[],
+    remote: readonly OrderedExcalidrawElement[],
+    appState: AppState,
+  ) => OrderedExcalidrawElement[];
+  /** New elements from their skeletons (text, image) with fresh ids. */
+  readonly convertToExcalidrawElements: (
+    skeletons: readonly ExcalidrawElementSkeleton[],
+  ) => OrderedExcalidrawElement[];
 }
 
 /**

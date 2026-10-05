@@ -2103,3 +2103,14 @@ a.p-menu-item-link:hover {
     font: var(--tb-type-body-s);
   }
 }
+
+/*
+ * Excalidraw (ADR-0028) sets `font-family: Assistant` with no fallback on its dialogs and labels, and
+ * Assistant has no Cyrillic: Russian text fell back to a serif. The Cyrillic range of «Assistant» is
+ * taken from the system's sans-serif fonts instead (no download, nothing for the CSP).
+ */
+@font-face {
+  font-family: Assistant;
+  src: local('Roboto'), local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}

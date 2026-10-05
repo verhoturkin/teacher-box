@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
-import { OwnerBoardLinks } from '@features/boards/parts';
+import { BoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
@@ -9,7 +9,7 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
 /** Teacher's home, on top: the nearest lesson with «Начать урок» and the boards of the student or group. */
 @Component({
   selector: 'tb-upcoming-lesson-widget',
-  imports: [RouterLink, Card, JoinLessonButton, OwnerBoardLinks],
+  imports: [RouterLink, Card, JoinLessonButton, BoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Следующее занятие" styleClass="tb-upcoming tb-hero">
@@ -21,7 +21,10 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
           @if (next.topic !== null) {
             <span class="tb-muted">{{ next.topic }}</span>
           }
-          <tb-owner-board-links [ownerIds]="owners()" />
+          <tb-board-links
+            [studentId]="next.groupId === null ? next.studentId : null"
+            [groupId]="next.groupId"
+          />
         </div>
         <div class="tb-actions">
           @if (next.joinUrl; as url) {
@@ -64,5 +67,4 @@ export class UpcomingLessonWidget {
   protected readonly time = computed(() =>
     formatLessonTime(this.lesson().startsAt, this.lesson().endsAt),
   );
-  protected readonly owners = computed(() => [this.lesson().groupId ?? this.lesson().studentId]);
 }

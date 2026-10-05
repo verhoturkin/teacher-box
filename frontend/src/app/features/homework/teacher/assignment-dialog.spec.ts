@@ -186,7 +186,7 @@ describe('AssignmentDialog', () => {
     await fixture.whenStable();
     toBoard.click();
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/boards').flush([]);
+    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     const board = fixture.debugElement

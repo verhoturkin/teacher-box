@@ -21,7 +21,7 @@ import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
 import { Tooltip } from 'primeng/tooltip';
-import { OwnerBoardLinks } from '@features/boards/parts';
+import { BoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
@@ -60,7 +60,7 @@ import { AttendanceDialog } from './attendance-dialog';
     Tooltip,
     AttendanceDialog,
     JoinLessonButton,
-    OwnerBoardLinks,
+    BoardLinks,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -129,7 +129,10 @@ import { AttendanceDialog } from './attendance-dialog';
             </div>
           }
           @if (visible()) {
-            <tb-owner-board-links [ownerIds]="[lesson.groupId ?? lesson.studentId]" />
+            <tb-board-links
+              [studentId]="lesson.groupId === null ? lesson.studentId : null"
+              [groupId]="lesson.groupId"
+            />
           }
           @if (lesson.cancelReason !== null) {
             <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>

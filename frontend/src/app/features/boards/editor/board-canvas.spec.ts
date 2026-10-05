@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { FakeIsland, fakeExcalidraw } from '@testing/excalidraw-fake';
 import { testProviders } from '@testing/setup';
-import { BoardCanvas, BoardCanvasChange } from './board-canvas';
+import { BoardCanvas, BoardCanvasChange, BoardCanvasReady } from './board-canvas';
 import { ExcalidrawLoader, ExcalidrawModules } from './excalidraw-loader';
 
 describe('BoardCanvas', () => {
@@ -75,6 +75,27 @@ describe('BoardCanvas', () => {
     Reflect.apply(island.last().onChange ?? fail, undefined, [[], appState, {}]);
 
     expect(changes).toEqual([{ elements: [], appState, files: {} }]);
+  });
+
+  it('builds the portal menu, keeps embeds off and hands out the editor API', async () => {
+    const back = vi.fn();
+    await render((canvas) => {
+      canvas.componentRef.setInput('menu', [{ label: 'Вернуться к доскам', onSelect: back }]);
+    });
+    const ready: BoardCanvasReady[] = [];
+    fixture.componentInstance.ready.subscribe((value) => ready.push(value));
+    const props = island.last();
+
+    expect(island.menu.map((item) => item.label)).toEqual(['Вернуться к доскам']);
+    island.menu[0]?.onSelect();
+    expect(back).toHaveBeenCalled();
+    expect(props.UIOptions?.canvasActions).toMatchObject({ loadScene: false, toggleTheme: null });
+    const validate = props.validateEmbeddable;
+    expect(typeof validate === 'function' ? validate('https://x') : validate).toBe(false);
+
+    const api = { id: 'api' };
+    Reflect.apply(props.excalidrawAPI ?? fail, undefined, [api]);
+    expect(ready).toEqual([{ api, modules: island.modules }]);
   });
 
   it('offers to retry when the editor did not load', async () => {
