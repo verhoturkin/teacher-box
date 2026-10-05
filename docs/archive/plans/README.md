@@ -28,3 +28,4 @@ Legend: **B** — backend, **F** — frontend, **D** — docker/infrastructure.
 | [1.6.13](v1.6.13.md) | 81–83 |
 | [1.7.0](v1.7.0.md) | 84–93 |
 | [1.7.1](v1.7.1.md) | 94–95 |
+| [1.7.2](v1.7.2.md) | 96–98 |

@@ -1,8 +1,8 @@
 # boards
 
 Boards of the portal: our own Excalidraw boards and external boards by link, bound to any number of students and
-groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../adr/0028-excalidraw-boards.md), [0029](../adr/0029-live-boards.md) (real time)
-(supersedes the boards part of [0012](../adr/0012-meetings-and-boards.md)).
+groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../adr/0028-excalidraw-boards.md)
+(supersedes the boards part of [0012](../adr/0012-meetings-and-boards.md)), [0029](../adr/0029-live-boards.md) (real time).
 
 ## Rules
 
