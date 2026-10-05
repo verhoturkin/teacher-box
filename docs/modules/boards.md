@@ -20,6 +20,16 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   (`boards.scene-too-large`).
 - Polling: `GET /api/boards/{id}/scene?since=<version>` → 204 while unchanged. An external board has no scene →
   409 `boards.no-scene`.
+- Live channel (ADR-0029): `POST /api/boards/{id}/live` → `{ticket}` (after `requireAccess`, Excalidraw boards
+  only; one-time, 1 min, kept in memory as a hash — `LiveTickets`), then a WebSocket to
+  `/api/public/boards/live?ticket=` (no ticket, a used or expired one → 403). `live/LiveRooms` keeps the editors of
+  each board in memory (one instance): a peer has an id, the user's name and the smallest free colour index;
+  `welcome` / `joined` / `left`; relays `pointer` (x, y, tool, button — checked) and `elements` (checked by
+  `SceneElements.valid`) to the others; answers `ping` with `pong`; sends `saved` with the version after a scene
+  save or a restored copy (`SceneSaved`, after commit). Nothing is stored. Access is checked again
+  (`BoardService.mayAccess`) when the board changes or is deleted (`BoardAccessChanged`), a group changes or is
+  archived; a deactivated student's channels close — closed with 1008. Messages ≤ 1 M characters; a slow
+  receiver loses old messages (the scene still comes by save and poll).
 - Images: `PUT|GET /api/boards/{id}/files/{fileId}` — raw body, png/jpeg/webp/gif checked by magic bytes (no SVG),
   ≤ 20 MB; stored once per `fileId` in the `boards` namespace of `FileStorage` (keys in `board_files`; a namespace
   cannot have sub-folders, so not `boards/<boardId>/`); served `private, max-age=1y, immutable`, `nosniff`.
@@ -43,7 +53,8 @@ Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 chara
 |---|---|
 | `GET /api/teacher/boards?studentId=|groupId=`, `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
-| `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}` | teacher, member student |
+| `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
+| WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
 | `GET|PUT /api/boards/library` — the current user's own library (an array of items with `id` and `elements`) | teacher, student |
 | `GET /api/me/boards` (kind, `groupNames`, `updatedAt`, newest first) | student |
 

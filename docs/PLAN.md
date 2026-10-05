@@ -42,7 +42,7 @@ the fallback. Supersedes the «опрос, без реального време�
 
 ### Stage 97. Real time
 
-- [ ] 97.1 **B** `boards`: `spring-boot-starter-websocket`; `application/LiveTickets` (one-time, 60 s, issued
+- [x] 97.1 **B** `boards`: `spring-boot-starter-websocket`; `application/LiveTickets` (one-time, 60 s, issued
       after `requireAccess`, Excalidraw boards only), `web/BoardsController` `POST /api/boards/{id}/live`;
       `live/` adapter — `LiveConfiguration` (`/api/public/boards/live`, message ≤ 1 MB), `LiveRooms` (peers of a
       board, colour index, `welcome` / `joined` / `left`, relays `pointer` and `elements`, `saved` after a scene

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.boards.domain.BackupKind;
@@ -51,15 +52,17 @@ public class BoardBackupService {
     private final BoardsProperties properties;
     private final JsonMapper json;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     public BoardBackupService(BoardService boards, SceneRepository scenes, FileStorage storage,
-            BoardsProperties properties, JsonMapper json, Clock clock) {
+            BoardsProperties properties, JsonMapper json, Clock clock, ApplicationEventPublisher events) {
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
         this.properties = properties;
         this.json = json;
         this.clock = clock;
+        this.events = events;
     }
 
     /** Newest first. */
@@ -93,6 +96,7 @@ public class BoardBackupService {
                 SceneElements.valid(json.readTree(backup.elements())));
         scenes.update(new BoardScene(board.id(), json.writeValueAsString(restored), backup.appState(),
                 current.version() + 1, clock.instant(), teacher.id()));
+        events.publishEvent(new SceneSaved(board.id(), current.version() + 1));
         return view(safety);
     }
 

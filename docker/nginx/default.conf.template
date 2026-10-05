@@ -6,6 +6,12 @@ map $http_x_forwarded_proto $teacherbox_forwarded_proto {
     ""      $scheme;
 }
 
+# The live channel of a board is a WebSocket (ADR-0029): pass the upgrade on, keep other requests plain.
+map $http_upgrade $teacherbox_connection {
+    default upgrade;
+    ""      "";
+}
+
 server {
     listen 8080;
     server_name _;
@@ -31,7 +37,9 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $teacherbox_forwarded_proto;
         proxy_set_header X-Forwarded-Host $host;
-        # AI requests and file uploads may take a while.
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $teacherbox_connection;
+        # AI requests and file uploads may take a while; an open board pings its channel every 30 s.
         proxy_read_timeout 180s;
         proxy_send_timeout 180s;
         # nginx adds the security headers itself (server level); avoid duplicates from the backend.
