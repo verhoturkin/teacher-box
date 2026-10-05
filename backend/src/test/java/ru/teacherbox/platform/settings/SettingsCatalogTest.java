@@ -41,9 +41,14 @@ class SettingsCatalogTest {
                 .extracting(SettingDefinition::access).isEqualTo(Access.DOCKER);
         assertThat(SettingsCatalog.find("TEACHERBOX_AI_MODEL")).get().matches(SettingDefinition::editable);
         assertThat(SettingsCatalog.find("NOPE")).isEmpty();
+        // one key per section, and a key never names two sections
+        assertThat(SettingsCatalog.all().stream().map(setting -> setting.section() + "=" + setting.group()).distinct())
+                .doesNotHaveDuplicates()
+                .hasSameSizeAs(SettingsCatalog.all().stream().map(SettingDefinition::section).distinct().toList());
         assertThat(SettingsCatalog.all()).allSatisfy(setting -> {
             assertThat(setting.title()).isNotBlank();
             assertThat(setting.group()).isNotBlank();
+            assertThat(setting.section()).matches("[a-z]+");
             assertThat(setting.kind() == SettingKind.CHOICE).isEqualTo(!setting.choices().isEmpty());
         });
     }

@@ -130,7 +130,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
 
 test('the administrator chooses the time zone from the list', async ({ page }) => {
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings');
+  await page.goto('/admin/settings?open=portal');
   const setting = page
     .locator('.tb-setting')
     .filter({ has: page.locator('#setting-TEACHERBOX_TIMEZONE') });

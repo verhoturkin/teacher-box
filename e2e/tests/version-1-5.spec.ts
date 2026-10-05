@@ -202,7 +202,7 @@ test('the administrator changes a setting and the portal restarts to apply it', 
 }) => {
   test.setTimeout(240_000);
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings');
+  await page.goto('/admin/settings?open=backups');
   const keep = page.locator('#setting-TEACHERBOX_BACKUP_KEEP');
   await keep.fill('9');
   await page.getByRole('button', { name: 'Сохранить и перезапустить' }).click();

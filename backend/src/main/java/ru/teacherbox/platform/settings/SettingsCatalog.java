@@ -42,23 +42,23 @@ public final class SettingsCatalog {
     private static List<SettingDefinition> build() {
         Builder b = new Builder();
 
-        b.group("Портал")
+        b.group("portal", "Портал")
                 .add("TEACHERBOX_PUBLIC_URL", "Адрес портала", ADDRESS,
                         "Все ссылки портала начинаются с него. Если задан, важнее адреса из «Настройки» → «Портал».")
                 .add("TEACHERBOX_TIMEZONE", "Часовой пояс учителя", TIME_ZONE,
                         "По нему считаются даты занятий и отчёты за месяц, например Europe/Moscow.");
 
-        b.group("Оплаты")
+        b.group("billing", "Оплаты")
                 .add("TEACHERBOX_BILLING_CURRENCY", "Валюта", CURRENCY, "Код ISO 4217, например RUB.")
                 .add("TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION", "Длительность занятия, минут", NUMBER, "");
 
-        b.group("Домашние задания")
+        b.group("homework", "Домашние задания")
                 .add("TEACHERBOX_HOMEWORK_MAX_FILE_SIZE", "Наибольший размер файла", DATA_SIZE,
                         "Например 20MB; больше 25MB сервер не примет.")
                 .add("TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD", "Файлов за одну отправку", NUMBER, "")
                 .add("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", "Напоминание о сроке сдачи за", DURATION, "Например 24h.");
 
-        b.group("Расписание")
+        b.group("schedule", "Расписание")
                 .add("TEACHERBOX_SCHEDULE_DEFAULT_DURATION", "Длительность занятия по умолчанию, минут", NUMBER, "")
                 .add("TEACHERBOX_SCHEDULE_HORIZON", "Регулярные занятия создаются вперёд на", DURATION,
                         "Например 84d.")
@@ -71,20 +71,20 @@ public final class SettingsCatalog {
                 .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET", "Google: секрет клиента OAuth")
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", "Google: прокси", PROXY, "Если Google недоступен напрямую.");
 
-        b.group("Видеовстречи")
+        b.group("meetings", "Видеовстречи")
                 .add("TEACHERBOX_MEETINGS_YANDEX_CLIENT_ID", "Яндекс: идентификатор приложения", TEXT,
                         "Приложение в Яндекс ID с правами Телемоста.")
                 .secret("TEACHERBOX_MEETINGS_YANDEX_CLIENT_SECRET", "Яндекс: секрет приложения")
                 .secret("TEACHERBOX_MEETINGS_TELEMOST_TOKEN", "Готовый токен Телемоста")
                 .add("TEACHERBOX_MEETINGS_TELEMOST_API_URL", "Адрес API Телемоста", URL, "Только для проверок.");
 
-        b.group("Доски")
+        b.group("boards", "Доски")
                 .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
                         "Ежедневная копия каждой изменённой доски, например 0 0 3 * * *; - — выключить.")
                 .add("TEACHERBOX_BOARDS_BACKUP_KEEP", "Сколько ежедневных копий доски хранить", NUMBER,
                         "Копии, сделанные учителем, не считаются.");
 
-        b.group("Уведомления и боты")
+        b.group("notifications", "Уведомления и боты")
                 .secret("TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", "Telegram: токен бота")
                 .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", "Telegram: прокси", PROXY,
                         "Если Telegram заблокирован в сети сервера.")
@@ -98,7 +98,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL", "Код подключения мессенджера действует", DURATION,
                         "Например 15m.");
 
-        b.group("ИИ-помощник")
+        b.group("ai", "ИИ-помощник")
                 .choice("TEACHERBOX_AI_PROVIDER", "Сервис ИИ", "Пусто — ИИ выключен.",
                         List.of("anthropic", "gemini", "openai-compatible"))
                 .secret("TEACHERBOX_AI_API_KEY", "Ключ API")
@@ -112,7 +112,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_AI_MAX_TOKENS", "Токенов в ответе", NUMBER, "")
                 .add("TEACHERBOX_AI_TIMEOUT", "Время ожидания ответа", DURATION, "Например 120s.");
 
-        b.group("Сеансы и вход")
+        b.group("sessions", "Сеансы и вход")
                 .add("TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", "Токен доступа действует", DURATION, "Например 15m.")
                 .add("TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL", "Вход помнится", DURATION, "Например 30d.")
                 .add("TEACHERBOX_IDENTITY_INVITE_TTL", "Приглашение действует", DURATION, "Например 7d.")
@@ -126,7 +126,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD", "Период подсчёта попыток", DURATION,
                         "Например 1m.");
 
-        b.group("Резервные копии")
+        b.group("backups", "Резервные копии")
                 .add("TEACHERBOX_BACKUP_CRON", "Расписание копий", CRON,
                         "Cron из 6 частей, например 0 30 3 * * * (каждую ночь в 3:30); - — выключить.")
                 .add("TEACHERBOX_BACKUP_KEEP", "Сколько копий хранить", NUMBER,
@@ -134,7 +134,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_BACKUP_RESTART", "Перезапуск после восстановления", BOOLEAN,
                         "true в Docker; false — перезапускать портал вручную.");
 
-        b.group("Журнал")
+        b.group("log", "Журнал")
                 .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", "Формат журнала в консоли",
                         "Пусто — обычный текст; JSON для сборщиков журналов.", List.of("ecs", "logstash", "gelf"))
                 .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", "Размер файла журнала", DATA_SIZE,
@@ -143,7 +143,7 @@ public final class SettingsCatalog {
                         "Например 100MB.")
                 .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", "Дней журнала хранить", NUMBER, "");
 
-        b.group("Учётные записи")
+        b.group("accounts", "Учётные записи")
                 .account("TEACHERBOX_IDENTITY_TEACHER_LOGIN", "Логин учителя", false)
                 .account("TEACHERBOX_IDENTITY_TEACHER_PASSWORD", "Пароль учителя", true)
                 .account("TEACHERBOX_IDENTITY_TEACHER_NAME", "Имя учителя", false)
@@ -151,7 +151,7 @@ public final class SettingsCatalog {
                 .account("TEACHERBOX_IDENTITY_ADMIN_LOGIN", "Логин администратора", false)
                 .account("TEACHERBOX_IDENTITY_ADMIN_PASSWORD", "Пароль администратора", true);
 
-        b.group("Docker")
+        b.group("docker", "Docker")
                 .docker("TEACHERBOX_HTTP_PORT", "Порт веб-интерфейса на сервере", NUMBER)
                 .docker("TEACHERBOX_VERSION", "Версия образа", TEXT)
                 .docker("TEACHERBOX_MEMORY_LIMIT", "Память контейнера", TEXT)
@@ -164,9 +164,11 @@ public final class SettingsCatalog {
     private static final class Builder {
 
         private final List<SettingDefinition> settings = new ArrayList<>();
+        private String section = "";
         private String group = "";
 
-        Builder group(String name) {
+        Builder group(String key, String name) {
+            section = key;
             group = name;
             return this;
         }
@@ -198,7 +200,7 @@ public final class SettingsCatalog {
 
         private Builder put(String name, String title, String hint, SettingKind kind, List<String> choices,
                 boolean secret, Access access) {
-            settings.add(new SettingDefinition(name, group, title, hint, kind, choices, secret, access));
+            settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access));
             return this;
         }
     }

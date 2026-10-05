@@ -17,6 +17,16 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## Next release
+
+Goals: the administrator's settings page follows the design system.
+
+### Stage 99. Admin settings page by the design system
+
+- [x] 99.1 **B F** Sections of `SettingsCatalog` get a `section` key; `admin/settings/settings-page.ts` — sections
+  fold (`tb-fold-card`, `?open=`, badge of unsaved changes), full-width stack, M3 outlined fields (label on the
+  outline, variable and source under the field), Docker and accounts as a segmented `tb-list`.
+
 ## Backlog
 
 Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):
