@@ -200,7 +200,7 @@ test('students are cards with their buttons next to the name, words are whole', 
 
 test('the settings of the administrator are one under another', async ({ page }) => {
   await signIn(page, 1440, 'admin');
-  await page.goto('/admin/settings');
+  await page.goto('/admin/settings?open=sessions');
 
   const fields = page.locator('.tb-setting');
   await expect(fields.first()).toBeVisible();

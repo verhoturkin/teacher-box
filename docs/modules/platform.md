@@ -26,7 +26,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   tables are covered.
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example` (test),
   values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
-  Compose variables and accounts read-only; change confirmed by password, then restart.
+  Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a
+  `section` key (`ai`, `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`).
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
   incomplete Modulith events with resubmit, integration checks (`IntegrationCheck` beans), diagnostics archive.
   Admin actions → `teacherbox.audit` logger.

@@ -129,6 +129,7 @@ export function aiUsage(overrides: Partial<AiUsage> = {}): AiUsage {
 export function adminSetting(overrides: Partial<AdminSetting> = {}): AdminSetting {
   return {
     name: 'TEACHERBOX_AI_MODEL',
+    section: 'ai',
     group: 'ИИ-помощник',
     title: 'Модель',
     hint: 'Пусто — модель сервиса по умолчанию.',
@@ -148,6 +149,7 @@ export function adminSettings(overrides: Partial<AdminSettings> = {}): AdminSett
     settings: [
       adminSetting({
         name: 'TEACHERBOX_HTTP_PORT',
+        section: 'docker',
         group: 'Docker',
         title: 'Порт веб-интерфейса на сервере',
         hint: 'Docker Compose читает её до запуска портала: меняется только в .env.',
@@ -159,6 +161,7 @@ export function adminSettings(overrides: Partial<AdminSettings> = {}): AdminSett
       }),
       adminSetting({
         name: 'TEACHERBOX_IDENTITY_TEACHER_PASSWORD',
+        section: 'accounts',
         group: 'Учётные записи',
         title: 'Пароль учителя',
         secret: true,
@@ -193,6 +196,7 @@ export function adminSettings(overrides: Partial<AdminSettings> = {}): AdminSett
       }),
       adminSetting({
         name: 'TEACHERBOX_BACKUP_KEEP',
+        section: 'backups',
         group: 'Резервные копии',
         title: 'Сколько копий хранить',
         hint: '',

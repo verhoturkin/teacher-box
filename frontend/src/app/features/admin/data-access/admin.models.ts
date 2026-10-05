@@ -147,6 +147,8 @@ export type SettingSource = 'DEFAULT' | 'ENVIRONMENT' | 'ADMIN';
 /** Mirrors `AdminSettingsService.SettingView`: one setting of the portal (ADR-0016). */
 export interface AdminSetting {
   readonly name: string;
+  /** The key of the section, e.g. `ai`: opens it by a link (`?open=ai`). */
+  readonly section: string;
   readonly group: string;
   readonly title: string;
   readonly hint: string;

@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { Select } from 'primeng/select';
 import { adminSetting, adminSettings } from '@testing/admin-fixtures';
 import {
@@ -21,13 +22,17 @@ describe('SettingsPage', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(settings: AdminSettings = adminSettings()): Promise<void> {
+  async function render(
+    settings: AdminSettings = adminSettings(),
+    open = 'docker,accounts,ai,backups,portal',
+  ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
       providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(SettingsPage);
+    fixture.componentRef.setInput('open', open);
     fixture.detectChanges();
     backend.expectOne('/api/admin/settings').flush(settings);
     await fixture.whenStable();
@@ -80,7 +85,7 @@ describe('SettingsPage', () => {
     expect(text).toContain('Docker');
     expect(text).toContain('Порт веб-интерфейса на сервере');
     expect(text).toContain('8080');
-    expect(text).toContain('Пароль учителя из .env TEACHERBOX_IDENTITY_TEACHER_PASSWORD задан');
+    expect(text).toContain('Пароль учителя задан TEACHERBOX_IDENTITY_TEACHER_PASSWORD');
     expect(text).toContain('задан');
     expect(text).toContain('из .env');
     expect(text).toContain('задано здесь');
@@ -94,9 +99,66 @@ describe('SettingsPage', () => {
     expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(true);
   });
 
+  it('folds the sections and keeps the open ones in the address', async () => {
+    await render(adminSettings(), '');
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    expect(host.querySelector('#setting-TEACHERBOX_AI_MODEL')).toBeNull();
+    expect(readableText(host)).toContain('Сервис, модель, ключ и лимиты');
+
+    buttonByText(host, 'ИИ-помощник').click();
+    expect(navigate).toHaveBeenLastCalledWith([], {
+      queryParams: { open: 'ai' },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+
+    fixture.componentRef.setInput('open', 'ai,backups');
+    await fixture.whenStable();
+    fixture.componentInstance.fold('ai', false);
+    expect(navigate).toHaveBeenLastCalledWith([], {
+      queryParams: { open: 'backups' },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    fixture.componentRef.setInput('open', 'backups');
+    await fixture.whenStable();
+    fixture.componentInstance.fold('backups', false);
+    expect(navigate).toHaveBeenLastCalledWith([], {
+      queryParams: { open: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  });
+
+  it('counts the unsaved changes of a folded section and explains a section it does not know', async () => {
+    const extra = adminSetting({
+      name: 'TEACHERBOX_EXTRA',
+      section: 'extra',
+      group: 'Новое',
+      title: 'Первая',
+    });
+    const settings = adminSettings();
+    await render(
+      adminSettings({
+        settings: [...settings.settings, extra, { ...extra, name: 'B', title: 'Вторая' }],
+      }),
+      '',
+    );
+
+    expect(readableText(host)).toContain('Первая, Вторая');
+    fixture.componentInstance.change(extra, '1');
+    await fixture.whenStable();
+    expect(requireElement(host, '#settings-extra .p-badge', HTMLElement).textContent).toContain(
+      '1',
+    );
+  });
+
   it('chooses the time zone from the list', async () => {
     const zone = adminSetting({
       name: 'TEACHERBOX_TIMEZONE',
+      section: 'portal',
       group: 'Портал',
       title: 'Часовой пояс учителя',
       kind: 'TIME_ZONE',

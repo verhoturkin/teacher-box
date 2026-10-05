@@ -36,7 +36,7 @@ public class AdminSettingsService {
      * @param value the value; always {@code null} for a secret and for a setting that is not set
      * @param set   the setting has a non-empty value (the only thing shown about a secret)
      */
-    public record SettingView(String name, String group, String title, String hint, SettingKind kind,
+    public record SettingView(String name, String section, String group, String title, String hint, SettingKind kind,
             List<String> choices, boolean secret, Access access, Source source, @Nullable String value,
             boolean set) {
     }
@@ -137,7 +137,7 @@ public class AdminSettingsService {
         Source source = fromFile != null ? Source.ADMIN : fromEnvironment != null ? Source.ENVIRONMENT : Source.DEFAULT;
         String value = fromFile != null ? fromFile : fromEnvironment;
         boolean set = value != null && !value.isEmpty();
-        return new SettingView(setting.name(), setting.group(), setting.title(), setting.hint(), setting.kind(),
+        return new SettingView(setting.name(), setting.section(), setting.group(), setting.title(), setting.hint(), setting.kind(),
                 setting.choices(), setting.secret(), setting.access(), source, setting.secret() ? null : value, set);
     }
 }

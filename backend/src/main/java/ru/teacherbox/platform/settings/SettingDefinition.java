@@ -6,6 +6,7 @@ import java.util.List;
  * A setting of the portal: an environment variable of {@code .env.example} (ADR-0016).
  *
  * @param name    the variable, e.g. {@code TEACHERBOX_AI_MODEL}
+ * @param section the key of the section, e.g. {@code ai}: it opens the section by a link ({@code ?open=ai})
  * @param group   the section in the interface, e.g. «ИИ-помощник»
  * @param title   what it is, in Russian
  * @param hint    how to fill it, in Russian; may be empty
@@ -13,7 +14,7 @@ import java.util.List;
  * @param secret  a password, token or key: never shown, only set anew
  * @param access  who may change it
  */
-public record SettingDefinition(String name, String group, String title, String hint, SettingKind kind,
+public record SettingDefinition(String name, String section, String group, String title, String hint, SettingKind kind,
         List<String> choices, boolean secret, Access access) {
 
     /** Who may change the setting. */
