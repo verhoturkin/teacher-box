@@ -2123,3 +2123,62 @@ a.p-menu-item-link:hover {
 .excalidraw a.library-menu-browse-button {
   display: none;
 }
+
+/*
+ * The editor's toolbars, menus and dialogs take the portal's colour roles instead of Excalidraw's violet
+ * (the board follows the portal theme, so `--p-md-*` already belong to the right one). The canvas
+ * background (`--default-bg-color`, the board's own `viewBackgroundColor`) stays. `:root` outweighs
+ * Excalidraw's `.excalidraw` and `.excalidraw.theme--dark`, whose stylesheet comes later.
+ */
+:root .excalidraw,
+:root .excalidraw.theme--dark {
+  --color-primary: var(--p-md-primary);
+  --color-primary-darker: color-mix(in srgb, var(--p-md-primary) 88%, var(--p-md-on-surface));
+  --color-primary-darkest: color-mix(in srgb, var(--p-md-primary) 76%, var(--p-md-on-surface));
+  --color-primary-hover: var(--color-primary-darker);
+  --color-primary-light: var(--p-md-primary-container);
+  --color-primary-light-darker: color-mix(
+    in srgb,
+    var(--p-md-primary-container) 88%,
+    var(--p-md-on-primary-container)
+  );
+  --color-brand-hover: var(--color-primary-darker);
+  --color-brand-active: var(--color-primary-darkest);
+  --color-on-primary-container: var(--p-md-on-primary-container);
+  --color-surface-primary-container: var(--p-md-primary-container);
+  --color-logo-text: var(--p-md-on-primary-container);
+  --color-selection: var(--p-md-primary);
+  --select-highlight-color: var(--p-md-primary);
+  --focus-highlight-color: var(--p-md-primary);
+  --link-color: var(--p-md-primary);
+  --color-surface-lowest: var(--p-md-surface-container-lowest);
+  --color-surface-low: var(--p-md-surface-container-low);
+  --color-surface-mid: var(--p-md-surface-container);
+  --color-surface-high: var(--p-md-surface-container-high);
+  --color-on-surface: var(--p-md-on-surface);
+  --text-primary-color: var(--p-md-on-surface);
+  --popup-text-color: var(--p-md-on-surface);
+  --keybinding-color: var(--p-md-on-surface-variant);
+  --color-border-outline: var(--p-md-outline);
+  --color-border-outline-variant: var(--p-md-outline-variant);
+  --dialog-border-color: var(--p-md-outline-variant);
+  --input-border-color: var(--p-md-outline-variant);
+  --input-label-color: var(--p-md-on-surface-variant);
+  --island-bg-color: var(--p-md-surface-container-lowest);
+  --input-bg-color: var(--p-md-surface-container-lowest);
+  --input-hover-bg-color: var(--p-md-surface-container-low);
+  --popup-secondary-bg-color: var(--p-md-surface-container-low);
+  --color-danger: var(--p-md-error);
+  --color-danger-background: var(--p-md-error-container);
+  --color-danger-icon-background: var(--p-md-error-container);
+  --color-danger-color: var(--p-md-on-error-container);
+  --color-danger-icon-color: var(--p-md-on-error-container);
+}
+
+/* Floating surfaces in the dark theme are surface-container (design system §2) */
+:root.tb-dark .excalidraw.theme--dark {
+  --island-bg-color: var(--p-md-surface-container);
+  --input-bg-color: var(--p-md-surface-container);
+  --input-hover-bg-color: var(--p-md-surface-container-high);
+  --popup-secondary-bg-color: var(--p-md-surface-container-high);
+}

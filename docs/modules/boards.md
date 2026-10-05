@@ -69,12 +69,16 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
   (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`, `self-hosted-fonts.ts` drops
   Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with its owner), `board-canvas.ts`
-  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`, `library`; outputs `sceneChange`, `ready` with the API; loading and
-  error states; no file load/save, no theme switch, no embeds).
+  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`, `settings`, `wheel`, `library`; outputs `sceneChange`, `ready` with
+  the API; loading and error states; no file load/save, no Excalidraw theme switch, no embeds). In the `zoom` wheel mode
+  a plain wheel over the canvas is handed to Excalidraw again as Ctrl + wheel (lines and pages turned into pixels);
+  Ctrl, ⌘ and Shift keep Excalidraw's meaning.
   - `board-page.ts` — routes `/teacher/boards/:id`, `/cabinet/boards/:id` outside the shell (full screen, same
     guards, `canLeaveGuard`): bar «← Доски» / «← Мои доски», title, save status «Сохранено» / «Сохранение…» /
-    «Нет связи — повторим»; menu «Вернуться к доскам» (+ the teacher's «Резервные копии» — only there); portal
-    theme, `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
+    «Нет связи — повторим»; menu «Вернуться к доскам» (+ the teacher's «Резервные копии» — only there), then
+    Excalidraw's items, then the settings: «Тема» («Светлая» / «Тёмная» / «Как в системе» — the portal's own
+    `ThemeMode`), «Сетка» (the board's `gridModeEnabled`, shared and saved), «Колесо мыши» («Масштаб» by default /
+    «Прокрутка (тачпад)», device setting `tb.board.wheel`); `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
   - `board-sync.ts` — saves the changed elements 1 s after the last change (and on leaving, on a hidden tab),
     applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
     tab is visible and nothing is being saved, retries a failed save every 5 s, uploads new images once and fetches
@@ -83,7 +87,9 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
     (`board-page.ts` → `GET|PUT /api/boards/library`); library URLs (`#addLibrary`) are refused and
     «Просмотреть библиотеки» is hidden — libraries.excalidraw.com is outside the CSP (ADR-0028); a
     `.excalidrawlib` file opens via «Открыть».
-  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts.
+  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
+    Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
+    in both themes; the canvas background stays the board's.
 - `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard

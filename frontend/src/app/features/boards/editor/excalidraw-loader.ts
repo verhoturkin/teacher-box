@@ -15,7 +15,18 @@ export interface IslandRoot {
 export interface BoardMenuItem {
   readonly label: string;
   readonly onSelect: () => void;
+  /** A setting: on (or the chosen one of a group) — marked; an action has none. */
+  readonly checked?: boolean;
 }
+
+/** A setting with several choices, e.g. «Тема»: a titled group, the chosen item is checked. */
+export interface BoardMenuGroup {
+  readonly title: string;
+  readonly items: readonly BoardMenuItem[];
+}
+
+/** A setting of the editor in the main menu: a switch («Сетка») or a group of choices. */
+export type BoardMenuSetting = BoardMenuItem | BoardMenuGroup;
 
 /** Where the user's Excalidraw library lives (the portal keeps it on the server, per user). */
 export interface BoardLibrary {
@@ -38,8 +49,14 @@ export interface ExcalidrawModules {
   ) => ReactElement;
   /** Excalidraw that also loads and saves the library through `library`. */
   readonly Excalidraw: ComponentType<BoardEditorProps>;
-  /** Excalidraw's main menu: the portal's items, then Excalidraw's own (no links to its socials). */
-  readonly mainMenu: (items: readonly BoardMenuItem[]) => ReactNode;
+  /**
+   * Excalidraw's main menu: the portal's items, Excalidraw's own (no links to its socials), then the
+   * editor's settings.
+   */
+  readonly mainMenu: (
+    items: readonly BoardMenuItem[],
+    settings: readonly BoardMenuSetting[],
+  ) => ReactNode;
   /** Excalidraw's merge of the local and the remote elements (keeps what is being drawn). */
   readonly reconcileElements: (
     local: readonly OrderedExcalidrawElement[],

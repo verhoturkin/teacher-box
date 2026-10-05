@@ -98,6 +98,104 @@ describe('BoardCanvas', () => {
     expect(ready).toEqual([{ api, modules: island.modules }]);
   });
 
+  it('puts the settings at the end of the menu', async () => {
+    const grid = { label: 'Сетка', checked: true, onSelect: vi.fn() };
+    await render((canvas) => {
+      canvas.componentRef.setInput('settings', [grid]);
+    });
+
+    expect(island.settings).toEqual([grid]);
+  });
+
+  describe('mouse wheel', () => {
+    function canvasIn(): HTMLCanvasElement {
+      const canvas = document.createElement('canvas');
+      hostElement(fixture).querySelector('.tb-board-canvas__surface')?.append(canvas);
+      return canvas;
+    }
+
+    function wheels(target: EventTarget): WheelEvent[] {
+      const seen: WheelEvent[] = [];
+      target.addEventListener('wheel', (event) => {
+        if (event instanceof WheelEvent) seen.push(event);
+      });
+      return seen;
+    }
+
+    it('zooms with a plain wheel over the canvas: Excalidraw gets its Ctrl + wheel', async () => {
+      await render();
+      const canvas = canvasIn();
+      const seen = wheels(canvas);
+      const wheel = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaY: 3,
+        deltaMode: 1,
+        clientX: 10,
+        clientY: 20,
+      });
+
+      canvas.dispatchEvent(wheel);
+
+      expect(wheel.defaultPrevented).toBe(true);
+      expect(seen).toHaveLength(1);
+      expect(seen[0]).toMatchObject({ ctrlKey: true, deltaY: 120, deltaMode: 0, clientX: 10 });
+    });
+
+    it('scales pages to pixels too', async () => {
+      await render();
+      const canvas = canvasIn();
+      const seen = wheels(canvas);
+
+      canvas.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 1, deltaMode: 2 }));
+
+      expect(seen[0]).toMatchObject({ ctrlKey: true, deltaY: 800 });
+    });
+
+    it.each([{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }])(
+      'leaves %o to Excalidraw',
+      async (keys) => {
+        await render();
+        const canvas = canvasIn();
+        const seen = wheels(canvas);
+
+        canvas.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100, ...keys }));
+
+        expect(seen).toEqual([expect.objectContaining({ deltaY: 100, ...keys })]);
+      },
+    );
+
+    it('scrolls in the touchpad mode and outside the canvas', async () => {
+      await render((canvas) => {
+        canvas.componentRef.setInput('wheel', 'scroll');
+      });
+      const canvas = canvasIn();
+      const seen = wheels(canvas);
+      canvas.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+      expect(seen).toEqual([expect.objectContaining({ ctrlKey: false })]);
+
+      fixture.componentRef.setInput('wheel', 'zoom');
+      const toolbar = document.createElement('div');
+      canvas.after(toolbar);
+      const outside = wheels(toolbar);
+      toolbar.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+      expect(outside).toEqual([expect.objectContaining({ ctrlKey: false })]);
+    });
+
+    it('stops listening with the component', async () => {
+      await render();
+      const host = hostElement(fixture);
+      const canvas = canvasIn();
+      fixture.destroy();
+      const seen = wheels(canvas);
+      host.append(canvas);
+
+      canvas.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+
+      expect(seen).toEqual([expect.objectContaining({ ctrlKey: false })]);
+    });
+  });
+
   it('offers to retry when the editor did not load', async () => {
     load.mockRejectedValueOnce(new Error('offline'));
     await render();

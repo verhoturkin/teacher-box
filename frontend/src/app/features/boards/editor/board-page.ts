@@ -17,7 +17,8 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Message } from 'primeng/message';
 import { CanLeave } from '@core/routing/can-leave.guard';
-import { ThemeMode } from '@core/theme/theme-mode';
+import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-settings';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -26,11 +27,25 @@ import { BoardContent } from '../data-access/boards.models';
 import { BoardBackupsDialog } from '../teacher/board-backups-dialog';
 import { BoardClipboard } from '../to-board/board-clipboard';
 import { BoardInsert } from '../to-board/board-insert';
-import { BoardCanvas, BoardCanvasChange, BoardCanvasReady } from './board-canvas';
+import { BoardCanvas, BoardCanvasChange, BoardCanvasReady, BoardWheel } from './board-canvas';
 import { BoardSync, SaveStatus } from './board-sync';
-import type { BoardLibrary, BoardMenuItem } from './excalidraw-loader';
+import type { BoardLibrary, BoardMenuItem, BoardMenuSetting } from './excalidraw-loader';
 import { elementsOf, libraryItemsOf, sharedAppState } from './excalidraw-data';
 import { insertMaterial } from './material-insert';
+
+/** Device setting: what the mouse wheel does on boards. */
+export const WHEEL_KEY = 'tb.board.wheel';
+
+const THEMES: readonly { readonly choice: ThemeChoice; readonly label: string }[] = [
+  { choice: 'light', label: 'Светлая' },
+  { choice: 'dark', label: 'Тёмная' },
+  { choice: 'system', label: 'Как в системе' },
+];
+
+const WHEELS: readonly { readonly wheel: BoardWheel; readonly label: string }[] = [
+  { wheel: 'zoom', label: 'Масштаб' },
+  { wheel: 'scroll', label: 'Прокрутка (тачпад)' },
+];
 
 const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
   saved: 'Сохранено',
@@ -84,6 +99,8 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
                 [scene]="initialScene()"
                 [theme]="theme()"
                 [menu]="menu()"
+                [settings]="settings()"
+                [wheel]="wheel()"
                 [library]="library"
                 (ready)="attach($event)"
                 (sceneChange)="changed($event)"
@@ -184,6 +201,7 @@ export class BoardPage implements OnInit, CanLeave {
   private readonly clipboard = inject(BoardClipboard);
   private readonly insert = inject(BoardInsert);
   private readonly document = inject(DOCUMENT);
+  private editor: BoardCanvasReady['api'] | undefined;
 
   /** The board (route parameter). */
   readonly id = input.required<string>();
@@ -229,6 +247,45 @@ export class BoardPage implements OnInit, CanLeave {
           },
         ]
       : []),
+  ]);
+
+  /** Whether the board shows its grid (the board's own setting, shared with everyone on it). */
+  protected readonly grid = signal(false);
+  protected readonly wheel = signal<BoardWheel>(
+    readDeviceSetting(WHEEL_KEY) === 'scroll' ? 'scroll' : 'zoom',
+  );
+  protected readonly settings = computed<BoardMenuSetting[]>(() => [
+    {
+      title: 'Тема',
+      items: THEMES.map(({ choice, label }) => ({
+        label,
+        checked: this.themeMode.choice() === choice,
+        onSelect: () => {
+          this.themeMode.choose(choice);
+        },
+      })),
+    },
+    {
+      label: 'Сетка',
+      checked: this.grid(),
+      onSelect: () => {
+        this.editor?.updateScene({
+          appState: { gridModeEnabled: !this.grid() },
+          captureUpdate: 'EVENTUALLY',
+        });
+      },
+    },
+    {
+      title: 'Колесо мыши',
+      items: WHEELS.map(({ wheel, label }) => ({
+        label,
+        checked: this.wheel() === wheel,
+        onSelect: () => {
+          this.wheel.set(wheel);
+          writeDeviceSetting(WHEEL_KEY, wheel);
+        },
+      })),
+    },
   ]);
 
   /** The user's own library of shapes, kept on the server for all their boards. */
@@ -305,6 +362,7 @@ export class BoardPage implements OnInit, CanLeave {
   protected attach(ready: BoardCanvasReady): void {
     const sync = this.sync();
     if (sync === null) return;
+    this.editor = ready.api;
     sync.attach(ready.api, ready.modules);
     const material = this.insert.take(this.id());
     if (material !== null) {
@@ -315,6 +373,7 @@ export class BoardPage implements OnInit, CanLeave {
   }
 
   protected changed(change: BoardCanvasChange): void {
+    this.grid.set(change.appState.gridModeEnabled);
     this.sync()?.changed(change.elements, change.appState);
   }
 

@@ -9,7 +9,9 @@ import { FakeIsland, anElement, fakeExcalidraw, fakeScene } from '@testing/excal
 import { testProviders } from '@testing/setup';
 import { BoardBackupsDialog } from '../teacher/board-backups-dialog';
 import { BoardInsert } from '../to-board/board-insert';
-import { BoardPage } from './board-page';
+import { ThemeMode } from '@core/theme/theme-mode';
+import { BoardCanvas } from './board-canvas';
+import { BoardPage, WHEEL_KEY } from './board-page';
 import { ExcalidrawLoader } from './excalidraw-loader';
 
 describe('BoardPage', () => {
@@ -91,6 +93,51 @@ describe('BoardPage', () => {
     expect(host.querySelector('a[href="/cabinet/boards"]')?.textContent).toContain('Мои доски');
     expect(island.menu.map((item) => item.label)).toEqual(['Вернуться к доскам']);
     expect(host.textContent).not.toContain('Резервные копии');
+  });
+
+  it('switches the portal theme, the board’s grid and the wheel from the menu', async () => {
+    localStorage.removeItem(WHEEL_KEY);
+    render('cabinet');
+    const scene = await open();
+    const theme = TestBed.inject(ThemeMode);
+    const update = vi.spyOn(scene.access, 'updateScene');
+
+    expect(
+      island.settings.map((setting) => ('title' in setting ? setting.title : setting.label)),
+    ).toEqual(['Тема', 'Сетка', 'Колесо мыши']);
+    expect(island.setting(theme.choice() === 'system' ? 'Как в системе' : 'Светлая').checked).toBe(
+      true,
+    );
+    island.setting('Тёмная').onSelect();
+    fixture.detectChanges();
+    expect(theme.choice()).toBe('dark');
+    expect(island.setting('Тёмная').checked).toBe(true);
+    expect(island.last().theme).toBe('dark');
+    theme.choose('system');
+
+    expect(island.setting('Сетка').checked).toBe(false);
+    island.setting('Сетка').onSelect();
+    expect(update).toHaveBeenCalledWith({
+      appState: { gridModeEnabled: true },
+      captureUpdate: 'EVENTUALLY',
+    });
+    Reflect.apply(island.last().onChange ?? fail, undefined, [
+      [],
+      { ...scene.state.appState, gridModeEnabled: true },
+      {},
+    ]);
+    fixture.detectChanges();
+    expect(island.setting('Сетка').checked).toBe(true);
+
+    expect(island.setting('Масштаб').checked).toBe(true);
+    island.setting('Прокрутка (тачпад)').onSelect();
+    fixture.detectChanges();
+    expect(island.setting('Прокрутка (тачпад)').checked).toBe(true);
+    expect(localStorage.getItem(WHEEL_KEY)).toBe('scroll');
+    const canvas = fixture.debugElement.query(By.directive(BoardCanvas)).injector.get(BoardCanvas);
+    expect(canvas.wheel()).toBe('scroll');
+    localStorage.removeItem(WHEEL_KEY);
+    backend.match(() => true);
   });
 
   it('keeps the user’s library on the server', async () => {

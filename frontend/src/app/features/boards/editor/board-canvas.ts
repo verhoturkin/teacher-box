@@ -28,12 +28,20 @@ import {
   BoardEditorProps,
   BoardLibrary,
   BoardMenuItem,
+  BoardMenuSetting,
   ExcalidrawLoader,
   ExcalidrawModules,
 } from './excalidraw-loader';
 
 /** The portal theme the canvas follows. */
 export type BoardTheme = 'light' | 'dark';
+
+/** What the mouse wheel does over the canvas: zooms (a mouse) or scrolls (a touchpad, Excalidraw's own). */
+export type BoardWheel = 'zoom' | 'scroll';
+
+/** Pixels of a wheel «line» and «page» (Firefox reports lines): Excalidraw's zoom reads pixels. */
+const LINE_PX = 40;
+const PAGE_PX = 800;
 
 /** What Excalidraw reports on every change of the scene. */
 export interface BoardCanvasChange {
@@ -95,6 +103,9 @@ export class BoardCanvas {
   readonly theme = input<BoardTheme>('light');
   /** The portal's items of the main menu (e.g. «Вернуться к доскам»). */
   readonly menu = input<readonly BoardMenuItem[]>([]);
+  /** The editor's settings at the end of the main menu (theme, grid, wheel). */
+  readonly settings = input<readonly BoardMenuSetting[]>([]);
+  readonly wheel = input<BoardWheel>('zoom');
   /** The user's Excalidraw library; read when the editor mounts. */
   readonly library = input<BoardLibrary | null>(null);
   readonly sceneChange = output<BoardCanvasChange>();
@@ -109,13 +120,47 @@ export class BoardCanvas {
   private modules: ExcalidrawModules | undefined;
   private initialData: ExcalidrawInitialDataState | null = null;
 
+  /**
+   * In zoom mode a plain wheel over the canvas zooms: the event goes to Excalidraw again as its own zoom
+   * gesture (Ctrl + wheel). Ctrl, ⌘ and Shift (sideways scroll) keep Excalidraw's meaning.
+   */
+  private readonly zoomByWheel = (event: WheelEvent): void => {
+    const target = event.target;
+    if (this.wheel() !== 'zoom' || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (!(target instanceof HTMLCanvasElement)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const scale = event.deltaMode === 1 ? LINE_PX : event.deltaMode === 2 ? PAGE_PX : 1;
+    target.dispatchEvent(
+      new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        screenX: event.screenX,
+        screenY: event.screenY,
+        deltaX: event.deltaX * scale,
+        deltaY: event.deltaY * scale,
+        deltaMode: 0,
+        ctrlKey: true,
+        altKey: event.altKey,
+      }),
+    );
+  };
+
   constructor() {
+    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    element.addEventListener('wheel', this.zoomByWheel, { capture: true, passive: false });
+    this.destroyRef.onDestroy(() => {
+      element.removeEventListener('wheel', this.zoomByWheel, { capture: true });
+    });
     afterNextRender(() => {
       this.load();
     });
     effect(() => {
       this.theme();
       this.menu();
+      this.settings();
       untracked(() => {
         this.render();
       });
@@ -152,7 +197,7 @@ export class BoardCanvas {
       excalidrawAPI: (api) => {
         if (modules) this.ready.emit({ api, modules });
       },
-      children: modules?.mainMenu(this.menu()),
+      children: modules?.mainMenu(this.menu(), this.settings()),
       library: this.library() ?? undefined,
     };
   }
