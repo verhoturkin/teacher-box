@@ -1,7 +1,7 @@
 import { DOCUMENT, Injectable, InjectionToken, inject } from '@angular/core';
 import type { ExcalidrawElementSkeleton } from '@excalidraw/excalidraw/data/transform';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type { AppState, ExcalidrawProps } from '@excalidraw/excalidraw/types';
+import type { AppState, ExcalidrawProps, LibraryItems } from '@excalidraw/excalidraw/types';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
 import { selfHostFonts } from './self-hosted-fonts';
 
@@ -17,6 +17,15 @@ export interface BoardMenuItem {
   readonly onSelect: () => void;
 }
 
+/** Where the user's Excalidraw library lives (the portal keeps it on the server, per user). */
+export interface BoardLibrary {
+  load(): Promise<LibraryItems>;
+  save(items: LibraryItems): Promise<void>;
+}
+
+/** Excalidraw's props and the user's library, kept and restored by the island. */
+export type BoardEditorProps = ExcalidrawProps & { readonly library?: BoardLibrary };
+
 /**
  * The parts of React, ReactDOM and Excalidraw the board editor uses — a narrow contract so tests pass fakes
  * and never start React in jsdom (ADR-0028).
@@ -24,10 +33,11 @@ export interface BoardMenuItem {
 export interface ExcalidrawModules {
   readonly createRoot: (container: Element) => IslandRoot;
   readonly createElement: (
-    type: ComponentType<ExcalidrawProps>,
-    props: ExcalidrawProps,
+    type: ComponentType<BoardEditorProps>,
+    props: BoardEditorProps,
   ) => ReactElement;
-  readonly Excalidraw: ComponentType<ExcalidrawProps>;
+  /** Excalidraw that also loads and saves the library through `library`. */
+  readonly Excalidraw: ComponentType<BoardEditorProps>;
   /** Excalidraw's main menu: the portal's items, then Excalidraw's own (no links to its socials). */
   readonly mainMenu: (items: readonly BoardMenuItem[]) => ReactNode;
   /** Excalidraw's merge of the local and the remote elements (keeps what is being drawn). */

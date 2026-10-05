@@ -122,6 +122,15 @@ async function draw(
   await saved;
 }
 
+/** «Резервные копии» of the board menu (☰). */
+async function openCopies(page: Page): Promise<void> {
+  await page.locator('.excalidraw .main-menu-trigger').click();
+  await page
+    .locator('.excalidraw .dropdown-menu-item')
+    .filter({ hasText: 'Резервные копии' })
+    .click();
+}
+
 test.beforeAll(async ({ request }) => {
   vera = await student(request, VERA);
   const other = await student(request, `Гриша ${RUN}`);
@@ -222,7 +231,7 @@ test('the teacher makes a copy, changes the board and restores it', async ({ pag
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto(`/teacher/boards/${boardId}`);
   await editorReady(page);
-  await page.getByRole('button', { name: 'Резервные копии' }).click();
+  await openCopies(page);
   const copies = page.getByRole('dialog', { name: /Резервные копии/ });
   await copies.getByRole('button', { name: 'Сделать копию' }).click();
   await expect(copies).toContainText('Копия учителя');
@@ -236,7 +245,7 @@ test('the teacher makes a copy, changes the board and restores it', async ({ pag
     )
     .toBe(4);
 
-  await page.getByRole('button', { name: 'Резервные копии' }).click();
+  await openCopies(page);
   await copies
     .getByRole('button', { name: /^Восстановить копию от/ })
     .last()

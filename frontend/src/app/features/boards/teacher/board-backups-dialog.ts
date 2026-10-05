@@ -45,98 +45,102 @@ interface PendingAction {
       styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
-      <p class="tb-muted">
-        Портал копирует каждую изменённую доску раз в сутки. Сделайте свою копию перед большими
-        изменениями.
-      </p>
-      <div class="tb-form-actions">
-        <p-button
-          label="Сделать копию"
-          icon="pi pi-copy"
-          severity="secondary"
-          [loading]="busy() === 'create'"
-          (onClick)="create()"
-        />
-      </div>
-      @if (confirming(); as action) {
-        <p-message
-          [severity]="action.kind === 'delete' ? 'error' : 'warn'"
-          styleClass="tb-form-message"
-        >
-          <span>
-            @if (action.kind === 'restore') {
-              Вернуть рисунок от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}? Текущий
-              рисунок сохранится копией — его тоже можно будет вернуть.
-            } @else {
-              Удалить копию от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}?
-            }
-          </span>
-          <span class="tb-inline">
-            <p-button
-              label="Отмена"
-              severity="secondary"
-              [text]="true"
-              (onClick)="confirming.set(null)"
-            />
-            <p-button
-              [label]="action.kind === 'restore' ? 'Восстановить' : 'Удалить'"
-              [severity]="action.kind === 'restore' ? 'success' : 'danger'"
-              [loading]="busy() === action.kind"
-              (onClick)="confirm(action)"
-            />
-          </span>
-        </p-message>
-      }
-      @if (error(); as message) {
-        <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-      }
-      <tb-load-state [state]="state" what="копии" (retry)="load()">
-        @if (backups().length > 0) {
-          <ul class="tb-list">
-            @for (backup of backups(); track backup.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"
-                  ><i [class]="backup.kind === 'DAILY' ? 'pi pi-calendar' : 'pi pi-copy'"></i
-                ></span>
-                <div class="tb-list__text">
-                  <span class="tb-list__title">{{
-                    backup.createdAt | date: 'dd.MM.yyyy HH:mm'
-                  }}</span>
-                  <span class="tb-list__supporting">{{ kindLabels[backup.kind] }}</span>
-                </div>
-                <span class="tb-list__trail">
-                  <p-button
-                    label="Восстановить"
-                    [text]="true"
-                    [ariaLabel]="
-                      'Восстановить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
-                    "
-                    (onClick)="ask('restore', backup)"
-                  />
-                  <p-button
-                    icon="pi pi-trash"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="danger"
-                    [pTooltip]="'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')"
-                    [ariaLabel]="
-                      'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
-                    "
-                    (onClick)="ask('delete', backup)"
-                  />
-                </span>
-              </li>
-            }
-          </ul>
-        } @else {
-          <tb-empty-state
-            [compact]="true"
-            icon="pi-history"
-            title="Копий пока нет"
-            hint="Ежедневная копия появится после первых изменений на доске."
+      <div class="tb-form">
+        <p class="tb-muted">
+          Портал копирует каждую изменённую доску раз в сутки. Сделайте свою копию перед большими
+          изменениями.
+        </p>
+        <div class="tb-form-actions">
+          <p-button
+            label="Сделать копию"
+            icon="pi pi-copy"
+            severity="secondary"
+            [loading]="busy() === 'create'"
+            (onClick)="create()"
           />
+        </div>
+        @if (confirming(); as action) {
+          <p-message
+            [severity]="action.kind === 'delete' ? 'error' : 'warn'"
+            styleClass="tb-form-message"
+          >
+            <span>
+              @if (action.kind === 'restore') {
+                Вернуть рисунок от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}? Текущий
+                рисунок сохранится копией — его тоже можно будет вернуть.
+              } @else {
+                Удалить копию от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}?
+              }
+            </span>
+            <span class="tb-inline">
+              <p-button
+                label="Отмена"
+                severity="secondary"
+                [text]="true"
+                (onClick)="confirming.set(null)"
+              />
+              <p-button
+                [label]="action.kind === 'restore' ? 'Восстановить' : 'Удалить'"
+                [severity]="action.kind === 'restore' ? 'success' : 'danger'"
+                [loading]="busy() === action.kind"
+                (onClick)="confirm(action)"
+              />
+            </span>
+          </p-message>
         }
-      </tb-load-state>
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+        <tb-load-state [state]="state" what="копии" (retry)="load()">
+          @if (backups().length > 0) {
+            <ul class="tb-list">
+              @for (backup of backups(); track backup.id) {
+                <li>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i [class]="backup.kind === 'DAILY' ? 'pi pi-calendar' : 'pi pi-copy'"></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{
+                      backup.createdAt | date: 'dd.MM.yyyy HH:mm'
+                    }}</span>
+                    <span class="tb-list__supporting">{{ kindLabels[backup.kind] }}</span>
+                  </div>
+                  <span class="tb-list__trail">
+                    <p-button
+                      label="Восстановить"
+                      [text]="true"
+                      [ariaLabel]="
+                        'Восстановить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
+                      "
+                      (onClick)="ask('restore', backup)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="danger"
+                      [pTooltip]="
+                        'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
+                      "
+                      [ariaLabel]="
+                        'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
+                      "
+                      (onClick)="ask('delete', backup)"
+                    />
+                  </span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <tb-empty-state
+              [compact]="true"
+              icon="pi-history"
+              title="Копий пока нет"
+              hint="Ежедневная копия появится после первых изменений на доске."
+            />
+          }
+        </tb-load-state>
+      </div>
       <ng-template #footer>
         <p-button
           label="Закрыть"
@@ -146,6 +150,12 @@ interface PendingAction {
         />
       </ng-template>
     </p-dialog>
+  `,
+  styles: `
+    /* the column's gap spaces the text, the button and the list */
+    p {
+      margin: 0;
+    }
   `,
 })
 export class BoardBackupsDialog {

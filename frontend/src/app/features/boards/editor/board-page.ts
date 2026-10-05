@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import type { ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
+import { firstValueFrom } from 'rxjs';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -27,8 +28,8 @@ import { BoardClipboard } from '../to-board/board-clipboard';
 import { BoardInsert } from '../to-board/board-insert';
 import { BoardCanvas, BoardCanvasChange, BoardCanvasReady } from './board-canvas';
 import { BoardSync, SaveStatus } from './board-sync';
-import type { BoardMenuItem } from './excalidraw-loader';
-import { elementsOf, sharedAppState } from './excalidraw-data';
+import type { BoardLibrary, BoardMenuItem } from './excalidraw-loader';
+import { elementsOf, libraryItemsOf, sharedAppState } from './excalidraw-data';
 import { insertMaterial } from './material-insert';
 
 const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
@@ -73,12 +74,6 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
             >{{ statusLabels[board.status()] }}</span
           >
         }
-        @if (teacher() && content()?.kind === 'EXCALIDRAW') {
-          <button pButton [text]="true" severity="secondary" (click)="backupsVisible.set(true)">
-            <i pButtonIcon class="pi pi-history"></i>
-            <span pButtonLabel>Резервные копии</span>
-          </button>
-        }
       </header>
       <main class="tb-board-page__body">
         <tb-load-state [state]="state" what="доску" (retry)="load()">
@@ -89,6 +84,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
                 [scene]="initialScene()"
                 [theme]="theme()"
                 [menu]="menu()"
+                [library]="library"
                 (ready)="attach($event)"
                 (sceneChange)="changed($event)"
               />
@@ -234,6 +230,12 @@ export class BoardPage implements OnInit, CanLeave {
         ]
       : []),
   ]);
+
+  /** The user's own library of shapes, kept on the server for all their boards. */
+  protected readonly library: BoardLibrary = {
+    load: async () => libraryItemsOf(await firstValueFrom(this.api.library())),
+    save: (items) => firstValueFrom(this.api.saveLibrary(items)),
+  };
 
   /** Leaving the tab saves at once; coming back asks for the others' changes. */
   private readonly visibility = (): void => {

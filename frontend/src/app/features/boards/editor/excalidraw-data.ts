@@ -1,5 +1,5 @@
 import type { FileId, OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type { AppState, BinaryFileData, DataURL } from '@excalidraw/excalidraw/types';
+import type { AppState, BinaryFileData, DataURL, LibraryItems } from '@excalidraw/excalidraw/types';
 
 /** The image types a board keeps (the server takes the same, never SVG). */
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
@@ -27,6 +27,23 @@ export function isElements(
 /** The elements of a stored drawing; nothing when the JSON is not a drawing. */
 export function elementsOf(values: readonly unknown[]): readonly OrderedExcalidrawElement[] {
   return isElements(values) ? values : [];
+}
+
+/** Library items from the server (plain JSON): every one has an id and elements; nothing otherwise. */
+export function libraryItemsOf(values: readonly unknown[]): LibraryItems {
+  return isLibraryItems(values) ? values : [];
+}
+
+function isLibraryItems(values: readonly unknown[]): values is LibraryItems {
+  return values.every(
+    (value) =>
+      typeof value === 'object' &&
+      value !== null &&
+      'id' in value &&
+      typeof value.id === 'string' &&
+      'elements' in value &&
+      Array.isArray(value.elements),
+  );
 }
 
 /** The shared part of an appState, from Excalidraw's or from the server's JSON. */

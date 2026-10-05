@@ -10,13 +10,11 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -35,31 +33,18 @@ import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 
-/** A choice of the filter: `student:<id>` or `group:<id>`. */
-interface FilterOption {
-  readonly label: string;
-  readonly value: string;
-}
-
-interface FilterGroup {
-  readonly label: string;
-  readonly items: readonly FilterOption[];
-}
-
 /**
- * Teacher: every board in one place (ADR-0028) — create, change, delete, copies; filtered by a student
- * or a group in the URL (`?student=`, `?group=`).
+ * Teacher: every board in one place (ADR-0028) — create, change, delete, copies. «Доски (n)» of a student
+ * or a group opens the list filtered in the URL (`?student=`, `?group=`); «Все доски» drops the filter.
  */
 @Component({
   selector: 'tb-boards-page',
   imports: [
     DatePipe,
-    FormsModule,
     RouterLink,
     Button,
     Card,
     ConfirmDialog,
-    Select,
     TableModule,
     Tag,
     Tooltip,
@@ -84,25 +69,18 @@ interface FilterGroup {
       />
     </tb-page-header>
 
-    <div class="tb-toolbar">
-      <div class="tb-field">
-        <label for="boards-filter">Ученик или группа</label>
-        <p-select
-          inputId="boards-filter"
-          [options]="filterOptions()"
-          [group]="true"
-          optionLabel="label"
-          optionValue="value"
-          [ngModel]="filter()"
-          (ngModelChange)="applyFilter($event)"
-          placeholder="Все доски"
-          [showClear]="true"
-          [filter]="true"
-          filterPlaceholder="Поиск"
-          appendTo="body"
+    @if (filterLabel(); as label) {
+      <div class="tb-toolbar">
+        <span class="tb-strong">{{ label }}</span>
+        <p-button
+          label="Все доски"
+          icon="pi pi-times"
+          [text]="true"
+          severity="secondary"
+          (onClick)="showAll()"
         />
       </div>
-    </div>
+    }
 
     <p-card>
       <h2 class="tb-sr-only">Список досок</h2>
@@ -229,19 +207,20 @@ export class BoardsPage implements OnInit {
     if (student) return `student:${student}`;
     return group ? `group:${group}` : null;
   });
-  protected readonly filterOptions = computed<FilterGroup[]>(() => [
-    {
-      label: 'Ученики',
-      items: this.students().map((student) => ({
-        label: student.name,
-        value: `student:${student.id}`,
-      })),
-    },
-    {
-      label: 'Группы',
-      items: this.groups().map((group) => ({ label: group.name, value: `group:${group.id}` })),
-    },
-  ]);
+  /** Whose boards the list shows when it is filtered; `null` for all boards. */
+  protected readonly filterLabel = computed(() => {
+    const student = this.student();
+    const group = this.group();
+    if (student) {
+      const name = this.students().find((option) => option.id === student)?.name;
+      return name ? `Доски ученика: ${name}` : 'Доски ученика';
+    }
+    if (group) {
+      const name = this.groups().find((option) => option.id === group)?.name;
+      return name ? `Доски группы: ${name}` : 'Доски группы';
+    }
+    return null;
+  });
   /** A new board starts with the student or the group of the filter. */
   protected readonly defaults = computed<BoardDefaults>(() => ({
     studentIds: this.student() ? [this.student() ?? ''] : [],
@@ -283,13 +262,9 @@ export class BoardsPage implements OnInit {
       });
   }
 
-  applyFilter(value: string | null): void {
-    const [type, id] = value?.split(':') ?? [];
+  showAll(): void {
     void this.router.navigate([], {
-      queryParams: {
-        student: type === 'student' ? id : null,
-        group: type === 'group' ? id : null,
-      },
+      queryParams: { student: null, group: null },
       queryParamsHandling: 'merge',
     });
   }

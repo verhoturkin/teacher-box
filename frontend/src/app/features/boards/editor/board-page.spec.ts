@@ -64,6 +64,7 @@ describe('BoardPage', () => {
       'Вернуться к доскам',
       'Резервные копии',
     ]);
+    expect(host.querySelector('.tb-board-page__bar')?.textContent).not.toContain('Резервные копии');
 
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     island.menu[0]?.onSelect();
@@ -90,6 +91,27 @@ describe('BoardPage', () => {
     expect(host.querySelector('a[href="/cabinet/boards"]')?.textContent).toContain('Мои доски');
     expect(island.menu.map((item) => item.label)).toEqual(['Вернуться к доскам']);
     expect(host.textContent).not.toContain('Резервные копии');
+  });
+
+  it('keeps the user’s library on the server', async () => {
+    render('cabinet');
+    await open();
+    const library = island.last().library ?? fail();
+    const item = { id: 'circle', status: 'unpublished', created: 1, elements: [] };
+
+    const loaded = library.load();
+    backend.expectOne('/api/boards/library').flush([item]);
+    await expect(loaded).resolves.toEqual([item]);
+
+    const broken = library.load();
+    backend.expectOne('/api/boards/library').flush([{ id: 'no-elements' }]);
+    await expect(broken).resolves.toEqual([]);
+
+    const saved = library.save([]);
+    const request = backend.expectOne({ method: 'PUT', url: '/api/boards/library' });
+    expect(request.request.body).toEqual([]);
+    request.flush([]);
+    await expect(saved).resolves.toBeUndefined();
   });
 
   it('saves before leaving and asks when the server is away', async () => {

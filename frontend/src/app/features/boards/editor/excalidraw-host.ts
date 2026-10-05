@@ -1,6 +1,5 @@
 import type { DestroyRef } from '@angular/core';
-import type { ExcalidrawProps } from '@excalidraw/excalidraw/types';
-import type { ExcalidrawModules, IslandRoot } from './excalidraw-loader';
+import type { BoardEditorProps, ExcalidrawModules, IslandRoot } from './excalidraw-loader';
 
 /** One Excalidraw mounted into an element as a React root; unmounted with its Angular owner. */
 export class ExcalidrawHost {
@@ -19,7 +18,7 @@ export class ExcalidrawHost {
   }
 
   /** Renders (or re-renders) Excalidraw with these props; no JSX, so tsconfig stays as is. */
-  render(props: ExcalidrawProps): void {
+  render(props: BoardEditorProps): void {
     if (this.mounted) this.root.render(this.modules.createElement(this.modules.Excalidraw, props));
   }
 

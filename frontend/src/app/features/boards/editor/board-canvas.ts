@@ -24,7 +24,13 @@ import { defer } from 'rxjs';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ExcalidrawHost } from './excalidraw-host';
-import { BoardMenuItem, ExcalidrawLoader, ExcalidrawModules } from './excalidraw-loader';
+import {
+  BoardEditorProps,
+  BoardLibrary,
+  BoardMenuItem,
+  ExcalidrawLoader,
+  ExcalidrawModules,
+} from './excalidraw-loader';
 
 /** The portal theme the canvas follows. */
 export type BoardTheme = 'light' | 'dark';
@@ -89,6 +95,8 @@ export class BoardCanvas {
   readonly theme = input<BoardTheme>('light');
   /** The portal's items of the main menu (e.g. «Вернуться к доскам»). */
   readonly menu = input<readonly BoardMenuItem[]>([]);
+  /** The user's Excalidraw library; read when the editor mounts. */
+  readonly library = input<BoardLibrary | null>(null);
   readonly sceneChange = output<BoardCanvasChange>();
   /** The editor is mounted: its API arrives once. */
   readonly ready = output<BoardCanvasReady>();
@@ -129,7 +137,7 @@ export class BoardCanvas {
     this.host?.render(this.props());
   }
 
-  private props(): ExcalidrawProps {
+  private props(): BoardEditorProps {
     const modules = this.modules;
     return {
       initialData: this.initialData,
@@ -145,6 +153,7 @@ export class BoardCanvas {
         if (modules) this.ready.emit({ api, modules });
       },
       children: modules?.mainMenu(this.menu()),
+      library: this.library() ?? undefined,
     };
   }
 }
