@@ -27,3 +27,6 @@ frontend/.angular/
 
 # Local preview configuration (machine-specific paths)
 .claude/launch.json
+
+# Output of scripts/verify.sh
+.verify-logs/

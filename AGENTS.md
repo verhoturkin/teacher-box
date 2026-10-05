@@ -37,8 +37,8 @@ M3 Expressive preset, TypeScript 5.9 strict, Vitest; Docker Compose — split or
 | Release, new module, new env var | skills `.claude/skills/{release,new-module,new-setting}/SKILL.md` |
 | Running the product | `README.md`, `docs/operations.md` (Russian, for users) |
 
-**Don't read unless the task needs it:** `docs/archive/` (completed plans, design audit — grep for the
-specific item, e.g. `DA-081`), old `CHANGELOG.md` entries (only the top one), whole ADRs when the spec answers.
+**Don't read unless the task needs it:** `docs/archive/` (completed plans, design audit; left out of searches by
+`.ignore` — find an item with `rg --no-ignore DA-081 docs/archive`), old `CHANGELOG.md` entries (only the top one), whole ADRs when the spec answers.
 
 ## 3. Repository layout
 
@@ -109,7 +109,7 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
 From the repo root (Windows: `mvnw.cmd`, bash scripts via Git Bash).
 
 ```bash
-./scripts/verify.sh                    # all checks (= pre-commit = CI)
+./scripts/verify.sh                    # all checks (= pre-commit = CI): one line per step, full logs in .verify-logs/
 ./scripts/verify.sh backend|frontend|docker|e2e
 cd backend && ./mvnw clean verify      # tests + JaCoCo gates + Modulith verify
 cd backend && ./mvnw spring-boot:run   # API :8080, data in ./backend/data
@@ -119,6 +119,10 @@ cd frontend && npm start               # :4200, proxy /api -> :8080
 ./scripts/e2e.sh                       # Playwright on a fresh single container (port 8091); locally E2E_BROWSER_CHANNEL=chrome
 docker compose -f compose.split.yaml up -d --build    # or compose.single.yaml
 ```
+
+**While iterating run only the affected tests** (`npm run test:only -- <path>`, `./mvnw -q test -Dtest=<Class>` —
+see the nested AGENTS.md); run `./scripts/verify.sh <part>` once before committing. When a step fails, read its
+printed tail first, then grep `.verify-logs/<step>.log` — don't read whole logs or rerun with verbose output.
 
 ## 6. Conventions
 

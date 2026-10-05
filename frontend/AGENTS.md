@@ -48,13 +48,16 @@ knip. Gate (`npm test`, coverage): lines / statements / functions ≥ 90 %, bran
 
 - Components — `TestBed` + Vitest, interaction through the DOM (`@testing/dom`).
 - Services — `HttpTestingController`; guards and interceptors — separate tests.
+- Edited `src/**/*.{ts,html,scss}` files are formatted by Prettier automatically (Claude Code hook); other agents
+  run `npm run format`.
 - Common setup — `testProviders(...)` from `@testing/setup` (HTTP testing, router, PrimeNG, `MessageService`);
   fixtures — `@testing/*-fixtures`.
 
 ```bash
 npx -y npm@11 ci   # install
 npm run lint       # ESLint (no any, boundaries) + Prettier check + knip (dead code)
-npm test           # Vitest + coverage gates
+npm test           # Vitest + coverage gates (whole suite)
+npm run test:only -- src/app/features/billing   # only these specs (a dir or file), dot reporter, no coverage
 npm run build      # production build
 npm start          # dev server :4200, /api -> :8080
 ```
