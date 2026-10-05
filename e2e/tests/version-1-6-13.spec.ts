@@ -16,7 +16,7 @@ async function signIn(page: Page): Promise<void> {
  */
 test('the bell is a 40 px link to the notifications', async ({ page }) => {
   await signIn(page);
-  const bell = page.getByRole('link', { name: /^Уведомления/ });
+  const bell = page.locator('tb-notification-bell').getByRole('link', { name: /^Уведомления/ });
   await expect(bell).toHaveAttribute('href', '/teacher/notifications');
   const box = await bell.boundingBox();
   expect(Math.round(box?.width ?? 0)).toBe(40);

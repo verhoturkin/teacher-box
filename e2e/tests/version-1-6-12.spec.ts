@@ -21,8 +21,9 @@ test('«Отмена» of a form is neutral and a button is 40 px high', async (
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
   await expect(cancel).toHaveClass(/p-button-secondary/);
-  const box = await dialog.getByRole('button', { name: 'Сохранить' }).boundingBox();
-  expect(Math.round(box?.height ?? 0)).toBe(40);
+  // the dialog grows in when it opens: measured once it stands still
+  const save = dialog.getByRole('button', { name: 'Сохранить' });
+  await expect.poll(async () => Math.round((await save.boundingBox())?.height ?? 0)).toBe(40);
 });
 
 test('an unknown page of the teacher keeps the frame', async ({ page }) => {

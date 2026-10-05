@@ -41,7 +41,7 @@ async function addStudent(page: Page, name: string): Promise<string> {
   await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
   await page.getByLabel('Имя и фамилия').fill(name);
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  const link = page.getByLabel('Ссылка-приглашение');
+  const link = page.getByRole('textbox', { name: 'Ссылка-приглашение' });
   await expect(link).toHaveValue(/\/invite\//);
   const invite = await link.inputValue();
   await page.keyboard.press('Escape');

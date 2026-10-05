@@ -41,7 +41,8 @@ describe('MonthlyReportPage', () => {
     expect(text()).toContain('Начислено за занятия 3 000 ₽');
     expect(text()).toContain('пропусков: 1, отменено: 1');
     expect(text()).toContain('Проведено');
-    expect(text()).toContain('Пропуск (оплачивается)');
+    expect(text()).toContain('Пропуск');
+    expect(host.querySelector('p-tag[title="Пропуск (оплачивается)"]')).not.toBeNull();
     expect(text()).not.toContain('Способ');
     expect(host.querySelectorAll('tr.tb-inactive')).toHaveLength(1);
   });

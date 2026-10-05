@@ -104,7 +104,7 @@ test.describe('on a phone', () => {
     await expect.poll(async () => (await dialog.boundingBox())?.width).toBe(PHONE.width);
     await dialog.getByLabel('Имя и фамилия').fill(STUDENT);
     await dialog.getByRole('button', { name: 'Сохранить' }).click();
-    const link = page.getByLabel('Ссылка-приглашение');
+    const link = page.getByRole('textbox', { name: 'Ссылка-приглашение' });
     await expect(link).toHaveValue(/\/invite\//);
     inviteLink = await link.inputValue();
     await page.keyboard.press('Escape');

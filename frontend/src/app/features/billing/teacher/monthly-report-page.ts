@@ -17,7 +17,7 @@ import { Tag } from 'primeng/tag';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
-import { LESSON_STATUS_LABELS } from '../billing-labels';
+import { LESSON_STATUS_HINTS, LESSON_STATUS_LABELS } from '../billing-labels';
 import { BillingApi } from '../data-access/billing-api';
 import { MonthlyReport } from '../data-access/billing.models';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -167,6 +167,7 @@ import { InitialsPipe } from '@shared/ui/initials';
                   <td data-label="Итог">
                     <p-tag
                       [value]="lessonStatusLabels[entry.lesson.status]"
+                      [attr.title]="lessonStatusHints[entry.lesson.status] ?? null"
                       [severity]="
                         entry.lesson.status === 'CONDUCTED'
                           ? 'success'
@@ -235,6 +236,7 @@ export class MonthlyReportPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
+  protected readonly lessonStatusHints = LESSON_STATUS_HINTS;
   readonly month = new FormControl<Date>(new Date(), { nonNullable: true });
   protected readonly report = signal<MonthlyReport | null>(null);
   protected readonly state = new LoadState();
