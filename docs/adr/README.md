@@ -41,4 +41,5 @@ commit.
 | [0025](0025-page-states.md) | Page states: loading, error, empty, feedback | active | design-system |
 | [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | active | design-system |
 | [0027](0027-bottom-navigation.md) | Bottom bar: four sections and «Ещё» | active | design-system |
-| [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active | [boards](../modules/boards.md) |
+| [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active (real time — 0029) | [boards](../modules/boards.md) |
+| [0029](0029-live-boards.md) | Live boards: WebSocket with a one-time ticket, relayed cursors and elements | active | [boards](../modules/boards.md) |

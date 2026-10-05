@@ -94,6 +94,11 @@ docker compose -f compose.single.yaml cp app:/data/backups ./teacherbox-backups
 
 - Портал рассчитан на работу **за HTTPS** (reverse proxy: Caddy, nginx, Traefik). Cookie сессии
   получает флаг `Secure`, когда прокси передаёт `X-Forwarded-Proto: https`.
+- Доски Excalidraw работают в реальном времени через WebSocket (`/api/public/boards/live`). Caddy и
+  Traefik пропускают его сами; в своём nginx перед порталом добавьте в `location /api/`
+  `proxy_http_version 1.1;`, `proxy_set_header Upgrade $http_upgrade;` и
+  `proxy_set_header Connection "upgrade";` (или через `map`, как в `docker/nginx/default.conf.template`).
+  Без этого доски работают, но чужие изменения видны с задержкой в несколько секунд, а курсоров нет.
 - Заголовки: Content-Security-Policy (без inline-скриптов), `X-Frame-Options: DENY`,
   `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
 - Вход: блокировка учётной записи после 5 неудачных попыток на 15 минут и ограничение частоты

@@ -53,7 +53,7 @@ the fallback. Supersedes the «опрос, без реального време�
       peers), `board-sync.ts` (sends changed elements every ~100 ms, applies relayed ones without saving them
       again, polls on `saved`, polls every 30 s while live), `board-canvas.ts` (`onPointerUpdate`,
       `isCollaborating`, collaborators with names and colours), `BoardsApi.liveTicket`.
-- [ ] 97.3 ADR-0029, ADR-0028 status, `docs/modules/boards.md`, `docs/operations.md` (own reverse proxy must pass
+- [x] 97.3 ADR-0029, ADR-0028 status, `docs/modules/boards.md`, `docs/operations.md` (own reverse proxy must pass
       WebSocket), README.
 
 ### Stage 98. Release 1.7.2
