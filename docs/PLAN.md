@@ -72,7 +72,7 @@ Goal: the CI E2E job passes again; the scenarios follow the UI of 1.6.12–1.6.1
 
 Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle nothing. Decision recorded first.
 
-- [ ] 87.1 ADR-0028 (Russian) `docs/adr/0028-excalidraw-boards.md`: board kinds `EXCALIDRAW` / `LINK`, members
+- [x] 87.1 ADR-0028 (Russian) `docs/adr/0028-excalidraw-boards.md`: board kinds `EXCALIDRAW` / `LINK`, members
       (students and groups, many-to-many), scene in the `boards` schema + images in `FileStorage`, board backups
       (daily and manual), co-editing by polling with per-element merge (no real time), React island via dynamic
       `import()` (alternatives: Vite-built web component, iframe mini-app, Angular↔React wrapper libs — why

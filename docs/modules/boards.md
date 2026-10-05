@@ -1,7 +1,7 @@
 # boards
 
 Interactive boards (Холст) of students and groups, as links. Depends on: `shared`, `identity::api`. Schema
-`boards`. ADR: [0012](../adr/0012-meetings-and-boards.md).
+`boards`. ADR: [0012](../adr/0012-meetings-and-boards.md), [0028](../adr/0028-excalidraw-boards.md) (Excalidraw boards, 1.7.0).
 
 ## Rules
 
