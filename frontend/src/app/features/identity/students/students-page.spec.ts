@@ -157,7 +157,7 @@ describe('StudentsPage', () => {
       Array.from(host.querySelectorAll('div.tb-stack > p-card tbody td[data-label]')).map((cell) =>
         cell.getAttribute('data-label'),
       ),
-    ).toEqual(['Имя', 'Контакты', 'Группы', 'Видеовстреча', 'Доски', 'Статус', 'Логин']);
+    ).toEqual(['Имя', 'Контакты', 'Видеовстреча', 'Статус', 'Логин']);
   });
 
   it('opens the form of a new student from the home page', async () => {
@@ -271,27 +271,26 @@ describe('StudentsPage', () => {
     expect(host.textContent).toContain('Учеников пока нет');
   });
 
-  it('shows the current groups of each student', async () => {
+  it('keeps the cards short: neither groups nor boards of a student', async () => {
     await loadStudents(
       [MARIA],
-      [
-        aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
-        aGroup({
-          id: 'g2',
-          name: 'Английский',
-          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
-        }),
-        aGroup({
-          id: 'g3',
-          name: 'Прошлый год',
-          archivedAt: '2026-06-01T10:00:00Z',
-          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
-        }),
-      ],
+      [aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] })],
+      [],
+      [aBoard({ members: [{ type: 'STUDENT', id: 'm', name: 'Мария' }] })],
     );
 
-    expect(rowsText()[0]).toContain('ОГЭ, Английский');
-    expect(rowsText()[0]).not.toContain('Прошлый год');
+    expect(rowsText()[0]).not.toContain('ОГЭ');
+    expect(rowsText()[0]).not.toContain('Доски');
+    expect(host.querySelector('a[href="/teacher/boards?student=m"]')).toBeNull();
+  });
+
+  it('shows the contacts of a student and a dash without them', async () => {
+    await loadStudents([MARIA, { ...BORIS, email: 'boris@example.com' }]);
+
+    const contacts = Array.from(
+      host.querySelectorAll('div.tb-stack > p-card tbody td[data-label="Контакты"]'),
+    ).map((cell) => cell.textContent.trim());
+    expect(contacts).toEqual(['—', 'boris@example.com']);
   });
 
   it('shows the groups under the students and gives them the students to choose from', async () => {
@@ -302,10 +301,6 @@ describe('StudentsPage', () => {
     expect(host.textContent).toContain('Создать группу');
     const panel = fixture.debugElement.query(By.directive(GroupsPanel)).injector.get(GroupsPanel);
     expect(panel.students()).toEqual([MARIA]);
-
-    panel.changed.emit();
-    backend.expectOne('/api/teacher/groups').flush([]);
-    await fixture.whenStable();
   });
 
   it('shows the video room of a student and edits it', async () => {
@@ -326,21 +321,5 @@ describe('StudentsPage', () => {
     dialog.changed.emit(aRoom({ ownerId: 'b', telemost: false, joinUrl: 'https://zoom.us/j/1' }));
     await fixture.whenStable();
     expect(rowsText()[1]).toContain('Ссылка');
-  });
-
-  it('links the boards of a student, with the boards of their groups', async () => {
-    await loadStudents(
-      [MARIA, BORIS],
-      [aGroup({ id: 'g1', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] })],
-      [],
-      [
-        aBoard({ members: [{ type: 'STUDENT', id: 'm', name: 'Мария' }] }),
-        aBoard({ id: 'board-2', members: [{ type: 'GROUP', id: 'g1', name: 'ОГЭ' }] }),
-      ],
-    );
-
-    expect(rowsText()[0]).toContain('Доски (2)');
-    expect(rowsText()[1]).toContain('Доски (0)');
-    expect(host.querySelector('a[href="/teacher/boards?student=m"]')).not.toBeNull();
   });
 });

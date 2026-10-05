@@ -1584,45 +1584,69 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * Wide lists (many columns: students, groups) are cards on every screen: a table of eight columns
- * does not fit next to the navigation, names and buttons go out of it (ADR-0018). The cards are one
- * under another (ADR-0021); a card is wide, so the name of a field is in a column on the left and
- * the value — a text or a button — is next to it, in the middle of its line.
+ * Wide lists (students, groups) are compact cards on every screen (ADR-0018, ADR-0021): the name on
+ * top, the fields side by side under it — the name of a field small above its value — wrapping to
+ * the next line when they do not fit. A field of long text (tb-cell-long) takes a double share.
+ * The actions are in the top corner of the card on a computer and after the fields on a phone.
  */
-@media (width > 48em) {
-  .p-datatable.tb-cards.tb-cards--wide {
-    @include row-cards;
+.p-datatable.tb-cards.tb-cards--wide {
+  @include row-cards;
 
-    .p-datatable-tbody > tr > td[data-label]:not(:first-child) {
-      display: grid;
-      grid-template-columns: 10rem minmax(0, 1fr);
-      align-content: center;
-      align-items: center;
-      justify-items: start;
-      column-gap: var(--tb-space-4);
-      box-sizing: border-box;
-      min-height: 2.5rem;
-      text-align: left;
+  .p-datatable-tbody > tr:not(:has(> td[colspan])) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--tb-space-2) var(--tb-space-4);
+  }
 
-      &::before {
-        grid-row: 1 / span 4;
-        grid-column: 1;
-        float: none;
-        margin: 0;
-      }
+  .p-datatable-tbody > tr > td {
+    width: auto;
+    padding: 0;
+  }
 
-      > * {
-        grid-column: 2;
-      }
+  .p-datatable-tbody > tr > td:first-child {
+    flex: 1 0 100%;
+    padding: 0;
+  }
 
-      /* the text button starts where the text does; a button is 40 px high everywhere (ADR-0026) */
-      p-button:first-child .p-button-text {
-        margin-inline-start: calc(-1 * var(--tb-space-3));
-        padding-inline: var(--tb-space-3);
-      }
+  .p-datatable-tbody > tr > td[data-label]:not(:first-child) {
+    display: grid;
+    flex: 1 1 8rem;
+    grid-template-rows: auto minmax(2.5rem, auto);
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+
+    /* the labels of a card on one line, the values (a text or a 40 px button) on the next */
+    &::before {
+      float: none;
+      margin: 0;
+      font: var(--tb-type-body-s);
     }
 
-    /* the actions of a card are in its top corner, next to the name, at the same place in every card */
+    /* the text button starts where the text does; a button is 40 px high everywhere (ADR-0026) */
+    p-button:first-child .p-button-text {
+      margin-inline-start: calc(-1 * var(--tb-space-3));
+      padding-inline: var(--tb-space-3);
+    }
+  }
+
+  .p-datatable-tbody > tr > td.tb-cell-long[data-label]:not(:first-child) {
+    flex: 2 1 16rem;
+  }
+
+  .p-datatable-tbody > tr > td.tb-actions-column:not([data-label]):not(:first-child) {
+    flex: none;
+    align-self: flex-end;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+  }
+}
+
+/* on a computer the actions are in the top corner, next to the name, at the same place in every card */
+@media (width > 48em) {
+  .p-datatable.tb-cards.tb-cards--wide {
     .p-datatable-tbody > tr {
       position: relative;
     }
@@ -1635,10 +1659,6 @@ a.p-menu-item-link:hover {
       position: absolute;
       top: var(--tb-space-3);
       right: var(--tb-space-4);
-      width: auto;
-      margin: 0;
-      padding: 0;
-      border: 0;
     }
   }
 }

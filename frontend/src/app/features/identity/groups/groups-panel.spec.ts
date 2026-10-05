@@ -24,7 +24,6 @@ describe('GroupsPanel', () => {
   let fixture: ComponentFixture<GroupsPanel>;
   let backend: HttpTestingController;
   let host: HTMLElement;
-  let changes: number;
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -35,8 +34,6 @@ describe('GroupsPanel', () => {
     fixture = TestBed.createComponent(GroupsPanel);
     fixture.componentRef.setInput('students', [aStudent({ id: 'student-1' })]);
     host = hostElement(fixture);
-    changes = 0;
-    fixture.componentInstance.changed.subscribe(() => changes++);
     await fixture.whenStable();
   });
 
@@ -135,7 +132,6 @@ describe('GroupsPanel', () => {
 
     expect(rows()[0]).toContain('Английский');
     expect(rows()[0]).toMatch(/500/);
-    expect(changes).toBe(1);
   });
 
   it('archives after confirmation and restores', async () => {
@@ -148,7 +144,6 @@ describe('GroupsPanel', () => {
       .flush({ ...CURRENT, archivedAt: '2026-09-03T10:00:00Z' });
     await fixture.whenStable();
     expect(host.textContent).toContain('Все группы в архиве');
-    expect(changes).toBe(1);
 
     requireElement(host, '#show-archived', HTMLInputElement).click();
     await fixture.whenStable();
@@ -156,7 +151,6 @@ describe('GroupsPanel', () => {
     backend.expectOne('/api/teacher/groups/g1/restore').flush(CURRENT);
     await fixture.whenStable();
     expect(rows()[0]).not.toContain('В архиве');
-    expect(changes).toBe(2);
   });
 
   it('shows a failed load with «Повторить», not «no groups»', async () => {

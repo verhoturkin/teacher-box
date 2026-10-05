@@ -17,15 +17,23 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release
+## v1.7.3
 
-Goals: the administrator's settings page follows the design system.
+Goals: the administrator's settings page follows the design system; student and group cards are compact and
+easier to scan, on a phone too.
 
 ### Stage 99. Admin settings page by the design system
 
 - [x] 99.1 **B F** Sections of `SettingsCatalog` get a `section` key; `admin/settings/settings-page.ts` — sections
   fold (`tb-fold-card`, `?open=`, badge of unsaved changes), full-width stack, M3 outlined fields (label on the
   outline, variable and source under the field), Docker and accounts as a segmented `tb-list`.
+
+### Stage 100. Compact student and group cards
+
+- [x] 100.1 **F** `identity/students/students-page.ts` — the student card drops «Группы» and «Доски» (groups are in
+  the panel below, boards in «Доски»); `tb-cards--wide` in `styles.scss` — the name on top, the fields side by side
+  under it (label above the value, wrapping), actions top right on a computer and after the fields on a phone;
+  `groups-panel.ts` — «Ученики» as `tb-cell-long`. Help «Ученики», design system §9, `boards.md`.
 
 ## Backlog
 

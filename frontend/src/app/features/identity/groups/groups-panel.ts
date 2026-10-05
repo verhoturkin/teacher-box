@@ -5,7 +5,6 @@ import {
   computed,
   inject,
   input,
-  output,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -118,7 +117,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   </span>
                 </div>
               </td>
-              <td data-label="Ученики">
+              <td data-label="Ученики" class="tb-cell-long">
                 @if (group.members.length === 0) {
                   <span class="tb-muted">Пока никого</span>
                 } @else {
@@ -237,8 +236,6 @@ export class GroupsPanel implements OnInit {
 
   /** Students of the teacher: the members to choose from. */
   readonly students = input<readonly Student[]>([]);
-  /** A group was created, changed or archived. */
-  readonly changed = output();
 
   protected readonly groups = signal<StudentGroup[]>([]);
   private readonly prices = signal<ReadonlyMap<string, number>>(new Map());
@@ -377,7 +374,6 @@ export class GroupsPanel implements OnInit {
     this.groups.update((groups) =>
       sortGroups([...groups.filter((group) => group.id !== saved.id), saved]),
     );
-    this.changed.emit();
   }
 }
 

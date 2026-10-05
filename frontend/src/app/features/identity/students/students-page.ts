@@ -22,7 +22,6 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
-import { BoardsLink, MemberBoards } from '@features/boards/parts';
 import {
   MeetingRoom,
   MeetingsApi,
@@ -32,12 +31,7 @@ import {
 } from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { IdentityApi } from '../data-access/identity-api';
-import {
-  CreatedStudent,
-  IssuedInvite,
-  Student,
-  StudentGroup,
-} from '../data-access/identity.models';
+import { CreatedStudent, IssuedInvite, Student } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
@@ -72,7 +66,6 @@ import { Busy } from '@shared/ui/busy';
     ToggleSwitch,
     Tooltip,
     RowType,
-    BoardsLink,
     GroupsPanel,
     InviteLinkDialog,
     RoomCell,
@@ -124,9 +117,7 @@ import { Busy } from '@shared/ui/busy';
               <tr>
                 <th class="tb-col-main">Имя</th>
                 <th>Контакты</th>
-                <th>Группы</th>
                 <th>Видеовстреча</th>
-                <th>Доски</th>
                 <th>Статус</th>
                 <th>Логин</th>
                 <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
@@ -148,10 +139,19 @@ import { Busy } from '@shared/ui/busy';
                   </div>
                 </td>
                 <td data-label="Контакты">
-                  <div>{{ student.email ?? '' }}</div>
-                  <div>{{ student.phone ?? '' }}</div>
+                  @if (student.email || student.phone) {
+                    <div>
+                      @if (student.email) {
+                        <div>{{ student.email }}</div>
+                      }
+                      @if (student.phone) {
+                        <div>{{ student.phone }}</div>
+                      }
+                    </div>
+                  } @else {
+                    <span class="tb-muted">—</span>
+                  }
                 </td>
-                <td data-label="Группы">{{ groupNames(student.id) }}</td>
                 <td data-label="Видеовстреча">
                   @if (student.status !== 'DEACTIVATED') {
                     <tb-room-cell
@@ -163,28 +163,21 @@ import { Busy } from '@shared/ui/busy';
                     />
                   }
                 </td>
-                <td data-label="Доски">
-                  @if (student.status !== 'DEACTIVATED') {
-                    <tb-boards-link
-                      [count]="boards.count(memberIds(student.id))"
-                      [name]="student.displayName"
-                      [studentId]="student.id"
-                    />
-                  }
-                </td>
                 <td data-label="Статус">
-                  <p-tag
-                    [value]="statusLabels[student.status]"
-                    [severity]="statusSeverities[student.status]"
-                  />
-                  @if (student.pendingInvite; as invite) {
-                    <div>
-                      <small class="tb-muted">
-                        {{ purposeLabels[invite.purpose] }} до
-                        {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
-                      </small>
-                    </div>
-                  }
+                  <div>
+                    <p-tag
+                      [value]="statusLabels[student.status]"
+                      [severity]="statusSeverities[student.status]"
+                    />
+                    @if (student.pendingInvite; as invite) {
+                      <div>
+                        <small class="tb-muted">
+                          {{ purposeLabels[invite.purpose] }} до
+                          {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
+                        </small>
+                      </div>
+                    }
+                  </div>
                 </td>
                 <td data-label="Логин">{{ student.login ?? '—' }}</td>
                 <td class="tb-actions-column">
@@ -234,7 +227,7 @@ import { Busy } from '@shared/ui/busy';
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="8">
+                <td colspan="6">
                   @if (students().length === 0) {
                     <tb-empty-state
                       icon="pi-user-plus"
@@ -254,7 +247,7 @@ import { Busy } from '@shared/ui/busy';
           </p-table>
         </tb-load-state>
       </p-card>
-      <tb-groups-panel [students]="students()" (changed)="loadGroups()" />
+      <tb-groups-panel [students]="students()" />
     </div>
 
     <tb-student-form-dialog
@@ -293,10 +286,8 @@ export class StudentsPage implements OnInit {
   readonly create = input<string>();
 
   protected readonly students = signal<Student[]>([]);
-  private readonly groups = signal<StudentGroup[]>([]);
   protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
   protected readonly canCreateRooms = signal(false);
-  protected readonly boards = new MemberBoards();
   protected readonly roomVisible = signal(false);
   protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
   protected readonly ownerRoom = computed(() => {
@@ -315,10 +306,8 @@ export class StudentsPage implements OnInit {
   protected readonly visibleStudents = computed(() => {
     const query = this.query().trim().toLocaleLowerCase('ru');
     const includeDeactivated = this.includeDeactivated();
-    // New rows when the groups, rooms or boards arrive: the table re-renders the columns only for a new value.
-    this.groups();
+    // New rows when the rooms arrive: the table re-renders the columns only for a new value.
     this.rooms();
-    this.boards.byMember();
     return this.students().filter(
       (student) =>
         (includeDeactivated || student.status !== 'DEACTIVATED') &&
@@ -337,9 +326,7 @@ export class StudentsPage implements OnInit {
       this.openCreate();
     }
     this.loadStudents();
-    this.loadGroups();
     this.loadRooms();
-    this.boards.load();
   }
 
   protected loadStudents(): void {
@@ -349,12 +336,6 @@ export class StudentsPage implements OnInit {
       .subscribe((students) => {
         this.students.set(students);
       });
-  }
-
-  protected loadGroups(): void {
-    this.api.listGroups().subscribe((groups) => {
-      this.groups.set(groups);
-    });
   }
 
   protected roomOf(ownerId: string): MeetingRoom | null {
@@ -389,30 +370,6 @@ export class StudentsPage implements OnInit {
     this.meetings.yandexStatus().subscribe((status) => {
       this.canCreateRooms.set(status.status === 'CONNECTED' || status.tokenFromEnvironment);
     });
-  }
-
-  /** Current groups of the student. */
-  /** The student and their current groups: the boards of «Доски (n)». */
-  protected memberIds(studentId: string): string[] {
-    return [
-      studentId,
-      ...this.groups()
-        .filter(
-          (group) =>
-            group.archivedAt === null && group.members.some((member) => member.id === studentId),
-        )
-        .map((group) => group.id),
-    ];
-  }
-
-  protected groupNames(studentId: string): string {
-    return this.groups()
-      .filter(
-        (group) =>
-          group.archivedAt === null && group.members.some((member) => member.id === studentId),
-      )
-      .map((group) => group.name)
-      .join(', ');
   }
 
   protected openCreate(): void {
