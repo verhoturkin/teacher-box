@@ -88,7 +88,7 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
       `bundleName: 'excalidraw'`) loaded by the loader via `<link>`; fonts copied to `excalidraw-assets/`
       (assets glob) + `window.EXCALIDRAW_ASSET_PATH` — no CDN. Measure: initial bundle before/after (must be
       unchanged), lazy chunks raw/gzip → ADR-0028. `initial` budget stays as is.
-- [ ] 87.4 **F** `features/boards/editor/board-canvas.ts` (standalone, signals): inputs `scene`, `theme`;
+- [x] 87.4 **F** `features/boards/editor/board-canvas.ts` (standalone, signals): inputs `scene`, `theme`;
       output `sceneChange`; loading/error states (ADR-0025). Tests mock the loader (no React in jsdom); coverage
       gates hold.
 - [ ] 87.5 **D** `docker/nginx/security-headers.conf`: check the board in the single container — fonts, export
