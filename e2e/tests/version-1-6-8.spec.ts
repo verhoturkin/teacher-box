@@ -165,22 +165,21 @@ test('the actions of the page header are at one height on every page', async ({
   expect(Math.round(nested?.y ?? 0)).toBe(Math.round(list?.y ?? -1));
 });
 
-test('students are compact cards with «Подробнее» next to the name, words are whole', async ({
+test('students are list rows with the status and «⋮» on the line of the name, words are whole', async ({
   page,
 }) => {
   await signIn(page);
   await page.goto('/teacher/students');
 
   const card = page
-    .locator('.p-datatable.tb-cards tbody tr')
+    .locator('ul.tb-list[aria-label="Ученики"] > li')
     .filter({ hasText: LONG_NAME })
     .first();
   await expect(card).toBeVisible();
-  await expect(page.locator('.p-datatable.tb-cards--wide thead').first()).toBeHidden();
   const cardBox = await card.boundingBox();
-  // 1.7.3: a closed card is one line — the name (and the phone), «Подробнее» in its corner
+  // 1.7.3: a row is the name (and the phone), the status and «⋮» on the right
   expect(cardBox?.height ?? 0).toBeLessThan(90);
-  const edit = await card.getByRole('button', { name: `Подробнее: ${LONG_NAME}` }).boundingBox();
+  const edit = await card.getByRole('button', { name: `Действия: ${LONG_NAME}` }).boundingBox();
   const name = await card.locator('.tb-list__title').boundingBox();
   // the button is inside the card, on the line of the name
   expect((edit?.x ?? 0) + (edit?.width ?? 0)).toBeLessThanOrEqual(

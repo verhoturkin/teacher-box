@@ -240,23 +240,24 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
-  // 1.7.3: a card shows the name and the phone; the room is in its details
-  await page.getByRole('button', { name: `Подробнее: ${ANNA}` }).click();
-  await page.getByRole('button', { name: `Добавить видеовстречу: ${ANNA}` }).click();
-  await page.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
-  // Anna's own row: the row of her group has her name too
-  const row = page.getByRole('row', { name: new RegExp(`^${ANNA}`) });
-  await expect(row).toContainText('Телемост');
+  // 1.7.3: the room is set up in the edit dialog, opened from the «⋮» menu of the student
+  await page.getByRole('button', { name: `Действия: ${ANNA}` }).click();
+  await page.getByRole('menuitem', { name: 'Изменить' }).click();
+  const edit = page.getByRole('dialog', { name: 'Изменить ученика' });
+  await edit.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
+  await expect(edit.getByRole('link', { name: /telemost/ })).toBeVisible();
+  await edit.getByRole('button', { name: 'Отмена' }).click();
 
-  // 1.7.3: the student card has no boards; the details of her group link the group's boards
-  await page.getByRole('button', { name: `Подробнее о группе: ${GROUP}` }).click();
-  await page.getByRole('link', { name: `Доски: ${GROUP}, 0` }).click();
-  await expect(page).toHaveURL(/\/teacher\/boards\?group=/);
+  // 1.7.3: the students page links no boards; a board for Anna is made on «Доски»
+  await page.goto('/teacher/boards');
   await page.getByRole('button', { name: 'Новая доска' }).click();
   const dialog = page.getByRole('dialog', { name: 'Новая доска' });
   await dialog.getByText('Внешняя доска', { exact: true }).click();
   await page.locator('#board-title').fill('Алгебра');
   await page.locator('#board-url').fill('https://app.holst.so/board/e2e');
+  await page.locator('p-multiselect:has(#board-students)').click();
+  await page.getByRole('option', { name: ANNA }).click();
+  await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();
   await expect(page.getByRole('link', { name: /Алгебра/ })).toHaveAttribute(
     'href',

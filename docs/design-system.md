@@ -217,16 +217,17 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     `@shared/ui/initials`) for people, an icon for things;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
-  - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left.
+  - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
+    `tb-list__trail--icons` keeps a status and icon buttons on the right.
+  - Students and groups (1.7.3) — a `tb-list`, not a table: initials / icon; name + one supporting line (a
+    student's phone, a group's members); trail — status `p-tag` and «⋮» (one popup `p-menu` per list, items
+    for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
+    (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
+    (`tb-tooltip-lines`, focusable).
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number
   right, details below).
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
-  the phone each row becomes a card «column: value» (`data-label`). Wide lists (students, groups) —
-  `tb-cards--wide`: compact cards on every screen — closed, a card is its main line only (lead + title + one
-  supporting line: a student's phone, a group's members) and the chevron «Подробнее» top right
-  (`shared/ui/open-cards.ts`, `aria-expanded`). Open, the details follow under a divider: fields side by side
-  (label in Body Small above the value, 40 px value line, wrap; `tb-cell-long` takes a double share), then the
-  card's actions as labelled text buttons (`td.tb-card-actions`). Main column
+  the phone each row becomes a card «column: value» (`data-label`). Main column
   `tb-col-main`, amounts `tb-amount`. Statuses — `p-tag`, one shape, no wrapping. Row typing — `tbRowType`.
 - Not data lists: wizard steps, help items, checklists, bot capability lists, task files — plain text lists.
 - No custom row markup for data in cards or dialogs.

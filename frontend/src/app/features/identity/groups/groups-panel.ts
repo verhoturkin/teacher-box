@@ -6,31 +6,21 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { TableModule } from 'primeng/table';
+import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
-import { BoardsLink, MemberBoards } from '@features/boards/parts';
-import {
-  MeetingRoom,
-  MeetingsApi,
-  RoomCell,
-  RoomDialog,
-  RoomOwnerRef,
-} from '@features/meetings/parts';
-import { MoneyPipe } from '@shared/money/money.pipe';
-import { RowType } from '@shared/ui/row-type.directive';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
-import { OpenCards } from '@shared/ui/open-cards';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
@@ -52,17 +42,12 @@ import { Snackbar } from '@core/snackbar/snackbar';
     Button,
     Card,
     ConfirmDialog,
-    TableModule,
+    Menu,
     Tag,
     ToggleSwitch,
     Tooltip,
-    MoneyPipe,
-    RowType,
     ButtonAttributes,
-    BoardsLink,
     GroupFormDialog,
-    RoomCell,
-    RoomDialog,
     HelpButton,
     LoadStateView,
   ],
@@ -91,132 +76,66 @@ import { Snackbar } from '@core/snackbar/snackbar';
       </div>
 
       <tb-load-state [state]="state" what="группы" (retry)="load()">
-        <p-table
-          [value]="visibleGroups()"
-          dataKey="id"
-          [rowHover]="true"
-          styleClass="tb-cards tb-cards--wide"
-        >
-          <ng-template #header>
-            <tr>
-              <th class="tb-col-main">Группа</th>
-              <th class="tb-actions-column"><span class="tb-sr-only">Подробнее</span></th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-group [tbRowType]="visibleGroups()">
-            <tr [class.tb-card--open]="cards.isOpen(group.id)">
-              <td data-label="Группа">
-                <div class="tb-person">
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">
-                      {{ group.name }}
-                      @if (group.archivedAt) {
-                        <p-tag value="В архиве" severity="secondary" />
-                      }
-                    </span>
-                    <span class="tb-list__supporting">
-                      @if (group.members.length === 0) {
-                        Пока никого
-                      } @else {
-                        {{ memberNames(group) }}
-                      }
-                    </span>
-                  </div>
+        @if (visibleGroups().length > 0) {
+          <ul class="tb-list" aria-label="Группы">
+            @for (group of visibleGroups(); track group.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ group.name }}</span>
+                  <span class="tb-list__supporting">
+                    @if (group.members.length === 0) {
+                      Пока никого
+                    } @else {
+                      {{ memberNames(group) }}
+                    }
+                  </span>
                 </div>
-              </td>
-              <td class="tb-actions-column">
-                <p-button
-                  [icon]="cards.icon(group.id)"
-                  [text]="true"
-                  severity="secondary"
-                  [rounded]="true"
-                  [pTooltip]="cards.isOpen(group.id) ? 'Скрыть подробности' : 'Подробнее'"
-                  [ariaLabel]="'Подробнее о группе: ' + group.name"
-                  [tbAttributes]="{ 'aria-expanded': cards.isOpen(group.id) ? 'true' : 'false' }"
-                  (onClick)="cards.toggle(group.id)"
-                />
-              </td>
-              @if (cards.isOpen(group.id)) {
-                <td data-label="Цена занятия">
-                  @if (priceOf(group.id); as price) {
-                    {{ price | money: currency() }}
-                  } @else {
-                    <span class="tb-muted">—</span>
-                  }
-                </td>
-                @if (!group.archivedAt) {
-                  <td data-label="Видеовстреча">
-                    <tb-room-cell
-                      [room]="roomOf(group.id)"
-                      [name]="group.name"
-                      (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
-                    />
-                  </td>
-                  <td data-label="Доски">
-                    <tb-boards-link
-                      [count]="boards.count([group.id])"
-                      [name]="group.name"
-                      [groupId]="group.id"
-                    />
-                  </td>
-                }
-                <td class="tb-card-actions">
-                  <p-button
-                    label="Изменить"
-                    icon="pi pi-pencil"
-                    [text]="true"
-                    severity="secondary"
-                    [ariaLabel]="'Изменить группу: ' + group.name"
-                    (onClick)="openEdit(group)"
-                  />
+                <div class="tb-list__trail tb-list__trail--icons">
                   @if (group.archivedAt) {
-                    <p-button
-                      label="Вернуть из архива"
-                      icon="pi pi-replay"
-                      [text]="true"
-                      severity="secondary"
-                      [ariaLabel]="'Вернуть из архива: ' + group.name"
-                      [loading]="busy.is('restore-' + group.id)"
-                      (onClick)="restore(group)"
-                    />
-                  } @else {
-                    <p-button
-                      label="В архив"
-                      icon="pi pi-inbox"
-                      [text]="true"
-                      severity="danger"
-                      [ariaLabel]="'В архив: ' + group.name"
-                      (onClick)="confirmArchive(group)"
-                    />
+                    <p-tag value="В архиве" severity="secondary" />
                   }
-                </td>
-              }
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td colspan="2">
-                @if (groups().length === 0) {
-                  <tb-empty-state
-                    icon="pi-users"
-                    title="Групп пока нет"
-                    hint="Нажмите «Создать группу», если занимаетесь с несколькими учениками сразу"
+                  <p-button
+                    icon="pi pi-ellipsis-v"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [pTooltip]="'Действия: ' + group.name"
+                    [ariaLabel]="'Действия: ' + group.name"
+                    [loading]="busy.is('restore-' + group.id)"
+                    [tbAttributes]="{
+                      'aria-haspopup': 'menu',
+                      'aria-expanded': menuFor()?.id === group.id ? 'true' : 'false',
+                    }"
+                    (onClick)="openMenu(group, $event)"
                   />
-                } @else {
-                  <tb-empty-state
-                    icon="pi-box"
-                    title="Все группы в архиве"
-                    hint="Вернуть группу из архива можно в её подробностях"
-                  />
-                }
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else if (groups().length === 0) {
+          <tb-empty-state
+            icon="pi-users"
+            title="Групп пока нет"
+            hint="Нажмите «Создать группу», если занимаетесь с несколькими учениками сразу"
+          />
+        } @else {
+          <tb-empty-state
+            icon="pi-box"
+            title="Все группы в архиве"
+            hint="Включите «Показывать архив»: вернуть группу можно в её меню «⋮»"
+          />
+        }
       </tb-load-state>
     </p-card>
 
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
     <tb-group-form-dialog
       [(visible)]="formVisible"
       [group]="edited()"
@@ -225,25 +144,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
       [currency]="currency()"
       (saved)="onSaved($event)"
     />
-    <tb-room-dialog
-      [(visible)]="roomVisible"
-      [owner]="roomOwner()"
-      [room]="ownerRoom()"
-      [canCreate]="canCreateRooms()"
-      (changed)="onRoomChanged($event)"
-    />
     <p-confirmdialog key="groups" />
   `,
-  styles: ``,
 })
 export class GroupsPanel implements OnInit {
   private readonly snackbar = inject(Snackbar);
   protected readonly busy = new Busy();
-  protected readonly cards = new OpenCards();
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly meetings = inject(MeetingsApi);
+  private readonly menu = viewChild.required<Menu>('menu');
 
   /** Students of the teacher: the members to choose from. */
   readonly students = input<readonly Student[]>([]);
@@ -256,22 +166,17 @@ export class GroupsPanel implements OnInit {
   private readonly includeArchived = toSignal(this.showArchived.valueChanges, {
     initialValue: false,
   });
-  protected readonly visibleGroups = computed(() => {
-    // New rows when the rooms or boards arrive: the table re-renders the columns only for a new value.
-    this.rooms();
-    this.boards.byMember();
-    return this.groups().filter((group) => this.includeArchived() || group.archivedAt === null);
+  protected readonly visibleGroups = computed(() =>
+    this.groups().filter((group) => this.includeArchived() || group.archivedAt === null),
+  );
+
+  /** The group whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<StudentGroup | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const group = this.menuFor();
+    return group === null ? [] : this.actionsOf(group);
   });
 
-  protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
-  protected readonly canCreateRooms = signal(false);
-  protected readonly boards = new MemberBoards();
-  protected readonly roomVisible = signal(false);
-  protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
-  protected readonly ownerRoom = computed(() => {
-    const owner = this.roomOwner();
-    return owner === null ? null : this.roomOf(owner.id);
-  });
   protected readonly formVisible = signal(false);
   protected readonly edited = signal<StudentGroup | null>(null);
   protected readonly editedPrice = computed(() => {
@@ -281,8 +186,6 @@ export class GroupsPanel implements OnInit {
 
   ngOnInit(): void {
     this.load();
-    this.loadRooms();
-    this.boards.load();
   }
 
   protected load(): void {
@@ -298,46 +201,13 @@ export class GroupsPanel implements OnInit {
       });
   }
 
-  protected roomOf(ownerId: string): MeetingRoom | null {
-    return this.rooms().get(ownerId) ?? null;
-  }
-
-  protected openRoom(owner: RoomOwnerRef): void {
-    this.roomOwner.set(owner);
-    this.roomVisible.set(true);
-  }
-
-  protected onRoomChanged(room: MeetingRoom | null): void {
-    const owner = this.roomOwner();
-    if (owner === null) {
-      return;
-    }
-    this.rooms.update((rooms) => {
-      const next = new Map(rooms);
-      if (room === null) {
-        next.delete(owner.id);
-      } else {
-        next.set(owner.id, room);
-      }
-      return next;
-    });
-  }
-
-  private loadRooms(): void {
-    this.meetings.rooms().subscribe((rooms) => {
-      this.rooms.set(new Map(rooms.map((room) => [room.ownerId, room])));
-    });
-    this.meetings.yandexStatus().subscribe((status) => {
-      this.canCreateRooms.set(status.status === 'CONNECTED' || status.tokenFromEnvironment);
-    });
-  }
-
   protected memberNames(group: StudentGroup): string {
     return group.members.map((member) => member.displayName).join(', ');
   }
 
-  protected priceOf(groupId: string): number | null {
-    return this.prices().get(groupId) ?? null;
+  protected openMenu(group: StudentGroup, event: Event): void {
+    this.menuFor.set(group);
+    this.menu().toggle(event);
   }
 
   protected openCreate(): void {
@@ -379,6 +249,41 @@ export class GroupsPanel implements OnInit {
     this.busy.guard('restore-' + group.id, this.api.restoreGroup(group.id)).subscribe((saved) => {
       this.replace(saved);
     });
+  }
+
+  private priceOf(groupId: string): number | null {
+    return this.prices().get(groupId) ?? null;
+  }
+
+  private actionsOf(group: StudentGroup): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Изменить',
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.openEdit(group);
+        },
+      },
+    ];
+    if (group.archivedAt === null) {
+      items.push({
+        label: 'В архив…',
+        icon: 'pi pi-inbox',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.confirmArchive(group);
+        },
+      });
+    } else {
+      items.push({
+        label: 'Вернуть из архива',
+        icon: 'pi pi-replay',
+        command: () => {
+          this.restore(group);
+        },
+      });
+    }
+    return items;
   }
 
   private replace(saved: StudentGroup): void {

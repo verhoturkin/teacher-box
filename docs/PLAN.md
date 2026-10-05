@@ -37,6 +37,12 @@ easier to scan, on a phone too.
 - [x] 100.2 **F** Closed cards show only the main line — a student's name and phone, a group's name and members;
   the rest and the actions open with «Подробнее» (`shared/ui/open-cards.ts`, `td.tb-card-actions` labelled text
   buttons). `students-page.ts`, `groups-panel.ts`, `styles.scss`, help «Ученики» / «Группы», E2E 1.2 and 1.6.8.
+- [x] 100.4 **F** Students and groups are a `tb-list` (100.1–100.2 replaced): a student — name + phone, the status
+  and «⋮» (Изменить, Сбросить пароль / Новое приглашение, Отключить / Вернуть доступ); login and note in the
+  tooltip of the name. A group — name + members, «В архиве» and «⋮» (Изменить, В архив / Вернуть); no boards on
+  either. The edit dialogs hold the login (read-only) and the room — `meetings/rooms/room-panel.ts` replaces
+  `room-dialog.ts` and `room-cell.ts`; `tb-cards--wide`, `OpenCards`, `BoardsLink`, `MemberBoards` removed.
+  ADR-0018/0021 notes, design system §9, help, E2E 1.2, 1.4, 1.5.3, 1.6.8.
 - [x] 100.3 **F** `identity/students/invite-link-dialog.ts` by the design system: the link is a full-width outlined
   field, «Закрыть» and «Копировать ссылку» (filled green) in the footer, initial focus on the title.
 

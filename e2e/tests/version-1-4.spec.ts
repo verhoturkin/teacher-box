@@ -109,12 +109,10 @@ test.describe('on a phone', () => {
     inviteLink = await link.inputValue();
     await page.keyboard.press('Escape');
 
-    await expect(page.locator('thead').first()).toBeHidden();
-    const card = page.locator('tbody tr').filter({ hasText: STUDENT });
-    // 1.7.3: the status is in the details of the card
-    await expect(card.locator('td[data-label="Статус"]')).toHaveCount(0);
-    await card.getByRole('button', { name: `Подробнее: ${STUDENT}` }).click();
-    await expect(card.locator('td[data-label="Статус"]')).toBeVisible();
+    // 1.7.3: a student is a row of the list — the name, the status and «⋮» on the right
+    const card = page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT });
+    await expect(card.locator('p-tag')).toHaveText('Приглашён');
+    await expect(card.getByRole('button', { name: `Действия: ${STUDENT}` })).toBeVisible();
     await expectNoSideScroll(page);
   });
 

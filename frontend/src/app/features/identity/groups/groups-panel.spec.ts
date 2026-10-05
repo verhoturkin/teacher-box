@@ -3,11 +3,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService } from 'primeng/api';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
-import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
-import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { yandexStatus } from '@testing/meetings-fixtures';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  menuItemByText,
+  readableText,
+  requireElement,
+} from '@testing/dom';
 import { StudentGroup } from '../data-access/identity.models';
-import { RoomDialog } from '@features/meetings/parts';
-import { aBoard } from '@testing/boards-fixtures';
 import { GroupFormDialog } from './group-form-dialog';
 import { GroupsPanel } from './groups-panel';
 import { testProviders } from '@testing/setup';
@@ -47,27 +52,25 @@ describe('GroupsPanel', () => {
     backend
       .expectOne('/api/teacher/billing/groups')
       .flush({ currency: 'RUB', prices: [{ groupId: 'g1', lessonPrice: 80000 }] });
-    backend
-      .expectOne('/api/teacher/meetings/rooms')
-      .flush([aRoom({ ownerId: 'g1', ownerType: 'GROUP', ownerName: 'ОГЭ 9 класс' })]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus({ status: 'CONNECTED' }));
-    backend
-      .expectOne('/api/teacher/boards')
-      .flush([
-        aBoard({ members: [{ type: 'GROUP', id: 'g1', name: 'ОГЭ 9 класс' }] }),
-        aBoard({ id: 'board-2', members: [{ type: 'GROUP', id: 'g1', name: 'ОГЭ 9 класс' }] }),
-      ]);
     await fixture.whenStable();
   }
 
   function rows(): string[] {
-    return Array.from(host.querySelectorAll('tbody tr')).map((row) => readableText(row));
+    return Array.from(host.querySelectorAll('ul.tb-list > li')).map((row) => readableText(row));
   }
 
-  /** «Подробнее» of a group's card: its price, room, boards and actions. */
-  async function openCard(name: string): Promise<void> {
-    buttonByText(host, `Подробнее о группе: ${name}`).click();
+  /** The «⋮» menu of a group, then one of its items. */
+  async function act(name: string, item: string): Promise<void> {
+    buttonByText(host, `Действия: ${name}`).click();
     await fixture.whenStable();
+    menuItemByText(item).click();
+    await fixture.whenStable();
+  }
+
+  /** The room panel of the edit dialog asks for the rooms and the Yandex status. */
+  function flushRoom(): void {
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
   }
 
   function confirmNext(): void {
@@ -78,29 +81,34 @@ describe('GroupsPanel', () => {
     });
   }
 
-  it('lists current groups with members and price', async () => {
+  it('lists current groups with their members only', async () => {
     await load([CURRENT, ARCHIVED]);
 
     expect(host.querySelector('.p-card-title')?.textContent).toContain('Группы');
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toContain('ОГЭ 9 класс');
     expect(rows()[0]).toContain('Мария, Борис');
-    // the price, the room and the boards wait for «Подробнее»
     expect(rows()[0]).not.toMatch(/800/);
-    expect(rows()[0]).not.toContain('Телемост');
-
-    await openCard('ОГЭ 9 класс');
-    expect(rows()[0]).toMatch(/800/);
-    expect(rows()[0]).toContain('Телемост');
+    expect(rows()[0]).not.toContain('Доски');
 
     requireElement(host, '#show-archived', HTMLInputElement).click();
     await fixture.whenStable();
     expect(rows()[1]).toContain('Летняя школа');
     expect(rows()[1]).toContain('В архиве');
     expect(rows()[1]).toContain('Пока никого');
-    await openCard('Летняя школа');
-    expect(rows()[1]).toContain('—');
-    expect(rows()[1]).not.toContain('Доски');
+  });
+
+  it('offers no boards in the menu of a group', async () => {
+    await load([CURRENT]);
+
+    const button = buttonByText(host, 'Действия: ОГЭ 9 класс');
+    expect(button.getAttribute('aria-haspopup')).toBe('menu');
+    button.click();
+    await fixture.whenStable();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(() => menuItemByText('Доски')).toThrow();
+    expect(() => menuItemByText('Вернуть из архива')).toThrow();
+    menuItemByText('В архив');
   });
 
   it('invites to create the first group', async () => {
@@ -118,13 +126,13 @@ describe('GroupsPanel', () => {
     expect(host.textContent).toContain('Все группы в архиве');
   });
 
-  it('edits a group with its price', async () => {
+  it('edits a group with its price and its room', async () => {
     await load([CURRENT]);
-    await openCard('ОГЭ 9 класс');
 
-    buttonByText(host, 'Изменить группу: ОГЭ 9 класс').click();
+    await act('ОГЭ 9 класс', 'Изменить');
+    flushRoom();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Группа');
+    expect(bodyText()).toContain('Видеовстреча');
     const form = fixture.debugElement
       .query(By.directive(GroupFormDialog))
       .injector.get(GroupFormDialog);
@@ -133,7 +141,7 @@ describe('GroupsPanel', () => {
     expect(price.value).toMatch(/800/);
   });
 
-  it('shows a saved group and its new price', async () => {
+  it('keeps a saved group and its new price', async () => {
     await load([CURRENT]);
     buttonByText(host, 'Создать группу').click();
     await fixture.whenStable();
@@ -145,16 +153,17 @@ describe('GroupsPanel', () => {
     await fixture.whenStable();
 
     expect(rows()[0]).toContain('Английский');
-    await openCard('Английский');
-    expect(rows()[0]).toMatch(/500/);
+    await act('Английский', 'Изменить');
+    flushRoom();
+    await fixture.whenStable();
+    expect(requireElement(document.body, '#group-price', HTMLInputElement).value).toMatch(/500/);
   });
 
   it('archives after confirmation and restores', async () => {
     await load([CURRENT]);
     confirmNext();
-    await openCard('ОГЭ 9 класс');
 
-    buttonByText(host, 'В архив: ОГЭ 9 класс').click();
+    await act('ОГЭ 9 класс', 'В архив');
     backend
       .expectOne('/api/teacher/groups/g1/archive')
       .flush({ ...CURRENT, archivedAt: '2026-09-03T10:00:00Z' });
@@ -163,7 +172,7 @@ describe('GroupsPanel', () => {
 
     requireElement(host, '#show-archived', HTMLInputElement).click();
     await fixture.whenStable();
-    buttonByText(host, 'Вернуть из архива: ОГЭ 9 класс').click();
+    await act('ОГЭ 9 класс', 'Вернуть из архива');
     backend.expectOne('/api/teacher/groups/g1/restore').flush(CURRENT);
     await fixture.whenStable();
     expect(rows()[0]).not.toContain('В архиве');
@@ -172,36 +181,10 @@ describe('GroupsPanel', () => {
   it('shows a failed load with «Повторить», not «no groups»', async () => {
     const prices = backend.expectOne('/api/teacher/billing/groups');
     backend.expectOne('/api/teacher/groups').flush(null, { status: 500, statusText: 'Error' });
-    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
-    backend.expectOne('/api/teacher/boards').flush([]);
     expect(prices.cancelled).toBe(true);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Не удалось загрузить группы');
     expect(host.textContent).not.toContain('Групп пока нет');
-  });
-
-  it('sets up the video room of a group', async () => {
-    await load([CURRENT]);
-    await openCard('ОГЭ 9 класс');
-
-    buttonByText(host, 'Видеовстреча: ОГЭ 9 класс').click();
-    await fixture.whenStable();
-    const dialog = fixture.debugElement.query(By.directive(RoomDialog)).injector.get(RoomDialog);
-    expect(dialog.canCreate()).toBe(true);
-    expect(dialog.room()?.ownerType).toBe('GROUP');
-
-    dialog.changed.emit(null);
-    await fixture.whenStable();
-    expect(rows()[0]).not.toContain('Телемост');
-  });
-
-  it('links the boards of a group', async () => {
-    await load([CURRENT]);
-    await openCard('ОГЭ 9 класс');
-
-    expect(rows()[0]).toContain('Доски (2)');
-    expect(host.querySelector('a[href="/teacher/boards?group=g1"]')).not.toBeNull();
   });
 });

@@ -16,6 +16,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -33,6 +34,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
     Textarea,
     FieldErrors,
     SubmitFor,
+    RoomPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -60,10 +62,26 @@ import { SubmitFor } from '@shared/ui/submit-for';
           <label for="note">Заметка (видна только вам)</label>
           <textarea pTextarea id="note" formControlName="note" rows="3"></textarea>
         </div>
+        @if (student(); as student) {
+          <div class="tb-field">
+            <label for="login">Логин</label>
+            <input
+              pInputText
+              id="login"
+              readonly
+              [value]="student.login ?? 'Ещё не выбран'"
+              aria-describedby="login-hint"
+            />
+            <small id="login-hint" class="tb-hint"
+              >Логин ученик выбирает сам, когда входит по приглашению.</small
+            >
+          </div>
+        }
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
+      <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
           label="Отмена"
@@ -94,6 +112,13 @@ export class StudentFormDialog {
   protected readonly title = computed(() =>
     this.student() === null ? 'Новый ученик' : 'Изменить ученика',
   );
+  /** The room is set up for a saved student who still has access. */
+  protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
+    const student = this.student();
+    return student === null || student.status === 'DEACTIVATED' || !this.visible()
+      ? null
+      : { type: 'STUDENT', id: student.id, name: student.displayName };
+  });
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
