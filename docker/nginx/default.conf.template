@@ -57,6 +57,13 @@ server {
         return 200 "ok\n";
     }
 
+    # Style bundles loaded on demand by name (angular.json `inject: false`, ADR-0028) are not hashed.
+    location = /excalidraw.css {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri =404;
+    }
+
     # Hashed build artifacts never change.
     location ~* ^/(?:[^/]+\.(?:js|css)|media/.+)$ {
         include /etc/nginx/snippets/security-headers.conf;

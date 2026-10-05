@@ -84,7 +84,7 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
       `createRoot`, `root.render(createElement(Excalidraw, props))` without JSX (no tsconfig change), unmount on
       `DestroyRef`. ESLint `no-restricted-imports`: `react*` and `@excalidraw/*` only under
       `features/boards/editor/**`.
-- [ ] 87.3 **F** `angular.json`: Excalidraw CSS as a non-injected style bundle (`inject: false`,
+- [x] 87.3 **F** `angular.json`: Excalidraw CSS as a non-injected style bundle (`inject: false`,
       `bundleName: 'excalidraw'`) loaded by the loader via `<link>`; fonts copied to `excalidraw-assets/`
       (assets glob) + `window.EXCALIDRAW_ASSET_PATH` — no CDN. Measure: initial bundle before/after (must be
       unchanged), lazy chunks raw/gzip → ADR-0028. `initial` budget stays as is.
