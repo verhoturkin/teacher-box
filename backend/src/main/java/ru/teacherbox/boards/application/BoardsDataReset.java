@@ -5,11 +5,12 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
-/** Full reset (ADR-0014): the boards of students and groups. */
+/** Full reset (ADR-0014): boards with their members, scenes, copies and images (the files are deleted by the platform). */
 @Component
 class BoardsDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("boards.boards");
+    private static final List<String> TABLES = List.of("boards.board_files", "boards.board_backups",
+            "boards.board_scenes", "boards.board_members", "boards.boards");
 
     private final JdbcClient jdbc;
 
@@ -24,6 +25,6 @@ class BoardsDataReset implements DataReset {
 
     @Override
     public void erase() {
-        jdbc.sql("delete from boards.boards").update();
+        TABLES.forEach(table -> jdbc.sql("delete from " + table).update());
     }
 }

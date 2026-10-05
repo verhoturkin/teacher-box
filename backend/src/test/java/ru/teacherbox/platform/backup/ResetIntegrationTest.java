@@ -88,8 +88,8 @@ class ResetIntegrationTest {
     void deletesEverythingButTheAccountsAfterABackup() throws IOException {
         UUID student = student("Сбрасываемый");
         waitFor(() -> count("billing.student_accounts") > 0 && incompleteEvents() == 0);
-        assertThat(post("/api/teacher/boards", "{\"studentId\":\"" + student
-                + "\",\"url\":\"https://app.holst.so/board/1\"}")).hasStatus(HttpStatus.CREATED);
+        assertThat(post("/api/teacher/boards", "{\"kind\":\"EXCALIDRAW\",\"title\":\"Доска\",\"studentIds\":[\""
+                + student + "\"]}")).hasStatus(HttpStatus.CREATED);
         assertThat(post("/api/teacher/billing/payments", "{\"studentId\":\"" + student
                 + "\",\"amount\":150000,\"paidOn\":\"" + LocalDate.now() + "\"}"))
                 .hasStatus(HttpStatus.CREATED);

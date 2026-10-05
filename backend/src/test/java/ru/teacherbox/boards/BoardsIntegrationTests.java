@@ -19,7 +19,7 @@ import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
-/** Boards of students and groups through the teacher's and the student's API. */
+/** Boards with their students and groups through the teacher's and the student's API (ADR-0028). */
 @BoardsIntegrationTest
 class BoardsIntegrationTests {
 
@@ -36,67 +36,90 @@ class BoardsIntegrationTests {
     MutableClock clock;
 
     @Test
-    void theTeacherLinksBoardsToStudentsAndGroups() throws UnsupportedEncodingException {
+    void theTeacherBindsABoardToStudentsAndGroups() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
-        UUID group = groups.addGroup("ОГЭ", anna);
+        UUID boris = directory.addStudent("Борис");
+        UUID group = groups.addGroup("ОГЭ", boris);
 
-        MvcTestResult own = post("""
-                {"studentId":"%s","title":" Алгебра ","url":"https://app.holst.so/board/1"}""".formatted(anna));
-        assertThat(own).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
+        MvcTestResult created = post("""
+                {"kind":"EXCALIDRAW","title":" Алгебра ","url":"https://ignored.example",
+                 "studentIds":["%s"],"groupIds":["%s"]}""".formatted(anna, group));
+        assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.title").isEqualTo("Алгебра");
-            assertThat(json).extractingPath("$.ownerName").isEqualTo("Анна");
-            assertThat(json).extractingPath("$.ownerType").isEqualTo("STUDENT");
-            assertThat(json).extractingPath("$.holst").isEqualTo(true);
+            assertThat(json).extractingPath("$.kind").isEqualTo("EXCALIDRAW");
+            assertThat(json).extractingPath("$.url").isNull();
+            assertThat(json).extractingPath("$.members[*].name").asArray().containsExactly("Анна", "ОГЭ");
+            assertThat(json).extractingPath("$.members[*].type").asArray().containsExactly("STUDENT", "GROUP");
         });
-        // boards are listed in the order they were added
+        String id = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
         clock.advance(Duration.ofMinutes(1));
-        assertThat(post("{\"groupId\":\"%s\",\"url\":\"https://miro.com/b/2\"}".formatted(group)))
-                .hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.title").isEqualTo("Доска");
+        MvcTestResult external = post("""
+                {"kind":"LINK","title":"Холст","url":"https://app.holst.so/board/1","studentIds":["%s"]}"""
+                .formatted(boris));
+        assertThat(external).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.url")
+                .isEqualTo("https://app.holst.so/board/1");
 
         assertThat(mvc.get().uri("/api/teacher/boards").with(teacher())).hasStatusOk().bodyJson()
-                .extractingPath("$[?(@.ownerId == '" + group + "')].ownerName").asArray().containsExactly("ОГЭ");
-        assertThat(mvc.get().uri("/api/me/boards").with(TestUsers.student(anna))).hasStatusOk().bodyJson()
+                .extractingPath("$[?(@.id == '" + id + "')].members[*].id").asArray()
+                .containsExactly(anna.toString(), group.toString());
+        assertThat(mvc.get().uri("/api/teacher/boards?groupId=" + group).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$[*].title").asArray().containsExactly("Алгебра");
+        assertThat(mvc.get().uri("/api/teacher/boards?studentId=" + boris).with(teacher())).as("with the group's")
+                .hasStatusOk().bodyJson().extractingPath("$[*].title").asArray().containsExactly("Алгебра", "Холст");
+        assertThat(mvc.get().uri("/api/teacher/boards?studentId=" + anna).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$[*].title").asArray().containsExactly("Алгебра");
+
+        assertThat(mvc.get().uri("/api/me/boards").with(TestUsers.student(boris))).hasStatusOk().bodyJson()
                 .satisfies(json -> {
-                    assertThat(json).extractingPath("$[*].title").asArray().containsExactly("Алгебра", "Доска");
-                    assertThat(json).extractingPath("$[1].groupName").isEqualTo("ОГЭ");
+                    assertThat(json).extractingPath("$[*].title").asArray().containsExactly("Холст", "Алгебра");
+                    assertThat(json).extractingPath("$[0].groupNames").asArray().isEmpty();
+                    assertThat(json).extractingPath("$[1].groupNames").asArray().containsExactly("ОГЭ");
+                    assertThat(json).extractingPath("$[1].kind").isEqualTo("EXCALIDRAW");
                 });
         UUID stranger = directory.addStudent("Чужой");
         assertThat(mvc.get().uri("/api/me/boards").with(TestUsers.student(stranger))).hasStatusOk()
                 .bodyJson().extractingPath("$").asArray().isEmpty();
 
-        String id = JsonPath.read(own.getResponse().getContentAsString(), "$.id");
-        assertThat(put(id, "{\"title\":\"Геометрия\",\"url\":\"https://app.holst.so/board/3\",\"version\":0}"))
-                .hasStatusOk().bodyJson().extractingPath("$.version").isEqualTo(1);
-        assertThat(put(id, "{\"title\":\"Старое\",\"url\":\"https://app.holst.so/board/3\",\"version\":0}"))
-                .hasStatus(HttpStatus.CONFLICT);
+        assertThat(put(id, """
+                {"title":"Геометрия","studentIds":[],"groupIds":["%s"],"version":0}""".formatted(group)))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.version").isEqualTo(1);
+                    assertThat(json).extractingPath("$.members[*].name").asArray().containsExactly("ОГЭ");
+                });
+        assertThat(put(id, "{\"title\":\"Старое\",\"version\":0}")).hasStatus(HttpStatus.CONFLICT);
+        assertThat(mvc.get().uri("/api/me/boards").with(TestUsers.student(anna))).hasStatusOk()
+                .bodyJson().extractingPath("$").asArray().isEmpty();
+
         assertThat(mvc.delete().uri("/api/teacher/boards/" + id).with(teacher())).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(mvc.delete().uri("/api/teacher/boards/" + id).with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
-        assertThat(put(id, "{\"title\":\"x\",\"url\":\"https://x.ru\",\"version\":1}"))
+        assertThat(put(id, "{\"title\":\"x\",\"version\":1}"))
                 .hasStatus(HttpStatus.NOT_FOUND).bodyJson().extractingPath("$.code").isEqualTo("boards.board-not-found");
     }
 
     @Test
-    void checksOwnersLinksAndLimits() {
+    void newMembersMustBeCurrentStudentsAndActiveGroups() throws UnsupportedEncodingException {
         UUID gone = directory.addStudent("Ушёл", StudentStatus.DEACTIVATED);
         UUID archived = groups.addGroup("Архив");
         groups.archive(archived);
         UUID vera = directory.addStudent("Вера");
 
-        assertThat(post("{\"studentId\":\"%s\",\"url\":\"https://holst.so/b\"}".formatted(gone)))
+        assertThat(post("{\"kind\":\"EXCALIDRAW\",\"title\":\"Д\",\"studentIds\":[\"%s\"]}".formatted(gone)))
                 .hasStatus(HttpStatus.NOT_FOUND).bodyJson().extractingPath("$.code").isEqualTo("boards.student-not-found");
-        assertThat(post("{\"groupId\":\"%s\",\"url\":\"https://holst.so/b\"}".formatted(archived)))
+        assertThat(post("{\"kind\":\"EXCALIDRAW\",\"title\":\"Д\",\"groupIds\":[\"%s\"]}".formatted(archived)))
                 .hasStatus(HttpStatus.NOT_FOUND).bodyJson().extractingPath("$.code").isEqualTo("boards.group-not-found");
-        assertThat(post("{\"url\":\"https://holst.so/b\"}")).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("boards.owner-invalid");
-        assertThat(post("{\"studentId\":\"%s\",\"url\":\"holst\"}".formatted(vera)))
+        assertThat(post("{\"kind\":\"LINK\",\"title\":\"Д\",\"url\":\"holst\"}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson().extractingPath("$.code")
                 .isEqualTo("boards.link-invalid");
-        for (int index = 0; index < 20; index++) {
-            assertThat(post("{\"studentId\":\"%s\",\"url\":\"https://holst.so/b/%d\"}".formatted(vera, index)))
-                    .hasStatus(HttpStatus.CREATED);
-        }
-        assertThat(post("{\"studentId\":\"%s\",\"url\":\"https://holst.so/b/21\"}".formatted(vera)))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson().extractingPath("$.code").isEqualTo("boards.too-many");
+        assertThat(post("{\"title\":\"Д\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+
+        MvcTestResult created = post("{\"kind\":\"EXCALIDRAW\",\"title\":\"Д\",\"studentIds\":[\"%s\"]}"
+                .formatted(vera));
+        String id = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        directory.setStatus(vera, StudentStatus.DEACTIVATED);
+        assertThat(put(id, "{\"title\":\"Д2\",\"studentIds\":[\"%s\"],\"version\":0}".formatted(vera)))
+                .as("a member the board already has stays").hasStatusOk();
+        assertThat(put(id, "{\"title\":\"Д3\",\"studentIds\":[\"%s\"],\"version\":1}".formatted(gone)))
+                .hasStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test

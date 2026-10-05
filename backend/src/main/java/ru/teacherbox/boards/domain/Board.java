@@ -9,8 +9,13 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
-/** A link to an interactive board of a student or a group. */
-public record Board(UUID id, BoardOwner ownerType, UUID ownerId, String title, String url, Instant createdAt,
+/**
+ * A board (ADR-0028): our own Excalidraw board, or an external board by link. Its members are kept
+ * apart ({@link BoardMember}).
+ *
+ * @param url the link of an external board; {@code null} for an Excalidraw board
+ */
+public record Board(UUID id, BoardKind kind, String title, @Nullable String url, Instant createdAt,
         Instant updatedAt, long version) {
 
     public static final int MAX_TITLE = 200;
@@ -18,35 +23,22 @@ public record Board(UUID id, BoardOwner ownerType, UUID ownerId, String title, S
 
     public Board {
         Objects.requireNonNull(id);
-        Objects.requireNonNull(ownerType);
-        Objects.requireNonNull(ownerId);
+        Objects.requireNonNull(kind);
         title = validTitle(title);
-        url = validUrl(url);
+        url = kind == BoardKind.LINK ? validUrl(url) : null;
     }
 
-    public static Board added(UUID id, BoardOwner ownerType, UUID ownerId, @Nullable String title, String url,
-            Instant now) {
-        String link = validUrl(url);
-        String name = title == null || title.isBlank() ? (isHolst(link) ? "Доска Холст" : "Доска") : title;
-        return new Board(id, ownerType, ownerId, name, link, now, now, 0);
+    public static Board created(UUID id, BoardKind kind, String title, @Nullable String url, Instant now) {
+        return new Board(id, kind, title, url, now, now, 0);
     }
 
-    public Board changed(String newTitle, String newUrl, Instant now) {
-        return new Board(id, ownerType, ownerId, newTitle, newUrl, createdAt, now, version);
+    /** The kind never changes: an Excalidraw board keeps its scene, an external board its link. */
+    public Board changed(String newTitle, @Nullable String newUrl, Instant now) {
+        return new Board(id, kind, newTitle, newUrl, createdAt, now, version);
     }
 
-    /** Whether the link opens a Holst board. */
-    public boolean holst() {
-        return isHolst(url);
-    }
-
-    static boolean isHolst(String url) {
-        try {
-            String host = new URI(url).getHost();
-            return host != null && (host.equals("holst.so") || host.endsWith(".holst.so"));
-        } catch (URISyntaxException e) {
-            return false;
-        }
+    public boolean excalidraw() {
+        return kind == BoardKind.EXCALIDRAW;
     }
 
     private static String validTitle(@Nullable String value) {

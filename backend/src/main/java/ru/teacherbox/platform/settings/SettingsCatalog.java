@@ -78,6 +78,12 @@ public final class SettingsCatalog {
                 .secret("TEACHERBOX_MEETINGS_TELEMOST_TOKEN", "Готовый токен Телемоста")
                 .add("TEACHERBOX_MEETINGS_TELEMOST_API_URL", "Адрес API Телемоста", URL, "Только для проверок.");
 
+        b.group("Доски")
+                .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
+                        "Ежедневная копия каждой изменённой доски, например 0 0 3 * * *; - — выключить.")
+                .add("TEACHERBOX_BOARDS_BACKUP_KEEP", "Сколько ежедневных копий доски хранить", NUMBER,
+                        "Копии, сделанные учителем, не считаются.");
+
         b.group("Уведомления и боты")
                 .secret("TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", "Telegram: токен бота")
                 .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", "Telegram: прокси", PROXY,

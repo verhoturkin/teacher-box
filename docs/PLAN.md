@@ -101,34 +101,35 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
 
 Goal: a board has a kind and members; Excalidraw scene and images live on the server. Entry: `boards/`.
 
-- [ ] 88.1 **B** `db/migration/boards/V2__boards_members_and_scenes.sql`: existing boards deleted (old
+- [x] 88.1 **B** `db/migration/boards/V2__boards_members_and_scenes.sql`: existing boards deleted (old
       single-owner links are not migrated); `boards.kind`, `url` nullable, `board_members (board_id, member_type
       STUDENT|GROUP, member_id)`, `board_scenes (board_id, elements, app_state, scene_version, updated_at,
       updated_by)`; drop `owner_type`/`owner_id`. Domain `Board`, `BoardKind`, `BoardMember`; remove `holst()`,
       `isHolst`, «Доска Холст», `MAX_PER_OWNER`.
-- [ ] 88.2 **B** `TeacherBoardsController` (controller tests with roles first): `GET /api/teacher/boards
+- [x] 88.2 **B** `TeacherBoardsController` (controller tests with roles first): `GET /api/teacher/boards
       ?studentId|groupId`, `POST` (kind, title, url for `LINK`, `studentIds`, `groupIds`), `PUT /{id}` (title,
       url, members, version), `DELETE /{id}` (scene, backups and files too). Members must be current students /
       active groups (`UserDirectory`, `StudentGroups`).
-- [ ] 88.3 **B** Access: `BoardService.requireAccess(user, boardId)` — teacher, or a student who is a member
+- [x] 88.3 **B** Access: `BoardService.requireAccess(user, boardId)` — teacher, or a student who is a member
       directly or through a current group (always edit, no read-only mode); otherwise 404. `/api/me/boards` →
       kind, groups, `updatedAt`. Tests «another student gets 404», «left the group — no access».
-- [ ] 88.4 **B** Scene: `GET /api/boards/{id}` (meta + scene + `sceneVersion`), `PUT /api/boards/{id}/scene`
+- [x] 88.4 **B** Scene: `GET /api/boards/{id}` (meta + scene + `sceneVersion`), `PUT /api/boards/{id}/scene`
       (`elements`, `appState` whitelist, `baseVersion`) — server merge per element id by `version` /
       `versionNonce` (Jackson 3 `JsonNode`, deleted elements kept as tombstones), returns the merged scene and the
       new `sceneVersion`; `GET /api/boards/{id}/scene?since=<version>` → 204 when nothing changed (polling);
       scene size limit; a `LINK` board has no scene → 409. Tests: two users save concurrently — both changes kept.
-- [ ] 88.5 **B** Images: `PUT|GET /api/boards/{id}/files/{fileId}` in `FileStorage` namespace
+- [x] 88.5 **B** Images: `PUT|GET /api/boards/{id}/files/{fileId}` in `FileStorage` namespace
       `boards/<boardId>/`; png/jpeg/webp/gif only (no SVG), size limit like homework attachments, immutable cache
       headers; a file stays while the scene or any backup refers to it. `BoardsDataReset` also wipes the files
-      namespace.
-- [ ] 88.6 **B** Board backups: table `board_backups (id, board_id, kind DAILY|MANUAL, elements, app_state,
+      namespace. *Done with namespace `boards` + table `board_files` (a `FileStorage` namespace has no sub-folders);
+      the platform deletes the files on a reset.*
+- [x] 88.6 **B** Board backups: table `board_backups (id, board_id, kind DAILY|MANUAL, elements, app_state,
       scene_version, created_at)`. `BoardBackupJob` `@Scheduled(cron = TEACHERBOX_BOARDS_BACKUP_CRON, zone = time
       zone)` — a daily copy of each board changed since its last copy; keeps `TEACHERBOX_BOARDS_BACKUP_KEEP` daily
       copies (skill `new-setting`). Teacher REST: `GET /api/teacher/boards/{id}/backups`, `POST …/backups` (manual
       copy, limit per board), `POST …/backups/{backupId}/restore` (the current scene is saved as a copy first),
       `DELETE …/backups/{backupId}`. Integration test: instance backup → restore keeps scene, copies and images.
-- [ ] 88.7 **B** `MyBoardsChatAction`: Excalidraw boards → `Portal.link("/cabinet/boards/<id>")`, external —
+- [x] 88.7 **B** `MyBoardsChatAction`: Excalidraw boards → `Portal.link("/cabinet/boards/<id>")`, external —
       the URL. Update `BoardsIntegrationTests`, `MyBoardsChatIntegrationTests`, `ResetIntegrationTest`,
       `docs/modules/boards.md`.
 
