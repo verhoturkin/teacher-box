@@ -114,7 +114,7 @@ interface FilterGroup {
               <th>Вид</th>
               <th>Кому открыта</th>
               <th>Изменена</th>
-              <th><span class="tb-sr-only">Действия</span></th>
+              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
             </tr>
           </ng-template>
           <ng-template #body let-board [tbRowType]="boards()">
@@ -136,7 +136,7 @@ interface FilterGroup {
               </td>
               <td data-label="Кому открыта">{{ membersText(board) }}</td>
               <td data-label="Изменена">{{ board.updatedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td class="tb-actions">
+              <td class="tb-actions-column">
                 @if (board.kind === 'EXCALIDRAW') {
                   <p-button
                     icon="pi pi-history"

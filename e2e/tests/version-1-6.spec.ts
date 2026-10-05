@@ -16,6 +16,7 @@ const SECTIONS = [
   'Ученики',
   'Задания',
   'Оплаты',
+  'Доски',
   'Уведомления',
   'ИИ-помощник',
 ];
@@ -81,6 +82,13 @@ test('on a phone the main action is the FAB above the bottom navigation', async 
   await page.locator('nav.tb-bottom-nav').getByRole('link', { name: 'Ученики' }).click();
   const fab = page.getByRole('button', { name: 'Добавить ученика' });
   await expect(fab).toBeVisible();
+  // the FAB slides in: measure it where it stops
+  await expect
+    .poll(async () => {
+      const box = await fab.boundingBox();
+      return box === null ? 0 : box.x + box.width;
+    })
+    .toBeGreaterThan(PHONE.width - 40);
   const [fabBox, navBox] = await Promise.all([
     fab.boundingBox(),
     page.locator('nav.tb-bottom-nav').boundingBox(),

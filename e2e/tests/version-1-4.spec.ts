@@ -142,7 +142,8 @@ test.describe('on a phone', () => {
     await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
     await expect(page).toHaveURL(/\/cabinet$/);
-    await expect(page.locator('nav.tb-bottom-nav').getByRole('link')).toHaveCount(4);
+    // five sections since 1.7.0 («Мои доски»): they fit without «Ещё»
+    await expect(page.locator('nav.tb-bottom-nav').getByRole('link')).toHaveCount(5);
     await expectNoSideScroll(page);
     for (const section of ['Расписание', 'Задания']) {
       await page.locator('nav.tb-bottom-nav').getByRole('link', { name: section }).click();
