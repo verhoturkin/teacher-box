@@ -13,7 +13,6 @@ import { Drawer } from 'primeng/drawer';
 import { Tag } from 'primeng/tag';
 import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
-import { MyBoardsCard } from '@features/boards/parts';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
@@ -53,7 +52,7 @@ export function nextMonday(date: Date): Date {
 /**
  * The student's schedule, one card under another (ADR-0021): upcoming lessons of this week with the
  * link to the online lesson and requests to move or cancel them, the student's requests, the
- * calendar, the boards and the calendar link.
+ * calendar and the calendar link.
  */
 @Component({
   selector: 'tb-my-schedule-page',
@@ -68,7 +67,6 @@ export function nextMonday(date: Date): Date {
     CalendarFeedPanel,
     ChangeRequestDialog,
     LessonActions,
-    MyBoardsCard,
     ScheduleCalendar,
     ModalDrawer,
     LoadStateView,
@@ -188,7 +186,6 @@ export function nextMonday(date: Date): Date {
           (rangeChange)="onRange($event)"
         />
       </p-card>
-      <tb-my-boards-card />
       <tb-calendar-feed-panel />
     </div>
 

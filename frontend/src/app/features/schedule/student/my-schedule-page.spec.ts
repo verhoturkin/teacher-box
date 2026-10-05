@@ -74,7 +74,6 @@ describe('MySchedulePage', () => {
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush(requests);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
-    backend.expectOne('/api/me/boards').flush([]);
     await fixture.whenStable();
     for (const request of lessonRequests()) {
       request.flush(lessons);
@@ -140,7 +139,6 @@ describe('MySchedulePage', () => {
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/requests').flush([]);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
-    backend.expectOne('/api/me/boards').flush([]);
     await fixture.whenStable();
     for (const request of lessonRequests()) {
       request.flush([]);
