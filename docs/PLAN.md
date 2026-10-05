@@ -74,8 +74,9 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
 
 - [ ] 87.1 ADR-0028 (Russian) `docs/adr/0028-excalidraw-boards.md`: board kinds `EXCALIDRAW` / `LINK`, members
       (students and groups, many-to-many), scene in the `boards` schema + images in `FileStorage`, board backups
-      (daily and manual), React island via dynamic `import()` (alternatives: Vite-built web component, iframe
-      mini-app, Angular↔React wrapper libs — why rejected). Row in `docs/adr/README.md`; ADR-0012 status →
+      (daily and manual), co-editing by polling with per-element merge (no real time), React island via dynamic
+      `import()` (alternatives: Vite-built web component, iframe mini-app, Angular↔React wrapper libs — why
+      rejected). Row in `docs/adr/README.md`; ADR-0012 status →
       «boards part superseded by 0028».
 - [ ] 87.2 **F** Dependencies `react`, `react-dom`, `@excalidraw/excalidraw` (`npx -y npm@11 install`; check
       the current Excalidraw API in docs first). `features/boards/editor/excalidraw-loader.ts` — the only place
@@ -110,8 +111,10 @@ Goal: a board has a kind and members; Excalidraw scene and images live on the se
       directly or through a current group (always edit, no read-only mode); otherwise 404. `/api/me/boards` →
       kind, groups, `updatedAt`. Tests «another student gets 404», «left the group — no access».
 - [ ] 88.4 **B** Scene: `GET /api/boards/{id}` (meta + scene + `sceneVersion`), `PUT /api/boards/{id}/scene`
-      (`elements`, `appState` whitelist, `baseVersion`) — optimistic lock: a stale `baseVersion` → 409 (the board
-      was saved from another window); scene size limit; a `LINK` board has no scene → 409.
+      (`elements`, `appState` whitelist, `baseVersion`) — server merge per element id by `version` /
+      `versionNonce` (Jackson 3 `JsonNode`, deleted elements kept as tombstones), returns the merged scene and the
+      new `sceneVersion`; `GET /api/boards/{id}/scene?since=<version>` → 204 when nothing changed (polling);
+      scene size limit; a `LINK` board has no scene → 409. Tests: two users save concurrently — both changes kept.
 - [ ] 88.5 **B** Images: `PUT|GET /api/boards/{id}/files/{fileId}` in `FileStorage` namespace
       `boards/<boardId>/`; png/jpeg/webp/gif only (no SVG), size limit like homework attachments, immutable cache
       headers; a file stays while the scene or any backup refers to it. `BoardsDataReset` also wipes the files
@@ -156,9 +159,13 @@ Goal: a board opens full screen and returns to the menu without losing changes. 
       tab.
 - [ ] 90.2 **F** Autosave: debounce on `sceneChange` (only when the elements changed), flush on «назад»,
       `visibilitychange` and `canDeactivate`; status «Сохранено» / «Сохранение…» / «Нет связи — повторим»;
-      409 → «Доску изменили в другом окне» with «Загрузить заново»; new images uploaded once by `fileId`, loaded
-      back through `addFiles`.
-- [ ] 90.3 **F** Student «Мои доски»: `/cabinet/boards` (`features/boards/student/my-boards-page.ts`) + item
+      the merged scene from the response applied to the canvas; new images uploaded once by `fileId`, loaded back
+      through `addFiles`.
+- [ ] 90.3 **F** Co-editing by polling (no real time): while the tab is visible poll
+      `GET /api/boards/{id}/scene?since=<version>` every ~5 s (paused while hidden), apply others' changes with
+      Excalidraw `reconcileElements` without disturbing the local selection / drawing; missing images fetched.
+      No WebSocket, cursors or presence — Backlog.
+- [ ] 90.4 **F** Student «Мои доски»: `/cabinet/boards` (`features/boards/student/my-boards-page.ts`) + item
       in `core/layout/student-layout.ts`; `MyBoardsCard` (`home/student-home.ts`,
       `schedule/student/my-schedule-page.ts`) links to the editor.
 
@@ -179,9 +186,10 @@ Goal: a board opens full screen and returns to the menu without losing changes. 
 ### Stage 93. Release 1.7.0
 
 - [ ] 93.1 Skill `release`: E2E `e2e/tests/version-1-7.spec.ts` (teacher creates a board for a student and a
-      group, draws, returns; the student opens «Мои доски» and sees the drawing; the teacher makes a copy,
-      changes the board and restores it; an external board opens in a new tab), help, CHANGELOG, version 1.7.0,
-      plan archived.
+      group, draws, returns; the student opens «Мои доски» and sees the drawing; teacher
+      and student edit at once and see each other's shapes within a poll; the teacher makes a copy, changes the
+      board and restores it; an external board opens in a new tab), help, CHANGELOG, version 1.7.0, plan
+      archived.
 
 ## Backlog
 
