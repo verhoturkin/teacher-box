@@ -246,14 +246,16 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   const row = page.getByRole('row', { name: new RegExp(`^${ANNA}`) });
   await expect(row).toContainText('Телемост');
 
-  await page.getByRole('button', { name: `Добавить доску: ${ANNA}` }).click();
+  // 1.7.0: boards live on «Доски»; the row links them filtered by the student
+  await row.getByRole('link', { name: `Доски: ${ANNA}, 0` }).click();
+  await expect(page).toHaveURL(/\/teacher\/boards\?student=/);
+  await page.getByRole('button', { name: 'Новая доска' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Новая доска' });
+  await dialog.getByText('Внешняя доска', { exact: true }).click();
   await page.locator('#board-title').fill('Алгебра');
   await page.locator('#board-url').fill('https://app.holst.so/board/e2e');
-  const boards = page.getByRole('dialog', { name: `Доски: ${ANNA}` });
-  await boards.getByRole('button', { name: 'Добавить доску', exact: true }).click();
-  await expect(boards.getByRole('link', { name: 'Алгебра' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(row.getByRole('link', { name: 'Алгебра' })).toHaveAttribute(
+  await dialog.getByRole('button', { name: 'Создать' }).click();
+  await expect(page.getByRole('link', { name: /Алгебра/ })).toHaveAttribute(
     'href',
     'https://app.holst.so/board/e2e',
   );

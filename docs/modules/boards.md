@@ -49,9 +49,36 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 ## Frontend
 
-`features/boards/`: `manage/` (boards dialog), `student/`, `to-board/` (copy to board); via `parts.ts`.
-`editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
-Excalidraw), `excalidraw-loader.ts` (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`,
-`self-hosted-fonts.ts` drops Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with
-its owner), `board-canvas.ts` (`tb-board-canvas`: inputs `scene`, `theme`; output `sceneChange`; loading and
-error states). Tests use `@testing/excalidraw-fake`, never React.
+`features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
+
+- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards,
+  filter «Ученик или группа» in the URL (`?student=`, `?group=`; a student's filter includes their groups' boards),
+  a new board starts with the filter's member; row actions — copies (Excalidraw only), change, delete
+  (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
+  members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
+  confirmation step inside the dialog (no dialog on top).
+- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's fifth section — five fit the bottom bar
+  without «Ещё»); `my-boards-card.ts` — the latest three on the student's home and schedule; `my-board-list.ts`.
+- `manage/` — `BoardsLink` «Доски (n)» + `MemberBoards` counts in the students and groups tables (a student counts
+  with their groups), `BoardLinks` — the boards of a lesson (lesson dialog, «Следующее занятие»).
+- `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
+  Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
+  (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`, `self-hosted-fonts.ts` drops
+  Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with its owner), `board-canvas.ts`
+  (`tb-board-canvas`: inputs `scene`, `theme`, `menu`; outputs `sceneChange`, `ready` with the API; loading and
+  error states; no file load/save, no theme switch, no embeds).
+  - `board-page.ts` — routes `/teacher/boards/:id`, `/cabinet/boards/:id` outside the shell (full screen, same
+    guards, `canLeaveGuard`): bar «← Доски» / «← Мои доски», title, save status «Сохранено» / «Сохранение…» /
+    «Нет связи — повторим», teacher's «Резервные копии»; menu «Вернуться к доскам» (+ «Резервные копии»); portal
+    theme, `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
+  - `board-sync.ts` — saves the changed elements 1 s after the last change (and on leaving, on a hidden tab),
+    applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
+    tab is visible and nothing is being saved, retries a failed save every 5 s, uploads new images once and fetches
+    missing ones. `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs.
+  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts.
+- `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
+  the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
+  `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard
+  (`board-clipboard.ts`) and opens by its link.
+
+Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

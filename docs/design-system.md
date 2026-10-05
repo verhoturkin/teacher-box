@@ -105,7 +105,7 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
 - **Bottom bar:** the first four sections of the role (sections are ordered by frequency of use; `NAV_ITEMS` in `shell.ts`), then «Ещё» (other sections,
-  help, settings, account, sign out); the student has four and no «Ещё». Item ≥ 64 px, Label Medium, never
+  help, settings, account, sign out); five sections fit without «Ещё» — the student has five (with «Мои доски»). Item ≥ 64 px, Label Medium, never
   truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
   `--tb-spring-fast-spatial`; same in the rail.
 - **Top bar** (64 px, sticky): logo and portal name, bell, user menu (settings, help, account, theme, sign

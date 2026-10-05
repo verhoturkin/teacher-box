@@ -24,21 +24,31 @@ describe('MyBoardsCard', () => {
   });
 
   it('opens the boards of the student and of their groups', async () => {
-    backend
-      .expectOne('/api/me/boards')
-      .flush([
-        aMyBoard(),
-        aMyBoard({ id: 'board-2', ownerType: 'GROUP', groupName: 'ОГЭ', title: 'Общая' }),
-      ]);
+    backend.expectOne('/api/me/boards').flush([
+      aMyBoard(),
+      aMyBoard({
+        id: 'board-2',
+        kind: 'LINK',
+        url: 'https://app.holst.so/board/2',
+        groupNames: ['ОГЭ'],
+        title: 'Общая',
+      }),
+      aMyBoard({ id: 'board-3', groupNames: ['ОГЭ', 'ЕГЭ'], title: 'Третья' }),
+      aMyBoard({ id: 'board-4', title: 'Четвёртая' }),
+    ]);
     await fixture.whenStable();
 
     const text = hostElement(fixture).textContent;
     expect(text).toContain('Мои доски');
     expect(text).toContain('группа «ОГЭ»');
+    expect(text).toContain('группы «ОГЭ», «ЕГЭ»');
+    expect(text).not.toContain('Четвёртая');
     const links = hostElement(fixture).querySelectorAll('a');
-    expect(links).toHaveLength(2);
-    expect(links[0]?.getAttribute('href')).toBe('https://app.holst.so/board/1');
-    expect(links[0]?.getAttribute('target')).toBe('_blank');
+    expect(links).toHaveLength(4);
+    expect(links[0]?.getAttribute('href')).toBe('/cabinet/boards/board-1');
+    expect(links[1]?.getAttribute('href')).toBe('https://app.holst.so/board/2');
+    expect(links[1]?.getAttribute('target')).toBe('_blank');
+    expect(links[3]?.textContent).toContain('Все доски (4)');
   });
 
   it('is hidden while there are no boards', async () => {
@@ -58,6 +68,6 @@ describe('MyBoardsCard', () => {
     backend.expectOne('/api/me/boards').flush([aMyBoard()]);
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelectorAll('a')).toHaveLength(1);
+    expect(hostElement(fixture).querySelectorAll('a')).toHaveLength(2);
   });
 });

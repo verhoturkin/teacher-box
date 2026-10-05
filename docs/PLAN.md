@@ -137,47 +137,51 @@ Goal: a board has a kind and members; Excalidraw scene and images live on the se
 
 Goal: one page to manage all boards; the old per-student widgets go away. Entry: `features/boards/`.
 
-- [ ] 89.1 **F** `data-access/boards-api.ts`, `boards.models.ts` (`BoardKind`, `BoardSummary`, `BoardScene`,
+- [x] 89.1 **F** `data-access/boards-api.ts`, `boards.models.ts` (`BoardKind`, `BoardSummary`, `BoardScene`,
       `BoardBackup`, members) rewritten; `src/testing/boards-fixtures.ts`.
-- [ ] 89.2 **F** Route `/teacher/boards` (`features/boards/teacher/boards-page.ts`, lazy) + item «Доски» in
+- [x] 89.2 **F** Route `/teacher/boards` (`features/boards/teacher/boards-page.ts`, lazy) + item «Доски» in
       `core/layout/teacher-layout.ts` (on a phone — under «Ещё», ADR-0027). List: title, kind, members, last
       change; filter by student / group in the URL (`?student=`, `?group=`); page states (ADR-0025).
-- [ ] 89.3 **F** `teacher/board-dialog.ts`: create / edit — kind («Доска Excalidraw» / «Внешняя доска по
+- [x] 89.3 **F** `teacher/board-dialog.ts`: create / edit — kind («Доска Excalidraw» / «Внешняя доска по
       ссылке»), title, link, members (students and groups, multi-select). Delete with confirmation (ADR-0026).
-- [ ] 89.4 **F** `teacher/board-backups-dialog.ts`: list of copies (daily / manual, date), «Сделать копию»,
+- [x] 89.4 **F** `teacher/board-backups-dialog.ts`: list of copies (daily / manual, date), «Сделать копию»,
       «Восстановить» and «Удалить» with confirmation (ADR-0026); opened from the list and from the editor menu.
-- [ ] 89.5 **F** Replace the old UI: `BoardCell`, `BoardsDialog`, `OwnerBoards` in
+- [x] 89.5 **F** Replace the old UI: `BoardCell`, `BoardsDialog`, `OwnerBoards` in
       `identity/students/students-page.ts` and `identity/groups/groups-panel.ts` → link «Доски (n)» to the
       filtered page; `OwnerBoardLinks` in `schedule/teacher/lesson-details-dialog.ts` and
       `schedule/home/upcoming-lesson-widget.ts` → boards of the lesson's student/group. Delete dead components,
       update `parts.ts`, `e2e/tests/version-1-2.spec.ts`.
+      *Done: the student's «Мои доски» made five sections — the bottom bar now shows five without «Ещё»
+      (`shell.ts`, design system §4).*
 
 ### Stage 90. Board editor: open and return
 
 Goal: a board opens full screen and returns to the menu without losing changes. Entry: `features/boards/editor/`.
 
-- [ ] 90.1 **F** Routes `/teacher/boards/:id`, `/cabinet/boards/:id` in `app.routes.ts` outside the shell layout
+- [x] 90.1 **F** Routes `/teacher/boards/:id`, `/cabinet/boards/:id` in `app.routes.ts` outside the shell layout
       (full screen, same guards) → `editor/board-page.ts`: top bar «← Доски» / «← Мои доски», title, save
       status; Excalidraw `MainMenu` item «Вернуться к доскам» (teacher: also «Резервные копии»); portal theme,
       `langCode="ru-RU"`, embeds off (`validateEmbeddable`). External boards are not routed — they open in a new
       tab. Excalidraw's own menu items (GitHub, Discord, «Follow us») removed; headings of its dialogs use only
       `Assistant` (no Cyrillic → serif) — give `.excalidraw` headings the portal font fallback (global styles, the
       dialogs are portalled to `body`). Re-measure the initial bundle (ADR-0028).
-- [ ] 90.2 **F** Autosave: debounce on `sceneChange` (only when the elements changed), flush on «назад»,
+      *Done: the Cyrillic range of `Assistant` is mapped to local sans-serif fonts (`@font-face` with
+      `unicode-range`); initial bundle 730.45 kB (ADR-0028).*
+- [x] 90.2 **F** Autosave: debounce on `sceneChange` (only when the elements changed), flush on «назад»,
       `visibilitychange` and `canDeactivate`; status «Сохранено» / «Сохранение…» / «Нет связи — повторим»;
       the merged scene from the response applied to the canvas; new images uploaded once by `fileId`, loaded back
       through `addFiles`.
-- [ ] 90.3 **F** Co-editing by polling (no real time): while the tab is visible poll
+- [x] 90.3 **F** Co-editing by polling (no real time): while the tab is visible poll
       `GET /api/boards/{id}/scene?since=<version>` every ~5 s (paused while hidden), apply others' changes with
       Excalidraw `reconcileElements` without disturbing the local selection / drawing; missing images fetched.
       No WebSocket, cursors or presence — Backlog.
-- [ ] 90.4 **F** Student «Мои доски»: `/cabinet/boards` (`features/boards/student/my-boards-page.ts`) + item
+- [x] 90.4 **F** Student «Мои доски»: `/cabinet/boards` (`features/boards/student/my-boards-page.ts`) + item
       in `core/layout/student-layout.ts`; `MyBoardsCard` (`home/student-home.ts`,
       `schedule/student/my-schedule-page.ts`) links to the editor.
 
 ### Stage 91. «На доску» without Холст
 
-- [ ] 91.1 **F** `to-board/to-board-dialog.ts`, `board-clipboard.ts`: pick a board of the student / group;
+- [x] 91.1 **F** `to-board/to-board-dialog.ts`, `board-clipboard.ts`: pick a board of the student / group;
       an Excalidraw board opens with the task / AI result inserted (text + image at the viewport centre);
       an external board — copy to the clipboard and open the link (generic wording, no Холст). Callers:
       `homework/teacher/assignment-dialog.ts`, `assignment-page.ts`, `task-review-page.ts`.

@@ -13,23 +13,26 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { RadioButton } from 'primeng/radiobutton';
+import { quietContext } from '@core/http/api-error.interceptor';
+import { EmptyState } from '@shared/ui/empty-state';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
+import { BOARD_KIND_LABELS, boardMembersText, boardRoute } from '../boards-labels';
 import { BoardClipboard } from './board-clipboard';
-import { EmptyState } from '@shared/ui/empty-state';
+import { BoardInsert, InsertMode } from './board-insert';
 
-/** How the material was put on the clipboard. */
-export type CopyMode = 'text' | 'image';
-
-/** A material copied for a board. */
-export interface Copied {
-  readonly mode: CopyMode;
+/** What happened to the material. */
+export interface Placed {
+  readonly mode: InsertMode;
   readonly board: Board;
+  /** Where the board opened. */
+  readonly href: string;
 }
 
 /**
- * Puts a material (an assignment, a draft of the AI) on a board: copies it and opens the board,
- * where the teacher pastes it with Ctrl+V. Boards of the given students and groups come first.
+ * Puts a material (an assignment, a draft of the AI) on a board (ADR-0028). An Excalidraw board opens in
+ * a new tab with the material already at the centre; an external board gets it through the clipboard
+ * (the teacher pastes it there). Boards of the given students and groups come first.
  */
 @Component({
   selector: 'tb-to-board-dialog',
@@ -48,14 +51,11 @@ export interface Copied {
           [compact]="true"
           icon="pi-th-large"
           title="Досок пока нет"
-          hint="Добавьте ссылку на доску ученика или группы в разделе «Ученики» (колонка «Доски»)."
+          hint="Создайте доску в разделе «Доски»."
         />
       } @else {
-        <p class="tb-muted">
-          Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac —
-          Cmd+V).
-        </p>
-        @if (!richClipboard) {
+        <p class="tb-muted">{{ hint() }}</p>
+        @if (needsClipboard() && !richClipboard) {
           <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
         }
         <ul class="tb-to-board">
@@ -69,18 +69,24 @@ export interface Copied {
               />
               <label [for]="'to-board-' + board.id">
                 {{ board.title }}
-                <span class="tb-muted">— {{ board.ownerName ?? '' }}</span>
+                <span class="tb-muted"
+                  >— {{ kindLabels[board.kind] }}, {{ membersText(board) }}</span
+                >
               </label>
             </li>
           }
         </ul>
       }
-      @if (done(); as copied) {
+      @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
-          {{ copied.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
-          Ctrl+V.
-          <a [href]="copied.board.url" target="_blank" rel="noopener"
-            >Открыть доску «{{ copied.board.title }}»</a
+          @if (placed.board.kind === 'EXCALIDRAW') {
+            Доска открылась в новой вкладке, материал уже на ней.
+          } @else {
+            {{ placed.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
+            Ctrl+V.
+          }
+          <a [href]="placed.href" target="_blank" rel="noopener"
+            >Открыть доску «{{ placed.board.title }}»</a
           >
         </p-message>
       }
@@ -98,16 +104,16 @@ export interface Copied {
           label="Картинкой"
           icon="pi pi-image"
           severity="secondary"
-          [disabled]="chosenBoard() === null || !richClipboard"
+          [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
           [loading]="copying()"
-          (onClick)="copy('image')"
+          (onClick)="place('image')"
         />
         <p-button
           label="Текстом"
           icon="pi pi-copy"
           [disabled]="chosenBoard() === null"
           [loading]="copying()"
-          (onClick)="copy('text')"
+          (onClick)="place('text')"
         />
       </ng-template>
     </p-dialog>
@@ -132,6 +138,7 @@ export interface Copied {
 export class ToBoardDialog {
   private readonly api = inject(BoardsApi);
   private readonly clipboard = inject(BoardClipboard);
+  private readonly insert = inject(BoardInsert);
 
   readonly visible = model(false);
   readonly title = input('');
@@ -140,21 +147,30 @@ export class ToBoardDialog {
   /** Students and groups whose boards come first. */
   readonly ownerIds = input<readonly string[]>([]);
 
+  protected readonly kindLabels = BOARD_KIND_LABELS;
+  protected readonly membersText = boardMembersText;
   protected readonly boards = signal<Board[]>([]);
   protected readonly loaded = signal(false);
   protected readonly richClipboard = this.clipboard.canWriteRich();
   protected readonly copying = signal(false);
-  protected readonly done = signal<Copied | null>(null);
+  protected readonly done = signal<Placed | null>(null);
   protected readonly error = signal<string | null>(null);
   readonly chosen = signal<string | null>(null);
   protected readonly sorted = computed(() => {
     const preferred = new Set(this.ownerIds());
-    return [...this.boards()].sort(
-      (a, b) => Number(preferred.has(b.ownerId)) - Number(preferred.has(a.ownerId)),
-    );
+    const rank = (board: Board): number =>
+      Number(board.members.some((member) => preferred.has(member.id)));
+    return [...this.boards()].sort((a, b) => rank(b) - rank(a));
   });
   protected readonly chosenBoard = computed(
     () => this.boards().find((board) => board.id === this.chosen()) ?? null,
+  );
+  /** An external board gets the material through the clipboard. */
+  protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
+  protected readonly hint = computed(() =>
+    this.needsClipboard()
+      ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
+      : 'Доска откроется в новой вкладке, материал появится в центре.',
   );
 
   constructor() {
@@ -162,7 +178,7 @@ export class ToBoardDialog {
       if (this.visible()) {
         this.done.set(null);
         this.error.set(null);
-        this.api.list().subscribe((boards) => {
+        this.api.list({}, quietContext()).subscribe((boards) => {
           this.boards.set(boards);
           this.loaded.set(true);
           this.chosen.set(this.sorted()[0]?.id ?? null);
@@ -171,13 +187,18 @@ export class ToBoardDialog {
     });
   }
 
-  async copy(mode: CopyMode): Promise<void> {
+  async place(mode: InsertMode): Promise<void> {
     const board = this.chosenBoard();
     if (board === null) {
       return;
     }
     this.error.set(null);
     this.done.set(null);
+    if (board.kind === 'EXCALIDRAW') {
+      this.insert.put(board.id, { title: this.title(), markdown: this.markdown(), mode });
+      this.open({ mode, board, href: boardRoute('teacher', board.id) });
+      return;
+    }
     this.copying.set(true);
     try {
       // Copy first: the clipboard is written only while the portal's tab has the focus.
@@ -186,9 +207,7 @@ export class ToBoardDialog {
       } else {
         await this.clipboard.copyText(this.title(), this.markdown());
       }
-      this.done.set({ mode, board });
-      // Still within the click's activation; if the browser blocks the tab, the message has a link.
-      window.open(board.url, '_blank', 'noopener');
+      this.open({ mode, board, href: board.url ?? '' });
     } catch {
       this.error.set(
         'Браузер не дал скопировать материал. Попробуйте ещё раз или скопируйте текст вручную.',
@@ -196,5 +215,11 @@ export class ToBoardDialog {
     } finally {
       this.copying.set(false);
     }
+  }
+
+  /** Still within the click's activation; if the browser blocks the tab, the message has a link. */
+  private open(placed: Placed): void {
+    this.done.set(placed);
+    window.open(placed.href, '_blank', 'noopener');
   }
 }

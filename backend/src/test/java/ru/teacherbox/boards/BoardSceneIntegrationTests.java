@@ -98,8 +98,10 @@ class BoardSceneIntegrationTests {
     void anExternalBoardHasNoScene() {
         String id = board("{\"kind\":\"LINK\",\"title\":\"Холст\",\"url\":\"https://app.holst.so/board/7\"}");
 
-        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson()
-                .extractingPath("$.kind").isEqualTo("LINK");
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.kind").isEqualTo("LINK");
+            assertThat(json).extractingPath("$.url").isEqualTo("https://app.holst.so/board/7");
+        });
         assertThat(save(teacher(), id, "[]", null, 0)).hasStatus(HttpStatus.CONFLICT)
                 .bodyJson().extractingPath("$.code").isEqualTo("boards.no-scene");
         assertThat(mvc.get().uri("/api/boards/" + id + "/scene?since=0").with(teacher()))

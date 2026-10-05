@@ -39,9 +39,13 @@ public class SceneService {
     /** Most characters of the stored elements of one board (images are files, not counted). */
     static final int MAX_SCENE_CHARS = 5_000_000;
 
-    /** What the editor needs to open a board. */
-    public record BoardContent(UUID id, BoardKind kind, String title, long sceneVersion, JsonNode elements,
-            JsonNode appState) {
+    /**
+     * What the editor needs to open a board.
+     *
+     * @param url the link of an external board (it has no scene)
+     */
+    public record BoardContent(UUID id, BoardKind kind, String title, @Nullable String url, long sceneVersion,
+            JsonNode elements, JsonNode appState) {
     }
 
     /** The scene after a save or a change by someone else. */
@@ -71,12 +75,12 @@ public class SceneService {
     public BoardContent open(CurrentUser user, UUID boardId) {
         Board board = boards.requireAccess(user, boardId);
         if (!board.excalidraw()) {
-            return new BoardContent(board.id(), board.kind(), board.title(), 0, json.createArrayNode(),
-                    json.createObjectNode());
+            return new BoardContent(board.id(), board.kind(), board.title(), board.url(), 0,
+                    json.createArrayNode(), json.createObjectNode());
         }
         SceneView scene = view(scene(board));
-        return new BoardContent(board.id(), board.kind(), board.title(), scene.sceneVersion(), scene.elements(),
-                scene.appState());
+        return new BoardContent(board.id(), board.kind(), board.title(), null, scene.sceneVersion(),
+                scene.elements(), scene.appState());
     }
 
     /**

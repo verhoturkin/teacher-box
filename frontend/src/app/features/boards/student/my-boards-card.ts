@@ -1,17 +1,22 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { BoardsApi } from '../data-access/boards-api';
 import { MyBoard } from '../data-access/boards.models';
+import { MyBoardList } from './my-board-list';
+
+/** Boards shown on the card; the rest are on «Мои доски». */
+export const CARD_BOARDS = 3;
 
 /**
- * A student's boards (their own and their groups'); hidden while there are none, a failed load
+ * A student's latest boards (their own and their groups'); hidden while there are none, a failed load
  * shows the card with «Повторить» (ADR-0025).
  */
 @Component({
   selector: 'tb-my-boards-card',
-  imports: [Card, LoadStateView],
+  imports: [Card, RouterLink, LoadStateView, MyBoardList],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (state.status() === 'error') {
@@ -20,25 +25,8 @@ import { MyBoard } from '../data-access/boards.models';
       </p-card>
     } @else if (boards().length > 0) {
       <p-card header="Мои доски">
-        <ul class="tb-list">
-          @for (board of boards(); track board.id) {
-            <li>
-              <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-th-large"></i></span>
-              <div class="tb-list__text">
-                <a
-                  class="tb-list__title tb-link"
-                  [href]="board.url"
-                  target="_blank"
-                  rel="noopener"
-                  >{{ board.title }}</a
-                >
-                @if (board.groupName !== null) {
-                  <span class="tb-list__supporting">группа «{{ board.groupName }}»</span>
-                }
-              </div>
-            </li>
-          }
-        </ul>
+        <tb-my-board-list [boards]="boards().slice(0, cardBoards)" />
+        <a class="tb-link" routerLink="/cabinet/boards">Все доски ({{ boards().length }})</a>
       </p-card>
     }
   `,
@@ -46,6 +34,7 @@ import { MyBoard } from '../data-access/boards.models';
 export class MyBoardsCard implements OnInit {
   private readonly api = inject(BoardsApi);
 
+  protected readonly cardBoards = CARD_BOARDS;
   protected readonly boards = signal<MyBoard[]>([]);
   protected readonly state = new LoadState();
 

@@ -22,7 +22,7 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
-import { BoardCell, BoardsDialog, OwnerBoards } from '@features/boards/parts';
+import { BoardsLink, MemberBoards } from '@features/boards/parts';
 import {
   MeetingRoom,
   MeetingsApi,
@@ -72,8 +72,7 @@ import { Busy } from '@shared/ui/busy';
     ToggleSwitch,
     Tooltip,
     RowType,
-    BoardCell,
-    BoardsDialog,
+    BoardsLink,
     GroupsPanel,
     InviteLinkDialog,
     RoomCell,
@@ -166,16 +165,10 @@ import { Busy } from '@shared/ui/busy';
                 </td>
                 <td data-label="Доски">
                   @if (student.status !== 'DEACTIVATED') {
-                    <tb-board-cell
-                      [boards]="boards.of(student.id)"
+                    <tb-boards-link
+                      [count]="boards.count(memberIds(student.id))"
                       [name]="student.displayName"
-                      (edit)="
-                        boards.open({
-                          type: 'STUDENT',
-                          id: student.id,
-                          name: student.displayName,
-                        })
-                      "
+                      [studentId]="student.id"
                     />
                   }
                 </td>
@@ -282,13 +275,6 @@ import { Busy } from '@shared/ui/busy';
       [canCreate]="canCreateRooms()"
       (changed)="onRoomChanged($event)"
     />
-    <tb-boards-dialog
-      [(visible)]="boards.visible"
-      [owner]="boards.owner()"
-      [boards]="boards.ownerBoards()"
-      (saved)="boards.saved($event)"
-      (removed)="boards.removed($event)"
-    />
     <p-confirmdialog />
   `,
 })
@@ -310,7 +296,7 @@ export class StudentsPage implements OnInit {
   private readonly groups = signal<StudentGroup[]>([]);
   protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
   protected readonly canCreateRooms = signal(false);
-  protected readonly boards = new OwnerBoards();
+  protected readonly boards = new MemberBoards();
   protected readonly roomVisible = signal(false);
   protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
   protected readonly ownerRoom = computed(() => {
@@ -332,7 +318,7 @@ export class StudentsPage implements OnInit {
     // New rows when the groups, rooms or boards arrive: the table re-renders the columns only for a new value.
     this.groups();
     this.rooms();
-    this.boards.byOwner();
+    this.boards.byMember();
     return this.students().filter(
       (student) =>
         (includeDeactivated || student.status !== 'DEACTIVATED') &&
@@ -406,6 +392,19 @@ export class StudentsPage implements OnInit {
   }
 
   /** Current groups of the student. */
+  /** The student and their current groups: the boards of «Доски (n)». */
+  protected memberIds(studentId: string): string[] {
+    return [
+      studentId,
+      ...this.groups()
+        .filter(
+          (group) =>
+            group.archivedAt === null && group.members.some((member) => member.id === studentId),
+        )
+        .map((group) => group.id),
+    ];
+  }
+
   protected groupNames(studentId: string): string {
     return this.groups()
       .filter(

@@ -76,10 +76,10 @@ describe('Shell on a phone', () => {
     expect(document.body.querySelectorAll('.p-menu .tb-menu-item--selected')).toHaveLength(1);
   });
 
-  it('has no «Ещё» when all sections fit', async () => {
+  it('has no «Ещё» when all five sections fit', async () => {
     const host = await render(STUDENT_MENU);
 
-    expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(4);
+    expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(5);
     expect(host.querySelector('button[aria-label="Ещё разделы"]')).toBeNull();
     expect(host.querySelector('.tb-shell__content--nav')).not.toBeNull();
   });

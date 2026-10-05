@@ -34,8 +34,8 @@ export interface PictureContext {
 }
 
 /**
- * Puts a material on the clipboard for pasting on a board (Holst has no API for boards,
- * ADR-0012): formatted text with a plain-text fallback, or a picture.
+ * Puts a material on the clipboard for pasting on an external board (ADR-0028): formatted text with a
+ * plain-text fallback, or a picture. The picture is also what goes on an Excalidraw board.
  */
 @Injectable({ providedIn: 'root' })
 export class BoardClipboard {

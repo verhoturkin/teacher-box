@@ -12,6 +12,7 @@ export const STUDENT_MENU: MenuItem[] = [
   { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/cabinet/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
+  { label: 'Мои доски', icon: 'pi pi-th-large', routerLink: '/cabinet/boards' },
 ];
 
 /** Frame of the student personal area (`/cabinet/**`). */

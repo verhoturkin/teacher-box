@@ -13,6 +13,7 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: 'Ученики', icon: 'pi pi-users', routerLink: '/teacher/students' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/teacher/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/teacher/billing' },
+  { label: 'Доски', icon: 'pi pi-th-large', routerLink: '/teacher/boards' },
   { label: 'Уведомления', icon: 'pi pi-bell', routerLink: '/teacher/notifications' },
   { label: 'ИИ-помощник', icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
 ];

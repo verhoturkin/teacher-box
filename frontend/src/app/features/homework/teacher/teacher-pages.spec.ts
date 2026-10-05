@@ -250,7 +250,7 @@ describe('AssignmentPage', () => {
 
     buttonByText(host, 'На доску').click();
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/boards').flush([]);
+    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     // The page's own dialog: the editor of the assignment has another one.
@@ -436,7 +436,7 @@ describe('TaskReviewPage', () => {
     await fixture.whenStable();
     toBoard.click();
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/boards').flush([]);
+    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
     expect(board.visible()).toBe(true);

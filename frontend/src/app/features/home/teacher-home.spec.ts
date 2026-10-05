@@ -44,7 +44,7 @@ describe('TeacherHome', () => {
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
     backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
-    backend.expectOne('/api/teacher/boards').flush([]);
+    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
 
