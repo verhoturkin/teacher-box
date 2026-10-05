@@ -18,7 +18,8 @@ No `api` package. Table `boards`. `/api/teacher/boards/**`, `/api/me/boards`. Bo
 ## Frontend
 
 `features/boards/`: `manage/` (boards dialog), `student/`, `to-board/` (copy to board); via `parts.ts`.
-`editor/` — the Excalidraw island (ADR-0028): `excalidraw-loader.ts` (the only dynamic `import()` of React and
-Excalidraw, `excalidraw.css`, fonts at `excalidraw-assets/`), `excalidraw-host.ts` (React root, unmounted with
+`editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
+Excalidraw), `excalidraw-loader.ts` (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`,
+`self-hosted-fonts.ts` drops Excalidraw's CDN font source), `excalidraw-host.ts` (React root, unmounted with
 its owner), `board-canvas.ts` (`tb-board-canvas`: inputs `scene`, `theme`; output `sceneChange`; loading and
 error states). Tests use `@testing/excalidraw-fake`, never React.

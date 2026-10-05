@@ -91,8 +91,11 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
 - [x] 87.4 **F** `features/boards/editor/board-canvas.ts` (standalone, signals): inputs `scene`, `theme`;
       output `sceneChange`; loading/error states (ADR-0025). Tests mock the loader (no React in jsdom); coverage
       gates hold.
-- [ ] 87.5 **D** `docker/nginx/security-headers.conf`: check the board in the single container — fonts, export
+- [x] 87.5 **D** `docker/nginx/security-headers.conf`: check the board in the single container — fonts, export
       to PNG/SVG (workers / wasm); widen CSP only as far as needed (`worker-src`, `'wasm-unsafe-eval'`), note why.
+      *Done: CSP unchanged (SVG glyph subsetting needs `'unsafe-eval'` — skipped by Excalidraw, whole fonts
+      embedded); `self-hosted-fonts.ts` drops Excalidraw's CDN font source; `excalidraw-island.ts` imports React
+      statically (dynamic `import()` of CommonJS gave only `default`). Initial +3 kB (`tslib`) — re-measure in 90.1.*
 
 ### Stage 88. Boards model v2 (backend)
 
@@ -156,7 +159,9 @@ Goal: a board opens full screen and returns to the menu without losing changes. 
       (full screen, same guards) → `editor/board-page.ts`: top bar «← Доски» / «← Мои доски», title, save
       status; Excalidraw `MainMenu` item «Вернуться к доскам» (teacher: also «Резервные копии»); portal theme,
       `langCode="ru-RU"`, embeds off (`validateEmbeddable`). External boards are not routed — they open in a new
-      tab.
+      tab. Excalidraw's own menu items (GitHub, Discord, «Follow us») removed; headings of its dialogs use only
+      `Assistant` (no Cyrillic → serif) — give `.excalidraw` headings the portal font fallback (global styles, the
+      dialogs are portalled to `body`). Re-measure the initial bundle (ADR-0028).
 - [ ] 90.2 **F** Autosave: debounce on `sceneChange` (only when the elements changed), flush on «назад»,
       `visibilitychange` and `canDeactivate`; status «Сохранено» / «Сохранение…» / «Нет связи — повторим»;
       the merged scene from the response applied to the canvas; new images uploaded once by `fileId`, loaded back

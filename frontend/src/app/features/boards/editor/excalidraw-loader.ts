@@ -1,6 +1,7 @@
 import { DOCUMENT, Injectable, InjectionToken, inject } from '@angular/core';
 import type { ExcalidrawProps } from '@excalidraw/excalidraw/types';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
+import { selfHostFonts } from './self-hosted-fonts';
 
 /** A React root as the island uses it (`react-dom/client`). */
 export interface IslandRoot {
@@ -22,29 +23,16 @@ export interface ExcalidrawModules {
 }
 
 /**
- * The dynamic imports of the island. This file is the only place that imports React and Excalidraw, and only
- * lazily: they land in their own chunks and never in the initial bundle.
+ * The island's code: one dynamic `import()` of `excalidraw-island.ts`, the only file importing React and
+ * Excalidraw. They land in lazy chunks and never in the initial bundle. A token so tests replace it.
  */
 export const EXCALIDRAW_IMPORTS = new InjectionToken<() => Promise<ExcalidrawModules>>(
   'EXCALIDRAW_IMPORTS',
   {
     providedIn: 'root',
-    factory: () => importExcalidraw,
+    factory: () => () => import('./excalidraw-island').then((island) => island.EXCALIDRAW_MODULES),
   },
 );
-
-async function importExcalidraw(): Promise<ExcalidrawModules> {
-  const [react, reactDom, excalidraw] = await Promise.all([
-    import('react'),
-    import('react-dom/client'),
-    import('@excalidraw/excalidraw'),
-  ]);
-  return {
-    createRoot: (container) => reactDom.createRoot(container),
-    createElement: (type, props) => react.createElement(type, props),
-    Excalidraw: excalidraw.Excalidraw,
-  };
-}
 
 /** Excalidraw's stylesheet: a non-injected style bundle (angular.json `inject: false`). */
 export const EXCALIDRAW_STYLESHEET = 'excalidraw.css';
@@ -76,8 +64,10 @@ export class ExcalidrawLoader {
 
   private async loadOnce(): Promise<ExcalidrawModules> {
     const window = this.document.defaultView;
-    if (window)
+    if (window) {
       window.EXCALIDRAW_ASSET_PATH = new URL(EXCALIDRAW_ASSET_DIR, this.document.baseURI).href;
+      selfHostFonts(window);
+    }
     this.styles ??= this.stylesheet().catch((error: unknown) => {
       this.styles = undefined;
       throw error;
