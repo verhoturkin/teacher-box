@@ -1584,29 +1584,40 @@ a.p-menu-item-link:hover {
 }
 
 /*
- * Wide lists (students, groups) are compact cards on every screen (ADR-0018, ADR-0021): the name on
- * top, the fields side by side under it — the name of a field small above its value — wrapping to
- * the next line when they do not fit. A field of long text (tb-cell-long) takes a double share.
- * The actions are in the top corner of the card on a computer and after the fields on a phone.
+ * Wide lists (students, groups) are compact cards on every screen (ADR-0018, ADR-0021): a card shows
+ * its main line (the name and one line under it) and «Подробнее» in its top corner; the details open
+ * under the line — the fields side by side, the name of a field small above its value, wrapping to the
+ * next line when they do not fit (a long text, tb-cell-long, takes a double share), then the actions
+ * of the card (tb-card-actions) as text buttons. Which cards are open — shared/ui/open-cards.ts.
  */
 .p-datatable.tb-cards.tb-cards--wide {
   @include row-cards;
 
   .p-datatable-tbody > tr:not(:has(> td[colspan])) {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--tb-space-2) var(--tb-space-4);
   }
 
+  /* the tile is ≥ 56 px by its padding and the 40 px lead (ADR-0020), not by the height of a cell */
   .p-datatable-tbody > tr > td {
     width: auto;
+    height: auto;
     padding: 0;
   }
 
+  /* the main line leaves room for «Подробнее» */
   .p-datatable-tbody > tr > td:first-child {
     flex: 1 0 100%;
-    padding: 0;
+    padding: 0 3rem 0 0;
+  }
+
+  .p-datatable-tbody > tr.tb-card--open > td:first-child {
+    margin-bottom: var(--tb-space-1);
+    padding-bottom: var(--tb-space-3);
+    border-bottom: 1px solid var(--p-md-outline-variant);
   }
 
   .p-datatable-tbody > tr > td[data-label]:not(:first-child) {
@@ -1635,31 +1646,27 @@ a.p-menu-item-link:hover {
     flex: 2 1 16rem;
   }
 
+  /* «Подробнее» — in the top corner, at the same place in every card */
   .p-datatable-tbody > tr > td.tb-actions-column:not([data-label]):not(:first-child) {
-    flex: none;
-    align-self: flex-end;
-    margin: 0 0 0 auto;
+    position: absolute;
+    top: var(--tb-space-3);
+    right: var(--tb-space-3);
+    width: auto;
+    margin: 0;
     padding: 0;
     border: 0;
   }
-}
 
-/* on a computer the actions are in the top corner, next to the name, at the same place in every card */
-@media (width > 48em) {
-  .p-datatable.tb-cards.tb-cards--wide {
-    .p-datatable-tbody > tr {
-      position: relative;
-    }
-
-    .p-datatable-tbody > tr > td:first-child {
-      padding-inline-end: 9rem;
-    }
-
-    .p-datatable-tbody > tr > td.tb-actions-column:not([data-label]):not(:first-child) {
-      position: absolute;
-      top: var(--tb-space-3);
-      right: var(--tb-space-4);
-    }
+  /* the actions of an open card: text buttons in a row, the first one starts where the text does */
+  .p-datatable-tbody > tr > td.tb-card-actions:not(:first-child) {
+    display: flex;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    gap: var(--tb-space-1) var(--tb-space-2);
+    margin: 0 0 0 calc(-1 * var(--tb-space-3));
+    padding: 0;
+    border: 0;
+    text-align: left;
   }
 }
 

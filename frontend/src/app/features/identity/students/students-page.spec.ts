@@ -122,17 +122,44 @@ describe('StudentsPage', () => {
     return studentRows().map((row) => row.textContent);
   }
 
-  it('lists current students with status and invitation', async () => {
-    await loadStudents([BORIS, MARIA, OLEG]);
+  /** «Подробнее» of a student's card: its details and actions. */
+  async function openCard(name: string): Promise<void> {
+    buttonByText(host, `Подробнее: ${name}`).click();
+    await fixture.whenStable();
+  }
 
-    const rows = rowsText();
+  it('shows only the name and the phone of a student until the card is opened', async () => {
+    await loadStudents([
+      BORIS,
+      { ...MARIA, phone: '+7 900 000-00-00', email: 'm@example.com' },
+      OLEG,
+    ]);
+
+    let rows = rowsText();
     expect(rows).toHaveLength(2);
     expect(rows[0]).toContain('Борис');
+    expect(rows[0]).not.toContain('Приглашён');
+    expect(rows[1]).toContain('Мария');
+    expect(rows[1]).toContain('+7 900 000-00-00');
+    for (const hidden of ['5 класс', 'maria', 'm@example.com', 'Активен', 'Изменить']) {
+      expect(rows[1]).not.toContain(hidden);
+    }
+    const toggle = requireElement(host, 'button[aria-label="Подробнее: Мария"]', HTMLButtonElement);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+    await openCard('Борис');
+    await openCard('Мария');
+    rows = rowsText();
     expect(rows[0]).toContain('Приглашён');
     expect(rows[0]).toContain('Приглашение до 01.10.2026');
-    expect(rows[1]).toContain('Мария');
-    expect(rows[1]).toContain('5 класс');
-    expect(rows[1]).toContain('maria');
+    expect(rows[0]).toContain('Приглашение');
+    for (const shown of ['5 класс', 'maria', 'm@example.com', 'Активен', 'Сбросить пароль']) {
+      expect(rows[1]).toContain(shown);
+    }
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+    await openCard('Мария');
+    expect(rowsText()[1]).not.toContain('maria');
   });
 
   it('filters by name and shows deactivated students on demand', async () => {
@@ -149,15 +176,16 @@ describe('StudentsPage', () => {
     expect(rowsText().join()).toContain('Отключён');
   });
 
-  it('labels the cells for the cards on a phone', async () => {
+  it('labels the fields of an open card', async () => {
     await loadStudents([MARIA]);
+    await openCard('Мария');
 
     expect(host.querySelector('.p-datatable.tb-cards')).not.toBeNull();
     expect(
       Array.from(host.querySelectorAll('div.tb-stack > p-card tbody td[data-label]')).map((cell) =>
         cell.getAttribute('data-label'),
       ),
-    ).toEqual(['Имя', 'Контакты', 'Видеовстреча', 'Статус', 'Логин']);
+    ).toEqual(['Ученик', 'Почта', 'Статус', 'Логин', 'Видеовстреча', 'Заметка']);
   });
 
   it('opens the form of a new student from the home page', async () => {
@@ -202,6 +230,7 @@ describe('StudentsPage', () => {
 
   it('edits a student', async () => {
     await loadStudents([MARIA]);
+    await openCard('Мария');
 
     buttonByText(host, 'Изменить: Мария').click();
     await fixture.whenStable();
@@ -218,6 +247,7 @@ describe('StudentsPage', () => {
 
   it('issues a new link', async () => {
     await loadStudents([MARIA]);
+    await openCard('Мария');
 
     buttonByText(host, 'Ссылка для сброса пароля: Мария').click();
     backend.expectOne('/api/teacher/students/m/invite').flush({
@@ -238,6 +268,7 @@ describe('StudentsPage', () => {
       options.accept?.();
       return confirmation;
     });
+    await openCard('Мария');
 
     buttonByText(host, 'Отключить доступ: Мария').click();
     backend
@@ -249,6 +280,7 @@ describe('StudentsPage', () => {
 
     requireElement(host, '#show-deactivated', HTMLInputElement).click();
     await fixture.whenStable();
+    expect(rowsText()[0]).toContain('Отключён');
     buttonByText(host, 'Вернуть доступ: Мария').click();
     backend.expectOne('/api/teacher/students/m/reactivate').flush(MARIA);
     await fixture.whenStable();
@@ -279,18 +311,21 @@ describe('StudentsPage', () => {
       [aBoard({ members: [{ type: 'STUDENT', id: 'm', name: 'Мария' }] })],
     );
 
+    await openCard('Мария');
     expect(rowsText()[0]).not.toContain('ОГЭ');
     expect(rowsText()[0]).not.toContain('Доски');
     expect(host.querySelector('a[href="/teacher/boards?student=m"]')).toBeNull();
   });
 
-  it('shows the contacts of a student and a dash without them', async () => {
+  it('shows the e-mail of a student and a dash without it', async () => {
     await loadStudents([MARIA, { ...BORIS, email: 'boris@example.com' }]);
+    await openCard('Мария');
+    await openCard('Борис');
 
-    const contacts = Array.from(
-      host.querySelectorAll('div.tb-stack > p-card tbody td[data-label="Контакты"]'),
+    const emails = Array.from(
+      host.querySelectorAll('div.tb-stack > p-card tbody td[data-label="Почта"]'),
     ).map((cell) => cell.textContent.trim());
-    expect(contacts).toEqual(['—', 'boris@example.com']);
+    expect(emails).toEqual(['—', 'boris@example.com']);
   });
 
   it('shows the groups under the students and gives them the students to choose from', async () => {
@@ -305,6 +340,8 @@ describe('StudentsPage', () => {
 
   it('shows the video room of a student and edits it', async () => {
     await loadStudents([MARIA, BORIS], [], [aRoom({ ownerId: 'm' })]);
+    await openCard('Мария');
+    await openCard('Борис');
 
     expect(rowsText()[0]).toContain('Телемост');
     expect(rowsText()[1]).toContain('Добавить');

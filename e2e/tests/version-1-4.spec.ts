@@ -111,6 +111,9 @@ test.describe('on a phone', () => {
 
     await expect(page.locator('thead').first()).toBeHidden();
     const card = page.locator('tbody tr').filter({ hasText: STUDENT });
+    // 1.7.3: the status is in the details of the card
+    await expect(card.locator('td[data-label="Статус"]')).toHaveCount(0);
+    await card.getByRole('button', { name: `Подробнее: ${STUDENT}` }).click();
     await expect(card.locator('td[data-label="Статус"]')).toBeVisible();
     await expectNoSideScroll(page);
   });

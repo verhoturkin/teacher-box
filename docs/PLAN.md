@@ -34,6 +34,9 @@ easier to scan, on a phone too.
   the panel below, boards in «Доски»); `tb-cards--wide` in `styles.scss` — the name on top, the fields side by side
   under it (label above the value, wrapping), actions top right on a computer and after the fields on a phone;
   `groups-panel.ts` — «Ученики» as `tb-cell-long`. Help «Ученики», design system §9, `boards.md`.
+- [x] 100.2 **F** Closed cards show only the main line — a student's name and phone, a group's name and members;
+  the rest and the actions open with «Подробнее» (`shared/ui/open-cards.ts`, `td.tb-card-actions` labelled text
+  buttons). `students-page.ts`, `groups-panel.ts`, `styles.scss`, help «Ученики» / «Группы», E2E 1.2 and 1.6.8.
 
 ## Backlog
 

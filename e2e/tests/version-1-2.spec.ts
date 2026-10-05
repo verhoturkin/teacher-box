@@ -240,15 +240,18 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
+  // 1.7.3: a card shows the name and the phone; the room is in its details
+  await page.getByRole('button', { name: `Подробнее: ${ANNA}` }).click();
   await page.getByRole('button', { name: `Добавить видеовстречу: ${ANNA}` }).click();
   await page.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
   // Anna's own row: the row of her group has her name too
   const row = page.getByRole('row', { name: new RegExp(`^${ANNA}`) });
   await expect(row).toContainText('Телемост');
 
-  // 1.7.0: boards live on «Доски»; the row links them filtered by the student
-  await row.getByRole('link', { name: `Доски: ${ANNA}, 0` }).click();
-  await expect(page).toHaveURL(/\/teacher\/boards\?student=/);
+  // 1.7.3: the student card has no boards; the details of her group link the group's boards
+  await page.getByRole('button', { name: `Подробнее о группе: ${GROUP}` }).click();
+  await page.getByRole('link', { name: `Доски: ${GROUP}, 0` }).click();
+  await expect(page).toHaveURL(/\/teacher\/boards\?group=/);
   await page.getByRole('button', { name: 'Новая доска' }).click();
   const dialog = page.getByRole('dialog', { name: 'Новая доска' });
   await dialog.getByText('Внешняя доска', { exact: true }).click();

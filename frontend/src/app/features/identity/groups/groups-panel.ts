@@ -29,6 +29,8 @@ import {
 } from '@features/meetings/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { OpenCards } from '@shared/ui/open-cards';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
@@ -56,6 +58,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
     Tooltip,
     MoneyPipe,
     RowType,
+    ButtonAttributes,
     BoardsLink,
     GroupFormDialog,
     RoomCell,
@@ -97,96 +100,103 @@ import { Snackbar } from '@core/snackbar/snackbar';
           <ng-template #header>
             <tr>
               <th class="tb-col-main">Группа</th>
-              <th>Ученики</th>
-              <th>Цена занятия</th>
-              <th>Видеовстреча</th>
-              <th>Доски</th>
-              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+              <th class="tb-actions-column"><span class="tb-sr-only">Подробнее</span></th>
             </tr>
           </ng-template>
           <ng-template #body let-group [tbRowType]="visibleGroups()">
-            <tr>
+            <tr [class.tb-card--open]="cards.isOpen(group.id)">
               <td data-label="Группа">
                 <div class="tb-person">
                   <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
-                  <span class="tb-list__title">
-                    {{ group.name }}
-                    @if (group.archivedAt) {
-                      <p-tag value="В архиве" severity="secondary" />
-                    }
-                  </span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">
+                      {{ group.name }}
+                      @if (group.archivedAt) {
+                        <p-tag value="В архиве" severity="secondary" />
+                      }
+                    </span>
+                    <span class="tb-list__supporting">
+                      @if (group.members.length === 0) {
+                        Пока никого
+                      } @else {
+                        {{ memberNames(group) }}
+                      }
+                    </span>
+                  </div>
                 </div>
-              </td>
-              <td data-label="Ученики" class="tb-cell-long">
-                @if (group.members.length === 0) {
-                  <span class="tb-muted">Пока никого</span>
-                } @else {
-                  {{ memberNames(group) }}
-                }
-              </td>
-              <td data-label="Цена занятия">
-                @if (priceOf(group.id); as price) {
-                  {{ price | money: currency() }}
-                } @else {
-                  <span class="tb-muted">—</span>
-                }
-              </td>
-              <td data-label="Видеовстреча">
-                @if (!group.archivedAt) {
-                  <tb-room-cell
-                    [room]="roomOf(group.id)"
-                    [name]="group.name"
-                    (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
-                  />
-                }
-              </td>
-              <td data-label="Доски">
-                @if (!group.archivedAt) {
-                  <tb-boards-link
-                    [count]="boards.count([group.id])"
-                    [name]="group.name"
-                    [groupId]="group.id"
-                  />
-                }
               </td>
               <td class="tb-actions-column">
                 <p-button
-                  icon="pi pi-pencil"
+                  [icon]="cards.icon(group.id)"
                   [text]="true"
                   severity="secondary"
                   [rounded]="true"
-                  [pTooltip]="'Изменить группу: ' + group.name"
-                  [ariaLabel]="'Изменить группу: ' + group.name"
-                  (onClick)="openEdit(group)"
+                  [pTooltip]="cards.isOpen(group.id) ? 'Скрыть подробности' : 'Подробнее'"
+                  [ariaLabel]="'Подробнее о группе: ' + group.name"
+                  [tbAttributes]="{ 'aria-expanded': cards.isOpen(group.id) ? 'true' : 'false' }"
+                  (onClick)="cards.toggle(group.id)"
                 />
-                @if (group.archivedAt) {
+              </td>
+              @if (cards.isOpen(group.id)) {
+                <td data-label="Цена занятия">
+                  @if (priceOf(group.id); as price) {
+                    {{ price | money: currency() }}
+                  } @else {
+                    <span class="tb-muted">—</span>
+                  }
+                </td>
+                @if (!group.archivedAt) {
+                  <td data-label="Видеовстреча">
+                    <tb-room-cell
+                      [room]="roomOf(group.id)"
+                      [name]="group.name"
+                      (edit)="openRoom({ type: 'GROUP', id: group.id, name: group.name })"
+                    />
+                  </td>
+                  <td data-label="Доски">
+                    <tb-boards-link
+                      [count]="boards.count([group.id])"
+                      [name]="group.name"
+                      [groupId]="group.id"
+                    />
+                  </td>
+                }
+                <td class="tb-card-actions">
                   <p-button
-                    icon="pi pi-replay"
+                    label="Изменить"
+                    icon="pi pi-pencil"
                     [text]="true"
                     severity="secondary"
-                    [rounded]="true"
-                    [pTooltip]="'Вернуть из архива: ' + group.name"
-                    [ariaLabel]="'Вернуть из архива: ' + group.name"
-                    [loading]="busy.is('restore-' + group.id)"
-                    (onClick)="restore(group)"
+                    [ariaLabel]="'Изменить группу: ' + group.name"
+                    (onClick)="openEdit(group)"
                   />
-                } @else {
-                  <p-button
-                    icon="pi pi-inbox"
-                    [text]="true"
-                    severity="danger"
-                    [rounded]="true"
-                    [pTooltip]="'В архив: ' + group.name"
-                    [ariaLabel]="'В архив: ' + group.name"
-                    (onClick)="confirmArchive(group)"
-                  />
-                }
-              </td>
+                  @if (group.archivedAt) {
+                    <p-button
+                      label="Вернуть из архива"
+                      icon="pi pi-replay"
+                      [text]="true"
+                      severity="secondary"
+                      [ariaLabel]="'Вернуть из архива: ' + group.name"
+                      [loading]="busy.is('restore-' + group.id)"
+                      (onClick)="restore(group)"
+                    />
+                  } @else {
+                    <p-button
+                      label="В архив"
+                      icon="pi pi-inbox"
+                      [text]="true"
+                      severity="danger"
+                      [ariaLabel]="'В архив: ' + group.name"
+                      (onClick)="confirmArchive(group)"
+                    />
+                  }
+                </td>
+              }
             </tr>
           </ng-template>
           <ng-template #emptymessage>
             <tr>
-              <td colspan="6">
+              <td colspan="2">
                 @if (groups().length === 0) {
                   <tb-empty-state
                     icon="pi-users"
@@ -197,7 +207,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <tb-empty-state
                     icon="pi-box"
                     title="Все группы в архиве"
-                    hint="Вернуть группу из архива можно кнопкой в её строке"
+                    hint="Вернуть группу из архива можно в её подробностях"
                   />
                 }
               </td>
@@ -229,6 +239,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 export class GroupsPanel implements OnInit {
   private readonly snackbar = inject(Snackbar);
   protected readonly busy = new Busy();
+  protected readonly cards = new OpenCards();
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);

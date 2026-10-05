@@ -64,6 +64,12 @@ describe('GroupsPanel', () => {
     return Array.from(host.querySelectorAll('tbody tr')).map((row) => readableText(row));
   }
 
+  /** «Подробнее» of a group's card: its price, room, boards and actions. */
+  async function openCard(name: string): Promise<void> {
+    buttonByText(host, `Подробнее о группе: ${name}`).click();
+    await fixture.whenStable();
+  }
+
   function confirmNext(): void {
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);
     vi.spyOn(confirmation, 'confirm').mockImplementationOnce((options) => {
@@ -79,6 +85,11 @@ describe('GroupsPanel', () => {
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toContain('ОГЭ 9 класс');
     expect(rows()[0]).toContain('Мария, Борис');
+    // the price, the room and the boards wait for «Подробнее»
+    expect(rows()[0]).not.toMatch(/800/);
+    expect(rows()[0]).not.toContain('Телемост');
+
+    await openCard('ОГЭ 9 класс');
     expect(rows()[0]).toMatch(/800/);
     expect(rows()[0]).toContain('Телемост');
 
@@ -87,7 +98,9 @@ describe('GroupsPanel', () => {
     expect(rows()[1]).toContain('Летняя школа');
     expect(rows()[1]).toContain('В архиве');
     expect(rows()[1]).toContain('Пока никого');
+    await openCard('Летняя школа');
     expect(rows()[1]).toContain('—');
+    expect(rows()[1]).not.toContain('Доски');
   });
 
   it('invites to create the first group', async () => {
@@ -107,6 +120,7 @@ describe('GroupsPanel', () => {
 
   it('edits a group with its price', async () => {
     await load([CURRENT]);
+    await openCard('ОГЭ 9 класс');
 
     buttonByText(host, 'Изменить группу: ОГЭ 9 класс').click();
     await fixture.whenStable();
@@ -131,12 +145,14 @@ describe('GroupsPanel', () => {
     await fixture.whenStable();
 
     expect(rows()[0]).toContain('Английский');
+    await openCard('Английский');
     expect(rows()[0]).toMatch(/500/);
   });
 
   it('archives after confirmation and restores', async () => {
     await load([CURRENT]);
     confirmNext();
+    await openCard('ОГЭ 9 класс');
 
     buttonByText(host, 'В архив: ОГЭ 9 класс').click();
     backend
@@ -168,6 +184,7 @@ describe('GroupsPanel', () => {
 
   it('sets up the video room of a group', async () => {
     await load([CURRENT]);
+    await openCard('ОГЭ 9 класс');
 
     buttonByText(host, 'Видеовстреча: ОГЭ 9 класс').click();
     await fixture.whenStable();
@@ -182,6 +199,7 @@ describe('GroupsPanel', () => {
 
   it('links the boards of a group', async () => {
     await load([CURRENT]);
+    await openCard('ОГЭ 9 класс');
 
     expect(rows()[0]).toContain('Доски (2)');
     expect(host.querySelector('a[href="/teacher/boards?group=g1"]')).not.toBeNull();

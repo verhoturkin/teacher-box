@@ -30,6 +30,8 @@ import {
   RoomOwnerRef,
 } from '@features/meetings/parts';
 import { RowType } from '@shared/ui/row-type.directive';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { OpenCards } from '@shared/ui/open-cards';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, IssuedInvite, Student } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
@@ -66,6 +68,7 @@ import { Busy } from '@shared/ui/busy';
     ToggleSwitch,
     Tooltip,
     RowType,
+    ButtonAttributes,
     GroupsPanel,
     InviteLinkDialog,
     RoomCell,
@@ -115,119 +118,131 @@ import { Busy } from '@shared/ui/busy';
           >
             <ng-template #header>
               <tr>
-                <th class="tb-col-main">Имя</th>
-                <th>Контакты</th>
-                <th>Видеовстреча</th>
-                <th>Статус</th>
-                <th>Логин</th>
-                <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+                <th class="tb-col-main">Ученик</th>
+                <th class="tb-actions-column"><span class="tb-sr-only">Подробнее</span></th>
               </tr>
             </ng-template>
             <ng-template #body let-student [tbRowType]="visibleStudents()">
-              <tr>
-                <td data-label="Имя">
+              <tr [class.tb-card--open]="cards.isOpen(student.id)">
+                <td data-label="Ученик">
                   <div class="tb-person">
                     <span class="tb-avatar" aria-hidden="true">{{
                       student.displayName | initials
                     }}</span>
                     <div class="tb-list__text">
-                      <span class="tb-list__title">{{ student.displayName }}</span>
-                      @if (student.note) {
-                        <span class="tb-list__supporting">{{ student.note }}</span>
-                      }
-                    </div>
-                  </div>
-                </td>
-                <td data-label="Контакты">
-                  @if (student.email || student.phone) {
-                    <div>
-                      @if (student.email) {
-                        <div>{{ student.email }}</div>
-                      }
+                      <span class="tb-list__title">
+                        {{ student.displayName }}
+                        @if (student.status === 'DEACTIVATED') {
+                          <p-tag
+                            [value]="statusLabels[student.status]"
+                            [severity]="statusSeverities[student.status]"
+                          />
+                        }
+                      </span>
                       @if (student.phone) {
-                        <div>{{ student.phone }}</div>
+                        <span class="tb-list__supporting">{{ student.phone }}</span>
                       }
                     </div>
-                  } @else {
-                    <span class="tb-muted">—</span>
-                  }
-                </td>
-                <td data-label="Видеовстреча">
-                  @if (student.status !== 'DEACTIVATED') {
-                    <tb-room-cell
-                      [room]="roomOf(student.id)"
-                      [name]="student.displayName"
-                      (edit)="
-                        openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
-                      "
-                    />
-                  }
-                </td>
-                <td data-label="Статус">
-                  <div>
-                    <p-tag
-                      [value]="statusLabels[student.status]"
-                      [severity]="statusSeverities[student.status]"
-                    />
-                    @if (student.pendingInvite; as invite) {
-                      <div>
-                        <small class="tb-muted">
-                          {{ purposeLabels[invite.purpose] }} до
-                          {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
-                        </small>
-                      </div>
-                    }
                   </div>
                 </td>
-                <td data-label="Логин">{{ student.login ?? '—' }}</td>
                 <td class="tb-actions-column">
                   <p-button
-                    icon="pi pi-pencil"
+                    [icon]="cards.icon(student.id)"
                     [text]="true"
                     severity="secondary"
                     [rounded]="true"
-                    [pTooltip]="'Изменить: ' + student.displayName"
-                    [ariaLabel]="'Изменить: ' + student.displayName"
-                    (onClick)="openEdit(student)"
+                    [pTooltip]="cards.isOpen(student.id) ? 'Скрыть подробности' : 'Подробнее'"
+                    [ariaLabel]="'Подробнее: ' + student.displayName"
+                    [tbAttributes]="{
+                      'aria-expanded': cards.isOpen(student.id) ? 'true' : 'false',
+                    }"
+                    (onClick)="cards.toggle(student.id)"
                   />
-                  @if (student.status === 'DEACTIVATED') {
-                    <p-button
-                      icon="pi pi-replay"
-                      [text]="true"
-                      severity="secondary"
-                      [rounded]="true"
-                      [pTooltip]="'Вернуть доступ: ' + student.displayName"
-                      [ariaLabel]="'Вернуть доступ: ' + student.displayName"
-                      [loading]="busy.is('reactivate-' + student.id)"
-                      (onClick)="reactivate(student)"
-                    />
-                  } @else {
-                    <p-button
-                      icon="pi pi-link"
-                      [text]="true"
-                      severity="secondary"
-                      [rounded]="true"
-                      [pTooltip]="linkLabel(student)"
-                      [ariaLabel]="linkLabel(student)"
-                      [loading]="busy.is('invite-' + student.id)"
-                      (onClick)="reissueInvite(student)"
-                    />
-                    <p-button
-                      icon="pi pi-ban"
-                      [text]="true"
-                      [rounded]="true"
-                      severity="danger"
-                      [pTooltip]="'Отключить доступ: ' + student.displayName"
-                      [ariaLabel]="'Отключить доступ: ' + student.displayName"
-                      (onClick)="confirmDeactivate(student)"
-                    />
-                  }
                 </td>
+                @if (cards.isOpen(student.id)) {
+                  <td data-label="Почта">
+                    @if (student.email) {
+                      {{ student.email }}
+                    } @else {
+                      <span class="tb-muted">—</span>
+                    }
+                  </td>
+                  <td data-label="Статус">
+                    <div>
+                      <p-tag
+                        [value]="statusLabels[student.status]"
+                        [severity]="statusSeverities[student.status]"
+                      />
+                      @if (student.pendingInvite; as invite) {
+                        <div>
+                          <small class="tb-muted">
+                            {{ purposeLabels[invite.purpose] }} до
+                            {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
+                          </small>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                  <td data-label="Логин">{{ student.login ?? '—' }}</td>
+                  @if (student.status !== 'DEACTIVATED') {
+                    <td data-label="Видеовстреча">
+                      <tb-room-cell
+                        [room]="roomOf(student.id)"
+                        [name]="student.displayName"
+                        (edit)="
+                          openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
+                        "
+                      />
+                    </td>
+                  }
+                  @if (student.note) {
+                    <td data-label="Заметка" class="tb-cell-long">{{ student.note }}</td>
+                  }
+                  <td class="tb-card-actions">
+                    <p-button
+                      label="Изменить"
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      severity="secondary"
+                      [ariaLabel]="'Изменить: ' + student.displayName"
+                      (onClick)="openEdit(student)"
+                    />
+                    @if (student.status === 'DEACTIVATED') {
+                      <p-button
+                        label="Вернуть доступ"
+                        icon="pi pi-replay"
+                        [text]="true"
+                        severity="secondary"
+                        [ariaLabel]="'Вернуть доступ: ' + student.displayName"
+                        [loading]="busy.is('reactivate-' + student.id)"
+                        (onClick)="reactivate(student)"
+                      />
+                    } @else {
+                      <p-button
+                        [label]="student.status === 'ACTIVE' ? 'Сбросить пароль' : 'Приглашение'"
+                        icon="pi pi-link"
+                        [text]="true"
+                        severity="secondary"
+                        [ariaLabel]="linkLabel(student)"
+                        [loading]="busy.is('invite-' + student.id)"
+                        (onClick)="reissueInvite(student)"
+                      />
+                      <p-button
+                        label="Отключить доступ"
+                        icon="pi pi-ban"
+                        [text]="true"
+                        severity="danger"
+                        [ariaLabel]="'Отключить доступ: ' + student.displayName"
+                        (onClick)="confirmDeactivate(student)"
+                      />
+                    }
+                  </td>
+                }
               </tr>
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="6">
+                <td colspan="2">
                   @if (students().length === 0) {
                     <tb-empty-state
                       icon="pi-user-plus"
@@ -273,6 +288,7 @@ import { Busy } from '@shared/ui/busy';
 })
 export class StudentsPage implements OnInit {
   protected readonly busy = new Busy();
+  protected readonly cards = new OpenCards();
   private readonly api = inject(IdentityApi);
   private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);

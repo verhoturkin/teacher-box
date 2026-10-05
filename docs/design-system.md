@@ -222,9 +222,11 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   right, details below).
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
   the phone each row becomes a card «column: value» (`data-label`). Wide lists (students, groups) —
-  `tb-cards--wide`: compact cards on every screen — the name on top, the fields side by side under it (label in
-  Body Small above the value, 40 px value line, wrap when they don't fit; `tb-cell-long` takes a double share),
-  card buttons top right on a computer and after the fields on a phone. Keep these cards to ≤ 5 fields. Main column
+  `tb-cards--wide`: compact cards on every screen — closed, a card is its main line only (lead + title + one
+  supporting line: a student's phone, a group's members) and the chevron «Подробнее» top right
+  (`shared/ui/open-cards.ts`, `aria-expanded`). Open, the details follow under a divider: fields side by side
+  (label in Body Small above the value, 40 px value line, wrap; `tb-cell-long` takes a double share), then the
+  card's actions as labelled text buttons (`td.tb-card-actions`). Main column
   `tb-col-main`, amounts `tb-amount`. Statuses — `p-tag`, one shape, no wrapping. Row typing — `tbRowType`.
 - Not data lists: wizard steps, help items, checklists, bot capability lists, task files — plain text lists.
 - No custom row markup for data in cards or dialogs.
