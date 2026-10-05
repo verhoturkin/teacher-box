@@ -75,7 +75,7 @@ test('the teacher signs in and invites a student', async ({ page }) => {
   await page.getByLabel('Имя и фамилия').fill(STUDENT_NAME);
   await page.getByRole('button', { name: 'Сохранить' }).click();
 
-  const link = page.getByLabel('Ссылка-приглашение');
+  const link = page.getByRole('textbox', { name: 'Ссылка-приглашение' });
   await expect(link).toHaveValue(/\/invite\//);
   inviteLink = await link.inputValue();
 });
@@ -138,7 +138,10 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
   await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('3 000');
 
   const student = await studentPage(browser);
-  await student.getByRole('button', { name: /Уведомления/ }).click();
+  await student
+    .locator('tb-notification-bell')
+    .getByRole('link', { name: /^Уведомления/ })
+    .click();
   await expect(student).toHaveURL(/\/cabinet\/notifications$/);
   await expect(student.getByText('Получена оплата 3 000 ₽')).toBeVisible({ timeout: 20_000 });
   await expect(student.getByText(`Новое задание: «${HOMEWORK_TITLE}»`)).toBeVisible();

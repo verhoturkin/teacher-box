@@ -45,6 +45,20 @@ Goal: shorter tool output in agent sessions. No product changes.
 - [x] 85.4 PostToolUse hook `.claude/hooks/format.mjs`: Prettier on edited frontend and e2e files.
 - [x] 85.5 Plan substeps name their entry points; "Context economy" in `CLAUDE.md`.
 
+### Stage 86. Green E2E after 1.6.12–1.6.13
+
+Goal: the CI E2E job passes again; the scenarios follow the UI of 1.6.12–1.6.13.
+
+- [x] 86.1 **F** `e2e/tests/*`: the invite link is the textbox (row buttons «Новая ссылка-приглашение: …» match
+      the label too); the bell is a link in `tb-notification-bell`; the teacher sees «Адрес задан
+      администратором портала»; the weekly schedule ends with `pi-stop-circle` (DA-066); button heights are
+      measured after the dialog grows in.
+- [x] 86.2 **F** `styles.scss` `.tb-lesson-actions--stacked .tb-button-group`: equal halves on a 360 px phone
+      (`flex: 1 1 0`, `min-width: 0`, 16 px sides) — «Перенести» with its icon was 8 px wider.
+- [x] 86.3 **F** `billing/billing-labels.ts`: the status tag of a missed lesson is «Пропуск», the full «Пропуск
+      (оплачивается)» is its `title` (`LESSON_STATUS_HINTS`) — the lesson journal of the monthly report fits a
+      tablet (`version-1-6-5` «without scrolling sideways»).
+
 ## Backlog
 
 Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):

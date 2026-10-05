@@ -33,7 +33,7 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await page.goto('/teacher/settings');
   const card = page.locator('#portal');
   await expect(card.locator('#portal-address')).toHaveValue(BASE_URL);
-  await expect(card).toContainText('TEACHERBOX_PUBLIC_URL');
+  await expect(card).toContainText('Адрес задан администратором портала');
   await card.locator('#portal-name').fill(PORTAL_NAME);
   await card.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.locator('.tb-shell__brand')).toContainText(PORTAL_NAME);
@@ -43,7 +43,7 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await page.getByRole('button', { name: 'Добавить ученика' }).click();
   await page.getByLabel('Имя и фамилия').fill(STUDENT);
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByLabel('Ссылка-приглашение')).toHaveValue(
+  await expect(page.getByRole('textbox', { name: 'Ссылка-приглашение' })).toHaveValue(
     new RegExp(`^${BASE_URL}/invite/`),
   );
 });

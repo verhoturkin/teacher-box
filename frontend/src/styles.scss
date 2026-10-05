@@ -1959,12 +1959,16 @@ a.p-menu-item-link:hover {
   .tb-button-group {
     display: flex;
 
+    /* equal halves whatever the labels: they don't grow from the content, 16 px sides fit 360 px */
     > p-button {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 0;
     }
 
     .p-button {
       width: 100%;
+      min-width: 0;
+      padding-inline: var(--tb-space-4);
     }
   }
 }

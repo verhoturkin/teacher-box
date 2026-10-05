@@ -6,7 +6,7 @@ import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
-import { LESSON_STATUS_LABELS } from '../billing-labels';
+import { LESSON_STATUS_HINTS, LESSON_STATUS_LABELS } from '../billing-labels';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { ledgerEntries } from './ledger-entries';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -53,6 +53,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 @if (entry.lesson.status !== 'CONDUCTED') {
                   <p-tag
                     [value]="lessonStatusLabels[entry.lesson.status]"
+                    [attr.title]="lessonStatusHints[entry.lesson.status] ?? null"
                     [severity]="entry.lesson.status === 'MISSED' ? 'warn' : 'secondary'"
                   />
                 }
@@ -135,5 +136,6 @@ export class LedgerTable {
   readonly voidPayment = output<Payment>();
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
+  protected readonly lessonStatusHints = LESSON_STATUS_HINTS;
   protected readonly entries = computed(() => ledgerEntries(this.ledger()));
 }

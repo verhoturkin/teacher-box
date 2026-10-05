@@ -79,7 +79,10 @@ describe('LedgerTable', () => {
     expect(text[1]).not.toContain('Перевод');
     expect(text[1]).toContain('Аннулирована');
     expect(text[1]).toContain('+5 000 ₽');
-    expect(text[2]).toContain('Пропуск (оплачивается)');
+    expect(text[2]).toContain('Пропуск');
+    expect(
+      hostElement(fixture).querySelector('p-tag[title="Пропуск (оплачивается)"]'),
+    ).not.toBeNull();
     expect(text[3]).toContain('Дроби');
     expect(text[3]).toContain('−1 500 ₽');
     expect(hostElement(fixture).querySelectorAll('tbody tr.tb-inactive')).toHaveLength(2);

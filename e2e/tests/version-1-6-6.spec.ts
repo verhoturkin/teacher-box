@@ -4,7 +4,7 @@ import { type APIRequestContext, type Page, expect, test } from '@playwright/tes
  * Version 1.6.6: Material 3 Expressive and the meaning of button colors (ADR-0019) — confirming
  * buttons are green, cancelling and deleting ones red, dialogs are white like cards, the side
  * navigation has room between its items, the top bar no longer names the area, a weekly schedule
- * ends with a bin and the teacher's notifications are folding cards instead of tabs.
+ * ends with a red button (a stop sign since 1.6.12, DA-066) and the teacher's notifications are folding cards instead of tabs.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -104,7 +104,10 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');
 });
 
-test('a weekly schedule ends with a bin, red like deleting off time', async ({ page, request }) => {
+test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
+  page,
+  request,
+}) => {
   const token = await teacherToken(request);
   const headers = { Authorization: `Bearer ${token}` };
   const created = await request.post('/api/teacher/students', {
@@ -137,6 +140,6 @@ test('a weekly schedule ends with a bin, red like deleting off time', async ({ p
   });
   await expect(end).toBeVisible();
   await expect(end).toHaveClass(/p-button-danger/);
-  await expect(end.locator('.pi-trash')).toHaveCount(1);
-  await expect(end.locator('.pi-stop-circle')).toHaveCount(0);
+  await expect(end.locator('.pi-stop-circle')).toHaveCount(1);
+  await expect(end.locator('.pi-trash')).toHaveCount(0);
 });
