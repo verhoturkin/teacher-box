@@ -23,6 +23,7 @@ import type {
 import { defer } from 'rxjs';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import type { LivePointer } from './board-live';
 import { ExcalidrawHost } from './excalidraw-host';
 import {
   BoardEditorProps,
@@ -106,11 +107,15 @@ export class BoardCanvas {
   /** The editor's settings at the end of the main menu (theme, grid, wheel). */
   readonly settings = input<readonly BoardMenuSetting[]>([]);
   readonly wheel = input<BoardWheel>('zoom');
+  /** Others are on the board (the live channel is open): Excalidraw shows them. */
+  readonly collaborating = input(false);
   /** The user's Excalidraw library; read when the editor mounts. */
   readonly library = input<BoardLibrary | null>(null);
   readonly sceneChange = output<BoardCanvasChange>();
   /** The editor is mounted: its API arrives once. */
   readonly ready = output<BoardCanvasReady>();
+  /** This user's cursor moved (scene coordinates). */
+  readonly pointerMove = output<LivePointer>();
 
   protected readonly state = new LoadState();
   private readonly loader = inject(ExcalidrawLoader);
@@ -161,6 +166,7 @@ export class BoardCanvas {
       this.theme();
       this.menu();
       this.settings();
+      this.collaborating();
       untracked(() => {
         this.render();
       });
@@ -193,6 +199,10 @@ export class BoardCanvas {
       validateEmbeddable: () => false,
       onChange: (elements, appState, files) => {
         this.sceneChange.emit({ elements, appState, files });
+      },
+      isCollaborating: this.collaborating(),
+      onPointerUpdate: ({ pointer, button }) => {
+        this.pointerMove.emit({ x: pointer.x, y: pointer.y, tool: pointer.tool, button });
       },
       excalidrawAPI: (api) => {
         if (modules) this.ready.emit({ api, modules });

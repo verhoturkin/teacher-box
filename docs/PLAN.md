@@ -49,7 +49,7 @@ the fallback. Supersedes the «опрос, без реального време�
       save or restore — `SceneSaved` after commit), access re-checked on board change / delete, student
       deactivation and group changes (sessions that lost access are closed). nginx: `Upgrade` / `Connection`
       for `/api/`, dev proxy `ws: true`. Tests: tickets, handshake, relay, access loss.
-- [ ] 97.2 **F** `boards/editor/board-live.ts` (`BoardLive`: ticket, socket, reconnect with back-off, ping,
+- [x] 97.2 **F** `boards/editor/board-live.ts` (`BoardLive`: ticket, socket, reconnect with back-off, ping,
       peers), `board-sync.ts` (sends changed elements every ~100 ms, applies relayed ones without saving them
       again, polls on `saved`, polls every 30 s while live), `board-canvas.ts` (`onPointerUpdate`,
       `isCollaborating`, collaborators with names and colours), `BoardsApi.liveTicket`.

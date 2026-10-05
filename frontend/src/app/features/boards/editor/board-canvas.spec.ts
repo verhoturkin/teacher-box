@@ -98,6 +98,22 @@ describe('BoardCanvas', () => {
     expect(ready).toEqual([{ api, modules: island.modules }]);
   });
 
+  it('shows the others while they are on the board and reports this user’s cursor', async () => {
+    await render();
+    const moves: unknown[] = [];
+    fixture.componentInstance.pointerMove.subscribe((move) => moves.push(move));
+    expect(island.last().isCollaborating).toBe(false);
+
+    fixture.componentRef.setInput('collaborating', true);
+    await settle();
+    Reflect.apply(island.last().onPointerUpdate ?? fail, undefined, [
+      { pointer: { x: 1, y: 2, tool: 'laser' }, button: 'up', pointersMap: new Map() },
+    ]);
+
+    expect(island.last().isCollaborating).toBe(true);
+    expect(moves).toEqual([{ x: 1, y: 2, tool: 'laser', button: 'up' }]);
+  });
+
   it('puts the settings at the end of the menu', async () => {
     const grid = { label: 'Сетка', checked: true, onSelect: vi.fn() };
     await render((canvas) => {

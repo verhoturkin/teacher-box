@@ -6,12 +6,15 @@ import { ConfirmationService } from 'primeng/api';
 import { aBoardContent } from '@testing/boards-fixtures';
 import { buttonByText, hostElement } from '@testing/dom';
 import { FakeIsland, anElement, fakeExcalidraw, fakeScene } from '@testing/excalidraw-fake';
+import { fakeLiveSockets } from '@testing/live-fake';
 import { testProviders } from '@testing/setup';
 import { BoardBackupsDialog } from '../teacher/board-backups-dialog';
 import { BoardInsert } from '../to-board/board-insert';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { BoardCanvas } from './board-canvas';
+import { LIVE_SOCKET } from './board-live';
 import { BoardPage, WHEEL_KEY } from './board-page';
+import { POINTER_INTERVAL_MS } from './board-live';
 import { ExcalidrawLoader } from './excalidraw-loader';
 
 describe('BoardPage', () => {
@@ -19,15 +22,17 @@ describe('BoardPage', () => {
   let backend: HttpTestingController;
   let island: FakeIsland;
   let host: HTMLElement;
+  let sockets: ReturnType<typeof fakeLiveSockets>;
 
   function render(area: 'teacher' | 'cabinet' = 'teacher'): void {
     island = fakeExcalidraw();
+    sockets = fakeLiveSockets();
     TestBed.configureTestingModule({
       imports: [BoardPage],
-      providers: testProviders({
-        provide: ExcalidrawLoader,
-        useValue: { load: () => Promise.resolve(island.modules) },
-      }),
+      providers: testProviders(
+        { provide: ExcalidrawLoader, useValue: { load: () => Promise.resolve(island.modules) } },
+        { provide: LIVE_SOCKET, useValue: sockets.open },
+      ),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BoardPage);
@@ -46,6 +51,11 @@ describe('BoardPage', () => {
     await fixture.whenStable();
     const scene = fakeScene();
     Reflect.apply(island.last().excalidrawAPI ?? fail, undefined, [scene.access]);
+    // The live channel asks for its ticket at once.
+    backend.expectOne({ method: 'POST', url: '/api/boards/board-1/live' }).flush({ ticket: 't-1' });
+    await vi.waitFor(() => {
+      expect(sockets.sockets).toHaveLength(1);
+    });
     return scene;
   }
 
@@ -138,6 +148,45 @@ describe('BoardPage', () => {
     expect(canvas.wheel()).toBe('scroll');
     localStorage.removeItem(WHEEL_KEY);
     backend.match(() => true);
+  });
+
+  it('works with the others in real time: their cursors, strokes and saves', async () => {
+    render('cabinet');
+    const scene = await open();
+    const socket = sockets.last();
+    expect(socket.url).toContain('/api/public/boards/live?ticket=t-1');
+    expect(island.last().isCollaborating).toBe(false);
+
+    socket.receive({
+      type: 'welcome',
+      you: 'me',
+      peers: [{ id: 'p-1', name: 'Учитель', color: 0 }],
+    });
+    fixture.detectChanges();
+    expect(island.last().isCollaborating).toBe(true);
+    expect(scene.state.updates.at(-1)).toMatchObject({
+      collaborators: new Map([['p-1', expect.objectContaining({ username: 'Учитель' })]]),
+    });
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    Reflect.apply(island.last().onPointerUpdate ?? fail, undefined, [
+      { pointer: { x: 5, y: 6, tool: 'pointer' }, button: 'down', pointersMap: new Map() },
+    ]);
+    await vi.advanceTimersByTimeAsync(POINTER_INTERVAL_MS);
+    vi.useRealTimers();
+    expect(socket.sent).toEqual([{ type: 'pointer', x: 5, y: 6, tool: 'pointer', button: 'down' }]);
+
+    socket.receive({ type: 'elements', id: 'p-1', elements: [anElement('t', 1)] });
+    expect(scene.state.elements.map((element) => element.id)).toEqual(['t']);
+
+    socket.receive({ type: 'saved', sceneVersion: 4 });
+    backend.expectOne('/api/boards/board-1/scene?since=3').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    fixture.destroy();
+    expect(socket.closedByEditor).toBe(true);
   });
 
   it('keeps the user’s library on the server', async () => {

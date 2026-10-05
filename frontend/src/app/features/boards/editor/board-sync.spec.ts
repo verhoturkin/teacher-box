@@ -2,8 +2,11 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { anElement, fakeExcalidraw, fakeScene } from '@testing/excalidraw-fake';
 import { BoardScene } from '../data-access/boards.models';
 import {
+  BROADCAST_DELAY_MS,
   BoardServer,
   BoardSync,
+  LIVE_POLL_INTERVAL_MS,
+  LiveOutlet,
   POLL_INTERVAL_MS,
   RETRY_DELAY_MS,
   SAVE_DELAY_MS,
@@ -243,5 +246,152 @@ describe('BoardSync', () => {
 
     expect(server.saved).toEqual([]);
     sync.stop();
+  });
+
+  describe('with the live channel', () => {
+    /** A channel that is open (or not) and keeps what went out. */
+    function outlet(open = true): LiveOutlet & { sent: unknown[][]; open: boolean } {
+      const live = {
+        sent: [] as unknown[][],
+        open,
+        connected: () => live.open,
+        elements: (elements: readonly unknown[]) => {
+          if (live.open) live.sent.push([...elements]);
+          return live.open;
+        },
+      };
+      return live;
+    }
+
+    it('sends the changed elements to the others at once, each version once', async () => {
+      const { sync, state, access } = start([anElement('a', 1)]);
+      const live = outlet();
+      sync.useLive(live);
+
+      state.elements = [anElement('a', 2), anElement('tiny', 1, { width: 0, height: 0 })];
+      sync.changed(state.elements, access.getAppState());
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(BROADCAST_DELAY_MS);
+      expect(live.sent).toEqual([[anElement('a', 2)]]);
+
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(BROADCAST_DELAY_MS);
+      expect(live.sent).toHaveLength(1);
+
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+      expect(server.saved[0]?.elements).toEqual([anElement('a', 2)]);
+    });
+
+    it('leaves the elements to the save while the channel is closed', async () => {
+      const { sync, state, access } = start([anElement('a', 1)]);
+      const live = outlet(false);
+      sync.useLive(live);
+
+      state.elements = [anElement('a', 2)];
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(BROADCAST_DELAY_MS);
+      live.open = true;
+      state.elements = [anElement('a', 3)];
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(BROADCAST_DELAY_MS);
+
+      expect(live.sent).toEqual([[anElement('a', 3)]]);
+    });
+
+    it('takes the others’ elements without saving them again', async () => {
+      const { sync, state, access } = start([anElement('a', 1)]);
+      sync.useLive(outlet());
+
+      sync.received([anElement('b', 1, { type: 'image', fileId: 'f-1' }), anElement('a', 2)]);
+      sync.received('not elements');
+      sync.received([{ id: 'no version' }]);
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+
+      expect(state.elements.map((element) => `${element.id}:${String(element.version)}`)).toEqual([
+        'a:2',
+        'b:1',
+      ]);
+      expect(state.updates.at(-1)).toMatchObject({ captureUpdate: 'NEVER' });
+      expect(server.saved).toEqual([]);
+      expect(sync.status()).toBe('saved');
+      await vi.waitFor(() => {
+        expect(state.files['f-1']).toBeDefined();
+      });
+    });
+
+    it('fetches the scene when the server has a newer one', async () => {
+      const { sync } = start([], 3);
+      sync.useLive(outlet());
+
+      sync.saved(3);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(server.polls).toEqual([]);
+
+      sync.saved(4);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(server.polls).toEqual([3]);
+    });
+
+    it('polls rarely while the channel is open', async () => {
+      vi.useFakeTimers({
+        toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
+      });
+      const { sync } = start([], 3);
+      const live = outlet();
+      sync.useLive(live);
+
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
+      expect(server.polls).toEqual([3]);
+      await vi.advanceTimersByTimeAsync(LIVE_POLL_INTERVAL_MS - POLL_INTERVAL_MS);
+      expect(server.polls).toEqual([3]);
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
+      expect(server.polls).toEqual([3, 3]);
+
+      live.open = false;
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
+      expect(server.polls).toEqual([3, 3, 3]);
+      sync.stop();
+    });
+
+    it('sends nothing after stop', async () => {
+      const { sync, state, access } = start([anElement('a', 1)]);
+      const live = outlet();
+      sync.useLive(live);
+
+      state.elements = [anElement('a', 2)];
+      sync.changed(state.elements, access.getAppState());
+      sync.stop();
+      sync.received([anElement('b', 1)]);
+      await vi.advanceTimersByTimeAsync(BROADCAST_DELAY_MS);
+
+      expect(live.sent).toEqual([]);
+      expect(state.elements.map((element) => element.id)).toEqual(['a']);
+    });
+  });
+
+  it('does not save a shape too small to see', async () => {
+    const { sync, state, access } = start([anElement('a', 1)]);
+
+    state.elements = [
+      anElement('a', 1),
+      anElement('dot', 1, { width: 0, height: 0 }),
+      anElement('line', 1, { type: 'line', points: [[0, 0]] }),
+      anElement('gone', 2, { width: 0, height: 0, isDeleted: true }),
+      anElement('arrow', 1, {
+        type: 'arrow',
+        points: [
+          [0, 0],
+          [5, 5],
+        ],
+      }),
+    ];
+    sync.changed(state.elements, access.getAppState());
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+
+    expect(server.saved[0]?.elements).toEqual([
+      expect.objectContaining({ id: 'gone' }),
+      expect.objectContaining({ id: 'arrow' }),
+    ]);
   });
 });

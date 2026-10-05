@@ -92,8 +92,17 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
     «Прокрутка (тачпад)», device setting `tb.board.wheel`); `ru-RU`. An external board shows only its link. Leaving with unsaved changes asks first.
   - `board-sync.ts` — saves the changed elements 1 s after the last change (and on leaving, on a hidden tab),
     applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
-    tab is visible and nothing is being saved, retries a failed save every 5 s, uploads new images once and fetches
-    missing ones. `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs.
+    tab is visible and nothing is being saved (every 30 s while the live channel is open), retries a failed save
+    every 5 s, uploads new images once and fetches missing ones. Shapes still too small to see (no size, a line
+    with one point) never leave the editor — Excalidraw drops them without a tombstone. With the live channel it
+    sends the elements changed here 100 ms after a change (each version once; a closed channel leaves them to the
+    save), merges the others' elements without saving them again, and polls when `saved` brings a newer version.
+    `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs, `isSyncable`.
+  - `board-live.ts` — `BoardLive` (ADR-0029): ticket (`BoardsApi.liveTicket`), socket (`LIVE_SOCKET`, a fake in
+    tests), the others (`peers`, with cursors), the cursor out at most every 50 ms, `ping` every 30 s, reconnects
+    after 1, 2, 5, 10, 30 s (not after 1008 — the board was taken away). `board-presence.ts` — the others as
+    Excalidraw collaborators (name, colour by the server's number, cursor); `board-page.ts` puts them into the scene,
+    `tb-board-canvas` gets `collaborating` (`isCollaborating`) and reports `pointerMove` (`onPointerUpdate`).
   - Library: the island's `Excalidraw` wraps Excalidraw with `useHandleLibrary` and a `BoardLibrary` adapter
     (`board-page.ts` → `GET|PUT /api/boards/library`); library URLs (`#addLibrary`) are refused and
     «Просмотреть библиотеки» is hidden — libraries.excalidraw.com is outside the CSP (ADR-0028); a

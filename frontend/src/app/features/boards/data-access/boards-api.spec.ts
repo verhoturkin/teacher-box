@@ -31,6 +31,15 @@ describe('BoardsApi', () => {
     expect(seen).toEqual([[aBoard()]]);
   });
 
+  it('asks for a ticket to the live channel', () => {
+    const seen: string[] = [];
+    api.liveTicket('board-1').subscribe((ticket) => seen.push(ticket));
+    const request = backend.expectOne({ method: 'POST', url: '/api/boards/board-1/live' });
+    expect(request.request.body).toBeNull();
+    request.flush({ ticket: 't-1' });
+    expect(seen).toEqual(['t-1']);
+  });
+
   it('creates, changes and removes boards', () => {
     api.create('EXCALIDRAW', input).subscribe();
     expect(backend.expectOne({ method: 'POST', url: '/api/teacher/boards' }).request.body).toEqual({
