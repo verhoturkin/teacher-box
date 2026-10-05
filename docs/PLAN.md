@@ -78,7 +78,7 @@ Goal: a tested Angular wrapper around Excalidraw that costs the initial bundle n
       `import()` (alternatives: Vite-built web component, iframe mini-app, Angular↔React wrapper libs — why
       rejected). Row in `docs/adr/README.md`; ADR-0012 status →
       «boards part superseded by 0028».
-- [ ] 87.2 **F** Dependencies `react`, `react-dom`, `@excalidraw/excalidraw` (`npx -y npm@11 install`; check
+- [x] 87.2 **F** Dependencies `react`, `react-dom`, `@excalidraw/excalidraw` (`npx -y npm@11 install`; check
       the current Excalidraw API in docs first). `features/boards/editor/excalidraw-loader.ts` — the only place
       with `await import('react-dom/client')` / `import('@excalidraw/excalidraw')`; `excalidraw-host.ts` —
       `createRoot`, `root.render(createElement(Excalidraw, props))` without JSX (no tsconfig change), unmount on
