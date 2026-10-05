@@ -19,6 +19,7 @@ import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { describeError } from '@core/http/error-messages';
 import { BillingApi } from '@features/billing/parts';
+import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
@@ -44,6 +45,7 @@ export interface SavedGroup {
     MultiSelect,
     FieldErrors,
     SubmitFor,
+    RoomPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -101,6 +103,7 @@ export interface SavedGroup {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
+      <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
           label="Отмена"
@@ -134,6 +137,14 @@ export class GroupFormDialog {
   readonly saved = output<SavedGroup>();
 
   protected readonly title = computed(() => (this.group() === null ? 'Новая группа' : 'Группа'));
+  /** The room is set up for a saved group that is not archived. */
+  protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
+    const group = this.group();
+    if (group === null || !this.visible()) {
+      return null;
+    }
+    return group.archivedAt === null ? { type: 'GROUP', id: group.id, name: group.name } : null;
+  });
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   readonly memberOptions = computed(() => {

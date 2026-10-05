@@ -1,14 +1,18 @@
 import { HttpTestingController } from '@angular/common/http/testing';
-import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService } from 'primeng/api';
-import { bodyText, buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
+import { Tooltip } from 'primeng/tooltip';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  menuItemByText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
-import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
-import { Board } from '@features/boards/parts';
-import { MeetingRoom, RoomDialog } from '@features/meetings/parts';
-import { aBoard } from '@testing/boards-fixtures';
+import { yandexStatus } from '@testing/meetings-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
 import { StudentsPage } from './students-page';
@@ -66,38 +70,11 @@ describe('StudentsPage', () => {
     fixture.destroy();
   });
 
-  async function loadStudents(
-    students: Student[],
-    groups: StudentGroup[] = [],
-    rooms: MeetingRoom[] = [],
-    boards: Board[] = [],
-  ): Promise<void> {
+  async function loadStudents(students: Student[], groups: StudentGroup[] = []): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
-    for (const request of backend.match('/api/teacher/groups')) {
-      request.flush(groups);
-    }
+    backend.expectOne('/api/teacher/groups').flush(groups);
     backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
-    for (const request of backend.match('/api/teacher/meetings/rooms')) {
-      request.flush(rooms);
-    }
-    for (const request of backend.match('/api/teacher/meetings/yandex')) {
-      request.flush(yandexStatus());
-    }
-    for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
-      request.flush(boards);
-    }
     await fixture.whenStable();
-  }
-
-  /** A dialog of the page itself, not of the groups panel under the students. */
-  function own<T>(type: Type<T>): T {
-    const found = fixture.debugElement.children.find(
-      (child) => child.componentInstance instanceof type,
-    );
-    if (found === undefined) {
-      throw new Error(`No ${type.name} on the page`);
-    }
-    return found.injector.get(type);
   }
 
   /** Answers every waiting request with an empty result. */
@@ -114,50 +91,70 @@ describe('StudentsPage', () => {
     }
   }
 
-  function studentRows(): Element[] {
-    return Array.from(host.querySelectorAll('div.tb-stack > p-card tbody tr'));
-  }
-
   function rowsText(): string[] {
-    return studentRows().map((row) => row.textContent);
+    return Array.from(host.querySelectorAll('ul.tb-list[aria-label="Ученики"] > li')).map(
+      (row) => row.textContent,
+    );
   }
 
-  it('lists current students with status and invitation', async () => {
-    await loadStudents([BORIS, MARIA, OLEG]);
+  /** The «⋮» menu of a student, then one of its items. */
+  async function act(name: string, item: string): Promise<void> {
+    buttonByText(host, `Действия: ${name}`).click();
+    await fixture.whenStable();
+    menuItemByText(item).click();
+    await fixture.whenStable();
+  }
+
+  it('shows the name, the phone and the status of each current student', async () => {
+    await loadStudents([
+      BORIS,
+      { ...MARIA, phone: '+7 900 000-00-00', email: 'm@example.com' },
+      OLEG,
+    ]);
 
     const rows = rowsText();
     expect(rows).toHaveLength(2);
     expect(rows[0]).toContain('Борис');
     expect(rows[0]).toContain('Приглашён');
-    expect(rows[0]).toContain('Приглашение до 01.10.2026');
     expect(rows[1]).toContain('Мария');
-    expect(rows[1]).toContain('5 класс');
-    expect(rows[1]).toContain('maria');
+    expect(rows[1]).toContain('+7 900 000-00-00');
+    expect(rows[1]).toContain('Активен');
+    for (const hidden of ['5 класс', 'maria', 'm@example.com']) {
+      expect(rows[1]).not.toContain(hidden);
+    }
+  });
+
+  it('puts the login and the note in the tooltip of the name', async () => {
+    await loadStudents([MARIA, BORIS]);
+
+    const [maria, boris] = fixture.debugElement.queryAll(By.css('.tb-list__title'));
+    expect(maria?.injector.get(Tooltip).content).toBe('Логин: maria\nЗаметка: 5 класс');
+    expect(maria?.attributes['tabindex']).toBe('0');
+    expect(boris?.injector.get(Tooltip).content).toBe('');
+    expect(boris?.attributes['tabindex']).toBeUndefined();
+    // the status of an invited student tells until when the link works
+    const [active, invited] = fixture.debugElement.queryAll(By.css('li p-tag'));
+    expect(invited?.injector.get(Tooltip).content).toBe('Приглашение до 01.10.2026');
+    expect(active?.injector.get(Tooltip).content).toBe('');
   });
 
   it('filters by name and shows deactivated students on demand', async () => {
     await loadStudents([BORIS, MARIA, OLEG]);
+    const search = requireElement(host, 'input[aria-label="Поиск по имени"]', HTMLInputElement);
 
-    typeInto(requireElement(host, 'input[aria-label="Поиск по имени"]', HTMLInputElement), 'мар');
+    typeInto(search, 'мар');
     await fixture.whenStable();
     expect(rowsText()).toHaveLength(1);
 
-    typeInto(requireElement(host, 'input[aria-label="Поиск по имени"]', HTMLInputElement), '');
+    typeInto(search, 'нет');
+    await fixture.whenStable();
+    expect(host.textContent).toContain('Никого не найдено');
+
+    typeInto(search, '');
     requireElement(host, '#show-deactivated', HTMLInputElement).click();
     await fixture.whenStable();
     expect(rowsText().join()).toContain('Олег');
     expect(rowsText().join()).toContain('Отключён');
-  });
-
-  it('labels the cells for the cards on a phone', async () => {
-    await loadStudents([MARIA]);
-
-    expect(host.querySelector('.p-datatable.tb-cards')).not.toBeNull();
-    expect(
-      Array.from(host.querySelectorAll('div.tb-stack > p-card tbody td[data-label]')).map((cell) =>
-        cell.getAttribute('data-label'),
-      ),
-    ).toEqual(['Имя', 'Контакты', 'Группы', 'Видеовстреча', 'Доски', 'Статус', 'Логин']);
   });
 
   it('opens the form of a new student from the home page', async () => {
@@ -200,10 +197,13 @@ describe('StudentsPage', () => {
     expect(bodyText()).toContain('Ссылка для ученика: Анна');
   });
 
-  it('edits a student', async () => {
+  it('edits a student from the menu', async () => {
     await loadStudents([MARIA]);
+    const button = buttonByText(host, 'Действия: Мария');
+    expect(button.getAttribute('aria-haspopup')).toBe('menu');
 
-    buttonByText(host, 'Изменить: Мария').click();
+    await act('Мария', 'Изменить');
+    flushEverything(); // the room in the dialog
     await fixture.whenStable();
     typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Мария Иванова');
     await fixture.whenStable();
@@ -216,19 +216,29 @@ describe('StudentsPage', () => {
     expect(rowsText()[0]).toContain('Мария Иванова');
   });
 
-  it('issues a new link', async () => {
-    await loadStudents([MARIA]);
+  it('resets the password of an active student and re-invites an invited one', async () => {
+    await loadStudents([BORIS, MARIA]);
 
-    buttonByText(host, 'Ссылка для сброса пароля: Мария').click();
+    await act('Мария', 'Сбросить пароль');
     backend.expectOne('/api/teacher/students/m/invite').flush({
       token: 'reset-token',
       purpose: 'PASSWORD_RESET',
       expiresAt: '2026-10-02T10:00:00Z',
     });
     await fixture.whenStable();
-
-    expect(rowsText()[0]).toContain('Сброс пароля до 02.10.2026');
     expect(bodyText()).toContain('задаст новый пароль');
+
+    buttonByText(host, 'Действия: Борис').click();
+    await fixture.whenStable();
+    expect(() => menuItemByText('Сбросить пароль')).toThrow();
+    menuItemByText('Новое приглашение').click();
+    backend.expectOne('/api/teacher/students/b/invite').flush({
+      token: 'new-token',
+      purpose: 'ACTIVATION',
+      expiresAt: '2026-10-03T10:00:00Z',
+    });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('придумает логин и пароль');
   });
 
   it('deactivates after confirmation and reactivates', async () => {
@@ -239,17 +249,18 @@ describe('StudentsPage', () => {
       return confirmation;
     });
 
-    buttonByText(host, 'Отключить доступ: Мария').click();
+    await act('Мария', 'Отключить доступ');
     backend
       .expectOne('/api/teacher/students/m/deactivate')
       .flush({ ...MARIA, status: 'DEACTIVATED' });
     await fixture.whenStable();
-    expect(rowsText()).toHaveLength(1);
+    expect(rowsText()).toHaveLength(0);
     expect(host.textContent).toContain('Никого не найдено');
 
     requireElement(host, '#show-deactivated', HTMLInputElement).click();
     await fixture.whenStable();
-    buttonByText(host, 'Вернуть доступ: Мария').click();
+    expect(rowsText()[0]).toContain('Отключён');
+    await act('Мария', 'Вернуть доступ');
     backend.expectOne('/api/teacher/students/m/reactivate').flush(MARIA);
     await fixture.whenStable();
 
@@ -271,27 +282,15 @@ describe('StudentsPage', () => {
     expect(host.textContent).toContain('Учеников пока нет');
   });
 
-  it('shows the current groups of each student', async () => {
+  it('keeps the rows short: neither groups nor boards nor rooms of a student', async () => {
     await loadStudents(
       [MARIA],
-      [
-        aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] }),
-        aGroup({
-          id: 'g2',
-          name: 'Английский',
-          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
-        }),
-        aGroup({
-          id: 'g3',
-          name: 'Прошлый год',
-          archivedAt: '2026-06-01T10:00:00Z',
-          members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }],
-        }),
-      ],
+      [aGroup({ name: 'ОГЭ', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] })],
     );
 
-    expect(rowsText()[0]).toContain('ОГЭ, Английский');
-    expect(rowsText()[0]).not.toContain('Прошлый год');
+    expect(rowsText()[0]).not.toContain('ОГЭ');
+    expect(rowsText()[0]).not.toContain('Доски');
+    expect(rowsText()[0]).not.toContain('Видеовстреча');
   });
 
   it('shows the groups under the students and gives them the students to choose from', async () => {
@@ -302,45 +301,5 @@ describe('StudentsPage', () => {
     expect(host.textContent).toContain('Создать группу');
     const panel = fixture.debugElement.query(By.directive(GroupsPanel)).injector.get(GroupsPanel);
     expect(panel.students()).toEqual([MARIA]);
-
-    panel.changed.emit();
-    backend.expectOne('/api/teacher/groups').flush([]);
-    await fixture.whenStable();
-  });
-
-  it('shows the video room of a student and edits it', async () => {
-    await loadStudents([MARIA, BORIS], [], [aRoom({ ownerId: 'm' })]);
-
-    expect(rowsText()[0]).toContain('Телемост');
-    expect(rowsText()[1]).toContain('Добавить');
-    buttonByText(host, 'Видеовстреча: Мария').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Видеовстреча: Мария');
-
-    const dialog = own(RoomDialog);
-    dialog.changed.emit(null);
-    await fixture.whenStable();
-    expect(rowsText()[0]).not.toContain('Телемост');
-
-    buttonByText(host, 'Добавить видеовстречу: Борис').click();
-    dialog.changed.emit(aRoom({ ownerId: 'b', telemost: false, joinUrl: 'https://zoom.us/j/1' }));
-    await fixture.whenStable();
-    expect(rowsText()[1]).toContain('Ссылка');
-  });
-
-  it('links the boards of a student, with the boards of their groups', async () => {
-    await loadStudents(
-      [MARIA, BORIS],
-      [aGroup({ id: 'g1', members: [{ id: 'm', displayName: 'Мария', status: 'ACTIVE' }] })],
-      [],
-      [
-        aBoard({ members: [{ type: 'STUDENT', id: 'm', name: 'Мария' }] }),
-        aBoard({ id: 'board-2', members: [{ type: 'GROUP', id: 'g1', name: 'ОГЭ' }] }),
-      ],
-    );
-
-    expect(rowsText()[0]).toContain('Доски (2)');
-    expect(rowsText()[1]).toContain('Доски (0)');
-    expect(host.querySelector('a[href="/teacher/boards?student=m"]')).not.toBeNull();
   });
 });

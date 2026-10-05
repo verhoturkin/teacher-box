@@ -3,11 +3,13 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   inject,
   input,
   model,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -22,13 +24,16 @@ import { IssuedInvite } from '../data-access/identity.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="header()"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog tb-dialog--short"
       [draggable]="false"
-      (onShow)="copied.set(false)"
+      [focusOnShow]="false"
+      (onShow)="onShow()"
     >
+      <ng-template #header let-labelledBy="ariaLabelledBy">
+        <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">{{ heading() }}</span>
+      </ng-template>
       @if (invite(); as invite) {
         <p>
           @if (invite.purpose === 'ACTIVATION') {
@@ -40,16 +45,25 @@ import { IssuedInvite } from '../data-access/identity.models';
         </p>
         <div class="tb-field">
           <label for="invite-link">Ссылка-приглашение</label>
-          <div class="tb-copy-row">
-            <input pInputText id="invite-link" readonly [value]="link()" class="tb-grow" />
-            <p-button
-              [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
-              [label]="copied() ? 'Скопировано' : 'Копировать'"
-              (onClick)="copy()"
-            />
-          </div>
+          <input pInputText id="invite-link" readonly [value]="link()" />
         </div>
       }
+      <ng-template #footer>
+        <p-button
+          label="Закрыть"
+          severity="secondary"
+          [text]="true"
+          (onClick)="visible.set(false)"
+        />
+        @if (invite()) {
+          <p-button
+            [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
+            [label]="copied() ? 'Скопировано' : 'Копировать ссылку'"
+            severity="success"
+            (onClick)="copy()"
+          />
+        }
+      </ng-template>
     </p-dialog>
   `,
 })
@@ -62,11 +76,18 @@ export class InviteLinkDialog {
   readonly studentName = input('');
 
   protected readonly copied = signal(false);
-  protected readonly header = computed(() => `Ссылка для ученика: ${this.studentName()}`);
+  private readonly title = viewChild<ElementRef<HTMLElement>>('title');
+  protected readonly heading = computed(() => `Ссылка для ученика: ${this.studentName()}`);
   protected readonly link = computed(() => {
     const invite = this.invite();
     return invite === null ? '' : this.portal.link(`/invite/${invite.token}`);
   });
+
+  /** A new link is not copied yet; the focus starts on the title, not on a button (ADR-0026). */
+  protected onShow(): void {
+    this.copied.set(false);
+    this.title()?.nativeElement.focus();
+  }
 
   protected copy(): void {
     this.copied.set(this.clipboard.copy(this.link()));

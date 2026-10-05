@@ -4,6 +4,7 @@ import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { bodyText } from '@testing/dom';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
 import { testProviders } from '@testing/setup';
+import { yandexStatus } from '@testing/meetings-fixtures';
 
 describe('GroupFormDialog', () => {
   let fixture: ComponentFixture<GroupFormDialog>;
@@ -27,6 +28,12 @@ describe('GroupFormDialog', () => {
   });
 
   afterEach(() => {
+    // the room panel of an edited owner loads its room
+    for (const request of backend.match((request) =>
+      request.url.startsWith('/api/teacher/meetings/'),
+    )) {
+      request.flush(request.request.url.endsWith('/yandex') ? yandexStatus() : []);
+    }
     backend.verify();
     fixture.destroy();
   });
@@ -52,6 +59,24 @@ describe('GroupFormDialog', () => {
 
     expect(saved).toEqual([{ group: aGroup({ id: 'g', name: 'ОГЭ' }), lessonPrice: 80000 }]);
     expect(dialog.visible()).toBe(false);
+  });
+
+  it('sets up the room of a current group, not of an archived one or a new one', async () => {
+    await open();
+    expect(bodyText()).not.toContain('Видеовстреча');
+    fixture.componentInstance.visible.set(false);
+
+    fixture.componentRef.setInput('group', aGroup({ id: 'g', archivedAt: '2026-09-02T10:00:00Z' }));
+    await open();
+    expect(bodyText()).not.toContain('Видеовстреча');
+    backend.expectNone('/api/teacher/meetings/rooms');
+    fixture.componentInstance.visible.set(false);
+
+    fixture.componentRef.setInput('group', aGroup({ id: 'g' }));
+    await open();
+    expect(bodyText()).toContain('Видеовстреча');
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
   });
 
   it('keeps the price when it did not change', async () => {

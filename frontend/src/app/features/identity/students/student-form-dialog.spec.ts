@@ -4,6 +4,7 @@ import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { CreatedStudent, Student } from '../data-access/identity.models';
 import { StudentFormDialog } from './student-form-dialog';
 import { testProviders } from '@testing/setup';
+import { yandexStatus } from '@testing/meetings-fixtures';
 
 const STUDENT: Student = {
   id: 's-1',
@@ -32,6 +33,12 @@ describe('StudentFormDialog', () => {
   });
 
   afterEach(() => {
+    // the room panel of an edited owner loads its room
+    for (const request of backend.match((request) =>
+      request.url.startsWith('/api/teacher/meetings/'),
+    )) {
+      request.flush(request.request.url.endsWith('/yandex') ? yandexStatus() : []);
+    }
     backend.verify();
     fixture.destroy();
   });
@@ -84,6 +91,30 @@ describe('StudentFormDialog', () => {
     requireElement(document.body, '#student-form', HTMLFormElement).requestSubmit();
 
     backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
+  });
+
+  it('shows the login read-only and the room of a student being edited', async () => {
+    await open(STUDENT);
+    const login = field('login');
+    expect(login.value).toBe('maria');
+    expect(login.readOnly).toBe(true);
+    expect(login.closest('form')?.id).toBe('student-form');
+    expect(bodyText()).toContain('Видеовстреча');
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+  });
+
+  it('says the login is not chosen yet and has no room for a deactivated student', async () => {
+    await open({ ...STUDENT, login: null, status: 'DEACTIVATED' });
+    expect(field('login').value).toBe('Ещё не выбран');
+    expect(bodyText()).not.toContain('Видеовстреча');
+    backend.expectNone('/api/teacher/meetings/rooms');
+  });
+
+  it('has neither the login nor the room for a new student', async () => {
+    await open(null);
+    expect(document.body.querySelector('#login')).toBeNull();
+    expect(bodyText()).not.toContain('Видеовстреча');
   });
 
   it('edits a student with its version', async () => {

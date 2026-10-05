@@ -7,37 +7,25 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
+import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
-import { BoardsLink, MemberBoards } from '@features/boards/parts';
-import {
-  MeetingRoom,
-  MeetingsApi,
-  RoomCell,
-  RoomDialog,
-  RoomOwnerRef,
-} from '@features/meetings/parts';
-import { RowType } from '@shared/ui/row-type.directive';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { IdentityApi } from '../data-access/identity-api';
-import {
-  CreatedStudent,
-  IssuedInvite,
-  Student,
-  StudentGroup,
-} from '../data-access/identity.models';
+import { CreatedStudent, IssuedInvite, Student } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
@@ -59,7 +47,6 @@ import { Busy } from '@shared/ui/busy';
     InitialsPipe,
     EmptyState,
     HelpButton,
-    DatePipe,
     ReactiveFormsModule,
     Button,
     Card,
@@ -67,21 +54,18 @@ import { Busy } from '@shared/ui/busy';
     IconField,
     InputIcon,
     InputText,
-    TableModule,
+    Menu,
     Tag,
     ToggleSwitch,
     Tooltip,
-    RowType,
-    BoardsLink,
+    ButtonAttributes,
     GroupsPanel,
     InviteLinkDialog,
-    RoomCell,
-    RoomDialog,
     StudentFormDialog,
     LoadStateView,
     PageHeader,
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Ученики">
@@ -114,149 +98,76 @@ import { Busy } from '@shared/ui/busy';
         </div>
 
         <tb-load-state [state]="state" what="учеников" (retry)="loadStudents()">
-          <p-table
-            [value]="visibleStudents()"
-            dataKey="id"
-            [rowHover]="true"
-            styleClass="tb-cards tb-cards--wide"
-          >
-            <ng-template #header>
-              <tr>
-                <th class="tb-col-main">Имя</th>
-                <th>Контакты</th>
-                <th>Группы</th>
-                <th>Видеовстреча</th>
-                <th>Доски</th>
-                <th>Статус</th>
-                <th>Логин</th>
-                <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-student [tbRowType]="visibleStudents()">
-              <tr>
-                <td data-label="Имя">
-                  <div class="tb-person">
-                    <span class="tb-avatar" aria-hidden="true">{{
-                      student.displayName | initials
-                    }}</span>
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ student.displayName }}</span>
-                      @if (student.note) {
-                        <span class="tb-list__supporting">{{ student.note }}</span>
-                      }
-                    </div>
+          @if (visibleStudents().length > 0) {
+            <ul class="tb-list" aria-label="Ученики">
+              @for (student of visibleStudents(); track student.id) {
+                <li>
+                  <span class="tb-avatar" aria-hidden="true">{{
+                    student.displayName | initials
+                  }}</span>
+                  <div class="tb-list__text">
+                    <span
+                      class="tb-list__title"
+                      [pTooltip]="details(student)"
+                      tooltipStyleClass="tb-tooltip-lines"
+                      [attr.tabindex]="details(student) ? 0 : null"
+                      >{{ student.displayName }}</span
+                    >
+                    @if (student.phone) {
+                      <span class="tb-list__supporting">{{ student.phone }}</span>
+                    }
                   </div>
-                </td>
-                <td data-label="Контакты">
-                  <div>{{ student.email ?? '' }}</div>
-                  <div>{{ student.phone ?? '' }}</div>
-                </td>
-                <td data-label="Группы">{{ groupNames(student.id) }}</td>
-                <td data-label="Видеовстреча">
-                  @if (student.status !== 'DEACTIVATED') {
-                    <tb-room-cell
-                      [room]="roomOf(student.id)"
-                      [name]="student.displayName"
-                      (edit)="
-                        openRoom({ type: 'STUDENT', id: student.id, name: student.displayName })
+                  <div class="tb-list__trail tb-list__trail--icons">
+                    <p-tag
+                      [value]="statusLabels[student.status]"
+                      [severity]="statusSeverities[student.status]"
+                      [pTooltip]="inviteHint(student)"
+                    />
+                    <p-button
+                      icon="pi pi-ellipsis-v"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="secondary"
+                      [pTooltip]="'Действия: ' + student.displayName"
+                      [ariaLabel]="'Действия: ' + student.displayName"
+                      [loading]="
+                        busy.is('invite-' + student.id) || busy.is('reactivate-' + student.id)
                       "
+                      [tbAttributes]="{
+                        'aria-haspopup': 'menu',
+                        'aria-expanded': menuFor()?.id === student.id ? 'true' : 'false',
+                      }"
+                      (onClick)="openMenu(student, $event)"
                     />
-                  }
-                </td>
-                <td data-label="Доски">
-                  @if (student.status !== 'DEACTIVATED') {
-                    <tb-boards-link
-                      [count]="boards.count(memberIds(student.id))"
-                      [name]="student.displayName"
-                      [studentId]="student.id"
-                    />
-                  }
-                </td>
-                <td data-label="Статус">
-                  <p-tag
-                    [value]="statusLabels[student.status]"
-                    [severity]="statusSeverities[student.status]"
-                  />
-                  @if (student.pendingInvite; as invite) {
-                    <div>
-                      <small class="tb-muted">
-                        {{ purposeLabels[invite.purpose] }} до
-                        {{ invite.expiresAt | date: 'dd.MM.yyyy' }}
-                      </small>
-                    </div>
-                  }
-                </td>
-                <td data-label="Логин">{{ student.login ?? '—' }}</td>
-                <td class="tb-actions-column">
-                  <p-button
-                    icon="pi pi-pencil"
-                    [text]="true"
-                    severity="secondary"
-                    [rounded]="true"
-                    [pTooltip]="'Изменить: ' + student.displayName"
-                    [ariaLabel]="'Изменить: ' + student.displayName"
-                    (onClick)="openEdit(student)"
-                  />
-                  @if (student.status === 'DEACTIVATED') {
-                    <p-button
-                      icon="pi pi-replay"
-                      [text]="true"
-                      severity="secondary"
-                      [rounded]="true"
-                      [pTooltip]="'Вернуть доступ: ' + student.displayName"
-                      [ariaLabel]="'Вернуть доступ: ' + student.displayName"
-                      [loading]="busy.is('reactivate-' + student.id)"
-                      (onClick)="reactivate(student)"
-                    />
-                  } @else {
-                    <p-button
-                      icon="pi pi-link"
-                      [text]="true"
-                      severity="secondary"
-                      [rounded]="true"
-                      [pTooltip]="linkLabel(student)"
-                      [ariaLabel]="linkLabel(student)"
-                      [loading]="busy.is('invite-' + student.id)"
-                      (onClick)="reissueInvite(student)"
-                    />
-                    <p-button
-                      icon="pi pi-ban"
-                      [text]="true"
-                      [rounded]="true"
-                      severity="danger"
-                      [pTooltip]="'Отключить доступ: ' + student.displayName"
-                      [ariaLabel]="'Отключить доступ: ' + student.displayName"
-                      (onClick)="confirmDeactivate(student)"
-                    />
-                  }
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template #emptymessage>
-              <tr>
-                <td colspan="8">
-                  @if (students().length === 0) {
-                    <tb-empty-state
-                      icon="pi-user-plus"
-                      title="Учеников пока нет"
-                      hint="Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение"
-                    />
-                  } @else {
-                    <tb-empty-state
-                      icon="pi-search"
-                      title="Никого не найдено"
-                      hint="Измените запрос или включите показ отключённых учеников"
-                    />
-                  }
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else if (students().length === 0) {
+            <tb-empty-state
+              icon="pi-user-plus"
+              title="Учеников пока нет"
+              hint="Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение"
+            />
+          } @else {
+            <tb-empty-state
+              icon="pi-search"
+              title="Никого не найдено"
+              hint="Измените запрос или включите показ отключённых учеников"
+            />
+          }
         </tb-load-state>
       </p-card>
-      <tb-groups-panel [students]="students()" (changed)="loadGroups()" />
+      <tb-groups-panel [students]="students()" />
     </div>
 
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
     <tb-student-form-dialog
       [(visible)]="formVisible"
       [student]="editedStudent()"
@@ -268,41 +179,24 @@ import { Busy } from '@shared/ui/busy';
       [invite]="invite()"
       [studentName]="inviteStudentName()"
     />
-    <tb-room-dialog
-      [(visible)]="roomVisible"
-      [owner]="roomOwner()"
-      [room]="ownerRoom()"
-      [canCreate]="canCreateRooms()"
-      (changed)="onRoomChanged($event)"
-    />
     <p-confirmdialog />
   `,
 })
 export class StudentsPage implements OnInit {
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
-  private readonly meetings = inject(MeetingsApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
+  private readonly date = inject(DatePipe);
+  private readonly menu = viewChild.required<Menu>('menu');
 
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly statusSeverities = STATUS_SEVERITIES;
-  protected readonly purposeLabels = INVITE_PURPOSE_LABELS;
 
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();
 
   protected readonly students = signal<Student[]>([]);
-  private readonly groups = signal<StudentGroup[]>([]);
-  protected readonly rooms = signal<ReadonlyMap<string, MeetingRoom>>(new Map());
-  protected readonly canCreateRooms = signal(false);
-  protected readonly boards = new MemberBoards();
-  protected readonly roomVisible = signal(false);
-  protected readonly roomOwner = signal<RoomOwnerRef | null>(null);
-  protected readonly ownerRoom = computed(() => {
-    const owner = this.roomOwner();
-    return owner === null ? null : this.roomOf(owner.id);
-  });
 
   protected readonly state = new LoadState();
   protected readonly search = new FormControl('', { nonNullable: true });
@@ -315,15 +209,18 @@ export class StudentsPage implements OnInit {
   protected readonly visibleStudents = computed(() => {
     const query = this.query().trim().toLocaleLowerCase('ru');
     const includeDeactivated = this.includeDeactivated();
-    // New rows when the groups, rooms or boards arrive: the table re-renders the columns only for a new value.
-    this.groups();
-    this.rooms();
-    this.boards.byMember();
     return this.students().filter(
       (student) =>
         (includeDeactivated || student.status !== 'DEACTIVATED') &&
         student.displayName.toLocaleLowerCase('ru').includes(query),
     );
+  });
+
+  /** The student whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<Student | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const student = this.menuFor();
+    return student === null ? [] : this.actionsOf(student);
   });
 
   protected readonly formVisible = signal(false);
@@ -337,9 +234,6 @@ export class StudentsPage implements OnInit {
       this.openCreate();
     }
     this.loadStudents();
-    this.loadGroups();
-    this.loadRooms();
-    this.boards.load();
   }
 
   protected loadStudents(): void {
@@ -351,68 +245,29 @@ export class StudentsPage implements OnInit {
       });
   }
 
-  protected loadGroups(): void {
-    this.api.listGroups().subscribe((groups) => {
-      this.groups.set(groups);
-    });
-  }
-
-  protected roomOf(ownerId: string): MeetingRoom | null {
-    return this.rooms().get(ownerId) ?? null;
-  }
-
-  protected openRoom(owner: RoomOwnerRef): void {
-    this.roomOwner.set(owner);
-    this.roomVisible.set(true);
-  }
-
-  protected onRoomChanged(room: MeetingRoom | null): void {
-    const owner = this.roomOwner();
-    if (owner === null) {
-      return;
-    }
-    this.rooms.update((rooms) => {
-      const next = new Map(rooms);
-      if (room === null) {
-        next.delete(owner.id);
-      } else {
-        next.set(owner.id, room);
-      }
-      return next;
-    });
-  }
-
-  private loadRooms(): void {
-    this.meetings.rooms().subscribe((rooms) => {
-      this.rooms.set(new Map(rooms.map((room) => [room.ownerId, room])));
-    });
-    this.meetings.yandexStatus().subscribe((status) => {
-      this.canCreateRooms.set(status.status === 'CONNECTED' || status.tokenFromEnvironment);
-    });
-  }
-
-  /** Current groups of the student. */
-  /** The student and their current groups: the boards of «Доски (n)». */
-  protected memberIds(studentId: string): string[] {
+  /** The tooltip of the name: the login and the note (one per line), or none. */
+  protected details(student: Student): string {
     return [
-      studentId,
-      ...this.groups()
-        .filter(
-          (group) =>
-            group.archivedAt === null && group.members.some((member) => member.id === studentId),
-        )
-        .map((group) => group.id),
-    ];
+      student.login === null ? null : `Логин: ${student.login}`,
+      student.note === null ? null : `Заметка: ${student.note}`,
+    ]
+      .filter((line) => line !== null)
+      .join('\n');
   }
 
-  protected groupNames(studentId: string): string {
-    return this.groups()
-      .filter(
-        (group) =>
-          group.archivedAt === null && group.members.some((member) => member.id === studentId),
-      )
-      .map((group) => group.name)
-      .join(', ');
+  /** The tooltip of the status: until when the issued link works. */
+  protected inviteHint(student: Student): string {
+    const invite = student.pendingInvite;
+    if (invite === null) {
+      return '';
+    }
+    const until = this.date.transform(invite.expiresAt, 'dd.MM.yyyy') ?? '';
+    return `${INVITE_PURPOSE_LABELS[invite.purpose]} до ${until}`;
+  }
+
+  protected openMenu(student: Student, event: Event): void {
+    this.menuFor.set(student);
+    this.menu().toggle(event);
   }
 
   protected openCreate(): void {
@@ -433,13 +288,6 @@ export class StudentsPage implements OnInit {
   protected onUpdated(student: Student): void {
     this.replace(student);
     this.snackbar.success(`Сохранено: ${student.displayName}`);
-  }
-
-  /** The name and the tooltip of the link button: what the link is for and whose it is. */
-  protected linkLabel(student: Student): string {
-    const purpose =
-      student.status === 'ACTIVE' ? 'Ссылка для сброса пароля' : 'Новая ссылка-приглашение';
-    return `${purpose}: ${student.displayName}`;
   }
 
   protected reissueInvite(student: Student): void {
@@ -476,6 +324,46 @@ export class StudentsPage implements OnInit {
       .subscribe((saved) => {
         this.replace(saved);
       });
+  }
+
+  private actionsOf(student: Student): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Изменить',
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.openEdit(student);
+        },
+      },
+    ];
+    if (student.status === 'DEACTIVATED') {
+      items.push({
+        label: 'Вернуть доступ',
+        icon: 'pi pi-replay',
+        command: () => {
+          this.reactivate(student);
+        },
+      });
+    } else {
+      items.push(
+        {
+          label: student.status === 'ACTIVE' ? 'Сбросить пароль' : 'Новое приглашение',
+          icon: 'pi pi-link',
+          command: () => {
+            this.reissueInvite(student);
+          },
+        },
+        {
+          label: 'Отключить доступ…',
+          icon: 'pi pi-ban',
+          styleClass: 'tb-menu-item--danger',
+          command: () => {
+            this.confirmDeactivate(student);
+          },
+        },
+      );
+    }
+    return items;
   }
 
   private showInvite(student: Student, invite: IssuedInvite): void {

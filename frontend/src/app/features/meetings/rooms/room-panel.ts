@@ -1,0 +1,238 @@
+import { Clipboard } from '@angular/cdk/clipboard';
+import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable, forkJoin } from 'rxjs';
+import { Button } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Tooltip } from 'primeng/tooltip';
+import { quietContext } from '@core/http/api-error.interceptor';
+import { describeError } from '@core/http/error-messages';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { MeetingsApi } from '../data-access/meetings-api';
+import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
+
+/** An http(s) address; spaces around it are trimmed when it is saved. */
+const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
+
+/**
+ * The permanent room of a student or a group, inside the dialog that edits them (a dialog never
+ * opens another one, ADR-0026): create a Telemost meeting (with Yandex connected) or paste a link,
+ * copy it, send it to the students, remove it. Every action is saved at once.
+ */
+@Component({
+  selector: 'tb-room-panel',
+  imports: [ReactiveFormsModule, Button, InputText, Message, Tooltip],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (owner(); as owner) {
+      <section class="tb-form" aria-labelledby="room-panel-title">
+        <h3 id="room-panel-title" class="tb-subtitle">Видеовстреча</h3>
+        @if (room(); as room) {
+          <div class="tb-room-link">
+            <a [href]="room.joinUrl" target="_blank" rel="noopener">{{ room.joinUrl }}</a>
+            <p-button
+              icon="pi pi-copy"
+              [text]="true"
+              pTooltip="Копировать ссылку"
+              [rounded]="true"
+              severity="secondary"
+              ariaLabel="Копировать ссылку"
+              (onClick)="copy(room.joinUrl)"
+            />
+          </div>
+          <div class="tb-actions">
+            <p-button
+              [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
+              icon="pi pi-send"
+              class="tb-tonal"
+              severity="success"
+              [loading]="pending()"
+              (onClick)="share(room)"
+            />
+            <p-button
+              label="Удалить ссылку"
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [loading]="pending()"
+              (onClick)="remove(room)"
+            />
+          </div>
+        } @else {
+          <p class="tb-muted">
+            Постоянная ссылка: по ней
+            {{ owner.type === 'GROUP' ? 'группа приходит' : 'ученик приходит' }}
+            на все уроки. Ссылка попадёт в напоминания, календарь и кнопку «Войти в урок».
+          </p>
+        }
+        @if (canCreate()) {
+          <p-button
+            [label]="room() === null ? 'Создать встречу в Телемосте' : 'Новая встреча в Телемосте'"
+            icon="pi pi-video"
+            class="tb-tonal"
+            severity="success"
+            [loading]="pending()"
+            (onClick)="create()"
+          />
+        }
+        <div class="tb-field">
+          <label for="room-link">{{
+            canCreate() ? 'Или вставьте ссылку' : 'Ссылка на встречу'
+          }}</label>
+          <div class="tb-copy-row">
+            <input
+              pInputText
+              id="room-link"
+              class="tb-grow"
+              [formControl]="link"
+              placeholder="https://telemost.yandex.ru/j/..."
+              autocomplete="off"
+              (keydown.enter)="$event.preventDefault(); save()"
+            />
+            <p-button
+              [label]="room() === null ? 'Добавить ссылку' : 'Заменить ссылку'"
+              severity="secondary"
+              [text]="true"
+              [disabled]="link.invalid || link.value.trim() === ''"
+              [loading]="pending()"
+              (onClick)="save()"
+            />
+          </div>
+          @if (link.invalid) {
+            <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
+          }
+        </div>
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+      </section>
+    }
+  `,
+  styles: `
+    /* under the form of the dialog, apart from its fields */
+    section {
+      margin-top: var(--tb-space-6);
+      padding-top: var(--tb-space-4);
+      border-top: 1px solid var(--p-md-outline-variant);
+    }
+
+    .tb-subtitle {
+      margin: 0;
+    }
+
+    .tb-room-link {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+
+      a {
+        overflow-wrap: anywhere;
+      }
+    }
+  `,
+})
+export class RoomPanel {
+  private readonly api = inject(MeetingsApi);
+  private readonly clipboard = inject(Clipboard);
+  private readonly snackbar = inject(Snackbar);
+
+  /** The student or the group whose room it is. */
+  readonly owner = input<RoomOwnerRef | null>(null);
+
+  protected readonly room = signal<MeetingRoom | null>(null);
+  /** Yandex is connected: meetings can be created through the API. */
+  protected readonly canCreate = signal(false);
+  protected readonly pending = signal(false);
+  protected readonly error = signal<string | null>(null);
+  readonly link = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.pattern(ROOM_LINK_PATTERN)],
+  });
+
+  constructor() {
+    effect(() => {
+      const owner = this.owner();
+      this.room.set(null);
+      this.error.set(null);
+      this.link.reset('');
+      if (owner !== null) {
+        this.load(owner.id);
+      }
+    });
+  }
+
+  create(): void {
+    const owner = this.owner();
+    if (owner !== null) {
+      this.run(this.api.createRoom(owner), (room) => {
+        this.room.set(room);
+      });
+    }
+  }
+
+  save(): void {
+    const owner = this.owner();
+    const value = this.link.value.trim();
+    if (owner !== null && value !== '' && this.link.valid) {
+      this.run(this.api.enterLink(owner, value), (room) => {
+        this.room.set(room);
+        this.link.reset('');
+      });
+    }
+  }
+
+  remove(room: MeetingRoom): void {
+    this.run(this.api.removeRoom(room.ownerId), () => {
+      this.room.set(null);
+    });
+  }
+
+  share(room: MeetingRoom): void {
+    this.run(this.api.share(room.ownerId), (recipients) => {
+      this.snackbar.success(`Ссылка отправлена, получателей: ${String(recipients)}`);
+    });
+  }
+
+  copy(text: string): void {
+    if (this.clipboard.copy(text)) {
+      this.snackbar.success('Ссылка в буфере обмена');
+    }
+  }
+
+  private load(ownerId: string): void {
+    forkJoin({
+      rooms: this.api.rooms(quietContext()),
+      yandex: this.api.yandexStatus(quietContext()),
+    }).subscribe({
+      next: ({ rooms, yandex }) => {
+        if (this.owner()?.id !== ownerId) {
+          return;
+        }
+        this.room.set(rooms.find((room) => room.ownerId === ownerId) ?? null);
+        this.canCreate.set(yandex.status === 'CONNECTED' || yandex.tokenFromEnvironment);
+      },
+      error: () => {
+        this.error.set('Не удалось загрузить видеовстречу. Откройте окно ещё раз');
+      },
+    });
+  }
+
+  private run<T>(request: Observable<T>, done: (value: T) => void): void {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    request.subscribe({
+      next: (value) => {
+        this.pending.set(false);
+        done(value);
+      },
+      error: (error: unknown) => {
+        this.pending.set(false);
+        this.error.set(describeError(error, 'Не получилось. Попробуйте позже'));
+      },
+    });
+  }
+}

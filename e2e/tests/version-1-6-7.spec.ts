@@ -113,12 +113,13 @@ test('on a phone the card around a list stays and the rows are tiles on it', asy
   await signIn(page, 390);
   await page.goto('/teacher/students');
 
-  const card = page.locator('.p-card:has(.p-datatable.tb-cards)').first();
+  // 1.7.3: the students are a segmented list (tb-list), not a table
+  const card = page.locator('.p-card:has(ul.tb-list[aria-label="Ученики"])').first();
   expect(await card.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
     'rgba(0, 0, 0, 0)',
   );
   const row = page
-    .locator('.p-datatable.tb-cards tbody tr')
+    .locator('ul.tb-list[aria-label="Ученики"] > li')
     .filter({ hasText: 'Плитка Проверкина' })
     .first();
   const background = await row.evaluate((element) => getComputedStyle(element).backgroundColor);
