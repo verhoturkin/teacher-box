@@ -114,6 +114,8 @@
 - Шрифт **Roboto** (вариативный, ось веса), подключён локально из `@fontsource-variable/roboto`
   (лицензия OFL-1.1). Файлы лежат в сборке, CDN не используется, CSP `font-src 'self'` не
   меняется. Браузер скачивает только нужные наборы символов (кириллица, латиница).
+  *Изменено в 0.9.3:* шрифт — **Google Sans** (вариативный, ось веса 400–700), тоже локально из
+  `@fontsource-variable/google-sans` (OFL-1.1); Roboto убран.
 - Шкала M3 — токены `--tb-type-<роль>-<размер>` (`size`, `line`, `weight`):
   - Display, Headline, Title, Body, Label;
   - L, M, S.
@@ -170,4 +172,4 @@
   Firefox 128: нужны `linear()` и `:has()`.)*
 - Разделы на компьютере — в боковой панели, поэтому контент уже на 280 px. Ширина контента
   по-прежнему до 1440 px (`--tb-content-max`).
-- Новая зависимость: `@fontsource-variable/roboto` (OFL-1.1).
+- Новая зависимость: `@fontsource-variable/roboto` (OFL-1.1); с 0.9.3 — `@fontsource-variable/google-sans`.

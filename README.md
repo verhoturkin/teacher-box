@@ -567,7 +567,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 ## Разработка
 
 - Backend: Java 25, Spring Boot 4, Spring Modulith, H2 (файловый режим)
-- Frontend: Angular 21 LTS, PrimeNG 21 (MIT) с темой Material 3 Expressive, шрифт Roboto, TypeScript (strict)
+- Frontend: Angular 21 LTS, PrimeNG 21 (MIT) с темой Material 3 Expressive, шрифт Google Sans, TypeScript (strict)
 - Поставка: Docker Compose — два контейнера (nginx и приложение)
 
 Правила и архитектура — [AGENTS.md](AGENTS.md), решения — [docs/adr](docs/adr),

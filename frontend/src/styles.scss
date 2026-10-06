@@ -1,5 +1,5 @@
 @use 'primeicons/primeicons.css';
-@use '@fontsource-variable/roboto/wght.css';
+@use '@fontsource-variable/google-sans/wght.css';
 
 /*
  * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
@@ -26,8 +26,8 @@
 
   /* Type scale: `font: var(--tb-type-title-l)` */
   --tb-font:
-    'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
-    sans-serif;
+    'Google Sans Variable', 'Google Sans', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue',
+    Arial, sans-serif;
   --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
   --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
   /* Emphasized roles (Expressive): the titles of pages, cards and dialogs */

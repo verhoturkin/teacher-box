@@ -17,6 +17,44 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.9.3
+
+Goals: Google Sans instead of Roboto; billing and boards as one-line lists like «Ученики» (no tables), also
+on the phone; read notifications move to a «Прочитанные» section folded by default.
+
+ADR: ADR-0017 amended — the font is Google Sans.
+
+### Stage 126. Google Sans (F)
+
+- [x] 126.1 `styles.scss` `--tb-font`: `@fontsource-variable/google-sans` (OFL-1.1, weights 400–700, no CDN)
+  instead of `@fontsource-variable/roboto`; `knip.json`; design-system §3, ADR-0017, README.
+
+### Stage 127. Billing as lists (F)
+
+- [ ] 127.1 `billing/teacher/billing-overview-page.ts`: students' balances — a `tb-list` like «Ученики»
+  (avatar; name link + «цена · занятий · последнее»; trail — balance and the wallet button, one line on the
+  phone) instead of the `p-table`.
+- [ ] 127.2 `billing/ledger/ledger-table.ts` (teacher's `student-ledger-page.ts`, student's
+  `my-billing-page.ts`): lessons and payments — a `tb-list` (icon; operation + status tag; «date · details»;
+  trail — amount and «×» for the teacher), 20 rows and «Показать ещё» instead of the paginator.
+
+### Stage 128. Boards as a list (F)
+
+- [ ] 128.1 `boards/teacher/boards-page.ts`: a `tb-list` like «Ученики» (kind icon; title link + «кому ·
+  изменена»; trail — kind tag and «⋮» menu: «Резервные копии», «Изменить», «Удалить…»).
+
+### Stage 129. Read notifications folded (B, F)
+
+- [ ] 129.1 **B** `GET /api/me/notifications?read=true|false` (`MyNotificationsController.list`,
+  `NotificationService.page`, `InboxRepository.findPage/count`): optional filter, `total` counts the filtered
+  ones. **F** `notifications/inbox/inbox-panel.ts`: unread on top; «Прочитанные» — `tb-fold-card` folded by
+  default, loaded when opened, with its own «Показать ещё»; a notification marked read (or «Прочитать все»)
+  moves there.
+
+### Stage 130. Release 0.9.3
+
+- [ ] 130.1 Skill `release`: help, E2E `version-0-9-3.spec.ts`, CHANGELOG, version, archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

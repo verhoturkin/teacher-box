@@ -82,7 +82,7 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 
 ## 3. Typography
 
-- Roboto variable, bundled from `@fontsource-variable/roboto` (no CDN). Monospace — `var(--tb-font-mono)`.
+- Google Sans variable (weights 400–700), bundled from `@fontsource-variable/google-sans` (no CDN). Monospace — `var(--tb-font-mono)`.
 - Set roles with the shorthand `font: var(--tb-type-<role>)` (size, line height, weight) plus
   `letter-spacing: var(--tb-tracking-<role>)`; page text is Body Large.
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card title — Title Large
