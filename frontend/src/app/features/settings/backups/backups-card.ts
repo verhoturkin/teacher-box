@@ -7,19 +7,19 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
+import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { HelpButton } from '@features/help/parts';
 import type { HelpTopic } from '@features/help/parts';
-import { RowType } from '@shared/ui/row-type.directive';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
 import { RestoreDialog } from './restore-dialog';
@@ -50,9 +50,8 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
     Card,
     ConfirmDialog,
     HelpButton,
-    TableModule,
-    Tag,
-    RowType,
+    Menu,
+    ButtonAttributes,
     RestoreDialog,
     Tooltip,
     LoadStateView,
@@ -89,77 +88,47 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
         @if (backups().length === 0) {
           <tb-empty-state icon="pi-database" title="Копий пока нет" />
         } @else {
-          <p-table [value]="backups()" styleClass="tb-cards">
-            <ng-template #header>
-              <tr>
-                <th>Создана</th>
-                <th>Как</th>
-                <th>Размер</th>
-                <th></th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-backup [tbRowType]="backups()">
-              <tr>
-                <td data-label="Создана">{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                <td data-label="Как">
-                  @if (kind(backup); as label) {
-                    <p-tag
-                      [value]="label"
-                      [severity]="
-                        backup.kind === 'SCHEDULED' || backup.kind === 'MANUAL'
-                          ? 'secondary'
-                          : 'warn'
-                      "
-                    />
-                  }
-                </td>
-                <td data-label="Размер">{{ size(backup) }}</td>
-                <td class="tb-row-actions">
+          <ul class="tb-list" aria-label="Резервные копии">
+            @for (backup of backups(); track backup.name) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-database"></i></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{
+                    backup.createdAt | date: 'dd.MM.yyyy HH:mm'
+                  }}</span>
+                  <span class="tb-list__supporting">{{ details(backup) }}</span>
+                </div>
+                <div class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    icon="pi pi-history"
+                    icon="pi pi-ellipsis-v"
                     [text]="true"
-                    [pTooltip]="'Восстановить ' + backup.name"
                     [rounded]="true"
                     severity="secondary"
-                    [ariaLabel]="'Восстановить ' + backup.name"
-                    (onClick)="openRestore(backup)"
+                    [pTooltip]="'Действия: ' + backup.name"
+                    [ariaLabel]="'Действия: ' + backup.name"
+                    [loading]="busy.is('download-' + backup.name)"
+                    [tbAttributes]="{
+                      'aria-haspopup': 'menu',
+                      'aria-expanded': menuFor()?.name === backup.name ? 'true' : 'false',
+                    }"
+                    (onClick)="openMenu(backup, $event)"
                   />
-                  @if (!isAdmin()) {
-                    <p-button
-                      icon="pi pi-download"
-                      [text]="true"
-                      [pTooltip]="'Скачать ' + backup.name"
-                      [rounded]="true"
-                      severity="secondary"
-                      [ariaLabel]="'Скачать ' + backup.name"
-                      [loading]="busy.is('download-' + backup.name)"
-                      (onClick)="download(backup)"
-                    />
-                    <p-button
-                      icon="pi pi-trash"
-                      [text]="true"
-                      [pTooltip]="'Удалить ' + backup.name"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="'Удалить ' + backup.name"
-                      (onClick)="confirmDelete(backup)"
-                    />
-                  }
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
+                </div>
+              </li>
+            }
+          </ul>
         }
       </tb-load-state>
     </p-card>
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
     <tb-restore-dialog [(visible)]="restoring" [backup]="selected()" [area]="area()" />
     <p-confirmdialog />
-  `,
-  styles: `
-    .tb-row-actions {
-      text-align: right;
-      white-space: nowrap;
-    }
   `,
 })
 export class BackupsCard implements OnInit {
@@ -168,6 +137,7 @@ export class BackupsCard implements OnInit {
   private readonly fileSaver = inject(FileSaver);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
+  private readonly menu = viewChild.required<Menu>('menu');
 
   readonly area = input<BackupsArea>('teacher');
 
@@ -181,16 +151,26 @@ export class BackupsCard implements OnInit {
   protected readonly restoring = signal(false);
   protected readonly state = new LoadState();
 
+  /** The backup whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<BackupInfo | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const backup = this.menuFor();
+    return backup === null ? [] : this.actionsOf(backup);
+  });
+
   ngOnInit(): void {
     this.reload();
   }
 
-  protected size(backup: BackupInfo): string {
-    return formatFileSize(backup.size);
+  /** The supporting line of a row: why the backup was made and its size. */
+  protected details(backup: BackupInfo): string {
+    const size = formatFileSize(backup.size);
+    return backup.kind === null ? size : `${KINDS[backup.kind]} · ${size}`;
   }
 
-  protected kind(backup: BackupInfo): string | null {
-    return backup.kind === null ? null : KINDS[backup.kind];
+  protected openMenu(backup: BackupInfo, event: Event): void {
+    this.menuFor.set(backup);
+    this.menu().toggle(event);
   }
 
   create(): void {
@@ -231,6 +211,38 @@ export class BackupsCard implements OnInit {
         },
       }),
     );
+  }
+
+  private actionsOf(backup: BackupInfo): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Восстановить…',
+        icon: 'pi pi-history',
+        command: () => {
+          this.openRestore(backup);
+        },
+      },
+    ];
+    if (!this.isAdmin()) {
+      items.push(
+        {
+          label: 'Скачать',
+          icon: 'pi pi-download',
+          command: () => {
+            this.download(backup);
+          },
+        },
+        {
+          label: 'Удалить…',
+          icon: 'pi pi-trash',
+          styleClass: 'tb-menu-item--danger',
+          command: () => {
+            this.confirmDelete(backup);
+          },
+        },
+      );
+    }
+    return items;
   }
 
   protected reload(): void {

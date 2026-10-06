@@ -162,13 +162,13 @@ describe('PortalSettingsCard', () => {
       '/api/public/portal/logo?v=1',
     );
 
-    buttonByText(host, 'Убрать').click();
+    buttonByText(host, 'Убрать логотип').click();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/portal/logo' })
       .flush(portalSettings());
     await fixture.whenStable();
     expect(TestBed.inject(Portal).logo()).toBeNull();
-    expect(host.textContent).not.toContain('Убрать');
+    expect(host.querySelector('button[aria-label="Убрать логотип"]')).toBeNull();
   });
 
   it('refuses a logo over 1 MB and survives a failed upload', async () => {

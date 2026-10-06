@@ -45,19 +45,28 @@ describe('Portal', () => {
     expect(portal.link('/cabinet')).toBe('https://school.example.com/cabinet');
   });
 
-  it('shows the logo in the browser tab', () => {
+  it('shows the logo in the browser tab in place of every default icon', () => {
     const icon = document.createElement('link');
     icon.rel = 'icon';
     icon.href = 'favicon.ico';
-    document.head.append(icon);
+    const svg = document.createElement('link');
+    svg.rel = 'icon';
+    svg.type = 'image/svg+xml';
+    svg.href = 'favicon.svg';
+    document.head.append(icon, svg);
 
     portal.set(portalInfo({ logo: '/api/public/portal/logo?v=1', accent: 'emerald' }));
     expect(icon.getAttribute('href')).toBe('/api/public/portal/logo?v=1');
+    expect(svg.getAttribute('href')).toBe('/api/public/portal/logo?v=1');
+    expect(svg.type).toBe('');
     expect(portal.logo()).toBe('/api/public/portal/logo?v=1');
 
     portal.set(portalInfo());
     expect(icon.getAttribute('href')).toBe('favicon.ico');
+    expect(svg.getAttribute('href')).toBe('favicon.svg');
+    expect(svg.type).toBe('image/svg+xml');
     icon.remove();
+    svg.remove();
     portal.set(portalInfo({ logo: '/other' }));
   });
 

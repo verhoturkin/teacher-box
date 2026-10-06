@@ -66,7 +66,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
       header="Сбросить все данные?"
       [(visible)]="visible"
       [modal]="true"
-      styleClass="tb-dialog tb-dialog--short"
+      styleClass="tb-dialog"
       [draggable]="false"
     >
       <p>

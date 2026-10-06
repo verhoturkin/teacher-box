@@ -18,6 +18,7 @@ import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal
 import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
 import { PortalAddressField } from '@core/portal/portal-address-field';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { Tooltip } from 'primeng/tooltip';
 import {
   ACCENTS,
   DEFAULT_ACCENT,
@@ -40,6 +41,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 @Component({
   selector: 'tb-portal-settings-card',
   imports: [
+    Tooltip,
     ReactiveFormsModule,
     Button,
     Card,
@@ -164,18 +166,19 @@ const MAX_LOGO_SIZE = 1024 * 1024;
           </div>
           <div class="tb-field">
             <span>Логотип</span>
+            <input
+              #logoFile
+              type="file"
+              class="tb-sr-only"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              aria-label="Файл логотипа"
+              (change)="uploadLogo(logoFile)"
+            />
             <div class="tb-logo-row">
-              <tb-portal-logo size="2.5rem" />
-              <input
-                #logoFile
-                type="file"
-                class="tb-sr-only"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                aria-label="Файл логотипа"
-                (change)="uploadLogo(logoFile)"
-              />
+              <tb-portal-logo size="2.5rem" round />
               <p-button
-                label="Загрузить логотип"
+                label="Загрузить"
+                ariaLabel="Загрузить логотип"
                 icon="pi pi-upload"
                 severity="secondary"
                 [loading]="uploading()"
@@ -183,9 +186,12 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               />
               @if (settings.logo !== null) {
                 <p-button
-                  label="Убрать"
+                  icon="pi pi-trash"
                   severity="danger"
                   [text]="true"
+                  [rounded]="true"
+                  pTooltip="Убрать логотип"
+                  ariaLabel="Убрать логотип"
                   [loading]="busy.is('logo')"
                   (onClick)="removeLogo()"
                 />
@@ -264,11 +270,12 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       font-weight: 500;
     }
 
+    /* the logo, «Загрузить» and the bin keep one line on a 360 px phone */
     .tb-logo-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--tb-space-3);
+      gap: var(--tb-space-2);
     }
   `,
 })

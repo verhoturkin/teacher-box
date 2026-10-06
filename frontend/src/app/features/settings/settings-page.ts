@@ -66,8 +66,6 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
               <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ messenger.name }}</span>
-              </div>
-              <div class="tb-list__trail">
                 @switch (state?.connection) {
                   @case ('OK') {
                     <p-tag value="Работает" severity="success" />
@@ -80,15 +78,19 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
                   }
                   @default {
                     <p-tag value="Не настроен" severity="secondary" />
-                    <a
-                      routerLink="/teacher/notifications"
-                      [queryParams]="{ open: 'messengers' }"
-                      fragment="notifications-messengers"
-                      >подключить</a
-                    >
                   }
                 }
               </div>
+              @if (!state?.connection) {
+                <div class="tb-list__trail">
+                  <a
+                    routerLink="/teacher/notifications"
+                    [queryParams]="{ open: 'messengers' }"
+                    fragment="notifications-messengers"
+                    >подключить</a
+                  >
+                </div>
+              }
             </li>
             @if (state?.connection === 'ERROR') {
               <li class="tb-integration-error">
@@ -106,13 +108,13 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
             <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-sparkles"></i></span>
             <div class="tb-list__text">
               <span class="tb-list__title">ИИ-помощник</span>
-            </div>
-            <div class="tb-list__trail">
               @if (aiModel(); as model) {
                 <p-tag [value]="model" severity="success" />
               } @else {
                 <p-tag value="Не настроен" severity="secondary" />
               }
+            </div>
+            <div class="tb-list__trail">
               <a routerLink="/teacher/ai">подробнее</a>
             </div>
           </li>
@@ -171,41 +173,14 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     </div>
   `,
   styles: `
-    .tb-integrations {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-      margin: 0 0 var(--tb-space-4);
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: var(--tb-space-1) var(--tb-space-3);
-      }
-
-      li > span:first-child {
-        min-width: 9rem;
-      }
-
-      /* On a phone the name keeps its line: the states at the right edge, the link before them */
-      @media (width <= 30em) {
-        li > span:first-child {
-          flex: 1;
-          min-width: 0;
-        }
-
-        li > p-tag {
-          order: 1;
-        }
-      }
-    }
-
     .tb-integration-error {
       overflow-wrap: anywhere;
       color: var(--p-md-error);
+    }
+
+    /* the status under the name; long model names are cut, not pushed out of the row */
+    .tb-list__text > p-tag {
+      max-width: 100%;
     }
 
     .tb-error-cell {

@@ -101,12 +101,16 @@ export class Portal {
     }
   }
 
-  /** The logo becomes the icon of the browser tab. */
+  /**
+   * The logo becomes the icon of the browser tab, in place of every default icon (SVG and ICO); the
+   * defaults come back when the logo is removed.
+   */
   private showIcon(logo: string | null): void {
-    const icon = this.document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
-    if (icon !== null) {
-      icon.type = logo === null ? 'image/x-icon' : '';
-      icon.href = logo ?? 'favicon.ico';
+    for (const icon of this.document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')) {
+      icon.dataset['defaultHref'] ??= icon.getAttribute('href') ?? '';
+      icon.dataset['defaultType'] ??= icon.type;
+      icon.type = logo === null ? icon.dataset['defaultType'] : '';
+      icon.href = logo ?? icon.dataset['defaultHref'];
     }
   }
 

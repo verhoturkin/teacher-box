@@ -17,6 +17,49 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.9.1
+
+Goals: polish of the teacher's settings on the phone (backup rows with a «⋮» menu, full-screen reset dialog),
+a favicon, a round logo in the top bar; students get their own avatar and the name they want to see in their
+cabinet (the teacher keeps the name they set); a GitHub README in the M3 style.
+
+### Stage 116. Settings on the phone
+
+- [x] 116.1 **F** `features/settings/settings-page.ts`, `backups/backups-card.ts`: backup rows — a `tb-list`
+  (icon, date + kind/size, «⋮» popup `p-menu` with «Восстановить», «Скачать», «Удалить»), one line on the phone;
+  integration rows and the other cards checked against the design system at 375 px. *Also: integration statuses
+  under the names (the names were cut), cards on the phone 16 px at the sides (titles line up with list cards),
+  the logo row — «Загрузить» + bin icon in one line.*
+- [x] 116.2 **F** `features/settings/reset-card.ts`: the reset dialog (2 fields) is full screen on the phone
+  (no `tb-dialog--short`, design system §8).
+
+### Stage 117. Favicon and the round logo
+
+- [x] 117.1 **F** `frontend/public/favicon.svg` (+ `favicon.ico` fallback, `apple-touch-icon.png`), `index.html`;
+  the portal logo, when set, replaces all of them (`Portal.showIcon`).
+- [x] 117.2 **F** `core/portal/portal-logo.ts`: the top bar logo (and its preview in settings) is cropped to a
+  circle (`round`, `object-fit: cover`).
+
+### Stage 118. Student avatar and own name
+
+- [ ] 118.1 **B** `identity`: migration V5 (`own_name`, `avatar_key`, `avatar_type`); `PUT /api/me/profile`
+  (student's own name, empty — the teacher's), `PUT|DELETE /api/me/avatar` (PNG/JPEG/WebP ≤ 1 MB, students
+  only), `GET /api/public/avatars/{key}` (secret link); `AccountView.displayName` is the own name for the
+  student, `StudentView` keeps the teacher's name and gets `avatar`; the full reset removes the files (platform).
+- [ ] 118.2 **F** `shared/ui/avatar.ts` (photo or initials); «Мой аккаунт» of the student — photo (cropped to a
+  square and scaled to 256 px in the browser, `shared/files/square-photo.ts`) and name; the top bar user menu and
+  the students list show the photo. *Other lists with initials (billing, homework, schedule) keep the initials:
+  their modules get names via facades without the photo — Backlog.*
+
+### Stage 119. README
+
+- [ ] 119.1 README for GitHub in the M3 style: hero with the logo and badges, feature cards, screenshots-free
+  sections with icons, install in one command first.
+
+### Stage 120. Release 0.9.1
+
+- [ ] 120.1 Skill `release`: help, E2E `version-0-9-1.spec.ts`, CHANGELOG, version, plan archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

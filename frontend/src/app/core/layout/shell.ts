@@ -49,7 +49,7 @@ const NAV_ITEMS = 4;
   template: `
     <header class="tb-shell__header" [class.tb-shell__header--scrolled]="scrolled()">
       <a class="tb-shell__brand" [routerLink]="homeLink()">
-        <tb-portal-logo size="1.75rem" />
+        <tb-portal-logo size="1.75rem" round />
         <span>{{ portalName() }}</span>
       </a>
       <div class="tb-shell__user">
