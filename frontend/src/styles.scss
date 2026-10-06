@@ -331,11 +331,6 @@ textarea.p-textarea {
   }
 }
 
-/* Forms and settings: a readable column (ADR-0015) */
-.tb-stack--narrow {
-  max-width: var(--tb-content-narrow);
-}
-
 /* Sign-in and invitation pages */
 .tb-auth-page {
   display: flex;

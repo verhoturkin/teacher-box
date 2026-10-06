@@ -118,10 +118,21 @@ class OwnProfileIntegrationTests {
     }
 
     @Test
-    void theTeacherHasNoPhotoAndStrangersGetNothing() {
-        assertThat(uploadAvatar(signInTeacher(mvc), PNG))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("account.not-student");
+    void theTeacherHasAPhotoToo() {
+        Tokens teacher = signInTeacher(mvc);
+
+        String photo = avatarOf(uploadAvatar(teacher, PNG));
+
+        assertThat(photo).startsWith("/api/public/avatars/");
+        assertThat(mvc.get().uri("/api/me").header(HttpHeaders.AUTHORIZATION, teacher.bearer()))
+                .hasStatusOk().bodyJson().extractingPath("$.avatar").isEqualTo(photo);
+        assertThat(mvc.get().uri(photo)).hasStatusOk();
+        assertThat(mvc.delete().uri("/api/me/avatar").header(HttpHeaders.AUTHORIZATION, teacher.bearer()))
+                .hasStatusOk().bodyJson().extractingPath("$.avatar").isNull();
+    }
+
+    @Test
+    void strangersGetNothing() {
         assertThat(mvc.perform(multipart(HttpMethod.PUT, "/api/me/avatar").file(new MockMultipartFile("file", PNG))))
                 .hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(mvc.get().uri("/api/public/avatars/0190a3b2-0000-7000-8000-000000000000"))

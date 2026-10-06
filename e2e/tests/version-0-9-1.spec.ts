@@ -96,7 +96,7 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
   page,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 375);
-  await page.goto('/teacher/settings');
+  await page.goto('/teacher/settings?open=data');
   await expect(page.locator('.tb-shell__brand tb-portal-logo')).toBeVisible();
 
   const backups = page.locator('#backups');

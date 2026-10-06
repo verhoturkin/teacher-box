@@ -15,8 +15,7 @@ import { ColorPicker } from 'primeng/colorpicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
-import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
-import { PortalAddressField } from '@core/portal/portal-address-field';
+import { MAX_PORTAL_NAME_LENGTH } from '@core/portal/portal-address';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { Tooltip } from 'primeng/tooltip';
 import {
@@ -37,7 +36,7 @@ import { Busy } from '@shared/ui/busy';
 /** The largest logo the server takes, bytes. */
 const MAX_LOGO_SIZE = 1024 * 1024;
 
-/** Teacher: the name, the address, the color and the logo of the portal. */
+/** Teacher: the name, the color and the logo of the portal (the address — setup and administrator). */
 @Component({
   selector: 'tb-portal-settings-card',
   imports: [
@@ -49,7 +48,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     HelpButton,
     InputText,
     Message,
-    PortalAddressField,
     PortalLogo,
     FieldErrors,
   ],
@@ -77,10 +75,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               >Видно в шапке портала, во вкладке браузера, на странице входа и в календаре.</small
             >
           </div>
-          <tb-portal-address-field
-            [control]="form.controls.address"
-            [fromEnvironment]="settings.addressFromEnvironment"
-          />
           <div class="tb-field">
             <span id="portal-accent">Цвет</span>
             <div class="tb-accents" role="radiogroup" aria-labelledby="portal-accent">
@@ -297,7 +291,8 @@ export class PortalSettingsCard implements OnInit {
       nonNullable: true,
       validators: [Validators.maxLength(MAX_PORTAL_NAME_LENGTH)],
     }),
-    address: new FormControl('', { nonNullable: true, validators: [portalAddressValidator] }),
+    /** Not edited here (the setup and the administrator set it): sent back as it is. */
+    address: new FormControl('', { nonNullable: true }),
     accent: new FormControl<string>(DEFAULT_ACCENT, { nonNullable: true }),
   });
   /** The own color being picked; it becomes the accent while it is a valid `#rrggbb`. */

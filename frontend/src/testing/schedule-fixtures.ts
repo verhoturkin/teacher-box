@@ -64,6 +64,7 @@ export function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeReq
     lessonId: 'l-1',
     studentId: 's-1',
     studentName: 'Иван Петров',
+    studentAvatar: null,
     groupId: null,
     groupName: null,
     kind: 'RESCHEDULE',

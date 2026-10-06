@@ -57,7 +57,6 @@ import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
-import { InitialsPipe } from '@shared/ui/initials';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
@@ -79,7 +78,6 @@ const CLICK_SELECTION_MINUTES = 30;
   selector: 'tb-schedule-page',
   imports: [
     Avatar,
-    InitialsPipe,
     HelpButton,
     Button,
     Card,
@@ -125,9 +123,10 @@ const CLICK_SELECTION_MINUTES = 30;
           <ul class="tb-list">
             @for (request of requests(); track request.id) {
               <li>
-                <span class="tb-avatar" aria-hidden="true">{{
-                  request.studentName ?? 'Ученик' | initials
-                }}</span>
+                <tb-avatar
+                  [name]="request.studentName ?? 'Ученик'"
+                  [photo]="request.studentAvatar"
+                />
                 <div class="tb-list__text">
                   <span class="tb-list__title">
                     {{ request.studentName ?? 'Ученик' }}

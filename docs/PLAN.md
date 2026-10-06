@@ -33,19 +33,28 @@ ADR: ADR-0021 amended — no narrow page column, forms keep a readable width ins
   **F** `tb-avatar [photo]` in `billing-overview-page.ts` (column «Ученик»), `finance-widget.ts`,
   `calls-page.ts`, `today-lessons-widget.ts`, `upcoming-lesson-widget.ts` (gets an avatar),
   `schedule-page.ts`, `lesson-details-dialog.ts`.
+- [x] 120.2 **B** `ScheduleViews.RequestView.studentAvatar`; **F** requests on `schedule-page.ts`.
+- [x] 120.3 **B** the teacher has a photo too (`User.changeAvatar`, `AccountService.changeAvatar`; the
+  administrator — `account.no-photo`, `/api/me/avatar` closed). **F** photo buttons in «Мой аккаунт» for the
+  teacher, the photo on the top-bar user button.
 
-### 121. Settings without «Интеграции» (F)
+### 121. Settings: no «Интеграции», full width, folding sections (F)
 
-- [ ] 121.1 `settings/settings-page.ts`: the «Интеграции» card (messenger and AI statuses) removed; messengers
-  are in «Уведомления», the AI assistant — in its section. Help `teacher/settings`.
+- [x] 121.1 `settings/settings-page.ts`: the «Интеграции» card (messenger and AI statuses) removed — messengers
+  are in «Уведомления», the AI assistant is set up by the administrator. Full width; sections in
+  `tb-fold-card` (`?open=portal,calendar,deliveries,data`, Google's `?google=` opens the calendar):
+  «Портал», «Календарь и звонки», «Неудачные доставки» (counter), «Данные» (backups, reset). The «Профиль»
+  card and the portal address field (`portal-settings-card.ts`; the address is set in the setup and by the
+  administrator, saved back unchanged) removed.
+  Links: setup page, `ScheduleNotifications` (Google disconnected). Help `teacher/settings`, design-system §4,
+  ADR-0021.
 
-### 122. «Мой аккаунт» and «Настройки» full width, M3 Expressive (F)
+### 122. «Мой аккаунт» full width, M3 Expressive (F)
 
-- [ ] 122.1 `identity/account/account-page.ts`: full width; profile hero (large avatar, name, role, login /
-  e-mail / phone as `tb-stats`), forms in cards with `tb-form--narrow` fields. Used by teacher, student and
-  administrator.
-- [ ] 122.2 `settings/settings-page.ts`: full width, sections in `tb-fold-card` (`?open=`), like the
-  administrator's settings and «Уведомления»; `tb-stack--narrow` removed; design-system §4, ADR-0021.
+- [x] 122.1 `identity/account/account-page.ts` (teacher, student, administrator): full width; profile hero
+  (`tb-hero`: 96 px avatar, name as a headline, role, a student's photo buttons; login / e-mail / phone),
+  «Имя» and «Смена пароля» cards side by side on a wide screen (`tb-account__forms` grid, one column on a
+  narrow one); `tb-stack--narrow` removed.
 
 ### 123. No section titles on the phone (F)
 

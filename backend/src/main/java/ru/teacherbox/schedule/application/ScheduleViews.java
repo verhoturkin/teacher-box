@@ -92,6 +92,7 @@ public final class ScheduleViews {
     }
 
     /**
+     * @param studentAvatar address of the student's photo; {@code null}: none
      * @param groupId  the group of a group lesson
      * @param late     a cancellation asked for later than the cancellation policy allows
      * @param answer   the teacher's comment on the decision
@@ -101,6 +102,7 @@ public final class ScheduleViews {
             UUID lessonId,
             UUID studentId,
             @Nullable String studentName,
+            @Nullable String studentAvatar,
             @Nullable UUID groupId,
             @Nullable String groupName,
             ChangeKind kind,
@@ -115,7 +117,7 @@ public final class ScheduleViews {
 
         static RequestView of(ChangeRequest request, Lesson lesson, ScheduleNames names, Duration lateCancellation) {
             return new RequestView(request.id(), request.lessonId(), request.studentId(),
-                    names.student(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
+                    names.student(request.studentId()), names.avatar(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
                     request.kind(), lesson.startsAt(), request.proposedStartsAt(), request.comment(), request.status(),
                     isLate(request.kind(), lesson.startsAt(), request.createdAt(), lateCancellation),
                     request.resolutionComment(), request.createdAt(), request.resolvedAt());

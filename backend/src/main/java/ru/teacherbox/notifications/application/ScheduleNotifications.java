@@ -213,7 +213,7 @@ class ScheduleNotifications {
         notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_CALENDAR, "Google Календарь отключён",
                 "Google больше не принимает доступ портала, занятия не попадают в календарь. "
                         + "Подключите календарь заново в настройках.",
-                "/teacher/settings");
+                "/teacher/settings?open=calendar");
     }
 
     private void notifyStudents(Collection<UUID> studentIds, NotificationKind kind, String title,

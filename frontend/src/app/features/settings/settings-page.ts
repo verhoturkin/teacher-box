@@ -1,12 +1,16 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Card } from 'primeng/card';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
-import { AiApi } from '@features/ai/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { GoogleCalendarPanel } from '@features/schedule/parts';
 import { RowType } from '@shared/ui/row-type.directive';
@@ -14,39 +18,42 @@ import { BackupsCard } from './backups/backups-card';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import { ResetCard } from './reset-card';
-import {
-  FailedDelivery,
-  MessengerStatus,
-  MessengerType,
-  NotificationsStatus,
-} from './data-access/settings.models';
+import { FailedDelivery, MessengerType } from './data-access/settings.models';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
+import { FoldCard } from '@shared/ui/fold-card';
 
-export const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
+const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'TELEGRAM', name: 'Telegram' },
   { type: 'VK', name: 'ВКонтакте' },
   { type: 'MAX', name: 'MAX' },
 ];
 
-/** Teacher: the portal, integrations, delivery problems, backups and a link to the profile. */
+/** The sections that fold, in the order of the page (`?open=portal,data`). */
+const SECTIONS = ['portal', 'calendar', 'deliveries', 'data'] as const;
+type Section = (typeof SECTIONS)[number];
+
+function isSection(value: unknown): value is Section {
+  return SECTIONS.some((section) => section === value);
+}
+
+/**
+ * Teacher: the portal, the calendar and calls, delivery problems, backups and reset.
+ * Full width; the sections fold (design system §4), the open ones are in the address; Google's
+ * redirect (`?google=...`) opens the calendar.
+ */
 @Component({
   selector: 'tb-settings-page',
   imports: [
     HelpButton,
     DatePipe,
-    RouterLink,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-    Card,
+    FoldCard,
     GoogleCalendarPanel,
     MeetingsSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
     ResetCard,
     TableModule,
-    Tag,
     RowType,
     PageHeader,
     EmptyState,
@@ -56,133 +63,86 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
     <tb-page-header title="Настройки">
       <tb-help-button help topic="teacher/settings" />
     </tb-page-header>
-    <div class="tb-stack tb-stack--narrow">
-      <tb-portal-settings-card />
-      <p-card header="Интеграции">
-        <ul class="tb-list">
-          @for (messenger of messengers; track messenger.type) {
-            @let state = messengerStatus(messenger.type);
-            <li>
-              <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
-              <div class="tb-list__text">
-                <span class="tb-list__title">{{ messenger.name }}</span>
-                @switch (state?.connection) {
-                  @case ('OK') {
-                    <p-tag value="Работает" severity="success" />
-                  }
-                  @case ('PENDING') {
-                    <p-tag value="Подключается" severity="info" />
-                  }
-                  @case ('ERROR') {
-                    <p-tag value="Нет связи" severity="danger" />
-                  }
-                  @default {
-                    <p-tag value="Не настроен" severity="secondary" />
-                  }
-                }
-              </div>
-              @if (!state?.connection) {
-                <div class="tb-list__trail">
-                  <a
-                    routerLink="/teacher/notifications"
-                    [queryParams]="{ open: 'messengers' }"
-                    fragment="notifications-messengers"
-                    >подключить</a
-                  >
-                </div>
-              }
-            </li>
-            @if (state?.connection === 'ERROR') {
-              <li class="tb-integration-error">
-                <small class="tb-list__supporting">
-                  {{ state?.error }}
-                  @if (messenger.type === 'TELEGRAM') {
-                    <br />Если Telegram заблокирован в сети сервера, попросите администратора
-                    указать прокси в его настройках.
-                  }
-                </small>
-              </li>
-            }
+    <div class="tb-stack">
+      <tb-fold-card
+        id="settings-portal"
+        title="Портал"
+        summary="Название, логотип и цвет портала"
+        [single]="true"
+        [open]="opened().has('portal')"
+        (openChange)="fold('portal', $event)"
+      >
+        <ng-template><tb-portal-settings-card /></ng-template>
+      </tb-fold-card>
+
+      <tb-fold-card
+        id="settings-calendar"
+        title="Календарь и звонки"
+        summary="Google Календарь, видеовстречи и ссылки на занятия"
+        [open]="opened().has('calendar')"
+        (openChange)="fold('calendar', $event)"
+      >
+        <ng-template>
+          <div class="tb-stack">
+            <tb-google-calendar-panel />
+            <tb-meetings-settings-panel />
+          </div>
+        </ng-template>
+      </tb-fold-card>
+
+      <tb-fold-card
+        id="settings-deliveries"
+        title="Неудачные доставки"
+        summary="Уведомления, которые не дошли до мессенджера"
+        [badge]="failed().length"
+        [open]="opened().has('deliveries')"
+        (openChange)="fold('deliveries', $event)"
+      >
+        <ng-template>
+          @if (failed().length === 0) {
+            <tb-empty-state icon="pi-check-circle" title="Все уведомления доставлены" />
+          } @else {
+            <p-table [value]="failed()" styleClass="tb-cards">
+              <ng-template #header>
+                <tr>
+                  <th>Когда</th>
+                  <th>Кому</th>
+                  <th>Куда</th>
+                  <th>Ошибка</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-row [tbRowType]="failed()">
+                <tr>
+                  <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                  <td data-label="Кому">{{ row.recipientName ?? 'Вы' }}</td>
+                  <td data-label="Куда">{{ messengerName(row) }}</td>
+                  <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
+                    {{ row.error ?? '—' }}
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
           }
-          <li>
-            <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-sparkles"></i></span>
-            <div class="tb-list__text">
-              <span class="tb-list__title">ИИ-помощник</span>
-              @if (aiModel(); as model) {
-                <p-tag [value]="model" severity="success" />
-              } @else {
-                <p-tag value="Не настроен" severity="secondary" />
-              }
-            </div>
-            <div class="tb-list__trail">
-              <a routerLink="/teacher/ai">подробнее</a>
-            </div>
-          </li>
-        </ul>
-        <small class="tb-hint">
-          Ботов мессенджеров можно подключить в разделе
-          <a
-            routerLink="/teacher/notifications"
-            [queryParams]="{ open: 'messengers' }"
-            fragment="notifications-messengers"
-            >«Уведомления» → «Мессенджеры»</a
-          >. ИИ-помощник настраивает администратор портала.
-        </small>
-      </p-card>
+        </ng-template>
+      </tb-fold-card>
 
-      <tb-google-calendar-panel />
-
-      <tb-meetings-settings-panel />
-
-      <p-card header="Неудачные доставки уведомлений">
-        @if (failed().length === 0) {
-          <tb-empty-state icon="pi-check-circle" title="Все уведомления доставлены" />
-        } @else {
-          <p-table [value]="failed()" styleClass="tb-cards">
-            <ng-template #header>
-              <tr>
-                <th>Когда</th>
-                <th>Кому</th>
-                <th>Куда</th>
-                <th>Ошибка</th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-row [tbRowType]="failed()">
-              <tr>
-                <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                <td data-label="Кому">{{ row.recipientName ?? 'Вы' }}</td>
-                <td data-label="Куда">{{ messengerName(row) }}</td>
-                <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
-                  {{ row.error ?? '—' }}
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        }
-      </p-card>
-
-      <tb-backups-card />
-      <tb-reset-card />
-
-      <p-card header="Профиль">
-        <a pButton routerLink="/teacher/account" severity="secondary">
-          <i pButtonIcon aria-hidden="true" class="pi pi-id-card"></i>
-          <span pButtonLabel>Мой аккаунт и пароль</span>
-        </a>
-      </p-card>
+      <tb-fold-card
+        id="settings-data"
+        title="Данные"
+        summary="Резервные копии, восстановление и полный сброс"
+        [open]="opened().has('data')"
+        (openChange)="fold('data', $event)"
+      >
+        <ng-template>
+          <div class="tb-stack">
+            <tb-backups-card />
+            <tb-reset-card />
+          </div>
+        </ng-template>
+      </tb-fold-card>
     </div>
   `,
   styles: `
-    .tb-integration-error {
-      overflow-wrap: anywhere;
-      color: var(--p-md-error);
-    }
-
-    /* the status under the name; long model names are cut, not pushed out of the row */
-    .tb-list__text > p-tag {
-      max-width: 100%;
-    }
-
     .tb-error-cell {
       overflow-wrap: anywhere;
     }
@@ -190,25 +150,42 @@ export const MESSENGERS: { readonly type: MessengerType; readonly name: string }
 })
 export class SettingsPage implements OnInit {
   private readonly api = inject(SettingsApi);
-  private readonly ai = inject(AiApi);
+  private readonly router = inject(Router);
 
-  protected readonly messengers = MESSENGERS;
-  protected readonly status = signal<NotificationsStatus | null>(null);
+  /** The open sections (query parameter), e.g. `portal,data`. */
+  readonly open = input<string>();
+  /** The result of Google's redirect: the calendar is open to show it. */
+  readonly google = input<string>();
+
   protected readonly failed = signal<FailedDelivery[]>([]);
-  protected readonly aiModel = signal<string | null>(null);
+  protected readonly opened = computed<ReadonlySet<Section>>(() => {
+    const sections: unknown[] = (this.open() ?? '').split(',');
+    if (this.google() !== undefined) {
+      sections.push('calendar');
+    }
+    return new Set(sections.filter(isSection));
+  });
 
   ngOnInit(): void {
     this.api.notificationsStatus().subscribe((status) => {
-      this.status.set(status);
       this.failed.set(status.failedDeliveries);
-    });
-    this.ai.status().subscribe((status) => {
-      this.aiModel.set(status.enabled ? status.model : null);
     });
   }
 
-  protected messengerStatus(type: MessengerType): MessengerStatus | null {
-    return this.status()?.channels.find((status) => status.channel === type) ?? null;
+  /** Keeps the open sections in the address. */
+  fold(section: Section, open: boolean): void {
+    const next = new Set(this.opened());
+    if (open) {
+      next.add(section);
+    } else {
+      next.delete(section);
+    }
+    const sections = SECTIONS.filter((name) => next.has(name)).join(',');
+    void this.router.navigate([], {
+      queryParams: { open: sections === '' ? null : sections },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   protected messengerName(row: FailedDelivery): string {

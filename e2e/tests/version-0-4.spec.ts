@@ -61,7 +61,7 @@ test.describe('on a computer', () => {
     browser,
   }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
-    await page.goto('/teacher/settings');
+    await page.goto('/teacher/settings?open=portal');
     const card = page.locator('#portal');
     await card.getByRole('radio', { name: 'Изумрудный' }).click();
     await card.getByRole('button', { name: 'Сохранить' }).click();
