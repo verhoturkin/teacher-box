@@ -105,12 +105,16 @@ installer_dry_run() {
     bash scripts/install.sh --yes --no-start --source "$ROOT" --dir "$tmp/opt" --bin "$tmp/bin" \
         --domain https://school.example.com/ --calls --timezone Asia/Yekaterinburg || return 1
     env="$tmp/opt/.env"
-    for line in TEACHERBOX_DOMAIN=school.example.com TEACHERBOX_PUBLIC_URL=https://school.example.com \
-        TEACHERBOX_HTTP_PORT=127.0.0.1:8080 TEACHERBOX_TIMEZONE=Asia/Yekaterinburg COMPOSE_PROFILES=https,calls; do
+    for line in TEACHERBOX_DOMAIN=school.example.com TEACHERBOX_HTTP_PORT=127.0.0.1:8080 \
+        TEACHERBOX_TIMEZONE=Asia/Yekaterinburg COMPOSE_PROFILES=https,calls; do
         grep -qx "$line" "$env" || { echo "missing in .env: $line"; return 1; }
     done
     grep -Eqx 'TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET=[A-Za-z0-9]{48}' "$env" || { echo "no LiveKit secret"; return 1; }
-    docker compose --project-directory "$tmp/opt" -f "$tmp/opt/compose.yaml" config --quiet || return 1
+    # The portal address follows the domain; Caddy and LiveKit are in the configuration.
+    docker compose --project-directory "$tmp/opt" -f "$tmp/opt/compose.yaml" config >"$tmp/config.yaml" || return 1
+    for line in "TEACHERBOX_PUBLIC_URL: https://school.example.com" "image: caddy:" "image: livekit/"; do
+        grep -qF "$line" "$tmp/config.yaml" || { echo "missing in the configuration: $line"; return 1; }
+    done
     TEACHERBOX_DIR="$tmp/opt" bash "$tmp/bin/teacherbox" help | grep -q "teacherbox update" || return 1
     # A second run keeps the settings.
     bash scripts/install.sh --yes --no-start --source "$ROOT" --dir "$tmp/opt" --bin "$tmp/bin" --no-calls || return 1

@@ -212,7 +212,6 @@ else
     profiles=""
     if [ -n "$domain" ]; then
         set_env "$env_file" TEACHERBOX_DOMAIN "$domain"
-        set_env "$env_file" TEACHERBOX_PUBLIC_URL "https://$domain"
         set_env "$env_file" TEACHERBOX_HTTP_PORT "127.0.0.1:${port:-8080}"
         profiles="https"
     elif [ -n "$port" ]; then

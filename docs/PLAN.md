@@ -63,9 +63,9 @@ ADR: 0032 (ready images, installer, built-in HTTPS).
 
 ### Stage 114. Minimal settings
 
-- [ ] 114.1 **D B** `.env.example`: a short «Main» block on top (domain, address, time zone, profiles, teacher
-  password), every other line commented with its default; `TEACHERBOX_PUBLIC_URL` defaults to
-  `https://$TEACHERBOX_DOMAIN` in `compose.yaml`; `SettingsCatalog` (order), README «Настройки».
+- [x] 114.1 **D** `.env.example`: a short «Main» block on top (domain, time zone, profiles, teacher password),
+  every other line commented with its default; `TEACHERBOX_PUBLIC_URL` defaults to `https://$TEACHERBOX_DOMAIN`
+  in `compose.yaml` (the installer writes only the domain); README «Настройки».
 
 ### Stage 115. Release 1.9.0
 

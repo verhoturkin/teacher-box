@@ -20,6 +20,8 @@ services:
         required: false
     environment:
       TEACHERBOX_DATA_DIR: /data
+      # The portal address defaults to https://<domain> when the domain is set (.env, "Main").
+      TEACHERBOX_PUBLIC_URL: ${TEACHERBOX_PUBLIC_URL:-${TEACHERBOX_DOMAIN:+https://${TEACHERBOX_DOMAIN}}}
     # A proxy on the host (e.g. a VPN client for Telegram) is reachable as host.docker.internal.
     extra_hosts:
       - "host.docker.internal:host-gateway"
