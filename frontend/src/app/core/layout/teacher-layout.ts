@@ -10,6 +10,7 @@ export const TEACHER_MENU: MenuItem[] = [
     routerLinkActiveOptions: { exact: true },
   },
   { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/teacher/schedule' },
+  { label: 'Звонки', icon: 'pi pi-video', routerLink: '/teacher/calls' },
   { label: 'Ученики', icon: 'pi pi-users', routerLink: '/teacher/students' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/teacher/homework' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/teacher/billing' },

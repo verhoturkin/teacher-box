@@ -105,6 +105,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
       {
+        path: 'calls',
+        title: 'Звонки',
+        loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
+      },
+      {
         path: 'settings',
         title: 'Настройки',
         loadComponent: () => import('@features/settings').then((m) => m.SettingsPage),

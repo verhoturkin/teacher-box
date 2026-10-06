@@ -177,7 +177,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 
 ### Stage 106. Teacher «Звонки» section
 
-- [ ] 106.1 **F** Route `/teacher/calls` (`features/meetings/calls/calls-page.ts`), menu item «Звонки»
+- [x] 106.1 **F** Route `/teacher/calls` (`features/meetings/calls/calls-page.ts`), menu item «Звонки»
   (`pi pi-video`) in `core/layout/teacher-layout.ts` and the mobile navigation (ADR-0027). Simple cards in a
   `tb-list` (ADR-0020): left — avatar and name of the student or group (members count), status «Пусто» /
   «В звонке: …» / «Ждут: N» (status colours ADR-0023); right — «Войти» (filled when someone waits) or

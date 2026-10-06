@@ -47,7 +47,8 @@ join the lesson (`JoinLessonChatAction`).
 mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
 `call-tile`, `call-controls`, layout in `call-layout.ts`; `index.ts` exports `CallHost` (root `@defer`) and
-`CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`) — never import them from `parts.ts` in the root, it pulls the
+`CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`), `CallsPage` (`/teacher/calls`, menu «Звонки» after «Расписание»; refreshes
+every 10 s while visible and on return to the tab) — never import them from `parts.ts` in the root, it pulls the
 help articles into the first load; `home/my-calls-card.ts` (student home). `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
 once), `settings/` (device setting), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.
