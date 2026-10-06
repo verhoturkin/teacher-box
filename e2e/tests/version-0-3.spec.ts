@@ -56,14 +56,20 @@ test('the administrator makes a backup', async ({ page }) => {
     .click();
   await expect(page.getByRole('heading', { name: 'Копии', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Создать копию сейчас' }).click();
-  const row = page.getByRole('row').filter({ hasText: 'вручную' }).first();
+  // since 0.9.1 the actions of a backup are in its «⋮» menu; the administrator has only «Восстановить…»
+  const row = page
+    .getByRole('list', { name: 'Резервные копии' })
+    .getByRole('listitem')
+    .filter({ hasText: 'вручную' })
+    .first();
   await expect(row).toBeVisible();
-  await expect(row.getByRole('button', { name: /^Скачать/ })).toHaveCount(0);
-  const label = await row
-    .getByRole('button', { name: /^Восстановить / })
-    .getAttribute('aria-label');
-  backupRow = label ?? '';
-  expect(backupRow).toMatch(/^Восстановить teacherbox-/);
+  const actions = row.getByRole('button', { name: /^Действия: / });
+  backupRow = (await actions.getAttribute('aria-label')) ?? '';
+  expect(backupRow).toMatch(/^Действия: teacherbox-/);
+  await actions.click();
+  await expect(page.getByRole('menuitem', { name: 'Восстановить…' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Скачать' })).toHaveCount(0);
+  await page.keyboard.press('Escape');
 });
 
 test('the full reset deletes the data and opens the first setup', async ({ page }) => {
@@ -86,7 +92,13 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
   await page.goto('/teacher/students');
   await expect(page.getByText('Учеников пока нет')).toBeVisible();
   await page.goto('/teacher/settings');
-  await expect(page.getByRole('row').filter({ hasText: 'перед сбросом' }).first()).toBeVisible();
+  await expect(
+    page
+      .getByRole('list', { name: 'Резервные копии' })
+      .getByRole('listitem')
+      .filter({ hasText: 'перед сбросом' })
+      .first(),
+  ).toBeVisible();
 });
 
 test('the administrator restores the backup and the data comes back', async ({ page }) => {
@@ -97,6 +109,7 @@ test('the administrator restores the backup and the data comes back', async ({ p
     .getByRole('link', { name: 'Копии' })
     .click();
   await page.getByRole('button', { name: backupRow, exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Восстановить…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Восстановление из копии' });
   await dialog.locator('#restore-password').fill(ADMIN_PASSWORD);
   await dialog.getByRole('button', { name: 'Восстановить' }).click();
