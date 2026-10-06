@@ -31,10 +31,10 @@ ADR: ADR-0017 amended — the font is Google Sans.
 
 ### Stage 127. Billing as lists (F)
 
-- [ ] 127.1 `billing/teacher/billing-overview-page.ts`: students' balances — a `tb-list` like «Ученики»
+- [x] 127.1 `billing/teacher/billing-overview-page.ts`: students' balances — a `tb-list` like «Ученики»
   (avatar; name link + «цена · занятий · последнее»; trail — balance and the wallet button, one line on the
   phone) instead of the `p-table`.
-- [ ] 127.2 `billing/ledger/ledger-table.ts` (teacher's `student-ledger-page.ts`, student's
+- [x] 127.2 `billing/ledger/ledger-table.ts` (teacher's `student-ledger-page.ts`, student's
   `my-billing-page.ts`): lessons and payments — a `tb-list` (icon; operation + status tag; «date · details»;
   trail — amount and «×» for the teacher), 20 rows and «Показать ещё» instead of the paginator.
 

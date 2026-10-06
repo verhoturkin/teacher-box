@@ -13,12 +13,10 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { TableModule } from 'primeng/table';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { MoneyPipe } from '@shared/money/money.pipe';
-import { RowType } from '@shared/ui/row-type.directive';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingOverview, StudentBalance } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
@@ -31,6 +29,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { countOf } from '@shared/text/plural';
+import { formatMoney } from '@shared/money/money';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -39,7 +39,6 @@ import { Snackbar } from '@core/snackbar/snackbar';
     Avatar,
     EmptyState,
     HelpButton,
-    DatePipe,
     ReactiveFormsModule,
     RouterLink,
     Button,
@@ -47,17 +46,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
     ButtonIcon,
     ButtonLabel,
     Card,
-    TableModule,
     ToggleSwitch,
     Tooltip,
     MoneyPipe,
-    RowType,
     BalanceAmount,
     DefaultPriceCard,
     PaymentDialog,
     LoadStateView,
     PageHeader,
   ],
+  providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Оплаты">
@@ -115,73 +113,41 @@ import { Snackbar } from '@core/snackbar/snackbar';
               Только должники
             </label>
           </div>
-          <p-table [value]="rows()" dataKey="studentId" [rowHover]="true" styleClass="tb-cards">
-            <ng-template #header>
-              <tr>
-                <th class="tb-col-main">Ученик</th>
-                <th class="tb-amount">Цена занятия</th>
-                <th class="tb-num">Занятий</th>
-                <th>Последнее</th>
-                <th class="tb-amount">Баланс</th>
-                <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-row [tbRowType]="rows()">
-              <tr>
-                <td data-label="Ученик">
-                  <div class="tb-person">
-                    <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
-                    <div class="tb-list__text">
-                      <a
-                        [routerLink]="['students', row.studentId]"
-                        class="tb-list__title tb-link"
-                        >{{ row.displayName }}</a
-                      >
-                      @if (row.status === 'DEACTIVATED') {
-                        <span class="tb-list__supporting">отключён</span>
-                      }
-                    </div>
+          @if (rows().length > 0) {
+            <ul class="tb-list" aria-label="Балансы учеников">
+              @for (row of rows(); track row.studentId) {
+                <li>
+                  <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                  <div class="tb-list__text">
+                    <a [routerLink]="['students', row.studentId]" class="tb-list__title tb-link">{{
+                      row.displayName
+                    }}</a>
+                    <span class="tb-list__supporting">{{ details(row, overview.currency) }}</span>
                   </div>
-                </td>
-                <td data-label="Цена занятия" class="tb-amount">
-                  {{ row.lessonPrice | money: overview.currency }}
-                </td>
-                <td data-label="Занятий" class="tb-num">{{ row.chargedLessons }}</td>
-                <td data-label="Последнее">
-                  {{ row.lastLessonDate ? (row.lastLessonDate | date: 'dd.MM.yyyy') : '—' }}
-                </td>
-                <td data-label="Баланс" class="tb-amount">
-                  <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
-                </td>
-                <td class="tb-actions-column">
-                  <p-button
-                    icon="pi pi-wallet"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="secondary"
-                    [pTooltip]="'Записать оплату: ' + row.displayName"
-                    [ariaLabel]="'Записать оплату: ' + row.displayName"
-                    (onClick)="openPayment(row.studentId)"
-                  />
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template #emptymessage>
-              <tr>
-                <td colspan="6">
-                  @if (overview.students.length === 0) {
-                    <tb-empty-state
-                      icon="pi-users"
-                      title="Учеников пока нет"
-                      hint="Добавьте учеников в разделе «Ученики»"
+                  <div class="tb-list__trail tb-list__trail--icons">
+                    <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
+                    <p-button
+                      icon="pi pi-wallet"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="secondary"
+                      [pTooltip]="'Записать оплату: ' + row.displayName"
+                      [ariaLabel]="'Записать оплату: ' + row.displayName"
+                      (onClick)="openPayment(row.studentId)"
                     />
-                  } @else {
-                    <tb-empty-state icon="pi-check-circle" title="Должников нет" />
-                  }
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else if (overview.students.length === 0) {
+            <tb-empty-state
+              icon="pi-users"
+              title="Учеников пока нет"
+              hint="Добавьте учеников в разделе «Ученики»"
+            />
+          } @else {
+            <tb-empty-state icon="pi-check-circle" title="Должников нет" />
+          }
         </p-card>
 
         <tb-payment-dialog
@@ -198,6 +164,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 export class BillingOverviewPage implements OnInit {
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
+  private readonly date = inject(DatePipe);
 
   protected readonly overview = signal<BillingOverview | null>(null);
   protected readonly state = new LoadState();
@@ -239,6 +206,20 @@ export class BillingOverviewPage implements OnInit {
     if (overview !== null) {
       this.overview.set({ ...overview, defaultLessonPrice: price });
     }
+  }
+
+  /** «1 500 ₽ за занятие · 3 занятия · последнее 01.09.2026», «отключён» first for a deactivated one. */
+  protected details(row: StudentBalance, currency: string): string {
+    return [
+      row.status === 'DEACTIVATED' ? 'отключён' : null,
+      `${formatMoney(row.lessonPrice, currency)} за занятие`,
+      countOf(row.chargedLessons, 'занятие', 'занятия', 'занятий'),
+      row.lastLessonDate === null
+        ? null
+        : `последнее ${this.date.transform(row.lastLessonDate, 'dd.MM.yyyy') ?? ''}`,
+    ]
+      .filter((part) => part !== null)
+      .join(' · ');
   }
 
   protected load(): void {

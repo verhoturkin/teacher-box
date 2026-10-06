@@ -5,7 +5,7 @@ import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
 import { StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
-import { LedgerTable } from '../ledger/ledger-table';
+import { LedgerList } from '../ledger/ledger-list';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -13,7 +13,7 @@ import { PageHeader } from '@shared/ui/page-header';
 /** Student: own balance and history of lessons and payments. */
 @Component({
   selector: 'tb-my-billing-page',
-  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerTable, LoadStateView, PageHeader],
+  imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerList, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Оплаты">
@@ -47,7 +47,7 @@ import { PageHeader } from '@shared/ui/page-header';
           </p-card>
         </div>
         <p-card header="История">
-          <tb-ledger-table [ledger]="ledger" />
+          <tb-ledger-list [ledger]="ledger" />
         </p-card>
       }
     </tb-load-state>

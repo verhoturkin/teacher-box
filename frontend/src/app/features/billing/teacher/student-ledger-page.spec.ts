@@ -48,7 +48,7 @@ describe('StudentLedgerPage', () => {
     expect(text()).toContain('аванс 3 500 ₽');
     expect(text()).toContain('Начислено за всё время 1 500 ₽');
     expect(text()).toContain('Оплачено за всё время 5 000 ₽');
-    expect(host.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(host.querySelectorAll('.tb-list > li')).toHaveLength(2);
   });
 
   it('changes the lesson price in place: the field under its label, the buttons under it', async () => {
@@ -101,7 +101,7 @@ describe('StudentLedgerPage', () => {
       .flush(ledger({ lessons: [lesson({ status: 'CANCELLED' })] }));
     await fixture.whenStable();
 
-    expect(host.querySelectorAll('tbody tr.tb-inactive')).toHaveLength(1);
+    expect(host.querySelectorAll('.tb-list > li.tb-inactive')).toHaveLength(1);
   });
 
   it('voids a payment after confirmation and reloads', async () => {

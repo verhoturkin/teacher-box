@@ -234,6 +234,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
     (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
     (`tb-tooltip-lines`, focusable).
+- Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
+  «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
+  history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —
+  the amount and «×» for the teacher; 20 rows, then «Показать ещё»).
 - Backups (0.9.1) — a `tb-list`: database icon; the date + «kind · size»; trail — «⋮» only («Восстановить…»,
   «Скачать», «Удалить…» red), so a row is one line on a phone.
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number

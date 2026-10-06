@@ -1029,7 +1029,8 @@ a.p-menu-item-link:hover {
 }
 
 /* Muted data (a voided payment, a cancelled lesson) is on-surface-variant, not transparent (ADR-0023) */
-.tb-inactive td {
+.tb-inactive td,
+.tb-list > li.tb-inactive :is(.tb-ledger__operation, .tb-ledger__amount) {
   color: var(--p-md-on-surface-variant);
   text-decoration: line-through;
 }
