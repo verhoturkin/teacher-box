@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Teacher Box</title>
+  <rect width="64" height="64" rx="18" fill="#4f46e5"/>
+  <path d="M19 32.5v8.3c0 3.6 5.8 7.2 13 7.2s13-3.6 13-7.2v-8.3l-13 6.2z" fill="#e0e7ff"/>
+  <path d="M32 13 57 25.5 32 38 7 25.5z" fill="#fff"/>
+  <path d="M51 28.5v12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="51" cy="43" r="3" fill="#fff"/>
+</svg>

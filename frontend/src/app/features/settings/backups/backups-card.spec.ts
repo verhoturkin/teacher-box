@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { FileSaver } from '@shared/files/file-saver';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { BackupInfo } from '../data-access/settings.models';
 import { BackupsArea } from './backups-api';
 import { BackupsCard } from './backups-card';
@@ -86,9 +86,9 @@ describe('BackupsCard', () => {
     const host = await render();
 
     const text = readableText(host);
-    expect(text).toContain('перед сбросом');
-    expect(text).toContain('по расписанию');
-    expect(text).toContain('2,5 МБ');
+    expect(text).toContain('перед сбросом · 2,5 МБ');
+    expect(text).toContain('по расписанию · 2,5 МБ');
+    expect(host.querySelectorAll('li')).toHaveLength(3);
     expect(text).not.toContain('Скачать копию может только учитель');
   });
 
@@ -101,12 +101,18 @@ describe('BackupsCard', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
     await fixture.whenStable();
 
-    buttonByText(host, `Скачать ${SCHEDULED.name}`).click();
+    const actions = buttonByText(host, `Действия: ${SCHEDULED.name}`);
+    actions.click();
+    await fixture.whenStable();
+    expect(actions.getAttribute('aria-expanded')).toBe('true');
+    menuItemByText('Скачать').click();
     backend.expectOne(`/api/teacher/backups/${SCHEDULED.name}`).flush(new Blob(['zip']));
     expect(saved).toEqual([SCHEDULED.name]);
 
     const confirm = vi.spyOn(fixture.debugElement.injector.get(ConfirmationService), 'confirm');
-    buttonByText(host, `Удалить ${SCHEDULED.name}`).click();
+    buttonByText(host, `Действия: ${SCHEDULED.name}`).click();
+    await fixture.whenStable();
+    menuItemByText('Удалить').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Удалить копию?');
     confirm.mock.calls[0]?.[0].accept?.();
@@ -134,14 +140,16 @@ describe('BackupsCard', () => {
     const host = await render('admin');
 
     expect(readableText(host)).toContain('Скачать копию может только учитель');
-    expect(host.querySelector(`button[aria-label="Скачать ${SCHEDULED.name}"]`)).toBeNull();
-    expect(host.querySelector(`button[aria-label="Удалить ${SCHEDULED.name}"]`)).toBeNull();
     buttonByText(host, 'Создать копию сейчас').click();
     backend.expectOne({ method: 'POST', url: '/api/admin/backups' }).flush(SCHEDULED);
     backend.expectOne('/api/admin/backups').flush([SCHEDULED]);
     await fixture.whenStable();
 
-    buttonByText(host, `Восстановить ${SCHEDULED.name}`).click();
+    buttonByText(host, `Действия: ${SCHEDULED.name}`).click();
+    await fixture.whenStable();
+    expect(() => menuItemByText('Скачать')).toThrow();
+    expect(() => menuItemByText('Удалить')).toThrow();
+    menuItemByText('Восстановить').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Восстановление из копии');
     expect(bodyText()).toContain('Все данные портала заменятся данными из копии');

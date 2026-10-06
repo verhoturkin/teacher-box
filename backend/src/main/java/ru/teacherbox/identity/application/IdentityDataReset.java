@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
- * Full reset (ADR-0014): students, their invitations and sessions, groups. The accounts of the
- * teacher and the administrator stay with their passwords and sessions.
+ * Full reset (ADR-0014): students (their photos are deleted by the platform), invitations and sessions,
+ * groups. The accounts of the teacher and the administrator stay with their passwords and sessions.
  */
 @Component
 class IdentityDataReset implements DataReset {

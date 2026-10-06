@@ -36,7 +36,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 
@@ -44,7 +44,7 @@ import { Busy } from '@shared/ui/busy';
 @Component({
   selector: 'tb-students-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     HelpButton,
     ReactiveFormsModule,
@@ -102,9 +102,7 @@ import { Busy } from '@shared/ui/busy';
             <ul class="tb-list" aria-label="Ученики">
               @for (student of visibleStudents(); track student.id) {
                 <li>
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    student.displayName | initials
-                  }}</span>
+                  <tb-avatar [name]="student.displayName" [photo]="student.avatar" />
                   <div class="tb-list__text">
                     <span
                       class="tb-list__title"

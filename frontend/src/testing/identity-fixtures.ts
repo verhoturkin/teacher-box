@@ -5,6 +5,7 @@ export function aStudent(overrides: Partial<Student> = {}): Student {
   return {
     id: 'student-1',
     displayName: 'Мария',
+    avatar: null,
     email: null,
     phone: null,
     note: null,

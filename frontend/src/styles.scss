@@ -1589,6 +1589,11 @@ a.p-menu-item-link:hover {
     width: 100%;
   }
 
+  /* Cards of a page take 16 px at the sides (M3 compact), so their titles line up with the lists' */
+  :where(.tb-stack) .p-card > .p-card-body {
+    padding-inline: var(--tb-space-4);
+  }
+
   /* The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020) */
   .p-card:has(.p-datatable.tb-cards),
   .p-card:has(.tb-list) {

@@ -161,10 +161,14 @@ class UserTest {
     @Test
     void restoreKeepsAllFields() {
         UUID id = UUID.randomUUID();
-        User user = User.restore(id, Role.STUDENT, "login", "hash", Profile.named("N"), AccountStatus.ACTIVE, 2,
-                NOW, true, NOW.minusSeconds(60), NOW, 7);
+        Avatar avatar = new Avatar("key", "image/png");
+        User user = User.restore(id, Role.STUDENT, "login", "hash", Profile.named("N"), "Ника", avatar,
+                AccountStatus.ACTIVE, 2, NOW, true, NOW.minusSeconds(60), NOW, 7);
 
         assertThat(user.id()).isEqualTo(id);
+        assertThat(user.ownName()).isEqualTo("Ника");
+        assertThat(user.shownName()).isEqualTo("Ника");
+        assertThat(user.avatar()).isEqualTo(avatar);
         assertThat(user.failedLogins()).isEqualTo(2);
         assertThat(user.lockedUntil()).isEqualTo(NOW);
         assertThat(user.passwordChangeRequired()).isTrue();
@@ -180,5 +184,47 @@ class UserTest {
         User user = newStudent();
         user.activate("ivan", "hash", NOW);
         return user;
+    }
+
+    @Test
+    void aStudentChoosesTheirOwnNameAndTheProfileKeepsTheTeachers() {
+        User student = newStudent();
+        String teachers = student.profile().displayName();
+
+        student.renameSelf("  Ника ", NOW.plusSeconds(5));
+        assertThat(student.ownName()).isEqualTo("Ника");
+        assertThat(student.shownName()).isEqualTo("Ника");
+        assertThat(student.profile().displayName()).isEqualTo(teachers);
+        assertThat(student.updatedAt()).isEqualTo(NOW.plusSeconds(5));
+
+        student.renameSelf(" ", NOW);
+        assertThat(student.ownName()).isNull();
+        assertThat(student.shownName()).isEqualTo(teachers);
+        student.renameSelf(null, NOW);
+        assertThat(student.ownName()).isNull();
+        assertThatThrownBy(() -> student.renameSelf("я".repeat(101), NOW))
+                .isInstanceOfSatisfying(BusinessRuleException.class,
+                        e -> assertThat(e.code()).isEqualTo("profile.name-invalid"));
+    }
+
+    @Test
+    void onlyAStudentHasAnOwnNameAndAPhoto() {
+        User teacher = User.newTeacher(UUID.randomUUID(), "teacher", "hash", Profile.named("Анна"), NOW);
+
+        assertThatThrownBy(() -> teacher.renameSelf("Аня", NOW)).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> teacher.changeAvatar(new Avatar("k", "image/png"), NOW))
+                .isInstanceOf(BusinessRuleException.class);
+        assertThat(teacher.shownName()).isEqualTo("Анна");
+    }
+
+    @Test
+    void aNewPhotoReturnsThePreviousOne() {
+        User student = newStudent();
+        Avatar first = new Avatar("first", "image/png");
+
+        assertThat(student.changeAvatar(first, NOW)).isNull();
+        assertThat(student.changeAvatar(new Avatar("second", "image/jpeg"), NOW)).isEqualTo(first);
+        assertThat(student.changeAvatar(null, NOW)).isEqualTo(new Avatar("second", "image/jpeg"));
+        assertThat(student.avatar()).isNull();
     }
 }

@@ -83,11 +83,16 @@ export class AuthService {
     return response.user;
   }
 
-  /** The user's name changed (the teacher renamed themselves); the next session carries it anyway. */
-  renamed(displayName: string): void {
+  /**
+   * The user's name or photo changed (in «Мой аккаунт»); the next session carries them anyway.
+   */
+  profileChanged(profile: Pick<SessionUser, 'displayName' | 'avatar'>): void {
     const state = this.state();
     if (state !== null) {
-      this.state.set({ ...state, user: { ...state.user, displayName } });
+      this.state.set({
+        ...state,
+        user: { ...state.user, displayName: profile.displayName, avatar: profile.avatar },
+      });
     }
   }
 

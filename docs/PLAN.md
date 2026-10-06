@@ -36,6 +36,8 @@ Calls after 0.8.0: call history; teacher moderation (mute / remove a participant
 Picture-in-Picture; noise suppression; recording.
 
 Future:
+- Student photos in the other lists (billing, homework, schedule, calls): add the photo address to
+  `StudentSummary` and pass it through the modules' views.
 - Two-way Google Calendar sync.
 - Board templates / duplicating.
 - Lesson packages/subscriptions, online payment.

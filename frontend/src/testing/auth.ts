@@ -23,6 +23,7 @@ export function authResponse(
       id: USERS[role].id,
       role,
       displayName: USERS[role].displayName,
+      avatar: null,
       passwordChangeRequired: false,
     },
   };

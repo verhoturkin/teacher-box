@@ -21,6 +21,7 @@ function student(overrides: Partial<Student>): Student {
   return {
     id: 'id',
     displayName: 'Имя',
+    avatar: null,
     email: null,
     phone: null,
     note: null,

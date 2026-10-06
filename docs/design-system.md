@@ -108,8 +108,10 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   help, settings, account, sign out); five sections fit without «Ещё» — the student has five (with «Мои доски»). Item ≥ 64 px, Label Medium, never
   truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
   `--tb-spring-fast-spatial`; same in the rail.
-- **Top bar** (64 px, sticky): logo and portal name, bell, user menu (settings, help, account, theme, sign
-  out). No cabinet name.
+- **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
+  (settings, help, account, theme, sign out; a student's photo instead of the person icon). No cabinet name.
+- **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
+  all cards line up.
 - **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
   first). No card grids. Full width, except forms (`tb-stack--narrow`). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
@@ -188,8 +190,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
-- **Phone:** full screen only for dialogs with ≥ 2 fields or long content; one field or none —
-  `tb-dialog--short`, centred.
+- **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and
+  the word); one field or none — `tb-dialog--short`, centred.
 - **Form dialog:** `<form [id]>` in the body, submit in the footer with `type="submit" [attr.form]`
   (`tbSubmitFor`) so Enter submits; order «Отмена», then the action.
 - **At most one red button per dialog** — the confirmation of the dangerous action. Other dangerous actions go
@@ -214,8 +216,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Every list of data inside a card or dialog is a segmented list** `ul.tb-list` (CSS subgrid: lead, text,
   trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px gap, inner corners 4 px,
   outer 16 px (a single tile fully round), height ≥ 56 px, padding 12 / 16 px.
-  - `tb-list__lead` — 40 px secondary-container circle: initials (`tb-avatar` + pipe `initials` from
-    `@shared/ui/initials`) for people, an icon for things;
+  - `tb-list__lead` — 40 px secondary-container circle: for people the component `tb-avatar`
+    (`@shared/ui/avatar`: the student's photo cut to a circle, otherwise the initials; `size` for a bigger
+    one, e.g. 56 px in «Мой аккаунт»), an icon for things;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
@@ -225,6 +228,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
     (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
     (`tb-tooltip-lines`, focusable).
+- Backups (0.9.1) — a `tb-list`: database icon; the date + «kind · size»; trail — «⋮» only («Восстановить…»,
+  «Скачать», «Удалить…» red), so a row is one line on a phone.
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number
   right, details below).
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
@@ -273,7 +278,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 
 - Portal colour — preset palette or custom `#rrggbb`, stored in `platform` settings, applied at start.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
-  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`.
+  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar
+  and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
+- Browser icon — `favicon.svg` (graduation cap on indigo, rounded square) with `favicon.ico` (16/32/48) and
+  `apple-touch-icon.png` (180 px); the portal logo, when set, replaces all of them.
 - Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`, `color-mix()`); older ones get
   no springs.
 

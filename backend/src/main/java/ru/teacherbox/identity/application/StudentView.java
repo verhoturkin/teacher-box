@@ -8,10 +8,16 @@ import ru.teacherbox.identity.domain.Invite;
 import ru.teacherbox.identity.domain.InvitePurpose;
 import ru.teacherbox.identity.domain.User;
 
-/** Student card as seen by the teacher. */
+/**
+ * Student card as seen by the teacher: the name the teacher gave (the student's own name is not shown) and
+ * the student's photo.
+ *
+ * @param avatar address of the photo; {@code null}: none
+ */
 public record StudentView(
         UUID id,
         String displayName,
+        @Nullable String avatar,
         @Nullable String email,
         @Nullable String phone,
         @Nullable String note,
@@ -26,9 +32,9 @@ public record StudentView(
     }
 
     static StudentView of(User user, @Nullable Invite pendingInvite) {
-        return new StudentView(user.id(), user.profile().displayName(), user.profile().email(),
-                user.profile().phone(), user.profile().note(), user.status(), user.login(), user.createdAt(),
-                user.version(),
+        return new StudentView(user.id(), user.profile().displayName(), AccountService.avatarUrl(user.avatar()),
+                user.profile().email(), user.profile().phone(), user.profile().note(), user.status(), user.login(),
+                user.createdAt(), user.version(),
                 pendingInvite == null ? null : new PendingInvite(pendingInvite.purpose(), pendingInvite.expiresAt()));
     }
 }

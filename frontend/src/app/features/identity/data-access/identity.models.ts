@@ -6,7 +6,10 @@ export type InvitePurpose = 'ACTIVATION' | 'PASSWORD_RESET';
 /** Mirrors `StudentView` of the backend. */
 export interface Student {
   readonly id: string;
+  /** The name the teacher gave (the student's own name is not shown to the teacher). */
   readonly displayName: string;
+  /** Address of the student's photo; `null`: none. */
+  readonly avatar: string | null;
   readonly email: string | null;
   readonly phone: string | null;
   readonly note: string | null;
@@ -50,7 +53,12 @@ export interface InviteInfo {
 export interface Account {
   readonly id: string;
   readonly role: Role;
+  /** The name the user sees: a student's own name, if set. */
   readonly displayName: string;
+  /** The name from the profile: for a student — the one the teacher gave. */
+  readonly profileName: string;
+  /** Address of the student's photo; `null`: none. */
+  readonly avatar: string | null;
   readonly login: string | null;
   readonly email: string | null;
   readonly phone: string | null;

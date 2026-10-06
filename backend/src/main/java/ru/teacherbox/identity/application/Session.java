@@ -2,6 +2,7 @@ package ru.teacherbox.identity.application;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.security.Role;
 
 /**
@@ -19,7 +20,12 @@ public record Session(
         Instant refreshTokenExpiresAt,
         SessionUser user) {
 
-    /** @param passwordChangeRequired the password was generated on the first start and must be replaced */
-    public record SessionUser(UUID id, Role role, String displayName, boolean passwordChangeRequired) {
+    /**
+     * @param displayName            the name the user sees: a student's own name, if set
+     * @param avatar                 address of the student's photo; {@code null}: none
+     * @param passwordChangeRequired the password was generated on the first start and must be replaced
+     */
+    public record SessionUser(UUID id, Role role, String displayName, @Nullable String avatar,
+            boolean passwordChangeRequired) {
     }
 }

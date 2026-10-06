@@ -89,6 +89,21 @@ export class IdentityApi {
     return this.http.put<Account>('/api/teacher/profile', { displayName });
   }
 
+  /** A student's own name in the cabinet; empty — the name the teacher gave. */
+  renameSelf(displayName: string): Observable<Account> {
+    return this.http.put<Account>('/api/me/profile', { displayName });
+  }
+
+  changeAvatar(photo: Blob): Observable<Account> {
+    const body = new FormData();
+    body.append('file', photo, 'avatar');
+    return this.http.put<Account>('/api/me/avatar', body);
+  }
+
+  removeAvatar(): Observable<Account> {
+    return this.http.delete<Account>('/api/me/avatar');
+  }
+
   changePassword(currentPassword: string, newPassword: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       '/api/me/password',
