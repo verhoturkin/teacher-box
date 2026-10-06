@@ -72,7 +72,8 @@ class LiveKitCallServer implements CallServer {
         RoomServiceClient client = requireEnabled();
         Map<String, List<Participant>> result = new LinkedHashMap<>();
         for (LivekitModels.Room room : body(client.listRooms(), "ListRooms")) {
-            if (CallRooms.owner(room.getName()).isPresent() && room.getNumParticipants() > 0) {
+            // not num_participants: LiveKit updates it seconds after a join, the participants are exact
+            if (CallRooms.owner(room.getName()).isPresent()) {
                 List<Participant> participants = body(client.listParticipants(room.getName()), "ListParticipants")
                         .stream()
                         .map(info -> new Participant(info.getIdentity(), info.getName()))

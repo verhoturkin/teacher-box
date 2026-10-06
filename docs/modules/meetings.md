@@ -35,8 +35,8 @@ Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `Me
 `rooms`. `/api/teacher/meetings/rooms/**` (list, `PUT` a link, delete, share), `/api/me/meetings/rooms`,
 `POST /api/meetings/calls/{ownerId}/token` → `{token, room, title}` (teacher and students; the administrator gets 403),
 `GET /api/teacher/meetings/calls` → `{status: OK | UNREACHABLE | OFF, rooms: [{ownerId, ownerType, name, members,
-waiting, teacherPresent, externalLink}]}` (every current student by name, then active groups; one `ListRooms` +
-`ListParticipants` of occupied rooms, outside transactions), `GET /api/me/meetings/calls` → the student's own room
+waiting, teacherPresent, externalLink}]}` (every current student by name, then active groups; one `ListRooms` + `ListParticipants` of every room of the
+portal — not `num_participants`, LiveKit updates it seconds after a join; outside transactions), `GET /api/me/meetings/calls` → the student's own room
 and active groups with `teacherPresent`. Bot action:
 join the lesson (`JoinLessonChatAction`).
 

@@ -31,6 +31,8 @@ class LiveKitCallServerTest {
     private static final String SECRET = "0123456789abcdef0123456789abcdef";
     private static final String ROOM_A = "tb-00000000-0000-7000-8000-00000000000a";
     private static final String ROOM_GONE = "tb-00000000-0000-7000-8000-00000000000b";
+    /** Someone joined, but ListRooms still counts nobody. */
+    private static final String ROOM_STALE = "tb-00000000-0000-7000-8000-00000000000c";
 
     private HttpServer stub;
     private final List<String> calls = new ArrayList<>();
@@ -53,12 +55,13 @@ class LiveKitCallServerTest {
     void readsOnlyOccupiedRoomsOfThePortal() {
         Map<String, List<Participant>> rooms = server(url()).occupiedRooms();
 
-        assertThat(rooms).containsOnlyKeys(ROOM_A);
+        assertThat(rooms).containsOnlyKeys(ROOM_A, ROOM_STALE);
         assertThat(rooms.get(ROOM_A)).containsExactly(new Participant("u-1", "Анна"), new Participant("u-2", "Борис"));
-        assertThat(calls).containsExactly("ListRooms", "ListParticipants " + ROOM_A, "ListParticipants " + ROOM_GONE);
+        assertThat(calls).containsExactly("ListRooms", "ListParticipants " + ROOM_A, "ListParticipants " + ROOM_GONE,
+                "ListParticipants " + ROOM_STALE);
         assertThat(new LiveKitIntegrationCheck(server(url())).check().getFirst()).satisfies(result -> {
             assertThat(result.state()).isEqualTo(State.OK);
-            assertThat(result.detail()).isEqualTo("Идёт звонков: 1");
+            assertThat(result.detail()).isEqualTo("Идёт звонков: 2");
         });
     }
 
@@ -149,7 +152,7 @@ class LiveKitCallServerTest {
                 calls.add(method);
                 reply(exchange, 200, LivekitRoom.ListRoomsResponse.newBuilder()
                         .addRooms(room(ROOM_A, 2)).addRooms(room("tb-x", 1)).addRooms(room("other", 1))
-                        .addRooms(room(ROOM_GONE, 1)).addRooms(room("tb-00000000-0000-7000-8000-00000000000c", 0))
+                        .addRooms(room(ROOM_GONE, 1)).addRooms(room(ROOM_STALE, 0))
                         .build());
             }
             case "ListParticipants" -> {
@@ -157,6 +160,9 @@ class LiveKitCallServerTest {
                 calls.add(method + " " + room);
                 LivekitRoom.ListParticipantsResponse.Builder response =
                         LivekitRoom.ListParticipantsResponse.newBuilder();
+                if (room.equals(ROOM_STALE)) {
+                    response.addParticipants(participant("u-3", "Вера"));
+                }
                 if (room.equals(ROOM_A)) {
                     response.addParticipants(participant("u-1", "Анна")).addParticipants(participant("u-2", "Борис"));
                 }

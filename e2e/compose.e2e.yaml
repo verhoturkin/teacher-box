@@ -1,5 +1,7 @@
 # Overrides of compose.single.yaml for the E2E run (scripts/e2e.sh): known teacher and administrator
-# passwords, a separate port, no .env of the developer and an imitation of the Telegram Bot API.
+# passwords, a separate port, no .env of the developer, an imitation of the Telegram Bot API, and the
+# built-in calls (ADR-0030): LiveKit for this computer and the reverse proxy a user puts in front of the
+# single variant (the portal and /livekit/ on one address).
 services:
   app:
     env_file: !reset []
@@ -11,8 +13,35 @@ services:
       TEACHERBOX_BACKUP_CRON: "-"
       # Every test signs in again; the default limit (30 a minute) is for real clients.
       TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS: "1000"
+      TEACHERBOX_MEETINGS_LIVEKIT_API_URL: http://livekit:7880
+      TEACHERBOX_MEETINGS_LIVEKIT_API_KEY: e2e
+      TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET: e2e-livekit-secret-0123456789abcdef
+    ports: !reset []
+
+  livekit:
+    profiles: !reset []
+    environment:
+      LIVEKIT_KEYS: "e2e: e2e-livekit-secret-0123456789abcdef"
+      LIVEKIT_RTC_USE_EXTERNAL_IP: "false"
+      NODE_IP: 127.0.0.1
     ports: !override
+      - "7881:7881/tcp"
+      - "7882:7882/udp"
+
+  proxy:
+    image: nginx:1.29-alpine
+    volumes:
+      - ./e2e/proxy/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
       - "${E2E_PORT:-8091}:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
 
   telegram:
     image: node:22-alpine
