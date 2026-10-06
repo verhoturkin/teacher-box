@@ -8,6 +8,7 @@ import { testProviders } from '@testing/setup';
 const STUDENT: Student = {
   id: 's-1',
   displayName: 'Мария',
+  avatar: null,
   email: 'maria@example.com',
   phone: null,
   note: '5 класс',

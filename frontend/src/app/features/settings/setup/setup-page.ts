@@ -399,7 +399,7 @@ export class SetupPage implements OnInit {
       forkJoin([renamed, this.settingsApi.changePortal(portalName, this.savedAddress())]),
       ([account, settings]) => {
         if (account !== null) {
-          this.auth.renamed(account.displayName);
+          this.auth.profileChanged(account);
         }
         this.showSettings(settings);
       },

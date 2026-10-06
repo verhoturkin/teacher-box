@@ -1,3 +1,4 @@
+import { Avatar } from '@shared/ui/avatar';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -43,6 +44,7 @@ const NAV_ITEMS = 4;
     RouterLinkActive,
     PortalLogo,
     SideNav,
+    Avatar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(window:scroll)': 'onScroll()' },
@@ -69,7 +71,11 @@ const NAV_ITEMS = 4;
           [attr.aria-expanded]="userOpen()"
           (click)="userMenu.toggle($event)"
         >
-          <i pButtonIcon class="pi pi-user" aria-hidden="true"></i>
+          @if (userAvatar(); as photo) {
+            <tb-avatar class="tb-shell__avatar" [name]="userName()" [photo]="photo" size="2rem" />
+          } @else {
+            <i pButtonIcon class="pi pi-user" aria-hidden="true"></i>
+          }
           @if (!compact()) {
             <span pButtonLabel>{{ userName() }}</span>
           }
@@ -191,6 +197,8 @@ export class Shell {
   }
 
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
+  /** A student's photo on the user button; others keep the person icon. */
+  protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
     { label: 'Справка', icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },

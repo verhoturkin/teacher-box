@@ -84,7 +84,7 @@ export const HELP_TITLES: Readonly<Record<HelpTopic, string>> = {
   'teacher/appearance': 'Оформление и телефон',
   'teacher/backups': 'Резервные копии и полный сброс',
   'teacher/faq': 'Частые вопросы',
-  'cabinet/login': 'Вход и пароль',
+  'cabinet/login': 'Вход, пароль и профиль',
   'cabinet/schedule': 'Расписание и перенос',
   'cabinet/lesson': 'Урок и доска',
   'cabinet/homework': 'Задания',

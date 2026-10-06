@@ -42,11 +42,11 @@ cabinet (the teacher keeps the name they set); a GitHub README in the M3 style.
 
 ### Stage 118. Student avatar and own name
 
-- [ ] 118.1 **B** `identity`: migration V5 (`own_name`, `avatar_key`, `avatar_type`); `PUT /api/me/profile`
+- [x] 118.1 **B** `identity`: migration V5 (`own_name`, `avatar_key`, `avatar_type`); `PUT /api/me/profile`
   (student's own name, empty — the teacher's), `PUT|DELETE /api/me/avatar` (PNG/JPEG/WebP ≤ 1 MB, students
   only), `GET /api/public/avatars/{key}` (secret link); `AccountView.displayName` is the own name for the
   student, `StudentView` keeps the teacher's name and gets `avatar`; the full reset removes the files (platform).
-- [ ] 118.2 **F** `shared/ui/avatar.ts` (photo or initials); «Мой аккаунт» of the student — photo (cropped to a
+- [x] 118.2 **F** `shared/ui/avatar.ts` (photo or initials); «Мой аккаунт» of the student — photo (cropped to a
   square and scaled to 256 px in the browser, `shared/files/square-photo.ts`) and name; the top bar user menu and
   the students list show the photo. *Other lists with initials (billing, homework, schedule) keep the initials:
   their modules get names via facades without the photo — Backlog.*
@@ -79,6 +79,8 @@ Calls after 0.8.0: call history; teacher moderation (mute / remove a participant
 Picture-in-Picture; noise suppression; recording.
 
 Future:
+- Student photos in the other lists (billing, homework, schedule, calls): add the photo address to
+  `StudentSummary` and pass it through the modules' views.
 - Two-way Google Calendar sync.
 - Board templates / duplicating.
 - Lesson packages/subscriptions, online payment.

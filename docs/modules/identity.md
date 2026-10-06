@@ -15,6 +15,12 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 - Passwords — `DelegatingPasswordEncoder` (bcrypt), min length 8. Access token — JWT HS256, 15 min. Refresh token —
   random, only its hash stored, HttpOnly cookie, rotated on use. Brute force — per-account lock after
   `MAX_FAILED_LOGINS` for `LOCK_DURATION`, plus auth rate limit (`TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_*`).
+- **Own name and photo (0.9.1)** — a student may set `own_name` (shown to the student: `/api/me`, the session
+  user) and a photo (PNG/JPEG/WebP ≤ 1 MB, by magic bytes; the browser crops it to a 256 px square JPEG). The
+  teacher keeps seeing the profile name (`StudentView.displayName`, facades, JWT `name`); the photo is shown to
+  both. Files live in the `identity` namespace; a photo is served at `/api/public/avatars/{storage key}` — the
+  key is the secret part of the link, a new photo gets a new key (immutable cache); the old file is deleted.
+  The teacher and the administrator have no photo.
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
 - Implements `shared.security.PasswordConfirmation`.
@@ -29,16 +35,19 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 
 ## Data
 
-`users`, `invites`, `refresh_tokens`, `student_groups`, `group_members`. Housekeeping job removes expired
-tokens/invites (`IdentityHousekeeping`).
+`users` (+ `own_name`, `avatar_key`, `avatar_type`), `invites`, `refresh_tokens`, `student_groups`,
+`group_members`. Housekeeping job removes expired tokens/invites (`IdentityHousekeeping`). Photo files are removed
+with the rest of the files by the full reset.
 
 ## REST
 
-`/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`), `/api/teacher/students/**`,
+`/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`, `/profile` — a student's own name,
+`/avatar` PUT multipart / DELETE), `/api/public/avatars/{key}`, `/api/teacher/students/**`,
 `/api/teacher/groups/**`, `/api/teacher/profile`.
 
 ## Frontend
 
 `features/identity/`: `login/`, `invite/`, `students/` (list, form, invite link), `groups/` (panel on the
-students page), `account/` («Мой аккаунт», password change). Auth state, guards and token refresh —
+students page), `account/` («Мой аккаунт»: password change; the teacher's name; a student's photo and own name). Avatars —
+`shared/ui/avatar.ts` (`tb-avatar`: photo or initials), photo preparation — `shared/files/square-photo.ts`. Auth state, guards and token refresh —
 `core/auth/`.

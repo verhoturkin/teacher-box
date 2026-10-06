@@ -11,11 +11,13 @@ import ru.teacherbox.shared.error.BusinessRuleException;
  */
 public record Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note) {
 
+    public static final int MAX_NAME_LENGTH = 100;
+
     private static final Pattern EMAIL = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
 
     public Profile {
         displayName = displayName.trim();
-        if (displayName.isEmpty() || displayName.length() > 100) {
+        if (displayName.isEmpty() || displayName.length() > MAX_NAME_LENGTH) {
             throw new BusinessRuleException("profile.name-invalid", "Name must be 1-100 characters long");
         }
         email = blankToNull(email);

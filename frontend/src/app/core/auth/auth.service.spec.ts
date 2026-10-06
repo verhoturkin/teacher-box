@@ -52,15 +52,16 @@ describe('AuthService', () => {
     expect(auth.homeUrl()).toBe('/teacher');
   });
 
-  it('follows a renamed user until the next session', () => {
-    auth.renamed('Никто');
+  it('follows the name and the photo of the user until the next session', () => {
+    auth.profileChanged({ displayName: 'Никто', avatar: null });
     expect(auth.user()).toBeNull();
 
-    auth.acceptSession(authResponse('TEACHER'));
-    auth.renamed('Мария Ивановна');
+    auth.acceptSession(authResponse('STUDENT'));
+    auth.profileChanged({ displayName: 'Ника', avatar: '/api/public/avatars/a' });
 
-    expect(auth.user()?.displayName).toBe('Мария Ивановна');
-    expect(auth.accessToken()).toBe('token-TEACHER');
+    expect(auth.user()?.displayName).toBe('Ника');
+    expect(auth.user()?.avatar).toBe('/api/public/avatars/a');
+    expect(auth.accessToken()).toBe('token-STUDENT');
   });
 
   it('keeps the user anonymous when sign-in fails', () => {

@@ -30,6 +30,7 @@ const STUDENTS = [
   { id: 's-4', displayName: 'Гена', status: 'DEACTIVATED' },
 ].map((student) => ({
   ...student,
+  avatar: null,
   email: null,
   phone: null,
   note: null,

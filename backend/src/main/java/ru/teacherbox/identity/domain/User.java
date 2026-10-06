@@ -23,6 +23,8 @@ public final class User {
     private @Nullable String login;
     private @Nullable String passwordHash;
     private Profile profile;
+    private @Nullable String ownName;
+    private @Nullable Avatar avatar;
     private AccountStatus status;
     private int failedLogins;
     private @Nullable Instant lockedUntil;
@@ -32,13 +34,16 @@ public final class User {
     private long version;
 
     private User(UUID id, Role role, @Nullable String login, @Nullable String passwordHash, Profile profile,
-            AccountStatus status, int failedLogins, @Nullable Instant lockedUntil, boolean passwordChangeRequired,
-            Instant createdAt, Instant updatedAt, long version) {
+            @Nullable String ownName, @Nullable Avatar avatar, AccountStatus status, int failedLogins,
+            @Nullable Instant lockedUntil, boolean passwordChangeRequired, Instant createdAt, Instant updatedAt,
+            long version) {
         this.id = Objects.requireNonNull(id);
         this.role = Objects.requireNonNull(role);
         this.login = login;
         this.passwordHash = passwordHash;
         this.profile = Objects.requireNonNull(profile);
+        this.ownName = ownName;
+        this.avatar = avatar;
         this.status = Objects.requireNonNull(status);
         this.failedLogins = failedLogins;
         this.lockedUntil = lockedUntil;
@@ -49,25 +54,27 @@ public final class User {
     }
 
     public static User newTeacher(UUID id, String login, String passwordHash, Profile profile, Instant now) {
-        return new User(id, Role.TEACHER, Logins.normalize(login), passwordHash, profile, AccountStatus.ACTIVE,
-                0, null, false, now, now, 0);
+        return new User(id, Role.TEACHER, Logins.normalize(login), passwordHash, profile, null, null,
+                AccountStatus.ACTIVE, 0, null, false, now, now, 0);
     }
 
     /** The administrator account (ADR-0010). */
     public static User newAdministrator(UUID id, String login, String passwordHash, Instant now) {
         return new User(id, Role.ADMIN, Logins.normalize(login), passwordHash, Profile.named(ADMINISTRATOR_NAME),
-                AccountStatus.ACTIVE, 0, null, false, now, now, 0);
+                null, null, AccountStatus.ACTIVE, 0, null, false, now, now, 0);
     }
 
     public static User newStudent(UUID id, Profile profile, Instant now) {
-        return new User(id, Role.STUDENT, null, null, profile, AccountStatus.INVITED, 0, null, false, now, now, 0);
+        return new User(id, Role.STUDENT, null, null, profile, null, null, AccountStatus.INVITED, 0, null, false, now,
+                now, 0);
     }
 
     /** Restores a persisted user. */
     public static User restore(UUID id, Role role, @Nullable String login, @Nullable String passwordHash,
-            Profile profile, AccountStatus status, int failedLogins, @Nullable Instant lockedUntil,
-            boolean passwordChangeRequired, Instant createdAt, Instant updatedAt, long version) {
-        return new User(id, role, login, passwordHash, profile, status, failedLogins, lockedUntil,
+            Profile profile, @Nullable String ownName, @Nullable Avatar avatar, AccountStatus status,
+            int failedLogins, @Nullable Instant lockedUntil, boolean passwordChangeRequired, Instant createdAt,
+            Instant updatedAt, long version) {
+        return new User(id, role, login, passwordHash, profile, ownName, avatar, status, failedLogins, lockedUntil,
                 passwordChangeRequired, createdAt, updatedAt, version);
     }
 
@@ -103,6 +110,41 @@ public final class User {
     public void updateProfile(Profile newProfile, Instant now) {
         this.profile = Objects.requireNonNull(newProfile);
         touch(now);
+    }
+
+    /**
+     * The name the student wants to see in their cabinet; the teacher keeps seeing the name from the
+     * profile.
+     *
+     * @param name blank: the name from the profile again
+     */
+    public void renameSelf(@Nullable String name, Instant now) {
+        requireStudent();
+        String trimmed = name == null ? "" : name.trim();
+        if (trimmed.length() > Profile.MAX_NAME_LENGTH) {
+            throw new BusinessRuleException("profile.name-invalid", "Name must be 1-100 characters long");
+        }
+        this.ownName = trimmed.isEmpty() ? null : trimmed;
+        touch(now);
+    }
+
+    /**
+     * Replaces the student's photo.
+     *
+     * @param newAvatar {@code null}: no photo
+     * @return the previous photo, whose file the caller deletes
+     */
+    public @Nullable Avatar changeAvatar(@Nullable Avatar newAvatar, Instant now) {
+        requireStudent();
+        Avatar previous = avatar;
+        this.avatar = newAvatar;
+        touch(now);
+        return previous;
+    }
+
+    /** The name the user sees for themselves: the student's own name, if set, otherwise the profile's. */
+    public String shownName() {
+        return ownName == null ? profile.displayName() : ownName;
     }
 
     public void deactivate(Instant now) {
@@ -213,6 +255,14 @@ public final class User {
 
     public Profile profile() {
         return profile;
+    }
+
+    public @Nullable String ownName() {
+        return ownName;
+    }
+
+    public @Nullable Avatar avatar() {
+        return avatar;
     }
 
     public AccountStatus status() {

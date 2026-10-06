@@ -50,6 +50,23 @@ describe('Shell', () => {
     expect(text).not.toContain('Кабинет учителя');
   });
 
+  it('shows a student photo on the user button instead of the person icon', async () => {
+    const button = () => hostElement(fixture).querySelector('.tb-shell__user-button');
+    expect(button()?.querySelector('.pi-user')).not.toBeNull();
+
+    TestBed.inject(AuthService).profileChanged({
+      displayName: 'Ника',
+      avatar: '/api/public/avatars/a',
+    });
+    await fixture.whenStable();
+
+    expect(button()?.querySelector('.pi-user')).toBeNull();
+    expect(button()?.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/a',
+    );
+    expect(button()?.textContent).toContain('Ника');
+  });
+
   it('puts the sections in the expanded rail on a wide screen', () => {
     const nav = hostElement(fixture).querySelector('tb-side-nav');
     expect(nav?.classList).not.toContain('tb-side-nav--rail');
