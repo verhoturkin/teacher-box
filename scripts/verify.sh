@@ -5,7 +5,9 @@
 #   scripts/verify.sh            # everything
 #   scripts/verify.sh backend    # mvnw verify: tests, coverage gates, module verification
 #   scripts/verify.sh frontend   # lint, tests with coverage gates, production build
-#   scripts/verify.sh docker     # compose file is valid (images build, nginx config checks if the daemon is up)
+#   scripts/verify.sh docker     # compose files are valid (images build, nginx config checks if the daemon is up)
+#                                # + the installer checks
+#   scripts/verify.sh installer  # shellcheck of the scripts, a dry run of install.sh (ADR-0032)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
 #
 # Each step writes its full output to .verify-logs/<step>.log and prints one line; a failed step prints
@@ -82,6 +84,47 @@ verify_docker() {
     else
         echo "    docker daemon is not running, image build skipped"
     fi
+    verify_installer
+}
+
+shellcheck_scripts() {
+    local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh)
+    if command -v shellcheck >/dev/null 2>&1; then
+        shellcheck -x "${scripts[@]}"
+    else
+        # Git Bash: give Docker the Windows form of the path and keep the arguments unconverted.
+        MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W 2>/dev/null || pwd):/mnt" -w /mnt \
+            koalaman/shellcheck:stable -x "${scripts[@]}"
+    fi
+}
+
+# A dry run of the installer into .verify-logs/install: the written .env and compose.yaml make a valid configuration.
+installer_dry_run() {
+    local tmp="$LOG_DIR/install" env
+    rm -rf "$tmp"
+    bash scripts/install.sh --yes --no-start --source "$ROOT" --dir "$tmp/opt" --bin "$tmp/bin" \
+        --domain https://school.example.com/ --calls --timezone Asia/Yekaterinburg || return 1
+    env="$tmp/opt/.env"
+    for line in TEACHERBOX_DOMAIN=school.example.com TEACHERBOX_PUBLIC_URL=https://school.example.com \
+        TEACHERBOX_HTTP_PORT=127.0.0.1:8080 TEACHERBOX_TIMEZONE=Asia/Yekaterinburg COMPOSE_PROFILES=https,calls; do
+        grep -qx "$line" "$env" || { echo "missing in .env: $line"; return 1; }
+    done
+    grep -Eqx 'TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET=[A-Za-z0-9]{48}' "$env" || { echo "no LiveKit secret"; return 1; }
+    docker compose --project-directory "$tmp/opt" -f "$tmp/opt/compose.yaml" config --quiet || return 1
+    TEACHERBOX_DIR="$tmp/opt" bash "$tmp/bin/teacherbox" help | grep -q "teacherbox update" || return 1
+    # A second run keeps the settings.
+    bash scripts/install.sh --yes --no-start --source "$ROOT" --dir "$tmp/opt" --bin "$tmp/bin" --no-calls || return 1
+    grep -qx COMPOSE_PROFILES=https,calls "$env" || { echo ".env was rewritten"; return 1; }
+}
+
+verify_installer() {
+    step "installer"
+    if command -v shellcheck >/dev/null 2>&1 || docker info >/dev/null 2>&1; then
+        run installer-shellcheck "$ROOT" shellcheck_scripts
+    else
+        echo "    neither shellcheck nor a running docker daemon, shellcheck skipped"
+    fi
+    run installer-dry-run "$ROOT" installer_dry_run
 }
 
 verify_e2e() {
@@ -101,9 +144,10 @@ case "$target" in
     backend) verify_backend ;;
     frontend) verify_frontend ;;
     docker) verify_docker ;;
+    installer) verify_installer ;;
     e2e) verify_e2e ;;
     *)
-        echo "usage: $0 [all|backend|frontend|docker|e2e]" >&2
+        echo "usage: $0 [all|backend|frontend|docker|installer|e2e]" >&2
         exit 2
         ;;
 esac

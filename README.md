@@ -91,31 +91,42 @@
 
 ## Установка за 5 минут
 
-Портал ставится из готовых образов — исходники и сборка на сервере не нужны. Нужны только два файла:
+Портал ставится из готовых образов — исходники и сборка на сервере не нужны. На сервере с Linux
+(Ubuntu, Debian и др.) выполните одну команду:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/scripts/install.sh | sudo bash
+```
+
+Установщик поставит Docker, если его нет, и задаст три вопроса:
+
+- **домен** портала, например `school.example.com`, — тогда портал сам получит сертификат и откроется
+  по HTTPS (домен должен указывать на сервер). Без домена портал работает по `http://<сервер>:8080`;
+- **часовой пояс** (по умолчанию `Europe/Moscow`);
+- включить ли **звонки** в портале.
+
+Затем он запишет настройки в `/opt/teacher-box/.env` (секреты сгенерирует сам), запустит портал и
+напечатает адрес, логин `teacher` и пароль — после первого входа портал попросит его сменить. В конце
+он перечислит порты, которые нужно открыть в файрволе облачного провайдера. Параметры для установки
+без вопросов (`--domain`, `--no-calls`, `--port`, `--yes` …) — `install.sh --help`.
+
+Дальше портал обслуживает команда `teacherbox`: `status`, `logs`, `update`, `backups`, `config` —
+подробнее в [эксплуатации](docs/operations.md#команда-teacherbox).
+
+### Установка вручную
+
+На другой системе (NAS, Windows, macOS) или без установщика нужны только два файла:
 
 ```bash
 mkdir teacher-box && cd teacher-box
 curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
 curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/.env.example -o .env
-```
-
-Откройте `.env` и задайте хотя бы:
-
-```ini
-TEACHERBOX_IDENTITY_TEACHER_PASSWORD=придумайте-надёжный-пароль
-TEACHERBOX_PUBLIC_URL=https://school.example.com   # адрес портала (можно задать и в «Настройках»)
-TEACHERBOX_TIMEZONE=Europe/Moscow
-```
-
-Запустите:
-
-```bash
 docker compose up -d
 ```
 
-Откройте `http://<адрес-сервера>:8080` и войдите как `teacher` с паролем из `.env`
-(если пароль не задан, он сгенерирован и напечатан в журнале:
-`docker compose logs backend | grep "Teacher account"`).
+Откройте `http://<адрес-сервера>:8080` и войдите как `teacher`. Пароль сгенерирован и напечатан в
+журнале: `docker compose logs backend | grep "Teacher account"`. Настройки — в `.env`: для начала
+достаточно блока «Main» в его начале (домен, часовой пояс, звонки).
 
 Портал — это два контейнера: `frontend` (nginx: интерфейс, передача запросов к API и к серверу
 звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`. Образы
@@ -176,7 +187,15 @@ school.example.com {
 
 ## Обновление
 
-В каталоге с `compose.yaml`:
+Если портал поставлен установщиком:
+
+```bash
+sudo teacherbox update
+```
+
+Команда скачает свежий `compose.yaml` и новые образы и перезапустит портал; данные и `.env` остаются.
+
+При установке вручную — в каталоге с `compose.yaml`:
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
@@ -192,7 +211,8 @@ docker compose up -d --remove-orphans
 образы; проект и том данных (`teacherbox-data`) те же. В клоне репозитория выполните `git pull` и
 `docker compose up -d --remove-orphans`, старые локальные образы можно удалить:
 `docker image prune`. Клон больше не нужен: достаточно перенести `compose.yaml` и `.env` в любой
-каталог и запускать команды оттуда.
+каталог и запускать команды оттуда. Чтобы обслуживать портал командой `teacherbox`, положите свой
+`.env` в `/opt/teacher-box/` и запустите установщик — он оставит настройки как есть.
 
 **Переход с `compose.single.yaml` (до 1.8.1).** Вариант «один контейнер» убран, данные остаются в
 том же томе `teacherbox-data`. Обновитесь командами выше: `--remove-orphans` остановит и удалит

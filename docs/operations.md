@@ -4,6 +4,27 @@
 Все настройки — переменные окружения в файле `.env` (образец — [`.env.example`](../.env.example));
 с версии 1.5 администратор меняет их и в интерфейсе («Настройки», [ADR-0016](adr/0016-admin-settings.md)).
 
+## Команда teacherbox
+
+Установщик (`scripts/install.sh`, [ADR-0032](adr/0032-ready-images-and-installer.md)) кладёт портал в
+`/opt/teacher-box` (`compose.yaml` и `.env`) и ставит команду `teacherbox` в `/usr/local/bin`. Она
+работает с Docker, поэтому запускайте её через `sudo` (или от пользователя из группы `docker`).
+
+| Команда | Что делает |
+|---|---|
+| `teacherbox status` | контейнеры, их состояние и версия портала |
+| `teacherbox logs [сервис]` | журнал (`backend`, `frontend`, `caddy`, `livekit`); Ctrl+C — выход |
+| `teacherbox start`, `stop`, `restart` | запуск, остановка, перезапуск |
+| `teacherbox update` | свежий `compose.yaml` и образы, перезапуск; данные и `.env` остаются |
+| `teacherbox backups [каталог]` | копирует резервные копии из контейнера в каталог на сервере |
+| `teacherbox config` | открывает `.env` в редакторе (`$EDITOR`, по умолчанию nano) и применяет его |
+| `teacherbox version` | версия портала |
+
+Другой каталог установки — переменная `TEACHERBOX_DIR` (установщик сам прописывает его в команду при
+`--dir`). Повторный запуск установщика обновляет `compose.yaml` и команду, а `.env` не трогает.
+
+Без установщика всё то же делается командами `docker compose …` в каталоге с `compose.yaml`.
+
 ## Данные
 
 Всё состояние портала хранится в одном каталоге — `/data` в контейнере (Docker-том

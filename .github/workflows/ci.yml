@@ -63,6 +63,8 @@ jobs:
           docker compose config -q
           docker compose --profile https --profile calls config -q
           docker compose -f compose.yaml -f compose.build.yaml config -q
+      - name: Installer (shellcheck, dry run)
+        run: ./scripts/verify.sh installer
       - name: Build the images
         run: docker compose -f compose.yaml -f compose.build.yaml build
       - name: Check the nginx configuration

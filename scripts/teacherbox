@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+#
+# "teacherbox": serves a Teacher Box installation made by scripts/install.sh (ADR-0032).
+# The installer fills in the two lines below; TEACHERBOX_DIR / TEACHERBOX_REF in the environment override them.
+#
+set -euo pipefail
+
+TEACHERBOX_DIR="${TEACHERBOX_DIR:-/opt/teacher-box}"
+TEACHERBOX_REF="${TEACHERBOX_REF:-main}"
+
+REPO_URL="https://raw.githubusercontent.com/verhoturkin/teacher-box"
+
+say() { printf '%s\n' "$*"; }
+fail() {
+    printf 'Ошибка: %s\n' "$*" >&2
+    exit 1
+}
+
+usage() {
+    cat <<EOF
+teacherbox — обслуживание портала Teacher Box ($TEACHERBOX_DIR)
+
+  teacherbox status            контейнеры, их состояние и версия
+  teacherbox logs [сервис]     журнал (backend, frontend, caddy, livekit), Ctrl+C — выход
+  teacherbox start | stop | restart
+  teacherbox update            свежий compose.yaml и образы, перезапуск (данные остаются)
+  teacherbox backups [каталог] скопировать резервные копии портала в каталог на сервере
+  teacherbox config            открыть настройки (.env) в редакторе и применить их
+  teacherbox version           версия портала
+EOF
+}
+
+fetch() {
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$1" -o "$2"
+    else
+        wget -qO "$2" "$1"
+    fi
+}
+
+compose() {
+    docker compose --project-directory "$TEACHERBOX_DIR" -f "$TEACHERBOX_DIR/compose.yaml" "$@"
+}
+
+version() {
+    local container
+    container="$(compose ps -q backend 2>/dev/null || true)"
+    [ -n "$container" ] || { say "не запущен"; return; }
+    docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$container"
+}
+
+update() {
+    say "==> Свежий compose.yaml ($TEACHERBOX_REF)"
+    fetch "$REPO_URL/$TEACHERBOX_REF/compose.yaml" "$TEACHERBOX_DIR/compose.yaml.new"
+    mv "$TEACHERBOX_DIR/compose.yaml.new" "$TEACHERBOX_DIR/compose.yaml"
+    say "==> Новые образы"
+    compose pull --quiet
+    say "==> Перезапуск (миграции базы применяются при старте)"
+    compose up -d --remove-orphans --wait --wait-timeout 300
+    docker image prune -f >/dev/null
+    say "Готово, версия $(version). Что изменилось — https://github.com/verhoturkin/teacher-box/blob/main/CHANGELOG.md"
+    # The command itself last: the running copy stays open, the new one replaces it by a rename.
+    local self
+    self="$(command -v teacherbox || true)"
+    if [ -n "$self" ] && [ -w "$(dirname "$self")" ]; then
+        fetch "$REPO_URL/$TEACHERBOX_REF/scripts/teacherbox" "$self.new"
+        sed -i -e "s|^TEACHERBOX_DIR=.*|TEACHERBOX_DIR=\"\${TEACHERBOX_DIR:-$TEACHERBOX_DIR}\"|" \
+            -e "s|^TEACHERBOX_REF=.*|TEACHERBOX_REF=\"\${TEACHERBOX_REF:-$TEACHERBOX_REF}\"|" "$self.new"
+        chmod 755 "$self.new"
+        mv "$self.new" "$self"
+    fi
+}
+
+backups() {
+    local target="${1:-./teacherbox-backups-$(date +%Y%m%d-%H%M%S)}"
+    compose cp backend:/data/backups "$target"
+    say "Резервные копии — в $target"
+}
+
+config() {
+    "${EDITOR:-nano}" "$TEACHERBOX_DIR/.env"
+    compose up -d --remove-orphans
+}
+
+case "${1:-help}" in
+    help | --help | -h)
+        usage
+        exit 0
+        ;;
+esac
+[ -f "$TEACHERBOX_DIR/compose.yaml" ] || fail "нет $TEACHERBOX_DIR/compose.yaml — портал установлен в другой каталог? Задайте TEACHERBOX_DIR."
+
+command="${1:-help}"
+[ $# -gt 0 ] && shift
+case "$command" in
+    status)
+        compose ps
+        say "Версия: $(version)"
+        ;;
+    logs) compose logs --tail 200 -f "$@" ;;
+    start) compose up -d --remove-orphans ;;
+    stop) compose stop ;;
+    restart) compose restart ;;
+    update) update ;;
+    backups) backups "$@" ;;
+    config) config ;;
+    version) version ;;
+    *)
+        usage
+        exit 2
+        ;;
+esac
