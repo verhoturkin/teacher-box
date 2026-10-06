@@ -1,9 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/hero-dark.svg">
-  <img src="docs/assets/readme/hero-light.svg" width="100%" alt="Teacher Box — портал репетитора на вашем сервере">
-</picture>
+<img src="frontend/public/favicon.svg" width="96" height="96" alt="">
 
 # Teacher Box
 
@@ -82,10 +79,23 @@ Telegram, ВКонтакте и MAX, Яндекс Телемост, свои д�
 
 ## Возможности
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/features-dark.svg">
-  <img src="docs/assets/readme/features-light.svg" width="100%" alt="Ученики и группы, расписание, домашние задания, оплаты, звонки, доски, уведомления, ИИ-помощник, данные у вас">
-</picture>
+<table>
+<tr>
+<td width="33%"><img src="docs/assets/readme/people.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Ученики и группы</b><br>&nbsp;<sub>приглашение по ссылке, кабинет, фото</sub></td>
+<td width="33%"><img src="docs/assets/readme/calendar.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Расписание</b><br>&nbsp;<sub>регулярные занятия, перенос, календари</sub></td>
+<td width="33%"><img src="docs/assets/readme/homework.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Домашние задания</b><br>&nbsp;<sub>файлы, очередь проверки, оценки</sub></td>
+</tr>
+<tr>
+<td width="33%"><img src="docs/assets/readme/money.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Оплаты</b><br>&nbsp;<sub>баланс, долги, отчёт за месяц</sub></td>
+<td width="33%"><img src="docs/assets/readme/video.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Звонки</b><br>&nbsp;<sub>видеозвонки прямо в портале</sub></td>
+<td width="33%"><img src="docs/assets/readme/board.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Доски</b><br>&nbsp;<sub>Excalidraw вместе с учеником</sub></td>
+</tr>
+<tr>
+<td width="33%"><img src="docs/assets/readme/bell.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Уведомления</b><br>&nbsp;<sub>Telegram, ВКонтакте, MAX, бот</sub></td>
+<td width="33%"><img src="docs/assets/readme/sparkle.svg" width="40" height="40" align="left" alt="">&nbsp;<b>ИИ-помощник</b><br>&nbsp;<sub>черновики заданий и проверок</sub></td>
+<td width="33%"><img src="docs/assets/readme/shield.svg" width="40" height="40" align="left" alt="">&nbsp;<b>Данные у вас</b><br>&nbsp;<sub>свой сервер, копии каждую ночь</sub></td>
+</tr>
+</table>
 
 ### Учителю
 
