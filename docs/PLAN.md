@@ -17,55 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.9.2
-
-Goals: students' photos wherever the teacher sees students next to money, calls and today's lessons;
-«Мой аккаунт» and the teacher's «Настройки» full width in the M3 Expressive style, without «Интеграции»;
-no section titles on the phone.
-
-ADR: ADR-0021 amended — no narrow page column, forms keep a readable width inside their cards.
-
-### 120. Students' photos in billing, calls and home (B, F)
-
-- [x] 120.1 **B** `identity.api.StudentSummary.avatar` (`UserDirectoryService.summary`); passed through
-  `BillingViews.StudentBalance` / `Debtor` (`BillingQueryService.overview`, `summary`),
-  `CallService.CallCard`, `ScheduleNames` → `ScheduleViews.LessonView.studentAvatar` / `ParticipantView`.
-  **F** `tb-avatar [photo]` in `billing-overview-page.ts` (column «Ученик»), `finance-widget.ts`,
-  `calls-page.ts`, `today-lessons-widget.ts`, `upcoming-lesson-widget.ts` (gets an avatar),
-  `schedule-page.ts`, `lesson-details-dialog.ts`.
-- [x] 120.2 **B** `ScheduleViews.RequestView.studentAvatar`; **F** requests on `schedule-page.ts`.
-- [x] 120.3 **B** the teacher has a photo too (`User.changeAvatar`, `AccountService.changeAvatar`; the
-  administrator — `account.no-photo`, `/api/me/avatar` closed). **F** photo buttons in «Мой аккаунт» for the
-  teacher, the photo on the top-bar user button.
-
-### 121. Settings: no «Интеграции», full width, folding sections (F)
-
-- [x] 121.1 `settings/settings-page.ts`: the «Интеграции» card (messenger and AI statuses) removed — messengers
-  are in «Уведомления», the AI assistant is set up by the administrator. Full width; sections in
-  `tb-fold-card` (`?open=portal,calendar,deliveries,data`, Google's `?google=` opens the calendar):
-  «Портал», «Календарь и звонки», «Неудачные доставки» (counter), «Данные» (backups, reset). The «Профиль»
-  card and the portal address field (`portal-settings-card.ts`; the address is set in the setup and by the
-  administrator, saved back unchanged) removed.
-  Links: setup page, `ScheduleNotifications` (Google disconnected). Help `teacher/settings`, design-system §4,
-  ADR-0021.
-
-### 122. «Мой аккаунт» full width, M3 Expressive (F)
-
-- [x] 122.1 `identity/account/account-page.ts` (teacher, student, administrator): full width; profile hero
-  (`tb-hero`: 96 px avatar, name as a headline, role, a student's photo buttons; login / e-mail / phone),
-  «Имя» and «Смена пароля» cards side by side on a wide screen (`tb-account__forms` grid, one column on a
-  narrow one); `tb-stack--narrow` removed.
-
-### 123. No section titles on the phone (F)
-
-- [x] 123.1 `styles.scss` (`tb-page-header`): on compact windows a section page's title (and its «?») is
-  hidden visually, kept for screen readers; nested pages keep «Назад» + title; the empty header takes no
-  room. Design-system §5.
-
-### 124. Release 0.9.2
-
-- [ ] 124.1 Skill `release`: help, E2E `version-0-9-2.spec.ts`, CHANGELOG, version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
