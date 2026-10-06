@@ -65,8 +65,8 @@ class MyNotificationsController {
 
     @GetMapping("/notifications")
     NotificationPage list(CurrentUser user, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return notifications.page(user.id(), page, size);
+            @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) Boolean read) {
+        return notifications.page(user.id(), read, page, size);
     }
 
     @GetMapping("/notifications/unread-count")

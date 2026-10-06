@@ -45,11 +45,12 @@ ADR: ADR-0017 amended — the font is Google Sans.
 
 ### Stage 129. Read notifications folded (B, F)
 
-- [ ] 129.1 **B** `GET /api/me/notifications?read=true|false` (`MyNotificationsController.list`,
+- [x] 129.1 **B** `GET /api/me/notifications?read=true|false` (`MyNotificationsController.list`,
   `NotificationService.page`, `InboxRepository.findPage/count`): optional filter, `total` counts the filtered
-  ones. **F** `notifications/inbox/inbox-panel.ts`: unread on top; «Прочитанные» — `tb-fold-card` folded by
-  default, loaded when opened, with its own «Показать ещё»; a notification marked read (or «Прочитать все»)
-  moves there.
+  ones. **F** `notifications/inbox/inbox-panel.ts`: unread on top; «Прочитанные» — a section of the same card
+  folded by default (a text button with a chevron, `aria-expanded`; a `tb-fold-card` inside a card would be a
+  card in a card), loaded when opened, with its own «Показать ещё»; a notification marked read (or «Прочитать
+  все») moves there. Rows — `inbox/notification-list.ts`.
 
 ### Stage 130. Release 0.9.3
 

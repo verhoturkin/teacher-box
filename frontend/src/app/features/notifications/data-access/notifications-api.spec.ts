@@ -22,10 +22,12 @@ describe('NotificationsApi', () => {
 
   it('calls the notification endpoints', () => {
     api.page(2, 20).subscribe();
+    api.page(0, 20, true).subscribe();
     api.markRead('n-1').subscribe();
     api.markAllRead().subscribe();
 
     expect(backend.expectOne('/api/me/notifications?page=2&size=20').request.method).toBe('GET');
+    backend.expectOne('/api/me/notifications?page=0&size=20&read=true');
     expect(backend.expectOne('/api/me/notifications/n-1/read').request.method).toBe('POST');
     expect(backend.expectOne('/api/me/notifications/read-all').request.method).toBe('POST');
   });

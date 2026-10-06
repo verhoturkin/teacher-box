@@ -47,7 +47,7 @@ describe('NotificationsPage', () => {
 
   function flushInbox(): void {
     backend
-      .expectOne(`/api/me/notifications?page=0&size=${String(PAGE_SIZE)}`)
+      .expectOne(`/api/me/notifications?page=0&size=${String(PAGE_SIZE)}&read=false`)
       .flush(notificationPage([notification()]));
   }
 
