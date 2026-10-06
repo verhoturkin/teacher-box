@@ -100,7 +100,8 @@ docker compose -f compose.single.yaml cp app:/data/backups ./teacherbox-backups
   `proxy_set_header Connection "upgrade";` (или через `map`, как в `docker/nginx/default.conf.template`).
   Без этого доски работают, но чужие изменения видны с задержкой в несколько секунд, а курсоров нет.
 - Заголовки: Content-Security-Policy (без inline-скриптов), `X-Frame-Options: DENY`,
-  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (камера, микрофон и показ экрана —
+  только самому порталу, для звонков).
 - Вход: блокировка учётной записи после 5 неудачных попыток на 15 минут и ограничение частоты
   запросов входа с одного адреса (`TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_*`, по умолчанию
   30 в минуту). Адрес клиента берётся из `X-Forwarded-For`, поэтому публикуйте порт портала
@@ -174,10 +175,66 @@ docker compose -f compose.single.yaml cp app:/data/backups ./teacherbox-backups
 - Типичные причины: прокси слушает только `127.0.0.1` (из контейнера не виден), VPN не
   подключён, неверный порт или тип прокси (`http` вместо `socks5`).
 
+## Видеозвонки (LiveKit)
+
+Встроенные звонки идут через медиасервер LiveKit — отдельный контейнер `livekit` в обоих
+compose-файлах (профиль `calls`, ADR-0030). Без него портал работает как раньше — с внешними
+ссылками на видеосвязь.
+
+**Включение.**
+
+1. Придумайте ключ и секрет API (секрет — не короче 32 символов), например:
+   `openssl rand -hex 24`. Запишите в `.env`:
+   ```
+   TEACHERBOX_MEETINGS_LIVEKIT_API_KEY=teacherbox
+   TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET=<секрет>
+   COMPOSE_PROFILES=calls
+   ```
+2. Откройте на сервере порты для медиа: **7881/tcp**, **7882/udp**, **3478/udp** (TURN) и
+   **30000–30049/udp** (ретрансляция TURN). Порт 7880 наружу открывать не нужно.
+3. `docker compose -f compose.split.yaml up -d` (или `compose.single.yaml`).
+
+**Публичный адрес.** LiveKit сам узнаёт внешний IP сервера через STUN. Если сервер за NAT с
+пробросом портов или у него несколько адресов, задайте `TEACHERBOX_LIVEKIT_NODE_IP=<внешний IP>`.
+Для проверки на своём компьютере — `TEACHERBOX_LIVEKIT_NODE_IP=127.0.0.1`.
+
+**Сигнализация через адрес портала.** Браузер подключается к `wss://<портал>/livekit`.
+
+- Вариант split: nginx фронтенда уже передаёт `/livekit/` в контейнер `livekit`.
+- Вариант single: своего nginx нет — добавьте правило в обратный прокси перед порталом
+  (LiveKit слушает `127.0.0.1:7880`, порт меняет `TEACHERBOX_LIVEKIT_HTTP_PORT`). Caddy:
+  ```
+  handle_path /livekit/* {
+      reverse_proxy 127.0.0.1:7880
+  }
+  ```
+  nginx:
+  ```
+  location /livekit/ {
+      proxy_pass http://127.0.0.1:7880/;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_read_timeout 1h;
+  }
+  ```
+- Свой прокси перед вариантом split тоже должен пропускать WebSocket на `/livekit/`.
+
+**Внешний LiveKit** (свой на другом адресе или LiveKit Cloud): задайте
+`TEACHERBOX_MEETINGS_LIVEKIT_URL` (адрес для браузеров, `wss://…`),
+`TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (адрес для портала, `https://…`), ключ и секрет; профиль
+`calls` тогда не нужен.
+
+**Если нет видео или звука.** Проверьте, что открыты UDP-порты и верен публичный адрес (в журнале
+LiveKit строка `starting LiveKit server` с `nodeIP`); в сетях, где UDP закрыт, звонок идёт через
+TCP 7881 — качество может быть хуже. Состояние связи с LiveKit — «Настройки» → «Интеграции» у
+администратора.
+
 ## Ресурсы
 
 - Лимиты контейнера: `TEACHERBOX_MEMORY_LIMIT` (по умолчанию 1 ГБ; JVM берёт 75%) и
-  `TEACHERBOX_CPU_LIMIT` (по умолчанию 2). Для одного учителя с десятками учеников хватает
+  `TEACHERBOX_CPU_LIMIT` (по умолчанию 2); у LiveKit — `TEACHERBOX_LIVEKIT_MEMORY_LIMIT` (512 МБ) и
+  `TEACHERBOX_LIVEKIT_CPU_LIMIT` (2). Для одного учителя с десятками учеников хватает
   512 МБ.
 - Остановка — корректная (graceful shutdown до 20 с, база закрывается штатно).
 

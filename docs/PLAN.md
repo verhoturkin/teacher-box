@@ -104,7 +104,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 
 ### Stage 103. LiveKit server in delivery
 
-- [ ] 103.1 **D** `docker/livekit/livekit.yaml` (port 7880, `rtc.tcp_port` 7881, `rtc.udp_port` 7882 mux,
+- [x] 103.1 **D** `docker/livekit/livekit.yaml` (port 7880, `rtc.tcp_port` 7881, `rtc.udp_port` 7882 mux,
   `use_external_ip` / `node_ip` from `TEACHERBOX_LIVEKIT_NODE_IP`, `turn` UDP 3478, `room.empty_timeout`,
   `max_participants`, no webhooks); service `livekit` (pinned image, profile `calls`, memory/cpu limits,
   `LIVEKIT_KEYS` built from `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET`) in `compose.split.yaml` and
@@ -114,7 +114,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   `docker/nginx/security-headers.conf` and `PlatformSecurityAutoConfiguration.PERMISSIONS_POLICY` (+ test);
   CSP `connect-src` gets the LiveKit origin only when `TEACHERBOX_MEETINGS_LIVEKIT_URL` is another host.
   `scripts/verify.sh docker` checks `config` with and without the profile.
-- [ ] 103.2 **D** `docs/operations.md` (Russian): enabling calls (`COMPOSE_PROFILES=calls`, key/secret
+- [x] 103.2 **D** `docs/operations.md` (Russian): enabling calls (`COMPOSE_PROFILES=calls`, key/secret
   generation, secret ≥ 32 chars), ports to open (7881/tcp, 7882/udp, 3478/udp), public IP, own reverse proxy
   rules for `/livekit/` (nginx and Caddy snippets; required for the single variant, which has no nginx),
   external LiveKit (Cloud or another host), troubleshooting (no video behind a firewall → TURN).
