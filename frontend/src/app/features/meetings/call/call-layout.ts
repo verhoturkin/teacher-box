@@ -9,7 +9,7 @@ export interface StageView {
 /**
  * The stage of the full window:
  * - `alone` — only this user, their tile in the middle, «waiting» under it;
- * - `pair` — the other one on the stage, this user in a small inset;
+ * - `pair` — the other one on the stage, this user in a small movable tile (`CallSelf`);
  * - `grid` — three or more, equal tiles;
  * - `screen` — a shared screen on the stage, everyone in a strip.
  */

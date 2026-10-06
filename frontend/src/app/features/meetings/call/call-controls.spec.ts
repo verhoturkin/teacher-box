@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { hostElement, menuItemByText } from '@testing/dom';
+import { buttonByText, hostElement, menuItemByText } from '@testing/dom';
 import { aMediaRef, aParticipant } from '@testing/meetings-fixtures';
 import { testProviders } from '@testing/setup';
+import { DEFAULT_AUDIO_PROCESSING } from './call-engine';
 import { CallControls } from './call-controls';
 import { CallDevices } from './call-devices';
 import { CallSession } from './call-session';
@@ -21,6 +22,8 @@ describe('CallControls', () => {
       providers: testProviders({
         provide: CallDevices,
         useValue: {
+          audioProcessing: () => DEFAULT_AUDIO_PROCESSING,
+          rememberAudioProcessing: () => undefined,
           preferences: () => ({
             microphone: true,
             camera: true,
@@ -92,15 +95,54 @@ describe('CallControls', () => {
     await render();
     const switched = vi.spyOn(session, 'switchDevice').mockResolvedValue();
 
-    button('Устройства').click();
+    button('Настройки звонка').click();
     await fixture.whenStable();
     await new Promise((resolve) => setTimeout(resolve, 0));
     await fixture.whenStable();
 
     expect(menuItemByText('USB').closest('li')?.classList).toContain('tb-menu-item--selected');
+    // above the call window (z-index 1050)
+    expect(
+      Number(document.querySelector<HTMLElement>('.tb-call-menu')?.style.zIndex),
+    ).toBeGreaterThan(1050);
     expect(document.body.textContent).toContain('Микрофон 1');
     menuItemByText('Встроенная').click();
     expect(switched).toHaveBeenCalledWith('videoinput', 'cam-1');
+  });
+
+  it('switches the sound processing and opens the details of the connection', async () => {
+    await render();
+    const processed = vi.spyOn(session, 'setAudioProcessing').mockResolvedValue();
+    vi.spyOn(session, 'stats').mockResolvedValue(null);
+    async function openMenu(): Promise<void> {
+      button('Настройки звонка').click();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await fixture.whenStable();
+    }
+
+    await openMenu();
+    expect(menuItemByText('Шумоподавление').closest('li')?.classList).toContain(
+      'tb-menu-item--selected',
+    );
+    menuItemByText('Шумоподавление').click();
+    expect(processed).toHaveBeenCalledWith({
+      echoCancellation: true,
+      noiseSuppression: false,
+      autoGainControl: true,
+    });
+
+    fixture.destroy();
+    TestBed.resetTestingModule();
+    await render();
+    vi.spyOn(session, 'stats').mockResolvedValue(null);
+    await openMenu();
+    menuItemByText('Сведения о связи').click();
+    await fixture.whenStable();
+    expect(document.querySelector('.tb-call-stats')?.textContent).toContain('Качество связи');
+    buttonByText(document.body, 'Закрыть').click();
+    await fixture.whenStable();
+    expect(host.querySelector('tb-call-stats-dialog')).toBeNull();
   });
 
   it('keeps the compact set for the mini window and waits while connecting', async () => {
@@ -109,7 +151,7 @@ describe('CallControls', () => {
 
     button('Развернуть').click();
     expect(expand).toHaveBeenCalled();
-    expect(host.querySelector('button[aria-label="Устройства"]')).toBeNull();
+    expect(host.querySelector('button[aria-label="Настройки звонка"]')).toBeNull();
     expect(host.querySelector('button[aria-label="Показ экрана"]')).toBeNull();
 
     session.phase.set('connecting');

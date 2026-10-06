@@ -14,6 +14,7 @@ import { injectMobile } from '@core/layout/mobile';
 import { CountPipe } from '@shared/text/plural';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
+import { CallSelf } from './call-self';
 import { CallSession } from './call-session';
 import { CallTile } from './call-tile';
 
@@ -23,7 +24,7 @@ import { CallTile } from './call-tile';
  */
 @Component({
   selector: 'tb-call-window',
-  imports: [Button, Message, CountPipe, CallControls, CallTile],
+  imports: [Button, Message, CountPipe, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-call-window',
@@ -93,7 +94,7 @@ import { CallTile } from './call-tile';
           />
         }
         @if (layout().inset; as inset) {
-          <tb-call-tile class="tb-call-stage__inset" [participant]="inset" />
+          <tb-call-self [participant]="inset" />
         }
         @if (layout().tiles.length > 0) {
           <div

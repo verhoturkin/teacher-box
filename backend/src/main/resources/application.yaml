@@ -25,7 +25,7 @@ spring:
     timeout-per-shutdown-phase: 20s
   web:
     resources:
-      # Static files are served by platform/web (SpaWebConfigurer) only when the frontend is bundled.
+      # No static files: the SPA is served by the nginx of the frontend container (ADR-0031).
       add-mappings: false
 
 server:

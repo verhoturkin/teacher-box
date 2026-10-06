@@ -205,8 +205,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   `tbModalDrawer`; handle, 28 px top corners, height by content, full-width buttons. Closes by Esc, scrim and
   «Закрыть» (no swipe). Example: upcoming lesson row on the phone = icon, time and details, chevron
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
-- **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items 12 px tiles with 2 px gap, hover
-  8 %; selected item — tertiary-container (selected theme also says «(выбрана)»); destructive item red.
+- **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
+  corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
+  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — tertiary-container (selected theme also says «(выбрана)»); destructive item red.
 
 ## 9. Lists and tables
 
@@ -286,16 +287,21 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Full window** — fixed over the page (`role="dialog"`, title focused, Esc minimizes), surface-container;
   header: title (Title Large emphasized), time and people (Body Medium, on-surface-variant). Stage
   (`call-layout.ts`): alone — own tile centred with «Пока в комнате только вы»; pair — the other on the stage, own
-  tile as an inset (elevation 2); three and more — a square grid (`gridSize`, at most two columns on a phone); a
+  tile floating in a corner of the stage as in messengers (`call-self.ts`, elevation 2; dragged to any corner or
+  moved with the arrow keys, remembered on the device); three and more — a square grid (`gridSize`, at most two columns on a phone); a
   shared screen — on the stage with everyone in a strip (side, bottom on a phone).
 - **Tiles** — `--tb-shape-xl`, surface-container-highest; own camera mirrored, screens not; a 3 px primary
   outline on the speaker; the name in an inverse-surface pill (Label Medium) with a crossed microphone and a
   weak-connection icon; initials in a primary-container circle while the camera is off.
 - **Toolbar** — the M3 Expressive floating toolbar: a pill of surface-container-high with elevation 2. Its
   buttons are the exception to the 40 px rule: 56 px (48 px on a phone, 44 px in the mini window) round
-  toggles; a switched-off microphone or camera turns error-coloured and squarer (`--tb-shape-lg`, spring
-  `--tb-spring-fast-spatial`) with a crossing line (primeicons have no «slash» icons); `aria-pressed` on every
-  toggle. «Выйти из звонка» — a wider red button with the hang-up phone. Phones have no screen sharing.
+  toggles; a switched-off microphone or camera stays round and turns error-container with a crossing line
+  (primeicons have no «slash» icons); `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
+  the hang-up phone. No tooltips on call buttons (they cover the video); the labels are for screen readers. The
+  settings menu («Настройки звонка», the gear) lies above the window (`baseZIndex`): groups «Микрофон», «Камера»
+  (the chosen device checked), «Обработка звука» (three checkable switches) and «Связь» → «Сведения о связи» — a
+  `tb-dialog` with titled «label — value» lists (Title Medium headings, Body Medium, values right-aligned with
+  tabular figures), refreshed every 2 s. Phones have no screen sharing.
 - **Mini window** — on a computer 20 rem, surface-container-high, `--tb-shape-xl`, elevation 3, in a corner
   (dragged by its top line and snapped to the nearest corner, or «Переместить окно звонка»; remembered on the
   device); shows a shared screen, the speaker or a camera; compact toolbar. On a phone — a full-width pill above

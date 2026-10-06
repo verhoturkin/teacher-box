@@ -2,20 +2,21 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Tooltip } from 'primeng/tooltip';
 import { injectMobile } from '@core/layout/mobile';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { CallDevices, DeviceList } from './call-devices';
+import { AudioProcessing } from './call-engine';
 import { CallSession } from './call-session';
+import { CallStatsDialog } from './call-stats-dialog';
 
 /**
- * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (round while on, a
- * squarer error-coloured shape while off), screen sharing, devices, minimize/expand and the red
- * «Выйти». The compact set is for the mini window.
+ * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (error-coloured while
+ * off), screen sharing, devices, minimize/expand and the red «Выйти»; no tooltips, the labels are for
+ * screen readers. The compact set is for the mini window.
  */
 @Component({
   selector: 'tb-call-controls',
-  imports: [Button, Menu, Tooltip, ButtonAttributes],
+  imports: [Button, Menu, ButtonAttributes, CallStatsDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'tb-call-controls', role: 'toolbar', 'aria-label': 'Управление звонком' },
   template: `
@@ -25,8 +26,6 @@ import { CallSession } from './call-session';
       [rounded]="true"
       [severity]="session.microphone() ? 'secondary' : 'danger'"
       [ariaLabel]="'Микрофон'"
-      [pTooltip]="session.microphone() ? 'Выключить микрофон' : 'Включить микрофон'"
-      tooltipPosition="top"
       [tbAttributes]="{ 'aria-pressed': session.microphone() ? 'true' : 'false' }"
       [disabled]="!connected()"
       (onClick)="session.toggleMicrophone()"
@@ -37,8 +36,6 @@ import { CallSession } from './call-session';
       [rounded]="true"
       [severity]="session.camera() ? 'secondary' : 'danger'"
       [ariaLabel]="'Камера'"
-      [pTooltip]="session.camera() ? 'Выключить камеру' : 'Включить камеру'"
-      tooltipPosition="top"
       [tbAttributes]="{ 'aria-pressed': session.camera() ? 'true' : 'false' }"
       [disabled]="!connected()"
       (onClick)="session.toggleCamera()"
@@ -51,8 +48,6 @@ import { CallSession } from './call-session';
           [rounded]="true"
           [severity]="session.screen() ? undefined : 'secondary'"
           [ariaLabel]="'Показ экрана'"
-          [pTooltip]="session.screen() ? 'Остановить показ экрана' : 'Показать экран'"
-          tooltipPosition="top"
           [tbAttributes]="{ 'aria-pressed': session.screen() ? 'true' : 'false' }"
           [disabled]="!connected()"
           (onClick)="session.toggleScreen()"
@@ -63,9 +58,7 @@ import { CallSession } from './call-session';
         icon="pi pi-cog"
         [rounded]="true"
         severity="secondary"
-        ariaLabel="Устройства"
-        pTooltip="Устройства"
-        tooltipPosition="top"
+        ariaLabel="Настройки звонка"
         [tbAttributes]="{ 'aria-haspopup': 'menu', 'aria-expanded': menuOpen() ? 'true' : 'false' }"
         [disabled]="!connected()"
         (onClick)="openDevices($event, menu)"
@@ -75,18 +68,20 @@ import { CallSession } from './call-session';
         [model]="deviceItems()"
         [popup]="true"
         appendTo="body"
+        [baseZIndex]="menuLayer"
         styleClass="tb-call-menu"
         (onShow)="menuOpen.set(true)"
         (onHide)="menuOpen.set(false)"
       />
+      @if (statsOpen()) {
+        <tb-call-stats-dialog (closed)="statsOpen.set(false)" />
+      }
       <p-button
         styleClass="tb-call-button"
         icon="pi pi-window-minimize"
         [rounded]="true"
         severity="secondary"
         ariaLabel="Свернуть"
-        pTooltip="Свернуть: продолжить работу в портале"
-        tooltipPosition="top"
         (onClick)="session.minimize()"
       />
     } @else {
@@ -96,8 +91,6 @@ import { CallSession } from './call-session';
         [rounded]="true"
         severity="secondary"
         ariaLabel="Развернуть"
-        pTooltip="Развернуть"
-        tooltipPosition="top"
         (onClick)="session.expand()"
       />
     }
@@ -107,8 +100,6 @@ import { CallSession } from './call-session';
       [rounded]="true"
       severity="danger"
       ariaLabel="Выйти из звонка"
-      pTooltip="Выйти из звонка"
-      tooltipPosition="top"
       (onClick)="session.leave()"
     />
   `,
@@ -125,6 +116,9 @@ export class CallControls {
   protected readonly mobile = injectMobile();
   protected readonly connected = computed(() => this.session.phase() === 'connected');
   protected readonly menuOpen = signal(false);
+  protected readonly statsOpen = signal(false);
+  /** PrimeNG menus start at z-index 1000, under the call window (1050 in `styles.scss`). */
+  protected readonly menuLayer = 100;
   private readonly deviceList = signal<DeviceList>({ microphones: [], cameras: [] });
 
   protected readonly deviceItems = computed<MenuItem[]>(() => {
@@ -152,9 +146,38 @@ export class CallControls {
               };
             }),
     });
+    const processing = this.session.audioProcessing();
+    const toggle = (label: string, key: keyof AudioProcessing): MenuItem => ({
+      label,
+      icon: processing[key] ? 'pi pi-check' : 'pi pi-circle-off tb-call-menu__blank',
+      styleClass: processing[key] ? 'tb-menu-item--selected' : undefined,
+      command: () => {
+        void this.session.setAudioProcessing({ ...processing, [key]: !processing[key] });
+      },
+    });
     return [
       group('Микрофон', 'audioinput', list.microphones, media.microphoneId),
       group('Камера', 'videoinput', list.cameras, media.cameraId),
+      {
+        label: 'Обработка звука',
+        items: [
+          toggle('Эхоподавление', 'echoCancellation'),
+          toggle('Шумоподавление', 'noiseSuppression'),
+          toggle('Автоусиление громкости', 'autoGainControl'),
+        ],
+      },
+      {
+        label: 'Связь',
+        items: [
+          {
+            label: 'Сведения о связи',
+            icon: 'pi pi-chart-bar',
+            command: () => {
+              this.statsOpen.set(true);
+            },
+          },
+        ],
+      },
     ];
   });
 

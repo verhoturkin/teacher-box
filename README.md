@@ -108,21 +108,15 @@ TEACHERBOX_TIMEZONE=Europe/Moscow
 Запустите (первая сборка занимает несколько минут):
 
 ```bash
-docker compose -f compose.single.yaml up -d --build
+docker compose -f compose.split.yaml up -d --build
 ```
 
 Откройте `http://<адрес-сервера>:8080` и войдите как `teacher` с паролем из `.env`
 (если пароль не задан, он сгенерирован и напечатан в журнале:
-`docker compose -f compose.single.yaml logs | grep "Teacher account"`).
+`docker compose -f compose.split.yaml logs backend | grep "Teacher account"`).
 
-### Какой вариант выбрать
-
-| Вариант | Файл | Когда |
-|---|---|---|
-| Один контейнер | `compose.single.yaml` | Проще всего; подходит почти всегда |
-| Два контейнера (nginx + backend) | `compose.split.yaml` | Если нужен nginx перед приложением или отдельное масштабирование |
-
-Команды одинаковые, меняется только имя файла.
+Портал — это два контейнера: `frontend` (nginx: интерфейс, передача запросов к API и к серверу
+звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`.
 
 ### HTTPS
 
@@ -140,7 +134,7 @@ school.example.com {
 
 ### NAS
 
-На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.single.yaml`: создайте проект
+На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.split.yaml`: создайте проект
 («Container Manager» → «Проект» на Synology), укажите каталог с репозиторием и файл `.env`.
 Данные хранятся в Docker-томе `teacherbox-data`.
 
@@ -167,8 +161,14 @@ school.example.com {
 ```bash
 cd teacher-box
 git pull
-docker compose -f compose.single.yaml up -d --build
+docker compose -f compose.split.yaml up -d --build --remove-orphans
 ```
+
+**Переход с `compose.single.yaml` (до 1.8.1).** Вариант «один контейнер» убран, данные остаются в
+том же томе `teacherbox-data`. Обновитесь командой выше: `--remove-orphans` остановит и удалит
+старый контейнер `app`, вместо него запустятся `backend` и `frontend`. Если перед порталом стоит
+свой прокси с правилом `/livekit/` на `127.0.0.1:7880`, уберите это правило — теперь его выполняет
+nginx контейнера `frontend`.
 
 Перед обновлением сделайте резервную копию («Настройки» в меню пользователя → «Резервные копии» →
 «Создать копию сейчас») и скачайте её. Миграции базы применяются автоматически при старте. Что
@@ -408,7 +408,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 
 **Учитель забыл пароль.** Задайте в `.env` новый `TEACHERBOX_IDENTITY_TEACHER_PASSWORD` и
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=true`, перезапустите портал
-(`docker compose -f compose.single.yaml up -d`), войдите с новым паролем и верните
+(`docker compose -f compose.split.yaml up -d`), войдите с новым паролем и верните
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=false`.
 
 **Ученик забыл пароль.** «Ученики» → в строке ученика «Ссылка для сброса пароля»: портал покажет
@@ -443,7 +443,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 
 - Backend: Java 25, Spring Boot 4, Spring Modulith, H2 (файловый режим)
 - Frontend: Angular 21 LTS, PrimeNG 21 (MIT) с темой Material 3 Expressive, шрифт Roboto, TypeScript (strict)
-- Поставка: Docker Compose — один контейнер или два
+- Поставка: Docker Compose — два контейнера (nginx и приложение)
 
 Правила и архитектура — [AGENTS.md](AGENTS.md), решения — [docs/adr](docs/adr),
 план — [docs/PLAN.md](docs/PLAN.md) (выполненные — в [docs/archive/plans](docs/archive/plans/README.md)).

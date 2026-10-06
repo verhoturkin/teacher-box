@@ -1,6 +1,8 @@
-import { CallMedia, CallSnapshot } from './call-engine';
+import { CallMedia, CallSnapshot, DEFAULT_AUDIO_PROCESSING } from './call-engine';
+import { StatsReport } from './call-stats';
 import {
   LiveKitModule,
+  LkAudioCapture,
   LkLocalParticipant,
   LkParticipant,
   LkPublication,
@@ -13,6 +15,9 @@ import {
 
 class FakeTrack implements LkTrack {
   readonly attached: HTMLMediaElement[] = [];
+  getRTCStatsReport?: () => Promise<StatsReport | undefined>;
+  restartTrack?: (options?: LkAudioCapture) => Promise<void>;
+  getDeviceId?: () => Promise<string | undefined>;
   constructor(
     readonly kind: string,
     readonly sid?: string,
@@ -51,9 +56,11 @@ class FakeParticipant implements LkParticipant {
 
 class FakeLocal extends FakeParticipant implements LkLocalParticipant {
   readonly calls: string[] = [];
+  readonly captures: (LkAudioCapture | undefined)[] = [];
 
-  setMicrophoneEnabled(enabled: boolean): Promise<unknown> {
+  setMicrophoneEnabled(enabled: boolean, options?: LkAudioCapture): Promise<unknown> {
     this.calls.push(`mic ${String(enabled)}`);
+    this.captures.push(options);
     this.isMicrophoneEnabled = enabled;
     return Promise.resolve();
   }
@@ -74,6 +81,7 @@ class FakeRoom implements LkRoom {
   readonly localParticipant = new FakeLocal('t-1', 'Ольга');
   readonly remoteParticipants = new Map<string, LkParticipant>();
   canPlaybackAudio = true;
+  serverInfo?: { version?: string };
   readonly listeners = new Map<string, ((...args: never[]) => void)[]>();
   readonly calls: string[] = [];
   failConnect = false;
@@ -161,6 +169,7 @@ describe('LiveKit engine', () => {
 
     expect(room().calls).toEqual(['connect wss://p/livekit jwt']);
     expect(room().options.audioCaptureDefaults.deviceId).toBe('mic-2');
+    expect(room().options.audioCaptureDefaults.voiceIsolation).toBe(false);
     expect(room().options.videoCaptureDefaults.deviceId).toBeUndefined();
     expect(room().options.adaptiveStream).toBe(true);
     expect(last()).toEqual({
@@ -280,5 +289,54 @@ describe('LiveKit engine', () => {
     expect(endReason(5)).toBe('removed');
     expect(endReason(9)).toBe('lost');
     expect(endReason(undefined)).toBe('lost');
+  });
+
+  it('restarts the microphone with new processing and reads the statistics', async () => {
+    const call = await connect();
+    const quiet = { echoCancellation: false, noiseSuppression: true, autoGainControl: false };
+    await call.setAudioProcessing(quiet);
+    await call.setMicrophone(true);
+    await call.setMicrophone(false);
+    expect(room().localParticipant.captures.slice(-2)).toEqual([
+      { ...quiet, voiceIsolation: false },
+      undefined,
+    ]);
+
+    const restarts: (LkAudioCapture | undefined)[] = [];
+    const mic = new FakeTrack('audio', 'TR_mic');
+    mic.restartTrack = (options) => {
+      restarts.push(options);
+      return Promise.resolve();
+    };
+    mic.getDeviceId = () => Promise.resolve('mic-2');
+    mic.getRTCStatsReport = () =>
+      Promise.resolve(
+        new Map<string, unknown>([
+          ['T', { id: 'T', type: 'transport', selectedCandidatePairId: 'P' }],
+          ['P', { id: 'P', type: 'candidate-pair', currentRoundTripTime: 0.05 }],
+        ]),
+      );
+    room().localParticipant.publications.set('microphone', { isMuted: false, track: mic });
+    const anna = new FakeParticipant('s-1', 'Анна');
+    const voice = new FakeTrack('audio');
+    voice.getRTCStatsReport = () => Promise.reject(new Error('closed'));
+    anna.publications.set('microphone', { isMuted: false, track: voice });
+    anna.publications.set('camera', { isMuted: false, track: new FakeTrack('video') });
+    room().remoteParticipants.set('s-1', anna);
+    room().serverInfo = { version: '1.13.7' };
+
+    await call.setAudioProcessing(DEFAULT_AUDIO_PROCESSING);
+    mic.getDeviceId = () => Promise.resolve(undefined);
+    await call.setAudioProcessing(quiet);
+    expect(restarts).toEqual([
+      { ...DEFAULT_AUDIO_PROCESSING, voiceIsolation: false, deviceId: 'mic-2' },
+      { ...quiet, voiceIsolation: false },
+    ]);
+
+    const stats = await call.stats();
+    expect(stats.serverVersion).toBe('1.13.7');
+    expect(stats.transport?.roundTrip).toBe(50);
+    room().serverInfo = undefined;
+    expect((await call.stats()).serverVersion).toBeNull();
   });
 });

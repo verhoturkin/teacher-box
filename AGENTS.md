@@ -23,7 +23,7 @@ student sets login and password and gets a cabinet (ЛК). An `ADMIN` account is
 
 Stack: Java 25, Spring Boot 4.1, Spring Modulith 2.1, Spring Security 7, `JdbcClient` + Flyway, H2 (file,
 schema per module), Maven (`mvnw`); Angular 21.2 LTS (standalone, signals, zoneless), PrimeNG 21.1 (MIT) with an
-M3 Expressive preset, TypeScript 5.9 strict, Vitest; Docker Compose — split or single.
+M3 Expressive preset, TypeScript 5.9 strict, Vitest; Docker Compose — nginx + backend ([ADR-0031](docs/adr/0031-split-variant-only.md)).
 
 ## 2. What to read
 
@@ -46,9 +46,9 @@ M3 Expressive preset, TypeScript 5.9 strict, Vitest; Docker Compose — split or
 docs/          PLAN.md, design-system.md, glossary.md, operations.md, modules/, adr/, archive/
 backend/       Spring Boot app — src/main/java/ru/teacherbox/{shared,platform,<modules>}
 frontend/      Angular app — src/app/{core,shared,features/<module>}
-docker/        Dockerfile (targets backend, frontend, single) and nginx; compose.split.yaml, compose.single.yaml
+docker/        Dockerfile (targets backend, frontend), nginx, livekit; compose.split.yaml
 e2e/           Playwright tests against a running instance
-scripts/       verify.sh (all checks = pre-commit = CI), e2e.sh (E2E on a fresh single container)
+scripts/       verify.sh (all checks = pre-commit = CI), e2e.sh (E2E on a fresh instance)
 .env.example   every TEACHERBOX_* variable;  .githooks/pre-commit;  .github/workflows/ci.yml
 ```
 
@@ -116,8 +116,8 @@ cd backend && ./mvnw spring-boot:run   # API :8080, data in ./backend/data
 cd frontend && npx -y npm@11 ci        # npm >= 11 (ADR-0007)
 cd frontend && npm run lint && npm test && npm run build
 cd frontend && npm start               # :4200, proxy /api -> :8080
-./scripts/e2e.sh                       # Playwright on a fresh single container (port 8091); locally E2E_BROWSER_CHANNEL=chrome
-docker compose -f compose.split.yaml up -d --build    # or compose.single.yaml
+./scripts/e2e.sh                       # Playwright on a fresh instance (port 8091); locally E2E_BROWSER_CHANNEL=chrome
+docker compose -f compose.split.yaml up -d --build
 ```
 
 **While iterating run only the affected tests** (`npm run test:only -- <path>`, `./mvnw -q test -Dtest=<Class>` —

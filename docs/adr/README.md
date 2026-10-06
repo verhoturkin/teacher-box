@@ -17,7 +17,7 @@ commit.
 | [0001](0001-modular-monolith.md) | Modular monolith on Spring Modulith | active | AGENTS.md §4 |
 | [0002](0002-embedded-database.md) | H2 file mode, schema per module | active | AGENTS.md §4.2, backend |
 | [0003](0003-authentication.md) | Invites, JWT, refresh-token rotation | active | [identity](../modules/identity.md) |
-| [0004](0004-delivery-variants.md) | Two Docker Compose variants (split, single) | active | README |
+| [0004](0004-delivery-variants.md) | Two Docker Compose variants (split, single) | active (single removed — 0031) | README |
 | [0005](0005-notifications.md) | Notifications: inbox + outbox + channel adapters | active | [notifications](../modules/notifications.md) |
 | [0006](0006-ai-integration.md) | AI module with provider-agnostic SPI; Gemini | active | [ai](../modules/ai.md) |
 | [0007](0007-frontend-stack-licensing.md) | Angular 21 LTS + PrimeNG 21 (MIT), version caps | active | frontend |
@@ -44,3 +44,4 @@ commit.
 | [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active (real time — 0029) | [boards](../modules/boards.md) |
 | [0029](0029-live-boards.md) | Live boards: WebSocket with a one-time ticket, relayed cursors and elements | active | [boards](../modules/boards.md) |
 | [0030](0030-livekit-calls.md) | Built-in video calls on LiveKit: own server, rooms `tb-<ownerId>`, tokens, link precedence | active | [meetings](../modules/meetings.md) |
+| [0031](0031-split-variant-only.md) | Only the split variant: single container, `bundle-frontend` and backend SPA serving removed | active | README, [operations](../operations.md) |

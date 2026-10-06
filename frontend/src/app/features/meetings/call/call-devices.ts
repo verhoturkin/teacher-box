@@ -1,5 +1,5 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
-import { CallMedia } from './call-engine';
+import { AudioProcessing, CallMedia, DEFAULT_AUDIO_PROCESSING } from './call-engine';
 
 /** Microphones and cameras of this device. */
 export interface DeviceList {
@@ -8,6 +8,7 @@ export interface DeviceList {
 }
 
 const PREFERENCES_KEY = 'tb-call-media';
+const PROCESSING_KEY = 'tb-call-audio';
 
 const DEFAULT_MEDIA: CallMedia = {
   microphone: true,
@@ -94,8 +95,35 @@ export class CallDevices {
   }
 
   remember(media: CallMedia): void {
+    this.store(PREFERENCES_KEY, media);
+  }
+
+  /** The sound processing chosen on this device; a missing switch is on. */
+  audioProcessing(): AudioProcessing {
     try {
-      this.window?.localStorage.setItem(PREFERENCES_KEY, JSON.stringify(media));
+      const stored = this.window?.localStorage.getItem(PROCESSING_KEY);
+      const value: unknown = stored ? JSON.parse(stored) : null;
+      if (typeof value === 'object' && value !== null) {
+        const flag = (key: keyof AudioProcessing): boolean => Reflect.get(value, key) !== false;
+        return {
+          echoCancellation: flag('echoCancellation'),
+          noiseSuppression: flag('noiseSuppression'),
+          autoGainControl: flag('autoGainControl'),
+        };
+      }
+    } catch {
+      // storage is off or broken: the defaults
+    }
+    return DEFAULT_AUDIO_PROCESSING;
+  }
+
+  rememberAudioProcessing(processing: AudioProcessing): void {
+    this.store(PROCESSING_KEY, processing);
+  }
+
+  private store(key: string, value: unknown): void {
+    try {
+      this.window?.localStorage.setItem(key, JSON.stringify(value));
     } catch {
       // storage is off: the choice lives until the page closes
     }

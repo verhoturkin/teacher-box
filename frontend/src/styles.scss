@@ -533,6 +533,27 @@ textarea.p-textarea {
   overflow-wrap: break-word;
 }
 
+/*
+ * The items of a dropdown list are shaped like menu items (ADR-0022): 4 px, the first and the last 12 px on
+ * the outer side, the selected one 12 px. Here, not in the preset: the list's own style comes later.
+ */
+.p-select-list > :first-child > .p-select-option,
+.p-multiselect-list > :first-child > .p-multiselect-option {
+  border-start-start-radius: var(--tb-shape-md);
+  border-start-end-radius: var(--tb-shape-md);
+}
+
+.p-select-list > :last-child > .p-select-option,
+.p-multiselect-list > :last-child > .p-multiselect-option {
+  border-end-start-radius: var(--tb-shape-md);
+  border-end-end-radius: var(--tb-shape-md);
+}
+
+.p-select-overlay .p-select-option.p-select-option-selected,
+.p-multiselect-overlay .p-multiselect-option.p-multiselect-option-selected {
+  border-radius: var(--tb-shape-md);
+}
+
 /* The filter of a dropdown list is the search bar too, a size smaller (48 px) */
 .p-select-overlay .p-select-filter,
 .p-multiselect-overlay .p-multiselect-filter {
@@ -2223,15 +2244,6 @@ a.p-menu-item-link:hover {
     max-width: calc((100dvh - 12rem) * 16 / 9);
   }
 
-  &__inset {
-    position: absolute;
-    right: var(--tb-space-3);
-    bottom: var(--tb-space-3);
-    width: clamp(7rem, 22%, 16rem);
-    aspect-ratio: 16 / 9;
-    box-shadow: var(--tb-elevation-2);
-  }
-
   /* --tb-call-columns / --tb-call-rows come from the number of people (gridSize in call-layout.ts) */
   &--grid &__tiles {
     display: grid;
@@ -2281,11 +2293,59 @@ a.p-menu-item-link:hover {
     &--pair &__main {
       max-width: none;
     }
+  }
+}
 
-    &__inset {
-      width: 7rem;
-      aspect-ratio: 3 / 4;
-    }
+/* The own camera of a one-to-one call: a small tile in a corner of the stage, dragged between corners */
+.tb-call-self {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  width: clamp(7rem, 22%, 16rem);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--tb-shape-xl);
+  box-shadow: var(--tb-elevation-2);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    top var(--tb-spring-default-spatial),
+    bottom var(--tb-spring-default-spatial),
+    left var(--tb-spring-default-spatial),
+    right var(--tb-spring-default-spatial);
+
+  &--dragging {
+    cursor: grabbing;
+    transition: none;
+  }
+
+  &--top-left,
+  &--top-right {
+    top: var(--tb-space-3);
+  }
+
+  &--bottom-left,
+  &--bottom-right {
+    bottom: var(--tb-space-3);
+  }
+
+  &--top-left,
+  &--bottom-left {
+    left: var(--tb-space-3);
+  }
+
+  &--top-right,
+  &--bottom-right {
+    right: var(--tb-space-3);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-primary);
+    outline-offset: 2px;
+  }
+
+  @media (width <= 48em) {
+    width: 7rem;
+    aspect-ratio: 3 / 4;
   }
 }
 
@@ -2377,7 +2437,7 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The M3 Expressive floating toolbar: 56 px toggles that change shape when switched off */
+/* The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off */
 .tb-call-controls {
   display: flex;
   flex-wrap: wrap;
@@ -2395,10 +2455,19 @@ a.p-menu-item-link:hover {
   width: 3.5rem;
   height: 3.5rem;
   border-radius: var(--tb-shape-full);
-  transition: border-radius var(--tb-spring-fast-spatial);
 
   &.tb-call-button--off {
-    border-radius: var(--tb-shape-lg);
+    border-color: transparent;
+    background: var(--p-md-error-container);
+    color: var(--p-md-on-error-container);
+
+    &:not(:disabled):hover {
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-error-container) var(--tb-state-hover),
+        var(--p-md-error-container)
+      );
+    }
   }
 
   &.tb-call-button--leave {
@@ -2432,6 +2501,37 @@ a.p-menu-item-link:hover {
 
 .tb-call-menu .tb-call-menu__blank {
   visibility: hidden;
+}
+
+/* «Сведения о связи»: label and value side by side, wrapping on a phone */
+.tb-call-stats {
+  &__title {
+    margin: var(--tb-space-4) 0 var(--tb-space-2);
+    font: var(--tb-type-title-m);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--tb-space-1) var(--tb-space-4);
+    margin: 0;
+    font: var(--tb-type-body-m);
+
+    dt {
+      color: var(--p-md-on-surface-variant);
+    }
+
+    dd {
+      margin: 0;
+      text-align: end;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+  }
 }
 
 /* The minimized call: a floating window on a computer, a bar above the bottom navigation on a phone */
