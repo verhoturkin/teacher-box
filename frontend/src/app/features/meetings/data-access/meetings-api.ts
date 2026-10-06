@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { MeetingRoom, MyRoom, RoomOwnerRef, YandexStatus } from './meetings.models';
@@ -14,8 +14,8 @@ function ownerIds(owner: RoomOwnerRef): { studentId: string | null; groupId: str
 export class MeetingsApi {
   private readonly http = inject(HttpClient);
 
-  yandexStatus(): Observable<YandexStatus> {
-    return this.http.get<YandexStatus>('/api/teacher/meetings/yandex');
+  yandexStatus(context?: HttpContext): Observable<YandexStatus> {
+    return this.http.get<YandexStatus>('/api/teacher/meetings/yandex', { context });
   }
 
   saveClient(clientId: string, clientSecret: string): Observable<YandexStatus> {
@@ -40,8 +40,8 @@ export class MeetingsApi {
     return this.http.delete('/api/teacher/meetings/yandex').pipe(map(() => undefined));
   }
 
-  rooms(): Observable<MeetingRoom[]> {
-    return this.http.get<MeetingRoom[]>('/api/teacher/meetings/rooms');
+  rooms(context?: HttpContext): Observable<MeetingRoom[]> {
+    return this.http.get<MeetingRoom[]>('/api/teacher/meetings/rooms', { context });
   }
 
   /** Creates a Telemost meeting for the owner through the API. */

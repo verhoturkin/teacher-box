@@ -401,6 +401,12 @@ textarea.p-textarea {
     font: var(--tb-type-label-l);
   }
 
+  /* a read-only field (a student's login) shows its value, not an invitation to type */
+  > input[readonly]:not(.tb-grow) {
+    color: var(--p-md-on-surface-variant);
+    cursor: default;
+  }
+
   > .tb-hint,
   > small {
     font: var(--tb-type-body-s);
@@ -1583,64 +1589,9 @@ a.p-menu-item-link:hover {
   }
 }
 
-/*
- * Wide lists (many columns: students, groups) are cards on every screen: a table of eight columns
- * does not fit next to the navigation, names and buttons go out of it (ADR-0018). The cards are one
- * under another (ADR-0021); a card is wide, so the name of a field is in a column on the left and
- * the value — a text or a button — is next to it, in the middle of its line.
- */
-@media (width > 48em) {
-  .p-datatable.tb-cards.tb-cards--wide {
-    @include row-cards;
-
-    .p-datatable-tbody > tr > td[data-label]:not(:first-child) {
-      display: grid;
-      grid-template-columns: 10rem minmax(0, 1fr);
-      align-content: center;
-      align-items: center;
-      justify-items: start;
-      column-gap: var(--tb-space-4);
-      box-sizing: border-box;
-      min-height: 2.5rem;
-      text-align: left;
-
-      &::before {
-        grid-row: 1 / span 4;
-        grid-column: 1;
-        float: none;
-        margin: 0;
-      }
-
-      > * {
-        grid-column: 2;
-      }
-
-      /* the text button starts where the text does; a button is 40 px high everywhere (ADR-0026) */
-      p-button:first-child .p-button-text {
-        margin-inline-start: calc(-1 * var(--tb-space-3));
-        padding-inline: var(--tb-space-3);
-      }
-    }
-
-    /* the actions of a card are in its top corner, next to the name, at the same place in every card */
-    .p-datatable-tbody > tr {
-      position: relative;
-    }
-
-    .p-datatable-tbody > tr > td:first-child {
-      padding-inline-end: 9rem;
-    }
-
-    .p-datatable-tbody > tr > td.tb-actions-column:not([data-label]):not(:first-child) {
-      position: absolute;
-      top: var(--tb-space-3);
-      right: var(--tb-space-4);
-      width: auto;
-      margin: 0;
-      padding: 0;
-      border: 0;
-    }
-  }
+/* A tooltip of several lines (e.g. the login and the note of a student): one line per fact */
+.tb-tooltip-lines .p-tooltip-text {
+  white-space: pre-line;
 }
 
 /* The week on a phone: the title fits in one line */

@@ -1,6 +1,8 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
+import { Dialog } from 'primeng/dialog';
 import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { InviteLinkDialog } from './invite-link-dialog';
@@ -39,11 +41,21 @@ describe('InviteLinkDialog', () => {
   it('copies the link', async () => {
     vi.spyOn(clipboard, 'copy').mockReturnValue(true);
 
-    buttonByText(document.body, 'Копировать').click();
+    buttonByText(document.body, 'Копировать ссылку').click();
     await fixture.whenStable();
 
     expect(clipboard.copy).toHaveBeenCalledWith(`${window.location.origin}/invite/secret-token`);
     expect(bodyText()).toContain('Скопировано');
+  });
+
+  it('closes with «Закрыть» and focuses the title when shown', async () => {
+    const dialog = fixture.debugElement.query(By.directive(Dialog)).injector.get(Dialog);
+    dialog.onShow.emit({});
+    expect(document.activeElement?.textContent).toContain('Ссылка для ученика: Мария');
+
+    buttonByText(document.body, 'Закрыть').click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.visible()).toBe(false);
   });
 
   it('starts the link with the portal address', async () => {

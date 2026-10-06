@@ -28,5 +28,6 @@ Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `Me
 
 ## Frontend
 
-`features/meetings/`: `rooms/`, `settings/` (Yandex connection), `ui/` (start-lesson split button),
+`features/meetings/`: `rooms/` (`room-panel.ts` — the room inside the edit dialog of a student or a group, saved at
+once; loads its own room and the Yandex status), `settings/` (Yandex connection), `ui/` (start-lesson split button),
 `telemost.ts` (app/browser opening); embedded via `parts.ts`.

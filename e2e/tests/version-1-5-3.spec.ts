@@ -68,7 +68,9 @@ test('the groups are under the students, without tabs', async ({ page, browser }
     has: page.locator('.p-card-title', { hasText: 'Группы' }),
   });
   await expect(groups.getByRole('button', { name: /Создать группу$/ }).first()).toBeVisible();
-  await expect(page.getByRole('row', { name: new RegExp(STUDENT) })).toBeVisible();
+  await expect(
+    page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT }),
+  ).toBeVisible();
 
   const student = await (await browser.newContext({ baseURL: BASE_URL })).newPage();
   await student.goto(invite);
