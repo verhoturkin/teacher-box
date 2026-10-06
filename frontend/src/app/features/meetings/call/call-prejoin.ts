@@ -15,7 +15,6 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
-import { Tooltip } from 'primeng/tooltip';
 import { AuthService } from '@core/auth/auth.service';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { InitialsPipe } from '@shared/ui/initials';
@@ -34,7 +33,7 @@ interface DeviceOption {
  */
 @Component({
   selector: 'tb-call-prejoin',
-  imports: [FormsModule, Button, Dialog, Message, Select, Tooltip, ButtonAttributes, InitialsPipe],
+  imports: [FormsModule, Button, Dialog, Message, Select, ButtonAttributes, InitialsPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -71,7 +70,6 @@ interface DeviceOption {
             [rounded]="true"
             [severity]="media().microphone ? 'secondary' : 'danger'"
             ariaLabel="Микрофон"
-            [pTooltip]="media().microphone ? 'Войти с выключенным микрофоном' : 'Включить микрофон'"
             [tbAttributes]="{ 'aria-pressed': media().microphone ? 'true' : 'false' }"
             (onClick)="update({ microphone: !media().microphone })"
           />
@@ -81,7 +79,6 @@ interface DeviceOption {
             [rounded]="true"
             [severity]="media().camera ? 'secondary' : 'danger'"
             ariaLabel="Камера"
-            [pTooltip]="media().camera ? 'Войти с выключенной камерой' : 'Включить камеру'"
             [tbAttributes]="{ 'aria-pressed': media().camera ? 'true' : 'false' }"
             (onClick)="update({ camera: !media().camera })"
           />

@@ -511,10 +511,6 @@ export const TeacherBoxPreset = definePreset(Aura, {
           border-end-start-radius: var(--tb-shape-md);
           border-end-end-radius: var(--tb-shape-md);
         }
-        .p-select-option-selected,
-        .p-multiselect-option.p-multiselect-option-selected {
-          border-radius: var(--tb-shape-md);
-        }
       `,
     },
     tag: {

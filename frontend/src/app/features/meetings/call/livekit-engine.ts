@@ -54,6 +54,8 @@ export interface LkRoomOptions {
     readonly deviceId?: string;
     readonly echoCancellation: boolean;
     readonly noiseSuppression: boolean;
+    readonly autoGainControl: boolean;
+    readonly voiceIsolation: boolean;
   };
   readonly videoCaptureDefaults: {
     readonly deviceId?: string;
@@ -158,6 +160,10 @@ function roomOptions(media: CallMedia): LkRoomOptions {
       ...(media.microphoneId === null ? {} : { deviceId: media.microphoneId }),
       echoCancellation: true,
       noiseSuppression: true,
+      autoGainControl: true,
+      // LiveKit asks for Chrome's voice isolation by default: on a slow computer it cuts and stutters
+      // the voice (docs/modules/meetings.md); the usual noise suppression stays.
+      voiceIsolation: false,
     },
     videoCaptureDefaults: {
       ...(media.cameraId === null ? {} : { deviceId: media.cameraId }),

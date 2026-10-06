@@ -98,6 +98,10 @@ describe('CallControls', () => {
     await fixture.whenStable();
 
     expect(menuItemByText('USB').closest('li')?.classList).toContain('tb-menu-item--selected');
+    // above the call window (z-index 1050)
+    expect(
+      Number(document.querySelector<HTMLElement>('.tb-call-menu')?.style.zIndex),
+    ).toBeGreaterThan(1050);
     expect(document.body.textContent).toContain('Микрофон 1');
     menuItemByText('Встроенная').click();
     expect(switched).toHaveBeenCalledWith('videoinput', 'cam-1');

@@ -46,9 +46,19 @@ join the lesson (`JoinLessonChatAction`).
 `livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
 mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
-`call-tile`, `call-controls`, layout in `call-layout.ts`; `index.ts` exports `CallHost` (root `@defer`) and
+`call-tile`, `call-controls`, `call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
+between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`), `CallsPage` (`/teacher/calls`, menu «Звонки» after «Расписание»; refreshes
 every 10 s while visible and on return to the tab) — never import them from `parts.ts` in the root, it pulls the
 help articles into the first load; `home/my-calls-card.ts` (student home). `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
 once), `settings/` (device setting), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.
+
+### Sound quality
+
+Capture: echo cancellation, noise suppression and automatic gain on; Chrome's voice isolation (LiveKit asks for
+it by default) off — on slow computers it chops the voice. Stuttering sound in a call is packet loss or jitter on
+the way, in order of likelihood: UDP blocked so media goes over TCP 7881 (head-of-line blocking); Docker Desktop's
+lossy UDP port forwarding; a saturated uplink of a participant (720p camera, simulcast); CPU of the `livekit`
+container or of the participant's computer; Bluetooth headsets in hands-free mode. Checks for administrators —
+`docs/operations.md`, «Если звук заикается».

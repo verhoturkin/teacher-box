@@ -39,7 +39,7 @@ describe('CallWindow', () => {
     const anna = aParticipant({ id: 'a', name: 'Анна', local: false });
     session.participants.set([aParticipant(), anna]);
     await fixture.whenStable();
-    expect(host.querySelector('.tb-call-stage__inset')).not.toBeNull();
+    expect(host.querySelector('tb-call-self')).not.toBeNull();
 
     session.participants.set([aParticipant(), anna, aParticipant({ id: 'b', local: false })]);
     await fixture.whenStable();

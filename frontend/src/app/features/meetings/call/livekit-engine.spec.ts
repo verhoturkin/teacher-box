@@ -161,6 +161,7 @@ describe('LiveKit engine', () => {
 
     expect(room().calls).toEqual(['connect wss://p/livekit jwt']);
     expect(room().options.audioCaptureDefaults.deviceId).toBe('mic-2');
+    expect(room().options.audioCaptureDefaults.voiceIsolation).toBe(false);
     expect(room().options.videoCaptureDefaults.deviceId).toBeUndefined();
     expect(room().options.adaptiveStream).toBe(true);
     expect(last()).toEqual({
