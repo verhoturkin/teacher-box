@@ -91,37 +91,69 @@
 
 ## Установка за 5 минут
 
-```bash
-git clone https://github.com/verhoturkin/teacher-box.git
-cd teacher-box
-cp .env.example .env
-```
-
-Откройте `.env` и задайте хотя бы:
-
-```ini
-TEACHERBOX_IDENTITY_TEACHER_PASSWORD=придумайте-надёжный-пароль
-TEACHERBOX_PUBLIC_URL=https://school.example.com   # адрес портала (можно задать и в «Настройках»)
-TEACHERBOX_TIMEZONE=Europe/Moscow
-```
-
-Запустите (первая сборка занимает несколько минут):
+Портал ставится из готовых образов — исходники и сборка на сервере не нужны. На сервере с Linux
+(Ubuntu, Debian и др.) выполните одну команду:
 
 ```bash
-docker compose -f compose.split.yaml up -d --build
+curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/scripts/install.sh | sudo bash
 ```
 
-Откройте `http://<адрес-сервера>:8080` и войдите как `teacher` с паролем из `.env`
-(если пароль не задан, он сгенерирован и напечатан в журнале:
-`docker compose -f compose.split.yaml logs backend | grep "Teacher account"`).
+Установщик поставит Docker, если его нет, и задаст три вопроса:
+
+- **домен** портала, например `school.example.com`, — тогда портал сам получит сертификат и откроется
+  по HTTPS (домен должен указывать на сервер). Без домена портал работает по `http://<сервер>:8080`;
+- **часовой пояс** (по умолчанию `Europe/Moscow`);
+- включить ли **звонки** в портале.
+
+Затем он запишет настройки в `/opt/teacher-box/.env` (секреты сгенерирует сам), запустит портал и
+напечатает адрес, логин `teacher` и пароль — после первого входа портал попросит его сменить. В конце
+он перечислит порты, которые нужно открыть в файрволе облачного провайдера. Параметры для установки
+без вопросов (`--domain`, `--no-calls`, `--port`, `--yes` …) — `install.sh --help`.
+
+Дальше портал обслуживает команда `teacherbox`: `status`, `logs`, `update`, `backups`, `config` —
+подробнее в [эксплуатации](docs/operations.md#команда-teacherbox).
+
+### Установка вручную
+
+На другой системе (NAS, Windows, macOS) или без установщика нужны только два файла:
+
+```bash
+mkdir teacher-box && cd teacher-box
+curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
+curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/.env.example -o .env
+docker compose up -d
+```
+
+Откройте `http://<адрес-сервера>:8080` и войдите как `teacher`. Пароль сгенерирован и напечатан в
+журнале: `docker compose logs backend | grep "Teacher account"`. Настройки — в `.env`: для начала
+достаточно блока «Main» в его начале (домен, часовой пояс, звонки).
 
 Портал — это два контейнера: `frontend` (nginx: интерфейс, передача запросов к API и к серверу
-звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`.
+звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`. Образы
+`ghcr.io/verhoturkin/teacher-box-backend` и `-frontend` собраны для `amd64` и `arm64` (в том числе
+Raspberry Pi и NAS на ARM); версию задаёт `TEACHERBOX_VERSION` в `.env` (по умолчанию `latest` —
+последний выпуск).
+
+**Сборка из исходников** (для разработки или своих изменений): в клоне репозитория
+`docker compose -f compose.yaml -f compose.build.yaml up -d --build`.
 
 ### HTTPS
 
-Портал рассчитан на работу за HTTPS. Проще всего поставить перед ним [Caddy](https://caddyserver.com)
-— он сам получит сертификат:
+Портал рассчитан на работу за HTTPS. Проще всего включить встроенный Caddy — он сам получит и будет
+продлевать сертификат Let's Encrypt. Направьте домен на сервер, откройте порты 80 и 443 и добавьте в
+`.env`:
+
+```ini
+TEACHERBOX_DOMAIN=school.example.com
+COMPOSE_PROFILES=https
+TEACHERBOX_HTTP_PORT=127.0.0.1:8080   # снаружи портал доступен только через HTTPS
+```
+
+Затем `docker compose up -d` — портал откроется на `https://school.example.com`. Звонки включаются
+вместе с HTTPS так: `COMPOSE_PROFILES=https,calls`.
+
+**Свой прокси.** Если на сервере уже есть nginx, Caddy или Traefik, профиль `https` не включайте, а
+направьте прокси на `localhost:8080` (он должен пропускать WebSocket — для досок и звонков). Caddy:
 
 ```
 school.example.com {
@@ -129,13 +161,10 @@ school.example.com {
 }
 ```
 
-Если прокси работает на том же сервере, откройте порт портала только для него:
-`TEACHERBOX_HTTP_PORT=127.0.0.1:8080` в `.env` — тогда снаружи портал доступен лишь через HTTPS.
-
 ### NAS
 
-На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.split.yaml`: создайте проект
-(«Container Manager» → «Проект» на Synology), укажите каталог с репозиторием и файл `.env`.
+На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.yaml`: создайте проект
+(«Container Manager» → «Проект» на Synology), положите в его каталог `compose.yaml` и `.env`.
 Данные хранятся в Docker-томе `teacherbox-data`.
 
 ## Первые шаги
@@ -158,14 +187,35 @@ school.example.com {
 
 ## Обновление
 
+Если портал поставлен установщиком:
+
 ```bash
-cd teacher-box
-git pull
-docker compose -f compose.split.yaml up -d --build --remove-orphans
+sudo teacherbox update
 ```
 
+Команда скачает свежий `compose.yaml` и новые образы и перезапустит портал; данные и `.env` остаются.
+
+При установке вручную — в каталоге с `compose.yaml`:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
+docker compose pull
+docker compose up -d --remove-orphans
+```
+
+Первая команда берёт свежий `compose.yaml` (в новых версиях он может измениться), вторая скачивает
+новые образы. Если портал собран из исходников — `git pull` и
+`docker compose -f compose.yaml -f compose.build.yaml up -d --build --remove-orphans`.
+
+**Переход с `compose.split.yaml` (до 1.9.0).** Файл переименован в `compose.yaml` и берёт готовые
+образы; проект и том данных (`teacherbox-data`) те же. В клоне репозитория выполните `git pull` и
+`docker compose up -d --remove-orphans`, старые локальные образы можно удалить:
+`docker image prune`. Клон больше не нужен: достаточно перенести `compose.yaml` и `.env` в любой
+каталог и запускать команды оттуда. Чтобы обслуживать портал командой `teacherbox`, положите свой
+`.env` в `/opt/teacher-box/` и запустите установщик — он оставит настройки как есть.
+
 **Переход с `compose.single.yaml` (до 1.8.1).** Вариант «один контейнер» убран, данные остаются в
-том же томе `teacherbox-data`. Обновитесь командой выше: `--remove-orphans` остановит и удалит
+том же томе `teacherbox-data`. Обновитесь командами выше: `--remove-orphans` остановит и удалит
 старый контейнер `app`, вместо него запустятся `backend` и `frontend`. Если перед порталом стоит
 свой прокси с правилом `/livekit/` на `127.0.0.1:7880`, уберите это правило — теперь его выполняет
 nginx контейнера `frontend`.
@@ -399,7 +449,11 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 
 ## Настройки
 
-Все переменные с пояснениями — в [.env.example](.env.example). Администратор может менять их и в
+Все переменные с пояснениями — в [.env.example](.env.example). Для запуска хватает блока «Main» в
+его начале: домен (`TEACHERBOX_DOMAIN` — из него получается и адрес портала `https://<домен>`),
+часовой пояс, профили (`https`, `calls`) и, по желанию, пароль учителя. Остальные строки
+закомментированы и показывают значения по умолчанию: чтобы изменить значение, уберите `# ` в начале
+строки. Администратор может менять настройки и в
 интерфейсе («Настройки»): значения оттуда важнее `.env` и применяются после перезапуска портала.
 Цену занятия, название, адрес, цвет и логотип портала учитель задаёт сам — в «Оплатах» и
 «Настройках». Эксплуатация, безопасность, журналы и ресурсы — [docs/operations.md](docs/operations.md).
@@ -408,7 +462,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 
 **Учитель забыл пароль.** Задайте в `.env` новый `TEACHERBOX_IDENTITY_TEACHER_PASSWORD` и
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=true`, перезапустите портал
-(`docker compose -f compose.split.yaml up -d`), войдите с новым паролем и верните
+(`docker compose up -d`), войдите с новым паролем и верните
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=false`.
 
 **Ученик забыл пароль.** «Ученики» → в строке ученика «Ссылка для сброса пароля»: портал покажет

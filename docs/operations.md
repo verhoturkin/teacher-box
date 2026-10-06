@@ -4,6 +4,27 @@
 Все настройки — переменные окружения в файле `.env` (образец — [`.env.example`](../.env.example));
 с версии 1.5 администратор меняет их и в интерфейсе («Настройки», [ADR-0016](adr/0016-admin-settings.md)).
 
+## Команда teacherbox
+
+Установщик (`scripts/install.sh`, [ADR-0032](adr/0032-ready-images-and-installer.md)) кладёт портал в
+`/opt/teacher-box` (`compose.yaml` и `.env`) и ставит команду `teacherbox` в `/usr/local/bin`. Она
+работает с Docker, поэтому запускайте её через `sudo` (или от пользователя из группы `docker`).
+
+| Команда | Что делает |
+|---|---|
+| `teacherbox status` | контейнеры, их состояние и версия портала |
+| `teacherbox logs [сервис]` | журнал (`backend`, `frontend`, `caddy`, `livekit`); Ctrl+C — выход |
+| `teacherbox start`, `stop`, `restart` | запуск, остановка, перезапуск |
+| `teacherbox update` | свежий `compose.yaml` и образы, перезапуск; данные и `.env` остаются |
+| `teacherbox backups [каталог]` | копирует резервные копии из контейнера в каталог на сервере |
+| `teacherbox config` | открывает `.env` в редакторе (`$EDITOR`, по умолчанию nano) и применяет его |
+| `teacherbox version` | версия портала |
+
+Другой каталог установки — переменная `TEACHERBOX_DIR` (установщик сам прописывает его в команду при
+`--dir`). Повторный запуск установщика обновляет `compose.yaml` и команду, а `.env` не трогает.
+
+Без установщика всё то же делается командами `docker compose …` в каталоге с `compose.yaml`.
+
 ## Данные
 
 Всё состояние портала хранится в одном каталоге — `/data` в контейнере (Docker-том
@@ -31,7 +52,7 @@
 Скопировать все копии с сервера:
 
 ```bash
-docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backups
+docker compose cp backend:/data/backups ./teacherbox-backups
 ```
 
 ### Копии досок
@@ -68,9 +89,9 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
 
 1. Положите архив в каталог `restore/` данных:
    ```bash
-   docker compose -f compose.split.yaml cp teacherbox-20260925-033000-000.zip backend:/data/restore/
+   docker compose cp teacherbox-20260925-033000-000.zip backend:/data/restore/
    ```
-2. Перезапустите портал: `docker compose -f compose.split.yaml restart backend`.
+2. Перезапустите портал: `docker compose restart backend`.
 3. При старте, до открытия базы, портал:
    - переносит текущие `db/` и `files/` в `restore/previous-<время>/` (на случай отката);
    - восстанавливает базу из `database.sql` и файлы из `files/`;
@@ -94,6 +115,12 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
 
 - Портал рассчитан на работу **за HTTPS** (reverse proxy: Caddy, nginx, Traefik). Cookie сессии
   получает флаг `Secure`, когда прокси передаёт `X-Forwarded-Proto: https`.
+- **Встроенный HTTPS** (ADR-0032): контейнер `caddy` из профиля `https` (`COMPOSE_PROFILES=https`,
+  `TEACHERBOX_DOMAIN`) принимает 80 и 443 и передаёт всё в `frontend`. Сертификат Let's Encrypt
+  выпускается при первом запросе и продлевается сам; хранится в томе `caddy-data` (не удаляйте его —
+  у Let's Encrypt лимит выпусков). Нет сертификата — проверьте, что домен указывает на сервер и порт 80
+  открыт: `docker compose logs caddy`. Порт портала тогда публикуйте только на `127.0.0.1`
+  (`TEACHERBOX_HTTP_PORT=127.0.0.1:8080`).
 - Доски Excalidraw работают в реальном времени через WebSocket (`/api/public/boards/live`). Caddy и
   Traefik пропускают его сами; в своём nginx перед порталом добавьте в `location /api/`
   `proxy_http_version 1.1;`, `proxy_set_header Upgrade $http_upgrade;` и
@@ -178,7 +205,7 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
 ## Видеозвонки (LiveKit)
 
 Встроенные звонки идут через медиасервер LiveKit — отдельный контейнер `livekit` в
-`compose.split.yaml` (профиль `calls`, ADR-0030). Без него портал работает как раньше — с внешними
+`compose.yaml` (профиль `calls`, ADR-0030). Без него портал работает как раньше — с внешними
 ссылками на видеосвязь.
 
 **Включение.**
@@ -192,7 +219,7 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
    ```
 2. Откройте на сервере порты для медиа: **7881/tcp**, **7882/udp**, **3478/udp** (TURN) и
    **30000–30049/udp** (ретрансляция TURN). Порт 7880 наружу открывать не нужно.
-3. `docker compose -f compose.split.yaml up -d`.
+3. `docker compose up -d`.
 
 **Публичный адрес.** LiveKit сам узнаёт внешний IP сервера через STUN. Если сервер за NAT с
 пробросом портов или у него несколько адресов, задайте адрес сами:
@@ -207,7 +234,7 @@ nginx контейнера `frontend` уже передаёт `/livekit/` в к�
 
 **LiveKit на другом сервере.** Браузер всегда подключается к `<адрес портала>/livekit`, поэтому
 направьте этот путь на свой LiveKit переменной `LIVEKIT_URL` контейнера `frontend` (в
-`compose.split.yaml`). Портал ходит к LiveKit по
+`compose.yaml`). Портал ходит к LiveKit по
 `TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (по умолчанию `http://livekit:7880`); ключ и секрет — те же.
 Профиль `calls` тогда не нужен.
 

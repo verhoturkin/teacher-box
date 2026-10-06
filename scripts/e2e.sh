@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# E2E tests against a fresh instance (compose.split.yaml + e2e/compose.e2e.yaml).
+# E2E tests against a fresh instance built from the source (compose.yaml + compose.build.yaml + e2e/compose.e2e.yaml).
 #
 #   ./scripts/e2e.sh                 # build, start, test, remove the instance and its data
 #   E2E_KEEP=1 ./scripts/e2e.sh      # keep the instance running afterwards
@@ -19,7 +19,7 @@ export E2E_BASE_URL="${E2E_BASE_URL:-http://localhost:${E2E_PORT}}"
 
 compose() {
   docker compose -p teacherbox-e2e --project-directory "$ROOT" \
-    -f "$ROOT/compose.split.yaml" -f "$ROOT/e2e/compose.e2e.yaml" "$@"
+    -f "$ROOT/compose.yaml" -f "$ROOT/compose.build.yaml" -f "$ROOT/e2e/compose.e2e.yaml" "$@"
 }
 
 cleanup() {

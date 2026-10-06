@@ -1,0 +1,146 @@
+# Teacher Box (ADR-0031, ADR-0032): ready images from GHCR, no source code or build on the server.
+#
+#   scripts/install.sh does everything below; by hand, next to this file:
+#   cp .env.example .env    # adjust settings (only the "Main" block is needed)
+#   docker compose up -d
+#
+# Update: docker compose pull && docker compose up -d. Building from the source instead of the ready images:
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+#
+# Only the frontend (nginx) is published, or Caddy in front of it (profile "https"); nginx proxies /api and
+# /livekit over the internal network.
+name: teacher-box
+
+services:
+  backend:
+    image: ghcr.io/verhoturkin/teacher-box-backend:${TEACHERBOX_VERSION:-latest}
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TEACHERBOX_DATA_DIR: /data
+      # The portal address defaults to https://<domain> when the domain is set (.env, "Main").
+      TEACHERBOX_PUBLIC_URL: ${TEACHERBOX_PUBLIC_URL:-${TEACHERBOX_DOMAIN:+https://${TEACHERBOX_DOMAIN}}}
+    # A proxy on the host (e.g. a VPN client for Telegram) is reachable as host.docker.internal.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - teacherbox-data:/data
+    # Lets the embedded database close cleanly on shutdown.
+    stop_grace_period: 30s
+    # Memory for the JVM (it takes 75% of the limit, see JAVA_TOOL_OPTIONS in the Dockerfile).
+    deploy:
+      resources:
+        limits:
+          memory: ${TEACHERBOX_MEMORY_LIMIT:-1g}
+          cpus: "${TEACHERBOX_CPU_LIMIT:-2}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  frontend:
+    image: ghcr.io/verhoturkin/teacher-box-frontend:${TEACHERBOX_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8080
+      LIVEKIT_URL: http://livekit:7880
+    ports:
+      - "${TEACHERBOX_HTTP_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  # HTTPS in the box (ADR-0032), only with the profile:  COMPOSE_PROFILES=https  and TEACHERBOX_DOMAIN.
+  # Caddy gets and renews the Let's Encrypt certificate itself: the domain points to this server, 80 and 443 are
+  # open. Then publish the frontend only on the loopback: TEACHERBOX_HTTP_PORT=127.0.0.1:8080.
+  caddy:
+    image: caddy:2.11-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    command: ["caddy", "reverse-proxy", "--from", "${TEACHERBOX_DOMAIN:-localhost}", "--to", "frontend:8080"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  # Built-in calls (ADR-0030), only with the profile:  COMPOSE_PROFILES=calls  (or --profile calls).
+  # Media goes straight to it: open 7881/tcp, 7882/udp, 3478/udp and 30000-30049/udp (docs/operations.md).
+  livekit:
+    image: livekit/livekit-server:v1.13.7
+    profiles: ["calls"]
+    restart: unless-stopped
+    environment:
+      LIVEKIT_KEYS: "${TEACHERBOX_MEETINGS_LIVEKIT_API_KEY:-}: ${TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET:-}"
+      # STUN finds the public address; false + TEACHERBOX_LIVEKIT_NODE_IP give it explicitly.
+      LIVEKIT_RTC_USE_EXTERNAL_IP: ${TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP:-true}
+      NODE_IP: ${TEACHERBOX_LIVEKIT_NODE_IP:-}
+      # The server config inline, so that this file alone is enough on a server.
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          # Media: one UDP port for every call, TCP as the fallback for networks that block UDP.
+          udp_port: 7882
+          tcp_port: 7881
+        turn:
+          # Embedded TURN over UDP for clients behind strict NAT; relayed media uses the published range.
+          enabled: true
+          udp_port: 3478
+          relay_range_start: 30000
+          relay_range_end: 30049
+        room:
+          # Rooms "tb-<ownerId>" are created on the first join and closed when empty.
+          auto_create: true
+          empty_timeout: 300
+          departure_timeout: 20
+          max_participants: 20
+    ports:
+      - "7881:7881/tcp"
+      - "7882:7882/udp"
+      - "3478:3478/udp"
+      - "30000-30049:30000-30049/udp"
+    deploy:
+      resources:
+        limits:
+          memory: ${TEACHERBOX_LIVEKIT_MEMORY_LIMIT:-512m}
+          cpus: "${TEACHERBOX_LIVEKIT_CPU_LIMIT:-2}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+volumes:
+  teacherbox-data:
+  # Certificates and keys of Caddy: kept across restarts so that Let's Encrypt is not asked again.
+  caddy-data:
+  caddy-config:
