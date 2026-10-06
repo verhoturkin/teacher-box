@@ -138,7 +138,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   `listRooms` + `listParticipants` for non-empty rooms; LiveKit unreachable → `status: UNKNOWN`, list still
   returned. Students: `GET /api/me/meetings/calls` — own room and active groups, «teacher is in the room»
   (empty while calls are off). Facade `StudentGroups.currentGroups()` added to `identity::api`.
-- [ ] 104.4 **B** Links and access: `RoomService.links` (`MeetingRooms`) → external link, else
+- [x] 104.4 **B** Links and access: `RoomService.links` (`MeetingRooms`) → external link, else
   `Portal.link("/call/<ownerId>")` when calls are on; `share` works without an external link (sends the portal
   link); `JoinLessonChatAction` texts. Listeners of `StudentDeactivated`, `GroupChanged` (removed members),
   `GroupArchived` remove the affected participants from LiveKit (`removeParticipant`). Update

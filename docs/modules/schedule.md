@@ -37,7 +37,8 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   `calendar.app.created` (+ optional `calendar.freebusy`), own «Teacher Box» calendar, one-way sync every minute
   (`GoogleSyncJob`), network calls outside transactions; `invalid_grant` → `GoogleCalendarDisconnected`.
   Redirect via `Portal.link`. Proxy `TEACHERBOX_SCHEDULE_GOOGLE_PROXY`.
-- `joinUrl` of a lesson = its own link or the student's/group's room from `MeetingRooms`.
+- `joinUrl` of a lesson = its own link or the link of the student's/group's room from `MeetingRooms` (an external
+  link or the portal link of the built-in call, ADR-0030).
 
 ## Contract (`schedule::api`)
 

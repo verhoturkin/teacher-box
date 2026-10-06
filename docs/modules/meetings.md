@@ -17,13 +17,18 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
   student — their own room and the rooms of their active groups; anything else is 404 `meetings.room-not-found`
   (no hint that a room exists), calls off — 422 `meetings.calls-disabled`. Identity = user id, name = display
   name; the title is the student/group for the teacher, the group or «Урок» for a student.
+- Links: `MeetingRooms.links` and `/api/me/meetings/rooms` give the external link or, with calls on and the portal
+  address set, `Portal.link("/call/<ownerId>")` for a current student / active group — so lessons, reminders, ICS,
+  the bot and «Отправить» (`MeetingLinkShared`) need no change. `CallAccess` removes from occupied rooms a
+  deactivated student (`StudentDeactivated`), students removed from a group (`GroupChanged.removedIds`) and everyone
+  of an archived group (`GroupArchived`); a failure is logged, not retried.
 - «Начать урок» (teacher) opens a Telemost link as `telemost://…` in the app (default on Windows, device setting)
   with «Открыть в браузере» in its split-button menu; students get a plain link.
 
 ## Contract (`meetings::api`)
 
 Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `MeetingLinkShared` →
-`notifications`.
+`notifications`. Consumes `identity::api` events `StudentDeactivated`, `GroupChanged`, `GroupArchived`.
 
 ## Data, REST, bot
 
