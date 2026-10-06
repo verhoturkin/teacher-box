@@ -31,7 +31,12 @@ public final class FakeUserDirectory implements UserDirectory {
     }
 
     public void setStatus(UUID studentId, StudentStatus status) {
-        students.computeIfPresent(studentId, (id, s) -> new StudentSummary(id, s.displayName(), status));
+        students.computeIfPresent(studentId, (id, s) -> new StudentSummary(id, s.displayName(), status, s.avatar()));
+    }
+
+    /** Gives the student a photo at this address. */
+    public void setAvatar(UUID studentId, String avatar) {
+        students.computeIfPresent(studentId, (id, s) -> new StudentSummary(id, s.displayName(), s.status(), avatar));
     }
 
     @Override

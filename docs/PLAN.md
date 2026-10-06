@@ -36,8 +36,8 @@ Calls after 0.8.0: call history; teacher moderation (mute / remove a participant
 Picture-in-Picture; noise suppression; recording.
 
 Future:
-- Student photos in the other lists (billing, homework, schedule, calls): add the photo address to
-  `StudentSummary` and pass it through the modules' views.
+- Student photos in the remaining lists (`StudentSummary.avatar` exists since 0.9.2): homework (assignment,
+  review queue), the monthly report, schedule requests, the messengers panel of notifications.
 - Two-way Google Calendar sync.
 - Board templates / duplicating.
 - Lesson packages/subscriptions, online payment.

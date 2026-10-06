@@ -56,7 +56,7 @@ import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
@@ -77,7 +77,7 @@ const CLICK_SELECTION_MINUTES = 30;
 @Component({
   selector: 'tb-schedule-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     HelpButton,
     Button,
     Card,
@@ -123,9 +123,10 @@ const CLICK_SELECTION_MINUTES = 30;
           <ul class="tb-list">
             @for (request of requests(); track request.id) {
               <li>
-                <span class="tb-avatar" aria-hidden="true">{{
-                  request.studentName ?? 'Ученик' | initials
-                }}</span>
+                <tb-avatar
+                  [name]="request.studentName ?? 'Ученик'"
+                  [photo]="request.studentAvatar"
+                />
                 <div class="tb-list__text">
                   <span class="tb-list__title">
                     {{ request.studentName ?? 'Ученик' }}
@@ -160,7 +161,7 @@ const CLICK_SELECTION_MINUTES = 30;
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
               <li>
-                <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ with(lesson) }}</span>
                   <span class="tb-list__supporting">{{ time(lesson) }}</span>

@@ -93,7 +93,7 @@ public class AccountService {
     }
 
     /**
-     * Replaces a student's photo.
+     * Replaces the photo of a student or the teacher (0.9.2); the administrator has none.
      *
      * @throws BusinessRuleException {@code avatar.too-large} over 1 MB, {@code avatar.invalid} unless it is a
      *                               PNG, JPEG or WebP image
@@ -106,8 +106,8 @@ public class AccountService {
         String contentType = Avatar.detectType(content).orElseThrow(() -> new BusinessRuleException(
                 "avatar.invalid", "The photo must be a PNG, JPEG or WebP image"));
         User user = load(userId);
-        if (user.role() != Role.STUDENT) {
-            throw new BusinessRuleException("account.not-student", "Operation is only allowed for students");
+        if (user.role() == Role.ADMIN) {
+            throw new BusinessRuleException("account.no-photo", "The administrator has no photo");
         }
         String key = files.store(NAMESPACE, new ByteArrayInputStream(content)).key();
         Avatar previous = user.changeAvatar(new Avatar(key, contentType), clock.instant());

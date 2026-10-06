@@ -37,7 +37,7 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   `--tb-spring-default-spatial`; effects (no overshoot; colour, opacity): `--tb-spring-fast-effects`. Used for
   button shape, nav indicator, section folding, FAB appearance; dialogs and snackbar keep PrimeNG animations.
   `prefers-reduced-motion: reduce` disables transitions (the loading indicator stays a circle).
-- **Layout** — content up to `--tb-content-max` (1440 px); forms in `--tb-content-narrow` (56 rem); top bar
+- **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
   64 px, bottom bar 80 px, rail 88 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
 
@@ -113,16 +113,22 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
 - **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
-  first). No card grids. Full width, except forms (`tb-stack--narrow`). Columns only inside one row of data
+  first). No card grids. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
+  readable width inside its card (`tb-form--narrow`). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
 - **Long settings pages** use foldable sections `tb-fold-card` (not tabs): header is a button with chevron and
-  a line of explanation; content loads on first open; open sections in the URL (`?open=`).
+  a line of explanation; content loads on first open; open sections in the URL (`?open=`). Pages: the
+  administrator's and the teacher's «Настройки» (portal · calendar and calls · failed deliveries with a
+  counter · data), «Уведомления».
 
 ## 5. Page anatomy
 
 - **Header** `tb-page-header` (`@shared/ui`): «Назад» icon button on nested pages (tooltip = destination,
   e.g. «Все задания»); h1; «?» help if the section has an article; detail line (due date, status); actions on
   the title line (56 px), main one last (right). On the phone actions go under the title, equal width.
+  **0.9.2:** on the phone a section page shows no title (visually hidden, kept for screen readers) and no
+  «?» (help is in the user menu); the header keeps only details and actions, and takes no room without them.
+  Nested pages keep «Назад» + title on one line.
 - **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
@@ -218,7 +224,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   outer 16 px (a single tile fully round), height ≥ 56 px, padding 12 / 16 px.
   - `tb-list__lead` — 40 px secondary-container circle: for people the component `tb-avatar`
     (`@shared/ui/avatar`: the student's photo cut to a circle, otherwise the initials; `size` for a bigger
-    one, e.g. 56 px in «Мой аккаунт»), an icon for things;
+    one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;

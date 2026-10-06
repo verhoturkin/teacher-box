@@ -32,7 +32,8 @@ async function signIn(page: Page): Promise<void> {
 
 async function open(page: Page, path: string): Promise<void> {
   await page.goto(path);
-  await expect(page.locator('h1.tb-page-title')).toBeVisible();
+  // on a phone a section's title is only for screen readers (0.9.2)
+  await expect(page.locator('h1.tb-page-title')).toBeAttached();
 }
 
 test('on a phone the main action of every section is the same extended FAB', async ({

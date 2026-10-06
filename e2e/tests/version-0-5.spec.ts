@@ -177,7 +177,7 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
 
 test('the teacher gives the portal an own color', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto('/teacher/settings');
+  await page.goto('/teacher/settings?open=portal');
   const card = page.locator('#portal');
   await card.getByRole('radio', { name: 'Свой цвет' }).click();
   await card.locator('#portal-own-color').fill('#1e40af');

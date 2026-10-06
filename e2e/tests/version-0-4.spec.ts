@@ -61,7 +61,7 @@ test.describe('on a computer', () => {
     browser,
   }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
-    await page.goto('/teacher/settings');
+    await page.goto('/teacher/settings?open=portal');
     const card = page.locator('#portal');
     await card.getByRole('radio', { name: 'Изумрудный' }).click();
     await card.getByRole('button', { name: 'Сохранить' }).click();
@@ -149,7 +149,8 @@ test.describe('on a phone', () => {
     await expectNoSideScroll(page);
     for (const section of ['Расписание', 'Задания']) {
       await page.locator('nav.tb-bottom-nav').getByRole('link', { name: section }).click();
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      // on a phone a section's title is only for screen readers (0.9.2)
+      await expect(page.getByRole('heading', { level: 1, name: section })).toBeAttached();
       await expectNoSideScroll(page);
     }
     await context.close();

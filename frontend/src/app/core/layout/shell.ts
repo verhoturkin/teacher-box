@@ -197,7 +197,7 @@ export class Shell {
   }
 
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
-  /** A student's photo on the user button; others keep the person icon. */
+  /** The photo of a student or the teacher on the user button; without one, the person icon. */
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),

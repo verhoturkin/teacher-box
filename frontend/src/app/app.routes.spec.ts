@@ -230,7 +230,7 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/teacher/settings');
 
-    TestBed.inject(HttpTestingController).expectOne('/api/teacher/backups');
+    TestBed.inject(HttpTestingController).expectOne('/api/teacher/notifications/status');
     expect(title()).toBe('Настройки — Teacher Box');
   });
 

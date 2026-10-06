@@ -25,18 +25,24 @@ public final class ScheduleViews {
     private ScheduleViews() {
     }
 
-    /** A participant of a lesson with their attendance. */
-    public record ParticipantView(UUID studentId, @Nullable String studentName, Attendance attendance) {
+    /**
+     * A participant of a lesson with their attendance.
+     *
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     */
+    public record ParticipantView(UUID studentId, @Nullable String studentName, @Nullable String studentAvatar,
+            Attendance attendance) {
 
         static ParticipantView of(Participant participant, ScheduleNames names) {
             return new ParticipantView(participant.studentId(), names.student(participant.studentId()),
-                    participant.attendance());
+                    names.avatar(participant.studentId()), participant.attendance());
         }
     }
 
     /**
      * A lesson with one student ({@code studentId}) or with a group ({@code groupId}).
      *
+     * @param studentAvatar    address of the photo of the lesson's student; {@code null}: none, or a group
      * @param participants     students of the lesson with their attendance
      * @param meetingUrl       the lesson's own link to the online lesson
      * @param joinUrl          where the lesson takes place: its own link or the room of the student or group
@@ -47,6 +53,7 @@ public final class ScheduleViews {
             UUID id,
             @Nullable UUID studentId,
             @Nullable String studentName,
+            @Nullable String studentAvatar,
             @Nullable UUID groupId,
             @Nullable String groupName,
             List<ParticipantView> participants,
@@ -66,7 +73,7 @@ public final class ScheduleViews {
         static LessonView of(Lesson lesson, ScheduleNames names, List<RequestView> pendingRequests) {
             UUID studentId = lesson.isGroup() ? null : lesson.studentId();
             return new LessonView(lesson.id(), studentId, studentId == null ? null : names.student(studentId),
-                    lesson.groupId(), names.group(lesson.groupId()),
+                    names.avatar(studentId), lesson.groupId(), names.group(lesson.groupId()),
                     lesson.participants().stream().map(participant -> ParticipantView.of(participant, names)).toList(),
                     lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.topic(),
                     lesson.meetingUrl(), names.joinUrl(lesson), lesson.status(), lesson.cancelledBy(),
@@ -76,7 +83,7 @@ public final class ScheduleViews {
 
         /** What a participant sees: their own attendance and requests, not those of classmates. */
         LessonView forStudent(UUID participantId) {
-            return new LessonView(id, studentId, studentName, groupId, groupName,
+            return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName,
                     participants.stream().filter(participant -> participant.studentId().equals(participantId)).toList(),
                     seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy,
                     cancelReason, originalStartsAt,
@@ -85,6 +92,7 @@ public final class ScheduleViews {
     }
 
     /**
+     * @param studentAvatar address of the student's photo; {@code null}: none
      * @param groupId  the group of a group lesson
      * @param late     a cancellation asked for later than the cancellation policy allows
      * @param answer   the teacher's comment on the decision
@@ -94,6 +102,7 @@ public final class ScheduleViews {
             UUID lessonId,
             UUID studentId,
             @Nullable String studentName,
+            @Nullable String studentAvatar,
             @Nullable UUID groupId,
             @Nullable String groupName,
             ChangeKind kind,
@@ -108,7 +117,7 @@ public final class ScheduleViews {
 
         static RequestView of(ChangeRequest request, Lesson lesson, ScheduleNames names, Duration lateCancellation) {
             return new RequestView(request.id(), request.lessonId(), request.studentId(),
-                    names.student(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
+                    names.student(request.studentId()), names.avatar(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
                     request.kind(), lesson.startsAt(), request.proposedStartsAt(), request.comment(), request.status(),
                     isLate(request.kind(), lesson.startsAt(), request.createdAt(), lateCancellation),
                     request.resolutionComment(), request.createdAt(), request.resolvedAt());

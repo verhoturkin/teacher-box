@@ -207,12 +207,22 @@ const STEPS: readonly Step[] = [
                 — уведомления и действия через бота в Telegram, ВКонтакте или MAX.
               </li>
               <li>
-                <a routerLink="/teacher/settings" fragment="meetings">Видеовстречи</a>
+                <a
+                  routerLink="/teacher/settings"
+                  [queryParams]="{ open: 'calendar' }"
+                  fragment="settings-calendar"
+                  >Видеовстречи</a
+                >
                 — постоянные ссылки на уроки в Яндекс Телемосте.
               </li>
               <li>
-                <a routerLink="/teacher/settings" fragment="google">Google Календарь</a> — занятия в
-                вашем календаре.
+                <a
+                  routerLink="/teacher/settings"
+                  [queryParams]="{ open: 'calendar' }"
+                  fragment="settings-calendar"
+                  >Google Календарь</a
+                >
+                — занятия в вашем календаре.
               </li>
               <li>
                 <a [routerLink]="aiHelp">ИИ-помощник</a> — черновики заданий и проверки работ

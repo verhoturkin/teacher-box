@@ -16,7 +16,7 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
 import { countOf } from '@shared/text/plural';
 import { EmptyState } from '@shared/ui/empty-state';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -41,17 +41,7 @@ interface RoomStatus {
  */
 @Component({
   selector: 'tb-calls-page',
-  imports: [
-    Button,
-    Card,
-    Message,
-    Tag,
-    HelpButton,
-    EmptyState,
-    InitialsPipe,
-    LoadStateView,
-    PageHeader,
-  ],
+  imports: [Button, Card, Message, Tag, HelpButton, EmptyState, Avatar, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Звонки">
@@ -90,7 +80,7 @@ interface RoomStatus {
                         ><i class="pi pi-users"></i
                       ></span>
                     } @else {
-                      <span class="tb-avatar" aria-hidden="true">{{ room.name | initials }}</span>
+                      <tb-avatar [name]="room.name" [photo]="room.avatar" />
                     }
                     <div class="tb-list__text">
                       <span class="tb-list__title">{{ room.name }}</span>

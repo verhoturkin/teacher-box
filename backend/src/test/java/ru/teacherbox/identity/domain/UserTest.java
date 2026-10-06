@@ -208,12 +208,16 @@ class UserTest {
     }
 
     @Test
-    void onlyAStudentHasAnOwnNameAndAPhoto() {
+    void onlyAStudentHasAnOwnNameTheAdministratorHasNoPhoto() {
         User teacher = User.newTeacher(UUID.randomUUID(), "teacher", "hash", Profile.named("Анна"), NOW);
+        User admin = User.newAdministrator(UUID.randomUUID(), "admin", "hash", NOW);
 
         assertThatThrownBy(() -> teacher.renameSelf("Аня", NOW)).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> teacher.changeAvatar(new Avatar("k", "image/png"), NOW))
-                .isInstanceOf(BusinessRuleException.class);
+        assertThat(teacher.changeAvatar(new Avatar("k", "image/png"), NOW)).isNull();
+        assertThat(teacher.avatar()).isEqualTo(new Avatar("k", "image/png"));
+        assertThatThrownBy(() -> admin.changeAvatar(new Avatar("k", "image/png"), NOW))
+                .isInstanceOfSatisfying(BusinessRuleException.class,
+                        e -> assertThat(e.code()).isEqualTo("account.no-photo"));
         assertThat(teacher.shownName()).isEqualTo("Анна");
     }
 

@@ -20,7 +20,10 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   teacher keeps seeing the profile name (`StudentView.displayName`, facades, JWT `name`); the photo is shown to
   both. Files live in the `identity` namespace; a photo is served at `/api/public/avatars/{storage key}` — the
   key is the secret part of the link, a new photo gets a new key (immutable cache); the old file is deleted.
-  The teacher and the administrator have no photo.
+  Since 0.9.2 the teacher has a photo too (shown in the top bar and «Мой аккаунт»); the administrator has
+  none (`account.no-photo`; `/api/me/avatar` is closed to the administrator). Other modules get the photo's address as
+  `StudentSummary.avatar` (0.9.2): billing (overview, debtors), meetings (call rooms), schedule (lessons and
+  their participants) pass it to their views.
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
 - Implements `shared.security.PasswordConfirmation`.
@@ -48,6 +51,6 @@ with the rest of the files by the full reset.
 ## Frontend
 
 `features/identity/`: `login/`, `invite/`, `students/` (list, form, invite link), `groups/` (panel on the
-students page), `account/` («Мой аккаунт»: password change; the teacher's name; a student's photo and own name). Avatars —
+students page), `account/` («Мой аккаунт»: profile hero, password change; the teacher's name; the photo of the teacher or a student, a student's own name). Avatars —
 `shared/ui/avatar.ts` (`tb-avatar`: photo or initials), photo preparation — `shared/files/square-photo.ts`. Auth state, guards and token refresh —
 `core/auth/`.

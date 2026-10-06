@@ -10,6 +10,7 @@ import ru.teacherbox.billing.domain.Lesson;
 import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.billing.domain.Payment;
 import ru.teacherbox.identity.api.StudentStatus;
+import ru.teacherbox.identity.api.StudentSummary;
 
 /**
  * Read models of the billing API. All amounts are integers in minor units of {@code currency}
@@ -55,10 +56,15 @@ public final class BillingViews {
         }
     }
 
-    /** One row of the teacher's overview. */
+    /**
+     * One row of the teacher's overview.
+     *
+     * @param avatar address of the student's photo; {@code null}: none
+     */
     public record StudentBalance(
             UUID studentId,
             String displayName,
+            @Nullable String avatar,
             StudentStatus status,
             long lessonPrice,
             long balance,
@@ -67,10 +73,9 @@ public final class BillingViews {
             int chargedLessons,
             @Nullable LocalDate lastLessonDate) {
 
-        static StudentBalance of(UUID studentId, String displayName, StudentStatus status, long lessonPrice,
-                BalanceTotals totals) {
-            return new StudentBalance(studentId, displayName, status, lessonPrice,
-                    totals.balance().amountMinor(), totals.charged().amountMinor(), totals.paid().amountMinor(),
+        static StudentBalance of(StudentSummary student, long lessonPrice, BalanceTotals totals) {
+            return new StudentBalance(student.id(), student.displayName(), student.avatar(), student.status(),
+                    lessonPrice, totals.balance().amountMinor(), totals.charged().amountMinor(), totals.paid().amountMinor(),
                     totals.chargedLessons(), totals.lastLessonDate());
         }
     }
@@ -134,8 +139,12 @@ public final class BillingViews {
             List<JournalPayment> payments) {
     }
 
-    /** A student who owes money; {@code balance} is negative. */
-    public record Debtor(UUID studentId, String displayName, long balance) {
+    /**
+     * A student who owes money; {@code balance} is negative.
+     *
+     * @param avatar address of the student's photo; {@code null}: none
+     */
+    public record Debtor(UUID studentId, String displayName, @Nullable String avatar, long balance) {
     }
 
     /**

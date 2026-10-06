@@ -1,8 +1,8 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { aiStatus } from '@testing/ai-fixtures';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { portalSettings } from '@testing/portal-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
@@ -49,9 +49,9 @@ describe('SettingsPage', () => {
 
   async function render(
     status = STATUS,
+    inputs: { open?: string; google?: string } = {},
     backups: BackupInfo[] = [BACKUP],
-    aiEnabled = true,
-  ): Promise<void> {
+  ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
       providers: testProviders(),
@@ -59,24 +59,35 @@ describe('SettingsPage', () => {
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(SettingsPage);
+    for (const [name, value] of Object.entries(inputs)) {
+      fixture.componentRef.setInput(name, value);
+    }
     fixture.detectChanges();
-    backend.expectOne('/api/teacher/portal').flush(portalSettings());
     backend.expectOne('/api/teacher/notifications/status').flush(status);
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
-    backend.expectOne('/api/teacher/backups').flush(backups);
-    backend.expectOne('/api/teacher/schedule/google').flush({
-      clientConfigured: false,
-      clientFromEnvironment: false,
-      clientId: null,
-      status: 'NOT_CONNECTED',
-      busyEnabled: false,
-      lastError: null,
-      lastSyncAt: null,
-      connectedAt: null,
-      callbackPath: '/api/public/schedule/google/callback',
-    });
-    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
     await fixture.whenStable();
+    const open = new Set((inputs.open ?? '').split(','));
+    if (open.has('portal')) {
+      backend.expectOne('/api/teacher/portal').flush(portalSettings());
+    }
+    if (open.has('calendar') || inputs.google !== undefined) {
+      backend.expectOne('/api/teacher/schedule/google').flush({
+        clientConfigured: false,
+        clientFromEnvironment: false,
+        clientId: null,
+        status: 'NOT_CONNECTED',
+        busyEnabled: false,
+        lastError: null,
+        lastSyncAt: null,
+        connectedAt: null,
+        callbackPath: '/api/public/schedule/google/callback',
+      });
+      backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
+    }
+    if (open.has('data')) {
+      backend.expectOne('/api/teacher/backups').flush(backups);
+    }
+    await fixture.whenStable();
+    return hostElement(fixture);
   }
 
   afterEach(() => {
@@ -84,50 +95,64 @@ describe('SettingsPage', () => {
     fixture.destroy();
   });
 
-  it('shows integrations and failed deliveries', async () => {
-    await render();
+  it('shows the sections folded, without integrations, the failed deliveries counted', async () => {
+    const host = await render();
 
-    const text = readableText(hostElement(fixture));
-    expect(text).toContain('Telegram Работает');
-    expect(text).toContain('ВКонтакте Не настроен');
-    expect(text).toContain('MAX Подключается');
-    expect(text).not.toContain('прокси');
-    expect(text).toContain('ИИ-помощник claude-opus-5');
+    const text = readableText(host);
+    expect(text).toContain('Портал Название, логотип и цвет портала');
+    expect(text).toContain('Календарь и звонки');
+    expect(text).toContain('Неудачные доставки 2');
+    expect(text).toContain('Данные');
+    expect(text).not.toContain('Профиль');
+    expect(text).not.toContain('Интеграции');
+    expect(text).not.toContain('ИИ-помощник');
+    expect(host.querySelector('#portal')).toBeNull();
+  });
+
+  it('shows every open section', async () => {
+    const host = await render(STATUS, { open: 'portal,calendar,deliveries,data' });
+
+    const text = readableText(host);
+    expect(host.querySelector('#portal')).not.toBeNull();
+    expect(host.querySelector('#google')).not.toBeNull();
+    expect(host.querySelector('#meetings')).not.toBeNull();
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
+    expect(host.querySelector('#backups')).not.toBeNull();
+    expect(host.querySelector('#reset')).not.toBeNull();
   });
 
-  it('explains a messenger without connection', async () => {
-    await render({
-      channels: [
-        {
-          channel: 'TELEGRAM',
-          connection: 'ERROR',
-          error: 'Telegram getUpdates: Connection timed out',
-          checkedAt: null,
-        },
-        {
-          channel: 'VK',
-          connection: 'ERROR',
-          error: 'VK: 5 User authorization failed',
-          checkedAt: null,
-        },
-      ],
-      failedDeliveries: [],
+  it('opens the calendar after Google sends the teacher back', async () => {
+    const host = await render(STATUS, { google: 'connected' });
+
+    expect(host.querySelector('#google')).not.toBeNull();
+    expect(host.querySelector('#portal')).toBeNull();
+  });
+
+  it('keeps the open sections in the address', async () => {
+    const host = await render(STATUS, { open: 'deliveries' });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    buttonByText(host, 'Портал').click();
+    expect(navigate).toHaveBeenLastCalledWith([], {
+      queryParams: { open: 'portal,deliveries' },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
-
-    const text = readableText(hostElement(fixture));
-    expect(text).toContain('Telegram Нет связи Telegram getUpdates: Connection timed out');
-    expect(text).toContain('попросите администратора');
-    expect(text).toContain('ВКонтакте Нет связи VK: 5 User authorization failed MAX');
+    buttonByText(host, 'Неудачные доставки').click();
+    expect(navigate).toHaveBeenLastCalledWith([], {
+      queryParams: { open: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    backend.match('/api/teacher/portal').forEach((request) => {
+      request.flush(portalSettings());
+    });
   });
 
-  it('shows empty states', async () => {
-    await render({ channels: [], failedDeliveries: [] }, [], false);
+  it('says when every notification was delivered', async () => {
+    const host = await render({ channels: [], failedDeliveries: [] }, { open: 'deliveries' });
 
-    const text = readableText(hostElement(fixture));
-    expect(text).toContain('Все уведомления доставлены');
-    expect(text).toContain('Копий пока нет');
-    expect(text).toContain('ИИ-помощник Не настроен');
+    expect(readableText(host)).toContain('Все уведомления доставлены');
   });
 });

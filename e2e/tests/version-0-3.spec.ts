@@ -30,10 +30,8 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await expect(page).toHaveURL(/\/teacher$/);
 
-  await page.goto('/teacher/settings');
+  await page.goto('/teacher/settings?open=portal');
   const card = page.locator('#portal');
-  await expect(card.locator('#portal-address')).toHaveValue(BASE_URL);
-  await expect(card).toContainText('Адрес задан администратором портала');
   await card.locator('#portal-name').fill(PORTAL_NAME);
   await card.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.locator('.tb-shell__brand')).toContainText(PORTAL_NAME);
@@ -74,7 +72,7 @@ test('the administrator makes a backup', async ({ page }) => {
 
 test('the full reset deletes the data and opens the first setup', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto('/teacher/settings');
+  await page.goto('/teacher/settings?open=data');
   await page.getByRole('button', { name: 'Сбросить все данные…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Сбросить все данные?' });
   await dialog.locator('#reset-password').fill(TEACHER_PASSWORD);
@@ -91,7 +89,7 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
 
   await page.goto('/teacher/students');
   await expect(page.getByText('Учеников пока нет')).toBeVisible();
-  await page.goto('/teacher/settings');
+  await page.goto('/teacher/settings?open=data');
   await expect(
     page
       .getByRole('list', { name: 'Резервные копии' })

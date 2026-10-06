@@ -13,6 +13,7 @@ export function studentBalance(overrides: Partial<StudentBalance> = {}): Student
   return {
     studentId: 's-1',
     displayName: 'Иван Петров',
+    avatar: null,
     status: 'ACTIVE',
     lessonPrice: 150_000,
     balance: 0,

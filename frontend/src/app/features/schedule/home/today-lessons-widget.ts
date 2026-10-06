@@ -8,7 +8,7 @@ import { JoinLessonButton } from '@features/meetings/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonOutcome, ScheduleSummary, ScheduledLesson } from '../data-access/schedule.models';
 import { STATUS_LABELS, formatClockRange, lessonWith } from '../schedule-labels';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { AttendanceDialog } from '../teacher/attendance-dialog';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -23,7 +23,7 @@ import { EmptyState } from '@shared/ui/empty-state';
     Card,
     Tag,
     AttendanceDialog,
-    InitialsPipe,
+    Avatar,
     JoinLessonButton,
     Tooltip,
   ],
@@ -40,7 +40,7 @@ import { EmptyState } from '@shared/ui/empty-state';
               class="tb-today__lesson"
               [class.tb-today__lesson--cancelled]="lesson.status === 'CANCELLED'"
             >
-              <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+              <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
               <div class="tb-list__text tb-today__info">
                 <span class="tb-list__title">{{ with(lesson) }}</span>
                 <span class="tb-list__supporting">

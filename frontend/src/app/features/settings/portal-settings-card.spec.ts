@@ -43,15 +43,12 @@ describe('PortalSettingsCard', () => {
     fixture.destroy();
   });
 
-  it('names the portal and sets its address', async () => {
-    const host = await render();
+  it('names the portal and keeps its address, which is not edited here', async () => {
+    const host = await render(portalSettings({ address: 'https://school.example.com' }));
     expect(requireElement(host, '#portal-name', HTMLInputElement).value).toBe('Teacher Box');
+    expect(host.querySelector('#portal-address')).toBeNull();
 
     typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Английский с Марией');
-    typeInto(
-      requireElement(host, '#portal-address', HTMLInputElement),
-      'https://school.example.com',
-    );
     buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
@@ -194,16 +191,10 @@ describe('PortalSettingsCard', () => {
     expect(buttonByText(host, 'Загрузить логотип').disabled).toBe(false);
   });
 
-  it('does not save a wrong address and survives a failed save', async () => {
+  it('survives a failed save', async () => {
     const host = await render();
 
-    typeInto(requireElement(host, '#portal-address', HTMLInputElement), 'school.example.com');
-    await fixture.whenStable();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(false);
-    fixture.componentInstance.save();
-    backend.expectNone({ method: 'PUT', url: '/api/teacher/portal' });
-
-    typeInto(requireElement(host, '#portal-address', HTMLInputElement), '');
+    typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа');
     fixture.componentInstance.save();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/portal' })
@@ -211,14 +202,5 @@ describe('PortalSettingsCard', () => {
     await fixture.whenStable();
 
     expect(buttonByText(host, 'Сохранить').disabled).toBe(false);
-  });
-
-  it('shows an address set on the server as read-only', async () => {
-    const host = await render(
-      portalSettings({ address: 'https://school.example.com', addressFromEnvironment: true }),
-    );
-
-    expect(requireElement(host, '#portal-address', HTMLInputElement).readOnly).toBe(true);
-    expect(readableText(host)).toContain('попросите администратора');
   });
 });

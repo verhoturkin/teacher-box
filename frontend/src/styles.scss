@@ -331,11 +331,6 @@ textarea.p-textarea {
   }
 }
 
-/* Forms and settings: a readable column (ADR-0015) */
-.tb-stack--narrow {
-  max-width: var(--tb-content-narrow);
-}
-
 /* Sign-in and invitation pages */
 .tb-auth-page {
   display: flex;
@@ -1828,6 +1823,40 @@ a.p-menu-item-link:hover {
 
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
 @media (width <= 48em) {
+  /*
+   * A section page has no title line on a phone (0.9.2): the navigation names the section, the room
+   * goes to the content. The title stays for screen readers; its «?» is in the user menu («Справка»).
+   * A nested page keeps «Назад» with its title: they share one line.
+   */
+  .tb-page-header:not(:has(.tb-page-header__back)) {
+    .tb-page-heading {
+      min-height: 0;
+
+      > [help] {
+        display: none;
+      }
+    }
+
+    .tb-page-title {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /* without details the lead is empty: out of the flow, no gap under it */
+    &:not(:has([meta])) > .tb-page-header__lead {
+      position: absolute;
+    }
+
+    /* only the FAB (fixed) or nothing left: the header takes no room */
+    &:not(:has([meta], > .tb-actions > :not(.tb-page-fab))) {
+      margin-bottom: 0;
+    }
+  }
+
   .tb-page-header {
     gap: var(--tb-space-3);
 

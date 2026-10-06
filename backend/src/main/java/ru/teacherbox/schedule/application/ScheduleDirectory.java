@@ -1,6 +1,7 @@
 package ru.teacherbox.schedule.application;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class ScheduleDirectory {
             }
         }
         ScheduleNames names = names(students, groupIds);
-        return new ScheduleNames(names.students(), names.groups(), owners.isEmpty() ? Map.of() : rooms.links(owners));
+        return owners.isEmpty() ? names : names.withRooms(rooms.links(owners));
     }
 
     /** Names for the students and groups of the series. */
@@ -58,11 +59,19 @@ public class ScheduleDirectory {
     }
 
     public ScheduleNames names(Collection<UUID> studentIds, Collection<UUID> groupIds) {
+        List<StudentSummary> students = users.findStudents(Set.copyOf(studentIds));
+        Map<UUID, String> avatars = new HashMap<>();
+        for (StudentSummary student : students) {
+            String avatar = student.avatar();
+            if (avatar != null) {
+                avatars.put(student.id(), avatar);
+            }
+        }
         return new ScheduleNames(
-                users.findStudents(Set.copyOf(studentIds)).stream()
-                        .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName)),
+                students.stream().collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName)),
                 groups.findGroups(Set.copyOf(groupIds)).stream()
-                        .collect(Collectors.toMap(GroupSummary::id, GroupSummary::name)));
+                        .collect(Collectors.toMap(GroupSummary::id, GroupSummary::name)),
+                Map.of(), avatars);
     }
 
     /** A student who can get lessons (not deactivated). */

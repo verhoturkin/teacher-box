@@ -45,6 +45,7 @@ class RequestsIntegrationTests {
     void studentAsksToMoveAndTheTeacherApproves(AssertablePublishedEvents events)
             throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Маша");
+        directory.setAvatar(student, "/api/public/avatars/asks");
         Instant start = Slots.next(clock);
         String lessonId = planned(student, start);
         Instant proposed = Slots.next(clock);
@@ -65,6 +66,9 @@ class RequestsIntegrationTests {
                 .hasStatusOk()
                 .bodyJson().extractingPath("$[?(@.id == '" + requestId + "')].studentName").asArray()
                 .containsExactly("Маша");
+        assertThat(mvc.get().uri("/api/teacher/schedule/requests").with(teacher()))
+                .bodyJson().extractingPath("$[?(@.id == '" + requestId + "')].studentAvatar").asArray()
+                .containsExactly("/api/public/avatars/asks");
         assertThat(teacherPost("/api/teacher/schedule/requests/" + requestId + "/approve", "{\"answer\":\"Ок\"}"))
                 .hasStatusOk()
                 .bodyJson().extractingPath("$.startsAt").isEqualTo(proposed.toString());

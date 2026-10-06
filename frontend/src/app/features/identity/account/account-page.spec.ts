@@ -62,6 +62,11 @@ describe('AccountPage', () => {
       'Анна Сергеевна',
     );
     expect(text).toContain('anna@example.com');
+    expect(text).toContain('Учитель');
+    expect(buttonByText(hostElement(fixture), 'Загрузить фото')).toBeTruthy();
+    expect(hostElement(fixture).querySelector('tb-avatar')?.getAttribute('style')).toContain(
+      '6rem',
+    );
     expect(text).toContain('teacher');
   });
 
@@ -106,6 +111,7 @@ describe('AccountPage', () => {
     const field = requireElement(host, '#account-own-name', HTMLInputElement);
     expect(field.value).toBe('Ника');
     expect(host.textContent).toContain('Учитель видит вас как «Вероника Петрова»');
+    expect(host.querySelector('.tb-account__role')?.textContent).toBe('Ученик');
     expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
 
     typeInto(field, ' Ника ');
@@ -232,6 +238,7 @@ describe('AccountPage', () => {
     expect(hostElement(fixture).textContent).toContain('Администратор');
     expect(hostElement(fixture).querySelector('#account-name')).toBeNull();
     expect(hostElement(fixture).querySelector('#account-own-name')).toBeNull();
+    expect(() => buttonByText(hostElement(fixture), 'Загрузить фото')).toThrow();
   });
 
   it('keeps the name when saving it fails', async () => {

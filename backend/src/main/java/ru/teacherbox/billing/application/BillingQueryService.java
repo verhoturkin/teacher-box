@@ -86,8 +86,7 @@ public class BillingQueryService {
         Set<UUID> ids = new HashSet<>(totals.keySet());
         directory.currentStudents().forEach(student -> ids.add(student.id()));
         List<StudentBalance> rows = directory.findStudents(ids).stream()
-                .map(student -> StudentBalance.of(student.id(), student.displayName(), student.status(),
-                        prices.getOrDefault(student.id(), defaultPrice),
+                .map(student -> StudentBalance.of(student, prices.getOrDefault(student.id(), defaultPrice),
                         totals.getOrDefault(student.id(), BalanceTotals.empty(currency.currency()))))
                 .sorted(Comparator.comparing(StudentBalance::displayName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
@@ -102,7 +101,8 @@ public class BillingQueryService {
         List<Debtor> debtors = overview.students().stream()
                 .filter(student -> student.balance() < 0)
                 .sorted(Comparator.comparingLong(StudentBalance::balance))
-                .map(student -> new Debtor(student.studentId(), student.displayName(), student.balance()))
+                .map(student -> new Debtor(student.studentId(), student.displayName(), student.avatar(),
+                        student.balance()))
                 .toList();
         YearMonth month = YearMonth.from(timeZone.today(clock));
         long income = payments.findBetween(month.atDay(1), month.atEndOfMonth()).stream()

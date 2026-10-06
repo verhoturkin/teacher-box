@@ -31,13 +31,20 @@ describe('UpcomingLessonWidget', () => {
 
   it('shows when and with whom, the lesson link and the boards of the student', async () => {
     const host = await render(
-      scheduledLesson({ topic: 'Степени', joinUrl: 'https://telemost.yandex.ru/j/1' }),
+      scheduledLesson({
+        topic: 'Степени',
+        joinUrl: 'https://telemost.yandex.ru/j/1',
+        studentAvatar: '/api/public/avatars/ivan',
+      }),
       'studentId=s-1',
     );
     const text = readableText(host);
 
     expect(text).toContain('Следующее занятие');
     expect(text).toContain('Иван Петров');
+    expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/ivan',
+    );
     expect(text).toContain('Степени');
     expect(text).toContain('Начать урок');
     expect(text).toContain('Алгебра');

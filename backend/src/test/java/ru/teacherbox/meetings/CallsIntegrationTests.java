@@ -131,6 +131,7 @@ class CallsIntegrationTests {
         mvc.put().uri("/api/teacher/meetings/rooms").with(TestUsers.teacher(teacher))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentId\":\"" + boris + "\",\"joinUrl\":\"https://zoom.us/j/1\"}").exchange();
+        directory.setAvatar(anna, "/api/public/avatars/anna");
 
         assertThat(mvc.get().uri("/api/teacher/meetings/calls").with(TestUsers.teacher(teacher))).hasStatusOk()
                 .bodyJson().satisfies(json -> {
@@ -138,6 +139,10 @@ class CallsIntegrationTests {
                     assertThat(json).extractingPath(card(anna) + ".ownerType").asArray().containsExactly("STUDENT");
                     assertThat(json).extractingPath(card(anna) + ".waiting[0]").asArray().containsExactly("Анна");
                     assertThat(json).extractingPath(card(anna) + ".teacherPresent").asArray().containsExactly(false);
+                    assertThat(json).extractingPath(card(anna) + ".avatar").asArray()
+                            .containsExactly("/api/public/avatars/anna");
+                    assertThat(json).extractingPath(card(boris) + ".avatar").asArray().containsExactly((Object) null);
+                    assertThat(json).extractingPath(card(group) + ".avatar").asArray().containsExactly((Object) null);
                     assertThat(json).extractingPath(card(boris) + ".externalLink").asArray().containsExactly(true);
                     assertThat(json).extractingPath(card(boris) + ".waiting.length()").asArray().containsExactly(0);
                     assertThat(json).extractingPath(card(group) + ".name").asArray().containsExactly("ОГЭ");

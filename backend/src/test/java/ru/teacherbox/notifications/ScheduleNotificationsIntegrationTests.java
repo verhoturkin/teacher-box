@@ -293,7 +293,7 @@ class ScheduleNotificationsIntegrationTests {
                 .andWaitForStateChange(() -> teacherNotifications("Google Календарь отключён"), list -> !list.isEmpty())
                 .andVerify(list -> {
                     assertThat(list.getFirst().kind()).isEqualTo(NotificationKind.SCHEDULE_CALENDAR);
-                    assertThat(list.getFirst().link()).isEqualTo("/teacher/settings");
+                    assertThat(list.getFirst().link()).isEqualTo("/teacher/settings?open=calendar");
                 });
     }
 

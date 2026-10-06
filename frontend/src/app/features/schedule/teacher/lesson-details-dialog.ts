@@ -36,7 +36,7 @@ import {
   lessonWith,
   requestKindLabel,
 } from '../schedule-labels';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { AttendanceDialog } from './attendance-dialog';
 
 /**
@@ -48,7 +48,7 @@ import { AttendanceDialog } from './attendance-dialog';
 @Component({
   selector: 'tb-lesson-details-dialog',
   imports: [
-    InitialsPipe,
+    Avatar,
     FormsModule,
     Button,
     Checkbox,
@@ -141,9 +141,10 @@ import { AttendanceDialog } from './attendance-dialog';
             <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
                 <li>
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    participant.studentName ?? 'Ученик' | initials
-                  }}</span>
+                  <tb-avatar
+                    [name]="participant.studentName ?? 'Ученик'"
+                    [photo]="participant.studentAvatar"
+                  />
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ participant.studentName ?? 'Ученик' }}</span>
                   </div>

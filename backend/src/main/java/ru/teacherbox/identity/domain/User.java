@@ -129,13 +129,15 @@ public final class User {
     }
 
     /**
-     * Replaces the student's photo.
+     * Replaces the photo of a student or the teacher; the administrator has none.
      *
      * @param newAvatar {@code null}: no photo
      * @return the previous photo, whose file the caller deletes
      */
     public @Nullable Avatar changeAvatar(@Nullable Avatar newAvatar, Instant now) {
-        requireStudent();
+        if (role == Role.ADMIN) {
+            throw new BusinessRuleException("account.no-photo", "The administrator has no photo");
+        }
         Avatar previous = avatar;
         this.avatar = newAvatar;
         touch(now);
