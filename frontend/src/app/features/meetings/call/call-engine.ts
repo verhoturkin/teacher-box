@@ -50,12 +50,76 @@ export interface CallMedia {
 
 export type CallDeviceKind = 'audioinput' | 'videoinput';
 
+/** The browser's processing of the microphone, chosen in the devices menu (remembered on the device). */
+export interface AudioProcessing {
+  readonly echoCancellation: boolean;
+  readonly noiseSuppression: boolean;
+  readonly autoGainControl: boolean;
+}
+
+export const DEFAULT_AUDIO_PROCESSING: AudioProcessing = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+
+/** How this browser reaches the media server: the selected ICE candidate pair. */
+export interface CallTransport {
+  /** `udp` or `tcp` towards the server (or the TURN relay). */
+  readonly protocol: string | null;
+  /** `host` (direct), `srflx` / `prflx` (through NAT), `relay` (through TURN). */
+  readonly candidate: string | null;
+  /** The protocol between the browser and the TURN relay. */
+  readonly relayProtocol: string | null;
+  readonly localPort: number | null;
+  readonly remoteAddress: string | null;
+  readonly remotePort: number | null;
+  /** Round trip, ms. */
+  readonly roundTrip: number | null;
+  /** The bandwidth estimate for sending, kbit/s. */
+  readonly outgoingBitrate: number | null;
+}
+
+/** Received sound since joining, over all speakers. */
+export interface CallAudioIn {
+  readonly packetsReceived: number;
+  readonly packetsLost: number;
+  /** ms */
+  readonly jitter: number | null;
+  /** The share of sound the browser had to make up for lost or late packets, %. */
+  readonly concealed: number | null;
+}
+
+/** A video stream: the largest one sent or received. */
+export interface CallVideo {
+  readonly width: number;
+  readonly height: number;
+  readonly frameRate: number | null;
+}
+
+/** Technical details of the connection («Сведения о связи»). */
+export interface CallStats {
+  readonly serverVersion: string | null;
+  readonly transport: CallTransport | null;
+  readonly audioIn: CallAudioIn | null;
+  /** Lost sent sound as the server reports it, %. */
+  readonly audioOutLoss: number | null;
+  readonly videoOut: CallVideo | null;
+  /** Why the browser lowers the sent video: `bandwidth`, `cpu`, `other`, `none`. */
+  readonly videoOutLimit: string | null;
+  readonly videoIn: CallVideo | null;
+}
+
 /** A joined call. */
 export interface CallConnection {
   setMicrophone(enabled: boolean): Promise<void>;
   setCamera(enabled: boolean): Promise<void>;
   setScreenShare(enabled: boolean): Promise<void>;
   switchDevice(kind: CallDeviceKind, deviceId: string): Promise<void>;
+  /** Used for the microphone from now on; a working microphone restarts with it. */
+  setAudioProcessing(processing: AudioProcessing): Promise<void>;
+  /** The current technical details. */
+  stats(): Promise<CallStats>;
   /** Unblocks the sound after a click. */
   startAudio(): Promise<void>;
   leave(): Promise<void>;

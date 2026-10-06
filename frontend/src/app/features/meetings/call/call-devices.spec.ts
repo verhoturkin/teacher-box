@@ -129,6 +129,23 @@ describe('CallDevices', () => {
     vi.restoreAllMocks();
   });
 
+  it('remembers the sound processing, a missing or broken switch is on', () => {
+    localStorage.removeItem('tb-call-audio');
+    const all = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+    expect(devices.audioProcessing()).toEqual(all);
+    const quiet = { ...all, noiseSuppression: false };
+    devices.rememberAudioProcessing(quiet);
+    expect(devices.audioProcessing()).toEqual(quiet);
+
+    localStorage.setItem('tb-call-audio', '{"autoGainControl":false,"echoCancellation":"no"}');
+    expect(devices.audioProcessing()).toEqual({ ...all, autoGainControl: false });
+    for (const broken of ['{', '7']) {
+      localStorage.setItem('tb-call-audio', broken);
+      expect(devices.audioProcessing()).toEqual(all);
+    }
+    localStorage.removeItem('tb-call-audio');
+  });
+
   it('names why the browser gave no media', () => {
     const named = (name: string) => Object.assign(new Error(name), { name });
     expect(mediaErrorText(named('NotAllowedError'))).toContain('не дал доступ');

@@ -15,6 +15,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { CallDevices, mediaErrorText } from './call-devices';
 import {
+  AudioProcessing,
   CALL_ENGINE,
   CallConnection,
   CallDeviceKind,
@@ -22,6 +23,7 @@ import {
   CallMedia,
   CallParticipant,
   CallSnapshot,
+  CallStats,
 } from './call-engine';
 
 /**
@@ -82,6 +84,7 @@ export class CallSession {
   /** The last change of people, for screen readers. */
   readonly announcement = signal('');
   readonly media = signal<CallMedia>(this.devices.preferences());
+  readonly audioProcessing = signal<AudioProcessing>(this.devices.audioProcessing());
 
   readonly live = computed(() => LIVE.has(this.phase()));
   readonly local = computed(() => this.participants().find((person) => person.local) ?? null);
@@ -176,6 +179,8 @@ export class CallSession {
       }
       this.connection = connection;
       this.startedAt.set(Date.now());
+      // only remembered by the engine: the microphone is not on yet
+      await connection.setAudioProcessing(this.audioProcessing()).catch(() => undefined);
       await this.turnOn(media);
     } catch (error: unknown) {
       if (attempt === this.attempt) {
@@ -244,6 +249,29 @@ export class CallSession {
       (connection) => connection.switchDevice(kind, deviceId),
       () => 'Не удалось переключить устройство',
     );
+  }
+
+  /** Restarts the microphone with the new processing; remembered on the device. */
+  async setAudioProcessing(processing: AudioProcessing): Promise<void> {
+    this.audioProcessing.set(processing);
+    this.devices.rememberAudioProcessing(processing);
+    await this.run(
+      (connection) => connection.setAudioProcessing(processing),
+      () => 'Не удалось изменить обработку звука',
+    );
+  }
+
+  /** «Сведения о связи»; `null` outside a call or when the browser gives none. */
+  async stats(): Promise<CallStats | null> {
+    const connection = this.connection;
+    if (connection === null) {
+      return null;
+    }
+    try {
+      return await connection.stats();
+    } catch {
+      return null;
+    }
   }
 
   async startAudio(): Promise<void> {

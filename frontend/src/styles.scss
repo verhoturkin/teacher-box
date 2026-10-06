@@ -2503,6 +2503,37 @@ a.p-menu-item-link:hover {
   visibility: hidden;
 }
 
+/* «Сведения о связи»: label and value side by side, wrapping on a phone */
+.tb-call-stats {
+  &__title {
+    margin: var(--tb-space-4) 0 var(--tb-space-2);
+    font: var(--tb-type-title-m);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--tb-space-1) var(--tb-space-4);
+    margin: 0;
+    font: var(--tb-type-body-m);
+
+    dt {
+      color: var(--p-md-on-surface-variant);
+    }
+
+    dd {
+      margin: 0;
+      text-align: end;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
 /* The minimized call: a floating window on a computer, a bar above the bottom navigation on a phone */
 .tb-call-mini {
   position: fixed;

@@ -298,7 +298,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   toggles; a switched-off microphone or camera stays round and turns error-container with a crossing line
   (primeicons have no «slash» icons); `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
   the hang-up phone. No tooltips on call buttons (they cover the video); the labels are for screen readers. The
-  devices menu lies above the window (`baseZIndex`). Phones have no screen sharing.
+  settings menu («Настройки звонка», the gear) lies above the window (`baseZIndex`): groups «Микрофон», «Камера»
+  (the chosen device checked), «Обработка звука» (three checkable switches) and «Связь» → «Сведения о связи» — a
+  `tb-dialog` with titled «label — value» lists (Title Medium headings, Body Medium, values right-aligned with
+  tabular figures), refreshed every 2 s. Phones have no screen sharing.
 - **Mini window** — on a computer 20 rem, surface-container-high, `--tb-shape-xl`, elevation 3, in a corner
   (dragged by its top line and snapped to the nearest corner, or «Переместить окно звонка»; remembered on the
   device); shows a shared screen, the speaker or a camera; compact toolbar. On a phone — a full-width pill above

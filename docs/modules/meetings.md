@@ -46,7 +46,9 @@ join the lesson (`JoinLessonChatAction`).
 `livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
 mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
-`call-tile`, `call-controls`, `call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
+`call-tile`, `call-controls` (settings menu: devices, sound processing, «Сведения о связи» —
+`call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
+`call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`), `CallsPage` (`/teacher/calls`, menu «Звонки» after «Расписание»; refreshes
 every 10 s while visible and on return to the tab) — never import them from `parts.ts` in the root, it pulls the
@@ -56,8 +58,11 @@ via `parts.ts`.
 
 ### Sound quality
 
-Capture: echo cancellation, noise suppression and automatic gain on; Chrome's voice isolation (LiveKit asks for
-it by default) off — on slow computers it chops the voice. Stuttering sound in a call is packet loss or jitter on
+Capture: echo cancellation, noise suppression and automatic gain — on by default, switched in the settings menu
+(`AudioProcessing`, `localStorage` `tb-call-audio`; a working microphone is restarted with them); Chrome's voice
+isolation (LiveKit asks for it by default) always off — on slow computers it chops the voice. «Сведения о связи»
+shows what to look at: the protocol and path (UDP/TCP, direct/NAT/TURN), round trip, received sound loss,
+jitter and the share the browser concealed, sent sound loss at the server, why the sent video is limited. Stuttering sound in a call is packet loss or jitter on
 the way, in order of likelihood: UDP blocked so media goes over TCP 7881 (head-of-line blocking); Docker Desktop's
 lossy UDP port forwarding; a saturated uplink of a participant (720p camera, simulcast); CPU of the `livekit`
 container or of the participant's computer; Bluetooth headsets in hands-free mode. Checks for administrators —

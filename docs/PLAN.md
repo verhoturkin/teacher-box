@@ -39,10 +39,10 @@ ADR: [0031](adr/0031-split-variant-only.md) (replaces the single variant of ADR-
   mini window (`call/call-corner.ts`), `call-window.ts`, `styles.scss`, help «Звонки».
 - [x] 108.4 **F D** Stuttering sound: capture without the browser's voice isolation (`livekit-engine.ts`), the
   causes and the server checks in `docs/operations.md` and `docs/modules/meetings.md`.
-- [ ] 108.5 **F** Sound processing in the devices menu: «Эхоподавление», «Шумоподавление», «Автоусиление
+- [x] 108.5 **F** Sound processing in the devices menu: «Эхоподавление», «Шумоподавление», «Автоусиление
   громкости» (checkable, remembered on the device, applied by restarting the microphone):
   `AudioProcessing` in `call-engine.ts`, `CallDevices`, `CallSession.setAudioProcessing`, `livekit-engine.ts`.
-- [ ] 108.6 **F** «Сведения о связи» from the devices menu: participants' connection quality, the transport
+- [x] 108.6 **F** «Сведения о связи» from the devices menu: participants' connection quality, the transport
   (UDP/TCP, direct / through NAT / TURN, ports, round trip, bandwidth), received sound (loss, jitter, concealed
   share), sent sound loss, video sizes and why the sent one is limited, LiveKit version; refreshed every 2 s.
   `CallConnection.stats()`, `readStats` in `call-stats.ts`, `call/call-stats-dialog.ts`.

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { CallDevices, DeviceList } from './call-devices';
-import { CallMedia } from './call-engine';
+import { CallMedia, DEFAULT_AUDIO_PROCESSING } from './call-engine';
 import { CallPrejoin } from './call-prejoin';
 import { CallSession } from './call-session';
 
@@ -36,6 +36,8 @@ describe('CallPrejoin', () => {
         provide: CallDevices,
         useValue: {
           supported: () => supported,
+          audioProcessing: () => DEFAULT_AUDIO_PROCESSING,
+          rememberAudioProcessing: () => undefined,
           preferences: () => ({
             microphone: true,
             camera: true,

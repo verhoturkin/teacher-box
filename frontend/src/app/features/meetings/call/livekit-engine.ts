@@ -1,13 +1,17 @@
-import type {
-  CallConnection,
-  CallDeviceKind,
-  CallEndReason,
-  CallEngine,
-  CallMedia,
-  CallParticipant,
-  CallQuality,
-  CallSnapshot,
-  MediaRef,
+import { readStats, StatsReport } from './call-stats';
+import {
+  AudioProcessing,
+  DEFAULT_AUDIO_PROCESSING,
+  type CallConnection,
+  type CallDeviceKind,
+  type CallEndReason,
+  type CallEngine,
+  type CallMedia,
+  type CallParticipant,
+  type CallQuality,
+  type CallSnapshot,
+  type CallStats,
+  type MediaRef,
 } from './call-engine';
 
 /*
@@ -21,6 +25,17 @@ export interface LkTrack {
   readonly kind: string;
   attach(element?: HTMLMediaElement): HTMLMediaElement;
   detach(element?: HTMLMediaElement): HTMLMediaElement | HTMLMediaElement[];
+  /** The WebRTC statistics of the connection carrying the track. */
+  getRTCStatsReport?(): Promise<StatsReport | undefined>;
+  /** A local microphone: captured again with new options. */
+  restartTrack?(options?: LkAudioCapture): Promise<void>;
+  getDeviceId?(): Promise<string | undefined>;
+}
+
+/** Microphone capture options (`AudioCaptureOptions`). */
+export interface LkAudioCapture extends AudioProcessing {
+  readonly deviceId?: string;
+  readonly voiceIsolation: boolean;
 }
 
 /** A published track (`TrackPublication`). */
@@ -41,7 +56,7 @@ export interface LkParticipant {
 
 /** This user (`LocalParticipant`). */
 export interface LkLocalParticipant extends LkParticipant {
-  setMicrophoneEnabled(enabled: boolean): Promise<unknown>;
+  setMicrophoneEnabled(enabled: boolean, options?: LkAudioCapture): Promise<unknown>;
   setCameraEnabled(enabled: boolean): Promise<unknown>;
   setScreenShareEnabled(enabled: boolean, options?: { audio: boolean }): Promise<unknown>;
 }
@@ -50,13 +65,7 @@ export interface LkLocalParticipant extends LkParticipant {
 export interface LkRoomOptions {
   readonly adaptiveStream: boolean;
   readonly dynacast: boolean;
-  readonly audioCaptureDefaults: {
-    readonly deviceId?: string;
-    readonly echoCancellation: boolean;
-    readonly noiseSuppression: boolean;
-    readonly autoGainControl: boolean;
-    readonly voiceIsolation: boolean;
-  };
+  readonly audioCaptureDefaults: LkAudioCapture;
   readonly videoCaptureDefaults: {
     readonly deviceId?: string;
     readonly resolution: {
@@ -72,6 +81,7 @@ export interface LkRoom {
   readonly localParticipant: LkLocalParticipant;
   readonly remoteParticipants: ReadonlyMap<string, LkParticipant>;
   readonly canPlaybackAudio: boolean;
+  readonly serverInfo?: { readonly version?: string };
   on(event: string, listener: (...args: never[]) => void): unknown;
   connect(url: string, token: string): Promise<void>;
   disconnect(): Promise<void>;
@@ -158,12 +168,7 @@ function roomOptions(media: CallMedia): LkRoomOptions {
     dynacast: true,
     audioCaptureDefaults: {
       ...(media.microphoneId === null ? {} : { deviceId: media.microphoneId }),
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-      // LiveKit asks for Chrome's voice isolation by default: on a slow computer it cuts and stutters
-      // the voice (docs/modules/meetings.md); the usual noise suppression stays.
-      voiceIsolation: false,
+      ...capture(DEFAULT_AUDIO_PROCESSING),
     },
     videoCaptureDefaults: {
       ...(media.cameraId === null ? {} : { deviceId: media.cameraId }),
@@ -172,12 +177,24 @@ function roomOptions(media: CallMedia): LkRoomOptions {
   };
 }
 
+/**
+ * The chosen processing; Chrome's voice isolation (LiveKit asks for it by default) is always off: on a slow
+ * computer it cuts and stutters the voice (docs/modules/meetings.md).
+ */
+function capture(processing: AudioProcessing): LkAudioCapture {
+  return { ...processing, voiceIsolation: false };
+}
+
+/** Track sources whose statistics are read; one peer connection usually carries them all. */
+const SOURCES = ['microphone', 'camera', 'screen_share', 'screen_share_audio'];
+
 class LiveKitCall implements CallConnection {
   private readonly audio: HTMLElement;
   private readonly refs = new WeakMap<LkTrack, MediaRef>();
   private state: CallSnapshot['state'] = 'connected';
   private ended: CallEndReason | null = null;
   private nextRef = 0;
+  private processing = DEFAULT_AUDIO_PROCESSING;
 
   constructor(
     private readonly room: LkRoom,
@@ -235,7 +252,10 @@ class LiveKitCall implements CallConnection {
   }
 
   async setMicrophone(enabled: boolean): Promise<void> {
-    await this.room.localParticipant.setMicrophoneEnabled(enabled);
+    await this.room.localParticipant.setMicrophoneEnabled(
+      enabled,
+      enabled ? capture(this.processing) : undefined,
+    );
     this.emit();
   }
 
@@ -251,6 +271,37 @@ class LiveKitCall implements CallConnection {
 
   async switchDevice(kind: CallDeviceKind, deviceId: string): Promise<void> {
     await this.room.switchActiveDevice(kind, deviceId);
+  }
+
+  async setAudioProcessing(processing: AudioProcessing): Promise<void> {
+    this.processing = processing;
+    const track = this.room.localParticipant.getTrackPublication('microphone')?.track;
+    if (track?.restartTrack === undefined) {
+      return;
+    }
+    const deviceId = await track.getDeviceId?.();
+    await track.restartTrack({
+      ...capture(processing),
+      ...(deviceId === undefined ? {} : { deviceId }),
+    });
+  }
+
+  async stats(): Promise<CallStats> {
+    const people = [this.room.localParticipant, ...this.room.remoteParticipants.values()];
+    const tracks = people.flatMap((person) =>
+      SOURCES.map((source) => person.getTrackPublication(source)?.track).filter(
+        (track) => track !== undefined,
+      ),
+    );
+    const reports = await Promise.all(
+      tracks.map((track) =>
+        (track.getRTCStatsReport?.() ?? Promise.resolve(undefined)).catch(() => undefined),
+      ),
+    );
+    return readStats(
+      reports.filter((report) => report !== undefined),
+      this.room.serverInfo?.version ?? null,
+    );
   }
 
   async startAudio(): Promise<void> {

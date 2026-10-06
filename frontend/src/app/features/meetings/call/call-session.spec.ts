@@ -7,10 +7,28 @@ import { authResponse } from '@testing/auth';
 import { aParticipant as person } from '@testing/meetings-fixtures';
 import { testProviders } from '@testing/setup';
 import { CallDevices } from './call-devices';
-import { CALL_ENGINE, CallConnection, CallEngine, CallMedia, CallSnapshot } from './call-engine';
+import {
+  AudioProcessing,
+  CALL_ENGINE,
+  CallConnection,
+  CallEngine,
+  CallMedia,
+  CallSnapshot,
+  CallStats,
+  DEFAULT_AUDIO_PROCESSING,
+} from './call-engine';
 import { CallSession, END_TEXTS } from './call-session';
 
 const MEDIA: CallMedia = { microphone: true, camera: false, microphoneId: null, cameraId: null };
+const STATS: CallStats = {
+  serverVersion: '1.13.7',
+  transport: null,
+  audioIn: null,
+  audioOutLoss: null,
+  videoOut: null,
+  videoOutLimit: null,
+  videoIn: null,
+};
 
 class FakeConnection implements CallConnection {
   readonly calls: string[] = [];
@@ -33,6 +51,13 @@ class FakeConnection implements CallConnection {
   }
   switchDevice(kind: string, id: string) {
     return this.act(`switch ${kind} ${id}`);
+  }
+  setAudioProcessing(processing: AudioProcessing) {
+    const flags = Object.values(processing).map((on) => (on ? '1' : '0'));
+    return this.act(`processing ${flags.join('')}`);
+  }
+  stats(): Promise<CallStats> {
+    return this.failWith === null ? Promise.resolve(STATS) : Promise.reject(this.failWith);
   }
   startAudio() {
     return this.act('startAudio');
@@ -66,10 +91,12 @@ describe('CallSession', () => {
   let engine: FakeEngine;
   let errors: string[];
   let remembered: CallMedia[];
+  let processed: AudioProcessing[];
 
   beforeEach(() => {
     engine = new FakeEngine();
     remembered = [];
+    processed = [];
     TestBed.configureTestingModule({
       providers: testProviders(
         { provide: CALL_ENGINE, useValue: () => Promise.resolve(engine) },
@@ -78,6 +105,8 @@ describe('CallSession', () => {
           useValue: {
             preferences: () => MEDIA,
             remember: (media: CallMedia) => remembered.push(media),
+            audioProcessing: () => DEFAULT_AUDIO_PROCESSING,
+            rememberAudioProcessing: (processing: AudioProcessing) => processed.push(processing),
           },
         },
       ),
@@ -168,7 +197,7 @@ describe('CallSession', () => {
 
     expect(engine.urls).toEqual([`${location.origin}/livekit jwt-s-1`]);
     expect(remembered).toEqual([MEDIA]);
-    expect(connection.calls).toEqual(['mic true']);
+    expect(connection.calls).toEqual(['processing 111', 'mic true']);
     expect(session.phase()).toBe('connecting');
     engine.update(snapshot({ participants: [person(), person({ id: 's-1', local: false })] }));
     expect(session.phase()).toBe('connected');
@@ -249,6 +278,7 @@ describe('CallSession', () => {
     await session.switchDevice('audioinput', 'mic-2');
     await session.startAudio();
     expect(connection.calls).toEqual([
+      'processing 111',
       'mic true',
       'mic false',
       'camera true',
@@ -270,6 +300,23 @@ describe('CallSession', () => {
       'Браузер не дал доступ к камере и микрофону. Разрешите его в настройках сайта.',
       'Не удалось включить звук',
     ]);
+  });
+
+  it('changes the sound processing and reads the details of the connection', async () => {
+    expect(await session.stats()).toBeNull();
+    const connection = await joined();
+    const quiet = { ...DEFAULT_AUDIO_PROCESSING, noiseSuppression: false };
+
+    await session.setAudioProcessing(quiet);
+    expect(connection.calls.at(-1)).toBe('processing 101');
+    expect(session.audioProcessing()).toEqual(quiet);
+    expect(processed).toEqual([quiet]);
+    expect(await session.stats()).toEqual(STATS);
+
+    connection.failWith = new Error('busy');
+    await session.setAudioProcessing(DEFAULT_AUDIO_PROCESSING);
+    expect(errors).toEqual(['Не удалось изменить обработку звука']);
+    expect(await session.stats()).toBeNull();
   });
 
   it('keeps the call when a device fails at the start', async () => {
