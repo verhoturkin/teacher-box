@@ -12,7 +12,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * The Excalidraw library of a user (1.7.1): the shapes the teacher or a student keeps for any of their
+ * The Excalidraw library of a user (0.7.1): the shapes the teacher or a student keeps for any of their
  * boards. Each user has their own; it is stored whole, as Excalidraw hands it over.
  */
 @Service

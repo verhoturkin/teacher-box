@@ -19,7 +19,7 @@ unless the task needs history.
 
 ## Backlog
 
-Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):
+Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 - Shared `tb-steps` and `tb-copy-field` components.
 - `cssLayer` instead of `::ng-deep` / `!important`.
 - CI check for unused design tokens.
@@ -31,7 +31,7 @@ portal time zone; picking a reschedule time from free slots; file check before u
 the URL; prompt on leaving unsaved settings; invitation and first-run fixes; list-detail for the review
 queue; filter chips instead of toggles.
 
-Calls after 1.8.0: call history; teacher moderation (mute / remove a participant); chat in the call;
+Calls after 0.8.0: call history; teacher moderation (mute / remove a participant); chat in the call;
 «ученик ждёт» notification (LiveKit webhooks); opening the student's board from the call; Document
 Picture-in-Picture; noise suppression; recording.
 

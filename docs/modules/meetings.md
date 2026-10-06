@@ -1,6 +1,6 @@
 # meetings
 
-Video calls of students and groups: external call links (built-in LiveKit rooms come with release 1.8.0). Depends
+Video calls of students and groups: external call links (built-in LiveKit rooms come with release 0.8.0). Depends
 on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meetings-and-boards.md),
 [0030](../adr/0030-livekit-calls.md).
 

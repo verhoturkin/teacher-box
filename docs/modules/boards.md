@@ -7,7 +7,7 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 ## Rules
 
 - Kinds: `EXCALIDRAW` — scene, images and copies live in the portal; `LINK` — an external board (Холст or any
-  other http(s) board): a title and a link. The kind never changes. Boards of 1.4–1.6 (single owner) were deleted
+  other http(s) board): a title and a link. The kind never changes. Boards of 0.4–0.6 (single owner) were deleted
   by `V2`.
 - Members: any number of students and groups (`board_members`). New members must be current students and active
   groups; members the board already has stay when they leave.
@@ -66,7 +66,7 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
 - `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards;
-  a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 1.7.3 the
+  a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 0.7.3 the
   students page links no boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
   with the filter's member; row actions — copies (Excalidraw only), change, delete
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
