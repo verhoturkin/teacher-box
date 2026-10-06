@@ -220,10 +220,11 @@ compose-файлах (профиль `calls`, ADR-0030). Без него пор�
   ```
 - Свой прокси перед вариантом split тоже должен пропускать WebSocket на `/livekit/`.
 
-**Внешний LiveKit** (свой на другом адресе или LiveKit Cloud): задайте
-`TEACHERBOX_MEETINGS_LIVEKIT_URL` (адрес для браузеров, `wss://…`),
-`TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (адрес для портала, `https://…`), ключ и секрет; профиль
-`calls` тогда не нужен.
+**LiveKit на другом сервере.** Браузер всегда подключается к `<адрес портала>/livekit`, поэтому
+направьте этот путь на свой LiveKit: в варианте split — переменной `LIVEKIT_URL` контейнера
+`frontend`, в варианте single — правилом своего прокси. Портал ходит к LiveKit по
+`TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (по умолчанию `http://livekit:7880`); ключ и секрет — те же.
+Профиль `calls` тогда не нужен.
 
 **Если нет видео или звука.** Проверьте, что открыты UDP-порты и верен публичный адрес (в журнале
 LiveKit строка `starting LiveKit server` с `nodeIP`); в сетях, где UDP закрыт, звонок идёт через

@@ -112,7 +112,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   `Upgrade`/`Connection`, long timeouts, upstream resolved lazily (`resolver 127.0.0.11` + variable) so nginx
   starts without the profile. Permissions-Policy `camera=(self), microphone=(self), display-capture=(self)` in
   `docker/nginx/security-headers.conf` and `PlatformSecurityAutoConfiguration.PERMISSIONS_POLICY` (+ test);
-  CSP `connect-src` gets the LiveKit origin only when `TEACHERBOX_MEETINGS_LIVEKIT_URL` is another host.
+  CSP unchanged: browsers always connect to `<portal>/livekit` (no separate browser URL, see 104.1).
   `scripts/verify.sh docker` checks `config` with and without the profile.
 - [x] 103.2 **D** `docs/operations.md` (Russian): enabling calls (`COMPOSE_PROFILES=calls`, key/secret
   generation, secret ≥ 32 chars), ports to open (7881/tcp, 7882/udp, 3478/udp), public IP, own reverse proxy
@@ -121,9 +121,10 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 
 ### Stage 104. Built-in rooms — backend
 
-- [ ] 104.1 **B** Skill `new-setting`: `TEACHERBOX_MEETINGS_LIVEKIT_URL` (address for browsers, default
-  `<portal>/livekit`), `_API_URL` (backend → LiveKit, default `http://livekit:7880`), `_API_KEY`, `_API_SECRET`
-  (secret); `SettingsCatalog` group «Видеозвонки». Adapter `meetings/livekit/LiveKitGateway` (tokens,
+- [x] 104.1 **B** Skill `new-setting`: `TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (backend → LiveKit, default
+  `http://livekit:7880`), `_API_KEY`, `_API_SECRET` (secret); `SettingsCatalog` group «Видеозвонки». No browser
+  URL setting: browsers always use `<portal origin>/livekit`, another LiveKit is reached through that proxy.
+  Port `application/CallServer`, adapter `meetings/livekit/LiveKitCallServer` (tokens,
   `listRooms`, `listParticipants`, `removeParticipant`; timeouts, network calls outside transactions, no
   personal data in logs) and `LiveKitIntegrationCheck` for the admin integrations page; gateway tests against
   a local HTTP stub (Twirp + protobuf JSON).

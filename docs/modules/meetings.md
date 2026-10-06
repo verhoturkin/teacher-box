@@ -8,6 +8,11 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
 
 - One external link per student and per group (owner id), any http(s) address the teacher pastes; a lesson's own
   link still wins over it. The Telemost API is gone (ADR-0030): links created through it earlier stay as such links.
+- Built-in calls (ADR-0030): port `CallServer` (`application`), adapter `livekit/LiveKitCallServer` over the
+  official SDK — tokens signed locally (TTL 10 min, LiveKit refreshes them), `ListRooms`/`ListParticipants` for
+  rooms `tb-<ownerId>`, `RemoveParticipant`. On only with `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET` (secret ≥ 32
+  chars, else startup fails); the backend calls `TEACHERBOX_MEETINGS_LIVEKIT_API_URL`, browsers always
+  `<portal>/livekit`. `LiveKitIntegrationCheck` on the admin integrations page.
 - «Начать урок» (teacher) opens a Telemost link as `telemost://…` in the app (default on Windows, device setting)
   with «Открыть в браузере» in its split-button menu; students get a plain link.
 

@@ -74,7 +74,9 @@ public final class SettingsCatalog {
         b.group("meetings", "Видеозвонки")
                 // the LiveKit container reads them from .env too, so they change only there
                 .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", "LiveKit: ключ API")
-                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET", "LiveKit: секрет API (не короче 32 символов)");
+                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET", "LiveKit: секрет API (не короче 32 символов)")
+                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", "LiveKit: адрес для портала", URL,
+                        "Браузеры всегда подключаются к <адрес портала>/livekit.");
 
         b.group("boards", "Доски")
                 .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
