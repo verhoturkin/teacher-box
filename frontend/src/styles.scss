@@ -697,6 +697,30 @@ textarea.p-textarea {
 }
 
 /*
+ * A trailing amount with an icon button (`tb-list__trail--amount`: a balance with «Записать оплату», a
+ * charge with «×»): in a narrow list the amount (`tb-list__amount`) goes under the text and the button
+ * stays on the right, so a long amount does not squeeze the name into a narrow column.
+ */
+@container (max-width: 26rem) {
+  .tb-list > li:has(> .tb-list__trail--amount) {
+    grid-template-areas: 'lead text trail' 'lead amount trail';
+
+    > .tb-list__trail--amount {
+      display: contents;
+
+      > .tb-list__amount {
+        grid-area: amount;
+        justify-self: start;
+      }
+
+      > :not(.tb-list__amount) {
+        grid-area: trail;
+      }
+    }
+  }
+}
+
+/*
  * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
  * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
  */

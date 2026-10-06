@@ -32,16 +32,16 @@ ADR: ADR-0017 amended — the font is Google Sans.
 ### Stage 127. Billing as lists (F)
 
 - [x] 127.1 `billing/teacher/billing-overview-page.ts`: students' balances — a `tb-list` like «Ученики»
-  (avatar; name link + «цена · занятий · последнее»; trail — balance and the wallet button, one line on the
-  phone) instead of the `p-table`.
+  (avatar; name link + «цена · занятий · последнее»; trail — balance and the wallet button; on the phone the
+  balance goes under the name, `tb-list__trail--amount`) instead of the `p-table`.
 - [x] 127.2 `billing/ledger/ledger-table.ts` (teacher's `student-ledger-page.ts`, student's
   `my-billing-page.ts`): lessons and payments — a `tb-list` (icon; operation + status tag; «date · details»;
   trail — amount and «×» for the teacher), 20 rows and «Показать ещё» instead of the paginator.
 
 ### Stage 128. Boards as a list (F)
 
-- [x] 128.1 `boards/teacher/boards-page.ts`: a `tb-list` like «Ученики» (kind icon; title link + «кому ·
-  изменена»; trail — kind tag and «⋮» menu: «Резервные копии», «Изменить», «Удалить…»).
+- [x] 128.1 `boards/teacher/boards-page.ts`: a `tb-list` like «Ученики» (kind icon; title link + «вид · кому ·
+  изменена»; trail — «⋮» menu only: «Резервные копии», «Изменить», «Удалить…»).
 
 ### Stage 129. Read notifications folded (B, F)
 

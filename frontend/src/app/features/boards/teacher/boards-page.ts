@@ -17,7 +17,6 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
-import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
@@ -41,14 +40,12 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 @Component({
   selector: 'tb-boards-page',
   imports: [
-    DatePipe,
     RouterLink,
     Button,
     Card,
     ConfirmDialog,
     Menu,
     ButtonAttributes,
-    Tag,
     Tooltip,
     HelpButton,
     EmptyState,
@@ -57,7 +54,7 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
     BoardDialog,
     BoardBackupsDialog,
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Доски">
@@ -109,16 +106,9 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
                       >{{ board.title }}</a
                     >
                   }
-                  <span class="tb-list__supporting"
-                    >{{ membersText(board) }} · изменена
-                    {{ board.updatedAt | date: 'dd.MM.yyyy HH:mm' }}</span
-                  >
+                  <span class="tb-list__supporting">{{ details(board) }}</span>
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
-                  <p-tag
-                    [value]="kindLabels[board.kind]"
-                    [severity]="board.kind === 'EXCALIDRAW' ? 'info' : 'secondary'"
-                  />
                   <p-button
                     icon="pi pi-ellipsis-v"
                     [text]="true"
@@ -175,6 +165,7 @@ export class BoardsPage implements OnInit {
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly date = inject(DatePipe);
 
   /** `?student=<id>` — boards of a student, with their groups' boards. */
   readonly student = input<string>();
@@ -266,6 +257,15 @@ export class BoardsPage implements OnInit {
       queryParams: { student: null, group: null },
       queryParamsHandling: 'merge',
     });
+  }
+
+  /** «Доска Excalidraw · Мария, группа «ОГЭ» · изменена 01.09.2026 10:00»; an external board — no time. */
+  protected details(board: Board): string {
+    const parts = [this.kindLabels[board.kind], this.membersText(board)];
+    if (board.kind === 'EXCALIDRAW') {
+      parts.push(`изменена ${this.date.transform(board.updatedAt, 'dd.MM.yyyy HH:mm') ?? ''}`);
+    }
+    return parts.join(' · ');
   }
 
   protected openMenu(board: Board, event: Event): void {

@@ -124,8 +124,12 @@ import { formatMoney } from '@shared/money/money';
                     }}</a>
                     <span class="tb-list__supporting">{{ details(row, overview.currency) }}</span>
                   </div>
-                  <div class="tb-list__trail tb-list__trail--icons">
-                    <tb-balance-amount [balance]="row.balance" [currency]="overview.currency" />
+                  <div class="tb-list__trail tb-list__trail--icons tb-list__trail--amount">
+                    <tb-balance-amount
+                      class="tb-list__amount"
+                      [balance]="row.balance"
+                      [currency]="overview.currency"
+                    />
                     <p-button
                       icon="pi pi-wallet"
                       [text]="true"

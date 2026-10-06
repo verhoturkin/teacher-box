@@ -56,8 +56,8 @@ export const LEDGER_PAGE = 20;
                     }
                   </span>
                 </div>
-                <div class="tb-list__trail tb-list__trail--icons">
-                  <span class="tb-ledger__amount tb-negative"
+                <div class="tb-list__trail tb-list__trail--icons tb-list__trail--amount">
+                  <span class="tb-ledger__amount tb-list__amount tb-negative"
                     >−{{ entry.lesson.price | money: ledger().currency }}</span
                   >
                   @if (editable() && entry.lesson.status !== 'CANCELLED') {
@@ -91,8 +91,8 @@ export const LEDGER_PAGE = 20;
                     }
                   </span>
                 </div>
-                <div class="tb-list__trail tb-list__trail--icons">
-                  <span class="tb-ledger__amount tb-positive"
+                <div class="tb-list__trail tb-list__trail--icons tb-list__trail--amount">
+                  <span class="tb-ledger__amount tb-list__amount tb-positive"
                     >+{{ entry.payment.amount | money: ledger().currency }}</span
                   >
                   @if (editable() && !entry.payment.voidedAt) {
