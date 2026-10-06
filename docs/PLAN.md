@@ -42,7 +42,7 @@ ADR: [0031](adr/0031-split-variant-only.md) (replaces the single variant of ADR-
 
 ### Stage 109. Build
 
-- [ ] 109.1 **D** `docker/Dockerfile` target `frontend` gets `LIVEKIT_URL=http://livekit:7880` by default, so
+- [x] 109.1 **D** `docker/Dockerfile` target `frontend` gets `LIVEKIT_URL=http://livekit:7880` by default, so
   `nginx -t` (CI) and a container started without the variable get a valid config.
 - [ ] 109.2 **D B** Remove the single variant: `compose.single.yaml`, Dockerfile targets `single`/`single-build`,
   the Maven profile `bundle-frontend`, `platform/web/SpaWebConfigurer`; E2E runs on the split variant

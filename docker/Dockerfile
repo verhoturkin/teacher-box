@@ -64,7 +64,8 @@ COPY --from=backend-build /workspace/target/extracted/snapshot-dependencies/ ./
 COPY --from=backend-build /workspace/target/extracted/application/ ./
 
 FROM ${NGINX_IMAGE} AS frontend
-ENV BACKEND_URL=http://backend:8080
+# Both are substituted into the nginx template at start; an unset one would leave "${...}" in the config.
+ENV BACKEND_URL=http://backend:8080     LIVEKIT_URL=http://livekit:7880
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=frontend-build /workspace/dist/teacher-box/browser /usr/share/nginx/html
