@@ -221,8 +221,8 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await expect(page.getByRole('row', { name: new RegExp(ANNA) })).toContainText('800');
-  await expect(page.getByRole('row', { name: new RegExp(BORIS) })).toContainText('800');
+  await expect(page.getByRole('listitem').filter({ hasText: ANNA })).toContainText('800');
+  await expect(page.getByRole('listitem').filter({ hasText: BORIS })).toContainText('800');
 });
 
 test('a Telemost room and a board reach the student', async ({ page, browser, request }) => {

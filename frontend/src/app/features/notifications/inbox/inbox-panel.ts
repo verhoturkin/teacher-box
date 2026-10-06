@@ -1,105 +1,116 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Tooltip } from 'primeng/tooltip';
 import { HttpErrorResponse } from '@angular/common/http';
 import { errorMessage } from '@core/http/error-messages';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem } from '../data-access/notifications.models';
-import { KIND_ICONS } from '../notification-labels';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Busy } from '@shared/ui/busy';
+import { NotificationList } from './notification-list';
 
 export const PAGE_SIZE = 20;
 
-/** Notifications of the current user in the personal area. */
+/** Loaded notifications of one part of the inbox (unread or read ones) and how many there are. */
+interface InboxPart {
+  readonly items: NotificationItem[];
+  readonly total: number;
+}
+
+/**
+ * Notifications of the current user in the personal area: the unread ones on top, the read ones in
+ * the folded «Прочитанные» (loaded when it is opened). A notification marked read moves there.
+ */
 @Component({
   selector: 'tb-inbox-panel',
-  imports: [EmptyState, DatePipe, Button, Card, Tooltip, LoadStateView],
+  imports: [EmptyState, Button, Card, ButtonAttributes, LoadStateView, NotificationList],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
       <tb-load-state [state]="state" what="уведомления" (retry)="reload()">
-        <div class="tb-inbox-header">
-          <span class="tb-muted">
-            @if (unread() > 0) {
-              Непрочитанных: {{ unread() }}
-            } @else {
-              Все уведомления прочитаны
-            }
-          </span>
-          <p-button
-            label="Прочитать все"
-            icon="pi pi-check"
-            severity="secondary"
-            [disabled]="unread() === 0"
-            [loading]="busy.is('all')"
-            (onClick)="markAllRead()"
-          />
-        </div>
-        @if (items(); as items) {
-          @if (items.length === 0) {
-            <tb-empty-state icon="pi-bell" title="Уведомлений пока нет" />
+        @if (unreadPart(); as part) {
+          @if (part.items.length === 0) {
+            <tb-empty-state icon="pi-bell" title="Новых уведомлений нет" />
           } @else {
-            <ul class="tb-list tb-notifications">
-              @for (item of items; track item.id) {
-                <li class="tb-notification" [class.tb-notification--unread]="!item.read">
-                  <span
-                    class="tb-list__lead"
-                    [class.tb-list__lead--accent]="!item.read"
-                    aria-hidden="true"
-                    ><i [class]="icons[item.kind]"></i
-                  ></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title tb-notification__title">{{ item.title }}</span>
-                    @if (item.body !== null) {
-                      <span class="tb-list__supporting tb-notification__body">{{ item.body }}</span>
-                    }
-                    <span class="tb-list__supporting">{{
-                      item.createdAt | date: 'dd.MM.yyyy HH:mm'
-                    }}</span>
-                  </div>
-                  <div class="tb-list__trail">
-                    @if (item.link !== null) {
-                      <p-button
-                        label="Открыть"
-                        [text]="true"
-                        [ariaLabel]="'Открыть: ' + item.title"
-                        (onClick)="open(item)"
-                      />
-                    }
-                    @if (!item.read) {
-                      <p-button
-                        icon="pi pi-check"
-                        [text]="true"
-                        pTooltip="Отметить прочитанным"
-                        [rounded]="true"
-                        severity="secondary"
-                        ariaLabel="Отметить прочитанным"
-                        [loading]="busy.is('read-' + item.id)"
-                        (onClick)="markRead(item)"
-                      />
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
-            @if (items.length < total()) {
+            <div class="tb-inbox-header">
+              <span class="tb-muted">Непрочитанных: {{ unread() }}</span>
+              <p-button
+                label="Прочитать все"
+                icon="pi pi-check"
+                severity="secondary"
+                [loading]="busy.is('all')"
+                (onClick)="markAllRead()"
+              />
+            </div>
+            <tb-notification-list
+              label="Непрочитанные"
+              [items]="part.items"
+              [busy]="busy"
+              (opened)="open($event)"
+              (markRead)="markRead($event)"
+            />
+            @if (part.items.length < part.total) {
               <p-button
                 label="Показать ещё"
                 [text]="true"
-                [loading]="loading()"
+                [loading]="busy.is('more-unread')"
                 (onClick)="loadMore()"
               />
             }
           }
         }
+        <div class="tb-inbox-read">
+          <p-button
+            label="Прочитанные"
+            [icon]="readOpen() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            iconPos="right"
+            [text]="true"
+            severity="secondary"
+            [tbAttributes]="{
+              'aria-expanded': readOpen() ? 'true' : 'false',
+              'aria-controls': 'tb-inbox-read',
+            }"
+            (onClick)="toggleRead()"
+          />
+          <div id="tb-inbox-read" role="region" aria-label="Прочитанные">
+            @if (readOpen()) {
+              <tb-load-state
+                [state]="readState"
+                what="прочитанные уведомления"
+                [compact]="true"
+                (retry)="loadRead(0)"
+              >
+                @if (readPart(); as part) {
+                  @if (part.items.length === 0) {
+                    <tb-empty-state icon="pi-inbox" title="Прочитанных уведомлений нет" />
+                  } @else {
+                    <tb-notification-list
+                      label="Прочитанные уведомления"
+                      [items]="part.items"
+                      [busy]="busy"
+                      (opened)="open($event)"
+                      (markRead)="markRead($event)"
+                    />
+                    @if (part.items.length < part.total) {
+                      <p-button
+                        label="Показать ещё"
+                        [text]="true"
+                        [loading]="busy.is('more-read')"
+                        (onClick)="loadMoreRead()"
+                      />
+                    }
+                  }
+                }
+              </tb-load-state>
+            }
+          </div>
+        </div>
       </tb-load-state>
     </p-card>
   `,
@@ -113,22 +124,10 @@ export const PAGE_SIZE = 20;
       margin-bottom: var(--tb-space-2);
     }
 
-    .tb-notifications {
-      margin-bottom: var(--tb-space-2);
-    }
-
-    .tb-notification {
-      align-items: flex-start;
-    }
-
-    .tb-notification--unread .tb-notification__title {
-      font-weight: 500;
-    }
-
-    /* the text may hold a link to a meeting: a long address breaks anywhere (ADR-0021) */
-    .tb-notification__body {
-      white-space: pre-line;
-      overflow-wrap: anywhere;
+    .tb-inbox-read {
+      margin-top: var(--tb-space-4);
+      padding-top: var(--tb-space-2);
+      border-top: 1px solid var(--p-md-outline-variant);
     }
   `,
 })
@@ -139,24 +138,35 @@ export class InboxPanel implements OnInit {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
 
-  protected readonly icons = KIND_ICONS;
-  protected readonly items = signal<NotificationItem[] | null>(null);
-  protected readonly total = signal(0);
-  protected readonly loading = signal(false);
+  protected readonly unreadPart = signal<InboxPart | null>(null);
+  /** `null` until «Прочитанные» is opened (or after «Прочитать все»: loaded again when opened). */
+  protected readonly readPart = signal<InboxPart | null>(null);
+  protected readonly readOpen = signal(false);
   protected readonly unread = this.unreadCounter.count;
   protected readonly state = new LoadState();
+  protected readonly readState = new LoadState();
 
   ngOnInit(): void {
-    this.load(0);
+    this.loadUnread(0);
   }
 
   protected reload(): void {
-    this.load(0);
+    this.loadUnread(0);
   }
 
   loadMore(): void {
-    const loaded = this.items()?.length ?? 0;
-    this.load(Math.floor(loaded / PAGE_SIZE), true);
+    this.loadUnread(nextPage(this.unreadPart()), true);
+  }
+
+  loadMoreRead(): void {
+    this.loadRead(nextPage(this.readPart()), true);
+  }
+
+  protected toggleRead(): void {
+    this.readOpen.update((open) => !open);
+    if (this.readOpen() && this.readPart() === null) {
+      this.loadRead(0);
+    }
   }
 
   open(item: NotificationItem): void {
@@ -170,46 +180,83 @@ export class InboxPanel implements OnInit {
 
   markRead(item: NotificationItem): void {
     this.busy.guard('read-' + item.id, this.api.markRead(item.id)).subscribe(() => {
-      this.items.update(
-        (items) =>
-          items?.map((other) => (other.id === item.id ? { ...other, read: true } : other)) ?? null,
-      );
-      this.unreadCounter.set(this.unread() - 1);
+      this.unreadPart.update((part) => part && without(part, item.id));
+      this.readPart.update((part) => part && withRead(part, { ...item, read: true }));
+      this.unreadCounter.set(Math.max(0, this.unread() - 1));
     });
   }
 
   markAllRead(): void {
     this.busy.guard('all', this.api.markAllRead()).subscribe(() => {
-      this.items.update((items) => items?.map((item) => ({ ...item, read: true })) ?? null);
+      this.unreadPart.set({ items: [], total: 0 });
       this.unreadCounter.set(0);
+      this.readPart.set(null);
+      if (this.readOpen()) {
+        this.loadRead(0);
+      }
     });
   }
 
-  /**
-   * Loads a page; items already shown are kept, so pages are requested in order. The first load is
-   * the state of the panel (ADR-0025), a failed «Показать ещё» is a snackbar.
-   */
-  private load(page: number, more = false): void {
-    this.loading.set(true);
-    const request = this.api.page(page, PAGE_SIZE);
-    (more ? request : request.pipe(this.state.track())).subscribe({
+  /** The unread notifications; the first load is the state of the panel (ADR-0025). */
+  private loadUnread(page: number, more = false): void {
+    const request = this.api.page(page, PAGE_SIZE, false);
+    const load = more ? this.busy.guard('more-unread', request) : request.pipe(this.state.track());
+    load.subscribe({
       next: (result) => {
-        this.loading.set(false);
-        const known = new Set((this.items() ?? []).map((item) => item.id));
-        const fresh = result.items.filter((item) => !known.has(item.id));
-        this.items.set(page === 0 ? result.items : [...(this.items() ?? []), ...fresh]);
-        this.total.set(result.total);
+        this.unreadPart.set(merged(more ? this.unreadPart() : null, result.items, result.total));
         this.unreadCounter.set(result.unread);
       },
       error: (error: unknown) => {
-        this.loading.set(false);
-        if (error instanceof HttpErrorResponse) {
-          this.snackbar.error(errorMessage(error));
-        }
-      },
-      complete: () => {
-        this.loading.set(false);
+        this.failed(error);
       },
     });
   }
+
+  /** The read notifications; the first load is the state of «Прочитанные». */
+  loadRead(page: number, more = false): void {
+    const request = this.api.page(page, PAGE_SIZE, true);
+    const load = more
+      ? this.busy.guard('more-read', request)
+      : request.pipe(this.readState.track());
+    load.subscribe({
+      next: (result) => {
+        this.readPart.set(merged(more ? this.readPart() : null, result.items, result.total));
+      },
+      error: (error: unknown) => {
+        this.failed(error);
+      },
+    });
+  }
+
+  /** A failed «Показать ещё» is a snackbar; a failed first load is shown by `tb-load-state`. */
+  private failed(error: unknown): void {
+    if (error instanceof HttpErrorResponse) {
+      this.snackbar.error(errorMessage(error));
+    }
+  }
+}
+
+/** The page after the loaded items; items already shown are kept, so pages are requested in order. */
+function nextPage(part: InboxPart | null): number {
+  return Math.floor((part?.items.length ?? 0) / PAGE_SIZE);
+}
+
+function merged(part: InboxPart | null, items: NotificationItem[], total: number): InboxPart {
+  if (part === null) {
+    return { items, total };
+  }
+  const known = new Set(part.items.map((item) => item.id));
+  return { items: [...part.items, ...items.filter((item) => !known.has(item.id))], total };
+}
+
+function without(part: InboxPart, id: string): InboxPart {
+  return { items: part.items.filter((item) => item.id !== id), total: Math.max(0, part.total - 1) };
+}
+
+/** A notification just read takes its place among the read ones (newest first). */
+function withRead(part: InboxPart, item: NotificationItem): InboxPart {
+  const items = [...part.items, item].sort(
+    (a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id),
+  );
+  return { items, total: part.total + 1 };
 }

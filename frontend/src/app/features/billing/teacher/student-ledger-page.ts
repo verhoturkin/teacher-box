@@ -20,7 +20,7 @@ import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingStudent, Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
-import { LedgerTable } from '../ledger/ledger-table';
+import { LedgerList } from '../ledger/ledger-list';
 import { PaymentDialog } from './payment-dialog';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -41,7 +41,7 @@ import { pageDetail } from '@core/routing/page-detail';
     InputNumber,
     MoneyPipe,
     BalanceAmount,
-    LedgerTable,
+    LedgerList,
     PaymentDialog,
     PageHeader,
     HelpButton,
@@ -141,7 +141,7 @@ import { pageDetail } from '@core/routing/page-detail';
       </div>
 
       <p-card header="История">
-        <tb-ledger-table
+        <tb-ledger-list
           [ledger]="ledger"
           [editable]="true"
           (cancelLesson)="confirmCancel($event)"

@@ -23,10 +23,15 @@ import { quietContext } from '@core/http/api-error.interceptor';
 export class NotificationsApi {
   private readonly http = inject(HttpClient);
 
-  page(page: number, size: number): Observable<NotificationPage> {
+  /** A page of the inbox, newest first; `read` — only read (`true`) or unread (`false`) ones. */
+  page(page: number, size: number, read?: boolean): Observable<NotificationPage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (read !== undefined) {
+      params = params.set('read', read);
+    }
     return this.http.get<NotificationPage>('/api/me/notifications', {
       context: quietContext(),
-      params: new HttpParams().set('page', page).set('size', size),
+      params,
     });
   }
 

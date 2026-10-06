@@ -60,7 +60,7 @@ test.beforeAll(async ({ request }) => {
 test('the teacher sees the student photo in «Оплаты»', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/billing');
-  const row = page.locator('tbody tr').filter({ hasText: STUDENT });
+  const row = page.locator('.tb-list > li').filter({ hasText: STUDENT });
   await expect(row.locator('tb-avatar img')).toBeVisible();
 });
 

@@ -91,22 +91,22 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
   expect(tile.bottom).toBe('4px');
 });
 
-test('a table keeps its columns, its rows are tiles with the initials', async ({ page }) => {
+test('the payments are a list like the students, its rows are tiles with the initials', async ({
+  page,
+}) => {
   await signIn(page);
-  // students and groups are cards on every screen since 0.6.8 (ADR-0021): the payments keep columns
+  // 0.9.3: the payments are a segmented list (tb-list) like the students, not a table
   await page.goto('/teacher/billing');
 
   const row = page
-    .locator('.p-datatable.tb-cards tbody tr')
+    .locator('ul.tb-list[aria-label="Балансы учеников"] > li')
     .filter({ hasText: 'Плитка Проверкина' })
     .first();
   await expect(row.locator('.tb-avatar')).toHaveText('ПП');
-  const cell = row.locator('td').first();
-  expect(await cell.evaluate((element) => getComputedStyle(element).borderBottomWidth)).toBe('0px');
-  expect(await cell.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
+  expect(await row.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
     'rgba(0, 0, 0, 0)',
   );
-  await expect(page.locator('.p-datatable.tb-cards thead').first()).toBeVisible();
+  await expect(page.locator('.p-datatable')).toHaveCount(0);
 });
 
 test('on a phone the card around a list stays and the rows are tiles on it', async ({ page }) => {

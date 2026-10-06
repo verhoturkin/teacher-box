@@ -3,5 +3,5 @@
   "entry": ["src/test-setup.ts", "src/**/*.spec.ts"],
   "project": ["src/**/*.ts"],
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": ["@angular-eslint/builder", "primeicons", "@fontsource-variable/roboto"]
+  "ignoreDependencies": ["@angular-eslint/builder", "primeicons", "@fontsource-variable/google-sans"]
 }

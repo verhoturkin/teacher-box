@@ -199,15 +199,21 @@ public class NotificationService {
         return recipients.size();
     }
 
+    /**
+     * A page of the inbox, newest first; {@code total} counts the notifications of the filter.
+     *
+     * @param read {@code true} — only read ones, {@code false} — only unread ones, {@code null} — all
+     */
     @Transactional(readOnly = true)
-    public NotificationPage page(UUID recipientId, int page, int size) {
+    public NotificationPage page(UUID recipientId, Boolean read, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("page must be >= 0 and size between 1 and " + MAX_PAGE_SIZE);
         }
-        List<NotificationView> items = inbox.findPage(recipientId, Math.multiplyExact(page, size), size).stream()
+        List<NotificationView> items = inbox.findPage(recipientId, read, Math.multiplyExact(page, size), size)
+                .stream()
                 .map(NotificationView::of)
                 .toList();
-        return new NotificationPage(items, inbox.count(recipientId), inbox.countUnread(recipientId));
+        return new NotificationPage(items, inbox.count(recipientId, read), inbox.countUnread(recipientId));
     }
 
     @Transactional(readOnly = true)

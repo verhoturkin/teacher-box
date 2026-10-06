@@ -68,6 +68,37 @@ class InboxIntegrationTests {
     }
 
     @Test
+    void filtersUnreadAndReadOnes() {
+        UUID student = directory.addStudent("Сортировщик");
+        InboxNotification first = notify(student, "Прочитанное");
+        clock.advance(Duration.ofMinutes(1));
+        notify(student, "Новое");
+        clock.advance(Duration.ofMinutes(1));
+        InboxNotification third = notify(student, "Тоже прочитанное");
+        notifications.markRead(student, first.id());
+        notifications.markRead(student, third.id());
+
+        assertThat(mvc.get().uri("/api/me/notifications?read=false").with(TestUsers.student(student)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.total").isEqualTo(1);
+                    assertThat(json).extractingPath("$.unread").isEqualTo(1);
+                    assertThat(json).extractingPath("$.items[0].title").isEqualTo("Новое");
+                });
+        assertThat(mvc.get().uri("/api/me/notifications?read=true&size=1&page=1").with(TestUsers.student(student)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.total").isEqualTo(2);
+                    assertThat(json).extractingPath("$.unread").isEqualTo(1);
+                    assertThat(json).extractingPath("$.items.length()").isEqualTo(1);
+                    assertThat(json).extractingPath("$.items[0].title").isEqualTo("Прочитанное");
+                });
+        assertThat(mvc.get().uri("/api/me/notifications").with(TestUsers.student(student)))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.total").isEqualTo(3);
+    }
+
+    @Test
     void marksOneOrAllAsRead() {
         UUID student = directory.addStudent("Внимательный");
         InboxNotification first = notify(student, "Первое");

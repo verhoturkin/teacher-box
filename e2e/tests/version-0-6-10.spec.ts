@@ -33,9 +33,8 @@ async function teacherHeaders(request: APIRequestContext): Promise<Record<string
 /** A lesson start in «Ближайшие занятия» of the student: later this week, in Moscow. */
 function upcomingStart(hours: number): string {
   const lesson = laterThisWeek(hours);
-  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Moscow',
-  });
+  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
+  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
   return `${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`;
 }
 

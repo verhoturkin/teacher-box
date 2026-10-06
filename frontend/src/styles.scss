@@ -1,5 +1,5 @@
 @use 'primeicons/primeicons.css';
-@use '@fontsource-variable/roboto/wght.css';
+@use '@fontsource-variable/google-sans/wght.css';
 
 /*
  * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
@@ -26,8 +26,8 @@
 
   /* Type scale: `font: var(--tb-type-title-l)` */
   --tb-font:
-    'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
-    sans-serif;
+    'Google Sans Variable', 'Google Sans', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue',
+    Arial, sans-serif;
   --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
   --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
   /* Emphasized roles (Expressive): the titles of pages, cards and dialogs */
@@ -697,6 +697,30 @@ textarea.p-textarea {
 }
 
 /*
+ * A trailing amount with an icon button (`tb-list__trail--amount`: a balance with «Записать оплату», a
+ * charge with «×»): in a narrow list the amount (`tb-list__amount`) goes under the text and the button
+ * stays on the right, so a long amount does not squeeze the name into a narrow column.
+ */
+@container (max-width: 26rem) {
+  .tb-list > li:has(> .tb-list__trail--amount) {
+    grid-template-areas: 'lead text trail' 'lead amount trail';
+
+    > .tb-list__trail--amount {
+      display: contents;
+
+      > .tb-list__amount {
+        grid-area: amount;
+        justify-self: start;
+      }
+
+      > :not(.tb-list__amount) {
+        grid-area: trail;
+      }
+    }
+  }
+}
+
+/*
  * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
  * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
  */
@@ -1029,7 +1053,8 @@ a.p-menu-item-link:hover {
 }
 
 /* Muted data (a voided payment, a cancelled lesson) is on-surface-variant, not transparent (ADR-0023) */
-.tb-inactive td {
+.tb-inactive td,
+.tb-list > li.tb-inactive :is(.tb-ledger__operation, .tb-ledger__amount) {
   color: var(--p-md-on-surface-variant);
   text-decoration: line-through;
 }

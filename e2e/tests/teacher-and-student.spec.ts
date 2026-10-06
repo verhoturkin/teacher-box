@@ -135,7 +135,7 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
   await page.getByRole('button', { name: `Записать оплату: ${STUDENT_NAME}` }).click();
   await page.locator('#payment-amount').pressSequentially('3000');
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('3 000');
+  await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('3 000');
 
   const student = await studentPage(browser);
   await student
@@ -158,7 +158,7 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await expect(page.getByRole('row', { name: new RegExp(STUDENT_NAME) })).toContainText('1 500');
+  await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('1 500');
   await page.getByRole('link', { name: STUDENT_NAME }).click();
   await expect(page.getByText('Повторение')).toBeVisible();
 });

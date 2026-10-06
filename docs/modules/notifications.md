@@ -35,12 +35,14 @@ No `api` package: nothing depends on `notifications`.
 
 ## REST
 
-`/api/me/notifications/**` (inbox, unread count, read, preferences), `/api/me/channels/**` (link code, unlink),
+`/api/me/notifications/**` (inbox — newest first, `?read=true|false` filters it and `total` counts the filtered
+ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink),
 `/api/teacher/notifications/**` (status, summary, students, broadcast, remind-connect, `channels`, `bot`),
 `/api/admin/notifications/deliveries` (failed deliveries without texts, retry).
 
 ## Frontend
 
 `features/notifications/`: `notifications-page` (foldable sections: inbox, messages to students, messengers,
-students, what to send), `inbox/`, `channels/`, `preferences/`, `teacher/` (broadcast, bot wizard), `student/`,
+students, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
+opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `channels/`, `preferences/`, `teacher/` (broadcast, bot wizard), `student/`,
 `home/` widget, `notification-labels.ts`; bell in the top bar.

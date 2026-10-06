@@ -52,7 +52,7 @@ describe('BillingOverviewPage', () => {
   }
 
   function rows(): string[] {
-    return Array.from(host.querySelectorAll('tbody tr')).map((row) => readableText(row));
+    return Array.from(host.querySelectorAll('.tb-list > li')).map((row) => readableText(row));
   }
 
   it('shows totals and balances', () => {
@@ -61,12 +61,12 @@ describe('BillingOverviewPage', () => {
     expect(normalizedText()).toContain('Должников 1');
     expect(rows()).toHaveLength(3);
     expect(rows()[0]).toContain('Иван');
-    expect(rows()[0]).toContain('01.09.2026');
+    expect(rows()[0]).toContain('за занятие · 3 занятия · последнее 01.09.2026');
     expect(rows()[0]).toContain('долг 1 500 ₽');
     expect(rows()[1]).toContain('аванс 3 000 ₽');
-    expect(host.querySelector('tbody tr:nth-child(2) tb-avatar img')?.getAttribute('src')).toBe(
-      '/api/public/avatars/maria',
-    );
+    expect(
+      host.querySelector('.tb-list > li:nth-child(2) tb-avatar img')?.getAttribute('src'),
+    ).toBe('/api/public/avatars/maria');
     expect(rows()[2]).toContain('О Олег отключён');
   });
 

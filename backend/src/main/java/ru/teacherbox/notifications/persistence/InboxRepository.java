@@ -46,11 +46,17 @@ public class InboxRepository {
 
     /** Newest first. */
     public List<InboxNotification> findPage(UUID recipientId, int offset, int limit) {
-        return jdbc.sql(SELECT + """
-                 where recipient_id = :recipientId
-                 order by created_at desc, id desc
-                 offset :offset rows fetch next :limit rows only
-                """)
+        return findPage(recipientId, null, offset, limit);
+    }
+
+    /**
+     * Newest first.
+     *
+     * @param read {@code true} — only read ones, {@code false} — only unread ones, {@code null} — all
+     */
+    public List<InboxNotification> findPage(UUID recipientId, Boolean read, int offset, int limit) {
+        return jdbc.sql(SELECT + " where recipient_id = :recipientId" + readFilter(read)
+                + " order by created_at desc, id desc offset :offset rows fetch next :limit rows only")
                 .param("recipientId", recipientId)
                 .param("offset", offset)
                 .param("limit", limit)
@@ -59,7 +65,12 @@ public class InboxRepository {
     }
 
     public long count(UUID recipientId) {
-        return jdbc.sql("select count(*) from notifications.inbox where recipient_id = :recipientId")
+        return count(recipientId, null);
+    }
+
+    /** @param read as in {@link #findPage(UUID, Boolean, int, int)} */
+    public long count(UUID recipientId, Boolean read) {
+        return jdbc.sql("select count(*) from notifications.inbox where recipient_id = :recipientId" + readFilter(read))
                 .param("recipientId", recipientId)
                 .query(Long.class)
                 .single();
@@ -102,5 +113,12 @@ public class InboxRepository {
                 rs.getString("link"),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("read_at", Instant.class));
+    }
+
+    private static String readFilter(Boolean read) {
+        if (read == null) {
+            return "";
+        }
+        return read ? " and read_at is not null" : " and read_at is null";
     }
 }
