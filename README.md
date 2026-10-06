@@ -128,17 +128,27 @@ Raspberry Pi и NAS на ARM); версию задаёт `TEACHERBOX_VERSION` в
 
 ### HTTPS
 
-Портал рассчитан на работу за HTTPS. Проще всего поставить перед ним [Caddy](https://caddyserver.com)
-— он сам получит сертификат:
+Портал рассчитан на работу за HTTPS. Проще всего включить встроенный Caddy — он сам получит и будет
+продлевать сертификат Let's Encrypt. Направьте домен на сервер, откройте порты 80 и 443 и добавьте в
+`.env`:
+
+```ini
+TEACHERBOX_DOMAIN=school.example.com
+COMPOSE_PROFILES=https
+TEACHERBOX_HTTP_PORT=127.0.0.1:8080   # снаружи портал доступен только через HTTPS
+```
+
+Затем `docker compose up -d` — портал откроется на `https://school.example.com`. Звонки включаются
+вместе с HTTPS так: `COMPOSE_PROFILES=https,calls`.
+
+**Свой прокси.** Если на сервере уже есть nginx, Caddy или Traefik, профиль `https` не включайте, а
+направьте прокси на `localhost:8080` (он должен пропускать WebSocket — для досок и звонков). Caddy:
 
 ```
 school.example.com {
     reverse_proxy localhost:8080
 }
 ```
-
-Если прокси работает на том же сервере, откройте порт портала только для него:
-`TEACHERBOX_HTTP_PORT=127.0.0.1:8080` в `.env` — тогда снаружи портал доступен лишь через HTTPS.
 
 ### NAS
 

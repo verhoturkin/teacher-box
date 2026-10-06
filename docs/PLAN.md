@@ -41,7 +41,7 @@ ADR: 0032 (ready images, installer, built-in HTTPS).
 
 ### Stage 112. HTTPS in the box
 
-- [ ] 112.1 **D** Service `caddy` in `compose.yaml` (profile `https`): `caddy reverse-proxy --from
+- [x] 112.1 **D** Service `caddy` in `compose.yaml` (profile `https`): `caddy reverse-proxy --from
   $TEACHERBOX_DOMAIN --to frontend:8080`, ports 80, 443/tcp, 443/udp, volume `caddy-data`; new docker settings
   `TEACHERBOX_DOMAIN` (`.env.example`, `SettingsCatalog`); README «HTTPS», `docs/operations.md`.
 

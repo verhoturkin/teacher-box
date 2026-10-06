@@ -7,7 +7,8 @@
 # Update: docker compose pull && docker compose up -d. Building from the source instead of the ready images:
 #   docker compose -f compose.yaml -f compose.build.yaml up -d --build
 #
-# Only the frontend (nginx) is published; it proxies /api and /livekit over the internal network.
+# Only the frontend (nginx) is published, or Caddy in front of it (profile "https"); nginx proxies /api and
+# /livekit over the internal network.
 name: teacher-box
 
 services:
@@ -48,6 +49,35 @@ services:
       - "${TEACHERBOX_HTTP_PORT:-8080}:8080"
     depends_on:
       backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  # HTTPS in the box (ADR-0032), only with the profile:  COMPOSE_PROFILES=https  and TEACHERBOX_DOMAIN.
+  # Caddy gets and renews the Let's Encrypt certificate itself: the domain points to this server, 80 and 443 are
+  # open. Then publish the frontend only on the loopback: TEACHERBOX_HTTP_PORT=127.0.0.1:8080.
+  caddy:
+    image: caddy:2.11-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    command: ["caddy", "reverse-proxy", "--from", "${TEACHERBOX_DOMAIN:-localhost}", "--to", "frontend:8080"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      frontend:
         condition: service_healthy
     deploy:
       resources:
@@ -109,3 +139,6 @@ services:
 
 volumes:
   teacherbox-data:
+  # Certificates and keys of Caddy: kept across restarts so that Let's Encrypt is not asked again.
+  caddy-data:
+  caddy-config:

@@ -72,7 +72,7 @@ verify_docker() {
         return 0
     fi
     run docker-config "$ROOT" docker compose config --quiet
-    run docker-config-calls "$ROOT" docker compose --profile calls config --quiet
+    run docker-config-profiles "$ROOT" docker compose --profile https --profile calls config --quiet
     run docker-config-build "$ROOT" docker compose -f compose.yaml -f compose.build.yaml config --quiet
     if docker info >/dev/null 2>&1; then
         run docker-build "$ROOT" docker compose -f compose.yaml -f compose.build.yaml build

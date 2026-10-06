@@ -153,6 +153,7 @@ public final class SettingsCatalog {
 
         b.group("docker", "Docker")
                 .docker("TEACHERBOX_HTTP_PORT", "Порт веб-интерфейса на сервере", NUMBER)
+                .docker("TEACHERBOX_DOMAIN", "Домен портала для HTTPS (Caddy)", TEXT)
                 .docker("TEACHERBOX_VERSION", "Версия образа", TEXT)
                 .docker("TEACHERBOX_MEMORY_LIMIT", "Память контейнера", TEXT)
                 .docker("TEACHERBOX_CPU_LIMIT", "Процессоры контейнера", TEXT)

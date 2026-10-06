@@ -61,7 +61,7 @@ jobs:
       - name: Validate the compose files
         run: |
           docker compose config -q
-          docker compose --profile calls config -q
+          docker compose --profile https --profile calls config -q
           docker compose -f compose.yaml -f compose.build.yaml config -q
       - name: Build the images
         run: docker compose -f compose.yaml -f compose.build.yaml build

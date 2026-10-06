@@ -94,6 +94,12 @@ docker compose cp backend:/data/backups ./teacherbox-backups
 
 - Портал рассчитан на работу **за HTTPS** (reverse proxy: Caddy, nginx, Traefik). Cookie сессии
   получает флаг `Secure`, когда прокси передаёт `X-Forwarded-Proto: https`.
+- **Встроенный HTTPS** (ADR-0032): контейнер `caddy` из профиля `https` (`COMPOSE_PROFILES=https`,
+  `TEACHERBOX_DOMAIN`) принимает 80 и 443 и передаёт всё в `frontend`. Сертификат Let's Encrypt
+  выпускается при первом запросе и продлевается сам; хранится в томе `caddy-data` (не удаляйте его —
+  у Let's Encrypt лимит выпусков). Нет сертификата — проверьте, что домен указывает на сервер и порт 80
+  открыт: `docker compose logs caddy`. Порт портала тогда публикуйте только на `127.0.0.1`
+  (`TEACHERBOX_HTTP_PORT=127.0.0.1:8080`).
 - Доски Excalidraw работают в реальном времени через WebSocket (`/api/public/boards/live`). Caddy и
   Traefik пропускают его сами; в своём nginx перед порталом добавьте в `location /api/`
   `proxy_http_version 1.1;`, `proxy_set_header Upgrade $http_upgrade;` и
