@@ -40,7 +40,7 @@ ADR: ADR-0017 amended — the font is Google Sans.
 
 ### Stage 128. Boards as a list (F)
 
-- [ ] 128.1 `boards/teacher/boards-page.ts`: a `tb-list` like «Ученики» (kind icon; title link + «кому ·
+- [x] 128.1 `boards/teacher/boards-page.ts`: a `tb-list` like «Ученики» (kind icon; title link + «кому ·
   изменена»; trail — kind tag and «⋮» menu: «Резервные копии», «Изменить», «Удалить…»).
 
 ### Stage 129. Read notifications folded (B, F)
