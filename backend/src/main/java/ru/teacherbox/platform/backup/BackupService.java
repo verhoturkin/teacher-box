@@ -34,7 +34,7 @@ public class BackupService {
     /**
      * A backup file.
      *
-     * @param kind    why it was made; {@code null} for backups made before version 1.3
+     * @param kind    why it was made; {@code null} for backups made before version 0.3
      * @param version version of the portal that made it; {@code null} if unknown
      */
     public record BackupInfo(String name, long size, Instant createdAt, @Nullable BackupKind kind,

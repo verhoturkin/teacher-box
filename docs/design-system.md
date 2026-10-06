@@ -220,7 +220,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
     `tb-list__trail--icons` keeps a status and icon buttons on the right.
-  - Students and groups (1.7.3) — a `tb-list`, not a table: initials / icon; name + one supporting line (a
+  - Students and groups (0.7.3) — a `tb-list`, not a table: initials / icon; name + one supporting line (a
     student's phone, a group's members); trail — status `p-tag` and «⋮» (one popup `p-menu` per list, items
     for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
     (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name

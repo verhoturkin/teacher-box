@@ -43,7 +43,7 @@
 - Тесты адаптера Anthropic идут против локального HTTP-сервера (SDK работает на OkHttp, поэтому
   `MockRestServiceServer` не подходит); OpenAI-совместимого — через `MockRestServiceServer`.
 
-### Gemini (версия 1.1)
+### Gemini (версия 0.1)
 
 - Подписку Google AI Pro/Ultra использовать нельзя: её преимущества действуют только в
   веб-интерфейсе Google AI Studio, вызовы Gemini API оплачиваются отдельно, а использование

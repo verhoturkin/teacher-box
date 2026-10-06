@@ -9,7 +9,7 @@ export interface BackupInfo {
   /** Bytes. */
   readonly size: number;
   readonly createdAt: string;
-  /** `null` for backups made before version 1.3. */
+  /** `null` for backups made before version 0.3. */
   readonly kind: BackupKind | null;
   /** Version of the portal that made it. */
   readonly version: string | null;

@@ -28,7 +28,7 @@ MIT** (как и `@primeuix/themes` 2.x, `primeicons` 7).
   (reading 'edgesOut')` при разрешении optional peer-зависимостей vitest). Локально без обновления
   глобального npm: `npx -y npm@11 ci`.
 
-### Календарь (версия 1.1)
+### Календарь (версия 0.1)
 
 - В PrimeNG нет календаря-расписания, поэтому используется **FullCalendar 7** (`@fullcalendar/angular`,
   `fullcalendar`, `temporal-polyfill` — все MIT) только с бесплатными видами: неделя (`timegrid`),
