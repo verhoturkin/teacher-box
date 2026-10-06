@@ -105,7 +105,8 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 ### Stage 103. LiveKit server in delivery
 
 - [x] 103.1 **D** `docker/livekit/livekit.yaml` (port 7880, `rtc.tcp_port` 7881, `rtc.udp_port` 7882 mux,
-  `use_external_ip` / `node_ip` from `TEACHERBOX_LIVEKIT_NODE_IP`, `turn` UDP 3478, `room.empty_timeout`,
+  `LIVEKIT_RTC_USE_EXTERNAL_IP` from `TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP` (STUN, default) or `NODE_IP` from
+  `TEACHERBOX_LIVEKIT_NODE_IP` (with it false — the live check showed STUN wins over `NODE_IP`), `turn` UDP 3478, `room.empty_timeout`,
   `max_participants`, no webhooks); service `livekit` (pinned image, profile `calls`, memory/cpu limits,
   `LIVEKIT_KEYS` built from `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET`) in `compose.split.yaml` and
   `compose.single.yaml`. `docker/nginx/default.conf.template`: `location /livekit/` → `livekit:7880` with
@@ -146,27 +147,30 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 
 ### Stage 105. Call window — frontend
 
-- [ ] 105.1 **F** `npx -y npm@11 install livekit-client` (Apache-2.0, ADR-0007). `features/meetings/call/`:
+- [x] 105.1 **F** `npx -y npm@11 install livekit-client` (Apache-2.0, ADR-0007). `features/meetings/call/`:
   `CallEngine` (thin wrapper over `livekit-client`, loaded with dynamic `import()`, faked in specs) and
   `CallSession` (root service, signals: `idle | prejoin | connecting | connected | reconnecting | ended |
   error`, participants, tracks, active speaker, devices, mode `expanded | minimized`); one call at a time
   (switching asks), leave on logout, `beforeunload` prompt while connected; error codes in
   `core/http/error-messages.ts`.
-- [ ] 105.2 **F** Pre-join sheet: camera preview, mic level, toggles and device pickers (choice remembered on the
+- [x] 105.2 **F** Pre-join sheet: camera preview, mic level, toggles and device pickers (choice remembered on the
   device), states for denied permission / no devices / unsupported browser (ADR-0025); «Войти» enters.
-- [ ] 105.3 **F** Expanded view: stage + tiles (1 remote — full stage with self-view inset, 2–4 — grid, more —
+  *The chunk check of 101.1: `livekit-client` ≈ 580 kB (126 kB gzip) lazy; `CallHost` in `@defer (on idle)`
+  and `/call/:ownerId` via `loadChildren` from `@features/meetings` keep the initial bundle at +15 kB (a
+  static import of `parts.ts` from the root pulled the help articles in: +470 kB).*
+- [x] 105.3 **F** Expanded view: stage + tiles (1 remote — full stage with self-view inset, 2–4 — grid, more —
   grid with paging), screen share on the stage, active speaker outline, name/muted/connection-quality badges;
   M3 Expressive floating toolbar (mic, camera, screen share, devices menu, «Свернуть», «Выйти» in error colour,
   ADR-0026); phone — bottom toolbar, safe areas, portrait/landscape. Theme tokens only (light/dark follow the
   portal/system theme), a11y (ADR-0024): `aria-pressed`, live region for joins/leaves, keyboard-reachable
   tiles. New section «Call window» in `docs/design-system.md`; terms in `docs/glossary.md` (звонок, комната,
   войти в звонок, свернуть/развернуть, демонстрация экрана).
-- [ ] 105.4 **F** Minimized: `CallHost` mounted in the root `app.ts` (via `@features/meetings/parts`) so the call
+- [x] 105.4 **F** Minimized: `CallHost` mounted in the root `app.ts` (via `@features/meetings/parts`) so the call
   survives navigation between layouts and the full-screen board routes (`teacher/boards/:id`,
   `cabinet/boards/:id`); desktop — floating mini window (active speaker video, mic, «Развернуть», «Выйти»),
   draggable and keyboard-movable, snaps to corners, position remembered on the device, avoids FABs; phone — a
   compact bar above the bottom navigation. Video tracks of hidden tiles are unsubscribed (adaptive stream).
-- [ ] 105.5 **F** Entry points: route `/call/:ownerId` (links from notifications, ICS, bot) — guard opens the
+- [x] 105.5 **F** Entry points: route `/call/:ownerId` (links from notifications, ICS, bot) — guard opens the
   call for the role and redirects home; `ui/join-lesson-button.ts` opens a portal call link in place (external
   and Telemost links as before); student home — «Видеозвонок» card with their own and group rooms
   (`/api/me/meetings/rooms`), «Учитель уже в звонке» hint.

@@ -158,6 +158,7 @@ public final class SettingsCatalog {
                 .docker("TEACHERBOX_CPU_LIMIT", "Процессоры контейнера", TEXT)
                 .docker("JAVA_TOOL_OPTIONS", "Параметры Java", TEXT)
                 .docker("COMPOSE_PROFILES", "Профили Compose (calls — звонки)", TEXT)
+                .docker("TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP", "LiveKit: искать публичный IP через STUN", TEXT)
                 .docker("TEACHERBOX_LIVEKIT_NODE_IP", "LiveKit: публичный IP сервера", TEXT)
                 .docker("TEACHERBOX_LIVEKIT_HTTP_PORT", "LiveKit: порт сигнализации (вариант single)", NUMBER)
                 .docker("TEACHERBOX_LIVEKIT_MEMORY_LIMIT", "LiveKit: память контейнера", TEXT)

@@ -42,4 +42,19 @@ describe('MeetingsApi', () => {
 
     expect(recipients).toEqual([3]);
   });
+
+  it('joins built-in calls and reads who is in the rooms', () => {
+    const joins: unknown[] = [];
+    api.callToken('s-1').subscribe((join) => joins.push(join));
+    api.calls().subscribe();
+    api.myCalls().subscribe();
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/meetings/calls/s-1/token' })
+      .flush({ token: 'jwt', room: 'tb-s-1', title: 'Мария' });
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
+    backend.expectOne('/api/me/meetings/calls').flush([]);
+
+    expect(joins).toEqual([{ token: 'jwt', room: 'tb-s-1', title: 'Мария' }]);
+  });
 });

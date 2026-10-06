@@ -47,6 +47,8 @@ services:
     command: ["--config", "/etc/livekit.yaml"]
     environment:
       LIVEKIT_KEYS: "${TEACHERBOX_MEETINGS_LIVEKIT_API_KEY:-}: ${TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET:-}"
+      # STUN finds the public address; false + TEACHERBOX_LIVEKIT_NODE_IP give it explicitly.
+      LIVEKIT_RTC_USE_EXTERNAL_IP: ${TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP:-true}
       NODE_IP: ${TEACHERBOX_LIVEKIT_NODE_IP:-}
     volumes:
       - ./docker/livekit/livekit.yaml:/etc/livekit.yaml:ro

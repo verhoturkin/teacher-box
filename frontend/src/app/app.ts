@@ -3,13 +3,14 @@ import { RouterOutlet } from '@angular/router';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
 import { FocusReturn } from '@core/a11y/focus-return';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { CallHost } from '@features/meetings';
 
 /** The container of a message is a polite status (an error inside it is an alert, ADR-0024). */
 const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
 
 @Component({
   selector: 'tb-root',
-  imports: [RouterOutlet, Toast],
+  imports: [RouterOutlet, Toast, CallHost],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- The M3 snackbar (ADR-0024): the text and «Закрыть», it does not take the focus -->
@@ -33,6 +34,11 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
       </ng-template>
     </p-toast>
     <router-outlet />
+    <!-- The built-in call (ADR-0030) lives above the routes, so it goes on while the user works; its code
+         and the media library stay out of the first load -->
+    @defer (on idle) {
+      <tb-call-host />
+    }
   `,
 })
 export class App {

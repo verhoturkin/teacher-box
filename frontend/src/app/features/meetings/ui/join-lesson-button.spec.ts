@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { providePrimeNG } from 'primeng/config';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { buttonByText, hostElement, requireElement } from '@testing/dom';
 import { MeetingPreferences } from '../telemost';
+import { testProviders } from '@testing/setup';
+import { CallSession } from '../call/call-session';
 import { JoinLessonButton } from './join-lesson-button';
 
 describe('JoinLessonButton', () => {
@@ -13,7 +14,7 @@ describe('JoinLessonButton', () => {
     navigation = { go: vi.fn() };
     TestBed.configureTestingModule({
       imports: [JoinLessonButton],
-      providers: [providePrimeNG(), { provide: ExternalNavigation, useValue: navigation }],
+      providers: testProviders({ provide: ExternalNavigation, useValue: navigation }),
     });
     TestBed.inject(MeetingPreferences).openInApp.set(openInApp);
     fixture = TestBed.createComponent(JoinLessonButton);
@@ -70,5 +71,17 @@ describe('JoinLessonButton', () => {
   it('opens the browser when the application is not chosen on the device', async () => {
     await render('https://telemost.yandex.ru/j/1', true, false);
     expect(hostElement(fixture).querySelector('a')?.getAttribute('target')).toBe('_blank');
+  });
+
+  it('opens a built-in room of the portal in place', async () => {
+    const owner = '01a0de87-6fdd-7428-8555-bed8116f54f9';
+    await render(`${location.origin}/call/${owner}`, true, true);
+    const open = vi.spyOn(TestBed.inject(CallSession), 'open').mockImplementation(() => undefined);
+
+    buttonByText(hostElement(fixture), 'Начать урок').click();
+
+    expect(open).toHaveBeenCalledWith(owner);
+    expect(hostElement(fixture).querySelector('a')).toBeNull();
+    expect(navigation.go).not.toHaveBeenCalled();
   });
 });

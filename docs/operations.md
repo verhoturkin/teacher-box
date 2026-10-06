@@ -195,8 +195,9 @@ compose-файлах (профиль `calls`, ADR-0030). Без него пор�
 3. `docker compose -f compose.split.yaml up -d` (или `compose.single.yaml`).
 
 **Публичный адрес.** LiveKit сам узнаёт внешний IP сервера через STUN. Если сервер за NAT с
-пробросом портов или у него несколько адресов, задайте `TEACHERBOX_LIVEKIT_NODE_IP=<внешний IP>`.
-Для проверки на своём компьютере — `TEACHERBOX_LIVEKIT_NODE_IP=127.0.0.1`.
+пробросом портов или у него несколько адресов, задайте адрес сами:
+`TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP=false` и `TEACHERBOX_LIVEKIT_NODE_IP=<внешний IP>`. Для проверки на
+своём компьютере — `false` и `127.0.0.1`.
 
 **Сигнализация через адрес портала.** Браузер подключается к `wss://<портал>/livekit`.
 

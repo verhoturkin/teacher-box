@@ -42,6 +42,12 @@ join the lesson (`JoinLessonChatAction`).
 
 ## Frontend
 
-`features/meetings/`: `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
+`features/meetings/`: `call/` — built-in calls: `call-engine.ts` (contract, `CALL_ENGINE` lazily imports
+`livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
+mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
+list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
+`call-tile`, `call-controls`, layout in `call-layout.ts`; `index.ts` exports `CallHost` (root `@defer`) and
+`CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`) — never import them from `parts.ts` in the root, it pulls the
+help articles into the first load; `home/my-calls-card.ts` (student home). `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
 once), `settings/` (device setting), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.

@@ -1,13 +1,14 @@
 # LiveKit media server for the built-in calls (ADR-0030), profile "calls" of the compose files.
 # The API key and secret come from LIVEKIT_KEYS (built from TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET),
-# the public address from NODE_IP (TEACHERBOX_LIVEKIT_NODE_IP) or, when it is empty, from STUN.
+# the public address from STUN or, with TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP=false, from NODE_IP
+# (TEACHERBOX_LIVEKIT_NODE_IP).
 port: 7880
 log_level: info
 rtc:
   # Media: one UDP port for every call, TCP as the fallback for networks that block UDP.
   udp_port: 7882
   tcp_port: 7881
-  use_external_ip: true
+  # use_external_ip comes from LIVEKIT_RTC_USE_EXTERNAL_IP (compose): STUN finds the public address
 turn:
   # Embedded TURN over UDP for clients behind strict NAT.
   enabled: true
