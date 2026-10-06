@@ -133,10 +133,11 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   group, student — self or own groups (otherwise 404, «another student gets 404» test), admin — 403, calls off —
   422 `meetings.calls-disabled`. Token: identity = user id, name = display name, room `tb-<ownerId>`, teacher
   `roomAdmin`, student publish camera/microphone/screen share, short TTL.
-- [ ] 104.3 **B** Status: `GET /api/teacher/meetings/calls` — a card for every current student and active group:
+- [x] 104.3 **B** Status: `GET /api/teacher/meetings/calls` — a card for every current student and active group:
   owner, name, members count, participants in the room (names, teacher present), external link flag; one
   `listRooms` + `listParticipants` for non-empty rooms; LiveKit unreachable → `status: UNKNOWN`, list still
-  returned. `GET /api/me/meetings/rooms` (`MyRoomView`) gets the call owner id and «teacher is in the room».
+  returned. Students: `GET /api/me/meetings/calls` — own room and active groups, «teacher is in the room»
+  (empty while calls are off). Facade `StudentGroups.currentGroups()` added to `identity::api`.
 - [ ] 104.4 **B** Links and access: `RoomService.links` (`MeetingRooms`) → external link, else
   `Portal.link("/call/<ownerId>")` when calls are on; `share` works without an external link (sends the portal
   link); `JoinLessonChatAction` texts. Listeners of `StudentDeactivated`, `GroupChanged` (removed members),

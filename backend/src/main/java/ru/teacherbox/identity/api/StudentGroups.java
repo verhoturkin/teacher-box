@@ -15,4 +15,7 @@ public interface StudentGroups {
 
     /** Current (not archived) groups the student is a member of. */
     List<GroupSummary> groupsOf(UUID studentId);
+
+    /** All current (not archived) groups, by name. */
+    List<GroupSummary> currentGroups();
 }

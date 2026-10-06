@@ -149,6 +149,7 @@ class GroupIntegrationTests {
         post("/api/teacher/groups/" + archived + "/archive");
 
         assertThat(directory.groupsOf(anna)).extracting(GroupSummary::id).containsExactly(current);
+        assertThat(directory.currentGroups()).extracting(GroupSummary::id).contains(current).doesNotContain(archived);
         assertThat(directory.findGroups(List.of(current, archived, UUID.randomUUID())))
                 .extracting(GroupSummary::archived).containsExactlyInAnyOrder(false, true);
         assertThat(directory.findGroups(List.of())).isEmpty();

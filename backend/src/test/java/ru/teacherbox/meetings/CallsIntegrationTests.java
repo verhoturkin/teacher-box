@@ -7,11 +7,14 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -19,6 +22,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.meetings.application.CallServer;
 import ru.teacherbox.meetings.application.CallServer.Grant;
+import ru.teacherbox.meetings.application.CallServer.Participant;
+import ru.teacherbox.meetings.application.CallServerException;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.TestUsers;
@@ -114,6 +119,79 @@ class CallsIntegrationTests {
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("meetings.calls-disabled");
         verify(server, never()).token(any());
+    }
+
+    @Test
+    void theTeacherSeesWhoIsInEachRoom() {
+        UUID teacher = directory.teacherId();
+        when(server.occupiedRooms()).thenReturn(Map.of(
+                "tb-" + anna, List.of(new Participant(anna.toString(), "Анна")),
+                "tb-" + group, List.of(new Participant(teacher.toString(), "Ольга"),
+                        new Participant(anna.toString(), "Анна"))));
+        mvc.put().uri("/api/teacher/meetings/rooms").with(TestUsers.teacher(teacher))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"studentId\":\"" + boris + "\",\"joinUrl\":\"https://zoom.us/j/1\"}").exchange();
+
+        assertThat(mvc.get().uri("/api/teacher/meetings/calls").with(TestUsers.teacher(teacher))).hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.status").isEqualTo("OK");
+                    assertThat(json).extractingPath(card(anna) + ".ownerType").asArray().containsExactly("STUDENT");
+                    assertThat(json).extractingPath(card(anna) + ".waiting[0]").asArray().containsExactly("Анна");
+                    assertThat(json).extractingPath(card(anna) + ".teacherPresent").asArray().containsExactly(false);
+                    assertThat(json).extractingPath(card(boris) + ".externalLink").asArray().containsExactly(true);
+                    assertThat(json).extractingPath(card(boris) + ".waiting.length()").asArray().containsExactly(0);
+                    assertThat(json).extractingPath(card(group) + ".name").asArray().containsExactly("ОГЭ");
+                    assertThat(json).extractingPath(card(group) + ".members").asArray().containsExactly(1);
+                    assertThat(json).extractingPath(card(group) + ".teacherPresent").asArray().containsExactly(true);
+                    assertThat(json).extractingPath(card(group) + ".waiting[0]").asArray().containsExactly("Анна");
+                });
+    }
+
+    @Test
+    void theRoomsAreListedWhenTheMediaServerIsDownOrOff() {
+        UUID teacher = directory.teacherId();
+        when(server.occupiedRooms()).thenThrow(new CallServerException("LiveKit ListRooms answered 503"));
+
+        assertThat(mvc.get().uri("/api/teacher/meetings/calls").with(TestUsers.teacher(teacher))).hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.status").isEqualTo("UNREACHABLE");
+                    assertThat(json).extractingPath(card(anna) + ".name").asArray().containsExactly("Анна");
+                });
+
+        when(server.enabled()).thenReturn(false);
+        assertThat(mvc.get().uri("/api/teacher/meetings/calls").with(TestUsers.teacher(teacher)))
+                .bodyJson().extractingPath("$.status").isEqualTo("OFF");
+        assertThat(mvc.get().uri("/api/teacher/meetings/calls").with(TestUsers.student(anna)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void aStudentSeesTheirRoomsAndWhetherTheTeacherIsThere() {
+        when(server.occupiedRooms()).thenReturn(Map.of(
+                "tb-" + group, List.of(new Participant(directory.teacherId().toString(), "Ольга"))));
+
+        assertThat(mvc.get().uri("/api/me/meetings/calls").with(TestUsers.student(anna))).hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$[0].ownerId").isEqualTo(anna.toString());
+                    assertThat(json).extractingPath("$[0].title").isEqualTo("Урок");
+                    assertThat(json).extractingPath("$[0].teacherPresent").isEqualTo(false);
+                    assertThat(json).extractingPath("$[1].ownerId").isEqualTo(group.toString());
+                    assertThat(json).extractingPath("$[1].title").isEqualTo("ОГЭ");
+                    assertThat(json).extractingPath("$[1].teacherPresent").isEqualTo(true);
+                });
+        when(server.occupiedRooms()).thenThrow(new CallServerException("down"));
+        assertThat(mvc.get().uri("/api/me/meetings/calls").with(TestUsers.student(anna))).hasStatusOk()
+                .bodyJson().extractingPath("$[1].teacherPresent").isEqualTo(false);
+
+        when(server.enabled()).thenReturn(false);
+        assertThat(mvc.get().uri("/api/me/meetings/calls").with(TestUsers.student(anna))).hasStatusOk()
+                .bodyJson().extractingPath("$.length()").isEqualTo(0);
+        assertThat(mvc.get().uri("/api/me/meetings/calls").with(TestUsers.teacher(directory.teacherId())))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    private static String card(UUID ownerId) {
+        return "$.rooms[?(@.ownerId == '" + ownerId + "')]";
     }
 
     private MvcTestResult join(UUID ownerId, RequestPostProcessor user) {

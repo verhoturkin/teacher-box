@@ -36,6 +36,12 @@ class GroupDirectoryService implements StudentGroups {
         return groups.findCurrentByMember(studentId).stream().map(GroupDirectoryService::summary).toList();
     }
 
+    @Override
+    public List<GroupSummary> currentGroups() {
+        return groups.findAll().stream().filter(group -> !group.isArchived()).map(GroupDirectoryService::summary)
+                .toList();
+    }
+
     private static GroupSummary summary(StudentGroup group) {
         return new GroupSummary(group.id(), group.name(), group.memberIds(), group.isArchived());
     }
