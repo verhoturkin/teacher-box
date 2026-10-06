@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
+import { aRoom } from '@testing/meetings-fixtures';
 import { MeetingsApi } from './meetings-api';
 import { testProviders } from '@testing/setup';
 
@@ -20,48 +20,15 @@ describe('MeetingsApi', () => {
     backend.verify();
   });
 
-  it('manages the Yandex connection', () => {
-    const results: unknown[] = [];
-    api.yandexStatus().subscribe((status) => results.push(status));
-    api.saveClient('id', 'secret').subscribe();
-    api.setWaitingRoom(true).subscribe();
-    api.authorize('https://school.example.com').subscribe((url) => results.push(url));
-    api.disconnect().subscribe();
-
-    backend.expectOne({ method: 'GET', url: '/api/teacher/meetings/yandex' }).flush(yandexStatus());
-    expect(
-      backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/yandex/client' }).request.body,
-    ).toEqual({
-      clientId: 'id',
-      clientSecret: 'secret',
-    });
-    expect(backend.expectOne('/api/teacher/meetings/yandex/waiting-room').request.body).toEqual({
-      enabled: true,
-    });
-    backend
-      .expectOne('/api/teacher/meetings/yandex/authorize')
-      .flush({ url: 'https://oauth.yandex.ru/authorize' });
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/meetings/yandex' }).flush(null);
-
-    expect(results).toEqual([yandexStatus(), 'https://oauth.yandex.ru/authorize']);
-  });
-
   it('manages rooms of students and groups', () => {
     const recipients: number[] = [];
     api.rooms().subscribe();
-    api.createRoom({ type: 'GROUP', id: 'g-1', name: 'ОГЭ' }).subscribe();
     api.enterLink({ type: 'STUDENT', id: 's-1', name: 'Мария' }, 'https://zoom.us/j/1').subscribe();
     api.removeRoom('s-1').subscribe();
     api.share('g-1').subscribe((count) => recipients.push(count));
     api.myRooms().subscribe();
 
     backend.expectOne({ method: 'GET', url: '/api/teacher/meetings/rooms' }).flush([aRoom()]);
-    expect(
-      backend.expectOne({ method: 'POST', url: '/api/teacher/meetings/rooms' }).request.body,
-    ).toEqual({
-      studentId: null,
-      groupId: 'g-1',
-    });
     expect(
       backend.expectOne({ method: 'PUT', url: '/api/teacher/meetings/rooms' }).request.body,
     ).toEqual({
@@ -74,5 +41,20 @@ describe('MeetingsApi', () => {
     backend.expectOne('/api/me/meetings/rooms').flush([]);
 
     expect(recipients).toEqual([3]);
+  });
+
+  it('joins built-in calls and reads who is in the rooms', () => {
+    const joins: unknown[] = [];
+    api.callToken('s-1').subscribe((join) => joins.push(join));
+    api.calls().subscribe();
+    api.myCalls().subscribe();
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/meetings/calls/s-1/token' })
+      .flush({ token: 'jwt', room: 'tb-s-1', title: 'Мария' });
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
+    backend.expectOne('/api/me/meetings/calls').flush([]);
+
+    expect(joins).toEqual([{ token: 'jwt', room: 'tb-s-1', title: 'Мария' }]);
   });
 });

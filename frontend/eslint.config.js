@@ -8,7 +8,10 @@ const angular = require('angular-eslint');
 
 const FEATURES_DIR = path.join(__dirname, 'src/app/features');
 const features = fs.existsSync(FEATURES_DIR)
-  ? fs.readdirSync(FEATURES_DIR, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)
+  ? fs
+      .readdirSync(FEATURES_DIR, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
   : [];
 
 /** Relative imports may climb at most one level; use @core/@shared/@features aliases otherwise. */
@@ -23,12 +26,19 @@ const NO_REACT = {
   message: 'React and Excalidraw are imported only in features/boards/editor/ (ADR-0028).',
 };
 
+/** The media library of the calls is a lazy chunk (ADR-0030): only its adapter may import it. */
+const NO_LIVEKIT = {
+  regex: '^livekit-client$',
+  message:
+    'livekit-client is imported only in features/meetings/call/livekit-engine.ts (ADR-0030).',
+};
+
 /** The board editor folder: the only place allowed to import React and Excalidraw. */
 const BOARD_EDITOR_FILES = ['src/app/features/boards/editor/**/*.ts'];
 
 /** Builds no-restricted-imports options: the global rules plus area-specific patterns. */
 function restrictImports(...patterns) {
-  return ['error', { patterns: [NO_DEEP_RELATIVE, NO_REACT, ...patterns] }];
+  return ['error', { patterns: [NO_DEEP_RELATIVE, NO_REACT, NO_LIVEKIT, ...patterns] }];
 }
 
 /**
@@ -38,7 +48,8 @@ function restrictImports(...patterns) {
 function featureBoundary(feature) {
   return {
     regex: `^@features/(?!${feature}/)[^/]+/(?!parts$)`,
-    message: 'Import other features only through their public API: @features/<name> or @features/<name>/parts.',
+    message:
+      'Import other features only through their public API: @features/<name> or @features/<name>/parts.',
   };
 }
 
@@ -81,7 +92,10 @@ module.exports = defineConfig([
       '@angular-eslint/prefer-signals': 'error',
       '@angular-eslint/no-async-lifecycle-method': 'error',
       // "No any" policy (AGENTS.md §6.3).
-      '@typescript-eslint/no-explicit-any': ['error', { fixToUnknown: true, ignoreRestArgs: false }],
+      '@typescript-eslint/no-explicit-any': [
+        'error',
+        { fixToUnknown: true, ignoreRestArgs: false },
+      ],
       '@typescript-eslint/no-unsafe-argument': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
@@ -107,9 +121,21 @@ module.exports = defineConfig([
   },
   ...featureBoundaries,
   {
+    files: ['src/app/features/meetings/call/livekit-engine.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [NO_DEEP_RELATIVE, NO_REACT, featureBoundary('meetings')] },
+      ],
+    },
+  },
+  {
     files: BOARD_EDITOR_FILES,
     rules: {
-      'no-restricted-imports': ['error', { patterns: [NO_DEEP_RELATIVE, featureBoundary('boards')] }],
+      'no-restricted-imports': [
+        'error',
+        { patterns: [NO_DEEP_RELATIVE, featureBoundary('boards')] },
+      ],
     },
   },
   {

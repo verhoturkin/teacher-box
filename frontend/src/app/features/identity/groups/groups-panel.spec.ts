@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService } from 'primeng/api';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
-import { yandexStatus } from '@testing/meetings-fixtures';
 import {
   bodyText,
   buttonByText,
@@ -67,10 +66,10 @@ describe('GroupsPanel', () => {
     await fixture.whenStable();
   }
 
-  /** The room panel of the edit dialog asks for the rooms and the Yandex status. */
+  /** The room panel of the edit dialog asks for the rooms. */
   function flushRoom(): void {
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
   }
 
   function confirmNext(): void {

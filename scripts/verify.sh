@@ -73,6 +73,7 @@ verify_docker() {
     fi
     for file in compose.split.yaml compose.single.yaml; do
         run "docker-config-${file%.yaml}" "$ROOT" docker compose -f "$file" config --quiet
+        run "docker-config-${file%.yaml}-calls" "$ROOT" docker compose -f "$file" --profile calls config --quiet
     done
     if docker info >/dev/null 2>&1; then
         run docker-build-split "$ROOT" docker compose -f compose.split.yaml build

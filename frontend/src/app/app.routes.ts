@@ -17,6 +17,11 @@ export const routes: Routes = [
     loadComponent: () => import('@features/identity').then((m) => m.InvitePage),
   },
   {
+    // The link of a built-in room (ADR-0030): opens the call over the user's pages.
+    path: 'call/:ownerId',
+    loadChildren: () => import('@features/meetings').then((m) => m.CALL_ROUTES),
+  },
+  {
     // The board editor takes the whole screen: outside the shell, same guards (ADR-0028).
     path: 'teacher/boards/:id',
     title: 'Доска',
@@ -98,6 +103,11 @@ export const routes: Routes = [
         path: 'boards',
         title: 'Доски',
         loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
+      },
+      {
+        path: 'calls',
+        title: 'Звонки',
+        loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
       },
       {
         path: 'settings',

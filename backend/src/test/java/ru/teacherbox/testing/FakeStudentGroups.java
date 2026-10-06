@@ -1,6 +1,7 @@
 package ru.teacherbox.testing;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,12 @@ public final class FakeStudentGroups implements StudentGroups {
     @Override
     public List<GroupSummary> findGroups(Collection<UUID> groupIds) {
         return groupIds.stream().map(groups::get).filter(Objects::nonNull).toList();
+    }
+
+    @Override
+    public List<GroupSummary> currentGroups() {
+        return groups.values().stream().filter(group -> !group.archived())
+                .sorted(Comparator.comparing(GroupSummary::name)).toList();
     }
 
     @Override

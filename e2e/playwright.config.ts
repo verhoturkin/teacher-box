@@ -27,10 +27,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use:
-        channel === undefined
-          ? { ...devices['Desktop Chrome'] }
-          : { ...devices['Desktop Chrome'], channel },
+      // built-in calls (1.8.0): a fake camera and microphone, allowed without a prompt
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(channel === undefined ? {} : { channel }),
+        permissions: ['camera', 'microphone'],
+        launchOptions: {
+          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+        },
+      },
     },
   ],
 });

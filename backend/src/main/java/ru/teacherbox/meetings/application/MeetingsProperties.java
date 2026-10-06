@@ -7,35 +7,40 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 /**
  * Settings of the meetings module ({@code TEACHERBOX_MEETINGS_*}).
  *
- * @param yandex   OAuth client of the teacher's application in Yandex ID; it can also be entered in
- *                 the settings page, these variables take precedence
- * @param telemost the Telemost API
+ * @param livekit the media server of the built-in calls (ADR-0030)
  */
 @ConfigurationProperties("teacherbox.meetings")
-public record MeetingsProperties(@DefaultValue Yandex yandex, @DefaultValue Telemost telemost) {
+public record MeetingsProperties(@DefaultValue Livekit livekit) {
 
-    /** @param oauthUrl base address of Yandex OAuth (authorization, token and revoke endpoints) */
-    public record Yandex(
-            @Nullable String clientId,
-            @Nullable String clientSecret,
-            @DefaultValue("https://oauth.yandex.ru") String oauthUrl) {
-
-        /** Both client settings come from the environment. */
-        public boolean clientFromEnvironment() {
-            return clientId != null && !clientId.isBlank() && clientSecret != null && !clientSecret.isBlank();
-        }
-    }
+    /** LiveKit refuses shorter secrets. */
+    public static final int MIN_SECRET_LENGTH = 32;
 
     /**
-     * @param token  a ready OAuth token (for checks and E2E); takes precedence over the connection
-     * @param apiUrl base address of the Telemost API
+     * @param apiUrl    the address the backend calls; browsers always connect to {@code <portal>/livekit}
+     * @param apiKey    key of the LiveKit API; calls are on when it and the secret are set
+     * @param apiSecret secret of the LiveKit API, at least {@value #MIN_SECRET_LENGTH} characters
      */
-    public record Telemost(
-            @Nullable String token,
-            @DefaultValue("https://cloud-api.yandex.net/v1/telemost-api") String apiUrl) {
+    public record Livekit(
+            @DefaultValue("http://livekit:7880") String apiUrl,
+            @Nullable String apiKey,
+            @Nullable String apiSecret) {
 
-        public boolean tokenFromEnvironment() {
-            return token != null && !token.isBlank();
+        public Livekit {
+            apiKey = blankToNull(apiKey);
+            apiSecret = blankToNull(apiSecret);
+            if (apiSecret != null && apiSecret.length() < MIN_SECRET_LENGTH) {
+                throw new IllegalArgumentException("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET must have at least "
+                        + MIN_SECRET_LENGTH + " characters");
+            }
+        }
+
+        /** Built-in calls are on: the key and the secret are set. */
+        public boolean enabled() {
+            return apiKey != null && apiSecret != null;
+        }
+
+        private static @Nullable String blankToNull(@Nullable String value) {
+            return value == null || value.isBlank() ? null : value.strip();
         }
     }
 }

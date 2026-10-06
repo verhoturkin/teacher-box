@@ -1,32 +1,12 @@
 /** Mirrors the views of the meetings module of the backend. */
-export type YandexConnectionStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'NEEDS_RECONNECT';
 export type RoomOwner = 'STUDENT' | 'GROUP';
-export type RoomSource = 'API' | 'MANUAL';
 
-/** Mirrors `YandexStatusView`. */
-export interface YandexStatus {
-  readonly clientConfigured: boolean;
-  /** The OAuth client is set by environment variables and cannot be changed in the UI. */
-  readonly clientFromEnvironment: boolean;
-  /** A ready token comes from `TEACHERBOX_MEETINGS_TELEMOST_TOKEN`. */
-  readonly tokenFromEnvironment: boolean;
-  readonly clientId: string | null;
-  readonly status: YandexConnectionStatus;
-  /** Students wait until the teacher lets them in. */
-  readonly waitingRoom: boolean;
-  readonly lastError: string | null;
-  readonly connectedAt: string | null;
-  /** Path of the redirect address to register in Yandex ID. */
-  readonly callbackPath: string;
-}
-
-/** Mirrors `RoomView`: the permanent room of a student or a group. */
+/** Mirrors `RoomView`: the external call link of a student or a group. */
 export interface MeetingRoom {
   readonly ownerId: string;
   readonly ownerType: RoomOwner;
   readonly ownerName: string | null;
   readonly joinUrl: string;
-  readonly source: RoomSource;
   /** The link opens Telemost (and so its desktop application). */
   readonly telemost: boolean;
   readonly updatedAt: string;
@@ -38,6 +18,44 @@ export interface MyRoom {
   readonly groupName: string | null;
   readonly joinUrl: string;
   readonly telemost: boolean;
+}
+
+/** Mirrors `JoinView`: what the browser needs to join a built-in call (ADR-0030). */
+export interface CallJoin {
+  readonly token: string;
+  readonly room: string;
+  /** The student or the group for the teacher; the group or «Урок» for a student. */
+  readonly title: string;
+}
+
+/** Whether the occupancy of the rooms is known. */
+export type CallsStatus = 'OK' | 'UNREACHABLE' | 'OFF';
+
+/** Mirrors `CallCard`: the built-in room of a current student or an active group. */
+export interface CallCard {
+  readonly ownerId: string;
+  readonly ownerType: RoomOwner;
+  readonly name: string;
+  readonly members: number;
+  /** Names of the students in the room. */
+  readonly waiting: readonly string[];
+  readonly teacherPresent: boolean;
+  /** An external link wins over the room in lessons. */
+  readonly externalLink: boolean;
+}
+
+/** Mirrors `CallsView`. */
+export interface CallsOverview {
+  readonly status: CallsStatus;
+  readonly rooms: readonly CallCard[];
+}
+
+/** Mirrors `MyCallView`: the own room of a student or the room of their group. */
+export interface MyCall {
+  readonly ownerId: string;
+  readonly ownerType: RoomOwner;
+  readonly title: string;
+  readonly teacherPresent: boolean;
 }
 
 /** Whose room it is: a student or a group. */

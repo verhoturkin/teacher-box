@@ -83,7 +83,8 @@ public class PlatformSecurityAutoConfiguration {
     static final String CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; "
             + "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; "
             + "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
-    static final String PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=()";
+    static final String PERMISSIONS_POLICY =
+            "camera=(self), microphone=(self), display-capture=(self), geolocation=()";
 
     @Bean
     SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, PlatformSecurityProperties properties, Clock clock)

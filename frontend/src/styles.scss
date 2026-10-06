@@ -2133,3 +2133,454 @@ a.p-menu-item-link:hover {
   --input-hover-bg-color: var(--p-md-surface-container-high);
   --popup-secondary-bg-color: var(--p-md-surface-container-high);
 }
+
+/*
+ * Built-in calls (ADR-0030, design system §13): the full window over the portal, the mini window and the
+ * M3 Expressive toolbar. Colours follow the portal theme (light / dark / system).
+ */
+:root.tb-call-expanded body {
+  overflow: hidden;
+}
+
+.tb-call-window {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-4) var(--tb-space-4) calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+  background: var(--p-md-surface-container);
+  color: var(--p-md-on-surface);
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--tb-space-1) var(--tb-space-4);
+  }
+
+  &__title {
+    margin: 0;
+    font: var(--tb-type-title-l-emphasized);
+    outline-offset: 2px;
+  }
+
+  &__meta {
+    font: var(--tb-type-body-m);
+    color: var(--p-md-on-surface-variant);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__warning {
+    padding: 0 var(--tb-space-2);
+    border-radius: var(--tb-shape-sm);
+    background: var(--p-md-warning-container);
+    color: var(--p-md-on-warning-container);
+  }
+
+  &__end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--tb-space-4);
+    text-align: center;
+    font: var(--tb-type-body-l);
+  }
+
+  &__end-icon {
+    font-size: 2rem;
+    color: var(--p-md-on-surface-variant);
+    transform: rotate(135deg);
+  }
+
+  &__notice {
+    justify-self: center;
+  }
+
+  &__controls {
+    justify-self: center;
+  }
+}
+
+/* The stage: the main tile, an inset, a grid or a strip (call-layout.ts) */
+.tb-call-stage {
+  position: relative;
+  display: grid;
+  gap: var(--tb-space-2);
+  min-height: 0;
+
+  &--alone,
+  &--pair {
+    grid-template-rows: 1fr auto;
+    justify-items: center;
+  }
+
+  &--alone &__main,
+  &--pair &__main {
+    width: 100%;
+    max-width: calc((100dvh - 12rem) * 16 / 9);
+  }
+
+  &__inset {
+    position: absolute;
+    right: var(--tb-space-3);
+    bottom: var(--tb-space-3);
+    width: clamp(7rem, 22%, 16rem);
+    aspect-ratio: 16 / 9;
+    box-shadow: var(--tb-elevation-2);
+  }
+
+  /* --tb-call-columns / --tb-call-rows come from the number of people (gridSize in call-layout.ts) */
+  &--grid &__tiles {
+    display: grid;
+    grid-template-columns: repeat(var(--tb-call-columns, 2), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--tb-call-rows, 2), minmax(0, 1fr));
+    gap: var(--tb-space-2);
+    min-height: 0;
+  }
+
+  &--screen {
+    grid-template-columns: 1fr 14rem;
+  }
+
+  &--screen &__tiles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-2);
+    overflow: auto;
+
+    .tb-call-tile {
+      flex: none;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  &__waiting {
+    margin: 0;
+    font: var(--tb-type-body-m);
+    color: var(--p-md-on-surface-variant);
+  }
+
+  @media (width <= 48em) {
+    &--screen {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr auto;
+    }
+
+    &--screen &__tiles {
+      flex-direction: row;
+
+      .tb-call-tile {
+        width: 9rem;
+      }
+    }
+
+    &--alone &__main,
+    &--pair &__main {
+      max-width: none;
+    }
+
+    &__inset {
+      width: 7rem;
+      aspect-ratio: 3 / 4;
+    }
+  }
+}
+
+.tb-call-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--tb-shape-xl);
+  background: var(--p-md-surface-container-highest);
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+  transition: outline-color var(--tb-spring-fast-effects);
+
+  &--speaking {
+    outline-color: var(--p-md-primary);
+  }
+
+  &__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    &--mirror {
+      transform: scaleX(-1);
+    }
+  }
+
+  &--screen &__video {
+    object-fit: contain;
+    background: var(--p-md-surface-container-lowest);
+  }
+
+  &__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(3rem, 30%, 7rem);
+    aspect-ratio: 1;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-primary-container);
+    color: var(--p-md-on-primary-container);
+    font: var(--tb-type-headline-s);
+  }
+
+  &__name {
+    position: absolute;
+    left: var(--tb-space-2);
+    bottom: var(--tb-space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--tb-space-1);
+    max-width: calc(100% - var(--tb-space-4));
+    padding: var(--tb-space-1) var(--tb-space-2);
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-inverse-surface);
+    color: var(--p-md-inverse-on-surface);
+    font: var(--tb-type-label-m);
+  }
+
+  &__text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__weak {
+    color: var(--p-md-inverse-primary);
+  }
+}
+
+/* A crossed microphone or camera: primeicons have no «slash» variants */
+.tb-call-crossed,
+.tb-call-button--off .p-button-icon {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -15%;
+    width: 130%;
+    height: 2px;
+    background: currentcolor;
+    transform: rotate(-45deg);
+  }
+}
+
+/* The M3 Expressive floating toolbar: 56 px toggles that change shape when switched off */
+.tb-call-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2);
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+  box-shadow: var(--tb-elevation-2);
+}
+
+/* doubled: PrimeNG's icon-only rounded button sets its size with the same specificity, later */
+.p-button.tb-call-button.tb-call-button {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--tb-shape-full);
+  transition: border-radius var(--tb-spring-fast-spatial);
+
+  &.tb-call-button--off {
+    border-radius: var(--tb-shape-lg);
+  }
+
+  &.tb-call-button--leave {
+    width: 4.5rem;
+
+    .p-button-icon {
+      transform: rotate(135deg);
+    }
+  }
+}
+
+@media (width <= 48em) {
+  .p-button.tb-call-button.tb-call-button {
+    width: 3rem;
+    height: 3rem;
+
+    &.tb-call-button--leave {
+      width: 4rem;
+    }
+  }
+}
+
+.tb-call-mini .p-button.tb-call-button.tb-call-button {
+  width: 2.75rem;
+  height: 2.75rem;
+
+  &.tb-call-button--leave {
+    width: 3.5rem;
+  }
+}
+
+.tb-call-menu .tb-call-menu__blank {
+  visibility: hidden;
+}
+
+/* The minimized call: a floating window on a computer, a bar above the bottom navigation on a phone */
+.tb-call-mini {
+  position: fixed;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-2);
+  width: 20rem;
+  padding: var(--tb-space-2);
+  border-radius: var(--tb-shape-xl);
+  background: var(--p-md-surface-container-high);
+  color: var(--p-md-on-surface);
+  box-shadow: var(--tb-elevation-3);
+  transition:
+    top var(--tb-spring-default-spatial),
+    bottom var(--tb-spring-default-spatial),
+    left var(--tb-spring-default-spatial),
+    right var(--tb-spring-default-spatial);
+
+  &--dragging {
+    cursor: grabbing;
+    transition: none;
+  }
+
+  &--top-left,
+  &--top-right {
+    top: calc(64px + var(--tb-space-4));
+  }
+
+  &--bottom-left,
+  &--bottom-right {
+    bottom: var(--tb-space-6);
+  }
+
+  &--top-left,
+  &--bottom-left {
+    left: var(--tb-space-6);
+  }
+
+  &--top-right,
+  &--bottom-right {
+    right: var(--tb-space-6);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: var(--tb-space-2);
+    padding-left: var(--tb-space-2);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  &__title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font: var(--tb-type-title-m);
+  }
+
+  &__time {
+    font: var(--tb-type-body-s);
+    color: var(--p-md-on-surface-variant);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__tile {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--tb-shape-lg);
+  }
+
+  .tb-call-controls {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  &--bar {
+    inset: auto var(--tb-space-2)
+      calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2));
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    border-radius: var(--tb-shape-full);
+
+    .tb-call-mini__head {
+      flex: 1;
+      min-width: 0;
+      cursor: default;
+    }
+  }
+}
+
+/* On a phone the bar of a call sits where the FAB was: the FAB moves above it */
+@media (width <= 48em) {
+  :root:has(.tb-call-mini--bar) p-button.tb-page-fab {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 4rem
+    );
+  }
+}
+
+.tb-call-prejoin__preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--tb-shape-lg);
+  background: var(--p-md-surface-container-highest);
+
+  .tb-call-tile__avatar {
+    width: 5rem;
+  }
+}
+
+.tb-call-prejoin__toggles {
+  display: flex;
+  justify-content: center;
+  gap: var(--tb-space-3);
+}
+
+.tb-call-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid var(--p-md-secondary-container);
+  border-top-color: var(--p-md-primary);
+  border-radius: var(--tb-shape-full);
+  animation: tb-call-spin 1s linear infinite;
+}
+
+@keyframes tb-call-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-call-spinner {
+    animation-duration: 3s;
+  }
+}

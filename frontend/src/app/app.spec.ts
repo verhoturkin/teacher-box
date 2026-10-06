@@ -1,4 +1,5 @@
-import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
@@ -8,11 +9,25 @@ import { hostElement } from '@testing/dom';
 import { App } from './app';
 
 describe('App', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), MessageService],
+      providers: [provideRouter([]), MessageService, provideHttpClient()],
+      deferBlockBehavior: DeferBlockBehavior.Manual,
     });
+    // the call host is a deferred block (ADR-0030)
+    await TestBed.compileComponents();
+  });
+
+  it('loads the call host above the routes once the page is idle', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelector('tb-call-host')).toBeNull();
+
+    const [call] = await fixture.getDeferBlocks();
+    await call?.render(DeferBlockState.Complete);
+
+    expect(hostElement(fixture).querySelector('tb-call-host')).not.toBeNull();
   });
 
   it('renders the toast host and the router outlet', async () => {

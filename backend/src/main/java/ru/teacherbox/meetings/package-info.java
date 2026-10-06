@@ -1,6 +1,5 @@
 /**
- * Meetings: permanent video rooms of students and groups in Yandex Telemost, created through its
- * API or entered by the teacher (ADR-0012).
+ * Meetings: video calls of students and groups — external links entered by the teacher (ADR-0012, ADR-0030).
  */
 @ApplicationModule(displayName = "Meetings", allowedDependencies = {"shared", "identity :: api"})
 @NullMarked

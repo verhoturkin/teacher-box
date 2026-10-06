@@ -1,7 +1,7 @@
 # Design system
 
-The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015 and
-ADR-0017–0027, which are the history (*why*); if they disagree with this page, this page is right. A change to
+The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
+ADR-0017–0027 and the call window of ADR-0030, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
 [`glossary.md`](glossary.md) (Russian).
 
@@ -275,3 +275,32 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`.
 - Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`, `color-mix()`); older ones get
   no springs.
+
+## 13. Call window (ADR-0030)
+
+- **Where:** `CallHost` sits in the root component above the routes, so a call goes on across layouts and the
+  full-screen board editor; one call per tab (`CallSession`). Styles — section «Built-in calls» of `styles.scss`.
+- **Pre-join** — a `tb-dialog`: the camera preview (16:9, `--tb-shape-lg`; initials while the camera is off),
+  microphone and camera toggles under it, device fields only when there are several; «Отмена» text, «Войти»
+  filled portal colour. Notes when the current call will end.
+- **Full window** — fixed over the page (`role="dialog"`, title focused, Esc minimizes), surface-container;
+  header: title (Title Large emphasized), time and people (Body Medium, on-surface-variant). Stage
+  (`call-layout.ts`): alone — own tile centred with «Пока в комнате только вы»; pair — the other on the stage, own
+  tile as an inset (elevation 2); three and more — a square grid (`gridSize`, at most two columns on a phone); a
+  shared screen — on the stage with everyone in a strip (side, bottom on a phone).
+- **Tiles** — `--tb-shape-xl`, surface-container-highest; own camera mirrored, screens not; a 3 px primary
+  outline on the speaker; the name in an inverse-surface pill (Label Medium) with a crossed microphone and a
+  weak-connection icon; initials in a primary-container circle while the camera is off.
+- **Toolbar** — the M3 Expressive floating toolbar: a pill of surface-container-high with elevation 2. Its
+  buttons are the exception to the 40 px rule: 56 px (48 px on a phone, 44 px in the mini window) round
+  toggles; a switched-off microphone or camera turns error-coloured and squarer (`--tb-shape-lg`, spring
+  `--tb-spring-fast-spatial`) with a crossing line (primeicons have no «slash» icons); `aria-pressed` on every
+  toggle. «Выйти из звонка» — a wider red button with the hang-up phone. Phones have no screen sharing.
+- **Mini window** — on a computer 20 rem, surface-container-high, `--tb-shape-xl`, elevation 3, in a corner
+  (dragged by its top line and snapped to the nearest corner, or «Переместить окно звонка»; remembered on the
+  device); shows a shared screen, the speaker or a camera; compact toolbar. On a phone — a full-width pill above
+  the bottom navigation; the FAB moves above it.
+- **States** — «Подключение…» (spinner, `role="status"`), «Связь прервалась, переподключаемся…» (warning
+  container), the end of a call with its reason (`role="alert"`), «Закрыть» and «Войти снова»; blocked sound —
+  an info message with «Включить звук». Joins and leaves are announced in a polite live region.
+

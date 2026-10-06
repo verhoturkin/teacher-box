@@ -1,5 +1,5 @@
 # Teacher Box SPA + API reverse proxy (split variant, ADR-0004).
-# ${BACKEND_URL} is substituted by the nginx image entrypoint (envsubst) at container start.
+# ${BACKEND_URL} and ${LIVEKIT_URL} are substituted by the nginx image entrypoint (envsubst) at container start.
 
 map $http_x_forwarded_proto $teacherbox_forwarded_proto {
     default $http_x_forwarded_proto;
@@ -48,6 +48,24 @@ server {
         proxy_hide_header Referrer-Policy;
         proxy_hide_header Permissions-Policy;
         proxy_hide_header Content-Security-Policy;
+    }
+
+    # Signalling of the built-in calls (ADR-0030): a WebSocket to LiveKit (profile "calls"). The name is
+    # resolved per request, so nginx also starts without the LiveKit container (then this answers 502).
+    location /livekit/ {
+        resolver 127.0.0.11 valid=30s ipv6=off;
+        set $teacherbox_livekit ${LIVEKIT_URL};
+        rewrite ^/livekit/(.*)$ /$1 break;
+        proxy_pass $teacherbox_livekit;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $teacherbox_forwarded_proto;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $teacherbox_connection;
+        # A call keeps its channel open for hours; LiveKit pings it.
+        proxy_read_timeout 1h;
+        proxy_send_timeout 1h;
     }
 
     location = /actuator/health {

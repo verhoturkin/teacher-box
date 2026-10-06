@@ -1,6 +1,6 @@
 {
     "name": "teacher-box",
-    "version": "1.7.2",
+    "version": "1.8.0",
     "scripts": {
         "ng": "ng",
         "start": "ng serve",
@@ -28,6 +28,7 @@
         "@fullcalendar/angular": "~7.1.0",
         "@primeuix/themes": "^2.0.3",
         "fullcalendar": "~7.1.0",
+        "livekit-client": "^2.22.3",
         "marked": "^18.0.14",
         "primeicons": "^7.0.0",
         "primeng": "~21.1.10",

@@ -1,7 +1,14 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { MeetingRoom, MyRoom, RoomOwnerRef, YandexStatus } from './meetings.models';
+import {
+  CallJoin,
+  CallsOverview,
+  MeetingRoom,
+  MyCall,
+  MyRoom,
+  RoomOwnerRef,
+} from './meetings.models';
 
 function ownerIds(owner: RoomOwnerRef): { studentId: string | null; groupId: string | null } {
   return owner.type === 'GROUP'
@@ -14,39 +21,8 @@ function ownerIds(owner: RoomOwnerRef): { studentId: string | null; groupId: str
 export class MeetingsApi {
   private readonly http = inject(HttpClient);
 
-  yandexStatus(context?: HttpContext): Observable<YandexStatus> {
-    return this.http.get<YandexStatus>('/api/teacher/meetings/yandex', { context });
-  }
-
-  saveClient(clientId: string, clientSecret: string): Observable<YandexStatus> {
-    return this.http.put<YandexStatus>('/api/teacher/meetings/yandex/client', {
-      clientId,
-      clientSecret,
-    });
-  }
-
-  setWaitingRoom(enabled: boolean): Observable<YandexStatus> {
-    return this.http.put<YandexStatus>('/api/teacher/meetings/yandex/waiting-room', { enabled });
-  }
-
-  /** @returns the address of Yandex's consent page */
-  authorize(origin: string): Observable<string> {
-    return this.http
-      .post<{ url: string }>('/api/teacher/meetings/yandex/authorize', { origin })
-      .pipe(map((response) => response.url));
-  }
-
-  disconnect(): Observable<void> {
-    return this.http.delete('/api/teacher/meetings/yandex').pipe(map(() => undefined));
-  }
-
   rooms(context?: HttpContext): Observable<MeetingRoom[]> {
     return this.http.get<MeetingRoom[]>('/api/teacher/meetings/rooms', { context });
-  }
-
-  /** Creates a Telemost meeting for the owner through the API. */
-  createRoom(owner: RoomOwnerRef): Observable<MeetingRoom> {
-    return this.http.post<MeetingRoom>('/api/teacher/meetings/rooms', ownerIds(owner));
   }
 
   enterLink(owner: RoomOwnerRef, joinUrl: string): Observable<MeetingRoom> {
@@ -65,6 +41,21 @@ export class MeetingsApi {
     return this.http
       .post<{ recipients: number }>(`/api/teacher/meetings/rooms/${ownerId}/share`, null)
       .pipe(map((response) => response.recipients));
+  }
+
+  /** A token to join the built-in room of a student or a group. */
+  callToken(ownerId: string): Observable<CallJoin> {
+    return this.http.post<CallJoin>(`/api/meetings/calls/${ownerId}/token`, null);
+  }
+
+  /** The teacher: every built-in room with who is in it. */
+  calls(context?: HttpContext): Observable<CallsOverview> {
+    return this.http.get<CallsOverview>('/api/teacher/meetings/calls', { context });
+  }
+
+  /** A student: their built-in rooms and whether the teacher is there. */
+  myCalls(context?: HttpContext): Observable<MyCall[]> {
+    return this.http.get<MyCall[]>('/api/me/meetings/calls', { context });
   }
 
   myRooms(): Observable<MyRoom[]> {

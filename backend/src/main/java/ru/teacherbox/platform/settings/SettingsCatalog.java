@@ -71,12 +71,12 @@ public final class SettingsCatalog {
                 .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET", "Google: секрет клиента OAuth")
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", "Google: прокси", PROXY, "Если Google недоступен напрямую.");
 
-        b.group("meetings", "Видеовстречи")
-                .add("TEACHERBOX_MEETINGS_YANDEX_CLIENT_ID", "Яндекс: идентификатор приложения", TEXT,
-                        "Приложение в Яндекс ID с правами Телемоста.")
-                .secret("TEACHERBOX_MEETINGS_YANDEX_CLIENT_SECRET", "Яндекс: секрет приложения")
-                .secret("TEACHERBOX_MEETINGS_TELEMOST_TOKEN", "Готовый токен Телемоста")
-                .add("TEACHERBOX_MEETINGS_TELEMOST_API_URL", "Адрес API Телемоста", URL, "Только для проверок.");
+        b.group("meetings", "Видеозвонки")
+                // the LiveKit container reads them from .env too, so they change only there
+                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", "LiveKit: ключ API")
+                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET", "LiveKit: секрет API (не короче 32 символов)")
+                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", "LiveKit: адрес для портала", URL,
+                        "Браузеры всегда подключаются к <адрес портала>/livekit.");
 
         b.group("boards", "Доски")
                 .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
@@ -156,7 +156,13 @@ public final class SettingsCatalog {
                 .docker("TEACHERBOX_VERSION", "Версия образа", TEXT)
                 .docker("TEACHERBOX_MEMORY_LIMIT", "Память контейнера", TEXT)
                 .docker("TEACHERBOX_CPU_LIMIT", "Процессоры контейнера", TEXT)
-                .docker("JAVA_TOOL_OPTIONS", "Параметры Java", TEXT);
+                .docker("JAVA_TOOL_OPTIONS", "Параметры Java", TEXT)
+                .docker("COMPOSE_PROFILES", "Профили Compose (calls — звонки)", TEXT)
+                .docker("TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP", "LiveKit: искать публичный IP через STUN", TEXT)
+                .docker("TEACHERBOX_LIVEKIT_NODE_IP", "LiveKit: публичный IP сервера", TEXT)
+                .docker("TEACHERBOX_LIVEKIT_HTTP_PORT", "LiveKit: порт сигнализации (вариант single)", NUMBER)
+                .docker("TEACHERBOX_LIVEKIT_MEMORY_LIMIT", "LiveKit: память контейнера", TEXT)
+                .docker("TEACHERBOX_LIVEKIT_CPU_LIMIT", "LiveKit: процессоры контейнера", TEXT);
 
         return List.copyOf(b.settings);
     }
@@ -187,6 +193,12 @@ public final class SettingsCatalog {
 
         Builder secret(String name, String title, String hint) {
             return put(name, title, hint, TEXT, List.of(), true, EDITABLE);
+        }
+
+        /** A secret that Docker Compose also passes to another container: read-only in the UI. */
+        Builder dockerSecret(String name, String title) {
+            return put(name, title, "Docker Compose читает её до запуска портала: меняется только в .env.", TEXT,
+                    List.of(), true, DOCKER);
         }
 
         Builder docker(String name, String title, SettingKind kind) {

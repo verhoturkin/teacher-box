@@ -12,13 +12,12 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.meetings.domain.Room;
 import ru.teacherbox.meetings.domain.RoomOwner;
-import ru.teacherbox.meetings.domain.RoomSource;
 
 @Repository
 public class RoomRepository {
 
     private static final String SELECT = """
-            select id, owner_type, owner_id, join_url, conference_id, source, created_at, updated_at, version
+            select id, owner_type, owner_id, join_url, created_at, updated_at, version
             from meetings.rooms
             """;
 
@@ -30,16 +29,13 @@ public class RoomRepository {
 
     public void insert(Room room) {
         jdbc.sql("""
-                insert into meetings.rooms (id, owner_type, owner_id, join_url, conference_id, source, created_at,
-                    updated_at, version)
-                values (:id, :ownerType, :ownerId, :joinUrl, :conferenceId, :source, :createdAt, :updatedAt, :version)
+                insert into meetings.rooms (id, owner_type, owner_id, join_url, created_at, updated_at, version)
+                values (:id, :ownerType, :ownerId, :joinUrl, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", room.id())
                 .param("ownerType", room.ownerType().name())
                 .param("ownerId", room.ownerId())
                 .param("joinUrl", room.joinUrl())
-                .param("conferenceId", room.conferenceId())
-                .param("source", room.source().name())
                 .param("createdAt", room.createdAt())
                 .param("updatedAt", room.updatedAt())
                 .param("version", room.version())
@@ -50,22 +46,19 @@ public class RoomRepository {
     public Room update(Room room) {
         int updated = jdbc.sql("""
                 update meetings.rooms
-                set join_url = :joinUrl, conference_id = :conferenceId, source = :source, updated_at = :updatedAt,
-                    version = version + 1
+                set join_url = :joinUrl, updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
                 .param("id", room.id())
                 .param("version", room.version())
                 .param("joinUrl", room.joinUrl())
-                .param("conferenceId", room.conferenceId())
-                .param("source", room.source().name())
                 .param("updatedAt", room.updatedAt())
                 .update();
         if (updated != 1) {
             throw new OptimisticLockingFailureException("Room " + room.id() + " was modified");
         }
-        return new Room(room.id(), room.ownerType(), room.ownerId(), room.joinUrl(), room.conferenceId(),
-                room.source(), room.createdAt(), room.updatedAt(), room.version() + 1);
+        return new Room(room.id(), room.ownerType(), room.ownerId(), room.joinUrl(), room.createdAt(),
+                room.updatedAt(), room.version() + 1);
     }
 
     public boolean deleteByOwner(UUID ownerId) {
@@ -94,8 +87,6 @@ public class RoomRepository {
                 RoomOwner.valueOf(rs.getString("owner_type")),
                 rs.getObject("owner_id", UUID.class),
                 rs.getString("join_url"),
-                rs.getString("conference_id"),
-                RoomSource.valueOf(rs.getString("source")),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

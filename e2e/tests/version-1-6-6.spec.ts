@@ -129,6 +129,8 @@ test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
       endsOn: null,
       topic: null,
       meetingUrl: null,
+      // lessons of other specs may stand at this hour on the day of the run
+      allowOverlap: true,
     },
   });
   expect(series.ok()).toBe(true);

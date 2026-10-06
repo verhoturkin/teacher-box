@@ -39,8 +39,8 @@ describe('Shell on a phone', () => {
     expect(Array.from(nav.querySelectorAll('a')).map((link) => link.textContent.trim())).toEqual([
       'Главная',
       'Расписание',
+      'Звонки',
       'Ученики',
-      'Задания',
     ]);
     expect(host.querySelector('tb-side-nav')).toBeNull();
     expect(
@@ -53,6 +53,7 @@ describe('Shell on a phone', () => {
     await fixture.whenStable();
     expect(more.getAttribute('aria-expanded')).toBe('true');
     // four sections and «Ещё» (ADR-0027): the rest of the sections are in the menu
+    expect(bodyText()).toContain('Задания');
     expect(bodyText()).toContain('Оплаты');
     expect(bodyText()).toContain('Уведомления');
     expect(bodyText()).toContain('ИИ');

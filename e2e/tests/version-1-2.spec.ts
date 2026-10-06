@@ -1,8 +1,8 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 1.2: a group lesson charged at the price of the group, a Telemost room created on the
- * imitation of its API and a board that the student sees, a dialog with the Telegram bot (the
+ * Version 1.2: a group lesson charged at the price of the group, a Telemost room link (pasted by
+ * the teacher since 1.8.0) and a board that the student sees, a dialog with the Telegram bot (the
  * student asks to move a lesson with buttons, the teacher accepts it with the button under the
  * notification) and the help opened from a section.
  */
@@ -244,7 +244,9 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await page.getByRole('button', { name: `Действия: ${ANNA}` }).click();
   await page.getByRole('menuitem', { name: 'Изменить' }).click();
   const edit = page.getByRole('dialog', { name: 'Изменить ученика' });
-  await edit.getByRole('button', { name: 'Создать встречу в Телемосте' }).click();
+  // 1.8.0: no Telemost API — the teacher pastes the link of the meeting
+  await edit.locator('#room-link').fill('https://telemost.yandex.ru/j/12000000000001');
+  await edit.getByRole('button', { name: 'Добавить ссылку' }).click();
   await expect(edit.getByRole('link', { name: /telemost/ })).toBeVisible();
   await edit.getByRole('button', { name: 'Отмена' }).click();
 

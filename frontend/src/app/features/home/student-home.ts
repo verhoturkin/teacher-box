@@ -6,6 +6,7 @@ import { MyBoardsCard } from '@features/boards/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
 import { HomeworkApi, MyDeadlinesWidget } from '@features/homework/parts';
 import type { MyHomeworkSummary } from '@features/homework/parts';
+import { MyCallsCard } from '@features/meetings/parts';
 import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
@@ -15,8 +16,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 
 /**
- * Student personal area dashboard: the nearest lesson with its link on top, then the widgets of the
- * modules one under another (ADR-0021): homework, balance, notifications, boards.
+ * Student personal area dashboard: the nearest lesson with its link on top, the built-in call rooms, then
+ * the widgets of the modules one under another (ADR-0021): homework, balance, notifications, boards.
  */
 @Component({
   selector: 'tb-student-home',
@@ -26,6 +27,7 @@ import { PageHeader } from '@shared/ui/page-header';
     LatestNotificationsWidget,
     MyBalanceWidget,
     MyBoardsCard,
+    MyCallsCard,
     MyDeadlinesWidget,
     NextLessonWidget,
     StudentWelcomeCard,
@@ -45,6 +47,7 @@ import { PageHeader } from '@shared/ui/page-header';
       } @else {
         <tb-load-state [state]="state" what="занятия, задания и баланс" (retry)="load()" />
       }
+      <tb-my-calls-card />
       <tb-student-welcome-card />
       <tb-connect-messenger-card />
       @if (homework(); as homework) {
