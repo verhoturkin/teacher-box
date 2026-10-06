@@ -53,8 +53,9 @@ cabinet (the teacher keeps the name they set); a GitHub README in the M3 style.
 
 ### Stage 119. README
 
-- [ ] 119.1 README for GitHub in the M3 style: hero with the logo and badges, feature cards, screenshots-free
-  sections with icons, install in one command first.
+- [x] 119.1 README for GitHub in the M3 style: hero and a grid of feature cards (`docs/assets/readme/*.svg`,
+  light and dark via `<picture>`), badges, quick links, the three main points as cards, one-command install as
+  a TIP, the table of contents folded; the rest of the text stays.
 
 ### Stage 120. Release 0.9.1
 

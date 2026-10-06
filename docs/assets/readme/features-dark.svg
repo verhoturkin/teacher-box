@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" font-family="Roboto, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+<title>Возможности Teacher Box</title>
+<path d="M32.0 0H388.0A8 8 0 0 1 396.0 8V188A8 8 0 0 1 388.0 196H8.0A8 8 0 0 1 0.0 188V32A32 32 0 0 1 32.0 0Z" fill="#1f1f25"/>
+<circle cx="60" cy="62" r="32" fill="#3a3399"/>
+<g transform="translate(42 44) scale(1.5)" fill="none" stroke="#e2dfff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 13.6c2.6.2 4.4 2 5 4.9"/></g>
+<text x="28" y="130" font-size="24" font-weight="600" fill="#e5e1e9">Ученики и группы</text>
+<text x="28" y="158" font-size="17" fill="#c8c5d0">Приглашение по ссылке,</text>
+<text x="28" y="181" font-size="17" fill="#c8c5d0">свой кабинет, фото, группы</text>
+<path d="M410.0 0H790.0A8 8 0 0 1 798.0 8V188A8 8 0 0 1 790.0 196H410.0A8 8 0 0 1 402.0 188V8A8 8 0 0 1 410.0 0Z" fill="#1f1f25"/>
+<circle cx="462" cy="62" r="32" fill="#46455a"/>
+<g transform="translate(444 44) scale(1.5)" fill="none" stroke="#e3e0f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.5h.01M12 14.5h.01M16 14.5h.01" stroke-width="2.6"/></g>
+<text x="430" y="130" font-size="24" font-weight="600" fill="#e5e1e9">Расписание</text>
+<text x="430" y="158" font-size="17" fill="#c8c5d0">Регулярные занятия, перенос,</text>
+<text x="430" y="181" font-size="17" fill="#c8c5d0">ICS и Google Календарь</text>
+<path d="M812.0 0H1168.0A32 32 0 0 1 1200.0 32V188A8 8 0 0 1 1192.0 196H812.0A8 8 0 0 1 804.0 188V8A8 8 0 0 1 812.0 0Z" fill="#1f1f25"/>
+<circle cx="864" cy="62" r="32" fill="#633b48"/>
+<g transform="translate(846 44) scale(1.5)" fill="none" stroke="#ffd8e4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="3"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></g>
+<text x="832" y="130" font-size="24" font-weight="600" fill="#e5e1e9">Домашние задания</text>
+<text x="832" y="158" font-size="17" fill="#c8c5d0">Markdown и файлы, очередь</text>
+<text x="832" y="181" font-size="17" fill="#c8c5d0">проверки, оценки</text>
+<path d="M8.0 202H388.0A8 8 0 0 1 396.0 210V390A8 8 0 0 1 388.0 398H8.0A8 8 0 0 1 0.0 390V210A8 8 0 0 1 8.0 202Z" fill="#1f1f25"/>
+<circle cx="60" cy="264" r="32" fill="#46455a"/>
+<g transform="translate(42 246) scale(1.5)" fill="none" stroke="#e3e0f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="3.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v5M18 9.5v5"/></g>
+<text x="28" y="332" font-size="24" font-weight="600" fill="#e5e1e9">Оплаты</text>
+<text x="28" y="360" font-size="17" fill="#c8c5d0">Баланс каждого ученика,</text>
+<text x="28" y="383" font-size="17" fill="#c8c5d0">долги, отчёт за месяц</text>
+<path d="M410.0 202H790.0A8 8 0 0 1 798.0 210V390A8 8 0 0 1 790.0 398H410.0A8 8 0 0 1 402.0 390V210A8 8 0 0 1 410.0 202Z" fill="#1f1f25"/>
+<circle cx="462" cy="264" r="32" fill="#633b48"/>
+<g transform="translate(444 246) scale(1.5)" fill="none" stroke="#ffd8e4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3.5"/><path d="M15.5 10.5 21 7.5v9l-5.5-3"/></g>
+<text x="430" y="332" font-size="24" font-weight="600" fill="#e5e1e9">Звонки</text>
+<text x="430" y="360" font-size="17" fill="#c8c5d0">Видеозвонки прямо в портале</text>
+<text x="430" y="383" font-size="17" fill="#c8c5d0">или ссылка на Телемост</text>
+<path d="M812.0 202H1192.0A8 8 0 0 1 1200.0 210V390A8 8 0 0 1 1192.0 398H812.0A8 8 0 0 1 804.0 390V210A8 8 0 0 1 812.0 202Z" fill="#1f1f25"/>
+<circle cx="864" cy="264" r="32" fill="#3a3399"/>
+<g transform="translate(846 246) scale(1.5)" fill="none" stroke="#e2dfff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5 14.5 7l2.5 2.5L6.5 20H4z"/><path d="M13 6.5 15.5 4 18 6.5 15.5 9"/><path d="M10 21h10"/></g>
+<text x="832" y="332" font-size="24" font-weight="600" fill="#e5e1e9">Доски</text>
+<text x="832" y="360" font-size="17" fill="#c8c5d0">Excalidraw вместе с учеником,</text>
+<text x="832" y="383" font-size="17" fill="#c8c5d0">копии каждой доски</text>
+<path d="M8.0 404H388.0A8 8 0 0 1 396.0 412V592A8 8 0 0 1 388.0 600H32.0A32 32 0 0 1 0.0 568V412A8 8 0 0 1 8.0 404Z" fill="#1f1f25"/>
+<circle cx="60" cy="466" r="32" fill="#633b48"/>
+<g transform="translate(42 448) scale(1.5)" fill="none" stroke="#ffd8e4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></g>
+<text x="28" y="534" font-size="24" font-weight="600" fill="#e5e1e9">Уведомления</text>
+<text x="28" y="562" font-size="17" fill="#c8c5d0">Telegram, ВКонтакте и MAX,</text>
+<text x="28" y="585" font-size="17" fill="#c8c5d0">действия через бота</text>
+<path d="M410.0 404H790.0A8 8 0 0 1 798.0 412V592A8 8 0 0 1 790.0 600H410.0A8 8 0 0 1 402.0 592V412A8 8 0 0 1 410.0 404Z" fill="#1f1f25"/>
+<circle cx="462" cy="466" r="32" fill="#3a3399"/>
+<g transform="translate(444 448) scale(1.5)" fill="none" stroke="#e2dfff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/><path d="M19 15c.3 1.6.9 2.2 2.5 2.5-1.6.3-2.2.9-2.5 2.5-.3-1.6-.9-2.2-2.5-2.5 1.6-.3 2.2-.9 2.5-2.5z"/></g>
+<text x="430" y="534" font-size="24" font-weight="600" fill="#e5e1e9">ИИ-помощник</text>
+<text x="430" y="562" font-size="17" fill="#c8c5d0">Черновики заданий и проверок:</text>
+<text x="430" y="585" font-size="17" fill="#c8c5d0">Claude, Gemini, Ollama</text>
+<path d="M812.0 404H1192.0A8 8 0 0 1 1200.0 412V568A32 32 0 0 1 1168.0 600H812.0A8 8 0 0 1 804.0 592V412A8 8 0 0 1 812.0 404Z" fill="#1f1f25"/>
+<circle cx="864" cy="466" r="32" fill="#46455a"/>
+<g transform="translate(846 448) scale(1.5)" fill="none" stroke="#e3e0f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></g>
+<text x="832" y="534" font-size="24" font-weight="600" fill="#e5e1e9">Данные у вас</text>
+<text x="832" y="562" font-size="17" fill="#c8c5d0">Свой сервер или NAS,</text>
+<text x="832" y="585" font-size="17" fill="#c8c5d0">копии каждую ночь</text>
+</svg>
