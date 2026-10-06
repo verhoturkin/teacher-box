@@ -17,49 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v1.8.1
-
-Goals: fixes in the built-in calls (dropdown and toggle shapes, the devices menu, a movable self-view, no
-tooltips, steadier sound) and in the build: CI checks the nginx image again, and the single-container variant is
-removed — Teacher Box ships only as the split variant.
-
-ADR: [0031](adr/0031-split-variant-only.md) (replaces the single variant of ADR-0004).
-
-### Stage 108. Call fixes
-
-- [x] 108.1 **F** Shapes: the selected/first/last option of a `p-select` list is rounded like a menu item
-  (the rule moves from the menu preset `css`, where `select-style` overrode it, to `styles.scss`); the microphone
-  and camera toggles stay round when off (error container colour instead of a square shape). `styles.scss`,
-  `core/theme/teacher-box-preset.ts`, design system §13.
-- [x] 108.2 **F** `meetings/call/call-controls.ts`: the devices menu opens above the call window (its z-index was
-  under the window's 1050); no tooltips on the call buttons (`call-controls.ts`, `call-prejoin.ts`,
-  `call-mini.ts`).
-- [x] 108.3 **F** The own camera in a one-to-one call is a floating tile in a corner of the stage, dragged to any
-  corner (remembered on the device) or moved with the arrow keys: `call/call-self.ts`, the drag shared with the
-  mini window (`call/call-corner.ts`), `call-window.ts`, `styles.scss`, help «Звонки».
-- [x] 108.4 **F D** Stuttering sound: capture without the browser's voice isolation (`livekit-engine.ts`), the
-  causes and the server checks in `docs/operations.md` and `docs/modules/meetings.md`.
-- [x] 108.5 **F** Sound processing in the devices menu: «Эхоподавление», «Шумоподавление», «Автоусиление
-  громкости» (checkable, remembered on the device, applied by restarting the microphone):
-  `AudioProcessing` in `call-engine.ts`, `CallDevices`, `CallSession.setAudioProcessing`, `livekit-engine.ts`.
-- [x] 108.6 **F** «Сведения о связи» from the devices menu: participants' connection quality, the transport
-  (UDP/TCP, direct / through NAT / TURN, ports, round trip, bandwidth), received sound (loss, jitter, concealed
-  share), sent sound loss, video sizes and why the sent one is limited, LiveKit version; refreshed every 2 s.
-  `CallConnection.stats()`, `readStats` in `call-stats.ts`, `call/call-stats-dialog.ts`.
-
-### Stage 109. Build
-
-- [x] 109.1 **D** `docker/Dockerfile` target `frontend` gets `LIVEKIT_URL=http://livekit:7880` by default, so
-  `nginx -t` (CI) and a container started without the variable get a valid config.
-- [x] 109.2 **D B** Remove the single variant: `compose.single.yaml`, Dockerfile targets `single`/`single-build`,
-  the Maven profile `bundle-frontend`, `platform/web/SpaWebConfigurer`; E2E runs on the split variant
-  (`e2e/compose.e2e.yaml`, `scripts/e2e.sh`, the extra proxy goes); `scripts/verify.sh`, CI, README,
-  `docs/operations.md` (moving from single), `.env.example`, AGENTS.md; ADR-0031.
-
-### Stage 110. Release 1.8.1
-
-- [ ] 110.1 Help, CHANGELOG, version 1.8.1, plan archived (skill `release`).
-
 ## Backlog
 
 Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):
