@@ -71,12 +71,14 @@ verify_docker() {
         echo "    docker CLI not found, skipping"
         return 0
     fi
-    run docker-config "$ROOT" docker compose -f compose.split.yaml config --quiet
-    run docker-config-calls "$ROOT" docker compose -f compose.split.yaml --profile calls config --quiet
+    run docker-config "$ROOT" docker compose config --quiet
+    run docker-config-calls "$ROOT" docker compose --profile calls config --quiet
+    run docker-config-build "$ROOT" docker compose -f compose.yaml -f compose.build.yaml config --quiet
     if docker info >/dev/null 2>&1; then
-        run docker-build "$ROOT" docker compose -f compose.split.yaml build
+        run docker-build "$ROOT" docker compose -f compose.yaml -f compose.build.yaml build
         # The nginx template gives a valid config without LIVEKIT_URL (as in CI; "backend" resolves only in compose).
-        run docker-nginx-config "$ROOT" docker run --rm -e BACKEND_URL=http://127.0.0.1:8080 teacher-box-frontend:latest nginx -t
+        run docker-nginx-config "$ROOT" docker run --rm -e BACKEND_URL=http://127.0.0.1:8080 \
+            ghcr.io/verhoturkin/teacher-box-frontend:latest nginx -t
     else
         echo "    docker daemon is not running, image build skipped"
     fi

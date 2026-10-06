@@ -1,4 +1,4 @@
-# Overrides of compose.split.yaml for the E2E run (scripts/e2e.sh): known teacher and administrator
+# Overrides of compose.yaml for the E2E run (scripts/e2e.sh): known teacher and administrator
 # passwords, a separate port, no .env of the developer, an imitation of the Telegram Bot API, and the
 # built-in calls (ADR-0030): LiveKit for this computer behind the nginx of the frontend (/livekit/).
 services:

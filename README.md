@@ -91,10 +91,12 @@
 
 ## Установка за 5 минут
 
+Портал ставится из готовых образов — исходники и сборка на сервере не нужны. Нужны только два файла:
+
 ```bash
-git clone https://github.com/verhoturkin/teacher-box.git
-cd teacher-box
-cp .env.example .env
+mkdir teacher-box && cd teacher-box
+curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
+curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/.env.example -o .env
 ```
 
 Откройте `.env` и задайте хотя бы:
@@ -105,18 +107,24 @@ TEACHERBOX_PUBLIC_URL=https://school.example.com   # адрес портала (
 TEACHERBOX_TIMEZONE=Europe/Moscow
 ```
 
-Запустите (первая сборка занимает несколько минут):
+Запустите:
 
 ```bash
-docker compose -f compose.split.yaml up -d --build
+docker compose up -d
 ```
 
 Откройте `http://<адрес-сервера>:8080` и войдите как `teacher` с паролем из `.env`
 (если пароль не задан, он сгенерирован и напечатан в журнале:
-`docker compose -f compose.split.yaml logs backend | grep "Teacher account"`).
+`docker compose logs backend | grep "Teacher account"`).
 
 Портал — это два контейнера: `frontend` (nginx: интерфейс, передача запросов к API и к серверу
-звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`.
+звонков) и `backend` (приложение и данные). Наружу открыт только `frontend`. Образы
+`ghcr.io/verhoturkin/teacher-box-backend` и `-frontend` собраны для `amd64` и `arm64` (в том числе
+Raspberry Pi и NAS на ARM); версию задаёт `TEACHERBOX_VERSION` в `.env` (по умолчанию `latest` —
+последний выпуск).
+
+**Сборка из исходников** (для разработки или своих изменений): в клоне репозитория
+`docker compose -f compose.yaml -f compose.build.yaml up -d --build`.
 
 ### HTTPS
 
@@ -134,8 +142,8 @@ school.example.com {
 
 ### NAS
 
-На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.split.yaml`: создайте проект
-(«Container Manager» → «Проект» на Synology), укажите каталог с репозиторием и файл `.env`.
+На Synology/QNAP/TrueNAS с Docker используйте тот же `compose.yaml`: создайте проект
+(«Container Manager» → «Проект» на Synology), положите в его каталог `compose.yaml` и `.env`.
 Данные хранятся в Docker-томе `teacherbox-data`.
 
 ## Первые шаги
@@ -158,14 +166,26 @@ school.example.com {
 
 ## Обновление
 
+В каталоге с `compose.yaml`:
+
 ```bash
-cd teacher-box
-git pull
-docker compose -f compose.split.yaml up -d --build --remove-orphans
+curl -fsSLO https://raw.githubusercontent.com/verhoturkin/teacher-box/main/compose.yaml
+docker compose pull
+docker compose up -d --remove-orphans
 ```
 
+Первая команда берёт свежий `compose.yaml` (в новых версиях он может измениться), вторая скачивает
+новые образы. Если портал собран из исходников — `git pull` и
+`docker compose -f compose.yaml -f compose.build.yaml up -d --build --remove-orphans`.
+
+**Переход с `compose.split.yaml` (до 1.9.0).** Файл переименован в `compose.yaml` и берёт готовые
+образы; проект и том данных (`teacherbox-data`) те же. В клоне репозитория выполните `git pull` и
+`docker compose up -d --remove-orphans`, старые локальные образы можно удалить:
+`docker image prune`. Клон больше не нужен: достаточно перенести `compose.yaml` и `.env` в любой
+каталог и запускать команды оттуда.
+
 **Переход с `compose.single.yaml` (до 1.8.1).** Вариант «один контейнер» убран, данные остаются в
-том же томе `teacherbox-data`. Обновитесь командой выше: `--remove-orphans` остановит и удалит
+том же томе `teacherbox-data`. Обновитесь командами выше: `--remove-orphans` остановит и удалит
 старый контейнер `app`, вместо него запустятся `backend` и `frontend`. Если перед порталом стоит
 свой прокси с правилом `/livekit/` на `127.0.0.1:7880`, уберите это правило — теперь его выполняет
 nginx контейнера `frontend`.
@@ -408,7 +428,7 @@ TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
 
 **Учитель забыл пароль.** Задайте в `.env` новый `TEACHERBOX_IDENTITY_TEACHER_PASSWORD` и
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=true`, перезапустите портал
-(`docker compose -f compose.split.yaml up -d`), войдите с новым паролем и верните
+(`docker compose up -d`), войдите с новым паролем и верните
 `TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD=false`.
 
 **Ученик забыл пароль.** «Ученики» → в строке ученика «Ссылка для сброса пароля»: портал покажет

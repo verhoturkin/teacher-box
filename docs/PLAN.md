@@ -17,6 +17,58 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v1.9.0
+
+Goals: installing on a server takes one command and a few answers. Ready images are published to GHCR (amd64 and
+arm64), so the server needs no source code and no build; `compose.yaml` works without the repository; an optional
+Caddy container gets the HTTPS certificate itself; `install.sh` sets everything up and the `teacherbox` command
+updates and serves the portal; `.env` needs nothing but the domain.
+
+ADR: 0032 (ready images, installer, built-in HTTPS).
+
+### Stage 111. Ready images
+
+- [x] 111.1 **D** `docker/Dockerfile`: build stages run on `$BUILDPLATFORM` (the jar and the SPA do not depend on
+  the architecture), only the runtime stages per target platform; OCI labels (`title`, `source`, `version`).
+- [x] 111.2 **D** `compose.split.yaml` → `compose.yaml` on images `ghcr.io/verhoturkin/teacher-box-{backend,frontend}`
+  without `build:`; the build moves to the override `compose.build.yaml` (verify, CI, E2E use both); the LiveKit
+  config is inline (`LIVEKIT_CONFIG`), `docker/livekit/livekit.yaml` goes — `compose.yaml` alone is enough on a
+  server. `scripts/verify.sh`, `scripts/e2e.sh`, `e2e/compose.e2e.yaml`, CI, AGENTS.md.
+- [x] 111.3 **D** CI job `publish` on tags `v*`: multi-platform build (`linux/amd64`, `linux/arm64`) and push to
+  GHCR with tags `X.Y.Z`, `X.Y`, `latest` (`docker/metadata-action`, `build-push-action`, gha cache).
+- [x] 111.4 **D** ADR-0032; README «Установка» / «Обновление» / NAS (images instead of the build, moving from
+  `compose.split.yaml`), `docs/operations.md`.
+
+### Stage 112. HTTPS in the box
+
+- [ ] 112.1 **D** Service `caddy` in `compose.yaml` (profile `https`): `caddy reverse-proxy --from
+  $TEACHERBOX_DOMAIN --to frontend:8080`, ports 80, 443/tcp, 443/udp, volume `caddy-data`; new docker settings
+  `TEACHERBOX_DOMAIN` (`.env.example`, `SettingsCatalog`); README «HTTPS», `docs/operations.md`.
+
+### Stage 113. Installer and the `teacherbox` command
+
+- [ ] 113.1 **D** `scripts/install.sh`: checks Docker / Compose v2 (offers get.docker.com), asks for the domain,
+  time zone, calls; generates the teacher password and the LiveKit key; writes `.env` and downloads `compose.yaml`
+  into `/opt/teacher-box`; opens the ports in `ufw` if it is active; starts and waits for health; prints the address
+  and the login. Non-interactive mode by options (`--domain`, `--yes`, `--no-start`, `--source`).
+- [ ] 113.2 **D** `scripts/teacherbox`: `status`, `logs`, `start`, `stop`, `restart`, `update` (fresh
+  `compose.yaml`, `pull`, `up -d`), `backups` (copies `/data/backups` out), `config` (edit `.env` and apply),
+  `version`.
+- [ ] 113.3 **D** Checks: shellcheck of both scripts and a dry run of the installer (`--no-start --source`) +
+  `docker compose config` in `scripts/verify.sh docker` and CI; README «Установка за 5 минут» with one command,
+  `docs/operations.md` «Команда teacherbox».
+
+### Stage 114. Minimal settings
+
+- [ ] 114.1 **D B** `.env.example`: a short «Main» block on top (domain, address, time zone, profiles, teacher
+  password), every other line commented with its default; `TEACHERBOX_PUBLIC_URL` defaults to
+  `https://$TEACHERBOX_DOMAIN` in `compose.yaml`; `SettingsCatalog` (order), README «Настройки».
+
+### Stage 115. Release 1.9.0
+
+- [ ] 115.1 Skill `release`: help, CHANGELOG (moving from `compose.split.yaml`), version, plan archive; after the
+  tag — make the GHCR packages public and check `install.sh` on a clean server.
+
 ## Backlog
 
 Carried over from 1.6.13 (design audit 2026-09-29, `archive/audit/`):

@@ -1,0 +1,19 @@
+# Builds the images from the source instead of pulling them from GHCR (development, E2E, CI):
+#
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+#
+# The local images get the same names as the published ones.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: backend
+    pull_policy: build
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: frontend
+    pull_policy: build

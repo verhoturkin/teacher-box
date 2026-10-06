@@ -1,18 +1,18 @@
-# Variant 1 (ADR-0004): backend and frontend in separate containers.
+# Teacher Box (ADR-0031, ADR-0032): ready images from GHCR, no source code or build on the server.
 #
-#   cp .env.example .env    # adjust settings
-#   docker compose -f compose.split.yaml up -d --build
+#   scripts/install.sh does everything below; by hand, next to this file:
+#   cp .env.example .env    # adjust settings (only the "Main" block is needed)
+#   docker compose up -d
 #
-# Only the frontend (nginx) is published; it proxies /api to the backend over the internal network.
+# Update: docker compose pull && docker compose up -d. Building from the source instead of the ready images:
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+#
+# Only the frontend (nginx) is published; it proxies /api and /livekit over the internal network.
 name: teacher-box
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      target: backend
-    image: teacher-box-backend:${TEACHERBOX_VERSION:-latest}
+    image: ghcr.io/verhoturkin/teacher-box-backend:${TEACHERBOX_VERSION:-latest}
     restart: unless-stopped
     env_file:
       - path: .env
@@ -39,11 +39,7 @@ services:
         max-file: "5"
 
   frontend:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      target: frontend
-    image: teacher-box-frontend:${TEACHERBOX_VERSION:-latest}
+    image: ghcr.io/verhoturkin/teacher-box-frontend:${TEACHERBOX_VERSION:-latest}
     restart: unless-stopped
     environment:
       BACKEND_URL: http://backend:8080
@@ -70,14 +66,31 @@ services:
     image: livekit/livekit-server:v1.13.7
     profiles: ["calls"]
     restart: unless-stopped
-    command: ["--config", "/etc/livekit.yaml"]
     environment:
       LIVEKIT_KEYS: "${TEACHERBOX_MEETINGS_LIVEKIT_API_KEY:-}: ${TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET:-}"
       # STUN finds the public address; false + TEACHERBOX_LIVEKIT_NODE_IP give it explicitly.
       LIVEKIT_RTC_USE_EXTERNAL_IP: ${TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP:-true}
       NODE_IP: ${TEACHERBOX_LIVEKIT_NODE_IP:-}
-    volumes:
-      - ./docker/livekit/livekit.yaml:/etc/livekit.yaml:ro
+      # The server config inline, so that this file alone is enough on a server.
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          # Media: one UDP port for every call, TCP as the fallback for networks that block UDP.
+          udp_port: 7882
+          tcp_port: 7881
+        turn:
+          # Embedded TURN over UDP for clients behind strict NAT; relayed media uses the published range.
+          enabled: true
+          udp_port: 3478
+          relay_range_start: 30000
+          relay_range_end: 30049
+        room:
+          # Rooms "tb-<ownerId>" are created on the first join and closed when empty.
+          auto_create: true
+          empty_timeout: 300
+          departure_timeout: 20
+          max_participants: 20
     ports:
       - "7881:7881/tcp"
       - "7882:7882/udp"

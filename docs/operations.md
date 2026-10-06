@@ -31,7 +31,7 @@
 Скопировать все копии с сервера:
 
 ```bash
-docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backups
+docker compose cp backend:/data/backups ./teacherbox-backups
 ```
 
 ### Копии досок
@@ -68,9 +68,9 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
 
 1. Положите архив в каталог `restore/` данных:
    ```bash
-   docker compose -f compose.split.yaml cp teacherbox-20260925-033000-000.zip backend:/data/restore/
+   docker compose cp teacherbox-20260925-033000-000.zip backend:/data/restore/
    ```
-2. Перезапустите портал: `docker compose -f compose.split.yaml restart backend`.
+2. Перезапустите портал: `docker compose restart backend`.
 3. При старте, до открытия базы, портал:
    - переносит текущие `db/` и `files/` в `restore/previous-<время>/` (на случай отката);
    - восстанавливает базу из `database.sql` и файлы из `files/`;
@@ -178,7 +178,7 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
 ## Видеозвонки (LiveKit)
 
 Встроенные звонки идут через медиасервер LiveKit — отдельный контейнер `livekit` в
-`compose.split.yaml` (профиль `calls`, ADR-0030). Без него портал работает как раньше — с внешними
+`compose.yaml` (профиль `calls`, ADR-0030). Без него портал работает как раньше — с внешними
 ссылками на видеосвязь.
 
 **Включение.**
@@ -192,7 +192,7 @@ docker compose -f compose.split.yaml cp backend:/data/backups ./teacherbox-backu
    ```
 2. Откройте на сервере порты для медиа: **7881/tcp**, **7882/udp**, **3478/udp** (TURN) и
    **30000–30049/udp** (ретрансляция TURN). Порт 7880 наружу открывать не нужно.
-3. `docker compose -f compose.split.yaml up -d`.
+3. `docker compose up -d`.
 
 **Публичный адрес.** LiveKit сам узнаёт внешний IP сервера через STUN. Если сервер за NAT с
 пробросом портов или у него несколько адресов, задайте адрес сами:
@@ -207,7 +207,7 @@ nginx контейнера `frontend` уже передаёт `/livekit/` в к�
 
 **LiveKit на другом сервере.** Браузер всегда подключается к `<адрес портала>/livekit`, поэтому
 направьте этот путь на свой LiveKit переменной `LIVEKIT_URL` контейнера `frontend` (в
-`compose.split.yaml`). Портал ходит к LiveKit по
+`compose.yaml`). Портал ходит к LiveKit по
 `TEACHERBOX_MEETINGS_LIVEKIT_API_URL` (по умолчанию `http://livekit:7880`); ключ и секрет — те же.
 Профиль `calls` тогда не нужен.
 
