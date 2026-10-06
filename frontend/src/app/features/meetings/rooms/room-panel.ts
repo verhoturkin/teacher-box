@@ -1,7 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -17,8 +17,8 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
 /**
  * The permanent room of a student or a group, inside the dialog that edits them (a dialog never
- * opens another one, ADR-0026): create a Telemost meeting (with Yandex connected) or paste a link,
- * copy it, send it to the students, remove it. Every action is saved at once.
+ * opens another one, ADR-0026): paste an external call link, copy it, send it to the students,
+ * remove it. Every action is saved at once.
  */
 @Component({
   selector: 'tb-room-panel',
@@ -66,20 +66,8 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             на все уроки. Ссылка попадёт в напоминания, календарь и кнопку «Войти в урок».
           </p>
         }
-        @if (canCreate()) {
-          <p-button
-            [label]="room() === null ? 'Создать встречу в Телемосте' : 'Новая встреча в Телемосте'"
-            icon="pi pi-video"
-            class="tb-tonal"
-            severity="success"
-            [loading]="pending()"
-            (onClick)="create()"
-          />
-        }
         <div class="tb-field">
-          <label for="room-link">{{
-            canCreate() ? 'Или вставьте ссылку' : 'Ссылка на встречу'
-          }}</label>
+          <label for="room-link">Ссылка на встречу</label>
           <div class="tb-copy-row">
             <input
               pInputText
@@ -141,8 +129,6 @@ export class RoomPanel {
   readonly owner = input<RoomOwnerRef | null>(null);
 
   protected readonly room = signal<MeetingRoom | null>(null);
-  /** Yandex is connected: meetings can be created through the API. */
-  protected readonly canCreate = signal(false);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   readonly link = new FormControl('', {
@@ -160,15 +146,6 @@ export class RoomPanel {
         this.load(owner.id);
       }
     });
-  }
-
-  create(): void {
-    const owner = this.owner();
-    if (owner !== null) {
-      this.run(this.api.createRoom(owner), (room) => {
-        this.room.set(room);
-      });
-    }
   }
 
   save(): void {
@@ -201,16 +178,12 @@ export class RoomPanel {
   }
 
   private load(ownerId: string): void {
-    forkJoin({
-      rooms: this.api.rooms(quietContext()),
-      yandex: this.api.yandexStatus(quietContext()),
-    }).subscribe({
-      next: ({ rooms, yandex }) => {
+    this.api.rooms(quietContext()).subscribe({
+      next: (rooms) => {
         if (this.owner()?.id !== ownerId) {
           return;
         }
         this.room.set(rooms.find((room) => room.ownerId === ownerId) ?? null);
-        this.canCreate.set(yandex.status === 'CONNECTED' || yandex.tokenFromEnvironment);
       },
       error: () => {
         this.error.set('Не удалось загрузить видеовстречу. Откройте окно ещё раз');

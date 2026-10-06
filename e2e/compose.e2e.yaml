@@ -1,6 +1,5 @@
 # Overrides of compose.single.yaml for the E2E run (scripts/e2e.sh): known teacher and administrator
-# passwords, a separate port, no .env of the developer and an imitation of the Telegram Bot API and
-# of the Telemost API.
+# passwords, a separate port, no .env of the developer and an imitation of the Telegram Bot API.
 services:
   app:
     env_file: !reset []
@@ -8,8 +7,6 @@ services:
       TEACHERBOX_IDENTITY_TEACHER_PASSWORD: ${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}
       TEACHERBOX_IDENTITY_ADMIN_PASSWORD: ${E2E_ADMIN_PASSWORD:-e2e-admin-pass}
       TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL: http://telegram:8099
-      TEACHERBOX_MEETINGS_TELEMOST_API_URL: http://telegram:8099/telemost
-      TEACHERBOX_MEETINGS_TELEMOST_TOKEN: e2e-telemost-token
       TEACHERBOX_PUBLIC_URL: ${E2E_BASE_URL:-http://localhost:8091}
       TEACHERBOX_BACKUP_CRON: "-"
       # Every test signs in again; the default limit (30 a minute) is for real clients.

@@ -151,12 +151,6 @@ const CODE_MESSAGES: Readonly<Record<string, string>> = {
   'schedule.google-client-from-environment': 'OAuth-клиент Google задан администратором портала',
   'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
   'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
-  'meetings.not-connected':
-    'Сначала подключите Яндекс в «Настройках» или вставьте ссылку на встречу сами',
-  'meetings.reconnect':
-    'Яндекс больше не принимает доступ портала: подключите аккаунт заново в «Настройках»',
-  'meetings.telemost-failed':
-    'Телемост не создал встречу. Попробуйте позже или вставьте ссылку сами',
   'meetings.room-not-found': 'Такой комнаты уже нет',
   'meetings.no-recipients':
     'Ссылку некому отправить: у ученика нет доступа или в группе никого нет',

@@ -4,7 +4,6 @@ import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { bodyText } from '@testing/dom';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
 import { testProviders } from '@testing/setup';
-import { yandexStatus } from '@testing/meetings-fixtures';
 
 describe('GroupFormDialog', () => {
   let fixture: ComponentFixture<GroupFormDialog>;
@@ -32,7 +31,7 @@ describe('GroupFormDialog', () => {
     for (const request of backend.match((request) =>
       request.url.startsWith('/api/teacher/meetings/'),
     )) {
-      request.flush(request.request.url.endsWith('/yandex') ? yandexStatus() : []);
+      request.flush([]);
     }
     backend.verify();
     fixture.destroy();
@@ -76,7 +75,6 @@ describe('GroupFormDialog', () => {
     await open();
     expect(bodyText()).toContain('Видеовстреча');
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
   });
 
   it('keeps the price when it did not change', async () => {

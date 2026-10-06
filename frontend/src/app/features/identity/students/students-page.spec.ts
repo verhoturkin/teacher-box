@@ -12,7 +12,6 @@ import {
   typeInto,
 } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
-import { yandexStatus } from '@testing/meetings-fixtures';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
 import { StudentsPage } from './students-page';
@@ -81,13 +80,7 @@ describe('StudentsPage', () => {
   function flushEverything(): void {
     for (const request of backend.match(() => true)) {
       const url = request.request.url;
-      request.flush(
-        url.endsWith('/yandex')
-          ? yandexStatus()
-          : url.endsWith('/billing/groups')
-            ? { currency: 'RUB', prices: [] }
-            : [],
-      );
+      request.flush(url.endsWith('/billing/groups') ? { currency: 'RUB', prices: [] } : []);
     }
   }
 

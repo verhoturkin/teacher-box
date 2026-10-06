@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { aiStatus } from '@testing/ai-fixtures';
 import { hostElement, readableText } from '@testing/dom';
-import { yandexStatus } from '@testing/meetings-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
@@ -76,7 +75,6 @@ describe('SettingsPage', () => {
       connectedAt: null,
       callbackPath: '/api/public/schedule/google/callback',
     });
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
   }
 

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MessageService } from 'primeng/api';
 import { buttonByText, hostElement } from '@testing/dom';
-import { aRoom, yandexStatus } from '@testing/meetings-fixtures';
+import { aRoom } from '@testing/meetings-fixtures';
 import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
 import { RoomPanel } from './room-panel';
 import { testProviders } from '@testing/setup';
@@ -29,17 +29,10 @@ describe('RoomPanel', () => {
     fixture.destroy();
   });
 
-  async function show(
-    rooms: MeetingRoom[],
-    connected: boolean,
-    owner: RoomOwnerRef = MARIA,
-  ): Promise<RoomPanel> {
+  async function show(rooms: MeetingRoom[], owner: RoomOwnerRef = MARIA): Promise<RoomPanel> {
     fixture.componentRef.setInput('owner', owner);
     await fixture.whenStable();
     backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
-    backend
-      .expectOne('/api/teacher/meetings/yandex')
-      .flush(yandexStatus({ status: connected ? 'CONNECTED' : 'NOT_CONNECTED' }));
     await fixture.whenStable();
     return fixture.componentInstance;
   }
@@ -49,23 +42,10 @@ describe('RoomPanel', () => {
     expect(host.textContent.trim()).toBe('');
   });
 
-  it('creates a Telemost meeting for a student without a room', async () => {
-    await show([aRoom({ ownerId: 'other' })], true);
-    expect(host.textContent).toContain('ученик приходит');
-
-    buttonByText(host, 'Создать встречу в Телемосте').click();
-    const request = backend.expectOne({ method: 'POST', url: '/api/teacher/meetings/rooms' });
-    expect(request.request.body).toEqual({ studentId: 's-1', groupId: null });
-    request.flush(aRoom({ ownerId: 's-1' }));
-    await fixture.whenStable();
-
-    expect(host.textContent).toContain('telemost.yandex.ru/j/');
-    expect(host.textContent).toContain('Новая встреча в Телемосте');
-  });
-
   it('saves a pasted link', async () => {
-    const panel = await show([], false);
-    expect(host.textContent).not.toContain('Создать встречу в Телемосте');
+    const panel = await show([aRoom({ ownerId: 'other' })]);
+    expect(host.textContent).toContain('ученик приходит');
+    expect(host.textContent).not.toContain('Телемост');
 
     panel.link.setValue('zoom');
     await fixture.whenStable();
@@ -89,7 +69,7 @@ describe('RoomPanel', () => {
   });
 
   it('saves the link with Enter', async () => {
-    const panel = await show([], false);
+    const panel = await show([]);
     panel.link.setValue('https://zoom.us/j/2');
     host
       .querySelector('#room-link')
@@ -102,7 +82,7 @@ describe('RoomPanel', () => {
   it('copies, sends and removes a room', async () => {
     const room = aRoom({ ownerId: 's-1' });
     const copy = vi.spyOn(TestBed.inject(Clipboard), 'copy').mockReturnValue(true);
-    await show([room], true);
+    await show([room]);
     expect(host.textContent).toContain('Заменить ссылку');
 
     buttonByText(host, 'Копировать ссылку').click();
@@ -120,24 +100,25 @@ describe('RoomPanel', () => {
     expect(host.textContent).toContain('Добавить ссылку');
   });
 
-  it('explains why a meeting was not created', async () => {
-    await show([aRoom({ ownerId: 'g-1', ownerType: 'GROUP' })], true, {
+  it('explains why the link was not saved', async () => {
+    const panel = await show([aRoom({ ownerId: 'g-1', ownerType: 'GROUP' })], {
       type: 'GROUP',
       id: 'g-1',
       name: 'ОГЭ',
     });
     expect(host.textContent).toContain('Отправить группе');
 
-    buttonByText(host, 'Новая встреча в Телемосте').click();
+    panel.link.setValue('https://zoom.us/j/3');
+    panel.save();
     backend
       .expectOne('/api/teacher/meetings/rooms')
       .flush(
-        { status: 422, code: 'meetings.reconnect' },
-        { status: 422, statusText: 'Unprocessable' },
+        { status: 404, code: 'meetings.group-not-found' },
+        { status: 404, statusText: 'Not Found' },
       );
     await fixture.whenStable();
 
-    expect(host.textContent).toContain('Яндекс больше не принимает доступ портала');
+    expect(host.textContent).toContain('Группа не найдена');
   });
 
   it('says when the room could not be loaded', async () => {
@@ -146,7 +127,6 @@ describe('RoomPanel', () => {
     backend
       .expectOne('/api/teacher/meetings/rooms')
       .flush(null, { status: 500, statusText: 'Error' });
-    expect(backend.expectOne('/api/teacher/meetings/yandex').cancelled).toBe(true);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Не удалось загрузить видеовстречу');
@@ -156,13 +136,10 @@ describe('RoomPanel', () => {
     fixture.componentRef.setInput('owner', MARIA);
     await fixture.whenStable();
     const stale = backend.expectOne('/api/teacher/meetings/rooms');
-    const staleYandex = backend.expectOne('/api/teacher/meetings/yandex');
     fixture.componentRef.setInput('owner', { type: 'STUDENT', id: 's-2', name: 'Борис' });
     await fixture.whenStable();
     stale.flush([aRoom({ ownerId: 's-1' })]);
-    staleYandex.flush(yandexStatus());
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/yandex').flush(yandexStatus());
     await fixture.whenStable();
 
     expect(host.textContent).not.toContain('telemost.yandex.ru/j/');

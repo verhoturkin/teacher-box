@@ -88,7 +88,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
 
 ### Stage 102. Remove the Telemost API
 
-- [ ] 102.1 **B** Delete `meetings/application/{YandexService,TelemostApi,TelemostAuthException,TelemostException,
+- [x] 102.1 **B** Delete `meetings/application/{YandexService,TelemostApi,TelemostAuthException,TelemostException,
   TelemostIntegrationCheck}`, `web/PublicYandexController`, `persistence/YandexRepository`,
   `domain/{YandexConnection,YandexStatus,RoomSource}`, `/api/teacher/meetings/yandex/**` and
   `POST /api/teacher/meetings/rooms`; `MeetingsProperties` loses `yandex`/`telemost`; `Room` loses
@@ -97,7 +97,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   `MeetingsDataReset`, public path of the callback in security config, `SettingsCatalog` group «Видеовстречи»
   (Telemost variables), `.env.example`, README «Видеовстречи» (Yandex part), `e2e/compose.e2e.yaml` and the
   Telemost stub of the fake server; tests (`TelemostApiTest`, `MeetingsIntegrationTest(s)`) adjusted.
-- [ ] 102.2 **F** `features/meetings/settings/meetings-settings-panel.ts` — only the device setting (Telemost app);
+- [x] 102.2 **F** `features/meetings/settings/meetings-settings-panel.ts` — only the device setting (Telemost app);
   `rooms/room-panel.ts` — external link + «Отправить» only (no «Создать встречу в Телемосте»);
   `data-access/meetings.models.ts`/`meetings-api.ts` without Yandex; `core/http/error-messages.ts` drops
   `meetings.reconnect`/`telemost-failed`; `testing/meetings-fixtures.ts`, specs.

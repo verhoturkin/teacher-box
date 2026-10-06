@@ -71,13 +71,6 @@ public final class SettingsCatalog {
                 .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET", "Google: секрет клиента OAuth")
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", "Google: прокси", PROXY, "Если Google недоступен напрямую.");
 
-        b.group("meetings", "Видеовстречи")
-                .add("TEACHERBOX_MEETINGS_YANDEX_CLIENT_ID", "Яндекс: идентификатор приложения", TEXT,
-                        "Приложение в Яндекс ID с правами Телемоста.")
-                .secret("TEACHERBOX_MEETINGS_YANDEX_CLIENT_SECRET", "Яндекс: секрет приложения")
-                .secret("TEACHERBOX_MEETINGS_TELEMOST_TOKEN", "Готовый токен Телемоста")
-                .add("TEACHERBOX_MEETINGS_TELEMOST_API_URL", "Адрес API Телемоста", URL, "Только для проверок.");
-
         b.group("boards", "Доски")
                 .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
                         "Ежедневная копия каждой изменённой доски, например 0 0 3 * * *; - — выключить.")
