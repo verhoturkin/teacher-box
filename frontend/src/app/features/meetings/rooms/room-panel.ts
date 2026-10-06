@@ -1,7 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -16,9 +16,9 @@ import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
 const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
 /**
- * The permanent room of a student or a group, inside the dialog that edits them (a dialog never
- * opens another one, ADR-0026): paste an external call link, copy it, send it to the students,
- * remove it. Every action is saved at once.
+ * The call of a student or a group, inside the dialog that edits them (a dialog never opens another
+ * one, ADR-0026): the room of the portal by default (ADR-0030) or an external call link — paste it,
+ * copy it, send it to the students, remove it. Every action is saved at once.
  */
 @Component({
   selector: 'tb-room-panel',
@@ -48,7 +48,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               class="tb-tonal"
               severity="success"
               [loading]="pending()"
-              (onClick)="share(room)"
+              (onClick)="share(room.ownerId)"
             />
             <p-button
               label="Удалить ссылку"
@@ -57,6 +57,28 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               [text]="true"
               [loading]="pending()"
               (onClick)="remove(room)"
+            />
+          </div>
+          @if (callsOn()) {
+            <small class="tb-hint"
+              >В занятиях эта ссылка заменяет комнату портала. Удалите её, чтобы вести уроки в
+              портале.</small
+            >
+          }
+        } @else if (callsOn()) {
+          <p class="tb-muted">
+            Уроки идут в комнате портала (раздел «Звонки»): её ссылка попадает в напоминания,
+            календарь и кнопку «Войти в урок». Можно задать ссылку на внешнюю видеосвязь — тогда
+            занятия поведут по ней.
+          </p>
+          <div class="tb-actions">
+            <p-button
+              [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
+              icon="pi pi-send"
+              class="tb-tonal"
+              severity="success"
+              [loading]="pending()"
+              (onClick)="share(owner.id)"
             />
           </div>
         } @else {
@@ -129,6 +151,8 @@ export class RoomPanel {
   readonly owner = input<RoomOwnerRef | null>(null);
 
   protected readonly room = signal<MeetingRoom | null>(null);
+  /** Built-in calls are set up: without a link the room of the portal is used (ADR-0030). */
+  protected readonly callsOn = signal(false);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   readonly link = new FormControl('', {
@@ -165,8 +189,8 @@ export class RoomPanel {
     });
   }
 
-  share(room: MeetingRoom): void {
-    this.run(this.api.share(room.ownerId), (recipients) => {
+  share(ownerId: string): void {
+    this.run(this.api.share(ownerId), (recipients) => {
       this.snackbar.success(`Ссылка отправлена, получателей: ${String(recipients)}`);
     });
   }
@@ -178,12 +202,17 @@ export class RoomPanel {
   }
 
   private load(ownerId: string): void {
-    this.api.rooms(quietContext()).subscribe({
-      next: (rooms) => {
+    forkJoin({
+      rooms: this.api.rooms(quietContext()),
+      // the status only changes the words: without it the panel works as with calls off
+      calls: this.api.calls(quietContext()).pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({ rooms, calls }) => {
         if (this.owner()?.id !== ownerId) {
           return;
         }
         this.room.set(rooms.find((room) => room.ownerId === ownerId) ?? null);
+        this.callsOn.set(calls !== null && calls.status !== 'OFF');
       },
       error: () => {
         this.error.set('Не удалось загрузить видеовстречу. Откройте окно ещё раз');

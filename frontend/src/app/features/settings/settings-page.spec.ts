@@ -75,6 +75,7 @@ describe('SettingsPage', () => {
       connectedAt: null,
       callbackPath: '/api/public/schedule/google/callback',
     });
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
     await fixture.whenStable();
   }
 

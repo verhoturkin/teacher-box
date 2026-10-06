@@ -183,7 +183,7 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   «В звонке: …» / «Ждут: N» (status colours ADR-0023); right — «Войти» (filled when someone waits) or
   «Вы в звонке» for the current one; an external link is noted. Refresh every 10 s while the page is visible;
   states: calls off (how to enable, link to help), LiveKit unreachable, no students.
-- [ ] 106.2 **F** `meetings/rooms/room-panel.ts` (in the student and group edit dialogs) shows «Встроенная
+- [x] 106.2 **F** `meetings/rooms/room-panel.ts` (in the student and group edit dialogs) shows «Встроенная
   комната» or the external link, sets/removes the external link and sends the link;
   `MeetingsSettingsPanel` → «Видеозвонки»: LiveKit status (configured, reachable) + the Telemost-app device
   setting.

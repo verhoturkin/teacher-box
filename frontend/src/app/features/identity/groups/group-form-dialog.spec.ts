@@ -75,6 +75,7 @@ describe('GroupFormDialog', () => {
     await open();
     expect(bodyText()).toContain('Видеовстреча');
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
   });
 
   it('keeps the price when it did not change', async () => {

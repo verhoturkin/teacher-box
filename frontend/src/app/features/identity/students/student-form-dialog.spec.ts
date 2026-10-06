@@ -100,6 +100,7 @@ describe('StudentFormDialog', () => {
     expect(login.closest('form')?.id).toBe('student-form');
     expect(bodyText()).toContain('Видеовстреча');
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
   });
 
   it('says the login is not chosen yet and has no room for a deactivated student', async () => {

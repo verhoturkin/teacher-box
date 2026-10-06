@@ -69,6 +69,7 @@ describe('GroupsPanel', () => {
   /** The room panel of the edit dialog asks for the rooms. */
   function flushRoom(): void {
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
   }
 
   function confirmNext(): void {

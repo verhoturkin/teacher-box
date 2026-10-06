@@ -29,10 +29,15 @@ describe('RoomPanel', () => {
     fixture.destroy();
   });
 
-  async function show(rooms: MeetingRoom[], owner: RoomOwnerRef = MARIA): Promise<RoomPanel> {
+  async function show(
+    rooms: MeetingRoom[],
+    owner: RoomOwnerRef = MARIA,
+    calls: 'OK' | 'OFF' = 'OFF',
+  ): Promise<RoomPanel> {
     fixture.componentRef.setInput('owner', owner);
     await fixture.whenStable();
     backend.expectOne('/api/teacher/meetings/rooms').flush(rooms);
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: calls, rooms: [] });
     await fixture.whenStable();
     return fixture.componentInstance;
   }
@@ -127,6 +132,7 @@ describe('RoomPanel', () => {
     backend
       .expectOne('/api/teacher/meetings/rooms')
       .flush(null, { status: 500, statusText: 'Error' });
+    expect(backend.expectOne('/api/teacher/meetings/calls').cancelled).toBe(true);
     await fixture.whenStable();
 
     expect(host.textContent).toContain('Не удалось загрузить видеовстречу');
@@ -136,12 +142,44 @@ describe('RoomPanel', () => {
     fixture.componentRef.setInput('owner', MARIA);
     await fixture.whenStable();
     const stale = backend.expectOne('/api/teacher/meetings/rooms');
+    const staleCalls = backend.expectOne('/api/teacher/meetings/calls');
     fixture.componentRef.setInput('owner', { type: 'STUDENT', id: 's-2', name: 'Борис' });
     await fixture.whenStable();
     stale.flush([aRoom({ ownerId: 's-1' })]);
+    staleCalls.flush({ status: 'OFF', rooms: [] });
     backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
     await fixture.whenStable();
 
     expect(host.textContent).not.toContain('telemost.yandex.ru/j/');
+  });
+
+  it('uses the room of the portal without a link and sends its link', async () => {
+    await show([], MARIA, 'OK');
+
+    expect(host.textContent).toContain('Уроки идут в комнате портала');
+    buttonByText(host, 'Отправить ученику').click();
+    backend.expectOne('/api/teacher/meetings/rooms/s-1/share').flush({ recipients: 1 });
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Ссылка отправлена, получателей: 1' }),
+    );
+  });
+
+  it('says that a link replaces the room of the portal', async () => {
+    await show([aRoom({ ownerId: 's-1' })], MARIA, 'OK');
+
+    expect(host.textContent).toContain('эта ссылка заменяет комнату портала');
+  });
+
+  it('works as with calls off when their status is unknown', async () => {
+    fixture.componentRef.setInput('owner', MARIA);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
+    backend
+      .expectOne('/api/teacher/meetings/calls')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(host.textContent).toContain('Постоянная ссылка');
   });
 });
