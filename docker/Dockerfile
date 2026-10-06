@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1.7
 #
-# Teacher Box images (ADR-0004). Build context: repository root.
+# Teacher Box images (ADR-0004, ADR-0031: only the split variant). Build context: repository root.
 #
-#   target "backend"  - Spring Boot API             (split variant, compose.split.yaml)
-#   target "frontend" - nginx with the Angular SPA  (split variant, compose.split.yaml)
-#   target "single"   - API + SPA in one container  (single variant, compose.single.yaml; default)
+#   target "backend"  - Spring Boot API             (compose.split.yaml)
+#   target "frontend" - nginx with the Angular SPA  (compose.split.yaml)
 #
 # Tests are not run here: they run in scripts/verify.sh (pre-commit hook and CI).
 
@@ -33,13 +32,6 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -q package -DskipTests -Djacoco.skip=true \
     && java -Djarmode=tools -jar target/teacher-box.jar extract --layers --destination target/extracted
 
-FROM backend-deps AS single-build
-COPY backend/src ./src
-COPY --from=frontend-build /workspace/dist/teacher-box/browser /frontend-dist
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -q package -DskipTests -Djacoco.skip=true -Pbundle-frontend -Dfrontend.dist=/frontend-dist \
-    && java -Djarmode=tools -jar target/teacher-box.jar extract --layers --destination target/extracted
-
 # ---------- runtime images ----------
 FROM ${JRE_IMAGE} AS jre-base
 RUN addgroup -S -g 10001 teacherbox \
@@ -65,16 +57,11 @@ COPY --from=backend-build /workspace/target/extracted/application/ ./
 
 FROM ${NGINX_IMAGE} AS frontend
 # Both are substituted into the nginx template at start; an unset one would leave "${...}" in the config.
-ENV BACKEND_URL=http://backend:8080     LIVEKIT_URL=http://livekit:7880
+ENV BACKEND_URL=http://backend:8080 \
+    LIVEKIT_URL=http://livekit:7880
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=frontend-build /workspace/dist/teacher-box/browser /usr/share/nginx/html
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
-
-FROM jre-base AS single
-COPY --from=single-build /workspace/target/extracted/dependencies/ ./
-COPY --from=single-build /workspace/target/extracted/spring-boot-loader/ ./
-COPY --from=single-build /workspace/target/extracted/snapshot-dependencies/ ./
-COPY --from=single-build /workspace/target/extracted/application/ ./

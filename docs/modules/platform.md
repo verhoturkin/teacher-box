@@ -1,7 +1,7 @@
 # platform
 
 Infrastructure: security, HTTP errors, migrations bootstrap, file storage, backups and restore, full reset,
-portal settings, admin sections and diagnostics, SPA serving. Depends on: `shared`; knows no business module
+portal settings, admin sections and diagnostics. Depends on: `shared`; knows no business module
 (it collects SPI beans). Schema `platform`. ADRs: [0002](../adr/0002-embedded-database.md),
 [0004](../adr/0004-delivery-variants.md), [0010](../adr/0010-administrator-and-diagnostics.md),
 [0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md). Operations
@@ -13,7 +13,7 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   prefix (root AGENTS.md §4.3), auth rate limit. `ADMIN` reaches only `/api/admin/**`, `/api/me`,
   `/api/me/password` — enforced here, not in controllers.
 - `web/` — `ProblemDetailsAdvice` (domain errors → RFC 9457 with `requestId`), `X-Request-Id` in MDC and
-  response, `/api/client-errors` (browser errors, rate-limited), SPA fallback.
+  response, `/api/client-errors` (browser errors, rate-limited). The SPA is served by nginx (ADR-0031).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties.
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
 - `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), colour, logo

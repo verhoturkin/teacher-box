@@ -5,7 +5,7 @@
 #   scripts/verify.sh            # everything
 #   scripts/verify.sh backend    # mvnw verify: tests, coverage gates, module verification
 #   scripts/verify.sh frontend   # lint, tests with coverage gates, production build
-#   scripts/verify.sh docker     # compose files are valid (and images build if the daemon is up)
+#   scripts/verify.sh docker     # compose file is valid (images build, nginx config checks if the daemon is up)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
 #
 # Each step writes its full output to .verify-logs/<step>.log and prints one line; a failed step prints
@@ -71,13 +71,12 @@ verify_docker() {
         echo "    docker CLI not found, skipping"
         return 0
     fi
-    for file in compose.split.yaml compose.single.yaml; do
-        run "docker-config-${file%.yaml}" "$ROOT" docker compose -f "$file" config --quiet
-        run "docker-config-${file%.yaml}-calls" "$ROOT" docker compose -f "$file" --profile calls config --quiet
-    done
+    run docker-config "$ROOT" docker compose -f compose.split.yaml config --quiet
+    run docker-config-calls "$ROOT" docker compose -f compose.split.yaml --profile calls config --quiet
     if docker info >/dev/null 2>&1; then
-        run docker-build-split "$ROOT" docker compose -f compose.split.yaml build
-        run docker-build-single "$ROOT" docker compose -f compose.single.yaml build
+        run docker-build "$ROOT" docker compose -f compose.split.yaml build
+        # The nginx template gives a valid config without LIVEKIT_URL (as in CI; "backend" resolves only in compose).
+        run docker-nginx-config "$ROOT" docker run --rm -e BACKEND_URL=http://127.0.0.1:8080 teacher-box-frontend:latest nginx -t
     else
         echo "    docker daemon is not running, image build skipped"
     fi

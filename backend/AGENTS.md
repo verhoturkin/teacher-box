@@ -68,7 +68,7 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 ## Tests
 
 Stack: JUnit 6, AssertJ, Mockito, Spring Modulith Test, ArchUnit, JaCoCo. Gate (`./mvnw clean verify`): lines ≥ 90 %,
-branches ≥ 80 %. `clean` is required: after `-Pbundle-frontend` the SPA stays in `target/classes/static`.
+branches ≥ 80 %.
 
 - **Unit** — domain and application (Mockito for ports).
 - **Module** — `@<Module>IntegrationTest` (`@ApplicationModuleTest` + MockMvc + `testing.MutableClock`): only the

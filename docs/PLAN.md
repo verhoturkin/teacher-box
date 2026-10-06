@@ -39,12 +39,19 @@ ADR: [0031](adr/0031-split-variant-only.md) (replaces the single variant of ADR-
   mini window (`call/call-corner.ts`), `call-window.ts`, `styles.scss`, help «Звонки».
 - [x] 108.4 **F D** Stuttering sound: capture without the browser's voice isolation (`livekit-engine.ts`), the
   causes and the server checks in `docs/operations.md` and `docs/modules/meetings.md`.
+- [ ] 108.5 **F** Sound processing in the devices menu: «Эхоподавление», «Шумоподавление», «Автоусиление
+  громкости» (checkable, remembered on the device, applied by restarting the microphone):
+  `AudioProcessing` in `call-engine.ts`, `CallDevices`, `CallSession.setAudioProcessing`, `livekit-engine.ts`.
+- [ ] 108.6 **F** «Сведения о связи» from the devices menu: participants' connection quality, the transport
+  (UDP/TCP, direct / through NAT / TURN, ports, round trip, bandwidth), received sound (loss, jitter, concealed
+  share), sent sound loss, video sizes and why the sent one is limited, LiveKit version; refreshed every 2 s.
+  `CallConnection.stats()`, `readStats` in `call-stats.ts`, `call/call-stats-dialog.ts`.
 
 ### Stage 109. Build
 
 - [x] 109.1 **D** `docker/Dockerfile` target `frontend` gets `LIVEKIT_URL=http://livekit:7880` by default, so
   `nginx -t` (CI) and a container started without the variable get a valid config.
-- [ ] 109.2 **D B** Remove the single variant: `compose.single.yaml`, Dockerfile targets `single`/`single-build`,
+- [x] 109.2 **D B** Remove the single variant: `compose.single.yaml`, Dockerfile targets `single`/`single-build`,
   the Maven profile `bundle-frontend`, `platform/web/SpaWebConfigurer`; E2E runs on the split variant
   (`e2e/compose.e2e.yaml`, `scripts/e2e.sh`, the extra proxy goes); `scripts/verify.sh`, CI, README,
   `docs/operations.md` (moving from single), `.env.example`, AGENTS.md; ADR-0031.
