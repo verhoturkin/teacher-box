@@ -128,10 +128,10 @@ Decisions taken in this plan (change them here before stage 102 if needed):
   `listRooms`, `listParticipants`, `removeParticipant`; timeouts, network calls outside transactions, no
   personal data in logs) and `LiveKitIntegrationCheck` for the admin integrations page; gateway tests against
   a local HTTP stub (Twirp + protobuf JSON).
-- [ ] 104.2 **B** Join — controller test with roles first: `POST /api/meetings/calls/{ownerId}/token` →
+- [x] 104.2 **B** Join — controller test with roles first: `POST /api/meetings/calls/{ownerId}/token` →
   `{serverUrl, token, roomTitle}`; `CallService.join(user, ownerId)`: teacher — any current student / active
   group, student — self or own groups (otherwise 404, «another student gets 404» test), admin — 403, calls off —
-  409 `meetings.calls-disabled`. Token: identity = user id, name = display name, room `tb-<ownerId>`, teacher
+  422 `meetings.calls-disabled`. Token: identity = user id, name = display name, room `tb-<ownerId>`, teacher
   `roomAdmin`, student publish camera/microphone/screen share, short TTL.
 - [ ] 104.3 **B** Status: `GET /api/teacher/meetings/calls` — a card for every current student and active group:
   owner, name, members count, participants in the room (names, teacher present), external link flag; one

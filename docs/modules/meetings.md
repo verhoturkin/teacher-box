@@ -13,6 +13,10 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
   rooms `tb-<ownerId>`, `RemoveParticipant`. On only with `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET` (secret ≥ 32
   chars, else startup fails); the backend calls `TEACHERBOX_MEETINGS_LIVEKIT_API_URL`, browsers always
   `<portal>/livekit`. `LiveKitIntegrationCheck` on the admin integrations page.
+- Joining (`CallService.join`): the teacher — the room of any current student or active group (as `roomAdmin`); a
+  student — their own room and the rooms of their active groups; anything else is 404 `meetings.room-not-found`
+  (no hint that a room exists), calls off — 422 `meetings.calls-disabled`. Identity = user id, name = display
+  name; the title is the student/group for the teacher, the group or «Урок» for a student.
 - «Начать урок» (teacher) opens a Telemost link as `telemost://…` in the app (default on Windows, device setting)
   with «Открыть в браузере» in its split-button menu; students get a plain link.
 
@@ -23,7 +27,8 @@ Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `Me
 
 ## Data, REST, bot
 
-`rooms`. `/api/teacher/meetings/rooms/**` (list, `PUT` a link, delete, share), `/api/me/meetings/rooms`. Bot action:
+`rooms`. `/api/teacher/meetings/rooms/**` (list, `PUT` a link, delete, share), `/api/me/meetings/rooms`,
+`POST /api/meetings/calls/{ownerId}/token` → `{token, room, title}` (teacher and students; the administrator gets 403). Bot action:
 join the lesson (`JoinLessonChatAction`).
 
 ## Frontend

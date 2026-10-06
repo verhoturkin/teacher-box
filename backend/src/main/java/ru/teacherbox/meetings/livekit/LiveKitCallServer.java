@@ -23,15 +23,15 @@ import retrofit2.Response;
 import ru.teacherbox.meetings.application.CallServer;
 import ru.teacherbox.meetings.application.CallServerException;
 import ru.teacherbox.meetings.application.MeetingsProperties;
+import ru.teacherbox.meetings.domain.CallRooms;
 
 /**
  * {@link CallServer} over the official LiveKit server SDK: tokens are signed locally, rooms are read
- * through the Twirp API. Only rooms of the portal ({@value #ROOM_PREFIX}…) are looked at.
+ * through the Twirp API. Only rooms of the portal ({@link CallRooms}) are looked at.
  */
 @Component
 class LiveKitCallServer implements CallServer {
 
-    static final String ROOM_PREFIX = "tb-";
     /** The token only opens the connection; LiveKit refreshes it while the user stays. */
     static final Duration TOKEN_TTL = Duration.ofMinutes(10);
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
@@ -72,7 +72,7 @@ class LiveKitCallServer implements CallServer {
         RoomServiceClient client = requireEnabled();
         Map<String, List<Participant>> result = new LinkedHashMap<>();
         for (LivekitModels.Room room : body(client.listRooms(), "ListRooms")) {
-            if (room.getName().startsWith(ROOM_PREFIX) && room.getNumParticipants() > 0) {
+            if (CallRooms.owner(room.getName()).isPresent() && room.getNumParticipants() > 0) {
                 List<Participant> participants = body(client.listParticipants(room.getName()), "ListParticipants")
                         .stream()
                         .map(info -> new Participant(info.getIdentity(), info.getName()))
