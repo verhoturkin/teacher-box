@@ -126,6 +126,9 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 - **Header** `tb-page-header` (`@shared/ui`): «Назад» icon button on nested pages (tooltip = destination,
   e.g. «Все задания»); h1; «?» help if the section has an article; detail line (due date, status); actions on
   the title line (56 px), main one last (right). On the phone actions go under the title, equal width.
+  **0.9.2:** on the phone a section page shows no title (visually hidden, kept for screen readers) and no
+  «?» (help is in the user menu); the header keeps only details and actions, and takes no room without them.
+  Nested pages keep «Назад» + title on one line.
 - **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.

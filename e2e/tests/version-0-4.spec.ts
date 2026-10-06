@@ -149,7 +149,8 @@ test.describe('on a phone', () => {
     await expectNoSideScroll(page);
     for (const section of ['Расписание', 'Задания']) {
       await page.locator('nav.tb-bottom-nav').getByRole('link', { name: section }).click();
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      // on a phone a section's title is only for screen readers (0.9.2)
+      await expect(page.getByRole('heading', { level: 1, name: section })).toBeAttached();
       await expectNoSideScroll(page);
     }
     await context.close();

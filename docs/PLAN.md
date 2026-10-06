@@ -58,7 +58,7 @@ ADR: ADR-0021 amended — no narrow page column, forms keep a readable width ins
 
 ### 123. No section titles on the phone (F)
 
-- [ ] 123.1 `styles.scss` (`tb-page-header`): on compact windows a section page's title (and its «?») is
+- [x] 123.1 `styles.scss` (`tb-page-header`): on compact windows a section page's title (and its «?») is
   hidden visually, kept for screen readers; nested pages keep «Назад» + title; the empty header takes no
   room. Design-system §5.
 
