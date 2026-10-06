@@ -31,8 +31,13 @@ describe('FinanceWidget', () => {
         totalDebt: 450_000,
         debtors: 2,
         topDebtors: [
-          { studentId: 's-1', displayName: 'Анна', balance: -300_000 },
-          { studentId: 's-2', displayName: 'Борис', balance: -150_000 },
+          {
+            studentId: 's-1',
+            displayName: 'Анна',
+            avatar: '/api/public/avatars/anna',
+            balance: -300_000,
+          },
+          { studentId: 's-2', displayName: 'Борис', avatar: null, balance: -150_000 },
         ],
       }),
     );
@@ -40,7 +45,10 @@ describe('FinanceWidget', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Поступило за сентябрь 12 000 ₽');
     expect(text).toContain('Долг учеников 4 500 ₽ должников: 2');
-    expect(text).toContain('А Анна долг 3 000 ₽ Б Борис долг 1 500 ₽');
+    expect(text).toContain('Анна долг 3 000 ₽ Б Борис долг 1 500 ₽');
+    expect(hostElement(fixture).querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/anna',
+    );
     const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );

@@ -82,6 +82,7 @@ class GroupLessonsIntegrationTests {
         assertThat(result).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.groupName").isEqualTo("ОГЭ");
             assertThat(json).extractingPath("$.studentId").isNull();
+            assertThat(json).extractingPath("$.studentAvatar").isNull();
             assertThat(json).extractingPath("$.participants[*].studentName").asArray()
                     .containsExactly("Анна", "Борис");
             assertThat(json).extractingPath("$.participants[0].attendance").isEqualTo("EXPECTED");

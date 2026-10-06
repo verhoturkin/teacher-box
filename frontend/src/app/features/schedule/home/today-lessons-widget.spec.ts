@@ -50,6 +50,7 @@ describe('TodayLessonsWidget', () => {
           scheduledLesson({
             id: 'l-2',
             studentName: 'Мария',
+            studentAvatar: '/api/public/avatars/maria',
             startsAt: at(2026, 10, 1, 20),
             endsAt: at(2026, 10, 1, 21),
           }),
@@ -62,6 +63,9 @@ describe('TodayLessonsWidget', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('ИП Иван Петров 18:00–19:00 · Дроби Начать урок');
     expect(text).toContain('Мария 20:00–21:00');
+    expect(hostElement(fixture).querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/maria',
+    );
     expect(text).toContain('Ученик 18:00–19:00 Отменено');
     expect(text).toContain('Олег 18:00–19:00 Проведено');
     const join = hostElement(fixture).querySelector('tb-join-lesson-button a');

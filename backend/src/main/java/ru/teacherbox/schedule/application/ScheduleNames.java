@@ -7,20 +7,29 @@ import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.Series;
 
 /**
- * Names of the students and groups that lessons refer to (they live in identity) and the links of
- * their permanent rooms (they live in meetings).
+ * Names of the students and groups that lessons refer to and the students' photos (they live in identity),
+ * the links of their permanent rooms (they live in meetings).
+ *
+ * @param avatars addresses of the photos of the students who have one
  */
-public record ScheduleNames(Map<UUID, String> students, Map<UUID, String> groups, Map<UUID, String> rooms) {
+public record ScheduleNames(Map<UUID, String> students, Map<UUID, String> groups, Map<UUID, String> rooms,
+        Map<UUID, String> avatars) {
 
     public ScheduleNames {
         students = Map.copyOf(students);
         groups = Map.copyOf(groups);
         rooms = Map.copyOf(rooms);
+        avatars = Map.copyOf(avatars);
     }
 
-    /** Names without room links. */
+    /** Names without room links and photos. */
     public ScheduleNames(Map<UUID, String> students, Map<UUID, String> groups) {
-        this(students, groups, Map.of());
+        this(students, groups, Map.of(), Map.of());
+    }
+
+    /** The same names with the links of the rooms. */
+    public ScheduleNames withRooms(Map<UUID, String> links) {
+        return new ScheduleNames(students, groups, links, avatars);
     }
 
     /** Where the lesson takes place: its own link, or the room of the group or the student. */
@@ -33,6 +42,11 @@ public record ScheduleNames(Map<UUID, String> students, Map<UUID, String> groups
 
     public @Nullable String student(UUID studentId) {
         return students.get(studentId);
+    }
+
+    /** The address of the student's photo; {@code null}: none. */
+    public @Nullable String avatar(@Nullable UUID studentId) {
+        return studentId == null ? null : avatars.get(studentId);
     }
 
     public @Nullable String group(@Nullable UUID groupId) {

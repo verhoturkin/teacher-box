@@ -15,6 +15,7 @@ function room(overrides: Partial<CallCard> = {}): CallCard {
     waiting: [],
     teacherPresent: false,
     externalLink: false,
+    avatar: null,
     ...overrides,
   };
 }
@@ -52,7 +53,13 @@ describe('CallsPage', () => {
       status: 'OK',
       rooms: [
         room(),
-        room({ ownerId: 's-2', name: 'Борис', waiting: ['Борис'], externalLink: true }),
+        room({
+          ownerId: 's-2',
+          name: 'Борис',
+          waiting: ['Борис'],
+          externalLink: true,
+          avatar: '/api/public/avatars/boris',
+        }),
         room({ ownerId: 'g-1', ownerType: 'GROUP', name: 'ОГЭ', members: 3, teacherPresent: true }),
       ],
     });
@@ -65,6 +72,9 @@ describe('CallsPage', () => {
     expect(text).toContain('Вы в звонке');
     expect(text).toContain('Группа, 3 ученика');
     expect(host.querySelector('.tb-avatar')?.textContent.trim()).toBe('АС');
+    expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/boris',
+    );
     buttonByText(host, 'Войти в звонок: Борис').click();
     expect(open).toHaveBeenCalledWith('s-2');
   });

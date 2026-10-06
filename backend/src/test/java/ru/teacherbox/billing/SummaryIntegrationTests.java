@@ -46,6 +46,7 @@ class SummaryIntegrationTests {
         String before = summary();
         LocalDate today = timeZone.today(clock);
         UUID bigDebtor = directory.addStudent("Большой долг");
+        directory.setAvatar(bigDebtor, "/api/public/avatars/big-debtor");
         IntStream.range(0, 12).forEach(i -> lesson(bigDebtor, today.minusMonths(2)));
         UUID payer = directory.addStudent("Платит вперёд");
         payment(payer, today, 500_000);
@@ -60,9 +61,26 @@ class SummaryIntegrationTests {
         assertThat(JsonPath.<String>read(after, "$.topDebtors[0].studentId")).isEqualTo(bigDebtor.toString());
         assertThat(JsonPath.<Integer>read(after, "$.topDebtors[0].balance")).isEqualTo(-12 * 150_000);
         assertThat(JsonPath.<String>read(after, "$.topDebtors[0].displayName")).isEqualTo("Большой долг");
+        assertThat(JsonPath.<String>read(after, "$.topDebtors[0].avatar")).isEqualTo("/api/public/avatars/big-debtor");
         assertThat(JsonPath.<String>read(after, "$.month")).isEqualTo(today.toString().substring(0, 7));
         assertThat(JsonPath.<Boolean>read(after, "$.priceSet")).isTrue();
         assertThat(JsonPath.<String>read(after, "$.currency")).isEqualTo("RUB");
+    }
+
+    @Test
+    void theOverviewShowsTheStudentsPhotos() {
+        UUID withPhoto = directory.addStudent("С фото");
+        directory.setAvatar(withPhoto, "/api/public/avatars/with-photo");
+        UUID withoutPhoto = directory.addStudent("Без фото");
+
+        assertThat(mvc.get().uri("/api/teacher/billing/overview").with(teacher(directory.teacherId())))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.students[?(@.studentId == '" + withPhoto + "')].avatar")
+                            .asArray().containsExactly("/api/public/avatars/with-photo");
+                    assertThat(json).extractingPath("$.students[?(@.studentId == '" + withoutPhoto + "')].avatar")
+                            .asArray().containsExactly((Object) null);
+                });
     }
 
     @Test

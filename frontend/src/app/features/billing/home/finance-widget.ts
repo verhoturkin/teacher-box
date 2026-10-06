@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { MoneyPipe } from '@shared/money/money.pipe';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { BillingSummary } from '../data-access/billing.models';
 
 const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' });
@@ -10,7 +10,7 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
 /** Teacher's home: debts and the income of the month. */
 @Component({
   selector: 'tb-finance-widget',
-  imports: [RouterLink, Card, InitialsPipe, MoneyPipe],
+  imports: [RouterLink, Card, Avatar, MoneyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let finance = summary();
@@ -34,7 +34,7 @@ const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' 
         <ul class="tb-list tb-debtors">
           @for (debtor of finance.topDebtors; track debtor.studentId) {
             <li>
-              <span class="tb-avatar" aria-hidden="true">{{ debtor.displayName | initials }}</span>
+              <tb-avatar [name]="debtor.displayName" [photo]="debtor.avatar" />
               <div class="tb-list__text">
                 <a
                   [routerLink]="['/teacher/billing/students', debtor.studentId]"

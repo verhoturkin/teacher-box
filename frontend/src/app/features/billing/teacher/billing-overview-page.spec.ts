@@ -15,7 +15,12 @@ const IVAN = studentBalance({
   chargedLessons: 3,
   lastLessonDate: '2026-09-01',
 });
-const MARIA = studentBalance({ studentId: 's-2', displayName: 'Мария', balance: 300_000 });
+const MARIA = studentBalance({
+  studentId: 's-2',
+  displayName: 'Мария',
+  avatar: '/api/public/avatars/maria',
+  balance: 300_000,
+});
 const OLEG = studentBalance({ studentId: 's-3', displayName: 'Олег', status: 'DEACTIVATED' });
 
 describe('BillingOverviewPage', () => {
@@ -59,6 +64,9 @@ describe('BillingOverviewPage', () => {
     expect(rows()[0]).toContain('01.09.2026');
     expect(rows()[0]).toContain('долг 1 500 ₽');
     expect(rows()[1]).toContain('аванс 3 000 ₽');
+    expect(host.querySelector('tbody tr:nth-child(2) tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/maria',
+    );
     expect(rows()[2]).toContain('О Олег отключён');
   });
 

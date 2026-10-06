@@ -29,14 +29,14 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     HelpButton,
     DatePipe,
@@ -130,9 +130,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <tr>
                 <td data-label="Ученик">
                   <div class="tb-person">
-                    <span class="tb-avatar" aria-hidden="true">{{
-                      row.displayName | initials
-                    }}</span>
+                    <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
                     <div class="tb-list__text">
                       <a
                         [routerLink]="['students', row.studentId]"

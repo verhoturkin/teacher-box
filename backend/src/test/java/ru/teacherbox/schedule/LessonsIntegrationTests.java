@@ -48,6 +48,7 @@ class LessonsIntegrationTests {
     @Test
     void plansALessonWithDefaultDuration(AssertablePublishedEvents events) {
         UUID student = directory.addStudent("Иван");
+        directory.setAvatar(student, "/api/public/avatars/ivan");
         Instant start = Slots.next(clock);
 
         MvcTestResult result = post("/api/teacher/schedule/lessons", """
@@ -56,6 +57,8 @@ class LessonsIntegrationTests {
 
         assertThat(result).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.studentName").isEqualTo("Иван");
+            assertThat(json).extractingPath("$.studentAvatar").isEqualTo("/api/public/avatars/ivan");
+            assertThat(json).extractingPath("$.participants[0].studentAvatar").isEqualTo("/api/public/avatars/ivan");
             assertThat(json).extractingPath("$.durationMinutes").isEqualTo(60);
             assertThat(json).extractingPath("$.status").isEqualTo("SCHEDULED");
             assertThat(json).extractingPath("$.endsAt").isEqualTo(start.plusSeconds(3600).toString());

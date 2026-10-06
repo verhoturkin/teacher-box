@@ -186,7 +186,14 @@ describe('LessonDetailsDialog', () => {
     await open(
       scheduledLesson({
         status: 'MISSED',
-        participants: [{ studentId: 's-1', studentName: 'Иван Петров', attendance: 'MISSED' }],
+        participants: [
+          {
+            studentId: 's-1',
+            studentName: 'Иван Петров',
+            studentAvatar: null,
+            attendance: 'MISSED',
+          },
+        ],
       }),
     );
     buttonByText(document.body, 'Другие действия').click();

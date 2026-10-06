@@ -3,13 +3,14 @@ import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { BoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
+import { Avatar } from '@shared/ui/avatar';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
 
 /** Teacher's home, on top: the nearest lesson with «Начать урок» and the boards of the student or group. */
 @Component({
   selector: 'tb-upcoming-lesson-widget',
-  imports: [RouterLink, Card, JoinLessonButton, BoardLinks],
+  imports: [RouterLink, Card, Avatar, JoinLessonButton, BoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Следующее занятие" styleClass="tb-upcoming tb-hero">
@@ -17,7 +18,10 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
       <div class="tb-upcoming__body">
         <div class="tb-upcoming__info">
           <span class="tb-upcoming__time">{{ time() }}</span>
-          <strong>{{ with(next) }}</strong>
+          <div class="tb-upcoming__who">
+            <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" />
+            <strong>{{ with(next) }}</strong>
+          </div>
           @if (next.topic !== null) {
             <span class="tb-muted">{{ next.topic }}</span>
           }
@@ -48,6 +52,14 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-1);
+    }
+
+    .tb-upcoming__who {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .tb-upcoming__time {

@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.identity.application.AccountService;
 import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.domain.Profile;
 
@@ -17,11 +18,16 @@ import ru.teacherbox.identity.domain.Profile;
 @IdentityIntegrationTest
 class UserDirectoryIntegrationTests {
 
+    private static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0, 0, 0, 13};
+
     @Autowired
     UserDirectory directory;
 
     @Autowired
     StudentAdminService students;
+
+    @Autowired
+    AccountService accounts;
 
     @Autowired
     MockMvcTester mvc;
@@ -32,6 +38,16 @@ class UserDirectoryIntegrationTests {
 
         assertThat(directory.teacherId()).isEqualTo(teacherId);
         assertThat(directory.findStudent(teacherId)).isEmpty();
+    }
+
+    @Test
+    void givesTheAddressOfTheStudentsPhoto() {
+        UUID id = students.create(Profile.named("Ира")).student().id();
+        String avatar = accounts.changeAvatar(id, PNG).avatar();
+
+        assertThat(avatar).startsWith(AccountService.AVATAR_PATH);
+        assertThat(directory.findStudent(id)).map(StudentSummary::avatar).contains(avatar);
+        assertThat(directory.findStudents(List.of(id))).extracting(StudentSummary::avatar).containsExactly(avatar);
     }
 
     @Test

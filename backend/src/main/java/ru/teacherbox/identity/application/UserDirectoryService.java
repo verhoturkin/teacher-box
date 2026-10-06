@@ -49,6 +49,7 @@ class UserDirectoryService implements UserDirectory {
     }
 
     private static StudentSummary summary(User user) {
-        return new StudentSummary(user.id(), user.profile().displayName(), StudentStatus.valueOf(user.status().name()));
+        return new StudentSummary(user.id(), user.profile().displayName(), StudentStatus.valueOf(user.status().name()),
+                AccountService.avatarUrl(user.avatar()));
     }
 }

@@ -17,6 +17,46 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.9.2
+
+Goals: students' photos wherever the teacher sees students next to money, calls and today's lessons;
+«Мой аккаунт» and the teacher's «Настройки» full width in the M3 Expressive style, without «Интеграции»;
+no section titles on the phone.
+
+ADR: ADR-0021 amended — no narrow page column, forms keep a readable width inside their cards.
+
+### 120. Students' photos in billing, calls and home (B, F)
+
+- [x] 120.1 **B** `identity.api.StudentSummary.avatar` (`UserDirectoryService.summary`); passed through
+  `BillingViews.StudentBalance` / `Debtor` (`BillingQueryService.overview`, `summary`),
+  `CallService.CallCard`, `ScheduleNames` → `ScheduleViews.LessonView.studentAvatar` / `ParticipantView`.
+  **F** `tb-avatar [photo]` in `billing-overview-page.ts` (column «Ученик»), `finance-widget.ts`,
+  `calls-page.ts`, `today-lessons-widget.ts`, `upcoming-lesson-widget.ts` (gets an avatar),
+  `schedule-page.ts`, `lesson-details-dialog.ts`.
+
+### 121. Settings without «Интеграции» (F)
+
+- [ ] 121.1 `settings/settings-page.ts`: the «Интеграции» card (messenger and AI statuses) removed; messengers
+  are in «Уведомления», the AI assistant — in its section. Help `teacher/settings`.
+
+### 122. «Мой аккаунт» and «Настройки» full width, M3 Expressive (F)
+
+- [ ] 122.1 `identity/account/account-page.ts`: full width; profile hero (large avatar, name, role, login /
+  e-mail / phone as `tb-stats`), forms in cards with `tb-form--narrow` fields. Used by teacher, student and
+  administrator.
+- [ ] 122.2 `settings/settings-page.ts`: full width, sections in `tb-fold-card` (`?open=`), like the
+  administrator's settings and «Уведомления»; `tb-stack--narrow` removed; design-system §4, ADR-0021.
+
+### 123. No section titles on the phone (F)
+
+- [ ] 123.1 `styles.scss` (`tb-page-header`): on compact windows a section page's title (and its «?») is
+  hidden visually, kept for screen readers; nested pages keep «Назад» + title; the empty header takes no
+  room. Design-system §5.
+
+### 124. Release 0.9.2
+
+- [ ] 124.1 Skill `release`: help, E2E `version-0-9-2.spec.ts`, CHANGELOG, version, archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
@@ -36,8 +76,8 @@ Calls after 0.8.0: call history; teacher moderation (mute / remove a participant
 Picture-in-Picture; noise suppression; recording.
 
 Future:
-- Student photos in the other lists (billing, homework, schedule, calls): add the photo address to
-  `StudentSummary` and pass it through the modules' views.
+- Student photos in the remaining lists (`StudentSummary.avatar` exists since 0.9.2): homework (assignment,
+  review queue), the monthly report, schedule requests, the messengers panel of notifications.
 - Two-way Google Calendar sync.
 - Board templates / duplicating.
 - Lesson packages/subscriptions, online payment.

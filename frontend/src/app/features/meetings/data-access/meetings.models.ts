@@ -42,6 +42,8 @@ export interface CallCard {
   readonly teacherPresent: boolean;
   /** An external link wins over the room in lessons. */
   readonly externalLink: boolean;
+  /** Address of the student's photo; `null`: the initials, or a group. */
+  readonly avatar: string | null;
 }
 
 /** Mirrors `CallsView`. */

@@ -20,7 +20,9 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   teacher keeps seeing the profile name (`StudentView.displayName`, facades, JWT `name`); the photo is shown to
   both. Files live in the `identity` namespace; a photo is served at `/api/public/avatars/{storage key}` — the
   key is the secret part of the link, a new photo gets a new key (immutable cache); the old file is deleted.
-  The teacher and the administrator have no photo.
+  The teacher and the administrator have no photo. Other modules get the photo's address as
+  `StudentSummary.avatar` (0.9.2): billing (overview, debtors), meetings (call rooms), schedule (lessons and
+  their participants) pass it to their views.
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
 - Implements `shared.security.PasswordConfirmation`.

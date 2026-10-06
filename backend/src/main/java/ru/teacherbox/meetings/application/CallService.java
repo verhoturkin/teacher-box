@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -57,9 +58,10 @@ public class CallService {
      * @param members      students of the group (1 for a student)
      * @param waiting      names of the students in the room
      * @param externalLink an external link wins over the room in lessons
+     * @param avatar       address of the student's photo; {@code null}: none, or a group
      */
     public record CallCard(UUID ownerId, RoomOwner ownerType, String name, int members, List<String> waiting,
-            boolean teacherPresent, boolean externalLink) {
+            boolean teacherPresent, boolean externalLink, @Nullable String avatar) {
 
         public CallCard {
             waiting = List.copyOf(waiting);
@@ -106,11 +108,12 @@ public class CallService {
         List<StudentSummary> students = users.currentStudents().stream()
                 .sorted(Comparator.comparing(StudentSummary::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
         for (StudentSummary student : students) {
-            cards.add(card(RoomOwner.STUDENT, student.id(), student.displayName(), 1, occupied, teacher, external));
+            cards.add(card(RoomOwner.STUDENT, student.id(), student.displayName(), student.avatar(), 1, occupied,
+                    teacher, external));
         }
         for (GroupSummary group : groups.currentGroups()) {
-            cards.add(card(RoomOwner.GROUP, group.id(), group.name(), group.memberIds().size(), occupied, teacher,
-                    external));
+            cards.add(card(RoomOwner.GROUP, group.id(), group.name(), null, group.memberIds().size(), occupied,
+                    teacher, external));
         }
         return new CallsView(status, cards);
     }
@@ -165,13 +168,13 @@ public class CallService {
         }
     }
 
-    private static CallCard card(RoomOwner type, UUID ownerId, String name, int members,
+    private static CallCard card(RoomOwner type, UUID ownerId, String name, @Nullable String avatar, int members,
             Map<String, List<CallServer.Participant>> occupied, String teacher, Set<UUID> external) {
         List<CallServer.Participant> inRoom = occupied.getOrDefault(CallRooms.name(ownerId), List.of());
         List<String> waiting = inRoom.stream().filter(participant -> !participant.identity().equals(teacher))
                 .map(CallServer.Participant::name).toList();
         return new CallCard(ownerId, type, name, members, waiting, inRoom.size() > waiting.size(),
-                external.contains(ownerId));
+                external.contains(ownerId), avatar);
     }
 
     private static boolean present(Map<String, List<CallServer.Participant>> occupied, UUID ownerId,

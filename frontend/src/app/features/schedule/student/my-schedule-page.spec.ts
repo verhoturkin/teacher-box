@@ -276,12 +276,16 @@ describe('MySchedulePage', () => {
       [
         groupLesson({
           ...future(72),
-          participants: [{ studentId: 's-1', studentName: null, attendance: 'EXCUSED' }],
+          participants: [
+            { studentId: 's-1', studentName: null, studentAvatar: null, attendance: 'EXCUSED' },
+          ],
         }),
         groupLesson({
           id: 'gl-2',
           ...future(96),
-          participants: [{ studentId: 's-1', studentName: null, attendance: 'EXPECTED' }],
+          participants: [
+            { studentId: 's-1', studentName: null, studentAvatar: null, attendance: 'EXPECTED' },
+          ],
         }),
       ],
       [

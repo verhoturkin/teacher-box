@@ -56,6 +56,7 @@ import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { Avatar } from '@shared/ui/avatar';
 import { InitialsPipe } from '@shared/ui/initials';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
@@ -77,6 +78,7 @@ const CLICK_SELECTION_MINUTES = 30;
 @Component({
   selector: 'tb-schedule-page',
   imports: [
+    Avatar,
     InitialsPipe,
     HelpButton,
     Button,
@@ -160,7 +162,7 @@ const CLICK_SELECTION_MINUTES = 30;
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
               <li>
-                <span class="tb-avatar" aria-hidden="true">{{ with(lesson) | initials }}</span>
+                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ with(lesson) }}</span>
                   <span class="tb-list__supporting">{{ time(lesson) }}</span>

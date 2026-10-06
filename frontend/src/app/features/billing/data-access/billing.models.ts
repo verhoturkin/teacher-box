@@ -35,6 +35,8 @@ export interface BillingStudent {
 }
 
 export interface StudentBalance extends BillingStudent {
+  /** Address of the student's photo; `null`: the initials. */
+  readonly avatar: string | null;
   readonly status: StudentStatus;
   /** Paid minus charged: negative is debt. */
   readonly balance: number;
@@ -107,6 +109,8 @@ export interface RecordPaymentRequest {
 export interface Debtor {
   readonly studentId: string;
   readonly displayName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly avatar: string | null;
   readonly balance: number;
 }
 

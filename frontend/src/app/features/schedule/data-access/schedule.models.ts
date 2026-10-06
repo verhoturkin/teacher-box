@@ -35,6 +35,8 @@ export interface ChangeRequest {
 export interface Participant {
   readonly studentId: string;
   readonly studentName: string | null;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
   readonly attendance: Attendance;
 }
 
@@ -44,6 +46,8 @@ export interface ScheduledLesson {
   /** The student of a lesson with one student. */
   readonly studentId: string | null;
   readonly studentName: string | null;
+  /** The photo of the lesson's student; `null`: none, or a group. */
+  readonly studentAvatar: string | null;
   /** The group of a group lesson. */
   readonly groupId: string | null;
   readonly groupName: string | null;
