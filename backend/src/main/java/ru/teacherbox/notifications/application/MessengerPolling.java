@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
@@ -15,6 +17,10 @@ import ru.teacherbox.notifications.domain.ChannelType;
  * Receives messages to the bots: one virtual thread per configured messenger runs long polling. A
  * messenger configured again in the settings page gets a new thread. Disabled together with
  * scheduled jobs ({@code teacherbox.scheduling.enabled=false}, e.g. in tests).
+ *
+ * <p>A thread is interrupted only while it waits — for the messenger or between retries — never while it
+ * answers messages: an interrupt during the database's file I/O closes the whole H2 database for every
+ * connection («The database has been closed»).
  */
 @Component
 @ConditionalOnBooleanProperty(name = "teacherbox.scheduling.enabled", matchIfMissing = true)
@@ -27,7 +33,7 @@ public class MessengerPolling implements SmartLifecycle {
     private final MessengerChannels channels;
     private final ChatEngine engine;
     private final MessengerHealth health;
-    private final Map<ChannelType, Thread> threads = new ConcurrentHashMap<>();
+    private final Map<ChannelType, Poller> pollers = new ConcurrentHashMap<>();
     private volatile boolean running;
 
     public MessengerPolling(MessengerChannels channels, ChatEngine engine, MessengerHealth health) {
@@ -45,8 +51,8 @@ public class MessengerPolling implements SmartLifecycle {
     @Override
     public synchronized void stop() {
         running = false;
-        threads.values().forEach(Thread::interrupt);
-        threads.clear();
+        pollers.values().forEach(Poller::stop);
+        pollers.clear();
     }
 
     @Override
@@ -59,9 +65,9 @@ public class MessengerPolling implements SmartLifecycle {
         if (!running) {
             return;
         }
-        Thread previous = threads.remove(type);
+        Poller previous = pollers.remove(type);
         if (previous != null) {
-            previous.interrupt();
+            previous.stop();
         }
         channels.find(type).ifPresent(this::startPolling);
     }
@@ -72,7 +78,11 @@ public class MessengerPolling implements SmartLifecycle {
      * @return number of handled messages
      */
     int pollOnce(MessengerChannel channel) {
-        List<IncomingMessage> messages = channel.poll();
+        return answer(channel, channel.poll());
+    }
+
+    /** Answers the received messages: the bot's dialogs read and write the database. */
+    int answer(MessengerChannel channel, List<IncomingMessage> messages) {
         for (IncomingMessage message : messages) {
             ButtonPress press = message.press();
             if (press != null) {
@@ -106,26 +116,35 @@ public class MessengerPolling implements SmartLifecycle {
     }
 
     private void startPolling(MessengerChannel channel) {
-        threads.put(channel.type(), Thread.ofVirtual().name("messenger-" + channel.type()).start(() -> loop(channel)));
+        Poller poller = new Poller();
+        pollers.put(channel.type(), poller);
+        Thread thread = Thread.ofVirtual().name("messenger-" + channel.type()).unstarted(() -> loop(channel, poller));
+        poller.thread = thread;
+        thread.start();
     }
 
-    private void loop(MessengerChannel channel) {
+    private void loop(MessengerChannel channel, Poller poller) {
         publishCommands(channel);
         Duration backoff = MIN_BACKOFF;
-        while (active()) {
+        while (active(poller)) {
             try {
-                pollOnce(channel);
+                List<IncomingMessage> messages = poller.waiting(channel::poll);
+                if (!active(poller)) {
+                    return;
+                }
+                answer(channel, messages);
                 if (health.succeeded(channel.type())) {
                     log.info("Receiving messages from {}", channel.type());
                 }
                 backoff = MIN_BACKOFF;
             } catch (RuntimeException e) {
-                if (!active()) {
+                if (!active(poller)) {
                     return;
                 }
                 health.failed(channel.type(), String.valueOf(e.getMessage()));
                 log.warn("Polling {} failed, retrying in {} s: {}", channel.type(), backoff.toSeconds(), e.getMessage());
-                if (!pause(backoff)) {
+                Duration pause = backoff;
+                if (!poller.waiting(() -> pause(pause))) {
                     return;
                 }
                 backoff = nextBackoff(backoff);
@@ -134,8 +153,42 @@ public class MessengerPolling implements SmartLifecycle {
     }
 
     /** The service runs and this polling thread has not been replaced. */
-    private boolean active() {
-        return running && !Thread.currentThread().isInterrupted();
+    private boolean active(Poller poller) {
+        return running && !poller.stopped;
+    }
+
+    /**
+     * One polling thread. {@link #stop} interrupts it only inside {@link #waiting}; the interrupt flag is cleared
+     * when the wait ends, so the work that follows (the database) never sees an interrupt.
+     */
+    static final class Poller {
+
+        volatile @Nullable Thread thread;
+        volatile boolean stopped;
+        private boolean waiting;
+
+        synchronized void stop() {
+            stopped = true;
+            Thread current = thread;
+            if (waiting && current != null) {
+                current.interrupt();
+            }
+        }
+
+        <T> T waiting(Supplier<T> wait) {
+            synchronized (this) {
+                waiting = true;
+            }
+            try {
+                return wait.get();
+            } finally {
+                synchronized (this) {
+                    waiting = false;
+                    // an interrupt that came at the end of the wait must not reach the answers
+                    Thread.interrupted();
+                }
+            }
+        }
     }
 
     static Duration nextBackoff(Duration current) {

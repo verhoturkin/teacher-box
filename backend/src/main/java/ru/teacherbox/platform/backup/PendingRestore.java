@@ -40,7 +40,8 @@ public class PendingRestore implements ApplicationListener<ApplicationEnvironmen
     static final String RESULT = "last-result.properties";
 
     private static final Logger log = LoggerFactory.getLogger(PendingRestore.class);
-    private static final String FILE_DATABASE = "jdbc:h2:file:";
+    /** A database in files: {@code async:} since 0.10.0, {@code file:} before (and in a custom setting). */
+    private static final List<String> FILE_DATABASES = List.of("jdbc:h2:async:", "jdbc:h2:file:");
 
     @Override
     public int getOrder() {
@@ -52,7 +53,7 @@ public class PendingRestore implements ApplicationListener<ApplicationEnvironmen
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment environment = event.getEnvironment();
         String url = environment.getProperty("spring.datasource.url", "");
-        if (!url.startsWith(FILE_DATABASE)) {
+        if (FILE_DATABASES.stream().noneMatch(url::startsWith)) {
             return;
         }
         Path dataDir = Path.of(environment.getProperty("teacherbox.data-dir", "./data"));

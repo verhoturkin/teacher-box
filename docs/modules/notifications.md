@@ -15,6 +15,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 - Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling, `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`),
   VK (community messages), MAX (Bot API). Env tokens win over UI settings. HTTP/1.1 with `Content-Length`;
   tokens scrubbed from errors.
+- Polling (`MessengerPolling`): one virtual thread per messenger; a restart (settings saved) or a stop interrupts
+  the thread only while it waits — for the messenger or between retries (`Poller.waiting`); the interrupt flag is
+  cleared before the answers, which read and write the database (an interrupt during H2's file I/O closes the whole
+  database, ADR-0002). A thread stopped while answering finishes the batch, then exits.
 - **Linking:** one-time code (8 chars, 15 min, SHA-256 stored), deep link `t.me/<bot>?start=<code>` /
   `max.ru/<bot>?start=<code>`, typed to the VK community; `/stop` unlinks. One messenger account may serve
   several recipients (parent of two students).

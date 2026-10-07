@@ -5,7 +5,9 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: jdbc:h2:file:${teacherbox.data-dir}/db/teacherbox;DB_CLOSE_ON_EXIT=FALSE
+    # "async:" — the same files as "file:", but an interrupted thread does not close the database for everyone
+    # (with "file:" an interrupt during disk I/O closes its channel: «The database has been closed»)
+    url: jdbc:h2:async:${teacherbox.data-dir}/db/teacherbox;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: ""
   flyway:

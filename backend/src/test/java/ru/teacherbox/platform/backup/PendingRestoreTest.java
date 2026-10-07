@@ -117,6 +117,18 @@ class PendingRestoreTest {
         assertThat(listener.getOrder()).isGreaterThan(Integer.MIN_VALUE);
     }
 
+    @Test
+    void listenerRestoresTheAsyncFileDatabaseOfTheApplication() throws Exception {
+        archive("teacherbox-20260925-033000-000.zip", Map.of(BackupArchive.DATABASE, SCRIPT));
+
+        new PendingRestore().onApplicationEvent(event(Map.of("spring.datasource.url",
+                "jdbc:h2:async:" + dataDir.resolve("db/teacherbox").toAbsolutePath(),
+                "teacherbox.data-dir", dataDir.toString())));
+
+        assertThat(dataDir.resolve("restore/applied")).isDirectory();
+        assertThat(query("select TEXT from DEMO.NOTES where ID = 1")).isEqualTo("из бэкапа");
+    }
+
     private String url() {
         return "jdbc:h2:file:" + dataDir.resolve("db/teacherbox").toAbsolutePath();
     }
