@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
-import { bodyText, buttonByText, hostElement } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { testProviders } from '@testing/setup';
 import { BoardBackupsDialog } from './board-backups-dialog';
@@ -55,7 +55,8 @@ describe('BoardsPage', () => {
     expect(text).toContain('группа «ОГЭ»');
     expect(host.querySelector('a[href$="/board-1"]')).not.toBeNull();
     expect(host.querySelector('a[href="https://app.holst.so/board/1"]')).not.toBeNull();
-    expect(host.querySelectorAll('[aria-label^="Резервные копии"]')).toHaveLength(1);
+    expect(host.querySelectorAll('ul.tb-list[aria-label="Доски"] > li')).toHaveLength(2);
+    expect(text).toContain('изменена');
     expect(host.querySelector('p-select')).toBeNull();
     expect(text).not.toContain('Все доски');
   });
@@ -100,13 +101,12 @@ describe('BoardsPage', () => {
     backend.expectOne('/api/teacher/boards').flush([aBoard()]);
     await fixture.whenStable();
 
-    buttonByText(host, 'Изменить доску: Алгебра').click();
-    await fixture.whenStable();
+    expect(buttonByText(host, 'Действия: Алгебра').getAttribute('aria-haspopup')).toBe('menu');
+    await act('Алгебра', 'Изменить');
     const dialog = fixture.debugElement.query(By.directive(BoardDialog)).injector.get(BoardDialog);
     expect(dialog.board()).toEqual(aBoard());
 
-    buttonByText(host, 'Резервные копии: Алгебра').click();
-    await fixture.whenStable();
+    await act('Алгебра', 'Резервные копии');
     const backups = fixture.debugElement
       .query(By.directive(BoardBackupsDialog))
       .injector.get(BoardBackupsDialog);
@@ -116,7 +116,7 @@ describe('BoardsPage', () => {
     backend.expectOne('/api/teacher/boards').flush([aBoard()]);
 
     const confirm = vi.spyOn(fixture.debugElement.injector.get(ConfirmationService), 'confirm');
-    buttonByText(host, 'Удалить доску: Алгебра').click();
+    await act('Алгебра', 'Удалить…');
     const confirmation = confirm.mock.calls[0]?.[0];
     expect(confirmation?.message).toContain('вместе с рисунком');
     confirmation?.accept?.();
@@ -133,11 +133,22 @@ describe('BoardsPage', () => {
     await fixture.whenStable();
     const confirm = vi.spyOn(fixture.debugElement.injector.get(ConfirmationService), 'confirm');
 
-    buttonByText(host, 'Удалить доску: Холст').click();
+    buttonByText(host, 'Действия: Холст').click();
+    await fixture.whenStable();
+    expect(() => menuItemByText('Резервные копии')).toThrow();
+    menuItemByText('Удалить…').click();
 
     expect(confirm.mock.calls[0]?.[0].message).toContain('сама доска в другом сервисе останется');
     expect(bodyText()).not.toContain('Не удалось загрузить');
   });
+
+  /** The «⋮» menu of a board, then one of its items. */
+  async function act(title: string, item: string): Promise<void> {
+    buttonByText(host, `Действия: ${title}`).click();
+    await fixture.whenStable();
+    menuItemByText(item).click();
+    await fixture.whenStable();
+  }
 
   function text(): string {
     return host.textContent;

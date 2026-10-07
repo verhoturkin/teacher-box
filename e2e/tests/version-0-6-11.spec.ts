@@ -52,9 +52,8 @@ async function studentWithLesson(
     ).ok(),
   ).toBe(true);
   const lesson = laterThisWeek(18);
-  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Moscow',
-  });
+  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
+  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
   const startsAt = `${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`;
   expect(
     (

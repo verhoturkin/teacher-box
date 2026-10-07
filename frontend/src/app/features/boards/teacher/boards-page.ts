@@ -9,14 +9,14 @@ import {
   input,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
+import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
@@ -26,7 +26,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
-import { RowType } from '@shared/ui/row-type.directive';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
@@ -40,23 +40,21 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 @Component({
   selector: 'tb-boards-page',
   imports: [
-    DatePipe,
     RouterLink,
     Button,
     Card,
     ConfirmDialog,
-    TableModule,
-    Tag,
+    Menu,
+    ButtonAttributes,
     Tooltip,
     HelpButton,
     EmptyState,
     LoadStateView,
     PageHeader,
-    RowType,
     BoardDialog,
     BoardBackupsDialog,
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header title="Доски">
@@ -85,83 +83,66 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
     <p-card>
       <h2 class="tb-sr-only">Список досок</h2>
       <tb-load-state [state]="state" what="доски" (retry)="load()">
-        <p-table [value]="boards()" dataKey="id" [rowHover]="true" styleClass="tb-cards">
-          <ng-template #header>
-            <tr>
-              <th class="tb-col-main">Доска</th>
-              <th>Вид</th>
-              <th>Кому открыта</th>
-              <th>Изменена</th>
-              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-board [tbRowType]="boards()">
-            <tr>
-              <td data-label="Доска">
-                @if (board.kind === 'EXCALIDRAW') {
-                  <a class="tb-link" [routerLink]="[board.id]">{{ board.title }}</a>
-                } @else {
-                  <a class="tb-link" [href]="board.url" target="_blank" rel="noopener"
-                    >{{ board.title }} <i class="pi pi-external-link" aria-hidden="true"></i
-                  ></a>
-                }
-              </td>
-              <td data-label="Вид">
-                <p-tag
-                  [value]="kindLabels[board.kind]"
-                  [severity]="board.kind === 'EXCALIDRAW' ? 'info' : 'secondary'"
-                />
-              </td>
-              <td data-label="Кому открыта">{{ membersText(board) }}</td>
-              <td data-label="Изменена">{{ board.updatedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td class="tb-actions-column">
-                @if (board.kind === 'EXCALIDRAW') {
+        @if (boards().length > 0) {
+          <ul class="tb-list" aria-label="Доски">
+            @for (board of boards(); track board.id) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i
+                    [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-th-large' : 'pi pi-external-link'"
+                  ></i
+                ></span>
+                <div class="tb-list__text">
+                  @if (board.kind === 'EXCALIDRAW') {
+                    <a class="tb-list__title tb-link" [routerLink]="[board.id]">{{
+                      board.title
+                    }}</a>
+                  } @else {
+                    <a
+                      class="tb-list__title tb-link"
+                      [href]="board.url"
+                      target="_blank"
+                      rel="noopener"
+                      >{{ board.title }}</a
+                    >
+                  }
+                  <span class="tb-list__supporting">{{ details(board) }}</span>
+                </div>
+                <div class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    icon="pi pi-history"
+                    icon="pi pi-ellipsis-v"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Резервные копии: ' + board.title"
-                    [ariaLabel]="'Резервные копии: ' + board.title"
-                    (onClick)="openBackups(board)"
+                    [pTooltip]="'Действия: ' + board.title"
+                    [ariaLabel]="'Действия: ' + board.title"
+                    [tbAttributes]="{
+                      'aria-haspopup': 'menu',
+                      'aria-expanded': menuFor()?.id === board.id ? 'true' : 'false',
+                    }"
+                    (onClick)="openMenu(board, $event)"
                   />
-                }
-                <p-button
-                  icon="pi pi-pencil"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [pTooltip]="'Изменить доску: ' + board.title"
-                  [ariaLabel]="'Изменить доску: ' + board.title"
-                  (onClick)="openEdit(board)"
-                />
-                <p-button
-                  icon="pi pi-trash"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="danger"
-                  [pTooltip]="'Удалить доску: ' + board.title"
-                  [ariaLabel]="'Удалить доску: ' + board.title"
-                  (onClick)="confirmRemove(board)"
-                />
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td colspan="5">
-                <tb-empty-state
-                  icon="pi-th-large"
-                  [title]="filter() === null ? 'Досок пока нет' : 'У них досок пока нет'"
-                  hint="Нажмите «Новая доска»: доска Excalidraw откроется прямо в портале, а внешнюю доску (например, Холст) можно добавить ссылкой."
-                />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <tb-empty-state
+            icon="pi-th-large"
+            [title]="filter() === null ? 'Досок пока нет' : 'У них досок пока нет'"
+            hint="Нажмите «Новая доска»: доска Excalidraw откроется прямо в портале, а внешнюю доску (например, Холст) можно добавить ссылкой."
+          />
+        }
       </tb-load-state>
     </p-card>
 
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
     <tb-board-dialog
       [(visible)]="dialogVisible"
       [board]="editing()"
@@ -184,6 +165,7 @@ export class BoardsPage implements OnInit {
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly date = inject(DatePipe);
 
   /** `?student=<id>` — boards of a student, with their groups' boards. */
   readonly student = input<string>();
@@ -200,6 +182,14 @@ export class BoardsPage implements OnInit {
   protected readonly dialogVisible = signal(false);
   protected readonly backupsOf = signal<Board | null>(null);
   protected readonly backupsVisible = signal(false);
+  private readonly menu = viewChild.required<Menu>('menu');
+
+  /** The board whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<Board | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const board = this.menuFor();
+    return board === null ? [] : this.actionsOf(board);
+  });
 
   protected readonly filter = computed(() => {
     const student = this.student();
@@ -269,6 +259,20 @@ export class BoardsPage implements OnInit {
     });
   }
 
+  /** «Доска Excalidraw · Мария, группа «ОГЭ» · изменена 01.09.2026 10:00»; an external board — no time. */
+  protected details(board: Board): string {
+    const parts = [this.kindLabels[board.kind], this.membersText(board)];
+    if (board.kind === 'EXCALIDRAW') {
+      parts.push(`изменена ${this.date.transform(board.updatedAt, 'dd.MM.yyyy HH:mm') ?? ''}`);
+    }
+    return parts.join(' · ');
+  }
+
+  protected openMenu(board: Board, event: Event): void {
+    this.menuFor.set(board);
+    this.menu().toggle(event);
+  }
+
   protected openCreate(): void {
     this.editing.set(null);
     this.dialogVisible.set(true);
@@ -300,5 +304,36 @@ export class BoardsPage implements OnInit {
         },
       }),
     );
+  }
+
+  private actionsOf(board: Board): MenuItem[] {
+    const items: MenuItem[] = [];
+    if (board.kind === 'EXCALIDRAW') {
+      items.push({
+        label: 'Резервные копии',
+        icon: 'pi pi-history',
+        command: () => {
+          this.openBackups(board);
+        },
+      });
+    }
+    items.push(
+      {
+        label: 'Изменить',
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.openEdit(board);
+        },
+      },
+      {
+        label: 'Удалить…',
+        icon: 'pi pi-trash',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.confirmRemove(board);
+        },
+      },
+    );
+    return items;
   }
 }

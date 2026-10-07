@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { hostElement, requireElement } from '@testing/dom';
+import { buttonByText, hostElement, requireElement } from '@testing/dom';
 import { Lesson, Payment } from '../data-access/billing.models';
 import { BalanceAmount } from './balance-amount';
 import { ledgerEntries } from './ledger-entries';
-import { LedgerTable } from './ledger-table';
+import { LEDGER_PAGE, LedgerList } from './ledger-list';
 
 function normalize(text: string): string {
   return text.replace(/\s+/g, ' ');
@@ -41,16 +41,16 @@ describe('ledgerEntries', () => {
   });
 });
 
-describe('LedgerTable', () => {
-  let fixture: ComponentFixture<LedgerTable>;
+describe('LedgerList', () => {
+  let fixture: ComponentFixture<LedgerList>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [LedgerTable], providers: [providePrimeNG()] });
-    fixture = TestBed.createComponent(LedgerTable);
+    TestBed.configureTestingModule({ imports: [LedgerList], providers: [providePrimeNG()] });
+    fixture = TestBed.createComponent(LedgerList);
   });
 
   function rows(): string[] {
-    return Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) =>
+    return Array.from(hostElement(fixture).querySelectorAll('.tb-list > li')).map((row) =>
       normalize(row.textContent),
     );
   }
@@ -74,7 +74,7 @@ describe('LedgerTable', () => {
     const text = rows();
     expect(text[0]).toContain('04.09.2026');
     expect(text[0]).toContain('Отменено');
-    expect(text[0]).toContain('(болел)');
+    expect(text[0]).toContain('04.09.2026 · Дроби (болел)');
     expect(text[1]).toContain('Оплата');
     expect(text[1]).not.toContain('Перевод');
     expect(text[1]).toContain('Аннулирована');
@@ -85,7 +85,7 @@ describe('LedgerTable', () => {
     ).not.toBeNull();
     expect(text[3]).toContain('Дроби');
     expect(text[3]).toContain('−1 500 ₽');
-    expect(hostElement(fixture).querySelectorAll('tbody tr.tb-inactive')).toHaveLength(2);
+    expect(hostElement(fixture).querySelectorAll('.tb-list > li.tb-inactive')).toHaveLength(2);
     expect(hostElement(fixture).querySelector('button')).toBeNull();
   });
 
@@ -111,6 +111,24 @@ describe('LedgerTable', () => {
 
     expect(cancelled.map((value) => value.id)).toEqual(['l-1']);
     expect(voided.map((value) => value.id)).toEqual(['p-1']);
+  });
+
+  it('shows the history by pages', async () => {
+    const lessons = Array.from({ length: LEDGER_PAGE + 5 }, (_, index) =>
+      lesson({
+        id: `l-${String(index)}`,
+        createdAt: `2026-09-01T10:${String(index).padStart(2, '0')}:00Z`,
+      }),
+    );
+    fixture.componentRef.setInput('ledger', ledger({ lessons, payments: [] }));
+    await fixture.whenStable();
+    expect(rows()).toHaveLength(LEDGER_PAGE);
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    await fixture.whenStable();
+
+    expect(rows()).toHaveLength(LEDGER_PAGE + 5);
+    expect(hostElement(fixture).textContent).not.toContain('Показать ещё');
   });
 
   it('shows an empty state', async () => {

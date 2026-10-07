@@ -158,7 +158,7 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();
 
-  const row = page.getByRole('row', { name: new RegExp(BOARD) });
+  const row = page.getByRole('listitem').filter({ hasText: BOARD });
   await expect(row).toContainText('Доска Excalidraw');
   await expect(row).toContainText(VERA);
   await expect(row).toContainText(`группа «${GROUP}»`);
@@ -279,7 +279,7 @@ test('an external board opens in a new tab', async ({ page, request }) => {
   const link = page.getByRole('link', { name: `Холст ${RUN}` });
   await expect(link).toHaveAttribute('href', 'https://app.holst.so/board/e2e-1-7');
   await expect(link).toHaveAttribute('target', '_blank');
-  await expect(page.getByRole('row', { name: new RegExp(`Холст ${RUN}`) })).toContainText(
+  await expect(page.getByRole('listitem').filter({ hasText: `Холст ${RUN}` })).toContainText(
     'Внешняя доска',
   );
 });
