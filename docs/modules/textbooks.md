@@ -52,5 +52,5 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 
 ## Frontend
 
-`features/textbooks/` (pages in `index.ts`, widgets in `parts.ts`) — see stage 128 of `docs/PLAN.md` until it
+`features/textbooks/` (pages in `index.ts`, widgets in `parts.ts`) — see stage 133 of `docs/PLAN.md` until it
 is written here.

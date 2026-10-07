@@ -7,6 +7,8 @@ CLAUDE.md → AGENTS.md, loaded when you work there.
 
 ## Workflow
 
+0. **New branch — from the latest `main`** (`git fetch origin`, `git switch -c <branch> origin/main`; AGENTS.md
+   §8.1), so the plan and stage numbers continue from what is already released.
 1. **Work from the plan.** Find the task's substep in `docs/PLAN.md`; not there — add it first (or ask the user).
    Plans are written in English. Read only what AGENTS.md §2 lists for the task; `docs/archive/` only when
    history is needed, and grep for the item instead of reading whole files.

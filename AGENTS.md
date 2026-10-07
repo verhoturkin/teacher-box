@@ -157,11 +157,14 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 
 ## 8. Commits
 
-1. Checks of the touched parts pass before every commit (`./scripts/verify.sh`; hook `.githooks/pre-commit`,
+1. **A new branch always starts from the latest `main`:** `git fetch origin`, then
+   `git switch -c <branch> origin/main` (stage numbers and the plan continue from what `main` already has).
+   A long-lived branch takes new `main` commits with `git merge origin/main`.
+2. Checks of the touched parts pass before every commit (`./scripts/verify.sh`; hook `.githooks/pre-commit`,
    enable with `git config core.hooksPath .githooks`). Never `--no-verify`.
-2. Conventional Commits: `feat(billing): record lesson payments`, `fix(identity): …`, `test`, `docs`, `build`,
+3. Conventional Commits: `feat(billing): record lesson payments`, `fix(identity): …`, `test`, `docs`, `build`,
    `chore`. Scope — module or `frontend`, `docker`, `platform`.
-3. One commit = one complete logical unit (usually a plan substep); tick its checkbox in `docs/PLAN.md` in the
+4. One commit = one complete logical unit (usually a plan substep); tick its checkbox in `docs/PLAN.md` in the
    same commit; archive the release per `docs/PLAN.md`.
 
 ## 9. Definition of Done
