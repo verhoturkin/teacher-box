@@ -29,6 +29,8 @@ describe('ToBoardDialog', () => {
     backend.verify();
     fixture.destroy();
     vi.restoreAllMocks();
+    // a material handed to a board must not reach the board editor of another spec in this worker
+    localStorage.clear();
   });
 
   async function show(rich = true): Promise<ToBoardDialog> {

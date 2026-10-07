@@ -144,8 +144,15 @@ test.describe('on a phone', () => {
     await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
     await expect(page).toHaveURL(/\/cabinet$/);
-    // five sections since 0.7.0 («Мои доски»): they fit without «Ещё»
-    await expect(page.locator('nav.tb-bottom-nav').getByRole('link')).toHaveCount(5);
+    // six sections since 0.10.0 («Учебники»): four in the bar, the rest under «Ещё»
+    const bar = page.locator('nav.tb-bottom-nav');
+    await expect(bar.getByRole('link')).toHaveText([
+      'Главная',
+      'Расписание',
+      'Задания',
+      'Учебники',
+    ]);
+    await expect(bar.getByRole('button', { name: 'Ещё разделы' })).toBeVisible();
     await expectNoSideScroll(page);
     for (const section of ['Расписание', 'Задания']) {
       await page.locator('nav.tb-bottom-nav').getByRole('link', { name: section }).click();
