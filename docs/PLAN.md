@@ -63,7 +63,7 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
   `bindTextbook` / `unbindTextbook` (`POST|DELETE /api/teacher/homework/assignments/{id}/textbooks`), pages
   checked against the page count (`PageRanges`); `AssignmentDetails.textbooks`, `AssignmentInfo.textbooks`;
   the student downloads the bound pages `GET /api/me/homework/tasks/{taskId}/textbooks/{textbookId}`.
-- [ ] 134.2 **F** assignment page/dialog: «Учебники» block — bind (textbook picker + pages), unbind; the
+- [x] 134.2 **F** assignment page/dialog: «Учебники» block — bind (textbook picker + pages), unbind; the
   student's task page lists the textbooks with pages and a download.
 
 ### Stage 135. Textbook pages on a board (F)

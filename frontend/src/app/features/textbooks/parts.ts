@@ -1,5 +1,12 @@
 /**
- * Parts of the textbooks feature that other features embed (types for tests and homework). Pages are in
- * index.ts.
+ * Parts of the textbooks feature that other features embed: the API, types and labels for homework.
+ * Pages are in index.ts.
  */
-export type { MyTextbook, Textbook } from './data-access/textbooks.models';
+export { TextbooksApi } from './data-access/textbooks-api';
+export type {
+  MyTextbook,
+  Textbook,
+  TextbookFormat,
+  TextbookKind,
+} from './data-access/textbooks.models';
+export { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from './textbooks-labels';

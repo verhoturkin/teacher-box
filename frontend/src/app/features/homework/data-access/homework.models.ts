@@ -1,5 +1,7 @@
 /** Mirrors `HomeworkViews` of the backend. Instants are ISO-8601 strings in UTC. */
 
+import type { TextbookFormat, TextbookKind } from '@features/textbooks/parts';
+
 export type TaskStatus = 'ASSIGNED' | 'SUBMITTED' | 'RETURNED' | 'ACCEPTED';
 export type ReviewDecision = 'ACCEPT' | 'RETURN';
 
@@ -34,6 +36,17 @@ export interface TaskSummary {
   readonly overdue: boolean;
 }
 
+/** A textbook bound to an assignment (ADR-0033); `pages` — «1-3, 7», `null` — the whole textbook. */
+export interface BoundTextbook {
+  readonly textbookId: string;
+  readonly kind: TextbookKind;
+  readonly title: string;
+  readonly course: string | null;
+  readonly format: TextbookFormat;
+  readonly pageCount: number | null;
+  readonly pages: string | null;
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;
@@ -43,6 +56,7 @@ export interface AssignmentDetails {
   readonly version: number;
   readonly attachments: Attachment[];
   readonly tasks: TaskSummary[];
+  readonly textbooks: BoundTextbook[];
 }
 
 export interface Submission {
@@ -58,6 +72,7 @@ export interface AssignmentInfo {
   readonly description: string | null;
   readonly dueAt: string | null;
   readonly attachments: Attachment[];
+  readonly textbooks: BoundTextbook[];
 }
 
 export interface TaskDetails {

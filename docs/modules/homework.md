@@ -39,4 +39,7 @@ Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDu
 ## Frontend
 
 `features/homework/`: `teacher/` (assignments, assignment page, review queue), `student/` (my tasks, task
-page), `ui/`, `home/` widgets, `homework-labels.ts`. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
+«Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap downloads under
+`boundTextbookFilename`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
+`@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Routes `/teacher/homework/**`, `/cabinet/homework/**`.

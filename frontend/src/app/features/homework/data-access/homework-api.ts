@@ -66,6 +66,24 @@ export class HomeworkApi {
     return this.http.delete(`${TEACHER}/assignments/${id}/attachments/${attachmentId}`);
   }
 
+  /** Binds a textbook or changes its pages; `null` pages — the whole textbook. */
+  bindTextbook(
+    id: string,
+    textbookId: string,
+    pages: string | null,
+  ): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/textbooks`, {
+      textbookId,
+      pages,
+    });
+  }
+
+  unbindTextbook(id: string, textbookId: string): Observable<AssignmentDetails> {
+    return this.http.delete<AssignmentDetails>(
+      `${TEACHER}/assignments/${id}/textbooks/${textbookId}`,
+    );
+  }
+
   reviewQueue(): Observable<ReviewQueueItem[]> {
     return this.http.get<ReviewQueueItem[]>(`${TEACHER}/review-queue`, {
       context: quietContext(),
@@ -109,6 +127,11 @@ export class HomeworkApi {
       form.append('text', text);
     }
     return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/submissions`, form);
+  }
+
+  /** The bound pages of a textbook (a PDF cut to them). */
+  myTextbook(taskId: string, textbookId: string): Observable<Blob> {
+    return this.http.get(`${ME}/tasks/${taskId}/textbooks/${textbookId}`, { responseType: 'blob' });
   }
 
   myFile(attachmentId: string): Observable<Blob> {

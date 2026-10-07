@@ -2,6 +2,7 @@ import {
   AssignmentDetails,
   AssignmentSummary,
   Attachment,
+  BoundTextbook,
   HomeworkSummary,
   MyHomeworkSummary,
   MyTask,
@@ -9,6 +10,19 @@ import {
   Submission,
   TaskDetails,
 } from '@features/homework/data-access/homework.models';
+
+export function boundTextbook(overrides: Partial<BoundTextbook> = {}): BoundTextbook {
+  return {
+    textbookId: 'tb-1',
+    kind: 'TEXTBOOK',
+    title: 'Spotlight 5',
+    course: 'Английский',
+    format: 'PDF',
+    pageCount: 120,
+    pages: '12-14',
+    ...overrides,
+  };
+}
 
 export function attachment(overrides: Partial<Attachment> = {}): Attachment {
   return {
@@ -45,6 +59,7 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     createdAt: '2026-09-01T10:00:00Z',
     version: 0,
     attachments: [attachment()],
+    textbooks: [],
     tasks: [
       {
         taskId: 't-1',
@@ -99,6 +114,7 @@ export function taskDetails(overrides: Partial<TaskDetails> = {}): TaskDetails {
       description: 'Решить **№1-5**',
       dueAt: '2026-09-10T15:00:00Z',
       attachments: [attachment()],
+      textbooks: [],
     },
     submissions: [submission()],
     ...overrides,

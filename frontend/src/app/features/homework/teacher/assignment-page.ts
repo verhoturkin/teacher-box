@@ -23,8 +23,10 @@ import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
-import { AssignmentDetails, Attachment } from '../data-access/homework.models';
+import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
+import { TextbookList } from '../ui/textbook-list';
+import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
@@ -58,6 +60,8 @@ import { InitialsPipe } from '@shared/ui/initials';
     MarkdownView,
     RowType,
     AttachmentList,
+    BindTextbookDialog,
+    TextbookList,
     FilePicker,
     TaskStatusTag,
     AssignmentDialog,
@@ -121,6 +125,21 @@ import { InitialsPipe } from '@shared/ui/initials';
                 (onClick)="upload()"
               />
             }
+          </div>
+          <h3 class="tb-subtitle">Учебники</h3>
+          <tb-textbook-list
+            [textbooks]="assignment.textbooks"
+            [editable]="true"
+            (edit)="openBind($event)"
+            (remove)="unbind($event)"
+          />
+          <div class="tb-inline">
+            <p-button
+              label="Привязать учебник"
+              icon="pi pi-bookmark"
+              severity="secondary"
+              (onClick)="openBind(null)"
+            />
           </div>
         </p-card>
 
@@ -217,6 +236,13 @@ import { InitialsPipe } from '@shared/ui/initials';
         [assignment]="assignment"
         (saved)="details.set($event)"
       />
+      <tb-bind-textbook-dialog
+        [(visible)]="bindVisible"
+        [assignmentId]="assignment.id"
+        [taken]="assignment.textbooks"
+        [bound]="binding()"
+        (saved)="details.set($event)"
+      />
       <tb-to-board-dialog
         [(visible)]="boardVisible"
         [title]="assignment.title"
@@ -248,6 +274,9 @@ export class AssignmentPage implements OnInit {
   }
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
+  protected readonly bindVisible = signal(false);
+  /** The bound textbook whose pages change; `null` binds a new one. */
+  protected readonly binding = signal<BoundTextbook | null>(null);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
@@ -330,6 +359,22 @@ export class AssignmentPage implements OnInit {
         },
       }),
     );
+  }
+
+  protected openBind(textbook: BoundTextbook | null): void {
+    this.binding.set(textbook);
+    this.bindVisible.set(true);
+  }
+
+  protected unbind(textbook: BoundTextbook): void {
+    const assignment = this.details();
+    if (assignment === null) {
+      return;
+    }
+    this.api.unbindTextbook(assignment.id, textbook.textbookId).subscribe((updated) => {
+      this.details.set(updated);
+      this.snackbar.success(`Учебник «${textbook.title}» убран из задания`);
+    });
   }
 
   /** Adds the students of a chosen group who do not have the assignment yet. */

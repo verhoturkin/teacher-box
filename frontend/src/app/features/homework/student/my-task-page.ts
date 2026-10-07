@@ -9,8 +9,9 @@ import { describeError } from '@core/http/error-messages';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
-import { Attachment, TaskDetails } from '../data-access/homework.models';
+import { Attachment, BoundTextbook, TaskDetails } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
+import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
@@ -33,6 +34,7 @@ import { pageDetail } from '@core/routing/page-detail';
     Textarea,
     MarkdownView,
     AttachmentList,
+    TextbookList,
     FilePicker,
     SubmissionList,
     TaskStatusTag,
@@ -76,6 +78,14 @@ import { pageDetail } from '@core/routing/page-detail';
             [attachments]="task.assignment.attachments"
             (download)="download($event)"
           />
+          @if (task.assignment.textbooks.length > 0) {
+            <h3 class="tb-subtitle">Учебники</h3>
+            <tb-textbook-list
+              [textbooks]="task.assignment.textbooks"
+              [downloadable]="true"
+              (download)="downloadTextbook(task.taskId, $event)"
+            />
+          }
         </p-card>
 
         @if (task.status !== 'ACCEPTED') {
@@ -170,6 +180,12 @@ export class MyTaskPage implements OnInit {
         this.pending.set(false);
         this.error.set(describeError(error, 'Не удалось отправить ответ'));
       },
+    });
+  }
+
+  protected downloadTextbook(taskId: string, textbook: BoundTextbook): void {
+    this.api.myTextbook(taskId, textbook.textbookId).subscribe((blob) => {
+      this.fileSaver.save(blob, boundTextbookFilename(textbook, blob.type));
     });
   }
 

@@ -10,6 +10,7 @@ import {
   assignmentDetails,
   assignmentSummary,
   attachment,
+  boundTextbook,
   reviewQueueItem,
   taskDetails,
 } from '@testing/homework-fixtures';
@@ -17,6 +18,7 @@ import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { AssignmentDialog } from './assignment-dialog';
+import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { ReviewQueuePage } from './review-queue-page';
@@ -243,6 +245,44 @@ describe('AssignmentPage', () => {
       .picked.emit(['s-1', 's-3', 's-9']);
 
     expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
+    fixture.destroy();
+  });
+
+  it('binds, changes and unbinds textbooks', async () => {
+    const { fixture, host, backend } = await render();
+    const dialog = fixture.debugElement
+      .query(By.directive(BindTextbookDialog))
+      .injector.get(BindTextbookDialog);
+
+    buttonByText(host, 'Привязать учебник').click();
+    await fixture.whenStable();
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.bound()).toBeNull();
+    backend.expectOne('/api/teacher/textbooks').flush([]);
+    dialog.saved.emit(
+      assignmentDetails({
+        textbooks: [
+          boundTextbook(),
+          boundTextbook({ textbookId: 'tb-2', title: 'Тетрадь', pages: null }),
+        ],
+      }),
+    );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Учебник · Английский · с. 12-14');
+    expect(readableText(host)).toContain('целиком');
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="Страницы: Spotlight 5"]')?.click();
+    await fixture.whenStable();
+    expect(dialog.bound()?.textbookId).toBe('tb-1');
+
+    host
+      .querySelector<HTMLButtonElement>('button[aria-label="Убрать из задания: Тетрадь"]')
+      ?.click();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/textbooks/tb-2' })
+      .flush(assignmentDetails({ textbooks: [boundTextbook()] }));
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Тетрадь');
     fixture.destroy();
   });
 
