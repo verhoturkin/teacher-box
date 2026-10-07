@@ -71,6 +71,20 @@
   gap: var(--tb-space-1);
 }
 
+/* Without the name (a phone) the button is a 40 px circle around the photo or the icon */
+.tb-shell__user-button--round {
+  flex: none;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: var(--tb-shape-full);
+}
+
+.tb-shell__avatar {
+  flex: none;
+}
+
 .tb-shell__body {
   display: flex;
   flex: 1;
@@ -126,7 +140,6 @@
   font: var(--tb-type-label-m);
   text-decoration: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &:hover {
     text-decoration: none;

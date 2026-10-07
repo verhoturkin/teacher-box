@@ -43,9 +43,10 @@ describe('Shell on a phone', () => {
       'Ученики',
     ]);
     expect(host.querySelector('tb-side-nav')).toBeNull();
-    expect(
-      requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement).textContent,
-    ).not.toContain('Анна');
+    const user = requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement);
+    expect(user.textContent).not.toContain('Анна');
+    // a circle around the photo or the icon, not a pill
+    expect(user.classList).toContain('tb-shell__user-button--round');
 
     const more = requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
     expect(more.getAttribute('aria-haspopup')).toBe('menu');

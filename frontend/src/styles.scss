@@ -128,6 +128,11 @@ body {
   padding: 0;
 }
 
+/* A pressed element shows its own state layer, not the mobile browser's blue fill */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* The page is the surface container; cards lie on it (ADR-0017) */
 body {
   background: var(--p-md-surface-container);

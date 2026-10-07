@@ -17,6 +17,67 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.10.0
+
+Goals: phone fixes (round photo on the user button, no blue tap highlight); a new «Учебники» section — the
+teacher's textbooks, workbooks and other materials (images, PDF, DOC/DOCX) shared with students and groups;
+textbooks bound to assignments by pages; pages of a textbook put on a board as pictures inside a frame.
+
+ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendered on the server (PDFBox),
+`homework` → `textbooks::api`.
+
+### Stage 126. Phone fixes (F)
+
+- [x] 126.1 `core/layout/shell.ts` / `shell.scss`: the user button in the top bar stays a circle with a photo
+  on a phone (the avatar fills a round button, no padding stretching it).
+- [x] 126.2 `styles.scss`: `-webkit-tap-highlight-color: transparent` for the whole document — pressed elements
+  show their own M3 state layer, not the browser's blue fill.
+
+### Stage 127. Module `textbooks` (B)
+
+- [ ] 127.1 ADR-0033, `docs/modules/textbooks.md`, root `AGENTS.md` (module table, isolation table). Module
+  `ru.teacherbox.textbooks` (deps `shared`, `identity::api`), schema `textbooks` (`textbooks`,
+  `textbook_members`), `TextbooksDataReset`, `TextbooksProperties` (`TEACHERBOX_TEXTBOOKS_MAX_FILE_SIZE`,
+  default 100 MB). Kinds `TEXTBOOK` / `WORKBOOK` / `OTHER`; fields title, course, page count (PDF — from the
+  file via PDFBox, an image — 1, DOC/DOCX — entered by the teacher), one file (png/jpeg/webp/gif, PDF, DOC,
+  DOCX checked by content), members — students and groups like boards.
+- [ ] 127.2 REST `TeacherTextbooksController` `/api/teacher/textbooks`: list, create (multipart: file + fields),
+  change (with `version`), replace the file, delete, download, page image `GET /{id}/pages/{n}` (PNG,
+  PDF rendered by PDFBox, an image as is); `MyTextbooksController` `/api/me/textbooks` (student: own and
+  groups' textbooks, download). Tests incl. «another student gets 404».
+- [ ] 127.3 `textbooks::api`: `Textbooks` facade (`find(ids)` summaries, `content(id, pages)` — a PDF cut to the
+  pages, other files whole) for `homework`.
+
+### Stage 128. «Учебники» section (F)
+
+- [ ] 128.1 `features/textbooks/`: data access, labels, `teacher/textbooks-page.ts` (`/teacher/textbooks`, menu
+  item after «Задания»): one card per row — kind icon, title, course, kind, pages, members; add, change,
+  replace the file, download, delete. `textbook-dialog.ts` (kind, title, course, pages for DOC/DOCX, file,
+  students, groups).
+- [ ] 128.2 `student/my-textbooks-page.ts` (`/cabinet/textbooks`, after «Задания»): the student's textbooks,
+  download. Help articles (teacher, student), glossary.
+
+### Stage 129. Textbooks in assignments (B, F)
+
+- [ ] 129.1 **B** `homework`: table `assignment_textbooks` (assignment, textbook, pages), `AssignmentService`
+  `bindTextbook` / `unbindTextbook` (`POST|DELETE /api/teacher/homework/assignments/{id}/textbooks`), pages
+  checked against the page count (`PageRanges`); `AssignmentDetails.textbooks`, `AssignmentInfo.textbooks`;
+  the student downloads the bound pages `GET /api/me/homework/tasks/{taskId}/textbooks/{textbookId}`.
+- [ ] 129.2 **F** assignment page/dialog: «Учебники» block — bind (textbook picker + pages), unbind; the
+  student's task page lists the textbooks with pages and a download.
+
+### Stage 130. Textbook pages on a board (F)
+
+- [ ] 130.1 `boards/to-board`: a material of pages (`mode: 'pages'`, image URLs); `editor/material-insert.ts`
+  makes a frame named after the textbook and pages, with the pages as pictures in a row inside it; only
+  Excalidraw boards take pages.
+- [ ] 130.2 «На доску» from the textbooks page and from the assignment's textbooks: choosing the pages of a
+  multi-page file (the bound pages preselected); not for DOC/DOCX.
+
+### Stage 131. Release 0.10.0
+
+- [ ] 131.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
