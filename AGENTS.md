@@ -19,6 +19,7 @@ student sets login and password and gets a cabinet (ЛК). An `ADMIN` account is
 | `schedule` | lessons, series, attendance, requests, reminders, ICS, Google Calendar | [schedule](docs/modules/schedule.md) |
 | `meetings` | permanent Yandex Telemost rooms | [meetings](docs/modules/meetings.md) |
 | `boards` | Excalidraw boards (scene, images, copies) and external boards by link | [boards](docs/modules/boards.md) |
+| `textbooks` | textbooks and workbooks (one file each), pages for homework and boards | [textbooks](docs/modules/textbooks.md) |
 | `platform` / `shared` | infrastructure / shared kernel | [platform](docs/modules/platform.md), [backend](backend/AGENTS.md) |
 
 Stack: Java 25, Spring Boot 4.1, Spring Modulith 2.1, Spring Security 7, `JdbcClient` + Flyway, H2 (file,
@@ -82,6 +83,7 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
    | `meetings` | `shared`, `identity::api` |
    | `boards` | `shared`, `identity::api` |
+   | `textbooks` | `shared`, `identity::api` |
 
    Business modules never depend on `platform`; `platform` knows no business module (it collects SPI beans).
 3. **Data:** own schema per module (`platform` too), own Flyway migrations in `db/migration/<module>/` and history

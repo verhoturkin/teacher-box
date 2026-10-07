@@ -48,6 +48,12 @@ server {
         proxy_hide_header Referrer-Policy;
         proxy_hide_header Permissions-Policy;
         proxy_hide_header Content-Security-Policy;
+
+        # Textbooks take files up to 100 MB (ADR-0033); the headers above are inherited.
+        location /api/teacher/textbooks {
+            client_max_body_size 105m;
+            proxy_pass ${BACKEND_URL};
+        }
     }
 
     # Signalling of the built-in calls (ADR-0030): a WebSocket to LiveKit (profile "calls"). The name is

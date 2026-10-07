@@ -35,17 +35,17 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
 
 ### Stage 127. Module `textbooks` (B)
 
-- [ ] 127.1 ADR-0033, `docs/modules/textbooks.md`, root `AGENTS.md` (module table, isolation table). Module
+- [x] 127.1 ADR-0033, `docs/modules/textbooks.md`, root `AGENTS.md` (module table, isolation table). Module
   `ru.teacherbox.textbooks` (deps `shared`, `identity::api`), schema `textbooks` (`textbooks`,
   `textbook_members`), `TextbooksDataReset`, `TextbooksProperties` (`TEACHERBOX_TEXTBOOKS_MAX_FILE_SIZE`,
   default 100 MB). Kinds `TEXTBOOK` / `WORKBOOK` / `OTHER`; fields title, course, page count (PDF — from the
   file via PDFBox, an image — 1, DOC/DOCX — entered by the teacher), one file (png/jpeg/webp/gif, PDF, DOC,
   DOCX checked by content), members — students and groups like boards.
-- [ ] 127.2 REST `TeacherTextbooksController` `/api/teacher/textbooks`: list, create (multipart: file + fields),
+- [x] 127.2 REST `TeacherTextbooksController` `/api/teacher/textbooks`: list, create (multipart: file + fields),
   change (with `version`), replace the file, delete, download, page image `GET /{id}/pages/{n}` (PNG,
   PDF rendered by PDFBox, an image as is); `MyTextbooksController` `/api/me/textbooks` (student: own and
   groups' textbooks, download). Tests incl. «another student gets 404».
-- [ ] 127.3 `textbooks::api`: `Textbooks` facade (`find(ids)` summaries, `content(id, pages)` — a PDF cut to the
+- [x] 127.3 `textbooks::api`: `Textbooks` facade (`find(ids)` summaries, `content(id, pages)` — a PDF cut to the
   pages, other files whole) for `homework`.
 
 ### Stage 128. «Учебники» section (F)

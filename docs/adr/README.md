@@ -46,3 +46,4 @@ commit.
 | [0030](0030-livekit-calls.md) | Built-in video calls on LiveKit: own server, rooms `tb-<ownerId>`, tokens, link precedence | active | [meetings](../modules/meetings.md) |
 | [0031](0031-split-variant-only.md) | Only the split variant: single container, `bundle-frontend` and backend SPA serving removed | active | README, [operations](../operations.md) |
 | [0032](0032-ready-images-and-installer.md) | Ready GHCR images (amd64/arm64), `compose.yaml` without the repository, Caddy profile, `install.sh` and `teacherbox` | active | README, [operations](../operations.md) |
+| [0033](0033-textbooks.md) | Textbooks: module `textbooks`, PDF pages rendered by PDFBox, `homework` → `textbooks::api`, pages on a board in a frame | active | [textbooks](../modules/textbooks.md) |
