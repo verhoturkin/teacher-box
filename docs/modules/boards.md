@@ -73,8 +73,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
   confirmation step inside the dialog (no dialog on top).
-- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's fifth section — five fit the bottom bar
-  without «Ещё»); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
+- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — under «Ещё» on a
+  phone); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
 - `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog, «Следующее занятие»).
 - `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`

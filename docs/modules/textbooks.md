@@ -52,5 +52,14 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 
 ## Frontend
 
-`features/textbooks/` (pages in `index.ts`, widgets in `parts.ts`) — see stage 133 of `docs/PLAN.md` until it
-is written here.
+`features/textbooks/` (pages in `index.ts`, types in `parts.ts`), labels in `textbooks-labels.ts`:
+
+- `teacher/textbooks-page.ts` — «Учебники» (`/teacher/textbooks`, menu item after «Задания»): one row per textbook
+  (`tb-list`): kind icon, the title (a tap downloads), «Учебник · course · PDF, 120 с., 4,2 МБ», members; row
+  menu «⋮» — «Скачать», «Изменить», «Заменить файл» (a hidden file input, opened within the menu click),
+  «Удалить…» (`dangerConfirmation`). `textbook-dialog.ts` — the file (only when added; the title comes from the
+  file name; over 100 MB refused before sending), kind, title, course (suggestions from the other textbooks),
+  pages of a Word file, students, groups (members that left stay).
+- `student/my-textbooks-page.ts` — «Учебники» (`/cabinet/textbooks`, after «Задания»; the student's sixth
+  section, so «Оплаты» and «Мои доски» go under «Ещё» on a phone): their textbooks with the group names, a tap
+  downloads.

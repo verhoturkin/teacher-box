@@ -50,11 +50,11 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
 
 ### Stage 133. «Учебники» section (F)
 
-- [ ] 133.1 `features/textbooks/`: data access, labels, `teacher/textbooks-page.ts` (`/teacher/textbooks`, menu
+- [x] 133.1 `features/textbooks/`: data access, labels, `teacher/textbooks-page.ts` (`/teacher/textbooks`, menu
   item after «Задания»): one card per row — kind icon, title, course, kind, pages, members; add, change,
   replace the file, download, delete. `textbook-dialog.ts` (kind, title, course, pages for DOC/DOCX, file,
   students, groups).
-- [ ] 133.2 `student/my-textbooks-page.ts` (`/cabinet/textbooks`, after «Задания»): the student's textbooks,
+- [x] 133.2 `student/my-textbooks-page.ts` (`/cabinet/textbooks`, after «Задания»): the student's textbooks,
   download. Help articles (teacher, student), glossary.
 
 ### Stage 134. Textbooks in assignments (B, F)

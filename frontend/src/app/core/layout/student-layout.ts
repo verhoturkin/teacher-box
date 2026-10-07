@@ -11,6 +11,7 @@ export const STUDENT_MENU: MenuItem[] = [
   },
   { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
   { label: 'Задания', icon: 'pi pi-book', routerLink: '/cabinet/homework' },
+  { label: 'Учебники', icon: 'pi pi-bookmark', routerLink: '/cabinet/textbooks' },
   { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
   { label: 'Мои доски', icon: 'pi pi-th-large', routerLink: '/cabinet/boards' },
 ];

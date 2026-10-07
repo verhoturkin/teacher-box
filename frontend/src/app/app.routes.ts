@@ -85,6 +85,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentPage),
       },
       {
+        path: 'textbooks',
+        title: 'Учебники',
+        loadComponent: () => import('@features/textbooks').then((m) => m.TextbooksPage),
+      },
+      {
         path: 'billing',
         title: 'Оплаты',
         loadComponent: () => import('@features/billing').then((m) => m.BillingOverviewPage),
@@ -172,6 +177,11 @@ export const routes: Routes = [
         path: 'homework/:taskId',
         title: 'Задание',
         loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
+      },
+      {
+        path: 'textbooks',
+        title: 'Учебники',
+        loadComponent: () => import('@features/textbooks').then((m) => m.MyTextbooksPage),
       },
       {
         path: 'billing',
