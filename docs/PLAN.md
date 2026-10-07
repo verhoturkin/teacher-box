@@ -96,6 +96,9 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
   container, as M3 menus have it (`styles.scss`, `teacher-box-preset.ts`).
 - [x] 137.3 The bell's badge as in M3: no outline, on the icon inside the button (`overlaybadge` in
   `teacher-box-preset.ts`).
+- [x] 137.4 Android system bars in the portal's colours: `core/theme/system-bars.ts` keeps `<meta name="theme-color">`
+  and the manifest link in the top bar's colour; `PortalController` serves
+  `/api/public/portal/manifest.webmanifest` (name, logo, default icons in `public/icons/`, colours from the page).
 
 ### Stage 138. Release 0.10.0
 

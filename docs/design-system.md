@@ -58,6 +58,10 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   its links and text buttons take that colour (links underlined). All preset palettes and sample own colours are
   tested in both themes. The custom-colour check reports darkening and warns when primary is close (OKLab ΔE×100 <
   12) to success or error.
+- **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` and the manifest link carry the top
+  bar's colour — light surface-container, dark surface — following the theme and the portal colour; the manifest's
+  `background_color` is the page (surface-container). Chrome paints the status bar from the meta tag and, in an
+  installed app, the navigation bar from the manifest's `theme_color`.
 - **Custom roles:** success and warning are M3 custom colours (`customColor`): Aura green 500 / amber 500
   harmonized with the seed, tones 40 / 100 / 90 / 10 (dark 80 / 20 / 30 / 90). Error is M3's error palette. No info
   role — info uses tertiary.

@@ -1,7 +1,12 @@
 package ru.teacherbox.platform.portal.web;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
@@ -54,6 +59,47 @@ class PortalController {
     PublicPortal publicView() {
         View view = portal.view();
         return new PublicPortal(view.name(), view.address(), view.accent(), view.logo());
+    }
+
+    /** The default colors of the manifest: the top bar of the light theme in the default color (indigo). */
+    static final String DEFAULT_THEME_COLOR = "#efecf8";
+    private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-fA-F]{6}");
+
+    /** An icon of the installed app. */
+    record ManifestIcon(String src, String sizes, String type, String purpose) {
+    }
+
+    /** The web app manifest: what Android and desktop Chrome need to install the portal as an app. */
+    record Manifest(String id, String name, @JsonProperty("short_name") String shortName,
+            @JsonProperty("start_url") String startUrl, String scope, String display, String lang,
+            @JsonProperty("theme_color") String themeColor, @JsonProperty("background_color") String backgroundColor,
+            List<ManifestIcon> icons) {
+    }
+
+    /**
+     * The manifest of the installed portal: its name, its logo and the colors of the system bars. The colors
+     * come from the page (the M3 roles are computed there, ADR-0034): {@code theme} — the status and navigation
+     * bars, {@code background} — the splash screen; anything but {@code #rrggbb} gives the default.
+     */
+    @GetMapping(path = "/api/public/portal/manifest.webmanifest", produces = "application/manifest+json")
+    Manifest manifest(@RequestParam(required = false) @Nullable String theme,
+            @RequestParam(required = false) @Nullable String background) {
+        View view = portal.view();
+        List<ManifestIcon> icons = new ArrayList<>();
+        String logoAddress = view.logo();
+        if (logoAddress != null) {
+            portal.logo().ifPresent(logo -> icons.add(new ManifestIcon(logoAddress, "any", logo.contentType(), "any")));
+        }
+        icons.add(new ManifestIcon("/icons/icon-192.png", "192x192", "image/png", "any"));
+        icons.add(new ManifestIcon("/icons/icon-512.png", "512x512", "image/png", "any"));
+        icons.add(new ManifestIcon("/icons/icon-maskable-512.png", "512x512", "image/png", "maskable"));
+        String themeColor = color(theme, DEFAULT_THEME_COLOR);
+        return new Manifest("/", view.name(), view.name(), "/", "/", "standalone", "ru", themeColor,
+                color(background, themeColor), icons);
+    }
+
+    private static String color(@Nullable String value, String fallback) {
+        return value != null && HEX_COLOR.matcher(value).matches() ? value.toLowerCase(Locale.ROOT) : fallback;
     }
 
     /**

@@ -143,6 +143,35 @@ class PortalIntegrationTest {
     }
 
     @Test
+    void theManifestInstallsThePortalInItsColors() {
+        assertThat(mvc.get().uri("/api/public/portal/manifest.webmanifest").param("theme", "#F3EDF7")
+                .param("background", "#ffffff"))
+                .hasStatusOk().hasContentType("application/manifest+json").bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.name").isEqualTo("Teacher Box");
+                    assertThat(json).extractingPath("$.short_name").isEqualTo("Teacher Box");
+                    assertThat(json).extractingPath("$.display").isEqualTo("standalone");
+                    assertThat(json).extractingPath("$.start_url").isEqualTo("/");
+                    assertThat(json).extractingPath("$.id").isEqualTo("/");
+                    assertThat(json).extractingPath("$.theme_color").isEqualTo("#f3edf7");
+                    assertThat(json).extractingPath("$.background_color").isEqualTo("#ffffff");
+                    assertThat(json).extractingPath("$.icons[*].sizes").asArray()
+                            .containsExactly("192x192", "512x512", "512x512");
+                });
+        assertThat(mvc.get().uri("/api/public/portal/manifest.webmanifest?theme=red")).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$.theme_color").isEqualTo("#efecf8");
+                    assertThat(json).extractingPath("$.background_color")
+                            .isEqualTo("#efecf8");
+                });
+
+        assertThat(upload(PNG, TestUsers.teacher(TEACHER))).hasStatusOk();
+        assertThat(mvc.get().uri("/api/public/portal/manifest.webmanifest")).bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.icons[0].src").asString().startsWith("/api/public/portal/logo?v=");
+            assertThat(json).extractingPath("$.icons[0].type").isEqualTo("image/png");
+        });
+    }
+
+    @Test
     void everyoneSeesTheDefaultName() {
         assertThat(mvc.get().uri("/api/public/portal")).hasStatusOk().bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.name").isEqualTo("Teacher Box");

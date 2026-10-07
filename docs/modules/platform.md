@@ -17,7 +17,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties.
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
 - `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), colour, logo
-  (`/api/public/portal`, `/api/public/portal/logo`), first-run setup flag (`/api/teacher/portal/setup`).
+  (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:
+  the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
+  `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
   Address changes by admin are audited.
 - `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`, `_KEEP`), download, restore via restart (check
   archive → backup current → put into `restore/` → exit → apply before DB opens → module migrations;
