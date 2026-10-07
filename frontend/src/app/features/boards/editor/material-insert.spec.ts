@@ -1,8 +1,15 @@
 import { anElement, fakeExcalidraw, fakeScene } from '@testing/excalidraw-fake';
-import { TEXT_WIDTH, insertMaterial, viewportCentre } from './material-insert';
+import {
+  FRAME_PADDING,
+  PAGE_GAP,
+  TEXT_WIDTH,
+  insertMaterial,
+  viewportCentre,
+} from './material-insert';
 
 describe('insertMaterial', () => {
   const island = fakeExcalidraw();
+  const noPictures = (): Promise<Blob> => Promise.reject(new Error('No pictures'));
   const picture = {
     picture: vi.fn(() => Promise.resolve(new Blob(['png'], { type: 'image/png' }))),
   };
@@ -26,6 +33,7 @@ describe('insertMaterial', () => {
       island.modules,
       { title: 'Дроби', markdown: 'Решите', mode: 'text' },
       picture,
+      noPictures,
     );
 
     expect(state.elements).toHaveLength(2);
@@ -52,6 +60,7 @@ describe('insertMaterial', () => {
       island.modules,
       { title: 'Дроби', markdown: 'Решите', mode: 'image' },
       picture,
+      noPictures,
     );
 
     const [file] = Object.values(state.files);
@@ -64,5 +73,54 @@ describe('insertMaterial', () => {
       x: 0,
       y: 200,
     });
+  });
+
+  it('puts pages in a row inside a frame named after them', async () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => Promise.resolve(),
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(1240);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(1754);
+    const fetched: string[] = [];
+    const pictures = (url: string): Promise<Blob> => {
+      fetched.push(url);
+      return Promise.resolve(new Blob(['png'], { type: 'image/png' }));
+    };
+    const { access, state } = fakeScene([anElement('a', 1)]);
+
+    await insertMaterial(
+      access,
+      island.modules,
+      { title: 'Spotlight 5, с. 2-3', mode: 'pages', pictures: ['/api/p/2', '/api/p/3'] },
+      picture,
+      pictures,
+    );
+
+    expect(fetched).toEqual(['/api/p/2', '/api/p/3']);
+    expect(Object.values(state.files)).toHaveLength(2);
+    // the view centre is (400, 300); two pages 620 wide with a gap of 24
+    const rowWidth = 2 * 620 + PAGE_GAP;
+    expect(state.elements.slice(1)).toEqual([
+      expect.objectContaining({
+        type: 'image',
+        x: 400 - rowWidth / 2,
+        y: 300 - 877 / 2,
+        width: 620,
+      }),
+      expect.objectContaining({
+        type: 'image',
+        x: 400 - rowWidth / 2 + 620 + PAGE_GAP,
+        y: 300 - 877 / 2,
+      }),
+      expect.objectContaining({
+        type: 'frame',
+        name: 'Spotlight 5, с. 2-3',
+        children: ['page-0', 'page-1'],
+        x: 400 - rowWidth / 2 - FRAME_PADDING,
+        width: rowWidth + 2 * FRAME_PADDING,
+        height: 877 + 2 * FRAME_PADDING,
+      }),
+    ]);
   });
 });

@@ -120,4 +120,45 @@ describe('ToBoardDialog', () => {
     await dialog.place('text');
     expect(open).not.toHaveBeenCalled();
   });
+
+  it('puts pages of a textbook only on an Excalidraw board', async () => {
+    vi.spyOn(clipboard, 'canWriteRich').mockReturnValue(true);
+    fixture = TestBed.createComponent(ToBoardDialog);
+    const material = {
+      title: 'Spotlight 5, с. 2-3',
+      mode: 'pages' as const,
+      pictures: ['/api/teacher/textbooks/tb-1/pages/2'],
+    };
+    fixture.componentRef.setInput('pages', material);
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([aLinkBoard(), aBoard({ title: 'Физика' })]);
+    await fixture.whenStable();
+    const put = vi.spyOn(insert, 'put');
+
+    expect(bodyText()).toContain('страницы появятся в центре');
+    expect(bodyText()).not.toContain('Холст');
+    expect(bodyText()).not.toContain('Текстом');
+    fixture.componentInstance.placePages(material);
+    await fixture.whenStable();
+
+    expect(put).toHaveBeenCalledWith('board-1', material);
+    expect(open).toHaveBeenCalledWith('/teacher/boards/board-1', '_blank', 'noopener');
+    expect(bodyText()).toContain('страницы уже на ней');
+  });
+
+  it('says when there is no Excalidraw board for the pages', async () => {
+    vi.spyOn(clipboard, 'canWriteRich').mockReturnValue(true);
+    fixture = TestBed.createComponent(ToBoardDialog);
+    const material = { title: 'Скан', mode: 'pages' as const, pictures: [] };
+    fixture.componentRef.setInput('pages', material);
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([aLinkBoard()]);
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Досок Excalidraw пока нет');
+    fixture.componentInstance.placePages(material);
+    expect(open).not.toHaveBeenCalled();
+  });
 });

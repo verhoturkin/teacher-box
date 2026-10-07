@@ -18,6 +18,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { ToBoardDialog } from '@features/boards/parts';
+import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
@@ -67,6 +68,7 @@ import { InitialsPipe } from '@shared/ui/initials';
     AssignmentDialog,
     GroupPicker,
     ToBoardDialog,
+    TextbookToBoardDialog,
     PageHeader,
     HelpButton,
     LoadStateView,
@@ -132,6 +134,7 @@ import { InitialsPipe } from '@shared/ui/initials';
             [editable]="true"
             (edit)="openBind($event)"
             (remove)="unbind($event)"
+            (toBoard)="openTextbookBoard($event)"
           />
           <div class="tb-inline">
             <p-button
@@ -236,6 +239,11 @@ import { InitialsPipe } from '@shared/ui/initials';
         [assignment]="assignment"
         (saved)="details.set($event)"
       />
+      <tb-textbook-to-board-dialog
+        [(visible)]="textbookBoardVisible"
+        [textbook]="boardTextbook()"
+        [initialPages]="boardPages()"
+      />
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
         [assignmentId]="assignment.id"
@@ -275,6 +283,9 @@ export class AssignmentPage implements OnInit {
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
   protected readonly bindVisible = signal(false);
+  protected readonly textbookBoardVisible = signal(false);
+  protected readonly boardTextbook = signal<BoardTextbook | null>(null);
+  protected readonly boardPages = signal<string | null>(null);
   /** The bound textbook whose pages change; `null` binds a new one. */
   protected readonly binding = signal<BoundTextbook | null>(null);
   protected readonly newFiles = signal<File[]>([]);
@@ -364,6 +375,18 @@ export class AssignmentPage implements OnInit {
   protected openBind(textbook: BoundTextbook | null): void {
     this.binding.set(textbook);
     this.bindVisible.set(true);
+  }
+
+  /** The bound pages of a textbook on a board (the first page when it is bound whole). */
+  protected openTextbookBoard(textbook: BoundTextbook): void {
+    this.boardTextbook.set({
+      id: textbook.textbookId,
+      title: textbook.title,
+      format: textbook.format,
+      pageCount: textbook.pageCount,
+    });
+    this.boardPages.set(textbook.pages);
+    this.textbookBoardVisible.set(true);
   }
 
   protected unbind(textbook: BoundTextbook): void {

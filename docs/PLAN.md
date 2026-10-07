@@ -68,10 +68,10 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
 
 ### Stage 135. Textbook pages on a board (F)
 
-- [ ] 135.1 `boards/to-board`: a material of pages (`mode: 'pages'`, image URLs); `editor/material-insert.ts`
+- [x] 135.1 `boards/to-board`: a material of pages (`mode: 'pages'`, image URLs); `editor/material-insert.ts`
   makes a frame named after the textbook and pages, with the pages as pictures in a row inside it; only
   Excalidraw boards take pages.
-- [ ] 135.2 «На доску» from the textbooks page and from the assignment's textbooks: choosing the pages of a
+- [x] 135.2 «На доску» from the textbooks page and from the assignment's textbooks: choosing the pages of a
   multi-page file (the bound pages preselected); not for DOC/DOCX.
 
 ### Stage 136. Release 0.10.0

@@ -113,6 +113,10 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 - `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard
-  (`board-clipboard.ts`) and opens by its link.
+  (`board-clipboard.ts`) and opens by its link. Pages of a textbook (ADR-0033, `PagesMaterial`: a frame name and
+  API addresses of page pictures, only `/api/…` accepted from the storage; `ToBoardDialog [pages]` lists only
+  Excalidraw boards and projects the page field of `textbooks`) — the editor fetches the pictures
+  (`BoardsApi.picture`), puts them in a row (150 dpi pictures at half size, 24 px apart, tops aligned, centred on the
+  view) inside a frame with 40 px padding named after the textbook and its pages.
 
 Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

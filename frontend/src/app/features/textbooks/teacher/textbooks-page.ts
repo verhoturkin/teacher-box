@@ -36,6 +36,7 @@ import {
   textbookMembersText,
 } from '../textbooks-labels';
 import { MemberOption, TextbookDialog } from './textbook-dialog';
+import { TextbookToBoardDialog } from './textbook-to-board-dialog';
 
 /**
  * Teacher: «Учебники» (ADR-0033) — textbooks, workbooks and other materials, one per row: add, change,
@@ -55,6 +56,7 @@ import { MemberOption, TextbookDialog } from './textbook-dialog';
     LoadStateView,
     PageHeader,
     TextbookDialog,
+    TextbookToBoardDialog,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -136,6 +138,7 @@ import { MemberOption, TextbookDialog } from './textbook-dialog';
       appendTo="body"
       (onHide)="menuFor.set(null)"
     />
+    <tb-textbook-to-board-dialog [(visible)]="boardVisible" [textbook]="boardTextbook()" />
     <tb-textbook-dialog
       [(visible)]="dialogVisible"
       [textbook]="editing()"
@@ -164,6 +167,8 @@ export class TextbooksPage implements OnInit {
   protected readonly groups = signal<MemberOption[]>([]);
   protected readonly editing = signal<Textbook | null>(null);
   protected readonly dialogVisible = signal(false);
+  protected readonly boardTextbook = signal<Textbook | null>(null);
+  protected readonly boardVisible = signal(false);
   /** The textbook whose file is being replaced. */
   protected readonly replacing = signal<string | null>(null);
   private replaceTarget: Textbook | null = null;
@@ -278,6 +283,11 @@ export class TextbooksPage implements OnInit {
     );
   }
 
+  protected openBoard(textbook: Textbook): void {
+    this.boardTextbook.set(textbook);
+    this.boardVisible.set(true);
+  }
+
   private actionsOf(textbook: Textbook): MenuItem[] {
     return [
       {
@@ -287,6 +297,17 @@ export class TextbooksPage implements OnInit {
           this.download(textbook);
         },
       },
+      ...(textbook.format === 'DOCUMENT'
+        ? []
+        : [
+            {
+              label: 'На доску',
+              icon: 'pi pi-th-large',
+              command: () => {
+                this.openBoard(textbook);
+              },
+            },
+          ]),
       {
         label: 'Изменить',
         icon: 'pi pi-pencil',

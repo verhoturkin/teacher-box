@@ -31,6 +31,13 @@ describe('BoardsApi', () => {
     expect(seen).toEqual([[aBoard()]]);
   });
 
+  it('fetches a picture to put on a board by its address', () => {
+    const seen: Blob[] = [];
+    api.picture('/api/teacher/textbooks/tb-1/pages/2').subscribe((blob) => seen.push(blob));
+    backend.expectOne('/api/teacher/textbooks/tb-1/pages/2').flush(new Blob(['png']));
+    expect(seen).toHaveLength(1);
+  });
+
   it('asks for a ticket to the live channel', () => {
     const seen: string[] = [];
     api.liveTicket('board-1').subscribe((ticket) => seen.push(ticket));

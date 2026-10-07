@@ -19,11 +19,11 @@ import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS, boardMembersText, boardRoute } from '../boards-labels';
 import { BoardClipboard } from './board-clipboard';
-import { BoardInsert, InsertMode } from './board-insert';
+import { BoardInsert, InsertMode, PagesMaterial } from './board-insert';
 
 /** What happened to the material. */
 export interface Placed {
-  readonly mode: InsertMode;
+  readonly mode: InsertMode | 'pages';
   readonly board: Board;
   /** Where the board opened. */
   readonly href: string;
@@ -32,7 +32,8 @@ export interface Placed {
 /**
  * Puts a material (an assignment, a draft of the AI) on a board (ADR-0028). An Excalidraw board opens in
  * a new tab with the material already at the centre; an external board gets it through the clipboard
- * (the teacher pastes it there). Boards of the given students and groups come first.
+ * (the teacher pastes it there). Boards of the given students and groups come first. Pages of a textbook
+ * (`pages`) go only on an Excalidraw board, in a frame; what is projected inside chooses the pages.
  */
 @Component({
   selector: 'tb-to-board-dialog',
@@ -46,14 +47,15 @@ export interface Placed {
       styleClass="tb-dialog"
       [draggable]="false"
     >
-      @if (loaded() && boards().length === 0) {
+      @if (loaded() && sorted().length === 0) {
         <tb-empty-state
           [compact]="true"
           icon="pi-th-large"
-          title="Досок пока нет"
+          [title]="pages() === null ? 'Досок пока нет' : 'Досок Excalidraw пока нет'"
           hint="Создайте доску в разделе «Доски»."
         />
       } @else {
+        <ng-content />
         <p class="tb-muted">{{ hint() }}</p>
         @if (needsClipboard() && !richClipboard) {
           <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
@@ -79,7 +81,9 @@ export interface Placed {
       }
       @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
-          @if (placed.board.kind === 'EXCALIDRAW') {
+          @if (placed.mode === 'pages') {
+            Доска открылась в новой вкладке, страницы уже на ней.
+          } @else if (placed.board.kind === 'EXCALIDRAW') {
             Доска открылась в новой вкладке, материал уже на ней.
           } @else {
             {{ placed.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
@@ -100,21 +104,30 @@ export interface Placed {
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          label="Картинкой"
-          icon="pi pi-image"
-          severity="secondary"
-          [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
-          [loading]="copying()"
-          (onClick)="place('image')"
-        />
-        <p-button
-          label="Текстом"
-          icon="pi pi-copy"
-          [disabled]="chosenBoard() === null"
-          [loading]="copying()"
-          (onClick)="place('text')"
-        />
+        @if (pages(); as material) {
+          <p-button
+            label="На доску"
+            icon="pi pi-th-large"
+            [disabled]="chosenBoard() === null || material.pictures.length === 0"
+            (onClick)="placePages(material)"
+          />
+        } @else {
+          <p-button
+            label="Картинкой"
+            icon="pi pi-image"
+            severity="secondary"
+            [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
+            [loading]="copying()"
+            (onClick)="place('image')"
+          />
+          <p-button
+            label="Текстом"
+            icon="pi pi-copy"
+            [disabled]="chosenBoard() === null"
+            [loading]="copying()"
+            (onClick)="place('text')"
+          />
+        }
       </ng-template>
     </p-dialog>
   `,
@@ -146,6 +159,8 @@ export class ToBoardDialog {
   readonly markdown = input('');
   /** Students and groups whose boards come first. */
   readonly ownerIds = input<readonly string[]>([]);
+  /** Pages of a textbook instead of the Markdown: only Excalidraw boards take them. */
+  readonly pages = input<PagesMaterial | null>(null);
 
   protected readonly kindLabels = BOARD_KIND_LABELS;
   protected readonly membersText = boardMembersText;
@@ -160,17 +175,22 @@ export class ToBoardDialog {
     const preferred = new Set(this.ownerIds());
     const rank = (board: Board): number =>
       Number(board.members.some((member) => preferred.has(member.id)));
-    return [...this.boards()].sort((a, b) => rank(b) - rank(a));
+    const pages = this.pages() !== null;
+    return this.boards()
+      .filter((board) => !pages || board.kind === 'EXCALIDRAW')
+      .sort((a, b) => rank(b) - rank(a));
   });
   protected readonly chosenBoard = computed(
-    () => this.boards().find((board) => board.id === this.chosen()) ?? null,
+    () => this.sorted().find((board) => board.id === this.chosen()) ?? null,
   );
   /** An external board gets the material through the clipboard. */
   protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
   protected readonly hint = computed(() =>
-    this.needsClipboard()
-      ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
-      : 'Доска откроется в новой вкладке, материал появится в центре.',
+    this.pages() !== null
+      ? 'Доска откроется в новой вкладке, страницы появятся в центре — в ряд, во фрейме.'
+      : this.needsClipboard()
+        ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
+        : 'Доска откроется в новой вкладке, материал появится в центре.',
   );
 
   constructor() {
@@ -215,6 +235,17 @@ export class ToBoardDialog {
     } finally {
       this.copying.set(false);
     }
+  }
+
+  /** Pages go only on an Excalidraw board: it opens with them at the centre. */
+  placePages(material: PagesMaterial): void {
+    const board = this.chosenBoard();
+    if (board === null) {
+      return;
+    }
+    this.error.set(null);
+    this.insert.put(board.id, material);
+    this.open({ mode: 'pages', board, href: boardRoute('teacher', board.id) });
   }
 
   /** Still within the click's activation; if the browser blocks the tab, the message has a link. */

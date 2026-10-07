@@ -65,6 +65,17 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
             </div>
             @if (editable()) {
               <div class="tb-list__trail tb-list__trail--icons">
+                @if (textbook.format !== 'DOCUMENT') {
+                  <p-button
+                    icon="pi pi-th-large"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [pTooltip]="'На доску: ' + textbook.title"
+                    [ariaLabel]="'На доску: ' + textbook.title"
+                    (onClick)="toBoard.emit(textbook)"
+                  />
+                }
                 <p-button
                   icon="pi pi-pencil"
                   [text]="true"
@@ -101,11 +112,12 @@ export class TextbookList {
   readonly textbooks = input.required<readonly BoundTextbook[]>();
   /** The student: a tap on the title downloads the bound pages. */
   readonly downloadable = input(false);
-  /** The teacher: change the pages, unbind. */
+  /** The teacher: put the pages on a board, change them, unbind. */
   readonly editable = input(false);
   readonly download = output<BoundTextbook>();
   readonly edit = output<BoundTextbook>();
   readonly remove = output<BoundTextbook>();
+  readonly toBoard = output<BoundTextbook>();
 
   protected readonly icons = TEXTBOOK_KIND_ICONS;
   protected readonly details = boundPagesText;

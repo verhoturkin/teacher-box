@@ -63,3 +63,7 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 - `student/my-textbooks-page.ts` — «Учебники» (`/cabinet/textbooks`, after «Задания»; the student's sixth
   section, so «Оплаты» and «Мои доски» go under «Ещё» on a phone): their textbooks with the group names, a tap
   downloads.
+- `teacher/textbook-to-board-dialog.ts` (in `parts.ts`, also used by homework) — «На доску» (row menu, not for a
+  Word file): the boards' `ToBoardDialog` in its pages mode with a projected «Страницы» field for a PDF of more
+  than one page (`page-ranges.ts`: like `PageRanges`, at most 30 pages at once; the given pages — e.g. those
+  bound to an assignment — or page 1 to start with); the frame is named «<title>, с. 2-4» (an image — the title).

@@ -402,9 +402,9 @@ export class BoardPage implements OnInit, CanLeave {
     live.start();
     const material = this.insert.take(this.id());
     if (material !== null) {
-      void insertMaterial(ready.api, ready.modules, material, this.clipboard).catch(
-        () => undefined,
-      );
+      void insertMaterial(ready.api, ready.modules, material, this.clipboard, (url) =>
+        firstValueFrom(this.api.picture(url)),
+      ).catch(() => undefined);
     }
   }
 

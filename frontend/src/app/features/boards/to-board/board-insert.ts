@@ -4,15 +4,25 @@ import { Injectable } from '@angular/core';
 export type InsertMode = 'text' | 'image';
 
 /** A material waiting for its board to open (a task, a draft of the AI). */
-export interface BoardMaterial {
+export interface MarkdownMaterial {
   readonly title: string;
   readonly markdown: string;
   readonly mode: InsertMode;
 }
 
-interface StoredMaterial extends BoardMaterial {
-  readonly at: number;
+/**
+ * Pages of a textbook (ADR-0033): pictures put in a row inside a frame named `title`. `pictures` are API
+ * addresses the editor fetches with the user's token.
+ */
+export interface PagesMaterial {
+  readonly title: string;
+  readonly mode: 'pages';
+  readonly pictures: readonly string[];
 }
+
+export type BoardMaterial = MarkdownMaterial | PagesMaterial;
+
+type StoredMaterial = BoardMaterial & { readonly at: number };
 
 const PREFIX = 'tb.board-insert.';
 /** A material not picked up by then (the tab did not open) is forgotten. */
@@ -39,9 +49,10 @@ export class BoardInsert {
       localStorage.removeItem(PREFIX + boardId);
       if (text === null) return null;
       const stored: unknown = JSON.parse(text);
-      return isMaterial(stored) && now - stored.at <= INSERT_TTL_MS
-        ? { title: stored.title, markdown: stored.markdown, mode: stored.mode }
-        : null;
+      if (!isMaterial(stored) || now - stored.at > INSERT_TTL_MS) return null;
+      return stored.mode === 'pages'
+        ? { title: stored.title, mode: 'pages', pictures: stored.pictures }
+        : { title: stored.title, markdown: stored.markdown, mode: stored.mode };
     } catch {
       return null;
     }
@@ -50,11 +61,19 @@ export class BoardInsert {
 
 function isMaterial(value: unknown): value is StoredMaterial {
   if (typeof value !== 'object' || value === null) return false;
-  const material = value as Partial<Record<keyof StoredMaterial, unknown>>;
+  const material = value as Partial<
+    Record<'title' | 'markdown' | 'mode' | 'pictures' | 'at', unknown>
+  >;
+  if (typeof material.title !== 'string' || typeof material.at !== 'number') return false;
+  if (material.mode === 'pages') {
+    return (
+      Array.isArray(material.pictures) &&
+      material.pictures.every(
+        (picture) => typeof picture === 'string' && picture.startsWith('/api/'),
+      )
+    );
+  }
   return (
-    typeof material.title === 'string' &&
-    typeof material.markdown === 'string' &&
-    (material.mode === 'text' || material.mode === 'image') &&
-    typeof material.at === 'number'
+    typeof material.markdown === 'string' && (material.mode === 'text' || material.mode === 'image')
   );
 }

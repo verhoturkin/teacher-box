@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToBoardDialog } from '@features/boards/parts';
+import { TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
@@ -274,6 +275,23 @@ describe('AssignmentPage', () => {
     host.querySelector<HTMLButtonElement>('button[aria-label="Страницы: Spotlight 5"]')?.click();
     await fixture.whenStable();
     expect(dialog.bound()?.textbookId).toBe('tb-1');
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="На доску: Spotlight 5"]')?.click();
+    await fixture.whenStable();
+    const board = fixture.debugElement
+      .query(By.directive(TextbookToBoardDialog))
+      .injector.get(TextbookToBoardDialog);
+    expect(board.visible()).toBe(true);
+    expect(board.textbook()).toEqual({
+      id: 'tb-1',
+      title: 'Spotlight 5',
+      format: 'PDF',
+      pageCount: 120,
+    });
+    expect(board.initialPages()).toBe('12-14');
+    backend.expectOne('/api/teacher/boards').flush([]);
+    board.visible.set(false);
+    await fixture.whenStable();
 
     host
       .querySelector<HTMLButtonElement>('button[aria-label="Убрать из задания: Тетрадь"]')

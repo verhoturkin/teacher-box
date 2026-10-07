@@ -108,6 +108,11 @@ export class BoardsApi {
     });
   }
 
+  /** A picture to put on a board by its API address, e.g. a page of a textbook (ADR-0033). */
+  picture(url: string): Observable<Blob> {
+    return this.http.get(url, { responseType: 'blob', context: quietContext() });
+  }
+
   backups(boardId: string): Observable<BoardBackup[]> {
     return this.http.get<BoardBackup[]>(`/api/teacher/boards/${boardId}/backups`, {
       context: quietContext(),

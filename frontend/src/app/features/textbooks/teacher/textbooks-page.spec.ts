@@ -8,6 +8,7 @@ import { testProviders } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { FileSaver } from '@shared/files/file-saver';
 import { TextbookDialog } from './textbook-dialog';
+import { TextbookToBoardDialog } from './textbook-to-board-dialog';
 import { TextbooksPage } from './textbooks-page';
 
 describe('TextbooksPage', () => {
@@ -115,6 +116,24 @@ describe('TextbooksPage', () => {
     backend.expectOne('/api/teacher/textbooks').flush([aWorkbook()]);
     await fixture.whenStable();
     expect(host.querySelectorAll('ul.tb-list > li')).toHaveLength(1);
+  });
+
+  it('puts a textbook on a board, but not a Word file', async () => {
+    await render();
+    await openMenu('Spotlight 5');
+    menuItemByText('На доску').click();
+    await fixture.whenStable();
+    const board = fixture.debugElement
+      .query(By.directive(TextbookToBoardDialog))
+      .injector.get(TextbookToBoardDialog);
+    expect(board.visible()).toBe(true);
+    expect(board.textbook()?.id).toBe('tb-1');
+    backend.expectOne('/api/teacher/boards').flush([]);
+    board.visible.set(false);
+    await fixture.whenStable();
+
+    await openMenu('Рабочая тетрадь');
+    expect(() => menuItemByText('На доску')).toThrow();
   });
 
   it('replaces the file of a textbook', async () => {
