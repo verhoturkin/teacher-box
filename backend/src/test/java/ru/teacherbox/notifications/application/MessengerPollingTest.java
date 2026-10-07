@@ -15,7 +15,11 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import ru.teacherbox.notifications.FakeMessengerChannel;
@@ -195,6 +199,77 @@ class MessengerPollingTest {
         assertThat(health.status(ChannelType.VK).connection()).isEqualTo(Connection.ERROR);
         assertThat(health.succeeded(ChannelType.VK)).as("recovered").isTrue();
         assertThat(health.status(ChannelType.VK).error()).isNull();
+    }
+
+    @Test
+    void neverInterruptsTheAnswersThatWorkWithTheDatabase() throws InterruptedException {
+        FakeMessengerChannel telegram = new FakeMessengerChannel(ChannelType.TELEGRAM);
+        telegram.receive(new IncomingMessage("7", null, "код"));
+        CountDownLatch answering = new CountDownLatch(1);
+        CountDownLatch stopped = new CountDownLatch(1);
+        AtomicBoolean interrupted = new AtomicBoolean();
+        when(engine.handle(any(), any())).thenAnswer(invocation -> {
+            answering.countDown();
+            stopped.await(10, TimeUnit.SECONDS);
+            // H2 closes the whole database when a thread is interrupted during its file I/O
+            interrupted.set(Thread.currentThread().isInterrupted());
+            return OutgoingMessage.text("ответ");
+        });
+        MessengerPolling polling = new MessengerPolling(channels(telegram), engine, health);
+
+        polling.start();
+        assertThat(answering.await(10, TimeUnit.SECONDS)).isTrue();
+        polling.restart(ChannelType.TELEGRAM);
+        polling.stop();
+        stopped.countDown();
+
+        await().atMost(Duration.ofSeconds(10)).until(() -> !telegram.sent().isEmpty());
+        assertThat(interrupted).isFalse();
+    }
+
+    @Test
+    void stopsAThreadThatWaitsForTheMessengerAtOnce() {
+        AtomicReference<Thread> waiting = new AtomicReference<>();
+        MessengerChannel slow = new MessengerChannel() {
+            @Override
+            public ChannelType type() {
+                return ChannelType.VK;
+            }
+
+            @Override
+            public Optional<String> chatLink(String code) {
+                return Optional.empty();
+            }
+
+            @Override
+            public void send(String externalId, OutgoingMessage message) {
+            }
+
+            @Override
+            public String botName() {
+                return "bot";
+            }
+
+            @Override
+            public List<IncomingMessage> poll() {
+                waiting.set(Thread.currentThread());
+                try {
+                    Thread.sleep(Duration.ofMinutes(1));
+                } catch (InterruptedException e) {
+                    throw new IllegalStateException("interrupted", e);
+                }
+                return List.of();
+            }
+        };
+        MessengerPolling polling = new MessengerPolling(channels(slow), engine, health);
+
+        polling.start();
+        await().atMost(Duration.ofSeconds(10)).until(() -> waiting.get() != null);
+        polling.stop();
+
+        await().atMost(Duration.ofSeconds(5)).until(() -> !waiting.get().isAlive());
+        assertThat(health.status(ChannelType.VK).connection()).as("a stop is not a failure")
+                .isEqualTo(Connection.PENDING);
     }
 
     @Test

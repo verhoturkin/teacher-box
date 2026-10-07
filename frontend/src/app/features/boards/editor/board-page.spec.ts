@@ -59,6 +59,11 @@ describe('BoardPage', () => {
     return scene;
   }
 
+  beforeEach(() => {
+    // another spec of this worker may have left a material for «board-1» in the shared storage
+    localStorage.clear();
+  });
+
   afterEach(() => {
     fixture.destroy();
     backend.verify();
