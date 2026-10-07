@@ -1,5 +1,6 @@
 import { anElement, fakeExcalidraw, fakeScene } from '@testing/excalidraw-fake';
 import {
+  BESIDE_GAP,
   FRAME_PADDING,
   PAGE_GAP,
   TEXT_WIDTH,
@@ -122,5 +123,38 @@ describe('insertMaterial', () => {
         height: 877 + 2 * FRAME_PADDING,
       }),
     ]);
+  });
+
+  it('puts pages to the right of the drawing and shows them', async () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => Promise.resolve(),
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(1240);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(1754);
+    const { access, state } = fakeScene([
+      anElement('a', 1, { x: 100, y: -50, width: 200, height: 100 }),
+      anElement('b', 1, { x: 900, y: -500, width: 50, height: 50, isDeleted: true }),
+    ]);
+    const scrollToContent = vi.fn();
+
+    await insertMaterial(
+      { ...access, scrollToContent },
+      island.modules,
+      { title: 'Скан', mode: 'pages', pictures: ['/api/p/1'] },
+      picture,
+      () => Promise.resolve(new Blob(['png'], { type: 'image/png' })),
+    );
+
+    expect(state.elements[2]).toMatchObject({
+      type: 'image',
+      x: 300 + BESIDE_GAP + FRAME_PADDING,
+      y: -50 + FRAME_PADDING,
+    });
+    expect(state.elements[3]).toMatchObject({ type: 'frame', x: 300 + BESIDE_GAP, y: -50 });
+    expect(scrollToContent).toHaveBeenCalledWith(state.elements.slice(2), {
+      fitToContent: true,
+      animate: true,
+    });
   });
 });

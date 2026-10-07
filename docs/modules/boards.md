@@ -116,7 +116,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   (`board-clipboard.ts`) and opens by its link. Pages of a textbook (ADR-0033, `PagesMaterial`: a frame name and
   API addresses of page pictures, only `/api/…` accepted from the storage; `ToBoardDialog [pages]` lists only
   Excalidraw boards and projects the page field of `textbooks`) — the editor fetches the pictures
-  (`BoardsApi.picture`), puts them in a row (150 dpi pictures at half size, 24 px apart, tops aligned, centred on the
-  view) inside a frame with 40 px padding named after the textbook and its pages.
+  (`BoardsApi.picture`), puts them in a row (150 dpi pictures at half size, 24 px apart, tops aligned) inside a frame with
+  40 px padding named after the textbook and its pages — 80 px to the right of everything on the board, tops at the
+  drawing's top (on an empty board — at the view centre), and scrolls the view to them (`scrollToContent`).
 
 Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

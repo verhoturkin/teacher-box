@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { boundTextbook, myTask, taskDetails } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
@@ -129,6 +130,13 @@ describe('MyTaskPage', () => {
       .expectOne('/api/me/homework/tasks/t-1/textbooks/tb-2')
       .flush(new Blob(['x'], { type: 'image/jpeg' }));
     expect(saved).toEqual(['Spotlight 5 (с. 12-14).pdf', 'Скан.jpg']);
+
+    const open = vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation(() => undefined);
+    host.querySelector<HTMLButtonElement>('button[aria-label="Открыть Spotlight 5"]')?.click();
+    expect(open).toHaveBeenCalledWith(expect.anything(), true, expect.any(Function));
+    expect(open.mock.calls[0]?.[2](new Blob([], { type: 'application/pdf' }))).toBe(
+      'Spotlight 5 (с. 12-14).pdf',
+    );
   });
 
   it('hands in an answer with files', async () => {

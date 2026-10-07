@@ -11,14 +11,20 @@ import {
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputText } from 'primeng/inputtext';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HelpButton } from '@features/help/parts';
 import { IdentityApi } from '@features/identity/parts';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -47,6 +53,10 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
   imports: [
     Button,
     Card,
+    IconField,
+    InputIcon,
+    InputText,
+    ReactiveFormsModule,
     ConfirmDialog,
     Menu,
     Tooltip,
@@ -73,10 +83,23 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
 
     <p-card>
       <h2 class="tb-sr-only">Список учебников</h2>
+      @if (textbooks().length > 0) {
+        <div class="tb-toolbar">
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              [formControl]="search"
+              placeholder="Поиск по названию"
+              aria-label="Поиск по названию"
+            />
+          </p-iconfield>
+        </div>
+      }
       <tb-load-state [state]="state" what="учебники" (retry)="load()">
-        @if (textbooks().length > 0) {
+        @if (shown().length > 0) {
           <ul class="tb-list" aria-label="Учебники">
-            @for (textbook of textbooks(); track textbook.id) {
+            @for (textbook of shown(); track textbook.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i [class]="icons[textbook.kind]"></i
@@ -85,8 +108,8 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
                   <button
                     type="button"
                     class="tb-list__title tb-link-button"
-                    [attr.aria-label]="'Скачать ' + textbook.title"
-                    (click)="download(textbook)"
+                    [attr.aria-label]="'Открыть ' + textbook.title"
+                    (click)="open(textbook)"
                   >
                     {{ textbook.title }}
                   </button>
@@ -112,6 +135,12 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
               </li>
             }
           </ul>
+        } @else if (textbooks().length > 0) {
+          <tb-empty-state
+            icon="pi-search"
+            title="Ничего не найдено"
+            hint="Измените запрос: поиск идёт по названию учебника"
+          />
         } @else {
           <tb-empty-state
             icon="pi-book"
@@ -155,6 +184,7 @@ export class TextbooksPage implements OnInit {
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly fileSaver = inject(FileSaver);
+  private readonly fileOpener = inject(FileOpener);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly icons = TEXTBOOK_KIND_ICONS;
@@ -162,6 +192,17 @@ export class TextbooksPage implements OnInit {
   protected readonly details = textbookDetails;
   protected readonly membersText = textbookMembersText;
   protected readonly state = new LoadState();
+  protected readonly search = new FormControl('', { nonNullable: true });
+  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
+  /** The textbooks whose title has the search text. */
+  protected readonly shown = computed(() => {
+    const query = this.query().trim().toLocaleLowerCase('ru');
+    return query === ''
+      ? this.textbooks()
+      : this.textbooks().filter((textbook) =>
+          textbook.title.toLocaleLowerCase('ru').includes(query),
+        );
+  });
   protected readonly textbooks = signal<Textbook[]>([]);
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
@@ -228,6 +269,15 @@ export class TextbooksPage implements OnInit {
   protected openEdit(textbook: Textbook): void {
     this.editing.set(textbook);
     this.dialogVisible.set(true);
+  }
+
+  /** A PDF or a picture opens in a new tab; a Word file is saved. */
+  protected open(textbook: Textbook): void {
+    this.fileOpener.open(
+      this.api.file(textbook.id),
+      textbook.format !== 'DOCUMENT',
+      () => textbook.filename,
+    );
   }
 
   protected download(textbook: Textbook): void {

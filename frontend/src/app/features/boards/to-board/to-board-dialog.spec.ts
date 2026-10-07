@@ -136,7 +136,7 @@ describe('ToBoardDialog', () => {
     await fixture.whenStable();
     const put = vi.spyOn(insert, 'put');
 
-    expect(bodyText()).toContain('страницы появятся в центре');
+    expect(bodyText()).toContain('Выберите доску');
     expect(bodyText()).not.toContain('Холст');
     expect(bodyText()).not.toContain('Текстом');
     fixture.componentInstance.placePages(material);

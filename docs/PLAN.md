@@ -74,9 +74,18 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
 - [x] 135.2 «На доску» from the textbooks page and from the assignment's textbooks: choosing the pages of a
   multi-page file (the bound pages preselected); not for DOC/DOCX.
 
-### Stage 136. Release 0.10.0
+### Stage 136. Textbooks: search, opening, pages beside the drawing (F)
 
-- [ ] 136.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
+- [x] 136.1 «Учебники» (teacher and student): a search field filters the list by title (`textbooks-page.ts`,
+  `my-textbooks-page.ts`).
+- [x] 136.2 A tap on a textbook opens it in a new tab (PDF, picture — the browser shows it; a Word file is
+  downloaded): `shared/files/file-opener.ts`, the textbooks pages and the student's task.
+- [x] 136.3 `boards/editor/material-insert.ts`: pages go to the right of everything on the board (tops at the
+  drawing's top; at the view centre on an empty board) and the view scrolls to them.
+
+### Stage 137. Release 0.10.0
+
+- [ ] 137.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
 
 *Note:* the commits of stages 131 and 132 say «stage 126» and «stage 127»: they were numbered before
 release 0.9.3 (stages 126–130) was merged.

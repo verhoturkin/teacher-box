@@ -3,9 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
-import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, typeInto } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { TextbookDialog } from './textbook-dialog';
 import { TextbookToBoardDialog } from './textbook-to-board-dialog';
@@ -72,9 +73,25 @@ describe('TextbooksPage', () => {
     expect(text).toContain('Мария, группа «ОГЭ»');
     expect(text).toContain('ученикам не открыт');
 
-    requireButton('Скачать Spotlight 5').click();
-    backend.expectOne('/api/teacher/textbooks/tb-1/file').flush(new Blob(['%PDF']));
-    expect(saved).toEqual(['Spotlight 5.pdf']);
+    const open = vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation(() => undefined);
+    requireButton('Открыть Spotlight 5').click();
+    expect(open).toHaveBeenCalledWith(expect.anything(), true, expect.any(Function));
+    expect(open.mock.calls[0]?.[2](new Blob())).toBe('Spotlight 5.pdf');
+    requireButton('Открыть Рабочая тетрадь').click();
+    expect(open.mock.calls[1]?.[1]).toBe(false);
+  });
+
+  it('finds textbooks by title', async () => {
+    await render();
+    const search = host.querySelector<HTMLInputElement>('input[aria-label="Поиск по названию"]');
+    if (search === null) throw new Error('No search');
+    typeInto(search, 'ТЕТРАД');
+    await fixture.whenStable();
+    expect(host.querySelectorAll('ul.tb-list > li')).toHaveLength(1);
+    expect(host.textContent).toContain('Рабочая тетрадь');
+    typeInto(search, 'алгебра');
+    await fixture.whenStable();
+    expect(host.textContent).toContain('Ничего не найдено');
   });
 
   it('adds a textbook with the current students, groups and courses', async () => {

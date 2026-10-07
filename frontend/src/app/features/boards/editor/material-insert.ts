@@ -1,4 +1,5 @@
 import type { ExcalidrawElementSkeleton } from '@excalidraw/excalidraw/data/transform';
+import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import {
   BoardClipboard,
   PICTURE_SCALE,
@@ -17,6 +18,11 @@ export const PAGE_SCALE = 2;
 /** Between the pages in the row and between the pages and the frame, scene pixels. */
 export const PAGE_GAP = 24;
 export const FRAME_PADDING = 40;
+/** Between the drawing and the frame of new pages, scene pixels. */
+export const BESIDE_GAP = 80;
+
+/** The scene, and scrolling to new pages when the editor can. */
+export type InsertAccess = SceneAccess & Partial<Pick<ExcalidrawImperativeAPI, 'scrollToContent'>>;
 
 /** Fetches a page picture by its API address (with the user's token). */
 export type PictureSource = (url: string) => Promise<Blob>;
@@ -45,7 +51,7 @@ export function viewportCentre(appState: {
  * change.
  */
 export async function insertMaterial(
-  access: SceneAccess,
+  access: InsertAccess,
   modules: Pick<ExcalidrawModules, 'convertToExcalidrawElements'>,
   material: BoardMaterial,
   clipboard: Pick<BoardClipboard, 'picture'>,
@@ -61,6 +67,10 @@ export async function insertMaterial(
     elements: [...access.getSceneElementsIncludingDeleted(), ...added],
     captureUpdate: 'IMMEDIATELY',
   });
+  if (material.mode === 'pages') {
+    // the pages may lie outside the view: show them
+    access.scrollToContent?.(added, { fitToContent: true, animate: true });
+  }
 }
 
 async function markdownSkeleton(
@@ -109,8 +119,11 @@ async function pagesInFrame(
   const heights = sizes.map((size) => size.height / PAGE_SCALE);
   const rowWidth = widths.reduce((sum, width) => sum + width, 0) + PAGE_GAP * (files.length - 1);
   const rowHeight = Math.max(...heights);
-  const left = centre.x - rowWidth / 2;
-  const top = centre.y - rowHeight / 2;
+  const drawing = drawingBounds(access);
+  // to the right of everything, tops at the drawing's top; an empty board — at the centre of the view
+  const left =
+    drawing === null ? centre.x - rowWidth / 2 : drawing.right + BESIDE_GAP + FRAME_PADDING;
+  const top = drawing === null ? centre.y - rowHeight / 2 : drawing.top + FRAME_PADDING;
   let x = left;
   const pages: ExcalidrawElementSkeleton[] = files.map((file, index) => {
     const width = widths[index] ?? 0;
@@ -138,6 +151,20 @@ async function pagesInFrame(
       height: rowHeight + 2 * FRAME_PADDING,
     },
   ];
+}
+
+/** The right and top edges of what is on the board; `null` when it is empty. */
+function drawingBounds(access: SceneAccess): { right: number; top: number } | null {
+  let right = -Infinity;
+  let top = Infinity;
+  for (const element of access.getSceneElementsIncludingDeleted()) {
+    if (element.isDeleted || !Number.isFinite(element.x) || !Number.isFinite(element.y)) continue;
+    const width = Number.isFinite(element.width) ? element.width : 0;
+    const height = Number.isFinite(element.height) ? element.height : 0;
+    right = Math.max(right, element.x, element.x + width);
+    top = Math.min(top, element.y, element.y + height);
+  }
+  return right === -Infinity ? null : { right, top };
 }
 
 async function imageSize(dataUrl: string): Promise<{ width: number; height: number }> {

@@ -6,6 +6,7 @@ import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -83,6 +84,7 @@ import { pageDetail } from '@core/routing/page-detail';
             <tb-textbook-list
               [textbooks]="task.assignment.textbooks"
               [downloadable]="true"
+              (opened)="openTextbook(task.taskId, $event)"
               (download)="downloadTextbook(task.taskId, $event)"
             />
           }
@@ -126,6 +128,7 @@ export class MyTaskPage implements OnInit {
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
+  private readonly fileOpener = inject(FileOpener);
 
   /** Route parameter. */
   readonly taskId = input.required<string>();
@@ -181,6 +184,15 @@ export class MyTaskPage implements OnInit {
         this.error.set(describeError(error, 'Не удалось отправить ответ'));
       },
     });
+  }
+
+  /** The bound pages of a PDF or a picture open in a new tab; a Word file is saved. */
+  protected openTextbook(taskId: string, textbook: BoundTextbook): void {
+    this.fileOpener.open(
+      this.api.myTextbook(taskId, textbook.textbookId),
+      textbook.format !== 'DOCUMENT',
+      (blob) => boundTextbookFilename(textbook, blob.type),
+    );
   }
 
   protected downloadTextbook(taskId: string, textbook: BoundTextbook): void {

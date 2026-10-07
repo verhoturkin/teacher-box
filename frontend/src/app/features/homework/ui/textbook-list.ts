@@ -53,8 +53,8 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                 <button
                   type="button"
                   class="tb-list__title tb-link-button"
-                  [attr.aria-label]="'Скачать ' + textbook.title"
-                  (click)="download.emit(textbook)"
+                  [attr.aria-label]="'Открыть ' + textbook.title"
+                  (click)="opened.emit(textbook)"
                 >
                   {{ textbook.title }}
                 </button>
@@ -63,6 +63,19 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
               }
               <span class="tb-list__supporting">{{ details(textbook) }}</span>
             </div>
+            @if (downloadable()) {
+              <div class="tb-list__trail tb-list__trail--icons">
+                <p-button
+                  icon="pi pi-download"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [pTooltip]="'Скачать ' + textbook.title"
+                  [ariaLabel]="'Скачать ' + textbook.title"
+                  (onClick)="download.emit(textbook)"
+                />
+              </div>
+            }
             @if (editable()) {
               <div class="tb-list__trail tb-list__trail--icons">
                 @if (textbook.format !== 'DOCUMENT') {
@@ -110,10 +123,11 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
 })
 export class TextbookList {
   readonly textbooks = input.required<readonly BoundTextbook[]>();
-  /** The student: a tap on the title downloads the bound pages. */
+  /** The student: a tap on the title opens the bound pages, the button saves them. */
   readonly downloadable = input(false);
   /** The teacher: put the pages on a board, change them, unbind. */
   readonly editable = input(false);
+  readonly opened = output<BoundTextbook>();
   readonly download = output<BoundTextbook>();
   readonly edit = output<BoundTextbook>();
   readonly remove = output<BoundTextbook>();

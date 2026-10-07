@@ -187,7 +187,7 @@ export class ToBoardDialog {
   protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
   protected readonly hint = computed(() =>
     this.pages() !== null
-      ? 'Доска откроется в новой вкладке, страницы появятся в центре — в ряд, во фрейме.'
+      ? 'Выберите доску: она откроется в новой вкладке, страницы встанут справа от рисунка — в ряд, во фрейме.'
       : this.needsClipboard()
         ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
         : 'Доска откроется в новой вкладке, материал появится в центре.',

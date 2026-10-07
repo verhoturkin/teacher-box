@@ -1,8 +1,9 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aMyTextbook } from '@testing/textbooks-fixtures';
-import { buttonByText, hostElement } from '@testing/dom';
+import { buttonByText, hostElement, typeInto } from '@testing/dom';
 import { testProviders } from '@testing/setup';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { MyTextbooksPage } from './my-textbooks-page';
 
@@ -35,6 +36,20 @@ describe('MyTextbooksPage', () => {
     host.querySelector<HTMLButtonElement>('button[aria-label="Скачать Тетрадь"]')?.click();
     backend.expectOne('/api/me/textbooks/tb-2/file').flush(new Blob(['%PDF']));
     expect(save).toHaveBeenCalledWith(expect.any(Blob), 'Spotlight 5.pdf');
+
+    const open = vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation(() => undefined);
+    host.querySelector<HTMLButtonElement>('button[aria-label="Открыть Spotlight 5"]')?.click();
+    expect(open).toHaveBeenCalledWith(expect.anything(), true, expect.any(Function));
+    expect(open.mock.calls[0]?.[2](new Blob())).toBe('Spotlight 5.pdf');
+
+    const search = host.querySelector<HTMLInputElement>('input[aria-label="Поиск по названию"]');
+    if (search === null) throw new Error('No search');
+    typeInto(search, 'тетр');
+    await fixture.whenStable();
+    expect(host.querySelectorAll('.tb-list li')).toHaveLength(1);
+    typeInto(search, 'нет такого');
+    await fixture.whenStable();
+    expect(host.textContent).toContain('Ничего не найдено');
   });
 
   it('says when there are no textbooks and retries a failed load', async () => {

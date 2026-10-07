@@ -55,14 +55,16 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 `features/textbooks/` (pages in `index.ts`, types in `parts.ts`), labels in `textbooks-labels.ts`:
 
 - `teacher/textbooks-page.ts` — «Учебники» (`/teacher/textbooks`, menu item after «Задания»): one row per textbook
-  (`tb-list`): kind icon, the title (a tap downloads), «Учебник · course · PDF, 120 с., 4,2 МБ», members; row
+  (`tb-list`) under a «Поиск по названию» field (case-insensitive, «Ничего не найдено» when nothing matches):
+  kind icon, the title (a tap opens it — `shared/files/file-opener.ts`: a PDF or a picture in a new tab, a Word
+  file saved), «Учебник · course · PDF, 120 с., 4,2 МБ», members; row
   menu «⋮» — «Скачать», «Изменить», «Заменить файл» (a hidden file input, opened within the menu click),
   «Удалить…» (`dangerConfirmation`). `textbook-dialog.ts` — the file (only when added; the title comes from the
   file name; over 100 MB refused before sending), kind, title, course (suggestions from the other textbooks),
   pages of a Word file, students, groups (members that left stay).
 - `student/my-textbooks-page.ts` — «Учебники» (`/cabinet/textbooks`, after «Задания»; the student's sixth
-  section, so «Оплаты» and «Мои доски» go under «Ещё» on a phone): their textbooks with the group names, a tap
-  downloads.
+  section, so «Оплаты» and «Мои доски» go under «Ещё» on a phone): their textbooks with the group names and the same
+  search; a tap on the title opens one, the download button saves it.
 - `teacher/textbook-to-board-dialog.ts` (in `parts.ts`, also used by homework) — «На доску» (row menu, not for a
   Word file): the boards' `ToBoardDialog` in its pages mode with a projected «Страницы» field for a PDF of more
   than one page (`page-ranges.ts`: like `PageRanges`, at most 30 pages at once; the given pages — e.g. those
