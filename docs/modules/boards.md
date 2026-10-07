@@ -51,7 +51,7 @@ Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 chara
 
 | Endpoint | Who |
 |---|---|
-| `GET /api/teacher/boards?studentId=|groupId=`, `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
+| `GET /api/teacher/boards?studentId=|groupId=` (`studentId` may repeat: the boards of any of the students, with their groups'), `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
 | `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
 | WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
@@ -110,7 +110,9 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
     Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
     in both themes; the canvas background stays the board's.
-- `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
+- `to-board/` — «На доску» (assignment dialog and page, task review, textbooks): the board is chosen in a select with
+  a search by title; `[students]` — from an assignment only the boards of its students (their own and their groups',
+  one `GET …?studentId=` request; none — «У учеников задания досок нет»), `null` (textbooks) — every board; an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard
   (`board-clipboard.ts`) and opens by its link. Pages of a textbook (ADR-0033, `PagesMaterial`: a frame name and

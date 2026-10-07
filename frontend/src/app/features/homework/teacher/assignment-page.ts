@@ -243,6 +243,7 @@ import { InitialsPipe } from '@shared/ui/initials';
         [(visible)]="textbookBoardVisible"
         [textbook]="boardTextbook()"
         [initialPages]="boardPages()"
+        [students]="taskStudents()"
       />
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
@@ -255,7 +256,7 @@ import { InitialsPipe } from '@shared/ui/initials';
         [(visible)]="boardVisible"
         [title]="assignment.title"
         [markdown]="assignment.description ?? ''"
-        [ownerIds]="taskStudents(assignment)"
+        [students]="taskStudents()"
       />
     } @else {
       <tb-page-header title="Задание" back="/teacher/homework" backLabel="Задания" />
@@ -276,6 +277,10 @@ export class AssignmentPage implements OnInit {
   readonly assignmentId = input.required<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
+  /** The students of the assignment: «На доску» offers only their boards. */
+  protected readonly taskStudents = computed(
+    () => this.details()?.tasks.map((task) => task.studentId) ?? [],
+  );
 
   constructor() {
     pageDetail(() => this.details()?.title);
@@ -320,10 +325,6 @@ export class AssignmentPage implements OnInit {
       .subscribe((assignment) => {
         this.details.set(assignment);
       });
-  }
-
-  protected taskStudents(assignment: AssignmentDetails): string[] {
-    return assignment.tasks.map((task) => task.studentId);
   }
 
   protected download(file: Attachment): void {

@@ -21,6 +21,9 @@ export class BoardsApi {
   list(filter: BoardFilter = {}, context?: HttpContext): Observable<Board[]> {
     let params = new HttpParams();
     if (filter.studentId) params = params.set('studentId', filter.studentId);
+    filter.studentIds?.forEach((id) => {
+      params = params.append('studentId', id);
+    });
     if (filter.groupId) params = params.set('groupId', filter.groupId);
     return this.http.get<Board[]>('/api/teacher/boards', { params, context });
   }

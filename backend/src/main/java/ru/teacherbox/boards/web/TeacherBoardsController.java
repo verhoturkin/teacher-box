@@ -50,11 +50,14 @@ class TeacherBoardsController {
         this.backups = backups;
     }
 
-    /** All boards, or those of a student (with their groups' boards) or of a group. */
+    /**
+     * All boards, or those of some students (with their groups' boards; {@code studentId} may repeat) or of a
+     * group.
+     */
     @GetMapping
-    List<BoardView> list(@RequestParam(required = false) @Nullable UUID studentId,
+    List<BoardView> list(@RequestParam(required = false) @Size(max = 200) @Nullable List<UUID> studentId,
             @RequestParam(required = false) @Nullable UUID groupId) {
-        return boards.list(studentId, groupId);
+        return boards.list(orEmpty(studentId), groupId);
     }
 
     @PostMapping

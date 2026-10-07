@@ -68,6 +68,9 @@ class BoardsIntegrationTests {
                 .hasStatusOk().bodyJson().extractingPath("$[*].title").asArray().containsExactly("Алгебра", "Холст");
         assertThat(mvc.get().uri("/api/teacher/boards?studentId=" + anna).with(teacher())).hasStatusOk().bodyJson()
                 .extractingPath("$[*].title").asArray().containsExactly("Алгебра");
+        assertThat(mvc.get().uri("/api/teacher/boards?studentId=" + anna + "&studentId=" + boris).with(teacher()))
+                .as("the boards of an assignment's students").hasStatusOk().bodyJson()
+                .extractingPath("$[*].title").asArray().containsExactly("Алгебра", "Холст");
 
         assertThat(mvc.get().uri("/api/me/boards").with(TestUsers.student(boris))).hasStatusOk().bodyJson()
                 .satisfies(json -> {

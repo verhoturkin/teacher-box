@@ -36,7 +36,6 @@ describe('ToBoardDialog', () => {
     fixture = TestBed.createComponent(ToBoardDialog);
     fixture.componentRef.setInput('title', 'Дроби');
     fixture.componentRef.setInput('markdown', 'Решите');
-    fixture.componentRef.setInput('ownerIds', ['group-1']);
     fixture.componentInstance.visible.set(true);
     await fixture.whenStable();
     return fixture.componentInstance;
@@ -62,17 +61,15 @@ describe('ToBoardDialog', () => {
     expect(bodyText()).toContain('Открыть доску «Физика»');
   });
 
-  it('copies the material for an external board and opens it, its students first', async () => {
+  it('copies the material for an external board chosen in the list and opens it', async () => {
     const dialog = await show();
     backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
     await fixture.whenStable();
 
-    const labels = Array.from(document.body.querySelectorAll('.tb-to-board label')).map(
-      (label) => label.textContent,
-    );
-    expect(labels[0]).toContain('Холст');
-    expect(labels[0]).toContain('Внешняя доска, группа «ОГЭ»');
-    expect(dialog.chosen()).toBe('board-2');
+    expect(document.body.querySelector('p-select#to-board-board, p-select')).not.toBeNull();
+    expect(dialog.chosen()).toBe('board-1');
+    dialog.chosen.set('board-2');
+    await fixture.whenStable();
     expect(bodyText()).toContain('нажмите на ней Ctrl+V');
     const copyText = vi.spyOn(clipboard, 'copyText').mockResolvedValue();
 
@@ -160,5 +157,23 @@ describe('ToBoardDialog', () => {
     expect(bodyText()).toContain('Досок Excalidraw пока нет');
     fixture.componentInstance.placePages(material);
     expect(open).not.toHaveBeenCalled();
+  });
+
+  it('offers only the boards of the students of an assignment', async () => {
+    vi.spyOn(clipboard, 'canWriteRich').mockReturnValue(true);
+    fixture = TestBed.createComponent(ToBoardDialog);
+    fixture.componentRef.setInput('students', ['s-1', 's-2']);
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([aBoard()]);
+    await fixture.whenStable();
+    expect(fixture.componentInstance.chosen()).toBe('board-1');
+
+    fixture.componentInstance.visible.set(false);
+    fixture.componentRef.setInput('students', []);
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    expect(bodyText()).toContain('У учеников задания досок нет');
+    expect(bodyText()).toContain('Откройте доску ученикам задания');
   });
 });

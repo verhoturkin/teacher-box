@@ -82,6 +82,9 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
   downloaded): `shared/files/file-opener.ts`, the textbooks pages and the student's task.
 - [x] 136.3 `boards/editor/material-insert.ts`: pages go to the right of everything on the board (tops at the
   drawing's top; at the view centre on an empty board) and the view scrolls to them.
+- [x] 136.4 «На доску»: the board is chosen in a select with a search (`to-board-dialog.ts`); from an assignment only
+  its students' boards (their own and their groups': `GET /api/teacher/boards?studentId=…&studentId=…`), from
+  «Учебники» — every board.
 
 ### Stage 137. Release 0.10.0
 

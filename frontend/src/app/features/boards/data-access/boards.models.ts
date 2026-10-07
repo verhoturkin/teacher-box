@@ -77,5 +77,7 @@ export interface BoardBackup {
 /** Which boards to list: of a student (with their groups' boards), of a group, or all. */
 export interface BoardFilter {
   readonly studentId?: string | null;
+  /** Boards of any of these students (with their groups' boards). */
+  readonly studentIds?: readonly string[];
   readonly groupId?: string | null;
 }

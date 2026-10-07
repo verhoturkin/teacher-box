@@ -195,6 +195,6 @@ describe('AssignmentDialog', () => {
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe('Дроби');
     expect(board.markdown()).toBe('Решить **№1**');
-    expect(board.ownerIds()).toEqual([...assignment.tasks.map((task) => task.studentId), 's-2']);
+    expect(board.students()).toEqual([...assignment.tasks.map((task) => task.studentId), 's-2']);
   });
 });

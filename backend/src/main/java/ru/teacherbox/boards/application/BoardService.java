@@ -79,13 +79,16 @@ public class BoardService {
     }
 
     /**
-     * All boards, or the boards of one student (their own and those of their current groups), or of one group.
+     * All boards, or the boards of some students (their own and those of their current groups), or of one
+     * group.
      */
     @Transactional(readOnly = true)
-    public List<BoardView> list(@Nullable UUID studentId, @Nullable UUID groupId) {
+    public List<BoardView> list(Collection<UUID> studentIds, @Nullable UUID groupId) {
         List<Board> found;
-        if (studentId != null) {
-            found = boards.findByIds(boards.findIdsByMembers(withGroups(studentId).keySet()));
+        if (!studentIds.isEmpty()) {
+            Set<UUID> members = new HashSet<>();
+            studentIds.forEach(studentId -> members.addAll(withGroups(studentId).keySet()));
+            found = boards.findByIds(boards.findIdsByMembers(members));
         } else if (groupId != null) {
             found = boards.findByIds(boards.findIdsByMembers(List.of(groupId)));
         } else {

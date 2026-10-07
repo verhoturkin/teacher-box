@@ -289,7 +289,8 @@ describe('AssignmentPage', () => {
       pageCount: 120,
     });
     expect(board.initialPages()).toBe('12-14');
-    backend.expectOne('/api/teacher/boards').flush([]);
+    expect(board.students()).toEqual(['s-1', 's-2']);
+    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([]);
     board.visible.set(false);
     await fixture.whenStable();
 
@@ -321,7 +322,7 @@ describe('AssignmentPage', () => {
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe(assignment.title);
     expect(board.markdown()).toBe(assignment.description);
-    expect(board.ownerIds()).toEqual(assignment.tasks.map((task) => task.studentId));
+    expect(board.students()).toEqual(assignment.tasks.map((task) => task.studentId));
     fixture.destroy();
   });
 });
@@ -501,7 +502,7 @@ describe('TaskReviewPage', () => {
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe('Разбор: ' + details.assignment.title);
     expect(board.markdown()).toBe('**Оценка: 4**\n\nПроверь №2');
-    expect(board.ownerIds()).toEqual([details.studentId]);
+    expect(board.students()).toEqual([details.studentId]);
   });
 
   it('suggests accepting and tolerates a missing grade', async () => {

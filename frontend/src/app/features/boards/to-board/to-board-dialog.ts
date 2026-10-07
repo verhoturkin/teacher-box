@@ -7,12 +7,14 @@ import {
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
+import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
-import { RadioButton } from 'primeng/radiobutton';
+import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
 import { BoardsApi } from '../data-access/boards-api';
@@ -32,12 +34,12 @@ export interface Placed {
 /**
  * Puts a material (an assignment, a draft of the AI) on a board (ADR-0028). An Excalidraw board opens in
  * a new tab with the material already at the centre; an external board gets it through the clipboard
- * (the teacher pastes it there). Boards of the given students and groups come first. Pages of a textbook
+ * (the teacher pastes it there). From an assignment only its students' boards are offered. Pages of a textbook
  * (`pages`) go only on an Excalidraw board, in a frame; what is projected inside chooses the pages.
  */
 @Component({
   selector: 'tb-to-board-dialog',
-  imports: [EmptyState, FormsModule, Button, Dialog, Message, RadioButton],
+  imports: [EmptyState, FormsModule, Button, Dialog, Message, Select],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -51,8 +53,8 @@ export interface Placed {
         <tb-empty-state
           [compact]="true"
           icon="pi-th-large"
-          [title]="pages() === null ? 'Досок пока нет' : 'Досок Excalidraw пока нет'"
-          hint="Создайте доску в разделе «Доски»."
+          [title]="emptyTitle()"
+          [hint]="emptyHint()"
         />
       } @else {
         <ng-content />
@@ -60,24 +62,32 @@ export interface Placed {
         @if (needsClipboard() && !richClipboard) {
           <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
         }
-        <ul class="tb-to-board">
-          @for (board of sorted(); track board.id) {
-            <li>
-              <p-radiobutton
-                [inputId]="'to-board-' + board.id"
-                name="board"
-                [value]="board.id"
-                [(ngModel)]="chosen"
-              />
-              <label [for]="'to-board-' + board.id">
-                {{ board.title }}
-                <span class="tb-muted"
-                  >— {{ kindLabels[board.kind] }}, {{ membersText(board) }}</span
+        <div class="tb-field tb-to-board">
+          <label for="to-board-board">Доска</label>
+          <p-select
+            inputId="to-board-board"
+            [options]="sorted()"
+            optionLabel="title"
+            optionValue="id"
+            [(ngModel)]="chosen"
+            placeholder="Выберите доску"
+            [filter]="true"
+            filterBy="title"
+            filterPlaceholder="Поиск по названию"
+            emptyFilterMessage="Таких досок нет"
+            appendTo="body"
+            [fluid]="true"
+          >
+            <ng-template #item let-board>
+              <div class="tb-to-board__option">
+                <span>{{ board.title }}</span>
+                <small class="tb-muted"
+                  >{{ kindLabels[kindOf(board)] }}, {{ membersText(board) }}</small
                 >
-              </label>
-            </li>
-          }
-        </ul>
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
       }
       @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
@@ -132,19 +142,10 @@ export interface Placed {
     </p-dialog>
   `,
   styles: `
-    .tb-to-board {
+    .tb-to-board__option {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-2);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: center;
-        gap: var(--tb-space-2);
-      }
+      min-width: 0;
     }
   `,
 })
@@ -157,12 +158,19 @@ export class ToBoardDialog {
   readonly title = input('');
   /** The material in Markdown. */
   readonly markdown = input('');
-  /** Students and groups whose boards come first. */
-  readonly ownerIds = input<readonly string[]>([]);
+  /**
+   * Whose boards to offer: the students of an assignment (their own boards and their groups'); `null` — every
+   * board (e.g. from «Учебники»).
+   */
+  readonly students = input<readonly string[] | null>(null);
   /** Pages of a textbook instead of the Markdown: only Excalidraw boards take them. */
   readonly pages = input<PagesMaterial | null>(null);
 
   protected readonly kindLabels = BOARD_KIND_LABELS;
+  /** The item template's board is untyped. */
+  protected kindOf(board: Board): Board['kind'] {
+    return board.kind;
+  }
   protected readonly membersText = boardMembersText;
   protected readonly boards = signal<Board[]>([]);
   protected readonly loaded = signal(false);
@@ -171,15 +179,20 @@ export class ToBoardDialog {
   protected readonly done = signal<Placed | null>(null);
   protected readonly error = signal<string | null>(null);
   readonly chosen = signal<string | null>(null);
+  /** The boards to choose from: pages go only on Excalidraw boards. */
   protected readonly sorted = computed(() => {
-    const preferred = new Set(this.ownerIds());
-    const rank = (board: Board): number =>
-      Number(board.members.some((member) => preferred.has(member.id)));
     const pages = this.pages() !== null;
-    return this.boards()
-      .filter((board) => !pages || board.kind === 'EXCALIDRAW')
-      .sort((a, b) => rank(b) - rank(a));
+    return this.boards().filter((board) => !pages || board.kind === 'EXCALIDRAW');
   });
+  protected readonly emptyTitle = computed(() => {
+    if (this.students() !== null) return 'У учеников задания досок нет';
+    return this.pages() === null ? 'Досок пока нет' : 'Досок Excalidraw пока нет';
+  });
+  protected readonly emptyHint = computed(() =>
+    this.students() === null
+      ? 'Создайте доску в разделе «Доски».'
+      : 'Откройте доску ученикам задания или их группе в разделе «Доски».',
+  );
   protected readonly chosenBoard = computed(
     () => this.sorted().find((board) => board.id === this.chosen()) ?? null,
   );
@@ -195,15 +208,26 @@ export class ToBoardDialog {
 
   constructor() {
     effect(() => {
-      if (this.visible()) {
+      if (!this.visible()) {
+        return;
+      }
+      const students = this.students();
+      untracked(() => {
         this.done.set(null);
         this.error.set(null);
-        this.api.list({}, quietContext()).subscribe((boards) => {
+        this.loaded.set(false);
+        const found =
+          students === null
+            ? this.api.list({}, quietContext())
+            : students.length === 0
+              ? of([])
+              : this.api.list({ studentIds: students }, quietContext());
+        found.subscribe((boards) => {
           this.boards.set(boards);
           this.loaded.set(true);
           this.chosen.set(this.sorted()[0]?.id ?? null);
         });
-      }
+      });
     });
   }
 

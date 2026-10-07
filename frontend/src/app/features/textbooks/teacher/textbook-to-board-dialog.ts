@@ -36,6 +36,7 @@ export interface BoardTextbook {
       [(visible)]="visible"
       [title]="textbook()?.title ?? ''"
       [pages]="material()"
+      [students]="students()"
     >
       @if (multiPage()) {
         <div class="tb-field tb-textbook-pages">
@@ -66,6 +67,8 @@ export interface BoardTextbook {
 export class TextbookToBoardDialog {
   readonly visible = model(false);
   readonly textbook = input<BoardTextbook | null>(null);
+  /** The students of an assignment: only their boards; `null` — every board. */
+  readonly students = input<readonly string[] | null>(null);
   /** Pages to start with, e.g. those bound to an assignment; the first page when none. */
   readonly initialPages = input<string | null>(null);
 
