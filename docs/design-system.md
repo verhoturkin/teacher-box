@@ -74,7 +74,7 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   | info, hint | `info` | tertiary-container |
 
 - `p-message` — role container, no border or shadow, Body Medium. `p-badge` — error by default, `warn`,
-  calm counter `secondary`; the bell badge sits on the icon's corner. Calendar events: conducted —
+  calm counter `secondary`; a badge on an icon (the bell) has no outline and sits inside the 40 px button: its start at the icon's middle, 4 px from the top (M3). Calendar events: conducted —
   success-container, missed — warning-container, cancelled — surface-container-highest + on-surface-variant +
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —

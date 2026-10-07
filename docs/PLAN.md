@@ -94,6 +94,8 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
   carries only on-primary-container. `vitest.config.ts` inlines the package (0.4.0 imports without `.js`).
 - [x] 137.2 The selected item of menus and lists (the theme in the user menu, select options) is the secondary
   container, as M3 menus have it (`styles.scss`, `teacher-box-preset.ts`).
+- [x] 137.3 The bell's badge as in M3: no outline, on the icon inside the button (`overlaybadge` in
+  `teacher-box-preset.ts`).
 
 ### Stage 138. Release 0.10.0
 
