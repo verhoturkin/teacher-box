@@ -4,12 +4,14 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToBoardDialog } from '@features/boards/parts';
+import { TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
   assignmentDetails,
   assignmentSummary,
   attachment,
+  boundTextbook,
   reviewQueueItem,
   taskDetails,
 } from '@testing/homework-fixtures';
@@ -17,6 +19,7 @@ import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { AssignmentDialog } from './assignment-dialog';
+import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { ReviewQueuePage } from './review-queue-page';
@@ -246,6 +249,62 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
+  it('binds, changes and unbinds textbooks', async () => {
+    const { fixture, host, backend } = await render();
+    const dialog = fixture.debugElement
+      .query(By.directive(BindTextbookDialog))
+      .injector.get(BindTextbookDialog);
+
+    buttonByText(host, 'Привязать учебник').click();
+    await fixture.whenStable();
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.bound()).toBeNull();
+    backend.expectOne('/api/teacher/textbooks').flush([]);
+    dialog.saved.emit(
+      assignmentDetails({
+        textbooks: [
+          boundTextbook(),
+          boundTextbook({ textbookId: 'tb-2', title: 'Тетрадь', pages: null }),
+        ],
+      }),
+    );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Учебник · Английский · с. 12-14');
+    expect(readableText(host)).toContain('целиком');
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="Страницы: Spotlight 5"]')?.click();
+    await fixture.whenStable();
+    expect(dialog.bound()?.textbookId).toBe('tb-1');
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="На доску: Spotlight 5"]')?.click();
+    await fixture.whenStable();
+    const board = fixture.debugElement
+      .query(By.directive(TextbookToBoardDialog))
+      .injector.get(TextbookToBoardDialog);
+    expect(board.visible()).toBe(true);
+    expect(board.textbook()).toEqual({
+      id: 'tb-1',
+      title: 'Spotlight 5',
+      format: 'PDF',
+      pageCount: 120,
+    });
+    expect(board.initialPages()).toBe('12-14');
+    expect(board.students()).toEqual(['s-1', 's-2']);
+    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([]);
+    board.visible.set(false);
+    await fixture.whenStable();
+
+    host
+      .querySelector<HTMLButtonElement>('button[aria-label="Убрать из задания: Тетрадь"]')
+      ?.click();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/textbooks/tb-2' })
+      .flush(assignmentDetails({ textbooks: [boundTextbook()] }));
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Тетрадь');
+    fixture.destroy();
+  });
+
   it('puts the assignment on a board', async () => {
     const { fixture, host, backend } = await render();
 
@@ -263,7 +322,7 @@ describe('AssignmentPage', () => {
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe(assignment.title);
     expect(board.markdown()).toBe(assignment.description);
-    expect(board.ownerIds()).toEqual(assignment.tasks.map((task) => task.studentId));
+    expect(board.students()).toEqual(assignment.tasks.map((task) => task.studentId));
     fixture.destroy();
   });
 });
@@ -443,7 +502,7 @@ describe('TaskReviewPage', () => {
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe('Разбор: ' + details.assignment.title);
     expect(board.markdown()).toBe('**Оценка: 4**\n\nПроверь №2');
-    expect(board.ownerIds()).toEqual([details.studentId]);
+    expect(board.students()).toEqual([details.studentId]);
   });
 
   it('suggests accepting and tolerates a missing grade', async () => {

@@ -18,13 +18,16 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { ToBoardDialog } from '@features/boards/parts';
+import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
-import { AssignmentDetails, Attachment } from '../data-access/homework.models';
+import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
+import { TextbookList } from '../ui/textbook-list';
+import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { AssignmentDialog, StudentOption } from './assignment-dialog';
@@ -58,11 +61,14 @@ import { InitialsPipe } from '@shared/ui/initials';
     MarkdownView,
     RowType,
     AttachmentList,
+    BindTextbookDialog,
+    TextbookList,
     FilePicker,
     TaskStatusTag,
     AssignmentDialog,
     GroupPicker,
     ToBoardDialog,
+    TextbookToBoardDialog,
     PageHeader,
     HelpButton,
     LoadStateView,
@@ -121,6 +127,22 @@ import { InitialsPipe } from '@shared/ui/initials';
                 (onClick)="upload()"
               />
             }
+          </div>
+          <h3 class="tb-subtitle">Учебники</h3>
+          <tb-textbook-list
+            [textbooks]="assignment.textbooks"
+            [editable]="true"
+            (edit)="openBind($event)"
+            (remove)="unbind($event)"
+            (toBoard)="openTextbookBoard($event)"
+          />
+          <div class="tb-inline">
+            <p-button
+              label="Привязать учебник"
+              icon="pi pi-bookmark"
+              severity="secondary"
+              (onClick)="openBind(null)"
+            />
           </div>
         </p-card>
 
@@ -217,11 +239,24 @@ import { InitialsPipe } from '@shared/ui/initials';
         [assignment]="assignment"
         (saved)="details.set($event)"
       />
+      <tb-textbook-to-board-dialog
+        [(visible)]="textbookBoardVisible"
+        [textbook]="boardTextbook()"
+        [initialPages]="boardPages()"
+        [students]="taskStudents()"
+      />
+      <tb-bind-textbook-dialog
+        [(visible)]="bindVisible"
+        [assignmentId]="assignment.id"
+        [taken]="assignment.textbooks"
+        [bound]="binding()"
+        (saved)="details.set($event)"
+      />
       <tb-to-board-dialog
         [(visible)]="boardVisible"
         [title]="assignment.title"
         [markdown]="assignment.description ?? ''"
-        [ownerIds]="taskStudents(assignment)"
+        [students]="taskStudents()"
       />
     } @else {
       <tb-page-header title="Задание" back="/teacher/homework" backLabel="Задания" />
@@ -242,12 +277,22 @@ export class AssignmentPage implements OnInit {
   readonly assignmentId = input.required<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
+  /** The students of the assignment: «На доску» offers only their boards. */
+  protected readonly taskStudents = computed(
+    () => this.details()?.tasks.map((task) => task.studentId) ?? [],
+  );
 
   constructor() {
     pageDetail(() => this.details()?.title);
   }
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
+  protected readonly bindVisible = signal(false);
+  protected readonly textbookBoardVisible = signal(false);
+  protected readonly boardTextbook = signal<BoardTextbook | null>(null);
+  protected readonly boardPages = signal<string | null>(null);
+  /** The bound textbook whose pages change; `null` binds a new one. */
+  protected readonly binding = signal<BoundTextbook | null>(null);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
@@ -280,10 +325,6 @@ export class AssignmentPage implements OnInit {
       .subscribe((assignment) => {
         this.details.set(assignment);
       });
-  }
-
-  protected taskStudents(assignment: AssignmentDetails): string[] {
-    return assignment.tasks.map((task) => task.studentId);
   }
 
   protected download(file: Attachment): void {
@@ -330,6 +371,34 @@ export class AssignmentPage implements OnInit {
         },
       }),
     );
+  }
+
+  protected openBind(textbook: BoundTextbook | null): void {
+    this.binding.set(textbook);
+    this.bindVisible.set(true);
+  }
+
+  /** The bound pages of a textbook on a board (the first page when it is bound whole). */
+  protected openTextbookBoard(textbook: BoundTextbook): void {
+    this.boardTextbook.set({
+      id: textbook.textbookId,
+      title: textbook.title,
+      format: textbook.format,
+      pageCount: textbook.pageCount,
+    });
+    this.boardPages.set(textbook.pages);
+    this.textbookBoardVisible.set(true);
+  }
+
+  protected unbind(textbook: BoundTextbook): void {
+    const assignment = this.details();
+    if (assignment === null) {
+      return;
+    }
+    this.api.unbindTextbook(assignment.id, textbook.textbookId).subscribe((updated) => {
+      this.details.set(updated);
+      this.snackbar.success(`Учебник «${textbook.title}» убран из задания`);
+    });
   }
 
   /** Adds the students of a chosen group who do not have the assignment yet. */

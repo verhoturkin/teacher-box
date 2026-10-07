@@ -32,6 +32,7 @@ import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.ReviewService;
+import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
 @RestController
@@ -53,6 +54,10 @@ class TeacherHomeworkController {
     }
 
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
+    }
+
+    /** @param pages {@code 1-3, 7}; blank — the whole textbook */
+    record BindTextbookRequest(@NotNull UUID textbookId, @Size(max = PageRanges.MAX_TEXT) @Nullable String pages) {
     }
 
     record ReviewRequest(
@@ -116,6 +121,17 @@ class TeacherHomeworkController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void removeAttachment(@PathVariable UUID assignmentId, @PathVariable UUID attachmentId) {
         assignments.removeAttachment(assignmentId, attachmentId);
+    }
+
+    /** Binds a textbook to the assignment or changes its pages (ADR-0033). */
+    @PostMapping("/assignments/{assignmentId}/textbooks")
+    AssignmentDetails bindTextbook(@PathVariable UUID assignmentId, @Valid @RequestBody BindTextbookRequest request) {
+        return assignments.bindTextbook(assignmentId, request.textbookId(), request.pages());
+    }
+
+    @DeleteMapping("/assignments/{assignmentId}/textbooks/{textbookId}")
+    AssignmentDetails unbindTextbook(@PathVariable UUID assignmentId, @PathVariable UUID textbookId) {
+        return assignments.unbindTextbook(assignmentId, textbookId);
     }
 
     @GetMapping("/attachments/{attachmentId}")

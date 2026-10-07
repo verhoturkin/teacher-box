@@ -63,6 +63,7 @@ const NAV_ITEMS = 4;
           pButton
           type="button"
           class="tb-shell__user-button"
+          [class.tb-shell__user-button--round]="compact()"
           [text]="true"
           [rounded]="true"
           severity="secondary"

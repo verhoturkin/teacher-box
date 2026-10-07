@@ -27,6 +27,7 @@ import { PRIMENG_RU } from '@core/i18n/primeng-ru';
 import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
+import { SystemBars } from '@core/theme/system-bars';
 import { DARK_CLASS, ThemeMode } from '@core/theme/theme-mode';
 
 registerLocaleData(localeRu);
@@ -46,6 +47,7 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(Portal).load()),
     provideAppInitializer(() => {
       inject(ThemeMode).apply();
+      inject(SystemBars);
     }),
     providePrimeNG({
       theme: { preset: TeacherBoxPreset, options: { darkModeSelector: `.${DARK_CLASS}` } },

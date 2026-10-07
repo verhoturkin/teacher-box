@@ -17,6 +17,96 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.10.0
+
+Goals: phone fixes (round photo on the user button, no blue tap highlight); a new «Учебники» section — the
+teacher's textbooks, workbooks and other materials (images, PDF, DOC/DOCX) shared with students and groups;
+textbooks bound to assignments by pages; pages of a textbook put on a board as pictures inside a frame.
+
+ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendered on the server (PDFBox),
+`homework` → `textbooks::api`.
+
+### Stage 131. Phone fixes (F)
+
+- [x] 131.1 `core/layout/shell.ts` / `shell.scss`: the user button in the top bar stays a circle with a photo
+  on a phone (the avatar fills a round button, no padding stretching it).
+- [x] 131.2 `styles.scss`: `-webkit-tap-highlight-color: transparent` for the whole document — pressed elements
+  show their own M3 state layer, not the browser's blue fill.
+
+### Stage 132. Module `textbooks` (B)
+
+- [x] 132.1 ADR-0033, `docs/modules/textbooks.md`, root `AGENTS.md` (module table, isolation table). Module
+  `ru.teacherbox.textbooks` (deps `shared`, `identity::api`), schema `textbooks` (`textbooks`,
+  `textbook_members`), `TextbooksDataReset`, `TextbooksProperties` (`TEACHERBOX_TEXTBOOKS_MAX_FILE_SIZE`,
+  default 100 MB). Kinds `TEXTBOOK` / `WORKBOOK` / `OTHER`; fields title, course, page count (PDF — from the
+  file via PDFBox, an image — 1, DOC/DOCX — entered by the teacher), one file (png/jpeg/webp/gif, PDF, DOC,
+  DOCX checked by content), members — students and groups like boards.
+- [x] 132.2 REST `TeacherTextbooksController` `/api/teacher/textbooks`: list, create (multipart: file + fields),
+  change (with `version`), replace the file, delete, download, page image `GET /{id}/pages/{n}` (PNG,
+  PDF rendered by PDFBox, an image as is); `MyTextbooksController` `/api/me/textbooks` (student: own and
+  groups' textbooks, download). Tests incl. «another student gets 404».
+- [x] 132.3 `textbooks::api`: `Textbooks` facade (`find(ids)` summaries, `content(id, pages)` — a PDF cut to the
+  pages, other files whole) for `homework`.
+
+### Stage 133. «Учебники» section (F)
+
+- [x] 133.1 `features/textbooks/`: data access, labels, `teacher/textbooks-page.ts` (`/teacher/textbooks`, menu
+  item after «Задания»): one card per row — kind icon, title, course, kind, pages, members; add, change,
+  replace the file, download, delete. `textbook-dialog.ts` (kind, title, course, pages for DOC/DOCX, file,
+  students, groups).
+- [x] 133.2 `student/my-textbooks-page.ts` (`/cabinet/textbooks`, after «Задания»): the student's textbooks,
+  download. Help articles (teacher, student), glossary.
+
+### Stage 134. Textbooks in assignments (B, F)
+
+- [x] 134.1 **B** `homework`: table `assignment_textbooks` (assignment, textbook, pages), `AssignmentService`
+  `bindTextbook` / `unbindTextbook` (`POST|DELETE /api/teacher/homework/assignments/{id}/textbooks`), pages
+  checked against the page count (`PageRanges`); `AssignmentDetails.textbooks`, `AssignmentInfo.textbooks`;
+  the student downloads the bound pages `GET /api/me/homework/tasks/{taskId}/textbooks/{textbookId}`.
+- [x] 134.2 **F** assignment page/dialog: «Учебники» block — bind (textbook picker + pages), unbind; the
+  student's task page lists the textbooks with pages and a download.
+
+### Stage 135. Textbook pages on a board (F)
+
+- [x] 135.1 `boards/to-board`: a material of pages (`mode: 'pages'`, image URLs); `editor/material-insert.ts`
+  makes a frame named after the textbook and pages, with the pages as pictures in a row inside it; only
+  Excalidraw boards take pages.
+- [x] 135.2 «На доску» from the textbooks page and from the assignment's textbooks: choosing the pages of a
+  multi-page file (the bound pages preselected); not for DOC/DOCX.
+
+### Stage 136. Textbooks: search, opening, pages beside the drawing (F)
+
+- [x] 136.1 «Учебники» (teacher and student): a search field filters the list by title (`textbooks-page.ts`,
+  `my-textbooks-page.ts`).
+- [x] 136.2 A tap on a textbook opens it in a new tab (PDF, picture — the browser shows it; a Word file is
+  downloaded): `shared/files/file-opener.ts`, the textbooks pages and the student's task.
+- [x] 136.3 `boards/editor/material-insert.ts`: pages go to the right of everything on the board (tops at the
+  drawing's top; at the view centre on an empty board) and the view scrolls to them.
+- [x] 136.4 «На доску»: the board is chosen in a select with a search (`to-board-dialog.ts`); from an assignment only
+  its students' boards (their own and their groups': `GET /api/teacher/boards?studentId=…&studentId=…`), from
+  «Учебники» — every board.
+
+### Stage 137. MD3 colours from material-color-utilities (F)
+
+- [x] 137.1 ADR-0034: `core/theme/color-scheme.ts` computes the roles of both themes with
+  `@material/material-color-utilities` (Fidelity, spec 2025, seed — shade 500 of the portal colour), success and
+  warning as harmonized custom colours, the neutral palette from M3 tones; ADR-0023 contrast kept; the hero card
+  carries only on-primary-container. `vitest.config.ts` inlines the package (0.4.0 imports without `.js`).
+- [x] 137.2 The selected item of menus and lists (the theme in the user menu, select options) is the secondary
+  container, as M3 menus have it (`styles.scss`, `teacher-box-preset.ts`).
+- [x] 137.3 The bell's badge as in M3: no outline, on the icon inside the button (`overlaybadge` in
+  `teacher-box-preset.ts`).
+- [x] 137.4 Android system bars in the portal's colours: `core/theme/system-bars.ts` keeps `<meta name="theme-color">`
+  and the manifest link in the top bar's colour; `PortalController` serves
+  `/api/public/portal/manifest.webmanifest` (name, logo, default icons in `public/icons/`, colours from the page).
+
+### Stage 138. Release 0.10.0
+
+- [ ] 138.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
+
+*Note:* the commits of stages 131 and 132 say «stage 126» and «stage 127»: they were numbered before
+release 0.9.3 (stages 126–130) was merged.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

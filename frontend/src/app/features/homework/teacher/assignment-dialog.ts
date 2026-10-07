@@ -187,7 +187,7 @@ export interface StudentOption {
       [(visible)]="boardVisible"
       [title]="titleValue()"
       [markdown]="descriptionValue()"
-      [ownerIds]="boardOwners()"
+      [students]="boardOwners()"
     />
   `,
 })

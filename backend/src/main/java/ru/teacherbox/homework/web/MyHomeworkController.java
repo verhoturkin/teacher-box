@@ -62,6 +62,12 @@ class MyHomeworkController {
         return FileResponses.download(homework.download(studentId(user), attachmentId));
     }
 
+    /** The pages of a textbook bound to the task: a PDF cut to them, any other file whole. */
+    @GetMapping("/tasks/{taskId}/textbooks/{textbookId}")
+    ResponseEntity<Resource> textbook(CurrentUser user, @PathVariable UUID taskId, @PathVariable UUID textbookId) {
+        return FileResponses.download(homework.textbook(studentId(user), taskId, textbookId));
+    }
+
     private static UUID studentId(CurrentUser user) {
         if (user.isTeacher()) {
             throw new ForbiddenException("homework.students-only", "This area is available to students only");

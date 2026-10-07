@@ -12,7 +12,8 @@ export const UNREAD_POLL_INTERVAL_MS = 60_000;
 
 /**
  * Bell with the number of unread notifications; a link to the notifications page (it opens in a new
- * tab too). The badge sits on the corner of the icon button (M3), it does not widen the button.
+ * tab too). The badge sits on the icon inside the button, without an outline (M3); it does not widen
+ * the button.
  */
 @Component({
   selector: 'tb-notification-bell',

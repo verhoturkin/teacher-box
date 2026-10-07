@@ -13,7 +13,7 @@ import ru.teacherbox.shared.reset.DataReset;
 class HomeworkDataReset implements DataReset {
 
     private static final List<String> TABLES = List.of("homework.attachments", "homework.submissions",
-            "homework.tasks", "homework.assignments");
+            "homework.tasks", "homework.assignment_textbooks", "homework.assignments");
 
     private final JdbcClient jdbc;
 
@@ -31,6 +31,7 @@ class HomeworkDataReset implements DataReset {
         jdbc.sql("delete from homework.attachments").update();
         jdbc.sql("delete from homework.submissions").update();
         jdbc.sql("delete from homework.tasks").update();
+        jdbc.sql("delete from homework.assignment_textbooks").update();
         jdbc.sql("delete from homework.assignments").update();
     }
 }

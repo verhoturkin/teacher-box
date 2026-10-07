@@ -24,6 +24,7 @@ import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.textbooks.api.TextbookContent;
 
 /**
  * Homework in the student's personal area. Every operation checks that the task belongs to the
@@ -37,17 +38,19 @@ public class StudentHomeworkService {
     private final SubmissionRepository submissions;
     private final AttachmentService attachments;
     private final TaskDetailsAssembler assembler;
+    private final TextbookBindings textbooks;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public StudentHomeworkService(TaskRepository tasks, AssignmentRepository assignments,
             SubmissionRepository submissions, AttachmentService attachments, TaskDetailsAssembler assembler,
-            ApplicationEventPublisher events, Clock clock) {
+            TextbookBindings textbooks, ApplicationEventPublisher events, Clock clock) {
         this.tasks = tasks;
         this.assignments = assignments;
         this.submissions = submissions;
         this.attachments = attachments;
         this.assembler = assembler;
+        this.textbooks = textbooks;
         this.events = events;
         this.clock = clock;
     }
@@ -74,6 +77,12 @@ public class StudentHomeworkService {
     @Transactional(readOnly = true)
     public TaskDetails task(UUID studentId, UUID taskId) {
         return assembler.details(ownTask(studentId, taskId));
+    }
+
+    /** The pages of a textbook bound to the student's task (ADR-0033); anything else is not found. */
+    @Transactional(readOnly = true)
+    public TextbookContent textbook(UUID studentId, UUID taskId, UUID textbookId) {
+        return textbooks.content(ownTask(studentId, taskId).assignmentId(), textbookId);
     }
 
     @Transactional

@@ -6,11 +6,13 @@ import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
-import { Attachment, TaskDetails } from '../data-access/homework.models';
+import { Attachment, BoundTextbook, TaskDetails } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
+import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
@@ -33,6 +35,7 @@ import { pageDetail } from '@core/routing/page-detail';
     Textarea,
     MarkdownView,
     AttachmentList,
+    TextbookList,
     FilePicker,
     SubmissionList,
     TaskStatusTag,
@@ -76,6 +79,15 @@ import { pageDetail } from '@core/routing/page-detail';
             [attachments]="task.assignment.attachments"
             (download)="download($event)"
           />
+          @if (task.assignment.textbooks.length > 0) {
+            <h3 class="tb-subtitle">Учебники</h3>
+            <tb-textbook-list
+              [textbooks]="task.assignment.textbooks"
+              [downloadable]="true"
+              (opened)="openTextbook(task.taskId, $event)"
+              (download)="downloadTextbook(task.taskId, $event)"
+            />
+          }
         </p-card>
 
         @if (task.status !== 'ACCEPTED') {
@@ -116,6 +128,7 @@ export class MyTaskPage implements OnInit {
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
+  private readonly fileOpener = inject(FileOpener);
 
   /** Route parameter. */
   readonly taskId = input.required<string>();
@@ -170,6 +183,21 @@ export class MyTaskPage implements OnInit {
         this.pending.set(false);
         this.error.set(describeError(error, 'Не удалось отправить ответ'));
       },
+    });
+  }
+
+  /** The bound pages of a PDF or a picture open in a new tab; a Word file is saved. */
+  protected openTextbook(taskId: string, textbook: BoundTextbook): void {
+    this.fileOpener.open(
+      this.api.myTextbook(taskId, textbook.textbookId),
+      textbook.format !== 'DOCUMENT',
+      (blob) => boundTextbookFilename(textbook, blob.type),
+    );
+  }
+
+  protected downloadTextbook(taskId: string, textbook: BoundTextbook): void {
+    this.api.myTextbook(taskId, textbook.textbookId).subscribe((blob) => {
+      this.fileSaver.save(blob, boundTextbookFilename(textbook, blob.type));
     });
   }
 

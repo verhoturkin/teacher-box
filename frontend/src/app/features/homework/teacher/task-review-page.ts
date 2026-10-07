@@ -157,7 +157,7 @@ import { pageDetail } from '@core/routing/page-detail';
         [(visible)]="boardVisible"
         [title]="'Разбор: ' + task.assignment.title"
         [markdown]="reviewText()"
-        [ownerIds]="[task.studentId]"
+        [students]="[task.studentId]"
       />
     } @else {
       <tb-page-header

@@ -19,8 +19,9 @@ spring:
       republish-outstanding-events-on-restart: true
   servlet:
     multipart:
-      max-file-size: 25MB
-      max-request-size: 30MB
+      # Textbooks take up to 100 MB (ADR-0033); homework checks its own smaller limit.
+      max-file-size: 100MB
+      max-request-size: 105MB
   lifecycle:
     timeout-per-shutdown-phase: 20s
   web:

@@ -43,9 +43,10 @@ describe('Shell on a phone', () => {
       'Ученики',
     ]);
     expect(host.querySelector('tb-side-nav')).toBeNull();
-    expect(
-      requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement).textContent,
-    ).not.toContain('Анна');
+    const user = requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement);
+    expect(user.textContent).not.toContain('Анна');
+    // a circle around the photo or the icon, not a pill
+    expect(user.classList).toContain('tb-shell__user-button--round');
 
     const more = requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
     expect(more.getAttribute('aria-haspopup')).toBe('menu');
@@ -78,10 +79,21 @@ describe('Shell on a phone', () => {
   });
 
   it('has no «Ещё» when all five sections fit', async () => {
-    const host = await render(STUDENT_MENU);
+    const host = await render(STUDENT_MENU.slice(0, 5));
 
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(5);
     expect(host.querySelector('button[aria-label="Ещё разделы"]')).toBeNull();
     expect(host.querySelector('.tb-shell__content--nav')).not.toBeNull();
+  });
+
+  it('puts the sixth section of the student under «Ещё»', async () => {
+    const host = await render(STUDENT_MENU);
+
+    expect(
+      Array.from(host.querySelectorAll('nav.tb-bottom-nav a')).map((link) =>
+        link.textContent.trim(),
+      ),
+    ).toEqual(['Главная', 'Расписание', 'Задания', 'Учебники']);
+    expect(host.querySelector('button[aria-label="Ещё разделы"]')).not.toBeNull();
   });
 });

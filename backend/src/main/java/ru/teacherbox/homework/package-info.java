@@ -1,7 +1,7 @@
 /**
  * Homework: assignments, submissions with files, review and deadlines.
  */
-@ApplicationModule(displayName = "Homework", allowedDependencies = {"shared", "identity :: api"})
+@ApplicationModule(displayName = "Homework", allowedDependencies = {"shared", "identity :: api", "textbooks :: api"})
 @NullMarked
 package ru.teacherbox.homework;
 

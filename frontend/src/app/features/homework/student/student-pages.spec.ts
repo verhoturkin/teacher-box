@@ -1,8 +1,9 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
+import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
-import { myTask, taskDetails } from '@testing/homework-fixtures';
+import { boundTextbook, myTask, taskDetails } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
@@ -103,6 +104,40 @@ describe('MyTaskPage', () => {
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('downloads the bound pages of a textbook', async () => {
+    const details = taskDetails();
+    const { host, backend, saved } = await render(
+      taskDetails({
+        assignment: {
+          ...details.assignment,
+          textbooks: [
+            boundTextbook(),
+            boundTextbook({ textbookId: 'tb-2', title: 'Скан', format: 'IMAGE', pages: null }),
+          ],
+        },
+      }),
+    );
+    expect(readableText(host)).toContain('Учебники');
+    expect(readableText(host)).toContain('с. 12-14');
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="Скачать Spotlight 5"]')?.click();
+    backend
+      .expectOne('/api/me/homework/tasks/t-1/textbooks/tb-1')
+      .flush(new Blob(['%PDF'], { type: 'application/pdf' }));
+    host.querySelector<HTMLButtonElement>('button[aria-label="Скачать Скан"]')?.click();
+    backend
+      .expectOne('/api/me/homework/tasks/t-1/textbooks/tb-2')
+      .flush(new Blob(['x'], { type: 'image/jpeg' }));
+    expect(saved).toEqual(['Spotlight 5 (с. 12-14).pdf', 'Скан.jpg']);
+
+    const open = vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation(() => undefined);
+    host.querySelector<HTMLButtonElement>('button[aria-label="Открыть Spotlight 5"]')?.click();
+    expect(open).toHaveBeenCalledWith(expect.anything(), true, expect.any(Function));
+    expect(open.mock.calls[0]?.[2](new Blob([], { type: 'application/pdf' }))).toBe(
+      'Spotlight 5 (с. 12-14).pdf',
+    );
+  });
 
   it('hands in an answer with files', async () => {
     const { fixture, host, backend } = await render(

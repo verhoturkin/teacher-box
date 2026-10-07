@@ -21,6 +21,9 @@ export class BoardsApi {
   list(filter: BoardFilter = {}, context?: HttpContext): Observable<Board[]> {
     let params = new HttpParams();
     if (filter.studentId) params = params.set('studentId', filter.studentId);
+    filter.studentIds?.forEach((id) => {
+      params = params.append('studentId', id);
+    });
     if (filter.groupId) params = params.set('groupId', filter.groupId);
     return this.http.get<Board[]>('/api/teacher/boards', { params, context });
   }
@@ -106,6 +109,11 @@ export class BoardsApi {
       responseType: 'blob',
       context: quietContext(),
     });
+  }
+
+  /** A picture to put on a board by its API address, e.g. a page of a textbook (ADR-0033). */
+  picture(url: string): Observable<Blob> {
+    return this.http.get(url, { responseType: 'blob', context: quietContext() });
   }
 
   backups(boardId: string): Observable<BoardBackup[]> {

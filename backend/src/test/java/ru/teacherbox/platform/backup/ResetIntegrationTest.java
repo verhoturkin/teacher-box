@@ -43,7 +43,7 @@ class ResetIntegrationTest {
 
     private static final UUID TEACHER = UUID.randomUUID();
     private static final List<String> SCHEMAS = List.of("IDENTITY", "BILLING", "HOMEWORK", "NOTIFICATIONS", "AI",
-            "SCHEDULE", "MEETINGS", "BOARDS", "PLATFORM");
+            "SCHEDULE", "MEETINGS", "BOARDS", "TEXTBOOKS", "PLATFORM");
 
     @Autowired
     MockMvcTester mvc;

@@ -1,5 +1,15 @@
 import Aura from '@primeuix/themes/aura';
-import { Oklch, contrast, isHex, readable, toHex, toOklch } from './color';
+import {
+  ColorGroup,
+  CustomColorGroup,
+  DynamicScheme,
+  Hct,
+  SchemeFidelity,
+  argbFromHex,
+  customColor,
+  hexFromArgb,
+} from '@material/material-color-utilities';
+import { contrast, isHex, readable, toOklch } from './color';
 
 /** Shades 50–950 of a palette as `#rrggbb`. */
 export type Shades = Readonly<Record<string, string>>;
@@ -80,134 +90,144 @@ function shade(shades: Shades, name: string): string {
   return value;
 }
 
-/** A tone of the seed's hue: lightness and chroma fixed (ADR-0017), tertiary 60° further. */
-function toneOf(seed: Oklch): (lightness: number, chroma: number, hueShift?: number) => string {
-  return (lightness, chroma, hueShift = 0) =>
-    toHex({ l: lightness, c: chroma, h: (seed.h + hueShift) % 360 });
+const SCRIM = 'rgb(0 0 0 / 32%)';
+
+/** M3 tones of the neutral palette as shades 0–950 (PrimeNG's surface palette). */
+const NEUTRAL_TONES: Readonly<Record<string, number>> = {
+  '0': 99,
+  '50': 98,
+  '100': 95,
+  '200': 90,
+  '300': 80,
+  '400': 70,
+  '500': 60,
+  '600': 50,
+  '700': 40,
+  '800': 30,
+  '900': 20,
+  '950': 10,
+};
+
+function hex(argb: number): string {
+  return hexFromArgb(argb).toLowerCase();
 }
 
-const WHITE = '#ffffff';
+/**
+ * The M3 roles of one theme (ADR-0034): the dynamic scheme of `@material/material-color-utilities`
+ * (Fidelity — the primary and its container keep the chosen color; the 2025 spec — M3 Expressive) and the custom colors success and warning harmonized with
+ * the seed.
+ */
+function m3Roles(scheme: DynamicScheme, success: ColorGroup, warning: ColorGroup): Roles {
+  return {
+    primary: hex(scheme.primary),
+    onPrimary: hex(scheme.onPrimary),
+    primaryContainer: hex(scheme.primaryContainer),
+    onPrimaryContainer: hex(scheme.onPrimaryContainer),
+    secondary: hex(scheme.secondary),
+    secondaryContainer: hex(scheme.secondaryContainer),
+    onSecondaryContainer: hex(scheme.onSecondaryContainer),
+    tertiary: hex(scheme.tertiary),
+    tertiaryContainer: hex(scheme.tertiaryContainer),
+    onTertiaryContainer: hex(scheme.onTertiaryContainer),
+    error: hex(scheme.error),
+    onError: hex(scheme.onError),
+    errorContainer: hex(scheme.errorContainer),
+    onErrorContainer: hex(scheme.onErrorContainer),
+    success: hex(success.color),
+    onSuccess: hex(success.onColor),
+    successContainer: hex(success.colorContainer),
+    onSuccessContainer: hex(success.onColorContainer),
+    warning: hex(warning.color),
+    onWarning: hex(warning.onColor),
+    warningContainer: hex(warning.colorContainer),
+    onWarningContainer: hex(warning.onColorContainer),
+    surface: hex(scheme.surface),
+    surfaceContainerLowest: hex(scheme.surfaceContainerLowest),
+    surfaceContainerLow: hex(scheme.surfaceContainerLow),
+    surfaceContainer: hex(scheme.surfaceContainer),
+    surfaceContainerHigh: hex(scheme.surfaceContainerHigh),
+    surfaceContainerHighest: hex(scheme.surfaceContainerHighest),
+    onSurface: hex(scheme.onSurface),
+    onSurfaceVariant: hex(scheme.onSurfaceVariant),
+    outline: hex(scheme.outline),
+    outlineVariant: hex(scheme.outlineVariant),
+    inverseSurface: hex(scheme.inverseSurface),
+    inverseOnSurface: hex(scheme.inverseOnSurface),
+    inversePrimary: hex(scheme.inversePrimary),
+    scrim: SCRIM,
+  };
+}
+
+/** Moves `text` away from `ground`: lighter on a darker ground, darker on a lighter one. */
+function away(text: string, ground: string): 'lighter' | 'darker' {
+  return toOklch(text).l >= toOklch(ground).l ? 'lighter' : 'darker';
+}
 
 /**
- * The scheme of a portal color from its shades 50–950 (ADR-0023). The tones are those of ADR-0017
- * and ADR-0019; the text colors are then made readable: primary, error, success and warning have the
- * contrast 4.5:1 to every surface they stand on (the page, cards, tiles, the hero card) and to the
- * text on them, as the tone 40 of M3 does.
+ * Text roles keep the portal's contrast (ADR-0023): 4.5:1 to every surface they stand on — the page,
+ * cards, tiles — and to the text on them. M3 tones mostly have it already; a role short of it is moved
+ * along its hue. The primary container (the hero card, saturated in Fidelity) carries only its own
+ * text role.
+ */
+function readableRoles(roles: Roles, dark: boolean): Roles {
+  const direction = dark ? 'lighter' : 'darker';
+  const grounds = [
+    roles.surface,
+    roles.surfaceContainerLowest,
+    roles.surfaceContainerLow,
+    roles.surfaceContainer,
+    roles.surfaceContainerHigh,
+    roles.surfaceContainerHighest,
+  ];
+  const filled = (color: string, on: string): string =>
+    readable(color, [on, ...grounds], direction);
+  const on = (text: string, ground: string): string => readable(text, [ground], away(text, ground));
+  return {
+    ...roles,
+    primary: filled(roles.primary, roles.onPrimary),
+    onPrimaryContainer: on(roles.onPrimaryContainer, roles.primaryContainer),
+    onSecondaryContainer: on(roles.onSecondaryContainer, roles.secondaryContainer),
+    onTertiaryContainer: on(roles.onTertiaryContainer, roles.tertiaryContainer),
+    secondary: readable(roles.secondary, grounds, direction),
+    tertiary: readable(roles.tertiary, grounds, direction),
+    error: filled(roles.error, roles.onError),
+    success: filled(roles.success, roles.onSuccess),
+    warning: filled(roles.warning, roles.onWarning),
+    onSurfaceVariant: readable(roles.onSurfaceVariant, grounds, direction),
+    inversePrimary: on(roles.inversePrimary, roles.inverseSurface),
+  };
+}
+
+/**
+ * The scheme of a portal color from its shades 50–950 (ADR-0034): the shade 500 is the seed of the M3
+ * dynamic scheme computed by `@material/material-color-utilities`; the shades stay PrimeNG's primary
+ * palette. Green and amber of Aura are the custom colors success and warning.
  */
 export function colorScheme(primary: Shades): ColorScheme {
-  const tone = toneOf(toOklch(shade(primary, '500')));
-  const neutral: Shades = {
-    '0': tone(0.995, 0.002),
-    '50': tone(0.978, 0.006),
-    '100': tone(0.955, 0.009),
-    '200': tone(0.925, 0.011),
-    '300': tone(0.87, 0.013),
-    '400': tone(0.71, 0.016),
-    '500': tone(0.56, 0.018),
-    '600': tone(0.46, 0.018),
-    '700': tone(0.37, 0.016),
-    '800': tone(0.28, 0.013),
-    '900': tone(0.215, 0.01),
-    '950': tone(0.16, 0.008),
+  const seed = argbFromHex(shade(primary, '500'));
+  const source = Hct.fromInt(seed);
+  const light = new SchemeFidelity(source, false, 0, '2025');
+  const dark = new SchemeFidelity(source, true, 0, '2025');
+  const custom = (palette: string, name: string): CustomColorGroup =>
+    customColor(seed, {
+      value: argbFromHex(shade(auraPalette(palette), '500')),
+      name,
+      blend: true,
+    });
+  const success = custom('green', 'success');
+  const warning = custom('amber', 'warning');
+  const neutral: Shades = Object.fromEntries(
+    Object.entries(NEUTRAL_TONES).map(([name, tone]) => [
+      name,
+      hex(light.neutralPalette.tone(tone)),
+    ]),
+  );
+  return {
+    primary,
+    neutral,
+    light: readableRoles(m3Roles(light, success.light, warning.light), false),
+    dark: readableRoles(m3Roles(dark, success.dark, warning.dark), true),
   };
-  const n = (name: string): string => shade(neutral, name);
-  const p = (name: string): string => shade(primary, name);
-  const red = auraPalette('red');
-  const green = auraPalette('green');
-  const amber = auraPalette('amber');
-  const c = (palette: Shades, name: string): string => shade(palette, name);
-
-  const lightSurfaces = {
-    surface: n('50'),
-    surfaceContainerLowest: n('0'),
-    surfaceContainerLow: tone(0.965, 0.007),
-    surfaceContainer: n('100'),
-    surfaceContainerHigh: tone(0.94, 0.01),
-    surfaceContainerHighest: n('200'),
-  };
-  // the hero card (primary container) keeps a strong contrast to its text: 7:1, like tones 90 / 10
-  const lightPrimaryContainer = readable(p('100'), [p('900')], 'lighter', 7);
-  // text stands on the page, cards, tiles and the hero card (the primary container)
-  const lightGrounds = [...Object.values(lightSurfaces), lightPrimaryContainer];
-  const lightOnPrimaryContainer = readable(p('900'), [lightPrimaryContainer], 'darker');
-  const light: Roles = {
-    primary: readable(p('600'), [WHITE, ...lightGrounds], 'darker'),
-    onPrimary: WHITE,
-    primaryContainer: lightPrimaryContainer,
-    onPrimaryContainer: lightOnPrimaryContainer,
-    secondary: readable(tone(0.48, 0.04), lightGrounds, 'darker'),
-    secondaryContainer: tone(0.91, 0.05),
-    onSecondaryContainer: readable(tone(0.28, 0.05), [tone(0.91, 0.05)], 'darker'),
-    tertiary: readable(tone(0.48, 0.09, 60), lightGrounds, 'darker'),
-    tertiaryContainer: tone(0.915, 0.06, 60),
-    onTertiaryContainer: readable(tone(0.3, 0.06, 60), [tone(0.915, 0.06, 60)], 'darker'),
-    error: readable(c(red, '700'), [WHITE, ...lightGrounds], 'darker'),
-    onError: WHITE,
-    errorContainer: c(red, '100'),
-    onErrorContainer: c(red, '900'),
-    success: readable(c(green, '700'), [WHITE, ...lightGrounds], 'darker'),
-    onSuccess: WHITE,
-    successContainer: c(green, '100'),
-    onSuccessContainer: c(green, '900'),
-    warning: readable(c(amber, '700'), [WHITE, ...lightGrounds], 'darker'),
-    onWarning: WHITE,
-    warningContainer: c(amber, '100'),
-    onWarningContainer: c(amber, '900'),
-    ...lightSurfaces,
-    onSurface: n('900'),
-    onSurfaceVariant: readable(n('600'), lightGrounds, 'darker'),
-    outline: n('500'),
-    outlineVariant: n('300'),
-    inverseSurface: n('800'),
-    inverseOnSurface: n('100'),
-    inversePrimary: readable(p('200'), [n('800')], 'lighter'),
-    scrim: 'rgb(0 0 0 / 32%)',
-  };
-
-  const darkSurfaces = {
-    surface: n('950'),
-    surfaceContainerLowest: tone(0.13, 0.006),
-    surfaceContainerLow: tone(0.19, 0.009),
-    surfaceContainer: n('900'),
-    surfaceContainerHigh: tone(0.25, 0.011),
-    surfaceContainerHighest: n('800'),
-  };
-  const darkPrimaryContainer = readable(p('800'), [p('100')], 'darker', 7);
-  const darkGrounds = [...Object.values(darkSurfaces), darkPrimaryContainer];
-  const dark: Roles = {
-    primary: readable(p('200'), [p('900'), ...darkGrounds], 'lighter'),
-    onPrimary: p('900'),
-    primaryContainer: darkPrimaryContainer,
-    onPrimaryContainer: readable(p('100'), [darkPrimaryContainer], 'lighter'),
-    secondary: readable(tone(0.82, 0.035), darkGrounds, 'lighter'),
-    secondaryContainer: tone(0.35, 0.05),
-    onSecondaryContainer: readable(tone(0.91, 0.035), [tone(0.35, 0.05)], 'lighter'),
-    tertiary: readable(tone(0.82, 0.07, 60), darkGrounds, 'lighter'),
-    tertiaryContainer: tone(0.37, 0.075, 60),
-    onTertiaryContainer: readable(tone(0.92, 0.04, 60), [tone(0.37, 0.075, 60)], 'lighter'),
-    error: readable(c(red, '300'), [c(red, '900'), ...darkGrounds], 'lighter'),
-    onError: c(red, '900'),
-    errorContainer: c(red, '800'),
-    onErrorContainer: c(red, '100'),
-    success: readable(c(green, '300'), [c(green, '950'), ...darkGrounds], 'lighter'),
-    onSuccess: c(green, '950'),
-    successContainer: c(green, '800'),
-    onSuccessContainer: c(green, '100'),
-    warning: readable(c(amber, '300'), [c(amber, '950'), ...darkGrounds], 'lighter'),
-    onWarning: c(amber, '950'),
-    warningContainer: c(amber, '800'),
-    onWarningContainer: c(amber, '100'),
-    ...darkSurfaces,
-    onSurface: n('200'),
-    onSurfaceVariant: readable(n('300'), darkGrounds, 'lighter'),
-    outline: tone(0.62, 0.016),
-    outlineVariant: n('700'),
-    inverseSurface: n('200'),
-    inverseOnSurface: n('800'),
-    inversePrimary: readable(p('600'), [n('200')], 'darker'),
-    scrim: 'rgb(0 0 0 / 32%)',
-  };
-  return { primary, neutral, light, dark };
 }
 
 /** The pairs of roles whose contrast the scheme keeps (text / background), for checks and tests. */
@@ -218,7 +238,6 @@ export function textPairs(roles: Roles): readonly (readonly [string, string, str
     ['карточка', roles.surfaceContainerLowest],
     ['плитка', roles.surfaceContainerLow],
     ['плитка тёмной темы', roles.surfaceContainerHigh],
-    ['карточка «Ближайшее занятие»', roles.primaryContainer],
   ];
   const pairs: [string, string, string][] = [
     ['текст кнопки', roles.onPrimary, roles.primary],

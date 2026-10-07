@@ -3,7 +3,9 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { ColorScheme } from '@core/theme/color-scheme';
 import { DEFAULT_ACCENT, applyAccent } from '@core/theme/portal-accent';
+import { DEFAULT_SCHEME } from '@core/theme/teacher-box-preset';
 
 export const DEFAULT_PORTAL_NAME = 'Teacher Box';
 
@@ -43,6 +45,8 @@ export class Portal {
   });
   private setupDone = false;
 
+  /** The colors of the portal now in use (ADR-0034). */
+  readonly scheme = signal<ColorScheme>(DEFAULT_SCHEME);
   readonly name = computed(() => this.info().name);
   readonly logo = computed(() => this.info().logo);
   /** The portal address or, until it is set, the address this page is opened at. */
@@ -94,7 +98,7 @@ export class Portal {
     const before = this.info();
     this.info.set({ name: info.name, address: info.address, accent: info.accent, logo: info.logo });
     if (info.accent !== before.accent) {
-      applyAccent(info.accent);
+      this.scheme.set(applyAccent(info.accent));
     }
     if (info.logo !== before.logo) {
       this.showIcon(info.logo);

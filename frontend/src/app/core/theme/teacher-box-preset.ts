@@ -84,16 +84,17 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     list: {
       option: {
         focusBackground: over('{md.on.surface}', 'hover'),
-        selectedBackground: '{md.tertiary.container}',
+        // M3 menus and lists: the selected item is the secondary container
+        selectedBackground: '{md.secondary.container}',
         selectedFocusBackground: layer(
-          '{md.on.tertiary.container}',
-          '{md.tertiary.container}',
+          '{md.on.secondary.container}',
+          '{md.secondary.container}',
           'pressed',
         ),
         color: '{md.on.surface}',
         focusColor: '{md.on.surface}',
-        selectedColor: '{md.on.tertiary.container}',
-        selectedFocusColor: '{md.on.tertiary.container}',
+        selectedColor: '{md.on.secondary.container}',
+        selectedFocusColor: '{md.on.secondary.container}',
         icon: { color: '{md.on.surface.variant}', focusColor: '{md.on.surface}' },
       },
       optionGroup: { background: 'transparent', color: '{md.on.surface.variant}' },
@@ -723,6 +724,23 @@ export const TeacherBoxPreset = definePreset(Aura, {
         light: { root: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' } },
         dark: { root: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' } },
       },
+    },
+    // M3 badge on an icon button: no outline, its start at the middle of the 24 px icon, its top near the
+    // icon's top — inside the 40 px button, not on its corner
+    overlaybadge: {
+      root: { outline: { width: '0', color: 'transparent' } },
+      css: `
+        .p-overlaybadge .p-badge {
+          inset-block-start: 0.25rem;
+          inset-inline-start: 50%;
+          inset-inline-end: auto;
+          transform: none;
+        }
+
+        .p-overlaybadge .p-badge:dir(rtl) {
+          transform: none;
+        }
+      `,
     },
     badge: {
       root: {

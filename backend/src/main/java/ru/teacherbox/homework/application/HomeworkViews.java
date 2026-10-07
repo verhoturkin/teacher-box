@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
+import ru.teacherbox.textbooks.api.TextbookFormat;
+import ru.teacherbox.textbooks.api.TextbookKind;
+import ru.teacherbox.textbooks.api.TextbookSummary;
 
 /** Read models of the homework API. */
 public final class HomeworkViews {
@@ -18,6 +21,20 @@ public final class HomeworkViews {
         static AttachmentView of(Attachment attachment) {
             return new AttachmentView(attachment.id(), attachment.filename(), attachment.contentType(),
                     attachment.size(), attachment.uploadedAt());
+        }
+    }
+
+    /**
+     * A textbook of an assignment (ADR-0033).
+     *
+     * @param pages the bound pages ({@code 1-3, 7}); {@code null} — the whole textbook
+     */
+    public record BoundTextbookView(UUID textbookId, TextbookKind kind, String title, @Nullable String course,
+            TextbookFormat format, @Nullable Integer pageCount, @Nullable String pages) {
+
+        static BoundTextbookView of(TextbookSummary textbook, @Nullable String pages) {
+            return new BoundTextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
+                    textbook.format(), textbook.pageCount(), pages);
         }
     }
 
@@ -54,7 +71,8 @@ public final class HomeworkViews {
             Instant createdAt,
             long version,
             List<AttachmentView> attachments,
-            List<TaskSummary> tasks) {
+            List<TaskSummary> tasks,
+            List<BoundTextbookView> textbooks) {
     }
 
     public record SubmissionView(UUID id, @Nullable String text, Instant submittedAt, List<AttachmentView> attachments) {
@@ -66,7 +84,8 @@ public final class HomeworkViews {
             String title,
             @Nullable String description,
             @Nullable Instant dueAt,
-            List<AttachmentView> attachments) {
+            List<AttachmentView> attachments,
+            List<BoundTextbookView> textbooks) {
     }
 
     /** A task with the assignment, all submissions (newest first) and the review. */

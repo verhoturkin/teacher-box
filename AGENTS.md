@@ -19,6 +19,7 @@ student sets login and password and gets a cabinet (ЛК). An `ADMIN` account is
 | `schedule` | lessons, series, attendance, requests, reminders, ICS, Google Calendar | [schedule](docs/modules/schedule.md) |
 | `meetings` | permanent Yandex Telemost rooms | [meetings](docs/modules/meetings.md) |
 | `boards` | Excalidraw boards (scene, images, copies) and external boards by link | [boards](docs/modules/boards.md) |
+| `textbooks` | textbooks and workbooks (one file each), pages for homework and boards | [textbooks](docs/modules/textbooks.md) |
 | `platform` / `shared` | infrastructure / shared kernel | [platform](docs/modules/platform.md), [backend](backend/AGENTS.md) |
 
 Stack: Java 25, Spring Boot 4.1, Spring Modulith 2.1, Spring Security 7, `JdbcClient` + Flyway, H2 (file,
@@ -76,12 +77,13 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `platform` | `shared` |
    | `identity` | `shared` |
    | `billing` | `shared`, `identity::api`, `schedule::api` (events only: lesson outcome → charge) |
-   | `homework` | `shared`, `identity::api` |
+   | `homework` | `shared`, `identity::api`, `textbooks::api` (summaries and pages of bound textbooks) |
    | `notifications` | `shared`, `identity::api` (events and facades), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (events only) |
    | `ai` | `shared` |
    | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
    | `meetings` | `shared`, `identity::api` |
    | `boards` | `shared`, `identity::api` |
+   | `textbooks` | `shared`, `identity::api` |
 
    Business modules never depend on `platform`; `platform` knows no business module (it collects SPI beans).
 3. **Data:** own schema per module (`platform` too), own Flyway migrations in `db/migration/<module>/` and history
@@ -155,11 +157,14 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 
 ## 8. Commits
 
-1. Checks of the touched parts pass before every commit (`./scripts/verify.sh`; hook `.githooks/pre-commit`,
+1. **A new branch always starts from the latest `main`:** `git fetch origin`, then
+   `git switch -c <branch> origin/main` (stage numbers and the plan continue from what `main` already has).
+   A long-lived branch takes new `main` commits with `git merge origin/main`.
+2. Checks of the touched parts pass before every commit (`./scripts/verify.sh`; hook `.githooks/pre-commit`,
    enable with `git config core.hooksPath .githooks`). Never `--no-verify`.
-2. Conventional Commits: `feat(billing): record lesson payments`, `fix(identity): …`, `test`, `docs`, `build`,
+3. Conventional Commits: `feat(billing): record lesson payments`, `fix(identity): …`, `test`, `docs`, `build`,
    `chore`. Scope — module or `frontend`, `docker`, `platform`.
-3. One commit = one complete logical unit (usually a plan substep); tick its checkbox in `docs/PLAN.md` in the
+4. One commit = one complete logical unit (usually a plan substep); tick its checkbox in `docs/PLAN.md` in the
    same commit; archive the release per `docs/PLAN.md`.
 
 ## 9. Definition of Done

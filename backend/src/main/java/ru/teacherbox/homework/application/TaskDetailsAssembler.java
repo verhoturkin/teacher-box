@@ -29,14 +29,16 @@ class TaskDetailsAssembler {
     private final AssignmentRepository assignments;
     private final SubmissionRepository submissions;
     private final AttachmentService attachments;
+    private final TextbookBindings textbooks;
     private final UserDirectory directory;
     private final Clock clock;
 
     TaskDetailsAssembler(AssignmentRepository assignments, SubmissionRepository submissions,
-            AttachmentService attachments, UserDirectory directory, Clock clock) {
+            AttachmentService attachments, TextbookBindings textbooks, UserDirectory directory, Clock clock) {
         this.assignments = assignments;
         this.submissions = submissions;
         this.attachments = attachments;
+        this.textbooks = textbooks;
         this.directory = directory;
         this.clock = clock;
     }
@@ -61,7 +63,7 @@ class TaskDetailsAssembler {
                 task.teacherComment(), task.assignedAt(), task.submittedAt(), task.reviewedAt(),
                 task.isOverdue(assignment.dueAt(), clock.instant()),
                 new AssignmentInfo(assignment.id(), assignment.title(), assignment.description(), assignment.dueAt(),
-                        assignmentFiles),
+                        assignmentFiles, textbooks.of(assignment.id())),
                 taskSubmissions.stream()
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),
                                 submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))

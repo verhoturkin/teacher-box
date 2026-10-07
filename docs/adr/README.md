@@ -36,7 +36,7 @@ commit.
 | [0020](0020-lists-in-cards.md) | Segmented lists in cards | active | design-system |
 | [0021](0021-single-column.md) | One column; steady buttons; word wrapping | active | design-system |
 | [0022](0022-expressive-fields-menus-sheets.md) | Fields, menus, split button, bottom sheet | active | design-system |
-| [0023](0023-status-colors-and-contrast.md) | Status colours, warning role, contrast | active | design-system |
+| [0023](0023-status-colors-and-contrast.md) | Status colours, warning role, contrast | colour computation superseded by 0034 | design-system |
 | [0024](0024-accessibility.md) | Accessibility | active | design-system |
 | [0025](0025-page-states.md) | Page states: loading, error, empty, feedback | active | design-system |
 | [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | active | design-system |
@@ -46,3 +46,5 @@ commit.
 | [0030](0030-livekit-calls.md) | Built-in video calls on LiveKit: own server, rooms `tb-<ownerId>`, tokens, link precedence | active | [meetings](../modules/meetings.md) |
 | [0031](0031-split-variant-only.md) | Only the split variant: single container, `bundle-frontend` and backend SPA serving removed | active | README, [operations](../operations.md) |
 | [0032](0032-ready-images-and-installer.md) | Ready GHCR images (amd64/arm64), `compose.yaml` without the repository, Caddy profile, `install.sh` and `teacherbox` | active | README, [operations](../operations.md) |
+| [0033](0033-textbooks.md) | Textbooks: module `textbooks`, PDF pages rendered by PDFBox, `homework` → `textbooks::api`, pages on a board in a frame | active | [textbooks](../modules/textbooks.md) |
+| [0034](0034-md3-colors-from-material-color-utilities.md) | MD3 colours from `@material/material-color-utilities`: Fidelity scheme (spec 2025) from the portal colour, custom success/warning | active | design-system |

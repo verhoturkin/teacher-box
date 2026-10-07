@@ -51,7 +51,7 @@ Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 chara
 
 | Endpoint | Who |
 |---|---|
-| `GET /api/teacher/boards?studentId=|groupId=`, `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
+| `GET /api/teacher/boards?studentId=|groupId=` (`studentId` may repeat: the boards of any of the students, with their groups'), `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
 | `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
 | WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
@@ -73,8 +73,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
   confirmation step inside the dialog (no dialog on top).
-- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's fifth section — five fit the bottom bar
-  without «Ещё»); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
+- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — under «Ещё» on a
+  phone); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
 - `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog, «Следующее занятие»).
 - `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
@@ -110,9 +110,16 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
     Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
     in both themes; the canvas background stays the board's.
-- `to-board/` — «На доску» (assignment dialog and page, task review): an Excalidraw board opens in a new tab with
+- `to-board/` — «На доску» (assignment dialog and page, task review, textbooks): the board is chosen in a select with
+  a search by title; `[students]` — from an assignment only the boards of its students (their own and their groups',
+  one `GET …?studentId=` request; none — «У учеников задания досок нет»), `null` (textbooks) — every board; an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard
-  (`board-clipboard.ts`) and opens by its link.
+  (`board-clipboard.ts`) and opens by its link. Pages of a textbook (ADR-0033, `PagesMaterial`: a frame name and
+  API addresses of page pictures, only `/api/…` accepted from the storage; `ToBoardDialog [pages]` lists only
+  Excalidraw boards and projects the page field of `textbooks`) — the editor fetches the pictures
+  (`BoardsApi.picture`), puts them in a row (150 dpi pictures at half size, 24 px apart, tops aligned) inside a frame with
+  40 px padding named after the textbook and its pages — 80 px to the right of everything on the board, tops at the
+  drawing's top (on an empty board — at the view centre), and scrolls the view to them (`scrollToContent`).
 
 Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

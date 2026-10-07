@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AttachmentService.FileDownload;
 import ru.teacherbox.homework.application.UploadedFile;
+import ru.teacherbox.textbooks.api.TextbookContent;
 
 /** Conversions between HTTP and stored files. */
 final class FileResponses {
@@ -26,6 +27,20 @@ final class FileResponses {
                 .contentLength(file.attachment().size())
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
                         .filename(file.attachment().filename(), StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .header("X-Content-Type-Options", "nosniff")
+                .cacheControl(CacheControl.noStore())
+                .body(file.content());
+    }
+
+    /** A textbook's file or pages: a download like an attachment. */
+    static ResponseEntity<Resource> download(TextbookContent file) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.contentType()))
+                .contentLength(file.size())
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(file.filename(), StandardCharsets.UTF_8)
                         .build()
                         .toString())
                 .header("X-Content-Type-Options", "nosniff")

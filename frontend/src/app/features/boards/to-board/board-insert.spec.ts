@@ -34,6 +34,21 @@ describe('BoardInsert', () => {
     expect(insert.take('b1')).toBeNull();
   });
 
+  it('hands pages of a textbook, only with API addresses', () => {
+    const pages = {
+      title: 'Spotlight 5, с. 2',
+      mode: 'pages' as const,
+      pictures: ['/api/teacher/textbooks/tb-1/pages/2'],
+    };
+    insert.put('b1', pages, 1000);
+    expect(insert.take('b1', 1000)).toEqual(pages);
+
+    insert.put('b1', { ...pages, pictures: ['https://evil.example/x.png'] }, 1000);
+    expect(insert.take('b1', 1000)).toBeNull();
+    localStorage.setItem('tb.board-insert.b1', '{"title":"x","mode":"pages","pictures":3,"at":1}');
+    expect(insert.take('b1', 1)).toBeNull();
+  });
+
   it('works without the storage', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('quota');

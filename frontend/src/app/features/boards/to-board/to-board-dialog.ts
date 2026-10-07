@@ -7,23 +7,25 @@ import {
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
+import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
-import { RadioButton } from 'primeng/radiobutton';
+import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS, boardMembersText, boardRoute } from '../boards-labels';
 import { BoardClipboard } from './board-clipboard';
-import { BoardInsert, InsertMode } from './board-insert';
+import { BoardInsert, InsertMode, PagesMaterial } from './board-insert';
 
 /** What happened to the material. */
 export interface Placed {
-  readonly mode: InsertMode;
+  readonly mode: InsertMode | 'pages';
   readonly board: Board;
   /** Where the board opened. */
   readonly href: string;
@@ -32,11 +34,12 @@ export interface Placed {
 /**
  * Puts a material (an assignment, a draft of the AI) on a board (ADR-0028). An Excalidraw board opens in
  * a new tab with the material already at the centre; an external board gets it through the clipboard
- * (the teacher pastes it there). Boards of the given students and groups come first.
+ * (the teacher pastes it there). From an assignment only its students' boards are offered. Pages of a textbook
+ * (`pages`) go only on an Excalidraw board, in a frame; what is projected inside chooses the pages.
  */
 @Component({
   selector: 'tb-to-board-dialog',
-  imports: [EmptyState, FormsModule, Button, Dialog, Message, RadioButton],
+  imports: [EmptyState, FormsModule, Button, Dialog, Message, Select],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -46,40 +49,51 @@ export interface Placed {
       styleClass="tb-dialog"
       [draggable]="false"
     >
-      @if (loaded() && boards().length === 0) {
+      @if (loaded() && sorted().length === 0) {
         <tb-empty-state
           [compact]="true"
           icon="pi-th-large"
-          title="Досок пока нет"
-          hint="Создайте доску в разделе «Доски»."
+          [title]="emptyTitle()"
+          [hint]="emptyHint()"
         />
       } @else {
+        <ng-content />
         <p class="tb-muted">{{ hint() }}</p>
         @if (needsClipboard() && !richClipboard) {
           <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
         }
-        <ul class="tb-to-board">
-          @for (board of sorted(); track board.id) {
-            <li>
-              <p-radiobutton
-                [inputId]="'to-board-' + board.id"
-                name="board"
-                [value]="board.id"
-                [(ngModel)]="chosen"
-              />
-              <label [for]="'to-board-' + board.id">
-                {{ board.title }}
-                <span class="tb-muted"
-                  >— {{ kindLabels[board.kind] }}, {{ membersText(board) }}</span
+        <div class="tb-field tb-to-board">
+          <label for="to-board-board">Доска</label>
+          <p-select
+            inputId="to-board-board"
+            [options]="sorted()"
+            optionLabel="title"
+            optionValue="id"
+            [(ngModel)]="chosen"
+            placeholder="Выберите доску"
+            [filter]="true"
+            filterBy="title"
+            filterPlaceholder="Поиск по названию"
+            emptyFilterMessage="Таких досок нет"
+            appendTo="body"
+            [fluid]="true"
+          >
+            <ng-template #item let-board>
+              <div class="tb-to-board__option">
+                <span>{{ board.title }}</span>
+                <small class="tb-muted"
+                  >{{ kindLabels[kindOf(board)] }}, {{ membersText(board) }}</small
                 >
-              </label>
-            </li>
-          }
-        </ul>
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
       }
       @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
-          @if (placed.board.kind === 'EXCALIDRAW') {
+          @if (placed.mode === 'pages') {
+            Доска открылась в новой вкладке, страницы уже на ней.
+          } @else if (placed.board.kind === 'EXCALIDRAW') {
             Доска открылась в новой вкладке, материал уже на ней.
           } @else {
             {{ placed.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
@@ -100,38 +114,38 @@ export interface Placed {
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          label="Картинкой"
-          icon="pi pi-image"
-          severity="secondary"
-          [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
-          [loading]="copying()"
-          (onClick)="place('image')"
-        />
-        <p-button
-          label="Текстом"
-          icon="pi pi-copy"
-          [disabled]="chosenBoard() === null"
-          [loading]="copying()"
-          (onClick)="place('text')"
-        />
+        @if (pages(); as material) {
+          <p-button
+            label="На доску"
+            icon="pi pi-th-large"
+            [disabled]="chosenBoard() === null || material.pictures.length === 0"
+            (onClick)="placePages(material)"
+          />
+        } @else {
+          <p-button
+            label="Картинкой"
+            icon="pi pi-image"
+            severity="secondary"
+            [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
+            [loading]="copying()"
+            (onClick)="place('image')"
+          />
+          <p-button
+            label="Текстом"
+            icon="pi pi-copy"
+            [disabled]="chosenBoard() === null"
+            [loading]="copying()"
+            (onClick)="place('text')"
+          />
+        }
       </ng-template>
     </p-dialog>
   `,
   styles: `
-    .tb-to-board {
+    .tb-to-board__option {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-2);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: center;
-        gap: var(--tb-space-2);
-      }
+      min-width: 0;
     }
   `,
 })
@@ -144,10 +158,19 @@ export class ToBoardDialog {
   readonly title = input('');
   /** The material in Markdown. */
   readonly markdown = input('');
-  /** Students and groups whose boards come first. */
-  readonly ownerIds = input<readonly string[]>([]);
+  /**
+   * Whose boards to offer: the students of an assignment (their own boards and their groups'); `null` — every
+   * board (e.g. from «Учебники»).
+   */
+  readonly students = input<readonly string[] | null>(null);
+  /** Pages of a textbook instead of the Markdown: only Excalidraw boards take them. */
+  readonly pages = input<PagesMaterial | null>(null);
 
   protected readonly kindLabels = BOARD_KIND_LABELS;
+  /** The item template's board is untyped. */
+  protected kindOf(board: Board): Board['kind'] {
+    return board.kind;
+  }
   protected readonly membersText = boardMembersText;
   protected readonly boards = signal<Board[]>([]);
   protected readonly loaded = signal(false);
@@ -156,34 +179,55 @@ export class ToBoardDialog {
   protected readonly done = signal<Placed | null>(null);
   protected readonly error = signal<string | null>(null);
   readonly chosen = signal<string | null>(null);
+  /** The boards to choose from: pages go only on Excalidraw boards. */
   protected readonly sorted = computed(() => {
-    const preferred = new Set(this.ownerIds());
-    const rank = (board: Board): number =>
-      Number(board.members.some((member) => preferred.has(member.id)));
-    return [...this.boards()].sort((a, b) => rank(b) - rank(a));
+    const pages = this.pages() !== null;
+    return this.boards().filter((board) => !pages || board.kind === 'EXCALIDRAW');
   });
+  protected readonly emptyTitle = computed(() => {
+    if (this.students() !== null) return 'У учеников задания досок нет';
+    return this.pages() === null ? 'Досок пока нет' : 'Досок Excalidraw пока нет';
+  });
+  protected readonly emptyHint = computed(() =>
+    this.students() === null
+      ? 'Создайте доску в разделе «Доски».'
+      : 'Откройте доску ученикам задания или их группе в разделе «Доски».',
+  );
   protected readonly chosenBoard = computed(
-    () => this.boards().find((board) => board.id === this.chosen()) ?? null,
+    () => this.sorted().find((board) => board.id === this.chosen()) ?? null,
   );
   /** An external board gets the material through the clipboard. */
   protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
   protected readonly hint = computed(() =>
-    this.needsClipboard()
-      ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
-      : 'Доска откроется в новой вкладке, материал появится в центре.',
+    this.pages() !== null
+      ? 'Выберите доску: она откроется в новой вкладке, страницы встанут справа от рисунка — в ряд, во фрейме.'
+      : this.needsClipboard()
+        ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
+        : 'Доска откроется в новой вкладке, материал появится в центре.',
   );
 
   constructor() {
     effect(() => {
-      if (this.visible()) {
+      if (!this.visible()) {
+        return;
+      }
+      const students = this.students();
+      untracked(() => {
         this.done.set(null);
         this.error.set(null);
-        this.api.list({}, quietContext()).subscribe((boards) => {
+        this.loaded.set(false);
+        const found =
+          students === null
+            ? this.api.list({}, quietContext())
+            : students.length === 0
+              ? of([])
+              : this.api.list({ studentIds: students }, quietContext());
+        found.subscribe((boards) => {
           this.boards.set(boards);
           this.loaded.set(true);
           this.chosen.set(this.sorted()[0]?.id ?? null);
         });
-      }
+      });
     });
   }
 
@@ -215,6 +259,17 @@ export class ToBoardDialog {
     } finally {
       this.copying.set(false);
     }
+  }
+
+  /** Pages go only on an Excalidraw board: it opens with them at the centre. */
+  placePages(material: PagesMaterial): void {
+    const board = this.chosenBoard();
+    if (board === null) {
+      return;
+    }
+    this.error.set(null);
+    this.insert.put(board.id, material);
+    this.open({ mode: 'pages', board, href: boardRoute('teacher', board.id) });
   }
 
   /** Still within the click's activation; if the browser blocks the tab, the message has a link. */
