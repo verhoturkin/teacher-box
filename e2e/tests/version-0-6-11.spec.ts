@@ -165,6 +165,7 @@ test('every portal color keeps buttons, links and red text readable in both them
           'surface-container-lowest',
           'surface-container-low',
           'primary-container',
+          'on-primary-container',
           'on-surface-variant',
         ]);
         const pairs: [string, string, string][] = [
@@ -172,7 +173,8 @@ test('every portal color keeps buttons, links and red text readable in both them
           ['ссылка на карточке', 'primary', 'surface-container-lowest'],
           ['ссылка на странице', 'primary', 'surface-container'],
           ['ссылка на плитке', 'primary', 'surface-container-low'],
-          ['ссылка на hero', 'primary', 'primary-container'],
+          // the hero card is the portal color itself (ADR-0034): its links are its own text role
+          ['ссылка на hero', 'on-primary-container', 'primary-container'],
           ['красный текст на плитке', 'error', 'surface-container-low'],
           ['пояснение на плитке', 'on-surface-variant', 'surface-container-low'],
         ];

@@ -1,3 +1,4 @@
+import { Hct, SchemeFidelity, argbFromHex, hexFromArgb } from '@material/material-color-utilities';
 import { contrast } from './color';
 import { Shades, auraPalette, colorScheme, lowestContrast, textPairs } from './color-scheme';
 import { ownShades } from './portal-accent';
@@ -21,10 +22,21 @@ describe('color scheme', () => {
     }
   });
 
-  it('keeps the default indigo as it was and darkens the pale palettes', () => {
-    expect(colorScheme(auraPalette('indigo')).light.primary).toBe('#4f46e5');
-    expect(colorScheme(auraPalette('teal')).light.primary).not.toBe('#0d9488');
-    expect(colorScheme(auraPalette('indigo')).light.error).toBe('#b91c1c');
+  it('takes the roles from the M3 Fidelity scheme of the color', () => {
+    const seed = Hct.fromInt(argbFromHex(auraPalette('indigo')['500'] ?? ''));
+    const light = new SchemeFidelity(seed, false, 0, '2025');
+    const dark = new SchemeFidelity(seed, true, 0, '2025');
+    const scheme = colorScheme(auraPalette('indigo'));
+
+    expect(scheme.light.primary).toBe('#4648d4');
+    expect(scheme.light.primaryContainer).toBe(hexFromArgb(light.primaryContainer));
+    expect(scheme.light.surfaceContainer).toBe(hexFromArgb(light.surfaceContainer));
+    expect(scheme.light.error).toBe(hexFromArgb(light.error));
+    expect(scheme.dark.primary).toBe(hexFromArgb(dark.primary));
+    expect(scheme.dark.surface).toBe(hexFromArgb(dark.surface));
+    expect(scheme.neutral['950']).toBe(hexFromArgb(light.neutralPalette.tone(10)));
+    // success and warning: Aura green and amber harmonized with the seed, M3 custom-color tones
+    expect(scheme.light.success).not.toBe(scheme.light.warning);
   });
 
   it('computes every role as a ready color: no oklch(from) for the browser', () => {

@@ -45,18 +45,22 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 
 - **Only roles `--p-md-*`** in styles. Never `--p-surface-N`, `--p-<colour>-N` palettes, or opacity for
   dimming: muted text is on-surface-variant; 38 % only for disabled controls.
-- **Scheme from the portal colour** (seed): a preset palette or custom `#rrggbb` → shades 50–950
-  (`updatePrimaryPalette`, `palette()`); all M3 roles (primary, secondary, tertiary, neutrals, containers) are
-  computed in the app (`color-scheme.ts`, OKLCH tones mapped to sRGB) and pushed via `updatePreset`. No
-  `oklch(from …)` in CSS. Recomputed on load and when the portal colour is saved.
-- **Contrast is guaranteed by tone:** primary ≥ 4.5:1 against on-primary, page, card, list tile and
-  primary-container (start from shade 600 / dark 200, shift lightness until it passes); the same for
-  on-*-container pairs and inverse-primary / inverse-surface; primary-container ↔ its text ≥ 7:1. All preset
-  palettes are tested in both themes. The custom-colour check reports darkening and warns when primary is
-  close (OKLab ΔE×100 < 12) to success or error.
-- **Custom roles:** success (light green 700 / white, container green 100 / 900; dark green 300 / 950,
-  container 800 / 100), warning (amber 700 / white, container amber 100 / 900; dark amber 300 / 950,
-  container 800 / 100), error (light red 700). No info role — info uses tertiary.
+- **Scheme from the portal colour** (seed, ADR-0034): a preset palette or custom `#rrggbb` → shades 50–950
+  (PrimeNG's primary palette: `updatePrimaryPalette`, `palette()`); shade 500 is the seed of the M3 dynamic scheme
+  of `@material/material-color-utilities` — **Fidelity**, spec 2025 (M3 Expressive): primary and the primary
+  container keep the chosen colour. All M3 roles of both themes (primary, secondary, tertiary, error, surfaces,
+  outlines, inverse) and the neutral palette (tones 99…10 as shades 0–950) come from it (`color-scheme.ts`) and are
+  pushed via `updatePreset`. No `oklch(from …)` in CSS. Recomputed on load and when the portal colour is saved.
+- **Contrast is guaranteed by tone** (ADR-0023 kept): primary, error, success, warning ≥ 4.5:1 against their on-
+  colour, page, card and list tiles; secondary, tertiary, on-surface-variant ≥ 4.5:1 on every surface; every
+  on-*-container ≥ 4.5:1 on its container; inverse-primary on inverse-surface. A role short of it is moved along its
+  hue (`readable`). The hero card (primary container — the portal colour itself) carries only on-primary-container:
+  its links and text buttons take that colour (links underlined). All preset palettes and sample own colours are
+  tested in both themes. The custom-colour check reports darkening and warns when primary is close (OKLab ΔE×100 <
+  12) to success or error.
+- **Custom roles:** success and warning are M3 custom colours (`customColor`): Aura green 500 / amber 500
+  harmonized with the seed, tones 40 / 100 / 90 / 10 (dark 80 / 20 / 30 / 90). Error is M3's error palette. No info
+  role — info uses tertiary.
 - **Status = severity = role** (the map status → severity lives in the module's `*-labels.ts`; tags, calendar
   and widgets take it from there):
 
@@ -215,7 +219,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
-  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — tertiary-container (selected theme also says «(выбрана)»); destructive item red.
+  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it (selected theme also says «(выбрана)»); destructive item red.
 
 ## 9. Lists and tables
 

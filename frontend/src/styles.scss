@@ -1211,9 +1211,16 @@ a.p-menu-item-link:hover {
   background: var(--p-md-primary-container);
   color: var(--p-md-on-primary-container);
 
+  /* the container is the portal color itself (ADR-0034): only its own text role is readable on it */
   .tb-muted,
-  .tb-hint {
+  .tb-hint,
+  a,
+  .p-button-text {
     color: var(--p-md-on-primary-container);
+  }
+
+  a {
+    text-decoration: underline;
   }
 }
 
@@ -2047,10 +2054,10 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The chosen item of a menu (the theme in the user menu): the tertiary container (ADR-0022) */
+/* The chosen item of a menu (the theme in the user menu): the secondary container, as M3 menus have it */
 .p-menu .tb-menu-item--selected > .p-menu-item-content {
-  background: var(--p-md-tertiary-container);
-  color: var(--p-md-on-tertiary-container);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
 
   .p-menu-item-link,
   .p-menu-item-icon {

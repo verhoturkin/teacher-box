@@ -86,9 +86,18 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
   its students' boards (their own and their groups': `GET /api/teacher/boards?studentId=…&studentId=…`), from
   «Учебники» — every board.
 
-### Stage 137. Release 0.10.0
+### Stage 137. MD3 colours from material-color-utilities (F)
 
-- [ ] 137.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
+- [x] 137.1 ADR-0034: `core/theme/color-scheme.ts` computes the roles of both themes with
+  `@material/material-color-utilities` (Fidelity, spec 2025, seed — shade 500 of the portal colour), success and
+  warning as harmonized custom colours, the neutral palette from M3 tones; ADR-0023 contrast kept; the hero card
+  carries only on-primary-container. `vitest.config.ts` inlines the package (0.4.0 imports without `.js`).
+- [x] 137.2 The selected item of menus and lists (the theme in the user menu, select options) is the secondary
+  container, as M3 menus have it (`styles.scss`, `teacher-box-preset.ts`).
+
+### Stage 138. Release 0.10.0
+
+- [ ] 138.1 Skill `release`: help, E2E `version-0-10-0.spec.ts`, CHANGELOG, version, archive.
 
 *Note:* the commits of stages 131 and 132 say «stage 126» and «stage 127»: they were numbered before
 release 0.9.3 (stages 126–130) was merged.
