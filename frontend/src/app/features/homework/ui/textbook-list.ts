@@ -90,6 +90,12 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
       </ul>
     }
   `,
+  styles: `
+    /* like the files above it: apart from the button under it */
+    .tb-textbook-list {
+      margin: var(--tb-space-2) 0;
+    }
+  `,
 })
 export class TextbookList {
   readonly textbooks = input.required<readonly BoundTextbook[]>();
