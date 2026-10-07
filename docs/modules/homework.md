@@ -1,6 +1,7 @@
 # homework
 
-Assignments, submissions, review, attachments. Depends on: `shared`, `identity::api`. Schema `homework`.
+Assignments, submissions, review, attachments, bound textbooks. Depends on: `shared`, `identity::api`,
+`textbooks::api`. Schema `homework`.
 
 ## Rules
 
@@ -13,6 +14,12 @@ Assignments, submissions, review, attachments. Depends on: `shared`, `identity::
   `TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`, `MAX_FILES_PER_UPLOAD` (`FilePolicy`).
 - Review queue for the teacher; AI drafts are produced by the `ai` module from texts the frontend passes — `homework`
   does not know `ai`.
+- Textbooks ([ADR-0033](../adr/0033-textbooks.md)): the teacher binds a textbook to an assignment with pages
+  (`1-3, 7`, checked against its page count by `textbooks::api.PageRanges`) or whole (blank); binding it again
+  changes the pages. `AssignmentDetails.textbooks` / `AssignmentInfo.textbooks` (`BoundTextbookView`: kind,
+  title, course, format, page count, pages) skip deleted textbooks. The student of the task downloads the bound
+  pages: a PDF cut to them (`Textbooks.content`), any other file or a whole binding — the whole file
+  (`Textbooks.file`); a textbook not bound to the task — 404 `homework.textbook-not-found`.
 - A student sees only own tasks and attachments (403/404 tests).
 
 ## Contract (`homework::api`)
@@ -21,12 +28,13 @@ Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDu
 
 ## Data
 
-`assignments`, `tasks`, `submissions`, `attachments`.
+`assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages).
 
 ## REST
 
-`/api/teacher/homework/**` (assignments, students, attachments, tasks/{id}/review, review-queue, summary),
-`/api/me/homework/**` (tasks, submissions, attachments, summary).
+`/api/teacher/homework/**` (assignments, students, attachments, `POST assignments/{id}/textbooks`
+`{textbookId, pages}`, `DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary),
+`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
 
 ## Frontend
 

@@ -41,15 +41,17 @@ public class AssignmentService {
     private final AssignmentRepository assignments;
     private final TaskRepository tasks;
     private final AttachmentService attachments;
+    private final TextbookBindings textbooks;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks, AttachmentService attachments,
-            UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            TextbookBindings textbooks, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
         this.assignments = assignments;
         this.tasks = tasks;
         this.attachments = attachments;
+        this.textbooks = textbooks;
         this.directory = directory;
         this.events = events;
         this.clock = clock;
@@ -128,6 +130,25 @@ public class AssignmentService {
         attachments.delete(attachment);
     }
 
+    /**
+     * Binds a textbook to the assignment, or changes its pages (ADR-0033).
+     *
+     * @param pages {@code 1-3, 7}; blank — the whole textbook
+     */
+    @Transactional
+    public AssignmentDetails bindTextbook(UUID assignmentId, UUID textbookId, @Nullable String pages) {
+        Assignment assignment = load(assignmentId);
+        textbooks.bind(assignmentId, textbookId, pages);
+        return details(assignment);
+    }
+
+    @Transactional
+    public AssignmentDetails unbindTextbook(UUID assignmentId, UUID textbookId) {
+        Assignment assignment = load(assignmentId);
+        textbooks.unbind(assignmentId, textbookId);
+        return details(assignment);
+    }
+
     /** The teacher may download every file. */
     @Transactional(readOnly = true)
     public AttachmentService.FileDownload download(UUID attachmentId) {
@@ -164,7 +185,8 @@ public class AssignmentService {
                 assignmentTasks.stream()
                         .map(summary)
                         .sorted(Comparator.comparing(TaskSummary::studentName, String.CASE_INSENSITIVE_ORDER))
-                        .toList());
+                        .toList(),
+                textbooks.of(assignment.id()));
     }
 
     private Assignment load(UUID assignmentId) {

@@ -77,7 +77,7 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `platform` | `shared` |
    | `identity` | `shared` |
    | `billing` | `shared`, `identity::api`, `schedule::api` (events only: lesson outcome → charge) |
-   | `homework` | `shared`, `identity::api` |
+   | `homework` | `shared`, `identity::api`, `textbooks::api` (summaries and pages of bound textbooks) |
    | `notifications` | `shared`, `identity::api` (events and facades), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (events only) |
    | `ai` | `shared` |
    | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |

@@ -20,4 +20,11 @@ public interface Textbooks {
      * @throws ru.teacherbox.shared.error.NotFoundException if there is no such textbook
      */
     TextbookContent content(UUID textbookId, PageRanges pages);
+
+    /**
+     * The whole file of a textbook.
+     *
+     * @throws ru.teacherbox.shared.error.NotFoundException if there is no such textbook
+     */
+    TextbookContent file(UUID textbookId);
 }

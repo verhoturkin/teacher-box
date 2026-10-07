@@ -39,6 +39,12 @@ class TextbooksFacade implements Textbooks {
         return textbooks.content(textbookId, pages);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public TextbookContent file(UUID textbookId) {
+        return textbooks.whole(textbookId);
+    }
+
     private static TextbookSummary summary(Textbook textbook) {
         return new TextbookSummary(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
                 textbook.file().format(), textbook.pageCount());

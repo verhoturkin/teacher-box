@@ -182,6 +182,7 @@ class TextbooksIntegrationTests {
             assertThat(pdf.getNumberOfPages()).isEqualTo(2);
         }
         assertThat(cut.size()).isEqualTo(cut.content().contentLength());
+        assertThat(facade.file(textbookId).filename()).isEqualTo("Учебник.pdf");
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> facade.content(textbookId, PageRanges.parse("7")))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("5 pages");
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> facade.content(UUID.randomUUID(), PageRanges.all(1)))

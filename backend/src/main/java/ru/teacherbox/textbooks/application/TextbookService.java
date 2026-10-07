@@ -231,6 +231,10 @@ public class TextbookService {
                 .toList();
     }
 
+    TextbookContent whole(UUID textbookId) {
+        return whole(find(textbookId));
+    }
+
     Optional<Textbook> findOptional(UUID textbookId) {
         return textbooks.findById(textbookId);
     }

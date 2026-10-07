@@ -59,7 +59,7 @@ ADR: [ADR-0033](adr/0033-textbooks.md) — module `textbooks`, PDF pages rendere
 
 ### Stage 134. Textbooks in assignments (B, F)
 
-- [ ] 134.1 **B** `homework`: table `assignment_textbooks` (assignment, textbook, pages), `AssignmentService`
+- [x] 134.1 **B** `homework`: table `assignment_textbooks` (assignment, textbook, pages), `AssignmentService`
   `bindTextbook` / `unbindTextbook` (`POST|DELETE /api/teacher/homework/assignments/{id}/textbooks`), pages
   checked against the page count (`PageRanges`); `AssignmentDetails.textbooks`, `AssignmentInfo.textbooks`;
   the student downloads the bound pages `GET /api/me/homework/tasks/{taskId}/textbooks/{textbookId}`.
