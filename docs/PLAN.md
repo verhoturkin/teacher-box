@@ -17,16 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goal: images saved on a board appear quickly when it opens.
-
-### Stage 143. Faster board images (F)
-
-- [x] 143.1 `boards/editor/board-sync.ts` `fetchMissingFiles`: images were fetched one after another and shown
-  only when all had arrived; now six at a time (`FILE_FETCHES`), each added with `addFiles` on arrival, and an
-  image already on its way is not requested again by a poll or a live message.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
