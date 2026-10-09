@@ -49,4 +49,4 @@ ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink
 `features/notifications/`: `notifications-page` (foldable sections: inbox, messages to students, messengers,
 students, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
 opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `channels/`, `preferences/`, `teacher/` (broadcast, bot wizard), `student/`,
-`home/` widget, `notification-labels.ts`; bell in the top bar.
+`home/` widget (only unread notifications: ✓ each, «Прочитать все» in the title), `notification-labels.ts`; bell in the top bar.

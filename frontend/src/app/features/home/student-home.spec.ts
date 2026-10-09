@@ -39,7 +39,7 @@ describe('StudentHome', () => {
       .flush(myHomeworkSummary({ open: 1, upcoming: [myTask()] }));
     backend.expectOne('/api/me/billing/summary').flush(myBillingSummary({ balance: 150_000 }));
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/boards').flush([aMyBoard({ title: 'Доска по алгебре' })]);
     backend
@@ -52,7 +52,7 @@ describe('StudentHome', () => {
     expect(text).toContain('Получайте уведомления в мессенджере');
     expect(text).toContain('Дроби');
     expect(text).toContain('аванс 1 500 ₽');
-    expect(text).toContain('Уведомлений пока нет');
+    expect(text).toContain('Новых уведомлений нет');
     expect(text).toContain('Доска по алгебре');
     expect(text).toContain('Учитель уже в звонке');
     // one column (ADR-0021): the widgets one under another
@@ -87,7 +87,7 @@ describe('StudentHome', () => {
       .expectOne('/api/me/schedule/summary')
       .flush(null, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne('/api/me/boards').flush([]);
     backend.expectOne('/api/me/meetings/calls').flush([]);
     await fixture.whenStable();
