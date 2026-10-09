@@ -81,7 +81,9 @@ test('on a phone the main action is the FAB above the bottom navigation', async 
   await signIn(page);
   await expect(page.locator('tb-side-nav')).toHaveCount(0);
 
-  await page.locator('nav.tb-bottom-nav').getByRole('link', { name: 'Ученики' }).click();
+  // «Ученики» is under «Ещё» since 0.10.1
+  await page.locator('nav.tb-bottom-nav').getByRole('button', { name: 'Ещё разделы' }).click();
+  await page.getByRole('menuitem', { name: 'Ученики' }).click();
   const fab = page.getByRole('button', { name: 'Добавить ученика' });
   await expect(fab).toBeVisible();
   // the FAB slides in: measure it where it stops

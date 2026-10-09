@@ -74,19 +74,14 @@ describe('Shell', () => {
     expect(hostElement(fixture).querySelector('nav.tb-bottom-nav')).toBeNull();
   });
 
-  it('raises the top bar when the page is scrolled', async () => {
+  it('keeps the tone of the top bar when the page is scrolled', async () => {
     const header = requireElement(hostElement(fixture), '.tb-shell__header', HTMLElement);
-    expect(header.classList).not.toContain('tb-shell__header--scrolled');
+    const before = header.className;
 
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(120);
     window.dispatchEvent(new Event('scroll'));
     await fixture.whenStable();
-    expect(header.classList).toContain('tb-shell__header--scrolled');
-
-    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(0);
-    window.dispatchEvent(new Event('scroll'));
-    await fixture.whenStable();
-    expect(header.classList).not.toContain('tb-shell__header--scrolled');
+    expect(header.className).toBe(before);
   });
 
   it('has no notification bell for the administrator', async () => {

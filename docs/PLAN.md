@@ -17,6 +17,28 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.10.1
+
+Goals: a lesson dragged in the calendar is saved only after confirmation on its card; the top bar keeps its
+tone on scroll; the phone's bottom bar leads with «Главная», «Расписание», «Доски», «Оплаты»; the icons of
+«Задания» and «Учебники» match their meaning.
+
+### Stage 139. Interface fixes (F)
+
+- [x] 139.1 `schedule/ui/schedule-calendar.ts`: a dropped lesson stays at the new time with two buttons on its
+  card — ✓ «Перенести» (emits `lessonMove`) and ✕ «Отменить перенос» (back to its time); a reload of the
+  lessons drops a waiting move. Help (teacher), design system, `docs/modules/schedule.md`.
+- [x] 139.2 `core/layout/shell.ts` / `shell.scss`: no tone change of the top bar on scroll.
+- [x] 139.3 `core/layout/shell.ts` input `bottomNav`, `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`: on a phone the
+  bottom bar shows «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты», the rest under «Ещё»; the rail
+  keeps the menu order. Help (teacher, student).
+- [x] 139.4 Icons: «Задания» — `pi-pen-to-square` (menu, empty states, deadlines widget, the
+  «Задание выдано» notification), «Учебники» — `pi-book` (menu, «Привязать учебник»).
+
+### Stage 140. Release 0.10.1
+
+- [ ] 140.1 Skill `release`: CHANGELOG, version bump, plan archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

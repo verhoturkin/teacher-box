@@ -47,9 +47,8 @@ const NAV_ITEMS = 4;
     Avatar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(window:scroll)': 'onScroll()' },
   template: `
-    <header class="tb-shell__header" [class.tb-shell__header--scrolled]="scrolled()">
+    <header class="tb-shell__header">
       <a class="tb-shell__brand" [routerLink]="homeLink()">
         <tb-portal-logo size="1.75rem" round />
         <span>{{ portalName() }}</span>
@@ -160,14 +159,25 @@ export class Shell {
   readonly userLinks = input<MenuItem[]>([]);
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
+  /**
+   * Links of the sections that lead the bottom bar on a phone, in this order; the other sections
+   * follow in the order of `items` (the rail keeps the order of `items`).
+   */
+  readonly bottomNav = input<readonly string[]>([]);
 
+  /** The sections in the order of the bottom bar. */
+  private readonly bottomItems = computed(() => {
+    const items = this.items();
+    const first = this.bottomNav()
+      .map((link) => items.find((item) => item.routerLink === link))
+      .filter((item): item is MenuItem => item !== undefined);
+    return [...first, ...items.filter((item) => !first.includes(item))];
+  });
   /** How many sections the bottom bar shows. */
   private readonly shown = computed(() =>
     this.items().length <= NAV_ITEMS + 1 ? this.items().length : NAV_ITEMS,
   );
-  protected readonly navItems = computed(() => this.items().slice(0, this.shown()));
-  /** The page is scrolled: the top bar rises (M3 top app bar on scroll). */
-  protected readonly scrolled = signal(false);
+  protected readonly navItems = computed(() => this.bottomItems().slice(0, this.shown()));
   protected readonly userOpen = signal(false);
   protected readonly moreOpen = signal(false);
   private readonly router = inject(Router);
@@ -181,7 +191,7 @@ export class Shell {
   /** The sections under «Ещё»; the current one is chosen in the menu (ADR-0027, ADR-0022). */
   protected readonly moreItems = computed<MenuItem[]>(() => {
     const url = this.url().split(/[?#]/)[0] ?? '';
-    return this.items()
+    return this.bottomItems()
       .slice(this.shown())
       .map((item) => {
         const link: unknown = item.routerLink;
@@ -193,10 +203,6 @@ export class Shell {
   protected readonly moreActive = computed(() =>
     this.moreItems().some((item) => item.styleClass === 'tb-menu-item--selected'),
   );
-  protected onScroll(): void {
-    this.scrolled.set(window.scrollY > 0);
-  }
-
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   /** The photo of a student or the teacher on the user button; without one, the person icon. */
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);

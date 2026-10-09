@@ -80,10 +80,12 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 - `p-message` — role container, no border or shadow, Body Medium. `p-badge` — error by default, `warn`,
   calm counter `secondary`; a badge on an icon (the bell) has no outline and sits inside the 40 px button: its start at the icon's middle, 4 px from the top (M3). Calendar events: conducted —
   success-container, missed — warning-container, cancelled — surface-container-highest + on-surface-variant +
-  strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant.
+  strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
+  lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
+  (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); list tile `--tb-list-item` —
-  surface-container-low / surface-container-high. Top bar on scroll — surface-container. Scrim 32 % in both
+  surface-container-low / surface-container-high. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
   themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
 - Text contrast ≥ 4.5:1, outlines and focus rings ≥ 3:1.
@@ -112,8 +114,9 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   | expanded | `width >= 75em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
 
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
-- **Bottom bar:** the first four sections of the role (sections are ordered by frequency of use; `NAV_ITEMS` in `shell.ts`), then «Ещё» (other sections,
-  help, settings, account, sign out); five sections fit without «Ещё» — the student has five (with «Мои доски»). Item ≥ 64 px, Label Medium, never
+- **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
+  (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
+  help, settings, account, sign out); five sections fit without «Ещё». Item ≥ 64 px, Label Medium, never
   truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
   `--tb-spring-fast-spatial`; same in the rail.
 - **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu

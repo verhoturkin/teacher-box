@@ -139,7 +139,7 @@ import { InitialsPipe } from '@shared/ui/initials';
           <div class="tb-inline">
             <p-button
               label="Привязать учебник"
-              icon="pi pi-bookmark"
+              icon="pi pi-book"
               severity="secondary"
               (onClick)="openBind(null)"
             />

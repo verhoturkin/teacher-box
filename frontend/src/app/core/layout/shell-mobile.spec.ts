@@ -6,13 +6,16 @@ import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
 import { phoneScreen, testProvidersWithRouter } from '@testing/setup';
 import { Shell } from './shell';
-import { STUDENT_MENU } from './student-layout';
-import { TEACHER_MENU } from './teacher-layout';
+import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
+import { TEACHER_BOTTOM_NAV, TEACHER_MENU } from './teacher-layout';
 
 describe('Shell on a phone', () => {
   let fixture: ComponentFixture<Shell>;
 
-  async function render(items: MenuItem[]): Promise<HTMLElement> {
+  async function render(
+    items: MenuItem[],
+    bottomNav: readonly string[] = [],
+  ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
       providers: testProvidersWithRouter(
@@ -23,6 +26,7 @@ describe('Shell on a phone', () => {
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', items);
+    fixture.componentRef.setInput('bottomNav', bottomNav);
     fixture.componentRef.setInput('homeLink', '/teacher');
     await fixture.whenStable();
     return hostElement(fixture);
@@ -33,14 +37,14 @@ describe('Shell on a phone', () => {
   });
 
   it('moves the sections to the bottom navigation with «Ещё»', async () => {
-    const host = await render(TEACHER_MENU);
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
 
     const nav = requireElement(host, 'nav.tb-bottom-nav', HTMLElement);
     expect(Array.from(nav.querySelectorAll('a')).map((link) => link.textContent.trim())).toEqual([
       'Главная',
       'Расписание',
-      'Звонки',
-      'Ученики',
+      'Доски',
+      'Оплаты',
     ]);
     expect(host.querySelector('tb-side-nav')).toBeNull();
     const user = requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement);
@@ -54,8 +58,9 @@ describe('Shell on a phone', () => {
     await fixture.whenStable();
     expect(more.getAttribute('aria-expanded')).toBe('true');
     // four sections and «Ещё» (ADR-0027): the rest of the sections are in the menu
+    expect(bodyText()).toContain('Звонки');
+    expect(bodyText()).toContain('Ученики');
     expect(bodyText()).toContain('Задания');
-    expect(bodyText()).toContain('Оплаты');
     expect(bodyText()).toContain('Уведомления');
     expect(bodyText()).toContain('ИИ');
     expect(nav.children).toHaveLength(5);
@@ -86,14 +91,24 @@ describe('Shell on a phone', () => {
     expect(host.querySelector('.tb-shell__content--nav')).not.toBeNull();
   });
 
-  it('puts the sixth section of the student under «Ещё»', async () => {
-    const host = await render(STUDENT_MENU);
+  it('keeps the order of the sections without a bottom bar order', async () => {
+    const host = await render(TEACHER_MENU);
 
     expect(
       Array.from(host.querySelectorAll('nav.tb-bottom-nav a')).map((link) =>
         link.textContent.trim(),
       ),
-    ).toEqual(['Главная', 'Расписание', 'Задания', 'Учебники']);
+    ).toEqual(['Главная', 'Расписание', 'Звонки', 'Ученики']);
+  });
+
+  it('puts the sixth section of the student under «Ещё»', async () => {
+    const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV);
+
+    expect(
+      Array.from(host.querySelectorAll('nav.tb-bottom-nav a')).map((link) =>
+        link.textContent.trim(),
+      ),
+    ).toEqual(['Главная', 'Расписание', 'Мои доски', 'Оплаты']);
     expect(host.querySelector('button[aria-label="Ещё разделы"]')).not.toBeNull();
   });
 });
