@@ -86,21 +86,28 @@ export class BoardSync {
   private pollTimer: ReturnType<typeof setInterval> | undefined;
   private polling = false;
   private stopped = false;
+  /** The drawing the editor opens with. */
+  private readonly initialElements: readonly OrderedExcalidrawElement[];
 
   constructor(
     private readonly server: BoardServer,
     initial: BoardScene,
   ) {
     this.sceneVersion = initial.sceneVersion;
-    this.remember(elementsOf(initial.elements));
+    this.initialElements = elementsOf(initial.elements);
+    this.remember(this.initialElements);
     this.sharedState = sharedState(initial.appState);
   }
 
-  /** The editor is mounted: fetch the images of the drawing and start polling. */
+  /**
+   * The editor is mounted: fetch the images of the drawing and start polling. Excalidraw hands out its API
+   * before it loads the initial data, so the images are taken from the drawing it opens with, not from its
+   * still empty scene; it puts the ones added meanwhile in place once the scene is loaded.
+   */
   attach(access: SceneAccess, modules: Pick<ExcalidrawModules, 'reconcileElements'>): void {
     this.access = access;
     this.reconcile = modules.reconcileElements;
-    void this.fetchMissingFiles(access.getSceneElementsIncludingDeleted());
+    void this.fetchMissingFiles(this.initialElements);
     this.pollTimer = setInterval(() => {
       if (this.live?.connected() && Date.now() - this.lastPoll < LIVE_POLL_INTERVAL_MS) return;
       void this.poll();

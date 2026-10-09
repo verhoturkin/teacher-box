@@ -228,6 +228,17 @@ describe('BoardSync', () => {
     sync.stop();
   });
 
+  it('fetches the images of the opened drawing while the editor still loads it', async () => {
+    const image = anElement('img', 1, { type: 'image', fileId: 'f1' });
+    const sync = new BoardSync(server, { sceneVersion: 3, elements: [image], appState: {} });
+    const { access, state } = fakeScene([]);
+    sync.attach(access, island.modules);
+    await vi.waitFor(() => {
+      expect(Object.keys(state.files)).toEqual(['f1']);
+    });
+    sync.stop();
+  });
+
   it('fetches images a few at a time, shows each on arrival and asks for each once', async () => {
     const answers = new Map<string, Subject<Blob>>();
     server.fileAnswer = (fileId) => {
