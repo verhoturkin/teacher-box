@@ -1,11 +1,6 @@
 import { signal } from '@angular/core';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type {
-  AppState,
-  BinaryFileData,
-  BinaryFiles,
-  ExcalidrawImperativeAPI,
-} from '@excalidraw/excalidraw/types';
+import type { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { Observable, firstValueFrom } from 'rxjs';
 import { BoardScene } from '../data-access/boards.models';
 import type { ExcalidrawModules } from './excalidraw-loader';
@@ -30,6 +25,8 @@ export const LIVE_POLL_INTERVAL_MS = 30000;
 export const BROADCAST_DELAY_MS = 100;
 /** A failed save is tried again after this. */
 export const RETRY_DELAY_MS = 5000;
+/** Images of a board fetched at the same time (a browser opens about six connections to a host). */
+export const FILE_FETCHES = 6;
 
 /** The server side of a board the sync talks to (`BoardsApi`, bound to the board). */
 export interface BoardServer {
@@ -80,6 +77,8 @@ export class BoardSync {
   private lastPoll = 0;
   /** Images the server has. */
   private readonly uploaded = new Set<string>();
+  /** Images being fetched. */
+  private readonly fetching = new Set<string>();
   private sharedState: string;
   private dirty = false;
   private running: Promise<boolean> | null = null;
@@ -309,25 +308,37 @@ export class BoardSync {
     }
   }
 
+  /**
+   * Fetches the images the drawing shows but the editor lacks, a few at a time, and shows each one as soon
+   * as it arrives; an image already on its way is not asked for again.
+   */
   private async fetchMissingFiles(elements: readonly OrderedExcalidrawElement[]): Promise<void> {
     const access = this.access;
     if (access === undefined) return;
     const present = access.getFiles();
-    const missing = [
+    const queue = [
       ...new Set(
-        elements.map(fileIdOf).filter((id): id is string => id !== null && !(id in present)),
+        elements
+          .map(fileIdOf)
+          .filter((id): id is string => id !== null && !(id in present) && !this.fetching.has(id)),
       ),
     ];
-    const loaded: BinaryFileData[] = [];
-    for (const fileId of missing) {
-      try {
-        const blob = await firstValueFrom(this.server.file(fileId));
-        loaded.push(await binaryFile(fileId, blob));
-      } catch {
-        // An image that cannot be fetched stays a placeholder.
+    for (const fileId of queue) this.fetching.add(fileId);
+    const worker = async (): Promise<void> => {
+      for (let fileId = queue.shift(); fileId !== undefined; fileId = queue.shift()) {
+        try {
+          const blob = await firstValueFrom(this.server.file(fileId));
+          const file = await binaryFile(fileId, blob);
+          if (!this.stopped) access.addFiles([file]);
+        } catch {
+          // An image that cannot be fetched stays a placeholder.
+        } finally {
+          this.fetching.delete(fileId);
+        }
       }
-    }
-    if (loaded.length > 0 && !this.stopped) access.addFiles(loaded);
+    };
+    const workers = Math.min(FILE_FETCHES, queue.length);
+    await Promise.all(Array.from({ length: workers }, worker));
   }
 }
 
