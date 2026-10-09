@@ -17,21 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goal: images saved on a board appear right when it opens, not after the first poll or a stroke.
-
-### Stage 145. Board images on opening (F)
-
-- [x] 145.1 `boards/editor/board-sync.ts` `attach`: Excalidraw gives its API before it loads `initialData`, so
-  the scene read on `attach` was empty and the images were fetched only by the next poll (5 s, 30 s with the
-  live channel) or after a stroke; now they are taken from the scene the page opened with.
-
-### Stage 146. Release 0.10.4
-
-- [x] 146.1 Skill `release`: E2E `version-0-10-4.spec.ts` (images asked for right on opening), CHANGELOG,
-  version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
