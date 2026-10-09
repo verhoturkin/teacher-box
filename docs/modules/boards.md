@@ -94,7 +94,9 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
     applies the merged answer with `reconcileElements` (`captureUpdate: NEVER`), polls `?since=` every 5 s while the
     tab is visible and nothing is being saved (every 30 s while the live channel is open), retries a failed save
     every 5 s, uploads new images once and fetches missing ones — six at a time, each shown on arrival and asked
-    for once while it is on its way. Shapes still too small to see (no size, a line
+    for once while it is on its way. The images of the opened drawing are fetched right on `attach`, from the scene
+    the page loaded: Excalidraw hands out its API before it loads `initialData`, so its own scene is still empty
+    then (the images added meanwhile are put in place once it loads). Shapes still too small to see (no size, a line
     with one point) never leave the editor — Excalidraw drops them without a tombstone. With the live channel it
     sends the elements changed here 100 ms after a change (each version once; a closed channel leaves them to the
     save), merges the others' elements without saving them again, and polls when `saved` brings a newer version.
