@@ -22,4 +22,7 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
    `docs/archive/plans/vX.Y.Z.md` (heading `# vX.Y.Z — plan archive (stages N–M)`), add a row to
    `docs/archive/plans/README.md`, move unfinished items to Backlog.
 6. **Verify** — `./scripts/verify.sh` (backend, frontend, docker, e2e compile) green before committing.
-7. Tag `vX.Y.Z` only when the user asks (tags are pushed by the user/CI).
+7. **Tag** — before the last push of the release, put an annotated tag `vX.Y.Z` on the release commit
+   (`git tag -a vX.Y.Z -m "X.Y.Z"`) and push it together with the branch
+   (`git push origin <branch> vX.Y.Z`). The tag push makes CI publish the images to GHCR. If the release
+   commit changes after tagging (a fix before the push), move the tag to the new commit.
