@@ -17,22 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.10.2
-
-Goals: the home card «Уведомления» shows only unread notifications, each with «Отметить прочитанным», and
-«Прочитать все» in its title.
-
-### Stage 141. Unread notifications on the home page (F)
-
-- [x] 141.1 `notifications/home/latest-notifications-widget.ts`: loads `GET /api/me/notifications?read=false`;
-  a ✓ per notification and «Прочитать все» in the card title (`POST …/read-all`); a read one leaves the list
-  and the next unread takes its place; empty — «Новых уведомлений нет». Help (teacher, student),
-  `docs/modules/notifications.md`.
-
-### Stage 142. Release 0.10.2
-
-- [ ] 142.1 Skill `release`: E2E, CHANGELOG, version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
