@@ -43,7 +43,7 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/notifications/summary')
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -58,7 +58,7 @@ describe('TeacherHome', () => {
     expect(text).toContain('Отметьте прошедшие занятия 1');
     expect(text).toContain('Работы на проверку 2');
     expect(text).toContain('Поступило за сентябрь 3 000 ₽');
-    expect(text).toContain('Уведомлений пока нет');
+    expect(text).toContain('Новых уведомлений нет');
     // one column (ADR-0021): the widgets one under another, today first
     const widgets = Array.from(
       hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'),
@@ -84,7 +84,7 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/schedule/summary')
       .flush(null, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     await fixture.whenStable();
 
     const text = readableText(hostElement(fixture));
@@ -99,7 +99,7 @@ describe('TeacherHome', () => {
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5').flush(notificationPage([]));
+    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary());

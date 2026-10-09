@@ -8,11 +8,13 @@ import { NotificationItem } from '../data-access/notifications.models';
 import { LATEST_COUNT, LatestNotificationsWidget } from './latest-notifications-widget';
 import { testProviders } from '@testing/setup';
 
+const URL = `/api/me/notifications?page=0&size=${String(LATEST_COUNT)}&read=false`;
+
 describe('LatestNotificationsWidget', () => {
   let fixture: ComponentFixture<LatestNotificationsWidget>;
   let backend: HttpTestingController;
 
-  async function render(items: NotificationItem[]): Promise<void> {
+  function create(): void {
     TestBed.configureTestingModule({
       imports: [LatestNotificationsWidget],
       providers: testProviders(),
@@ -21,11 +23,23 @@ describe('LatestNotificationsWidget', () => {
     fixture = TestBed.createComponent(LatestNotificationsWidget);
     fixture.componentRef.setInput('link', '/cabinet/notifications');
     fixture.detectChanges();
-    backend
-      .expectOne(`/api/me/notifications?page=0&size=${String(LATEST_COUNT)}`)
-      .flush(notificationPage(items));
+  }
+
+  async function render(items: NotificationItem[], total = items.length): Promise<void> {
+    create();
+    backend.expectOne(URL).flush({ ...notificationPage(items, total), unread: total });
     fixture.detectChanges();
     await fixture.whenStable();
+  }
+
+  function markReadButton(title: string): HTMLButtonElement {
+    const button = hostElement(fixture).querySelector<HTMLButtonElement>(
+      `button[aria-label="Отметить прочитанным: ${title}"]`,
+    );
+    if (button === null) {
+      throw new Error(`no «Отметить прочитанным» for ${title}`);
+    }
+    return button;
   }
 
   afterEach(() => {
@@ -34,52 +48,76 @@ describe('LatestNotificationsWidget', () => {
   });
 
   it('shows a failed load with «Повторить», not «nothing»', async () => {
-    TestBed.configureTestingModule({
-      imports: [LatestNotificationsWidget],
-      providers: testProviders(),
-    });
-    backend = TestBed.inject(HttpTestingController);
-    fixture = TestBed.createComponent(LatestNotificationsWidget);
-    fixture.componentRef.setInput('link', '/cabinet/notifications');
-    fixture.detectChanges();
-    const url = `/api/me/notifications?page=0&size=${String(LATEST_COUNT)}`;
-    backend.expectOne(url).flush(null, { status: 500, statusText: 'Error' });
+    create();
+    backend.expectOne(URL).flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить уведомления');
-    expect(readableText(hostElement(fixture))).not.toContain('Уведомлений пока нет');
+    expect(readableText(hostElement(fixture))).not.toContain('Новых уведомлений нет');
 
     buttonByText(hostElement(fixture), 'Повторить').click();
-    backend.expectOne(url).flush(notificationPage([]));
+    backend.expectOne(URL).flush(notificationPage([]));
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Уведомлений пока нет');
+    expect(readableText(hostElement(fixture))).toContain('Новых уведомлений нет');
   });
 
-  it('says when there is nothing', async () => {
+  it('says when there is nothing new, without «Прочитать все»', async () => {
     await render([]);
 
-    expect(readableText(hostElement(fixture))).toContain('Уведомлений пока нет');
+    expect(readableText(hostElement(fixture))).toContain('Новых уведомлений нет');
+    expect(readableText(hostElement(fixture))).not.toContain('Прочитать все');
     expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(
       '/cabinet/notifications',
     );
   });
 
-  it('opens an unread notification and marks it read', async () => {
-    await render([
-      notification(),
-      notification({ id: 'n-2', title: 'Без ссылки', link: null, read: true }),
-    ]);
+  it('opens a notification and marks it read', async () => {
+    await render([notification(), notification({ id: 'n-2', title: 'Без ссылки', link: null })]);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    expect(readableText(hostElement(fixture))).toContain('Непрочитанных: 1');
+    expect(readableText(hostElement(fixture))).toContain('Непрочитанных: 2');
     expect(buttonByText(hostElement(fixture), 'Без ссылки').disabled).toBe(true);
 
     buttonByText(hostElement(fixture), 'Новое задание').click();
     backend.expectOne('/api/me/notifications/n-1/read').flush(null);
+    await fixture.whenStable();
 
     expect(navigate).toHaveBeenCalledWith('/cabinet/homework/t-1');
+    expect(TestBed.inject(UnreadNotifications).count()).toBe(1);
+    expect(readableText(hostElement(fixture))).not.toContain('Новое задание');
+    expect(readableText(hostElement(fixture))).toContain('Без ссылки');
+  });
+
+  it('marks one read and fills its place with the next unread one', async () => {
+    await render([notification(), notification({ id: 'n-2', title: 'Второе' })], 3);
+
+    markReadButton('Новое задание: «Дроби»').click();
+    backend.expectOne('/api/me/notifications/n-1/read').flush(null);
+    backend
+      .expectOne(URL)
+      .flush(
+        notificationPage([
+          notification({ id: 'n-2', title: 'Второе' }),
+          notification({ id: 'n-3', title: 'Третье' }),
+        ]),
+      );
+    await fixture.whenStable();
+
+    const text = readableText(hostElement(fixture));
+    expect(text).not.toContain('Новое задание');
+    expect(text).toContain('Третье');
+    expect(TestBed.inject(UnreadNotifications).count()).toBe(2);
+  });
+
+  it('reads all at once', async () => {
+    await render([notification(), notification({ id: 'n-2', title: 'Второе' })]);
+
+    buttonByText(hostElement(fixture), 'Прочитать все').click();
+    backend.expectOne('/api/me/notifications/read-all').flush(null);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Новых уведомлений нет');
+    expect(readableText(hostElement(fixture))).not.toContain('Непрочитанных');
     expect(TestBed.inject(UnreadNotifications).count()).toBe(0);
-    fixture.componentInstance.open(notification({ id: 'n-2', link: null, read: true }));
-    backend.expectNone('/api/me/notifications/n-2/read');
   });
 });
