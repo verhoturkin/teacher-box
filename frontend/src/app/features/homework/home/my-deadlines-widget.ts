@@ -15,7 +15,7 @@ import { EmptyState } from '@shared/ui/empty-state';
     @let homework = summary();
     <p-card header="Домашние задания">
       @if (homework.upcoming.length === 0) {
-        <tb-empty-state [compact]="true" icon="pi-book" title="Открытых заданий нет" />
+        <tb-empty-state [compact]="true" icon="pi-pen-to-square" title="Открытых заданий нет" />
       } @else {
         <ul class="tb-list tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
@@ -24,7 +24,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 class="tb-list__lead"
                 [class.tb-list__lead--accent]="task.overdue"
                 aria-hidden="true"
-                ><i class="pi pi-book"></i
+                ><i class="pi pi-pen-to-square"></i
               ></span>
               <div class="tb-list__text">
                 <a

@@ -1399,6 +1399,51 @@ a.p-menu-item-link:hover {
   outline-offset: 1px;
 }
 
+/* A dropped lesson waits for confirmation: the primary outline and two icon buttons on its card */
+.tb-lesson--moving {
+  outline: 2px solid var(--p-md-primary);
+  outline-offset: 1px;
+}
+
+.tb-lesson-move {
+  display: flex;
+  gap: var(--tb-space-1);
+  margin-block-start: var(--tb-space-1);
+}
+
+.tb-lesson-move__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-primary);
+  color: var(--p-md-on-primary);
+  cursor: pointer;
+
+  & + & {
+    background: var(--p-md-surface-container-highest);
+    color: var(--p-md-on-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: 2px;
+  }
+
+  /* the state layer of M3 */
+  &:hover {
+    filter: brightness(0.92);
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
+}
+
 /* When the teacher is busy: their Google Calendar; for a student also other lessons (no names) */
 .tb-busy {
   --fc-classic-background-event: var(--p-md-outline);

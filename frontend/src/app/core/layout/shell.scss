@@ -4,7 +4,8 @@
   min-height: 100vh;
 }
 
-/* The top app bar stays at the top while the page scrolls; it lies on the page's background */
+/* The top app bar stays at the top while the page scrolls; it lies on the page's background and keeps its
+   tone under the scrolled content */
 .tb-shell__header {
   position: sticky;
   top: 0;
@@ -17,16 +18,9 @@
   height: var(--tb-header-height);
   padding: 0 var(--tb-space-3) 0 var(--tb-space-6);
   background: var(--p-md-surface-container);
-  transition: background var(--tb-spring-fast-effects);
 
   :host-context(.tb-dark) & {
     background: var(--p-md-surface);
-  }
-
-  /* the content is scrolled under the bar: the bar takes the tone of the raised container (M3) */
-  &.tb-shell__header--scrolled,
-  :host-context(.tb-dark) &.tb-shell__header--scrolled {
-    background: var(--p-md-surface-container-high);
   }
 
   @media (width <= 48em) {

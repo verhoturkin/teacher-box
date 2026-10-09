@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import { hostElement, readableText } from '@testing/dom';
+import { hostElement, readableText, requireElement } from '@testing/dom';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { CalendarRange, LessonMove, ScheduleCalendar, lessonClasses } from './schedule-calendar';
 
@@ -109,20 +109,73 @@ describe('ScheduleCalendar', () => {
     expect(clicked.map((lesson) => lesson.id)).toEqual(['l-1']);
   });
 
-  it('turns a drop into a move or puts it back', async () => {
+  it('puts back a drop it does not know', async () => {
+    fixture.componentRef.setInput('editable', true);
+    await render([scheduledLesson()]);
+    const revert = vi.fn();
+
+    fixture.componentInstance.handleDrop('l-1', null, revert);
+    fixture.componentInstance.handleDrop('unknown', new Date(2026, 9, 2, 17), revert);
+
+    expect(revert).toHaveBeenCalledTimes(2);
+  });
+
+  it('saves a dropped lesson only after «Перенести» on its card', async () => {
     const moves: LessonMove[] = [];
     fixture.componentInstance.lessonMove.subscribe((move) => moves.push(move));
     fixture.componentRef.setInput('editable', true);
     await render([scheduledLesson()]);
-    const revert = vi.fn();
     const start = new Date(2026, 9, 2, 17);
 
-    fixture.componentInstance.handleDrop('l-1', start, revert);
-    fixture.componentInstance.handleDrop('l-1', null, revert);
-    fixture.componentInstance.handleDrop('unknown', start, revert);
+    fixture.componentInstance.handleDrop('l-1', start, vi.fn());
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(moves).toEqual([]);
+    expect(host.querySelector('.tb-lesson--moving')).not.toBeNull();
+    const confirm = requireElement(host, 'button[aria-label="Перенести"]', HTMLButtonElement);
+    expect(host.querySelector('button[aria-label="Отменить перенос"]')).not.toBeNull();
 
-    expect(moves).toEqual([{ lesson: scheduledLesson(), startsAt: start, revert }]);
-    expect(revert).toHaveBeenCalledTimes(2);
+    confirm.click();
+    await fixture.whenStable();
+    expect(moves.map((move) => [move.lesson.id, move.startsAt])).toEqual([['l-1', start]]);
+    // while it is saved the lesson stays at the new time without the buttons
+    expect(host.querySelector('.tb-lesson--moving')).not.toBeNull();
+    expect(host.querySelector('button[aria-label="Перенести"]')).toBeNull();
+    fixture.componentInstance.confirmMove();
+    expect(moves).toHaveLength(1);
+
+    // not saved: the lesson goes back
+    moves[0]?.revert();
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-lesson--moving')).toBeNull();
+  });
+
+  it('puts a dropped lesson back on «Отменить перенос»', async () => {
+    const moves: LessonMove[] = [];
+    fixture.componentInstance.lessonMove.subscribe((move) => moves.push(move));
+    fixture.componentRef.setInput('editable', true);
+    await render([scheduledLesson()]);
+
+    fixture.componentInstance.handleDrop('l-1', new Date(2026, 9, 2, 17), vi.fn());
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    requireElement(host, 'button[aria-label="Отменить перенос"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-lesson--moving')).toBeNull();
+    expect(host.querySelector('button[aria-label="Перенести"]')).toBeNull();
+    fixture.componentInstance.confirmMove();
+    expect(moves).toEqual([]);
+  });
+
+  it('drops a waiting move when the lessons are loaded again', async () => {
+    fixture.componentRef.setInput('editable', true);
+    await render([scheduledLesson()]);
+
+    fixture.componentInstance.handleDrop('l-1', new Date(2026, 9, 2, 17), vi.fn());
+    await render([scheduledLesson()]);
+
+    expect(hostElement(fixture).querySelector('.tb-lesson--moving')).toBeNull();
   });
 });
 

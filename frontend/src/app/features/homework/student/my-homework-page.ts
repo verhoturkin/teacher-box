@@ -71,7 +71,7 @@ import { PageHeader } from '@shared/ui/page-header';
             <tr>
               <td colspan="3">
                 <tb-empty-state
-                  icon="pi-book"
+                  icon="pi-pen-to-square"
                   title="Заданий пока нет"
                   hint="Здесь появятся задания от учителя"
                 />

@@ -87,8 +87,8 @@ test('sections lie on the page and the phone navigation has five even sections',
   const phone = await (await browser.newContext({ baseURL: BASE_URL, viewport: PHONE })).newPage();
   await signIn(phone, 'teacher', TEACHER_PASSWORD);
   const nav = phone.locator('nav.tb-bottom-nav');
-  // 0.8.0: «Звонки» after «Расписание», «Задания» under «Ещё»
-  await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Звонки', 'Ученики']);
+  // 0.10.1: «Доски» and «Оплаты» after «Расписание»
+  await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Доски', 'Оплаты']);
   const widths = await nav
     .locator('.tb-bottom-nav__item')
     .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().width)));

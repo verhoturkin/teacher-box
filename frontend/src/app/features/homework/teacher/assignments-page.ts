@@ -92,7 +92,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
             <tr>
               <td colspan="5">
                 <tb-empty-state
-                  icon="pi-book"
+                  icon="pi-pen-to-square"
                   title="Заданий пока нет"
                   hint="Нажмите «Новое задание» и выдайте его ученикам"
                 />

@@ -25,7 +25,7 @@ export const CHANNEL_HAS_START_LINK: Record<ChannelType, boolean> = {
 };
 
 export const KIND_ICONS: Record<NotificationKind, string> = {
-  HOMEWORK_ASSIGNED: 'pi pi-book',
+  HOMEWORK_ASSIGNED: 'pi pi-pen-to-square',
   HOMEWORK_SUBMITTED: 'pi pi-inbox',
   HOMEWORK_REVIEWED: 'pi pi-check-circle',
   HOMEWORK_DUE_SOON: 'pi pi-calendar-clock',
