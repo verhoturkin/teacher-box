@@ -5,6 +5,7 @@ import {
   BROADCAST_DELAY_MS,
   BoardServer,
   BoardSync,
+  FILE_FETCHES,
   LIVE_POLL_INTERVAL_MS,
   LiveOutlet,
   POLL_INTERVAL_MS,
@@ -21,7 +22,8 @@ class FakeServer implements BoardServer {
   readonly polls: number[] = [];
   saveAnswers: (() => Observable<BoardScene>)[] = [];
   changesAnswer: () => Observable<BoardScene | null> = () => of(null);
-  fileAnswer: () => Observable<Blob> = () => of(new Blob(['x'], { type: 'image/png' }));
+  fileAnswer: (fileId: string) => Observable<Blob> = () =>
+    of(new Blob(['x'], { type: 'image/png' }));
 
   save(
     elements: readonly unknown[],
@@ -45,8 +47,8 @@ class FakeServer implements BoardServer {
     return of(undefined);
   }
 
-  file(): Observable<Blob> {
-    return this.fileAnswer();
+  file(fileId: string): Observable<Blob> {
+    return this.fileAnswer(fileId);
   }
 }
 
@@ -223,6 +225,29 @@ describe('BoardSync', () => {
     await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
 
     expect(server.uploads).toEqual(['f-new']);
+    sync.stop();
+  });
+
+  it('fetches images a few at a time, shows each on arrival and asks for each once', async () => {
+    const answers = new Map<string, Subject<Blob>>();
+    server.fileAnswer = (fileId) => {
+      const answer = new Subject<Blob>();
+      answers.set(fileId, answer);
+      return answer;
+    };
+    const images = Array.from({ length: FILE_FETCHES + 1 }, (_, index) =>
+      anElement(`img${String(index)}`, 1, { type: 'image', fileId: `f${String(index)}` }),
+    );
+    const { sync, state } = start(images);
+    sync.received([images[0]]);
+    expect([...answers.keys()]).toHaveLength(FILE_FETCHES);
+
+    answers.get('f0')?.next(new Blob(['x'], { type: 'image/png' }));
+    answers.get('f0')?.complete();
+    await vi.waitFor(() => {
+      expect(Object.keys(state.files)).toEqual(['f0']);
+    });
+    expect(answers.has(`f${String(FILE_FETCHES)}`)).toBe(true);
     sync.stop();
   });
 
