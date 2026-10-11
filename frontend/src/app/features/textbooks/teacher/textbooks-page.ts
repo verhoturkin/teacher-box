@@ -43,6 +43,7 @@ import {
 } from '../textbooks-labels';
 import { MemberOption, TextbookDialog } from './textbook-dialog';
 import { TextbookToBoardDialog } from './textbook-to-board-dialog';
+import { T } from '../i18n/texts';
 
 /**
  * Teacher: «Учебники» (ADR-0033) — textbooks, workbooks and other materials, one per row: add, change,
@@ -71,18 +72,13 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Учебники">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/textbooks" />
-      <p-button
-        class="tb-page-fab"
-        label="Новый учебник"
-        icon="pi pi-plus"
-        (onClick)="openCreate()"
-      />
+      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
     </tb-page-header>
 
     <p-card>
-      <h2 class="tb-sr-only">Список учебников</h2>
+      <h2 class="tb-sr-only">{{ t.list }}</h2>
       @if (textbooks().length > 0) {
         <div class="tb-toolbar">
           <p-iconfield>
@@ -90,15 +86,15 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
             <input
               pInputText
               [formControl]="search"
-              placeholder="Поиск по названию"
-              aria-label="Поиск по названию"
+              [placeholder]="t.search"
+              [attr.aria-label]="t.search"
             />
           </p-iconfield>
         </div>
       }
-      <tb-load-state [state]="state" what="учебники" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (shown().length > 0) {
-          <ul class="tb-list" aria-label="Учебники">
+          <ul class="tb-list" [attr.aria-label]="t.title">
             @for (textbook of shown(); track textbook.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
@@ -108,7 +104,7 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
                   <button
                     type="button"
                     class="tb-list__title tb-link-button"
-                    [attr.aria-label]="'Открыть ' + textbook.title"
+                    [attr.aria-label]="t.open(textbook.title)"
                     (click)="open(textbook)"
                   >
                     {{ textbook.title }}
@@ -122,8 +118,8 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Действия: ' + textbook.title"
-                    [ariaLabel]="'Действия: ' + textbook.title"
+                    [pTooltip]="t.actions(textbook.title)"
+                    [ariaLabel]="t.actions(textbook.title)"
                     [tbAttributes]="{
                       'aria-haspopup': 'menu',
                       'aria-expanded': menuFor()?.id === textbook.id ? 'true' : 'false',
@@ -136,17 +132,9 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
             }
           </ul>
         } @else if (textbooks().length > 0) {
-          <tb-empty-state
-            icon="pi-search"
-            title="Ничего не найдено"
-            hint="Измените запрос: поиск идёт по названию учебника"
-          />
+          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
-          <tb-empty-state
-            icon="pi-book"
-            title="Учебников пока нет"
-            hint="Нажмите «Новый учебник» и выберите файл: PDF, Word или картинку. Учебник можно открыть ученикам и группам, привязать к заданию и показать на доске."
-          />
+          <tb-empty-state icon="pi-book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>
@@ -180,6 +168,7 @@ import { TextbookToBoardDialog } from './textbook-to-board-dialog';
   `,
 })
 export class TextbooksPage implements OnInit {
+  protected readonly t = T.list;
   private readonly api = inject(TextbooksApi);
   private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -301,19 +290,19 @@ export class TextbooksPage implements OnInit {
       return;
     }
     if (file.size > TEXTBOOK_MAX_SIZE) {
-      this.snackbar.error('Файл больше 100 МБ — портал его не примет.');
+      this.snackbar.error(T.list.tooLarge);
       return;
     }
     this.replacing.set(textbook.id);
     this.api.replaceFile(textbook, file).subscribe({
       next: () => {
         this.replacing.set(null);
-        this.snackbar.success(`Файл учебника «${textbook.title}» заменён`);
+        this.snackbar.success(T.list.replaced(textbook.title));
         this.load();
       },
       error: (error: unknown) => {
         this.replacing.set(null);
-        this.snackbar.error(describeError(error, 'Не удалось заменить файл'));
+        this.snackbar.error(describeError(error, T.list.replaceFailed));
       },
     });
   }
@@ -321,9 +310,9 @@ export class TextbooksPage implements OnInit {
   protected confirmRemove(textbook: Textbook): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Удалить учебник?',
-        message: `Учебник «${textbook.title}» удалится вместе с файлом и пропадёт из заданий. Вернуть его можно только из резервной копии портала.`,
-        acceptLabel: 'Удалить',
+        header: T.list.deleteHeader,
+        message: T.list.deleteMessage(textbook.title),
+        acceptLabel: T.list.delete,
         accept: () => {
           this.api.remove(textbook.id).subscribe(() => {
             this.load();
@@ -341,7 +330,7 @@ export class TextbooksPage implements OnInit {
   private actionsOf(textbook: Textbook): MenuItem[] {
     return [
       {
-        label: 'Скачать',
+        label: T.list.download,
         icon: 'pi pi-download',
         command: () => {
           this.download(textbook);
@@ -351,7 +340,7 @@ export class TextbooksPage implements OnInit {
         ? []
         : [
             {
-              label: 'На доску',
+              label: T.list.toBoard,
               icon: 'pi pi-th-large',
               command: () => {
                 this.openBoard(textbook);
@@ -359,21 +348,21 @@ export class TextbooksPage implements OnInit {
             },
           ]),
       {
-        label: 'Изменить',
+        label: T.list.edit,
         icon: 'pi pi-pencil',
         command: () => {
           this.openEdit(textbook);
         },
       },
       {
-        label: 'Заменить файл',
+        label: T.list.replace,
         icon: 'pi pi-upload',
         command: () => {
           this.pickReplacement(textbook);
         },
       },
       {
-        label: 'Удалить…',
+        label: T.list.deleteItem,
         icon: 'pi pi-trash',
         styleClass: 'tb-menu-item--danger',
         command: () => {

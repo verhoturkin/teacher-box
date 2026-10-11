@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { formatFileSize } from '../homework-labels';
+import { T } from '../i18n/texts';
 
 /** Extensions accepted by the backend (FilePolicy). */
 export const ACCEPTED_FILES =
@@ -38,10 +39,10 @@ export const ACCEPTED_FILES =
             <p-button
               icon="pi pi-times"
               [text]="true"
-              [pTooltip]="'Убрать ' + file.name"
+              [pTooltip]="t.unpick(file.name)"
               severity="danger"
               [rounded]="true"
-              [ariaLabel]="'Убрать ' + file.name"
+              [ariaLabel]="t.unpick(file.name)"
               (onClick)="removeAt($index)"
             />
           </li>
@@ -51,8 +52,9 @@ export const ACCEPTED_FILES =
   `,
 })
 export class FilePicker {
+  protected readonly t = T.ui;
   readonly files = model<File[]>([]);
-  readonly label = input('Прикрепить файлы');
+  readonly label = input(T.ui.attachFiles);
 
   protected readonly accept = ACCEPTED_FILES;
 

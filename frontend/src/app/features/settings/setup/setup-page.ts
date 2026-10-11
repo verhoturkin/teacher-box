@@ -26,6 +26,8 @@ import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { SettingsApi } from '../data-access/settings-api';
 import { PageHeader } from '@shared/ui/page-header';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { T } from '../i18n/texts';
+import { locale } from '@core/i18n/language';
 
 type StepId = 'password' | 'about' | 'address' | 'price' | 'next';
 
@@ -35,11 +37,11 @@ interface Step {
 }
 
 const STEPS: readonly Step[] = [
-  { id: 'password', title: 'Пароль' },
-  { id: 'about', title: 'Знакомство' },
-  { id: 'address', title: 'Адрес' },
-  { id: 'price', title: 'Занятия' },
-  { id: 'next', title: 'Готово' },
+  { id: 'password', title: T.setup.stepPassword },
+  { id: 'about', title: T.setup.stepAbout },
+  { id: 'address', title: T.setup.stepAddress },
+  { id: 'price', title: T.setup.stepPrice },
+  { id: 'next', title: T.setup.stepNext },
 ];
 
 /**
@@ -65,14 +67,11 @@ const STEPS: readonly Step[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-setup">
-      <tb-page-header title="Первоначальная настройка">
+      <tb-page-header [title]="t.title">
         <tb-help-button help topic="teacher/setup" />
       </tb-page-header>
-      <p class="tb-muted">
-        Несколько коротких шагов — и портал готов к работе. Всё это можно поменять потом в
-        «Настройках».
-      </p>
-      <ol class="tb-setup-steps" aria-label="Шаги настройки">
+      <p class="tb-muted">{{ t.intro }}</p>
+      <ol class="tb-setup-steps" [attr.aria-label]="t.steps">
         @for (step of steps(); track step.id; let index = $index) {
           <li
             [class.tb-setup-steps__current]="step.id === current()"
@@ -93,23 +92,20 @@ const STEPS: readonly Step[] = [
       <p-card>
         @switch (current()) {
           @case ('password') {
-            <h2 class="tb-setup-title">Придумайте свой пароль</h2>
-            <p>
-              Пароль для первого входа портал создал сам и записал в журнал сервера. Замените его на
-              свой — после этого старый пароль перестанет работать.
-            </p>
+            <h2 class="tb-setup-title">{{ t.passwordTitle }}</h2>
+            <p>{{ t.passwordText }}</p>
             <tb-change-password-form
-              currentLabel="Пароль, с которым вы вошли"
-              submitLabel="Далее"
+              [currentLabel]="t.currentPassword"
+              [submitLabel]="t.next"
               [proceeds]="true"
               (changed)="next()"
             />
           }
           @case ('about') {
-            <h2 class="tb-setup-title">Знакомство</h2>
+            <h2 class="tb-setup-title">{{ t.aboutTitle }}</h2>
             <form tbFieldErrors class="tb-form" [formGroup]="about" (ngSubmit)="saveAbout()">
               <div class="tb-field">
-                <label for="setup-teacher-name">Ваше имя</label>
+                <label for="setup-teacher-name">{{ t.teacherName }}</label>
                 <input
                   pInputText
                   id="setup-teacher-name"
@@ -117,10 +113,10 @@ const STEPS: readonly Step[] = [
                   maxlength="100"
                   autocomplete="name"
                 />
-                <small class="tb-hint">Так вас видят ученики в портале и в сообщениях бота.</small>
+                <small class="tb-hint">{{ t.teacherNameHint }}</small>
               </div>
               <div class="tb-field">
-                <label for="setup-portal-name">Название портала</label>
+                <label for="setup-portal-name">{{ t.portalName }}</label>
                 <input
                   pInputText
                   id="setup-portal-name"
@@ -129,18 +125,15 @@ const STEPS: readonly Step[] = [
                   [maxlength]="maxNameLength"
                   autocomplete="off"
                 />
-                <small class="tb-hint">
-                  Например, «Английский с Марией Ивановной». Видно в шапке, на странице входа и в
-                  календаре.
-                </small>
+                <small class="tb-hint">{{ t.portalNameHint }}</small>
               </div>
               <div class="tb-form-actions">
-                <p-button type="submit" label="Далее" [loading]="pending()" />
+                <p-button type="submit" [label]="t.next" [loading]="pending()" />
               </div>
             </form>
           }
           @case ('address') {
-            <h2 class="tb-setup-title">Адрес портала</h2>
+            <h2 class="tb-setup-title">{{ t.addressTitle }}</h2>
             <form tbFieldErrors class="tb-form" [formGroup]="address" (ngSubmit)="saveAddress()">
               <tb-portal-address-field
                 inputId="setup-address"
@@ -148,26 +141,22 @@ const STEPS: readonly Step[] = [
                 [fromEnvironment]="settings()?.addressFromEnvironment ?? false"
               />
               @if (timeZone(); as zone) {
-                <p class="tb-muted">Часовой пояс портала: {{ zone }}.</p>
+                <p class="tb-muted">{{ t.timeZone(zone) }}</p>
                 @if (zone !== browserZone) {
-                  <p-message severity="warn" styleClass="tb-form-message">
-                    На этом компьютере другой часовой пояс ({{ browserZone }}). Время занятий портал
-                    считает по часовому поясу портала; поменять его может администратор портала.
-                  </p-message>
+                  <p-message severity="warn" styleClass="tb-form-message">{{
+                    t.otherZone(browserZone)
+                  }}</p-message>
                 }
               }
               <div class="tb-form-actions">
-                <p-button label="Назад" severity="secondary" (onClick)="back()" />
-                <p-button type="submit" label="Далее" [loading]="pending()" />
+                <p-button [label]="t.back" severity="secondary" (onClick)="back()" />
+                <p-button type="submit" [label]="t.next" [loading]="pending()" />
               </div>
             </form>
           }
           @case ('price') {
-            <h2 class="tb-setup-title">Цена занятия</h2>
-            <p>
-              Проведённые занятия списываются с баланса ученика по этой цене. Она достаётся новым
-              ученикам и группам; у каждого ученика цену можно поменять отдельно.
-            </p>
+            <h2 class="tb-setup-title">{{ t.priceTitle }}</h2>
+            <p>{{ t.priceText }}</p>
             <form
               tbFieldErrors
               class="tb-form tb-form--narrow"
@@ -175,26 +164,26 @@ const STEPS: readonly Step[] = [
               (ngSubmit)="savePrice()"
             >
               <div class="tb-field">
-                <label for="setup-price">Цена одного занятия</label>
+                <label for="setup-price">{{ t.price }}</label>
                 <p-inputnumber
                   inputId="setup-price"
                   formControlName="price"
                   mode="currency"
                   [currency]="currency()"
-                  locale="ru-RU"
+                  [locale]="locale"
                   [min]="0"
                   [fluid]="true"
                 />
               </div>
               <div class="tb-form-actions">
-                <p-button label="Назад" severity="secondary" (onClick)="back()" />
-                <p-button type="submit" label="Далее" [loading]="pending()" />
+                <p-button [label]="t.back" severity="secondary" (onClick)="back()" />
+                <p-button type="submit" [label]="t.next" [loading]="pending()" />
               </div>
             </form>
           }
           @case ('next') {
-            <h2 class="tb-setup-title">Готово!</h2>
-            <p>Портал настроен. Остальное можно подключить, когда понадобится:</p>
+            <h2 class="tb-setup-title">{{ t.doneTitle }}</h2>
+            <p>{{ t.doneText }}</p>
             <ul class="tb-setup-later">
               <li>
                 <a
@@ -202,38 +191,37 @@ const STEPS: readonly Step[] = [
                   [queryParams]="{ open: 'messengers' }"
                   fragment="notifications-messengers"
                 >
-                  Мессенджеры
+                  {{ t.messengers }}
                 </a>
-                — уведомления и действия через бота в Telegram, ВКонтакте или MAX.
+                {{ t.messengersText }}
               </li>
               <li>
                 <a
                   routerLink="/teacher/settings"
                   [queryParams]="{ open: 'calendar' }"
                   fragment="settings-calendar"
-                  >Видеовстречи</a
+                  >{{ t.meetings }}</a
                 >
-                — постоянные ссылки на уроки в Яндекс Телемосте.
+                {{ t.meetingsText }}
               </li>
               <li>
                 <a
                   routerLink="/teacher/settings"
                   [queryParams]="{ open: 'calendar' }"
                   fragment="settings-calendar"
-                  >Google Календарь</a
+                  >{{ t.google }}</a
                 >
-                — занятия в вашем календаре.
+                {{ t.googleText }}
               </li>
               <li>
-                <a [routerLink]="aiHelp">ИИ-помощник</a> — черновики заданий и проверки работ
-                (включается на сервере).
+                <a [routerLink]="aiHelp">{{ t.ai }}</a> {{ t.aiText }}
               </li>
             </ul>
-            <p>Начните с главного: добавьте ученика и запланируйте первое занятие.</p>
+            <p>{{ t.startWith }}</p>
             <div class="tb-form-actions">
-              <p-button label="Назад" severity="secondary" (onClick)="back()" />
+              <p-button [label]="t.back" severity="secondary" (onClick)="back()" />
               <p-button
-                label="Перейти на главную"
+                [label]="t.home"
                 icon="pi pi-home"
                 [loading]="pending()"
                 (onClick)="finish()"
@@ -244,7 +232,7 @@ const STEPS: readonly Step[] = [
       </p-card>
       @if (current() !== 'password' && current() !== 'next') {
         <p-button
-          label="Пропустить настройку"
+          [label]="t.skip"
           severity="secondary"
           [text]="true"
           [loading]="pending()"
@@ -322,6 +310,8 @@ const STEPS: readonly Step[] = [
   `,
 })
 export class SetupPage implements OnInit {
+  protected readonly locale = locale();
+  protected readonly t = T.setup;
   private readonly settingsApi = inject(SettingsApi);
   private readonly identity = inject(IdentityApi);
   private readonly billing = inject(BillingApi);

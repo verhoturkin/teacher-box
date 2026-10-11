@@ -58,6 +58,11 @@ export const ru = {
     show: 'Показать пароль',
     hide: 'Скрыть пароль',
   },
+  messengers: {
+    TELEGRAM: 'Telegram',
+    VK: 'ВКонтакте',
+    MAX: 'MAX',
+  },
   fileSize: {
     bytes: 'Б',
     units: ['КБ', 'МБ', 'ГБ'],

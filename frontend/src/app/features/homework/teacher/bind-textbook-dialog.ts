@@ -24,6 +24,8 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Pages like «12-14, 20» (the backend normalizes and checks them). */
 export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-–—]\s*\d+)?)*\s*$/;
@@ -47,14 +49,14 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="bound() === null ? 'Учебник к заданию' : 'Страницы учебника'"
+      [header]="bound() === null ? t.newTitle : t.pagesTitle"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
       [draggable]="false"
     >
       @if (loaded() && choices().length === 0 && bound() === null) {
-        <p class="tb-muted">Свободных учебников нет. Добавьте учебник в разделе «Учебники».</p>
+        <p class="tb-muted">{{ t.noTextbooks }}</p>
       } @else {
         <form
           tbFieldErrors
@@ -67,14 +69,14 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
             <p class="tb-strong">{{ current.title }}</p>
           } @else {
             <div class="tb-field tb-field--required">
-              <label for="bind-textbook">Учебник</label>
+              <label for="bind-textbook">{{ t.textbook }}</label>
               <p-select
                 inputId="bind-textbook"
                 formControlName="textbook"
                 [options]="choices()"
                 optionLabel="title"
                 optionValue="id"
-                placeholder="Выберите учебник"
+                [placeholder]="t.chooseTextbook"
                 [filter]="true"
                 filterBy="title,course"
                 appendTo="body"
@@ -84,12 +86,12 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
           }
           @if (paged()) {
             <div class="tb-field">
-              <label for="bind-pages">Страницы</label>
+              <label for="bind-pages">{{ t.pages }}</label>
               <input
                 pInputText
                 id="bind-pages"
                 formControlName="pages"
-                placeholder="Например, 12-14, 20"
+                [placeholder]="t.pagesPlaceholder"
                 autocomplete="off"
               />
               <small class="tb-hint">{{ pagesHint() }}</small>
@@ -102,14 +104,14 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
       }
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          [label]="bound() === null ? 'Привязать' : 'Сохранить'"
+          [label]="bound() === null ? t.bind : c.save"
           [loading]="pending()"
           [disabled]="loaded() && choices().length === 0 && bound() === null"
           type="submit"
@@ -120,6 +122,8 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
   `,
 })
 export class BindTextbookDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.bind;
   private readonly homework = inject(HomeworkApi);
   private readonly textbooksApi = inject(TextbooksApi);
 
@@ -159,11 +163,8 @@ export class BindTextbookDialog {
   protected readonly pagesHint = computed(() => {
     const chosen = this.chosen();
     const count = chosen?.pageCount ?? null;
-    const whole =
-      count === null ? 'Пусто — весь учебник.' : `Пусто — весь учебник (${String(count)} с.).`;
-    return chosen?.format === 'DOCUMENT'
-      ? `${whole} Файл Word ученик получит целиком, страницы — подсказка.`
-      : `${whole} Ученик получит только эти страницы.`;
+    const whole = count === null ? T.bind.whole : T.bind.wholeOf(count);
+    return chosen?.format === 'DOCUMENT' ? T.bind.wordHint(whole) : T.bind.pagesHint(whole);
   });
 
   constructor() {
@@ -209,7 +210,7 @@ export class BindTextbookDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось привязать учебник'));
+          this.error.set(describeError(error, T.bind.failed));
         },
       });
   }

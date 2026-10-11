@@ -57,6 +57,11 @@ export const en: Translation<typeof ru> = {
     show: 'Show password',
     hide: 'Hide password',
   },
+  messengers: {
+    TELEGRAM: 'Telegram',
+    VK: 'VK',
+    MAX: 'MAX',
+  },
   fileSize: {
     bytes: 'B',
     units: ['KB', 'MB', 'GB'],

@@ -32,6 +32,8 @@ import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** The largest logo the server takes, bytes. */
 const MAX_LOGO_SIZE = 1024 * 1024;
@@ -56,13 +58,15 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     <p-card id="portal">
       <ng-template #title>
         <div class="tb-card-title">
-          <span class="tb-card-title__text">Портал <tb-help-button topic="teacher/setup" /></span>
+          <span class="tb-card-title__text"
+            >{{ t.title }} <tb-help-button topic="teacher/setup"
+          /></span>
         </div>
       </ng-template>
       @if (settings(); as settings) {
         <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">
-            <label for="portal-name">Название</label>
+            <label for="portal-name">{{ t.name }}</label>
             <input
               pInputText
               id="portal-name"
@@ -71,12 +75,10 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               [maxlength]="maxNameLength"
               autocomplete="off"
             />
-            <small class="tb-hint"
-              >Видно в шапке портала, во вкладке браузера, на странице входа и в календаре.</small
-            >
+            <small class="tb-hint">{{ t.nameHint }}</small>
           </div>
           <div class="tb-field">
-            <span id="portal-accent">Цвет</span>
+            <span id="portal-accent">{{ t.color }}</span>
             <div class="tb-accents" role="radiogroup" aria-labelledby="portal-accent">
               @for (accent of accents; track accent.value) {
                 <button
@@ -99,8 +101,8 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 role="radio"
                 class="tb-accent tb-accent--own"
                 [attr.aria-checked]="own()"
-                aria-label="Свой цвет"
-                title="Свой цвет"
+                [attr.aria-label]="t.ownColor"
+                [title]="t.ownColor"
                 [style.background]="own() ? accent() : null"
                 (click)="chooseOwn()"
               >
@@ -111,7 +113,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               <div class="tb-own-color">
                 <p-colorpicker [formControl]="ownColor" appendTo="body" />
                 <div class="tb-field tb-grow">
-                  <label for="portal-own-color">Свой цвет, #rrggbb</label>
+                  <label for="portal-own-color">{{ t.ownColorField }}</label>
                   <input
                     pInputText
                     id="portal-own-color"
@@ -125,54 +127,47 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   class="tb-own-color__sample"
                   [style.background]="scheme().light.primary"
                   [style.color]="scheme().light.onPrimary"
-                  >Светлая тема</span
+                  >{{ t.lightTheme }}</span
                 >
                 <span
                   class="tb-own-color__sample"
                   [style.background]="scheme().dark.primary"
                   [style.color]="scheme().dark.onPrimary"
-                  >Тёмная тема</span
+                  >{{ t.darkTheme }}</span
                 >
               </div>
               @if (poorContrast(); as advice) {
                 <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
               }
               @if (advice().adjusted) {
-                <small class="tb-hint"
-                  >Чтобы текст читался, кнопки и ссылки будут темнее выбранного цвета (в тёмной теме
-                  — светлее), как на образцах.</small
-                >
+                <small class="tb-hint">{{ t.adjusted }}</small>
               }
             }
             @if (advice().likeSuccess) {
-              <p-message severity="warn" styleClass="tb-form-message"
-                >Кнопки подтверждения («Сохранить», «Принять») зелёные — с этим цветом портала
-                главное действие раздела будет трудно отличить от них.</p-message
-              >
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                t.likeSuccess
+              }}</p-message>
             }
             @if (advice().likeError) {
-              <p-message severity="warn" styleClass="tb-form-message"
-                >Кнопки отмены и удаления красные — с этим цветом портала главное действие раздела
-                будет похоже на них.</p-message
-              >
+              <p-message severity="warn" styleClass="tb-form-message">{{ t.likeError }}</p-message>
             }
-            <small class="tb-hint">Кнопки, ссылки и выделения портала — в этом цвете.</small>
+            <small class="tb-hint">{{ t.colorHint }}</small>
           </div>
           <div class="tb-field">
-            <span>Логотип</span>
+            <span>{{ t.logo }}</span>
             <input
               #logoFile
               type="file"
               class="tb-sr-only"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              aria-label="Файл логотипа"
+              [attr.aria-label]="t.logoFile"
               (change)="uploadLogo(logoFile)"
             />
             <div class="tb-logo-row">
               <tb-portal-logo size="2.5rem" round />
               <p-button
-                label="Загрузить"
-                ariaLabel="Загрузить логотип"
+                [label]="t.upload"
+                [ariaLabel]="t.uploadLogo"
                 icon="pi pi-upload"
                 severity="secondary"
                 [loading]="uploading()"
@@ -184,23 +179,20 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   severity="danger"
                   [text]="true"
                   [rounded]="true"
-                  pTooltip="Убрать логотип"
-                  ariaLabel="Убрать логотип"
+                  [pTooltip]="t.removeLogo"
+                  [ariaLabel]="t.removeLogo"
                   [loading]="busy.is('logo')"
                   (onClick)="removeLogo()"
                 />
               }
             </div>
-            <small class="tb-hint">
-              PNG, JPEG, WebP или SVG до 1 МБ, лучше квадратный. Виден в шапке, на странице входа и
-              во вкладке браузера.
-            </small>
+            <small class="tb-hint">{{ t.logoHint }}</small>
           </div>
           <div class="tb-form-actions">
             <p-button
               class="tb-tonal"
               type="submit"
-              label="Сохранить"
+              [label]="c.save"
               severity="success"
               [loading]="pending()"
             />
@@ -274,6 +266,8 @@ const MAX_LOGO_SIZE = 1024 * 1024;
   `,
 })
 export class PortalSettingsCard implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.portal;
   protected readonly busy = new Busy();
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
@@ -313,11 +307,13 @@ export class PortalSettingsCard implements OnInit {
       return null;
     }
     const { light, dark } = this.advice();
-    const poor = [light < MIN_CONTRAST && 'светлой', dark < MIN_CONTRAST && 'тёмной'].filter(
-      (theme) => theme !== false,
-    );
-    if (poor.length > 0) {
-      return `Текст на кнопках в этом цвете будет плохо читаться в ${poor.join(' и ')} теме — выберите цвет насыщеннее или темнее.`;
+    const poorLight = light < MIN_CONTRAST;
+    const poorDark = dark < MIN_CONTRAST;
+    if (poorLight && poorDark) {
+      return T.portal.poorBoth;
+    }
+    if (poorLight || poorDark) {
+      return poorLight ? T.portal.poorLight : T.portal.poorDark;
     }
     return null;
   });
@@ -355,7 +351,7 @@ export class PortalSettingsCard implements OnInit {
         this.pending.set(false);
         this.show(settings);
         this.portal.set(settings);
-        this.snackbar.success('Настройки портала сохранены');
+        this.snackbar.success(T.portal.saved);
       },
       error: () => {
         this.pending.set(false);
@@ -370,7 +366,7 @@ export class PortalSettingsCard implements OnInit {
       return;
     }
     if (file.size > MAX_LOGO_SIZE) {
-      this.snackbar.error('Файл больше 1 МБ');
+      this.snackbar.error(T.portal.logoTooLarge);
       return;
     }
     this.uploading.set(true);

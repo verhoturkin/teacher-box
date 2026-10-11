@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Portal } from '@core/portal/portal';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
+import { T } from './i18n/texts';
 
 /** Browser storage key: the student hid the welcome card. */
 export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
@@ -15,28 +16,29 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!dismissed()) {
-      <p-card [header]="'Добро пожаловать в «' + portalName() + '»!'">
-        <p>Здесь всё, что нужно для занятий:</p>
+      <p-card [header]="t.title(portalName())">
+        <p>{{ t.intro }}</p>
         <ul class="tb-welcome">
           <li>
-            <a routerLink="/cabinet/schedule" class="tb-link">Расписание</a> — ваши занятия, ссылка
-            на урок, отмена и перенос.
+            <a routerLink="/cabinet/schedule" class="tb-link">{{ t.schedule }}</a>
+            {{ t.scheduleText }}
           </li>
           <li>
-            <a routerLink="/cabinet/homework" class="tb-link">Задания</a> — домашние задания и
-            ответы учителя.
+            <a routerLink="/cabinet/homework" class="tb-link">{{ t.homework }}</a>
+            {{ t.homeworkText }}
           </li>
           <li>
-            <a routerLink="/cabinet/billing" class="tb-link">Оплаты</a> — баланс и история оплат.
+            <a routerLink="/cabinet/billing" class="tb-link">{{ t.billing }}</a>
+            {{ t.billingText }}
           </li>
           <li>
-            Если что-то непонятно, откройте
-            <a routerLink="/cabinet/help" class="tb-link">справку</a> — там всё по шагам.
+            {{ t.helpBefore }}
+            <a routerLink="/cabinet/help" class="tb-link">{{ t.help }}</a> {{ t.helpAfter }}
           </li>
         </ul>
         <div class="tb-widget-footer">
           <span></span>
-          <p-button label="Понятно" severity="secondary" [text]="true" (onClick)="dismiss()" />
+          <p-button [label]="t.ok" severity="secondary" [text]="true" (onClick)="dismiss()" />
         </div>
       </p-card>
     }
@@ -52,6 +54,7 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
   `,
 })
 export class StudentWelcomeCard {
+  protected readonly t = T.welcome;
   protected readonly portalName = inject(Portal).name;
   protected readonly dismissed = signal(isHintHidden(WELCOME_DISMISSED_KEY));
 

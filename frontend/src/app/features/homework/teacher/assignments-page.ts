@@ -23,6 +23,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { T } from '../i18n/texts';
 
 /** Teacher: all assignments with progress. */
 @Component({
@@ -45,47 +46,44 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Задания">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/homework" />
       <a pButton routerLink="review" severity="secondary">
-        <span pButtonLabel>На проверку</span>
+        <span pButtonLabel>{{ t.toReview }}</span>
         @if (toReview() > 0) {
           <p-badge [value]="toReview()" severity="warn" />
         }
       </a>
-      <p-button
-        class="tb-page-fab"
-        label="Новое задание"
-        icon="pi pi-plus"
-        (onClick)="openCreate()"
-      />
+      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
     </tb-page-header>
 
     <p-card>
-      <tb-load-state [state]="state" what="задания" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         <p-table [value]="assignments()" dataKey="id" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th class="tb-col-main">Задание</th>
-              <th>Срок</th>
-              <th>Учеников</th>
-              <th>На проверке</th>
-              <th>Принято</th>
+              <th class="tb-col-main">{{ t.assignment }}</th>
+              <th>{{ t.due }}</th>
+              <th>{{ t.students }}</th>
+              <th>{{ t.submitted }}</th>
+              <th>{{ t.accepted }}</th>
             </tr>
           </ng-template>
           <ng-template #body let-row [tbRowType]="assignments()">
             <tr>
-              <td data-label="Задание">
+              <td [attr.data-label]="t.assignment">
                 <a [routerLink]="[row.id]" class="tb-link">{{ row.title }}</a>
               </td>
-              <td data-label="Срок">
-                {{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
+              <td [attr.data-label]="t.due">
+                {{ row.dueAt ? (row.dueAt | date: 'dd.MM.yyyy HH:mm') : noDueDate }}
               </td>
-              <td data-label="Учеников">{{ row.totalTasks }}</td>
-              <td data-label="На проверке" [class.tb-strong]="row.submitted > 0">
+              <td [attr.data-label]="t.students">{{ row.totalTasks }}</td>
+              <td [attr.data-label]="t.submitted" [class.tb-strong]="row.submitted > 0">
                 {{ row.submitted }}
               </td>
-              <td data-label="Принято">{{ row.accepted }} из {{ row.totalTasks }}</td>
+              <td [attr.data-label]="t.accepted">
+                {{ t.acceptedOf(row.accepted, row.totalTasks) }}
+              </td>
             </tr>
           </ng-template>
           <ng-template #emptymessage>
@@ -93,8 +91,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
               <td colspan="5">
                 <tb-empty-state
                   icon="pi-pen-to-square"
-                  title="Заданий пока нет"
-                  hint="Нажмите «Новое задание» и выдайте его ученикам"
+                  [title]="t.emptyTitle"
+                  [hint]="t.emptyHint"
                 />
               </td>
             </tr>
@@ -111,6 +109,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   `,
 })
 export class AssignmentsPage implements OnInit {
+  protected readonly noDueDate = T.noDueDate;
+  protected readonly t = T.list;
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);

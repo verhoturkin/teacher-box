@@ -3,6 +3,7 @@ import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { Attachment } from '../data-access/homework.models';
 import { formatFileSize } from '../homework-labels';
+import { T } from '../i18n/texts';
 
 /** Files of an assignment or a submission. */
 @Component({
@@ -23,10 +24,10 @@ import { formatFileSize } from '../homework-labels';
               <p-button
                 icon="pi pi-trash"
                 [text]="true"
-                [pTooltip]="'Удалить файл ' + file.filename"
+                [pTooltip]="t.removeFile(file.filename)"
                 [rounded]="true"
                 severity="danger"
-                [ariaLabel]="'Удалить файл ' + file.filename"
+                [ariaLabel]="t.removeFile(file.filename)"
                 (onClick)="remove.emit(file)"
               />
             }
@@ -37,6 +38,7 @@ import { formatFileSize } from '../homework-labels';
   `,
 })
 export class AttachmentList {
+  protected readonly t = T.ui;
   readonly attachments = input.required<readonly Attachment[]>();
   readonly removable = input(false);
   readonly download = output<Attachment>();

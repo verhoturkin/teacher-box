@@ -24,6 +24,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { TextbooksApi } from '../data-access/textbooks-api';
 import { MyTextbook } from '../data-access/textbooks.models';
 import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
+import { T } from '../i18n/texts';
 
 /**
  * Student: «Учебники» — their own textbooks and their groups', newest change first; a tap opens one, the
@@ -46,11 +47,11 @@ import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Учебники">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/textbooks" />
     </tb-page-header>
     <p-card>
-      <h2 class="tb-sr-only">Список учебников</h2>
+      <h2 class="tb-sr-only">{{ t.list }}</h2>
       @if (textbooks().length > 0) {
         <div class="tb-toolbar">
           <p-iconfield>
@@ -58,15 +59,15 @@ import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
             <input
               pInputText
               [formControl]="search"
-              placeholder="Поиск по названию"
-              aria-label="Поиск по названию"
+              [placeholder]="t.search"
+              [attr.aria-label]="t.search"
             />
           </p-iconfield>
         </div>
       }
-      <tb-load-state [state]="state" what="учебники" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (shown().length > 0) {
-          <ul class="tb-list" aria-label="Учебники">
+          <ul class="tb-list" [attr.aria-label]="t.title">
             @for (textbook of shown(); track textbook.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
@@ -76,16 +77,16 @@ import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
                   <button
                     type="button"
                     class="tb-list__title tb-link-button"
-                    [attr.aria-label]="'Открыть ' + textbook.title"
+                    [attr.aria-label]="t.open(textbook.title)"
                     (click)="open(textbook)"
                   >
                     {{ textbook.title }}
                   </button>
                   <span class="tb-list__supporting">{{ details(textbook) }}</span>
                   @if (textbook.groupNames.length > 0) {
-                    <span class="tb-list__supporting"
-                      >Группа: {{ textbook.groupNames.join(', ') }}</span
-                    >
+                    <span class="tb-list__supporting">{{
+                      t.groups(textbook.groupNames.join(', '))
+                    }}</span>
                   }
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
@@ -94,8 +95,8 @@ import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Скачать ' + textbook.title"
-                    [ariaLabel]="'Скачать ' + textbook.title"
+                    [pTooltip]="t.download(textbook.title)"
+                    [ariaLabel]="t.download(textbook.title)"
                     (onClick)="download(textbook)"
                   />
                 </div>
@@ -103,23 +104,16 @@ import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
             }
           </ul>
         } @else if (textbooks().length > 0) {
-          <tb-empty-state
-            icon="pi-search"
-            title="Ничего не найдено"
-            hint="Измените запрос: поиск идёт по названию учебника"
-          />
+          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
-          <tb-empty-state
-            icon="pi-book"
-            title="Учебников пока нет"
-            hint="Когда учитель откроет вам учебник, он появится здесь."
-          />
+          <tb-empty-state icon="pi-book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>
   `,
 })
 export class MyTextbooksPage implements OnInit {
+  protected readonly t = T.mine;
   private readonly api = inject(TextbooksApi);
   private readonly fileSaver = inject(FileSaver);
   private readonly fileOpener = inject(FileOpener);

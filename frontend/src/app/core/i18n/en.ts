@@ -184,7 +184,7 @@ export const en: Translation<typeof ru> = {
         'The backup was made by a newer version of the portal. Update the portal first',
       'portal.logo-invalid': 'The logo must be a PNG, JPEG, WebP or SVG picture',
       'portal.logo-too-large': 'The logo is larger than 1 MB',
-      'portal.accent-invalid': 'There is no such color',
+      'portal.accent-invalid': 'There is no such colour',
       'portal.address-invalid':
         'An address like https://school.example.com is needed — with no path after it',
       'auth.rate-limited': 'Too many sign-in attempts. Wait a minute and try again',

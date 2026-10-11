@@ -22,10 +22,12 @@ import { FailedDelivery, MessengerType } from './data-access/settings.models';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
 import { FoldCard } from '@shared/ui/fold-card';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'TELEGRAM', name: 'Telegram' },
-  { type: 'VK', name: 'ВКонтакте' },
+  { type: 'VK', name: SHARED_T.messengers.VK },
   { type: 'MAX', name: 'MAX' },
 ];
 
@@ -60,14 +62,14 @@ function isSection(value: unknown): value is Section {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Настройки">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/settings" />
     </tb-page-header>
     <div class="tb-stack">
       <tb-fold-card
         id="settings-portal"
-        title="Портал"
-        summary="Название, логотип и цвет портала"
+        [title]="t.portal"
+        [summary]="t.portalSummary"
         [single]="true"
         [open]="opened().has('portal')"
         (openChange)="fold('portal', $event)"
@@ -77,8 +79,8 @@ function isSection(value: unknown): value is Section {
 
       <tb-fold-card
         id="settings-calendar"
-        title="Календарь и звонки"
-        summary="Google Календарь, видеовстречи и ссылки на занятия"
+        [title]="t.calendar"
+        [summary]="t.calendarSummary"
         [open]="opened().has('calendar')"
         (openChange)="fold('calendar', $event)"
       >
@@ -92,31 +94,31 @@ function isSection(value: unknown): value is Section {
 
       <tb-fold-card
         id="settings-deliveries"
-        title="Неудачные доставки"
-        summary="Уведомления, которые не дошли до мессенджера"
+        [title]="t.deliveries"
+        [summary]="t.deliveriesSummary"
         [badge]="failed().length"
         [open]="opened().has('deliveries')"
         (openChange)="fold('deliveries', $event)"
       >
         <ng-template>
           @if (failed().length === 0) {
-            <tb-empty-state icon="pi-check-circle" title="Все уведомления доставлены" />
+            <tb-empty-state icon="pi-check-circle" [title]="t.allDelivered" />
           } @else {
             <p-table [value]="failed()" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th>Когда</th>
-                  <th>Кому</th>
-                  <th>Куда</th>
-                  <th>Ошибка</th>
+                  <th>{{ t.when }}</th>
+                  <th>{{ t.to }}</th>
+                  <th>{{ t.where }}</th>
+                  <th>{{ t.error }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-row [tbRowType]="failed()">
                 <tr>
-                  <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                  <td data-label="Кому">{{ row.recipientName ?? 'Вы' }}</td>
-                  <td data-label="Куда">{{ messengerName(row) }}</td>
-                  <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
+                  <td [attr.data-label]="t.when">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+                  <td [attr.data-label]="t.to">{{ row.recipientName ?? t.you }}</td>
+                  <td [attr.data-label]="t.where">{{ messengerName(row) }}</td>
+                  <td [attr.data-label]="t.error" class="tb-error-cell tb-cell-wide">
                     {{ row.error ?? '—' }}
                   </td>
                 </tr>
@@ -128,8 +130,8 @@ function isSection(value: unknown): value is Section {
 
       <tb-fold-card
         id="settings-data"
-        title="Данные"
-        summary="Резервные копии, восстановление и полный сброс"
+        [title]="t.data"
+        [summary]="t.dataSummary"
         [open]="opened().has('data')"
         (openChange)="fold('data', $event)"
       >
@@ -149,6 +151,7 @@ function isSection(value: unknown): value is Section {
   `,
 })
 export class SettingsPage implements OnInit {
+  protected readonly t = T.page;
   private readonly api = inject(SettingsApi);
   private readonly router = inject(Router);
 

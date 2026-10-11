@@ -14,6 +14,7 @@ import { StudentWelcomeCard } from './student-welcome-card';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from './i18n/texts';
 
 /**
  * Student personal area dashboard: the nearest lesson with its link on top, the built-in call rooms, then
@@ -36,7 +37,7 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Главная">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/lesson" />
     </tb-page-header>
     <div class="tb-stack">
@@ -45,7 +46,7 @@ import { PageHeader } from '@shared/ui/page-header';
           <tb-next-lesson-widget [summary]="schedule" (changed)="loadSchedule()" />
         }
       } @else {
-        <tb-load-state [state]="state" what="занятия, задания и баланс" (retry)="load()" />
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
       }
       <tb-my-calls-card />
       <tb-student-welcome-card />
@@ -62,6 +63,7 @@ import { PageHeader } from '@shared/ui/page-header';
   `,
 })
 export class StudentHome implements OnInit {
+  protected readonly t = T.studentHome;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);

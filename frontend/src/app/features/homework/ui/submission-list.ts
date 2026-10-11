@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { Attachment, Submission } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
 
 /** All attempts of a student, newest first. The answer text is shown as plain text. */
 @Component({
@@ -13,7 +14,7 @@ import { EmptyState } from '@shared/ui/empty-state';
     @for (submission of submissions(); track submission.id; let first = $first) {
       <article class="tb-submission" [class.tb-submission--old]="!first">
         <header class="tb-muted">
-          {{ first ? 'Последний ответ' : 'Предыдущий ответ' }} ·
+          {{ first ? t.lastAnswer : t.previousAnswer }} ·
           {{ submission.submittedAt | date: 'dd.MM.yyyy HH:mm' }}
         </header>
         @if (submission.text) {
@@ -25,11 +26,12 @@ import { EmptyState } from '@shared/ui/empty-state';
         />
       </article>
     } @empty {
-      <tb-empty-state icon="pi-comments" title="Ответов пока нет" />
+      <tb-empty-state icon="pi-comments" [title]="t.noAnswers" />
     }
   `,
 })
 export class SubmissionList {
+  protected readonly t = T.ui;
   readonly submissions = input.required<readonly Submission[]>();
   readonly download = output<Attachment>();
 }

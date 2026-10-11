@@ -5,6 +5,7 @@ import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
+import { T } from './i18n/texts';
 
 /** Browser storage key: the teacher hid the first-run checklist. */
 export const CHECKLIST_DISMISSED_KEY = 'tb.first-run-checklist.dismissed';
@@ -34,12 +35,12 @@ interface Step {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
-      <p-card header="С чего начать">
+      <p-card [header]="t.title">
         <p-progressbar
           [value]="percent()"
           [showValue]="false"
           styleClass="tb-checklist__progress"
-          [tbProgressLabel]="'Сделано ' + doneCount() + ' из ' + steps().length"
+          [tbProgressLabel]="t.progress(doneCount(), steps().length)"
         />
         <ol class="tb-checklist">
           @for (step of left(); track step.title) {
@@ -59,8 +60,8 @@ interface Step {
           }
         </ol>
         <div class="tb-widget-footer">
-          <span class="tb-muted">Сделано {{ doneCount() }} из {{ steps().length }}</span>
-          <p-button label="Скрыть" severity="secondary" [text]="true" (onClick)="dismiss()" />
+          <span class="tb-muted">{{ t.progress(doneCount(), steps().length) }}</span>
+          <p-button [label]="t.hide" severity="secondary" [text]="true" (onClick)="dismiss()" />
         </div>
       </p-card>
     }
@@ -98,6 +99,7 @@ interface Step {
   `,
 })
 export class FirstRunChecklist {
+  protected readonly t = T.checklist;
   readonly progress = input.required<SetupProgress>();
 
   private readonly dismissed = signal(isHintHidden(CHECKLIST_DISMISSED_KEY));
@@ -107,29 +109,29 @@ export class FirstRunChecklist {
     return [
       {
         done: progress.hasStudents === true,
-        title: 'Добавьте ученика',
-        hint: 'и отправьте ему ссылку-приглашение',
+        title: T.checklist.student,
+        hint: T.checklist.studentHint,
         link: '/teacher/students',
         query: { create: 'student' },
       },
       {
         done: progress.priceSet === true,
-        title: 'Укажите стоимость занятия',
-        hint: 'проведённые занятия будут списываться с баланса ученика',
+        title: T.checklist.price,
+        hint: T.checklist.priceHint,
         link: '/teacher/billing',
       },
       {
         done: progress.messengerConfigured === true,
-        title: 'Подключите мессенджер',
-        hint: 'уведомления будут приходить вам и ученикам в Telegram, ВКонтакте или MAX',
+        title: T.checklist.messenger,
+        hint: T.checklist.messengerHint,
         link: '/teacher/notifications',
         query: { open: 'messengers' },
         fragment: 'notifications-messengers',
       },
       {
         done: progress.hasLessons === true,
-        title: 'Запланируйте первое занятие',
-        hint: 'разовое или регулярное — напоминания придут сами',
+        title: T.checklist.lesson,
+        hint: T.checklist.lessonHint,
         link: '/teacher/schedule',
         query: { create: 'lesson' },
       },
