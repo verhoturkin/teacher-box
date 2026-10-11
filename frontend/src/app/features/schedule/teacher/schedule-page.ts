@@ -64,6 +64,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
@@ -101,9 +103,9 @@ const ALL_DAY_START_HOUR = 10;
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Расписание">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/schedule" />
-      <p-button class="tb-page-fab" label="Занятие" icon="pi pi-plus" (onClick)="newLesson()" />
+      <p-button class="tb-page-fab" [label]="t.lesson" icon="pi pi-plus" (onClick)="newLesson()" />
     </tb-page-header>
     @if (localTimeHint(); as hint) {
       <p class="tb-hint">{{ hint }}</p>
@@ -111,27 +113,27 @@ const ALL_DAY_START_HOUR = 10;
 
     <div class="tb-stack">
       @if (attentionState.status() === 'error') {
-        <p-card header="Запросы учеников и прошедшие занятия">
+        <p-card [header]="t.attention">
           <tb-load-state
             [state]="attentionState"
-            what="запросы и прошедшие занятия"
+            [what]="t.whatAttention"
             [compact]="true"
             (retry)="loadAttention()"
           />
         </p-card>
       }
       @if (requests().length > 0) {
-        <p-card header="Запросы учеников">
+        <p-card [header]="t.requests">
           <ul class="tb-list">
             @for (request of requests(); track request.id) {
               <li>
                 <tb-avatar
-                  [name]="request.studentName ?? 'Ученик'"
+                  [name]="request.studentName ?? c.student"
                   [photo]="request.studentAvatar"
                 />
                 <div class="tb-list__text">
                   <span class="tb-list__title">
-                    {{ request.studentName ?? 'Ученик' }}
+                    {{ request.studentName ?? c.student }}
                     <p-tag [value]="kind(request)" [severity]="request.late ? 'warn' : 'info'" />
                   </span>
                   <span class="tb-list__supporting">
@@ -146,9 +148,9 @@ const ALL_DAY_START_HOUR = 10;
                 </div>
                 <div class="tb-list__trail">
                   <p-button
-                    label="Ответить"
+                    [label]="t.answer"
                     [text]="true"
-                    [ariaLabel]="'Ответить: ' + (request.studentName ?? 'ученик')"
+                    [ariaLabel]="t.answerTo(request.studentName ?? t.student)"
                     (onClick)="answer(request)"
                   />
                 </div>
@@ -159,7 +161,7 @@ const ALL_DAY_START_HOUR = 10;
       }
 
       @if (unmarked().length > 0) {
-        <p-card header="Отметьте прошедшие занятия">
+        <p-card [header]="t.unmarked">
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
               <li>
@@ -171,31 +173,31 @@ const ALL_DAY_START_HOUR = 10;
                 <div class="tb-list__trail">
                   @if (lesson.groupId !== null) {
                     <p-button
-                      label="Отметить"
+                      [label]="t.mark"
                       icon="pi pi-users"
                       severity="success"
                       [text]="true"
-                      [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                      [ariaLabel]="t.markAttendance(with(lesson))"
                       (onClick)="markAttendance(lesson)"
                     />
                   } @else {
                     <p-button
                       icon="pi pi-check"
                       [text]="true"
-                      [pTooltip]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      [pTooltip]="t.conducted(lesson.studentName ?? t.student)"
                       [rounded]="true"
                       severity="success"
-                      [ariaLabel]="'Проведено: ' + (lesson.studentName ?? 'ученик')"
+                      [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
                       [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'CONDUCTED')"
                     />
                     <p-button
                       icon="pi pi-user-minus"
                       [text]="true"
-                      [pTooltip]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      [pTooltip]="t.missed(lesson.studentName ?? t.student)"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? 'ученик')"
+                      [ariaLabel]="t.missed(lesson.studentName ?? t.student)"
                       [loading]="marks.is(lesson.id)"
                       (onClick)="mark(lesson, 'MISSED')"
                     />
@@ -211,7 +213,7 @@ const ALL_DAY_START_HOUR = 10;
         @if (calendarState.status() === 'error') {
           <tb-load-state
             [state]="calendarState"
-            what="занятия"
+            [what]="t.whatLessons"
             [compact]="true"
             (retry)="loadLessons()"
           />
@@ -232,13 +234,13 @@ const ALL_DAY_START_HOUR = 10;
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Регулярные занятия</span>
+            <span class="tb-card-title__text">{{ t.series }}</span>
             <div class="tb-card-title__actions">
               <p-button
-                label="Добавить"
+                [label]="t.add"
                 icon="pi pi-plus"
                 severity="secondary"
-                ariaLabel="Добавить регулярные занятия"
+                [ariaLabel]="t.addSeries"
                 (onClick)="newSeries()"
               />
             </div>
@@ -246,16 +248,12 @@ const ALL_DAY_START_HOUR = 10;
         </ng-template>
         <tb-load-state
           [state]="seriesState"
-          what="регулярные занятия"
+          [what]="t.whatSeries"
           [compact]="true"
           (retry)="loadSeries()"
         >
           @if (series().length === 0) {
-            <tb-empty-state
-              icon="pi-replay"
-              title="Нет регулярных занятий"
-              hint="Нажмите «Добавить», чтобы запланировать занятия на каждую неделю"
-            />
+            <tb-empty-state icon="pi-replay" [title]="t.noSeriesTitle" [hint]="t.noSeriesHint" />
           } @else {
             <ul class="tb-list">
               @for (item of series(); track item.id) {
@@ -269,19 +267,19 @@ const ALL_DAY_START_HOUR = 10;
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      [pTooltip]="'Изменить регулярные занятия: ' + with(item)"
+                      [pTooltip]="t.editSeries(with(item))"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="'Изменить регулярные занятия: ' + with(item)"
+                      [ariaLabel]="t.editSeries(with(item))"
                       (onClick)="editSeries(item)"
                     />
                     <p-button
                       icon="pi pi-stop-circle"
                       [text]="true"
-                      [pTooltip]="'Завершить регулярные занятия: ' + with(item)"
+                      [pTooltip]="t.stopSeries(with(item))"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Завершить регулярные занятия: ' + with(item)"
+                      [ariaLabel]="t.stopSeries(with(item))"
                       (onClick)="stopSeries(item)"
                     />
                   </div>
@@ -295,13 +293,13 @@ const ALL_DAY_START_HOUR = 10;
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Нерабочее время</span>
+            <span class="tb-card-title__text">{{ t.offTime }}</span>
             <div class="tb-card-title__actions">
               <p-button
-                label="Добавить"
+                [label]="t.add"
                 icon="pi pi-plus"
                 severity="secondary"
-                ariaLabel="Добавить нерабочее время"
+                [ariaLabel]="t.addOffTime"
                 (onClick)="newOffTime()"
               />
             </div>
@@ -309,42 +307,38 @@ const ALL_DAY_START_HOUR = 10;
         </ng-template>
         <tb-load-state
           [state]="offTimesState"
-          what="нерабочее время"
+          [what]="t.whatOffTime"
           [compact]="true"
           (retry)="loadOffTimes()"
         >
           @if (offTimes().length === 0) {
-            <tb-empty-state
-              icon="pi-moon"
-              title="Нерабочее время не отмечено"
-              hint="Отметьте обед, выходные или отпуск — ученики увидят это время занятым."
-            />
+            <tb-empty-state icon="pi-moon" [title]="t.noOffTimeTitle" [hint]="t.noOffTimeHint" />
           } @else {
             <ul class="tb-list">
               @for (item of offTimes(); track item.id) {
                 <li>
                   <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
                   <div class="tb-list__text">
-                    <span class="tb-list__title">{{ item.note ?? 'Не работаю' }}</span>
+                    <span class="tb-list__title">{{ item.note ?? t.notWorking }}</span>
                     <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
                   </div>
                   <div class="tb-list__trail">
                     <p-button
                       icon="pi pi-pencil"
                       [text]="true"
-                      [pTooltip]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      [pTooltip]="t.editOffTime(offTimeText(item))"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="'Изменить нерабочее время: ' + offTimeText(item)"
+                      [ariaLabel]="t.editOffTime(offTimeText(item))"
                       (onClick)="editOffTime(item)"
                     />
                     <p-button
                       icon="pi pi-trash"
                       [text]="true"
-                      [pTooltip]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      [pTooltip]="t.deleteOffTime(offTimeText(item))"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Удалить нерабочее время: ' + offTimeText(item)"
+                      [ariaLabel]="t.deleteOffTime(offTimeText(item))"
                       (onClick)="deleteOffTime(item)"
                     />
                   </div>
@@ -365,19 +359,19 @@ const ALL_DAY_START_HOUR = 10;
       [lesson]="editing()"
       [slot]="slot()"
       [defaultDuration]="defaultDuration()"
-      (saved)="done('Занятие сохранено')"
+      (saved)="done(t.saved)"
     />
     <tb-lesson-details-dialog
       [(visible)]="detailsVisible"
       [lesson]="selected()"
-      (changed)="done('Занятие обновлено')"
-      (deleted)="done('Занятие удалено')"
+      (changed)="done(t.updated)"
+      (deleted)="done(t.deleted)"
       (edit)="editLesson($event)"
     />
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="selected()"
-      (saved)="done('Посещаемость сохранена')"
+      (saved)="done(t.attendanceSaved)"
     />
     <tb-series-dialog
       [(visible)]="seriesDialogVisible"
@@ -397,12 +391,14 @@ const ALL_DAY_START_HOUR = 10;
     <tb-request-answer-dialog
       [(visible)]="answerVisible"
       [request]="answering()"
-      (answered)="done('Ответ отправлен')"
+      (answered)="done(t.answered)"
     />
     <p-confirmdialog />
   `,
 })
 export class SchedulePage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.page;
   protected readonly marks = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
@@ -429,7 +425,7 @@ export class SchedulePage implements OnInit {
     const zone = this.settings()?.timeZone;
     return zone === undefined || zone === browserTimeZone()
       ? null
-      : `Время показано по часовому поясу этого устройства (${browserTimeZone()}), расписание портала — ${zone}.`;
+      : T.page.localTime(browserTimeZone(), zone);
   });
 
   protected readonly lessonDialogVisible = signal(false);
@@ -561,7 +557,7 @@ export class SchedulePage implements OnInit {
             this.confirmOverlap(move);
           } else {
             move.revert();
-            this.snackbar.error(describeError(error, 'Не удалось перенести занятие'));
+            this.snackbar.error(describeError(error, T.page.moveFailed));
           }
         },
       });
@@ -569,7 +565,7 @@ export class SchedulePage implements OnInit {
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
     this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
-      this.done('Занятие отмечено');
+      this.done(T.page.marked);
     });
   }
 
@@ -589,16 +585,16 @@ export class SchedulePage implements OnInit {
   }
 
   onSeriesSaved(planned: SeriesPlanned): void {
-    this.snackbar.success(`Расписание сохранено, занятий: ${String(planned.lessons)}`);
+    this.snackbar.success(T.page.seriesSaved(planned.lessons));
     this.reload();
   }
 
   stopSeries(series: LessonSeries): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Завершить регулярные занятия?',
-        message: `Занятия «${this.weekly(series)}» с сегодняшнего дня будут удалены из расписания. Перенесённые отдельно занятия останутся.`,
-        acceptLabel: 'Завершить',
+        header: T.page.stopHeader,
+        message: T.page.stopMessage(this.weekly(series)),
+        acceptLabel: T.page.stop,
         accept: () => {
           this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
             this.reload();
@@ -619,7 +615,7 @@ export class SchedulePage implements OnInit {
   }
 
   onOffTimeSaved(): void {
-    this.snackbar.success('Нерабочее время сохранено');
+    this.snackbar.success(T.page.offTimeSaved);
     this.loadOffTimes();
     this.loadOffTimePeriods();
   }
@@ -627,9 +623,9 @@ export class SchedulePage implements OnInit {
   deleteOffTime(offTime: OffTime): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Удалить нерабочее время?',
-        message: `«${this.offTimeText(offTime)}» станет свободным временем для учеников.`,
-        acceptLabel: 'Удалить',
+        header: T.page.deleteOffTimeHeader,
+        message: T.page.deleteOffTimeMessage(this.offTimeText(offTime)),
+        acceptLabel: T.page.delete,
         accept: () => {
           this.api.deleteOffTime(offTime.id).subscribe(() => {
             this.loadOffTimes();
@@ -659,9 +655,9 @@ export class SchedulePage implements OnInit {
   private confirmOverlap(move: LessonMove): void {
     this.confirmation.confirm(
       safeConfirmation({
-        header: 'Время занято',
-        message: 'В это время уже есть другое занятие. Всё равно перенести?',
-        acceptLabel: 'Перенести',
+        header: T.page.busyHeader,
+        message: T.page.busyMessage,
+        acceptLabel: T.page.move,
         accept: () => {
           this.onMove(move, true);
         },

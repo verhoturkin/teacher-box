@@ -5,6 +5,7 @@ import { Tooltip } from 'primeng/tooltip';
 import { Busy } from '@shared/ui/busy';
 import { NotificationItem } from '../data-access/notifications.models';
 import { KIND_ICONS } from '../notification-labels';
+import { T } from '../i18n/texts';
 
 /** Notifications as a list: icon, title, text and time; «Открыть» and «Отметить прочитанным». */
 @Component({
@@ -28,9 +29,9 @@ import { KIND_ICONS } from '../notification-labels';
           <div class="tb-list__trail">
             @if (item.link !== null) {
               <p-button
-                label="Открыть"
+                [label]="t.open"
                 [text]="true"
-                [ariaLabel]="'Открыть: ' + item.title"
+                [ariaLabel]="t.openOf(item.title)"
                 (onClick)="opened.emit(item)"
               />
             }
@@ -38,10 +39,10 @@ import { KIND_ICONS } from '../notification-labels';
               <p-button
                 icon="pi pi-check"
                 [text]="true"
-                pTooltip="Отметить прочитанным"
+                [pTooltip]="t.markRead"
                 [rounded]="true"
                 severity="secondary"
-                ariaLabel="Отметить прочитанным"
+                [ariaLabel]="t.markRead"
                 [loading]="busy().is('read-' + item.id)"
                 (onClick)="markRead.emit(item)"
               />
@@ -72,6 +73,7 @@ import { KIND_ICONS } from '../notification-labels';
   `,
 })
 export class NotificationList {
+  protected readonly t = T.list;
   readonly items = input.required<readonly NotificationItem[]>();
   readonly label = input.required<string>();
   /** The requests of the panel: «Отметить прочитанным» spins while its request runs. */

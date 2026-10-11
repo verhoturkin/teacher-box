@@ -4,6 +4,7 @@ import { Card } from 'primeng/card';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BotAbilities } from '../data-access/notifications.models';
+import { T } from '../i18n/texts';
 
 /** Teacher: what the bots can do for students and for the teacher; managing the portal through the bot. */
 @Component({
@@ -11,18 +12,14 @@ import { BotAbilities } from '../data-access/notifications.models';
   imports: [FormsModule, Card, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Что умеет бот">
-      <p class="tb-muted">
-        Кроме уведомлений, бот показывает меню действий: напишите ему /menu или нажмите кнопку под
-        сообщением. Команды: /menu — меню, /cancel — отменить действие, /help — подсказка, /stop —
-        отключить уведомления.
-      </p>
+    <p-card [header]="t.title">
+      <p class="tb-muted">{{ t.about }}</p>
       @if (abilities(); as bot) {
         <div class="tb-bot-abilities">
           <div>
-            <h3 class="tb-subtitle">Ученикам</h3>
+            <h3 class="tb-subtitle">{{ t.students }}</h3>
             @if (bot.studentMenu.length === 0) {
-              <p class="tb-muted">Пока только уведомления.</p>
+              <p class="tb-muted">{{ t.onlyNotifications }}</p>
             } @else {
               <ul>
                 @for (item of bot.studentMenu; track item) {
@@ -32,9 +29,9 @@ import { BotAbilities } from '../data-access/notifications.models';
             }
           </div>
           <div>
-            <h3 class="tb-subtitle">Вам</h3>
+            <h3 class="tb-subtitle">{{ t.you }}</h3>
             @if (bot.teacherMenu.length === 0) {
-              <p class="tb-muted">Пока только уведомления.</p>
+              <p class="tb-muted">{{ t.onlyNotifications }}</p>
             } @else {
               <ul>
                 @for (item of bot.teacherMenu; track item) {
@@ -51,12 +48,9 @@ import { BotAbilities } from '../data-access/notifications.models';
             (ngModelChange)="setTeacherActions($event)"
             [disabled]="pending()"
           />
-          Управлять порталом через бота (отмечать занятия, записывать оплаты, отвечать на запросы)
+          {{ t.teacherActions }}
         </label>
-        <small class="tb-muted">
-          Выключите, если к вашему мессенджеру есть доступ у других людей: уведомления продолжат
-          приходить, а действия учителя в боте станут недоступны.
-        </small>
+        <small class="tb-muted">{{ t.teacherActionsHint }}</small>
       }
     </p-card>
   `,
@@ -75,6 +69,7 @@ import { BotAbilities } from '../data-access/notifications.models';
   `,
 })
 export class BotAbilitiesPanel implements OnInit {
+  protected readonly t = T.abilities;
   private readonly api = inject(NotificationsApi);
 
   protected readonly abilities = signal<BotAbilities | null>(null);

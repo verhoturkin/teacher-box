@@ -33,6 +33,8 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
@@ -41,14 +43,14 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   {
     connected: {
       severity: 'success',
-      text: 'Google Календарь подключён. Занятия появятся в нём в течение минуты.',
+      text: T.google.connectedResult,
     },
-    denied: { severity: 'warn', text: 'Доступ к календарю не предоставлен.' },
+    denied: { severity: 'warn', text: T.google.denied },
     expired: {
       severity: 'warn',
-      text: 'Ссылка подключения устарела — нажмите «Подключить Google» ещё раз.',
+      text: T.google.expired,
     },
-    failed: { severity: 'error', text: 'Не удалось подключить Google Календарь.' },
+    failed: { severity: 'error', text: T.google.failed },
   };
 
 /**
@@ -79,7 +81,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >Google Календарь <tb-help-button topic="teacher/calendars"
+            >{{ t.title }} <tb-help-button topic="teacher/calendars"
           /></span>
         </div>
       </ng-template>
@@ -92,33 +94,33 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
         @switch (status.status) {
           @case ('CONNECTED') {
             <div class="tb-google-state">
-              <p-tag value="Подключён" severity="success" />
-              <span class="tb-muted">с {{ status.connectedAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+              <p-tag [value]="t.connected" severity="success" />
+              <span class="tb-muted">{{
+                t.since((status.connectedAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+              }}</span>
             </div>
-            <p>Занятия попадают в отдельный календарь портала в вашем Google Календаре.</p>
+            <p>{{ t.about }}</p>
             @if (status.lastSyncAt !== null) {
-              <small class="tb-muted"
-                >Последняя синхронизация: {{ status.lastSyncAt | date: 'dd.MM.yyyy HH:mm' }}</small
-              >
+              <small class="tb-muted">{{
+                t.lastSync((status.lastSyncAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+              }}</small>
             }
             @if (status.busyEnabled) {
-              <p class="tb-muted">
-                Занятость из вашего основного календаря показывается в расписании.
-              </p>
+              <p class="tb-muted">{{ t.busyShown }}</p>
             }
             @if (status.lastError !== null) {
               <p class="tb-error">{{ status.lastError }}</p>
             }
             <div class="tb-actions">
               <p-button
-                label="Синхронизировать сейчас"
+                [label]="t.sync"
                 icon="pi pi-refresh"
                 severity="secondary"
                 [loading]="pending()"
                 (onClick)="sync()"
               />
               <p-button
-                label="Отключить"
+                [label]="t.disconnect"
                 severity="danger"
                 [text]="true"
                 [loading]="actions.is('disconnect')"
@@ -128,25 +130,20 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
           }
           @default {
             @if (status.status === 'NEEDS_RECONNECT') {
-              <p-message severity="warn" styleClass="tb-form-message">
-                Google больше не принимает доступ портала. Подключите календарь заново.
-              </p-message>
+              <p-message severity="warn" styleClass="tb-form-message">{{ t.reconnect }}</p-message>
             }
             @if (status.clientConfigured && !editingClient()) {
-              <p>
-                Портал создаст в вашем Google Календаре отдельный календарь «{{ portalName() }}» и
-                будет добавлять в него занятия. Другие календари он не читает и не меняет.
-              </p>
+              <p>{{ t.willCreate(portalName()) }}</p>
               <label class="tb-switch" for="google-busy">
                 <p-checkbox [(ngModel)]="busy" [binary]="true" inputId="google-busy" />
-                <span>Показывать в расписании занятость из моего календаря</span>
+                <span>{{ t.showBusy }}</span>
               </label>
               @if (status.lastError !== null) {
                 <p class="tb-error">{{ status.lastError }}</p>
               }
               <div class="tb-actions">
                 <p-button
-                  label="Подключить Google"
+                  [label]="t.connect"
                   severity="secondary"
                   icon="pi pi-google"
                   [loading]="pending()"
@@ -154,7 +151,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 />
                 @if (!status.clientFromEnvironment) {
                   <p-button
-                    label="Изменить OAuth-клиент"
+                    [label]="t.editClient"
                     severity="secondary"
                     [text]="true"
                     (onClick)="editingClient.set(true)"
@@ -164,42 +161,34 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             } @else {
               <ol class="tb-google-steps">
                 <li>
-                  Откройте
+                  {{ t.open }}
                   <a href="https://console.cloud.google.com/" target="_blank" rel="noopener"
                     >Google Cloud Console</a
                   >
-                  и создайте проект.
+                  {{ t.createProject }}
+                </li>
+                <li>{{ t.enableApi }} <strong>Google Calendar API</strong>.</li>
+                <li>
+                  {{ t.consentBefore }} <strong>External</strong>{{ t.consentMiddle }}
+                  <strong>Publish app</strong> {{ t.consentAfter }}
                 </li>
                 <li>
-                  «APIs &amp; Services» → «Library»: включите <strong>Google Calendar API</strong>.
-                </li>
-                <li>
-                  «Google Auth Platform»: тип аудитории <strong>External</strong>, добавьте свой
-                  адрес в тестовые пользователи, затем нажмите <strong>Publish app</strong> — иначе
-                  Google отзывает доступ через 7 дней. Предупреждение «приложение не проверено» для
-                  личного использования можно пропустить.
-                </li>
-                <li>
-                  «Clients» → «Create client» → <strong>Web application</strong>. В «Authorized
-                  redirect URIs» добавьте:
+                  {{ t.clientBefore }} <strong>Web application</strong>{{ t.clientAfter }}
                   <div class="tb-google-uri">
                     <code>{{ redirectUri() }}</code>
                     <p-button
                       icon="pi pi-copy"
                       [text]="true"
-                      pTooltip="Копировать адрес"
+                      [pTooltip]="t.copyAddress"
                       [rounded]="true"
                       severity="secondary"
-                      ariaLabel="Копировать адрес"
+                      [ariaLabel]="t.copyAddress"
                       (onClick)="copy(redirectUri())"
                     />
                   </div>
-                  <small class="tb-muted"
-                    >Нужен HTTPS-адрес портала. Без него подключите календарь один раз, открыв
-                    портал по http://localhost (например, через SSH-туннель).</small
-                  >
+                  <small class="tb-muted">{{ t.httpsHint }}</small>
                 </li>
-                <li>Скопируйте Client ID и Client secret сюда.</li>
+                <li>{{ t.copyClient }}</li>
               </ol>
               <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
                 <div class="tb-field">
@@ -227,7 +216,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 <div class="tb-form-actions">
                   @if (status.clientConfigured) {
                     <p-button
-                      label="Отмена"
+                      [label]="c.cancel"
                       severity="secondary"
                       [text]="true"
                       (onClick)="editingClient.set(false)"
@@ -236,7 +225,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   <p-button
                     class="tb-tonal"
                     type="submit"
-                    label="Сохранить"
+                    [label]="c.save"
                     severity="success"
                     [loading]="pending()"
                   />
@@ -280,6 +269,8 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   `,
 })
 export class GoogleCalendarPanel implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.google;
   protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly navigation = inject(ExternalNavigation);
@@ -356,7 +347,7 @@ export class GoogleCalendarPanel implements OnInit {
     this.api.syncGoogle().subscribe({
       next: (response) => {
         this.pending.set(false);
-        this.snackbar.success(`Изменено событий: ${String(response.changed)}`);
+        this.snackbar.success(T.google.changed(response.changed));
         this.load();
       },
       error: () => {
@@ -374,7 +365,7 @@ export class GoogleCalendarPanel implements OnInit {
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.snackbar.success('Адрес в буфере обмена');
+      this.snackbar.success(T.google.copied);
     }
   }
 

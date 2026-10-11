@@ -20,6 +20,7 @@ import { BroadcastsPanel } from './teacher/broadcasts-panel';
 import { StudentMessengersPanel } from './teacher/student-messengers-panel';
 import { FoldCard } from '@shared/ui/fold-card';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from './i18n/texts';
 
 /** Sections of the teacher's notifications page that fold (`?open=messengers,students`). */
 export const FOLDED_SECTIONS = ['messengers', 'students', 'preferences'] as const;
@@ -50,26 +51,26 @@ function isFolded(value: unknown): value is FoldedSection {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Уведомления">
+    <tb-page-header [title]="t.title">
       <tb-help-button help [topic]="teacher ? 'teacher/notifications' : 'cabinet/bot'" />
     </tb-page-header>
     @if (teacher) {
       <div class="tb-stack">
         <tb-fold-card
           id="notifications-inbox"
-          title="Входящие"
+          [title]="t.inbox"
           [collapsible]="false"
           [badge]="unread()"
         >
           <ng-template><tb-inbox-panel /></ng-template>
         </tb-fold-card>
-        <tb-fold-card id="notifications-messages" title="Сообщения ученикам" [collapsible]="false">
+        <tb-fold-card id="notifications-messages" [title]="t.messages" [collapsible]="false">
           <ng-template><tb-broadcasts-panel /></ng-template>
         </tb-fold-card>
         <tb-fold-card
           id="notifications-messengers"
-          title="Мессенджеры"
-          summary="Боты портала, ваши мессенджеры и что умеет бот"
+          [title]="t.messengers"
+          [summary]="t.messengersSummary"
           [open]="opened().has('messengers')"
           (openChange)="fold('messengers', $event)"
         >
@@ -78,7 +79,7 @@ function isFolded(value: unknown): value is FoldedSection {
               <tb-bots-panel (changed)="reloadChannels()" />
               <tb-channels-panel
                 [teacher]="true"
-                header="Мои мессенджеры"
+                [header]="t.myMessengers"
                 (changed)="reloadBots()"
               />
               <tb-bot-abilities-panel />
@@ -87,8 +88,8 @@ function isFolded(value: unknown): value is FoldedSection {
         </tb-fold-card>
         <tb-fold-card
           id="notifications-students"
-          title="Ученики"
-          summary="Кто из учеников подключил мессенджер, напоминание подключить"
+          [title]="t.students"
+          [summary]="t.studentsSummary"
           [single]="true"
           [open]="opened().has('students')"
           (openChange)="fold('students', $event)"
@@ -97,8 +98,8 @@ function isFolded(value: unknown): value is FoldedSection {
         </tb-fold-card>
         <tb-fold-card
           id="notifications-preferences"
-          title="Что присылать"
-          summary="Какие уведомления дублировать в мессенджеры"
+          [title]="t.preferences"
+          [summary]="t.preferencesSummary"
           [single]="true"
           [open]="opened().has('preferences')"
           (openChange)="fold('preferences', $event)"
@@ -116,6 +117,7 @@ function isFolded(value: unknown): value is FoldedSection {
   `,
 })
 export class NotificationsPage {
+  protected readonly t = T.page;
   private readonly router = inject(Router);
   private readonly channels = viewChild(ChannelsPanel);
   private readonly bots = viewChild(BotsPanel);

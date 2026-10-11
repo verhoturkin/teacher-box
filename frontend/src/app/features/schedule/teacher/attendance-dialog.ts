@@ -18,6 +18,8 @@ import { describeError } from '@core/http/error-messages';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { AttendanceMark, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 interface MarkOption {
   readonly label: string;
@@ -26,9 +28,9 @@ interface MarkOption {
 
 /** Choices of the attendance of one student. */
 export const MARK_OPTIONS: readonly MarkOption[] = [
-  { label: 'Был', value: 'ATTENDED' },
-  { label: 'Пропуск', value: 'MISSED' },
-  { label: 'Предупредил', value: 'EXCUSED' },
+  { label: T.attendance.ATTENDED, value: 'ATTENDED' },
+  { label: T.attendance.MISSED, value: 'MISSED' },
+  { label: T.attendance.EXCUSED, value: 'EXCUSED' },
 ];
 
 /**
@@ -41,7 +43,7 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Кто был на занятии"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -52,7 +54,7 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
         <ul class="tb-attendance">
           @for (participant of lesson.participants; track participant.studentId) {
             <li>
-              <span>{{ participant.studentName ?? 'Ученик' }}</span>
+              <span>{{ participant.studentName ?? c.student }}</span>
               <p-selectbutton
                 [options]="options"
                 optionLabel="label"
@@ -60,28 +62,26 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
                 [allowEmpty]="false"
                 [ngModel]="marks()[participant.studentId]"
                 (ngModelChange)="set(participant.studentId, $event)"
-                [ariaLabel]="'Посещаемость: ' + (participant.studentName ?? 'ученик')"
+                [ariaLabel]="t.of(participant.studentName ?? t.student)"
               />
             </li>
           }
         </ul>
-        <small class="tb-hint"
-          >«Был» и «Пропуск» спишутся по цене занятия, «Предупредил» — нет.</small
-        >
+        <small class="tb-hint">{{ t.hint }}</small>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       }
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           [disabled]="!anybody()"
           (onClick)="save()"
@@ -109,6 +109,8 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
   `,
 })
 export class AttendanceDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.attendanceDialog;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -166,7 +168,7 @@ export class AttendanceDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сохранить отметки'));
+        this.error.set(describeError(error, T.attendanceDialog.failed));
       },
     });
   }

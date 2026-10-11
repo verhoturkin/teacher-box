@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
+import { T } from '../i18n/texts';
 
 /** How to connect an account to a bot with a one-time code. */
 @Component({
@@ -12,27 +13,25 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
     @let link = code();
     <div class="tb-link-code">
       @if (link.url !== null && startLink()) {
-        <p>Откройте бота и нажмите «Запустить» — аккаунт подключится автоматически.</p>
+        <p>{{ t.start }}</p>
         <a class="p-button tb-link-code__open" [href]="link.url" target="_blank" rel="noopener">
           <i class="pi pi-external-link" aria-hidden="true"></i>
-          <span>Открыть {{ name() }}</span>
+          <span>{{ t.open(name()) }}</span>
         </a>
-        <p class="tb-muted">Или отправьте боту код:</p>
+        <p class="tb-muted">{{ t.orCode }}</p>
       } @else {
         <p>
-          Отправьте этот код
+          {{ t.sendCode }}
           @if (link.url !== null) {
-            <a [href]="link.url" target="_blank" rel="noopener">боту {{ name() }}</a>
+            <a [href]="link.url" target="_blank" rel="noopener">{{ t.toBot(name()) }}</a>
           } @else {
-            боту {{ name() }}
+            {{ t.toBot(name()) }}
           }
-          в личные сообщения:
+          {{ t.privately }}
         </p>
       }
       <div class="tb-link-code__value">{{ link.code }}</div>
-      <small class="tb-muted"
-        >Код действует до {{ link.expiresAt | date: 'HH:mm' }}. Ждём подключения…</small
-      >
+      <small class="tb-muted">{{ t.validUntil((link.expiresAt | date: 'HH:mm') ?? '') }}</small>
     </div>
   `,
   styles: `
@@ -66,6 +65,7 @@ import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
   `,
 })
 export class LinkCodeView {
+  protected readonly t = T.linkCode;
   readonly code = input.required<LinkCode>();
 
   protected readonly name = computed(() => CHANNEL_NAMES[this.code().channel]);

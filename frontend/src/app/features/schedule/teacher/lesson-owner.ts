@@ -1,3 +1,4 @@
+import { T } from '../i18n/texts';
 /** A group the teacher can plan lessons with. */
 export interface LessonGroup {
   readonly id: string;
@@ -27,17 +28,17 @@ export function ownerOptions(
     value: `student:${student.id}`,
   }));
   if (groups.length === 0) {
-    return [{ label: 'Ученики', items: studentItems }];
+    return [{ label: T.owners.students, items: studentItems }];
   }
   return [
     {
-      label: 'Группы',
+      label: T.owners.groups,
       items: groups.map((group): OwnerOption => ({
         label: group.name,
         value: `group:${group.id}`,
       })),
     },
-    { label: 'Ученики', items: studentItems },
+    { label: T.owners.students, items: studentItems },
   ];
 }
 

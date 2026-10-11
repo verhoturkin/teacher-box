@@ -22,6 +22,7 @@ import { formatLessonTime, lessonWith, requestKindLabel } from '../schedule-labe
 import { ChangeRequestDialog } from '../student/change-request-dialog';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
 
 /** Student's home: the nearest lesson with the lesson link and a request to move or cancel it. */
 @Component({
@@ -29,7 +30,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   imports: [EmptyState, RouterLink, Card, ChangeRequestDialog, LessonActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Ближайшее занятие" styleClass="tb-hero">
+    <p-card [header]="t.title" styleClass="tb-hero">
       @if (summary().next; as lesson) {
         <div class="tb-next">
           <span class="tb-next__time">{{ time(lesson) }}</span>
@@ -40,9 +41,7 @@ import { EmptyState } from '@shared/ui/empty-state';
             <span>{{ lesson.topic }}</span>
           }
           @if (lesson.pendingRequests[0]; as request) {
-            <small class="tb-muted"
-              >{{ kind(request) }}: запрос отправлен, ждём ответа учителя.</small
-            >
+            <small class="tb-muted">{{ t.requestSent(kind(request)) }}</small>
           }
           <div class="tb-actions">
             <tb-lesson-actions
@@ -56,11 +55,11 @@ import { EmptyState } from '@shared/ui/empty-state';
           </div>
         </div>
       } @else {
-        <tb-empty-state [compact]="true" icon="pi-calendar" title="Ближайших занятий нет" />
+        <tb-empty-state [compact]="true" icon="pi-calendar" [title]="t.nothing" />
       }
       <div class="tb-widget-footer">
-        <span class="tb-muted">Занятий на неделе: {{ summary().weekLessons }}</span>
-        <a routerLink="/cabinet/schedule">Расписание</a>
+        <span class="tb-muted">{{ t.week(summary().weekLessons) }}</span>
+        <a routerLink="/cabinet/schedule">{{ t.schedule }}</a>
       </div>
     </p-card>
 
@@ -85,6 +84,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   `,
 })
 export class NextLessonWidget implements OnInit {
+  protected readonly t = T.next;
   private readonly snackbar = inject(Snackbar);
   protected readonly mobile = injectMobile();
   private readonly api = inject(ScheduleApi);
@@ -100,7 +100,7 @@ export class NextLessonWidget implements OnInit {
   protected readonly requestKind = signal<ChangeKind>('RESCHEDULE');
 
   protected onSent(): void {
-    this.snackbar.success('Учитель получит ваш запрос');
+    this.snackbar.success(T.next.sent);
     this.changed.emit();
   }
 

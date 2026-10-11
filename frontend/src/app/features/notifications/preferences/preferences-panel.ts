@@ -19,6 +19,8 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationPreferences, NotificationTopic } from '../data-access/notifications.models';
 import { MUTABLE_TOPICS } from '../notification-labels';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Every half hour of the day: `00:00`, `00:30` … `23:30`. */
 export const QUIET_TIMES: readonly string[] = Array.from({ length: 48 }, (_, index) => {
@@ -40,15 +42,12 @@ function shortTime(time: string | null, fallback: string): string {
   imports: [ReactiveFormsModule, Button, Card, Checkbox, Message, Select, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Что присылать в мессенджеры">
-      <p class="tb-muted">
-        В личном кабинете видны все уведомления. Здесь можно выбрать, какие из них дублировать в
-        мессенджеры.
-      </p>
+    <p-card [header]="t.title">
+      <p class="tb-muted">{{ t.about }}</p>
       @if (loaded()) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <fieldset class="tb-topics">
-            <legend class="tb-sr-only">Темы уведомлений</legend>
+            <legend class="tb-sr-only">{{ t.topics }}</legend>
             @for (topic of topics(); track topic.topic; let index = $index) {
               <div class="tb-topic">
                 <p-checkbox
@@ -65,8 +64,8 @@ function shortTime(time: string | null, fallback: string): string {
             <div class="tb-topic">
               <p-checkbox [formControl]="alwaysOn" [binary]="true" inputId="topic-MESSAGES" />
               <label for="topic-MESSAGES">
-                <strong>{{ teacher() ? 'Сообщения' : 'Сообщения учителя' }}</strong>
-                <small class="tb-muted">приходят всегда</small>
+                <strong>{{ teacher() ? t.messages : t.teacherMessages }}</strong>
+                <small class="tb-muted">{{ t.always }}</small>
               </label>
             </div>
           </fieldset>
@@ -74,12 +73,12 @@ function shortTime(time: string | null, fallback: string): string {
           <div class="tb-quiet">
             <label class="tb-switch" for="quiet-enabled">
               <p-toggleswitch formControlName="quiet" inputId="quiet-enabled" />
-              <span>Тихие часы — не присылать ночью</span>
+              <span>{{ t.quiet }}</span>
             </label>
             @if (form.controls.quiet.value) {
               <div class="tb-quiet__times">
                 <div class="tb-field">
-                  <label for="quiet-from">С</label>
+                  <label for="quiet-from">{{ t.from }}</label>
                   <p-select
                     inputId="quiet-from"
                     formControlName="quietFrom"
@@ -88,7 +87,7 @@ function shortTime(time: string | null, fallback: string): string {
                   />
                 </div>
                 <div class="tb-field">
-                  <label for="quiet-to">До</label>
+                  <label for="quiet-to">{{ t.to }}</label>
                   <p-select
                     inputId="quiet-to"
                     formControlName="quietTo"
@@ -97,9 +96,7 @@ function shortTime(time: string | null, fallback: string): string {
                   />
                 </div>
               </div>
-              <small class="tb-hint"
-                >Уведомления за это время придут в мессенджер, когда тихие часы закончатся.</small
-              >
+              <small class="tb-hint">{{ t.quietHint }}</small>
             }
           </div>
 
@@ -110,7 +107,7 @@ function shortTime(time: string | null, fallback: string): string {
             <p-button
               class="tb-tonal"
               type="submit"
-              label="Сохранить"
+              [label]="c.save"
               severity="success"
               icon="pi pi-check"
               [loading]="pending()"
@@ -157,6 +154,8 @@ function shortTime(time: string | null, fallback: string): string {
   `,
 })
 export class PreferencesPanel implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.preferences;
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
 
@@ -215,11 +214,11 @@ export class PreferencesPanel implements OnInit {
         next: (saved) => {
           this.pending.set(false);
           this.fill(saved);
-          this.snackbar.success('Настройки уведомлений сохранены');
+          this.snackbar.success(T.preferences.saved);
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось сохранить настройки'));
+          this.error.set(describeError(error, T.preferences.failed));
         },
       });
   }

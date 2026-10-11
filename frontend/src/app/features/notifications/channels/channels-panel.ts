@@ -24,6 +24,8 @@ import { LinkCodeView } from './link-code-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** How often the channel list is reloaded while the user is connecting a messenger. */
 export const LINK_POLL_INTERVAL_MS = 3_000;
@@ -50,15 +52,11 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
           <tb-empty-state
             [compact]="true"
             icon="pi-comments"
-            [title]="teacher() ? 'Боты мессенджеров не подключены' : 'Мессенджеры не подключены'"
-            [hint]="
-              teacher()
-                ? 'Подключите бота выше — и сможете получать уведомления сами и присылать их ученикам.'
-                : 'Уведомления приходят в личный кабинет; мессенджеры подключает учитель.'
-            "
+            [title]="teacher() ? t.noBotsTitle : t.noMessengersTitle"
+            [hint]="teacher() ? t.noBotsHint : t.noMessengersHint"
           />
         } @else {
-          <p class="tb-muted">Уведомления будут дублироваться в подключённые мессенджеры.</p>
+          <p class="tb-muted">{{ t.duplicated }}</p>
           <ul class="tb-list tb-channels">
             @for (channel of channels; track channel.channel) {
               <li class="tb-channel">
@@ -69,14 +67,14 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                   <span class="tb-list__title">{{ names[channel.channel] }}</span>
                   @if (channel.linked) {
                     <span class="tb-list__supporting">
-                      {{ channel.displayName ?? 'подключён' }}, с
-                      {{ channel.linkedAt | date: 'dd.MM.yyyy' }}
+                      {{ channel.displayName ?? t.linked }},
+                      {{ t.since((channel.linkedAt | date: 'dd.MM.yyyy') ?? '') }}
                       @if (!channel.enabled) {
-                        · на паузе
+                        · {{ t.paused }}
                       }
                     </span>
                   } @else {
-                    <span class="tb-list__supporting">не подключён</span>
+                    <span class="tb-list__supporting">{{ t.notLinked }}</span>
                   }
                 </div>
                 <div class="tb-list__trail">
@@ -88,21 +86,21 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                         [ngModel]="channel.enabled"
                         (ngModelChange)="setEnabled(channel.channel, $event)"
                       />
-                      Присылать
+                      {{ t.send }}
                     </label>
                     <p-button
                       icon="pi pi-times"
                       [text]="true"
-                      [pTooltip]="'Отключить ' + names[channel.channel]"
+                      [pTooltip]="t.unlink(names[channel.channel])"
                       [rounded]="true"
                       severity="danger"
-                      [ariaLabel]="'Отключить ' + names[channel.channel]"
+                      [ariaLabel]="t.unlink(names[channel.channel])"
                       [loading]="busy.is('unlink-' + channel.channel)"
                       (onClick)="unlink(channel.channel)"
                     />
                   } @else {
                     <p-button
-                      label="Подключить"
+                      [label]="t.connect"
                       icon="pi pi-link"
                       severity="secondary"
                       [text]="true"
@@ -130,7 +128,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
         <tb-link-code-view [code]="code" />
       }
       <ng-template #footer>
-        <p-button label="Закрыть" severity="secondary" [text]="true" (onClick)="closeLink()" />
+        <p-button [label]="c.close" severity="secondary" [text]="true" (onClick)="closeLink()" />
       </ng-template>
     </p-dialog>
   `,
@@ -141,6 +139,8 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
   `,
 })
 export class ChannelsPanel implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.channels;
   protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
@@ -149,7 +149,7 @@ export class ChannelsPanel implements OnInit {
   /** The teacher sees how to configure bots instead of a hint for students. */
   readonly teacher = input(false);
   /** Card title. */
-  readonly header = input('Мессенджеры');
+  readonly header = input(T.channels.header);
   /** An account was connected or disconnected. */
   readonly changed = output();
 
@@ -159,7 +159,7 @@ export class ChannelsPanel implements OnInit {
   protected readonly linkCode = signal<LinkCode | null>(null);
   protected readonly linkTitle = computed(() => {
     const code = this.linkCode();
-    return code === null ? '' : `Подключение ${CHANNEL_NAMES[code.channel]}`;
+    return code === null ? '' : T.channels.linkTitle(CHANNEL_NAMES[code.channel]);
   });
 
   constructor() {
@@ -198,7 +198,7 @@ export class ChannelsPanel implements OnInit {
 
   unlink(channel: ChannelType): void {
     this.busy.guard('unlink-' + channel, this.api.unlink(channel)).subscribe(() => {
-      this.snackbar.info(`${CHANNEL_NAMES[channel]} отключён`);
+      this.snackbar.info(T.channels.unlinked(CHANNEL_NAMES[channel]));
       this.reload();
       this.changed.emit();
     });
@@ -220,7 +220,7 @@ export class ChannelsPanel implements OnInit {
         this.channels.set(channels);
         if (channels.some((state) => state.channel === channel && state.linked)) {
           this.closeLink();
-          this.snackbar.success(`${CHANNEL_NAMES[channel]} подключён`);
+          this.snackbar.success(T.channels.connected(CHANNEL_NAMES[channel]));
           this.changed.emit();
         }
       });

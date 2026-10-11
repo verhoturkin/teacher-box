@@ -8,6 +8,7 @@ import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastDialog, Recipient } from './broadcast-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
 
 /** Teacher: writes to students and sees what was sent. */
 @Component({
@@ -17,12 +18,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
   template: `
     <p-card>
       <div class="tb-broadcasts-header">
-        <p class="tb-muted">
-          Сообщение придёт ученикам в личный кабинет и в подключённые мессенджеры — например, о
-          каникулах или смене ссылки на урок.
-        </p>
+        <p class="tb-muted">{{ t.about }}</p>
         <p-button
-          label="Написать ученикам"
+          [label]="t.write"
           severity="secondary"
           icon="pi pi-send"
           (onClick)="openBroadcast()"
@@ -30,7 +28,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
       </div>
       @if (history(); as history) {
         @if (history.length === 0) {
-          <tb-empty-state icon="pi-send" title="Вы ещё не отправляли сообщений" />
+          <tb-empty-state icon="pi-send" [title]="t.empty" />
         } @else {
           <ul class="tb-list tb-broadcasts">
             @for (item of history; track item.id) {
@@ -42,8 +40,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
                     <span class="tb-list__supporting tb-broadcast__body">{{ item.body }}</span>
                   }
                   <span class="tb-list__supporting">
-                    {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }} · получателей:
-                    {{ item.recipients }}
+                    {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }} ·
+                    {{ t.recipients(item.recipients) }}
                   </span>
                 </div>
               </li>
@@ -88,6 +86,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class BroadcastsPanel implements OnInit {
+  protected readonly t = T.broadcasts;
   private readonly api = inject(NotificationsApi);
   private readonly identity = inject(IdentityApi);
   private readonly snackbar = inject(Snackbar);
@@ -112,7 +111,7 @@ export class BroadcastsPanel implements OnInit {
   }
 
   onBroadcast(recipients: number): void {
-    this.snackbar.success(`Сообщение отправлено, получателей: ${String(recipients)}`);
+    this.snackbar.success(T.broadcasts.sent(recipients));
     this.reload();
   }
 

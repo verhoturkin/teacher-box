@@ -19,6 +19,8 @@ import { describeError } from '@core/http/error-messages';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, optionalText } from '../schedule-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * A student asks to move a lesson to another time or to cancel it; the teacher answers. A late
@@ -38,21 +40,19 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
     >
       @if (lesson(); as lesson) {
         <div class="tb-form">
-          <p>Занятие: {{ time() }}</p>
+          <p>{{ t.lesson(time()) }}</p>
           @if (lesson.groupId !== null) {
             <p class="tb-muted">
-              @if (kind() === 'RESCHEDULE') {
-                Это занятие группы «{{ lesson.groupName }}»: если учитель согласится, его перенесут
-                для всей группы.
-              } @else {
-                Занятие группы «{{ lesson.groupName }}» пройдёт без вас. Предупредите заранее —
-                тогда учитель сразу узнает, а пропуск не засчитается.
-              }
+              {{
+                kind() === 'RESCHEDULE'
+                  ? t.groupReschedule(lesson.groupName ?? '')
+                  : t.groupAbsence(lesson.groupName ?? '')
+              }}
             </p>
           }
           @if (kind() === 'RESCHEDULE') {
             <div class="tb-field">
-              <label for="request-start">Удобное время</label>
+              <label for="request-start">{{ t.time }}</label>
               <p-datepicker
                 inputId="request-start"
                 [ngModel]="proposed()"
@@ -69,17 +69,13 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
               />
             </div>
             @if (busyAt()) {
-              <p-message severity="warn" styleClass="tb-form-message">
-                В это время учитель занят — выберите другое время.
-              </p-message>
+              <p-message severity="warn" styleClass="tb-form-message">{{ t.busy }}</p-message>
             }
           } @else if (late()) {
-            <p-message severity="warn" styleClass="tb-form-message">
-              До занятия осталось мало времени: учитель может засчитать его как пропуск.
-            </p-message>
+            <p-message severity="warn" styleClass="tb-form-message">{{ t.late }}</p-message>
           }
           <div class="tb-field">
-            <label for="request-comment">Комментарий учителю</label>
+            <label for="request-comment">{{ t.comment }}</label>
             <textarea
               pTextarea
               id="request-comment"
@@ -95,7 +91,7 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
       }
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
@@ -112,6 +108,8 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
   `,
 })
 export class ChangeRequestDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.changeRequest;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -137,15 +135,15 @@ export class ChangeRequestDialog {
   protected readonly cancelsOwnLesson = computed(() => this.kind() === 'CANCEL' && !this.absence());
   protected readonly sendLabel = computed(() => {
     if (this.cancelsOwnLesson()) {
-      return 'Попросить отменить';
+      return T.changeRequest.askCancel;
     }
-    return this.absence() && !this.late() ? 'Предупредить учителя' : 'Отправить учителю';
+    return this.absence() && !this.late() ? T.changeRequest.warn : T.changeRequest.send;
   });
   protected readonly title = computed(() => {
     if (this.kind() === 'RESCHEDULE') {
-      return 'Перенести занятие';
+      return T.changeRequest.rescheduleTitle;
     }
-    return this.absence() ? 'Не приду на занятие' : 'Отменить занятие';
+    return this.absence() ? T.changeRequest.absenceTitle : T.changeRequest.cancelTitle;
   });
   protected readonly time = computed(() => {
     const lesson = this.lesson();
@@ -211,7 +209,7 @@ export class ChangeRequestDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось отправить запрос'));
+          this.error.set(describeError(error, T.changeRequest.failed));
         },
       });
   }

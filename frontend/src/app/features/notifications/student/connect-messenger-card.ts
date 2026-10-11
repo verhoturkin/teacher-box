@@ -13,6 +13,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState } from '../data-access/notifications.models';
 import { CHANNEL_NAMES } from '../notification-labels';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
+import { T } from '../i18n/texts';
 
 /** Browser storage key: the student postponed connecting a messenger. */
 export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
@@ -24,23 +25,21 @@ export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
-      <p-card header="Получайте уведомления в мессенджере" styleClass="tb-connect-card">
-        <p>
-          Подключите {{ names() }} — напоминания о занятиях, новые задания и сообщения учителя будут
-          приходить сразу, без захода в личный кабинет.
-        </p>
+      <p-card [header]="t.title" styleClass="tb-connect-card">
+        <p>{{ t.text(names()) }}</p>
         <div class="tb-actions">
           <a pButton routerLink="/cabinet/notifications" severity="secondary">
             <i pButtonIcon aria-hidden="true" class="pi pi-link"></i>
-            <span pButtonLabel>Подключить</span>
+            <span pButtonLabel>{{ t.connect }}</span>
           </a>
-          <p-button label="Не сейчас" severity="secondary" [text]="true" (onClick)="dismiss()" />
+          <p-button [label]="t.later" severity="secondary" [text]="true" (onClick)="dismiss()" />
         </div>
       </p-card>
     }
   `,
 })
 export class ConnectMessengerCard implements OnInit {
+  protected readonly t = T.connect;
   private readonly api = inject(NotificationsApi);
 
   private readonly channels = signal<ChannelState[]>([]);
@@ -55,7 +54,7 @@ export class ConnectMessengerCard implements OnInit {
   protected readonly names = computed(() => {
     const names = this.channels().map((channel) => CHANNEL_NAMES[channel.channel]);
     return names.length > 1
-      ? `${names.slice(0, -1).join(', ')} или ${names[names.length - 1] ?? ''}`
+      ? T.connect.or(names.slice(0, -1).join(', '), names[names.length - 1] ?? '')
       : (names[0] ?? '');
   });
 

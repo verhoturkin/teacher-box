@@ -9,6 +9,8 @@ import {
   ScheduledLesson,
   Weekday,
 } from './data-access/schedule.models';
+import { T } from './i18n/texts';
+import { locale } from '@core/i18n/language';
 
 /**
  * A status is a role (ADR-0023): `null` — the primary container (the default of `p-tag`: planned),
@@ -19,34 +21,31 @@ export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' |
 export const STATUS_LABELS: Readonly<
   Record<ScheduleLessonStatus, { label: string; severity: TagSeverity }>
 > = {
-  SCHEDULED: { label: 'Запланировано', severity: null },
-  CONDUCTED: { label: 'Проведено', severity: 'success' },
-  MISSED: { label: 'Пропуск', severity: 'warn' },
-  CANCELLED: { label: 'Отменено', severity: 'secondary' },
+  SCHEDULED: { label: T.statuses.SCHEDULED, severity: null },
+  CONDUCTED: { label: T.statuses.CONDUCTED, severity: 'success' },
+  MISSED: { label: T.statuses.MISSED, severity: 'warn' },
+  CANCELLED: { label: T.statuses.CANCELLED, severity: 'secondary' },
 };
 
-export const KIND_LABELS: Readonly<Record<ChangeKind, string>> = {
-  RESCHEDULE: 'Перенос',
-  CANCEL: 'Отмена',
-};
+export const KIND_LABELS: Readonly<Record<ChangeKind, string>> = T.kinds;
 
 export const ATTENDANCE_LABELS: Readonly<
   Record<Attendance, { label: string; severity: TagSeverity }>
 > = {
-  EXPECTED: { label: 'Ожидается', severity: null },
-  ATTENDED: { label: 'Был', severity: 'success' },
-  MISSED: { label: 'Пропуск', severity: 'warn' },
-  EXCUSED: { label: 'Предупредил', severity: 'secondary' },
+  EXPECTED: { label: T.attendance.EXPECTED, severity: null },
+  ATTENDED: { label: T.attendance.ATTENDED, severity: 'success' },
+  MISSED: { label: T.attendance.MISSED, severity: 'warn' },
+  EXCUSED: { label: T.attendance.EXCUSED, severity: 'secondary' },
 };
 
 export const REQUEST_STATUS_LABELS: Readonly<
   Record<RequestStatus, { label: string; severity: TagSeverity }>
 > = {
-  PENDING: { label: 'Ждёт ответа', severity: 'warn' },
-  APPROVED: { label: 'Согласовано', severity: 'success' },
-  DECLINED: { label: 'Отклонено', severity: 'danger' },
-  WITHDRAWN: { label: 'Отозвано', severity: 'secondary' },
-  OUTDATED: { label: 'Неактуально', severity: 'secondary' },
+  PENDING: { label: T.requestStatuses.PENDING, severity: 'warn' },
+  APPROVED: { label: T.requestStatuses.APPROVED, severity: 'success' },
+  DECLINED: { label: T.requestStatuses.DECLINED, severity: 'danger' },
+  WITHDRAWN: { label: T.requestStatuses.WITHDRAWN, severity: 'secondary' },
+  OUTDATED: { label: T.requestStatuses.OUTDATED, severity: 'secondary' },
 };
 
 export interface WeekdayOption {
@@ -56,24 +55,22 @@ export interface WeekdayOption {
 }
 
 /** Monday to Sunday. */
-export const WEEKDAYS: readonly WeekdayOption[] = [
-  { value: 'MONDAY', short: 'Пн', label: 'понедельник' },
-  { value: 'TUESDAY', short: 'Вт', label: 'вторник' },
-  { value: 'WEDNESDAY', short: 'Ср', label: 'среда' },
-  { value: 'THURSDAY', short: 'Чт', label: 'четверг' },
-  { value: 'FRIDAY', short: 'Пт', label: 'пятница' },
-  { value: 'SATURDAY', short: 'Сб', label: 'суббота' },
-  { value: 'SUNDAY', short: 'Вс', label: 'воскресенье' },
-];
+export const WEEKDAYS: readonly WeekdayOption[] = (
+  ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] as const
+).map((value, index) => ({
+  value,
+  short: T.weekdaysShort[index] ?? value,
+  label: T.weekdays[index] ?? value,
+}));
 
-const DAY_TIME = new Intl.DateTimeFormat('ru-RU', {
+const DAY_TIME = new Intl.DateTimeFormat(locale(), {
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
 });
-const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
 
 /** «чт, 01.10, 18:00» in the browser's time zone. */
 export function formatLessonStart(iso: string): string {
@@ -93,10 +90,10 @@ export function formatLessonTime(startsAt: string, endsAt: string): string {
 /** «Пн, Чт в 18:00» for a series (`HH:mm:ss` local time of the instance). */
 export function formatWeekly(weekdays: readonly Weekday[], startTime: string): string {
   const days = WEEKDAYS.filter((day) => weekdays.includes(day.value)).map((day) => day.short);
-  return `${days.join(', ')} в ${startTime.slice(0, 5)}`;
+  return T.weekly(days.join(', '), startTime.slice(0, 5));
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', {
+const DATE = new Intl.DateTimeFormat(locale(), {
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
@@ -120,9 +117,9 @@ export function formatOffTime(offTime: OffTime): string {
   const time = `${(offTime.startTime ?? '').slice(0, 5)}–${(offTime.endTime ?? '').slice(0, 5)}`;
   const since =
     offTime.startsOn !== null && fromIsoDate(offTime.startsOn) > new Date()
-      ? `с ${DATE.format(fromIsoDate(offTime.startsOn))}`
+      ? T.since(DATE.format(fromIsoDate(offTime.startsOn)))
       : '';
-  const until = offTime.endsOn === null ? '' : `по ${DATE.format(fromIsoDate(offTime.endsOn))}`;
+  const until = offTime.endsOn === null ? '' : T.until(DATE.format(fromIsoDate(offTime.endsOn)));
   const dates = [since, until].filter((part) => part !== '').join(' ');
   return `${days.join(', ')} ${time}${dates === '' ? '' : `, ${dates}`}`;
 }
@@ -158,14 +155,14 @@ export function lessonWith(
   lesson: Pick<ScheduledLesson, 'groupId' | 'groupName' | 'studentName'>,
 ): string {
   if (lesson.groupId !== null) {
-    return `Группа «${lesson.groupName ?? 'без названия'}»`;
+    return T.group(lesson.groupName ?? T.noTitle);
   }
-  return lesson.studentName ?? 'Ученик';
+  return lesson.studentName ?? T.student;
 }
 
 /** What a request asks for; in a group lesson a cancellation means that the student will not come. */
 export function requestKindLabel(request: Pick<ChangeRequest, 'groupId' | 'kind'>): string {
   return request.groupId !== null && request.kind === 'CANCEL'
-    ? 'Не придёт'
+    ? T.wontCome
     : KIND_LABELS[request.kind];
 }

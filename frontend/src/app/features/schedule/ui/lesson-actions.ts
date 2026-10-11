@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { Button } from 'primeng/button';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { ChangeKind } from '../data-access/schedule.models';
+import { T } from '../i18n/texts';
 
 /**
  * The student's buttons of a lesson: «Войти в урок» when the lesson has a meeting, «Перенести» and
@@ -23,9 +24,9 @@ import { ChangeKind } from '../data-access/schedule.models';
       <tb-join-lesson-button [url]="url" [label]="joinLabel()" [tonal]="inRow()" />
     }
     @if (requests()) {
-      <div class="tb-button-group" role="group" aria-label="Перенести или отменить">
+      <div class="tb-button-group" role="group" [attr.aria-label]="t.requests">
         <p-button
-          label="Перенести"
+          [label]="t.reschedule"
           [icon]="rescheduleIcon()"
           severity="secondary"
           [text]="inRow()"
@@ -44,9 +45,10 @@ import { ChangeKind } from '../data-access/schedule.models';
   `,
 })
 export class LessonActions {
+  protected readonly t = T.actions;
   /** The link of the lesson's meeting; none: no «Войти в урок». */
   readonly joinUrl = input<string | null>(null);
-  readonly joinLabel = input('Войти в урок');
+  readonly joinLabel = input(T.actions.join);
   /** Whether the student may ask to move or cancel the lesson. */
   readonly requests = input(true);
   /** A group lesson is not cancelled by a student: they will not come. */
@@ -61,5 +63,7 @@ export class LessonActions {
   readonly rescheduleIcon = input<string | undefined>(undefined);
   readonly ask = output<ChangeKind>();
 
-  protected readonly cancelLabel = computed(() => (this.group() ? 'Не приду' : 'Отменить'));
+  protected readonly cancelLabel = computed(() =>
+    this.group() ? T.actions.wontCome : T.actions.cancel,
+  );
 }

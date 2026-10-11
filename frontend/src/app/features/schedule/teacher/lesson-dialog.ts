@@ -26,6 +26,8 @@ import { optionalText } from '../schedule-labels';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student the teacher can plan a lesson with. */
 export interface LessonStudent {
@@ -62,7 +64,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="lesson() === null ? 'Новое занятие' : 'Изменить занятие'"
+      [header]="lesson() === null ? t.newLesson : t.editLesson"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -70,7 +72,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     >
       <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="schedule-lesson-student">С кем</label>
+          <label for="schedule-lesson-student">{{ t.with }}</label>
           <p-select
             inputId="schedule-lesson-student"
             formControlName="owner"
@@ -80,17 +82,17 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             optionGroupChildren="items"
             optionLabel="label"
             optionValue="value"
-            placeholder="Выберите ученика или группу"
+            [placeholder]="t.chooseOwner"
             [filter]="true"
-            filterPlaceholder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceholder]="t.search"
+            [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-row">
           <div class="tb-field">
-            <label for="schedule-lesson-start">Начало</label>
+            <label for="schedule-lesson-start">{{ t.start }}</label>
             <p-datepicker
               inputId="schedule-lesson-start"
               formControlName="startsAt"
@@ -105,7 +107,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             />
           </div>
           <div class="tb-field">
-            <label for="schedule-lesson-duration">Длительность, мин</label>
+            <label for="schedule-lesson-duration">{{ t.duration }}</label>
             <p-inputnumber
               inputId="schedule-lesson-duration"
               formControlName="durationMinutes"
@@ -118,11 +120,11 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           </div>
         </div>
         <div class="tb-field">
-          <label for="schedule-lesson-topic">Тема</label>
+          <label for="schedule-lesson-topic">{{ t.topic }}</label>
           <input pInputText id="schedule-lesson-topic" formControlName="topic" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="schedule-lesson-url">Ссылка на онлайн-урок</label>
+          <label for="schedule-lesson-url">{{ t.url }}</label>
           <input
             pInputText
             id="schedule-lesson-url"
@@ -131,15 +133,15 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             autocomplete="off"
           />
           @if (form.controls.meetingUrl.invalid) {
-            <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
+            <small class="tb-error">{{ t.urlInvalid }}</small>
           }
         </div>
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
-            Время пересекается с другим занятием.
+            {{ t.overlap }}
             <p-button
               severity="success"
-              label="Всё равно сохранить"
+              [label]="t.saveAnyway"
               [text]="true"
               (onClick)="save(true)"
             />
@@ -151,14 +153,14 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="lesson-form"
@@ -168,6 +170,8 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
   `,
 })
 export class LessonDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.lessonDialog;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -250,7 +254,7 @@ export class LessonDialog {
         if (problemCode(error) === 'schedule.overlap') {
           this.overlap.set(true);
         } else {
-          this.error.set(describeError(error, 'Не удалось сохранить занятие'));
+          this.error.set(describeError(error, T.lessonDialog.failed));
         }
       },
     });

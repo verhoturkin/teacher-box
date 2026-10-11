@@ -20,6 +20,8 @@ import { GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student the teacher can write to. */
 export interface Recipient {
@@ -45,7 +47,7 @@ export interface Recipient {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Сообщение ученикам"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog tb-dialog--wide"
@@ -59,17 +61,17 @@ export interface Recipient {
         (ngSubmit)="send()"
       >
         <div class="tb-field">
-          <label for="broadcast-students">Кому</label>
+          <label for="broadcast-students">{{ t.to }}</label>
           <p-multiselect
             inputId="broadcast-students"
             formControlName="studentIds"
             [options]="students()"
             optionLabel="displayName"
             optionValue="id"
-            placeholder="Всем ученикам"
+            [placeholder]="t.everyone"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
@@ -77,14 +79,14 @@ export interface Recipient {
           @if (visible()) {
             <tb-group-picker inputId="broadcast-group" (picked)="addStudents($event)" />
           }
-          <small class="tb-hint">Если никого не выбрать, сообщение получат все ученики.</small>
+          <small class="tb-hint">{{ t.hint }}</small>
         </div>
         <div class="tb-field">
-          <label for="broadcast-title">Тема</label>
+          <label for="broadcast-title">{{ t.subject }}</label>
           <input pInputText id="broadcast-title" formControlName="title" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="broadcast-body">Текст</label>
+          <label for="broadcast-body">{{ t.text }}</label>
           <textarea pTextarea id="broadcast-body" formControlName="body" rows="6"></textarea>
         </div>
         @if (error(); as message) {
@@ -93,14 +95,14 @@ export interface Recipient {
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Отправить"
+          [label]="t.send"
           icon="pi pi-send"
           [loading]="pending()"
           type="submit"
@@ -111,6 +113,8 @@ export interface Recipient {
   `,
 })
 export class BroadcastDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.broadcast;
   private readonly api = inject(NotificationsApi);
 
   readonly visible = model(false);
@@ -167,7 +171,7 @@ export class BroadcastDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось отправить сообщение'));
+          this.error.set(describeError(error, T.broadcast.failed));
         },
       });
   }
