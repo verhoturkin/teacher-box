@@ -11,6 +11,7 @@ import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-l
 import { BotWizardDialog } from './bot-wizard-dialog';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
 
 /** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
 @Component({
@@ -19,11 +20,8 @@ import { Snackbar } from '@core/snackbar/snackbar';
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Боты мессенджеров">
-      <p class="tb-muted">
-        Через ботов уведомления приходят вам и ученикам в Telegram, ВКонтакте или MAX. Достаточно
-        одного мессенджера — того, которым пользуются ваши ученики.
-      </p>
+    <p-card [header]="t.title">
+      <p class="tb-muted">{{ t.about }}</p>
       <ul class="tb-list tb-bots">
         @for (bot of bots(); track bot.channel) {
           <li class="tb-bot">
@@ -34,22 +32,21 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <span class="tb-list__title">{{ names[bot.channel] }}</span>
               @if (bot.configured) {
                 <span class="tb-list__supporting">
-                  {{ bot.botName ?? 'бот из настроек сервера' }}
+                  {{ bot.botName ?? t.fromServer }}
                   @if (!bot.teacherLinked) {
-                    · ваш аккаунт не подключён
+                    · {{ t.notLinked }}
                   }
                 </span>
                 @if (bot.connection.connection === 'ERROR') {
                   <span class="tb-list__supporting tb-bot__error">
                     {{ bot.connection.error }}
                     @if (bot.channel === 'TELEGRAM') {
-                      Если Telegram заблокирован в сети сервера, попросите администратора указать
-                      прокси в его настройках.
+                      {{ t.telegramBlocked }}
                     }
                   </span>
                 }
               } @else {
-                <span class="tb-list__supporting">не подключён</span>
+                <span class="tb-list__supporting">{{ t.notConnected }}</span>
               }
             </div>
             <div class="tb-list__trail">
@@ -57,7 +54,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                 @let tag = tags[bot.connection.connection];
                 <p-tag [value]="tag.value" [severity]="tag.severity" />
                 <p-button
-                  [label]="bot.teacherLinked ? 'Проверить' : 'Настроить'"
+                  [label]="bot.teacherLinked ? t.check : t.setUp"
                   icon="pi pi-cog"
                   severity="secondary"
                   [text]="true"
@@ -67,16 +64,16 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <p-button
                     icon="pi pi-trash"
                     [text]="true"
-                    [pTooltip]="'Отключить бота ' + names[bot.channel]"
+                    [pTooltip]="t.remove(names[bot.channel])"
                     [rounded]="true"
                     severity="danger"
-                    [ariaLabel]="'Отключить бота ' + names[bot.channel]"
+                    [ariaLabel]="t.remove(names[bot.channel])"
                     (onClick)="confirmRemove(bot.channel)"
                   />
                 }
               } @else {
                 <p-button
-                  label="Подключить"
+                  [label]="t.connect"
                   severity="secondary"
                   icon="pi pi-plus"
                   (onClick)="open(bot)"
@@ -108,6 +105,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class BotsPanel implements OnInit {
+  protected readonly t = T.bots;
   private readonly api = inject(NotificationsApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
@@ -149,12 +147,12 @@ export class BotsPanel implements OnInit {
   confirmRemove(channel: ChannelType): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Отключить бота?',
-        message: `Уведомления перестанут приходить в ${CHANNEL_NAMES[channel]}. Подключения учеников сохранятся и заработают снова, если подключить этого же бота.`,
-        acceptLabel: 'Отключить',
+        header: T.bots.removeHeader,
+        message: T.bots.removeMessage(CHANNEL_NAMES[channel]),
+        acceptLabel: T.bots.removeAccept,
         accept: () => {
           this.api.removeBot(channel).subscribe(() => {
-            this.snackbar.info(`Бот ${CHANNEL_NAMES[channel]} отключён`);
+            this.snackbar.info(T.bots.removed(CHANNEL_NAMES[channel]));
             this.reload();
             this.changed.emit();
           });

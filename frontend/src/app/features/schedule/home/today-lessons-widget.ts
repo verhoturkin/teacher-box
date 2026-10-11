@@ -12,6 +12,7 @@ import { Avatar } from '@shared/ui/avatar';
 import { AttendanceDialog } from '../teacher/attendance-dialog';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
 
 /** Teacher's home: today's lessons with a link to the lesson and quick marks (attendance of a group). */
 @Component({
@@ -29,10 +30,10 @@ import { EmptyState } from '@shared/ui/empty-state';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Сегодня">
+    <p-card [header]="t.title">
       @let lessons = summary().today;
       @if (lessons.length === 0) {
-        <tb-empty-state [compact]="true" icon="pi-calendar" title="Сегодня занятий нет" />
+        <tb-empty-state [compact]="true" icon="pi-calendar" [title]="t.nothing" />
       } @else {
         <ul class="tb-list tb-today">
           @for (lesson of lessons; track lesson.id) {
@@ -46,7 +47,7 @@ import { EmptyState } from '@shared/ui/empty-state';
                 <span class="tb-list__supporting">
                   <span class="tb-today__time">{{ time(lesson) }}</span>
                   @if (lesson.groupId !== null) {
-                    · учеников: {{ lesson.participants.length }}
+                    · {{ t.students(lesson.participants.length) }}
                   }
                   @if (lesson.topic !== null) {
                     · {{ lesson.topic }}
@@ -63,18 +64,18 @@ import { EmptyState } from '@shared/ui/empty-state';
                   @if (lesson.joinUrl; as url) {
                     <tb-join-lesson-button
                       [url]="url"
-                      label="Начать урок"
+                      [label]="t.start"
                       [teacher]="true"
                       [tonal]="true"
                     />
                   }
                   @if (started(lesson) && lesson.groupId !== null) {
                     <p-button
-                      label="Отметить"
+                      [label]="t.mark"
                       icon="pi pi-users"
                       severity="success"
                       [text]="true"
-                      [ariaLabel]="'Отметить посещаемость: ' + with(lesson)"
+                      [ariaLabel]="t.markAttendance(with(lesson))"
                       (onClick)="openAttendance(lesson)"
                     />
                   } @else if (started(lesson)) {
@@ -82,9 +83,9 @@ import { EmptyState } from '@shared/ui/empty-state';
                       icon="pi pi-check"
                       severity="success"
                       [text]="true"
-                      [pTooltip]="'Проведено: ' + (lesson.studentName ?? '')"
+                      [pTooltip]="t.conducted(lesson.studentName ?? '')"
                       [rounded]="true"
-                      [ariaLabel]="'Проведено: ' + (lesson.studentName ?? '')"
+                      [ariaLabel]="t.conducted(lesson.studentName ?? '')"
                       [disabled]="pending() === lesson.id"
                       (onClick)="mark(lesson, 'CONDUCTED')"
                     />
@@ -92,9 +93,9 @@ import { EmptyState } from '@shared/ui/empty-state';
                       icon="pi pi-user-minus"
                       severity="danger"
                       [text]="true"
-                      [pTooltip]="'Пропуск: ' + (lesson.studentName ?? '')"
+                      [pTooltip]="t.missed(lesson.studentName ?? '')"
                       [rounded]="true"
-                      [ariaLabel]="'Пропуск: ' + (lesson.studentName ?? '')"
+                      [ariaLabel]="t.missed(lesson.studentName ?? '')"
                       [disabled]="pending() === lesson.id"
                       (onClick)="mark(lesson, 'MISSED')"
                     />
@@ -106,15 +107,15 @@ import { EmptyState } from '@shared/ui/empty-state';
         </ul>
       }
       <div class="tb-widget-footer">
-        <span class="tb-muted">Впереди на неделе: {{ summary().weekLessons }}</span>
-        <a routerLink="/teacher/schedule">Расписание</a>
+        <span class="tb-muted">{{ t.week(summary().weekLessons) }}</span>
+        <a routerLink="/teacher/schedule">{{ t.schedule }}</a>
       </div>
     </p-card>
 
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="attendanceLesson()"
-      (saved)="done('Посещаемость сохранена')"
+      (saved)="done(t.attendanceSaved)"
     />
   `,
   styles: `
@@ -129,6 +130,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   `,
 })
 export class TodayLessonsWidget {
+  protected readonly t = T.today;
   private readonly snackbar = inject(Snackbar);
   private readonly api = inject(ScheduleApi);
 
@@ -167,7 +169,7 @@ export class TodayLessonsWidget {
     this.api.setOutcome(lesson.id, outcome).subscribe({
       next: () => {
         this.pending.set(null);
-        this.done('Занятие отмечено');
+        this.done(T.today.marked);
       },
       error: () => {
         this.pending.set(null);

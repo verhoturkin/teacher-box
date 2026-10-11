@@ -29,6 +29,8 @@ export interface TaskSummary {
   readonly taskId: string;
   readonly studentId: string;
   readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
   readonly status: TaskStatus;
   readonly grade: string | null;
   readonly submittedAt: string | null;
@@ -96,6 +98,8 @@ export interface ReviewQueueItem {
   readonly title: string;
   readonly studentId: string;
   readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
   readonly submittedAt: string | null;
   readonly dueAt: string | null;
 }

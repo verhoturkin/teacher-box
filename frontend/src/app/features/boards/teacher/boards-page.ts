@@ -32,6 +32,7 @@ import { Board } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
+import { T } from '../i18n/texts';
 
 /**
  * Teacher: every board in one place (ADR-0028) — create, change, delete, copies. «Доски (n)» of a student
@@ -57,21 +58,16 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
   providers: [ConfirmationService, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Доски">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/boards" />
-      <p-button
-        class="tb-page-fab"
-        label="Новая доска"
-        icon="pi pi-plus"
-        (onClick)="openCreate()"
-      />
+      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
     </tb-page-header>
 
     @if (filterLabel(); as label) {
       <div class="tb-toolbar">
         <span class="tb-strong">{{ label }}</span>
         <p-button
-          label="Все доски"
+          [label]="t.all"
           icon="pi pi-times"
           [text]="true"
           severity="secondary"
@@ -81,10 +77,10 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
     }
 
     <p-card>
-      <h2 class="tb-sr-only">Список досок</h2>
-      <tb-load-state [state]="state" what="доски" (retry)="load()">
+      <h2 class="tb-sr-only">{{ t.list }}</h2>
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (boards().length > 0) {
-          <ul class="tb-list" aria-label="Доски">
+          <ul class="tb-list" [attr.aria-label]="t.title">
             @for (board of boards(); track board.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
@@ -114,8 +110,8 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Действия: ' + board.title"
-                    [ariaLabel]="'Действия: ' + board.title"
+                    [pTooltip]="t.actions(board.title)"
+                    [ariaLabel]="t.actions(board.title)"
                     [tbAttributes]="{
                       'aria-haspopup': 'menu',
                       'aria-expanded': menuFor()?.id === board.id ? 'true' : 'false',
@@ -129,8 +125,8 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
         } @else {
           <tb-empty-state
             icon="pi-th-large"
-            [title]="filter() === null ? 'Досок пока нет' : 'У них досок пока нет'"
-            hint="Нажмите «Новая доска»: доска Excalidraw откроется прямо в портале, а внешнюю доску (например, Холст) можно добавить ссылкой."
+            [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
+            [hint]="t.emptyHint"
           />
         }
       </tb-load-state>
@@ -161,6 +157,7 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
   `,
 })
 export class BoardsPage implements OnInit {
+  protected readonly t = T.list;
   private readonly api = inject(BoardsApi);
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
@@ -203,11 +200,11 @@ export class BoardsPage implements OnInit {
     const group = this.group();
     if (student) {
       const name = this.students().find((option) => option.id === student)?.name;
-      return name ? `Доски ученика: ${name}` : 'Доски ученика';
+      return name ? T.list.studentBoardsOf(name) : T.list.studentBoards;
     }
     if (group) {
       const name = this.groups().find((option) => option.id === group)?.name;
-      return name ? `Доски группы: ${name}` : 'Доски группы';
+      return name ? T.list.groupBoardsOf(name) : T.list.groupBoards;
     }
     return null;
   });
@@ -263,7 +260,7 @@ export class BoardsPage implements OnInit {
   protected details(board: Board): string {
     const parts = [this.kindLabels[board.kind], this.membersText(board)];
     if (board.kind === 'EXCALIDRAW') {
-      parts.push(`изменена ${this.date.transform(board.updatedAt, 'dd.MM.yyyy HH:mm') ?? ''}`);
+      parts.push(T.list.changed(this.date.transform(board.updatedAt, 'dd.MM.yyyy HH:mm') ?? ''));
     }
     return parts.join(' · ');
   }
@@ -291,12 +288,12 @@ export class BoardsPage implements OnInit {
   protected confirmRemove(board: Board): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Удалить доску?',
+        header: T.list.deleteHeader,
         message:
           board.kind === 'EXCALIDRAW'
-            ? `Доска «${board.title}» удалится вместе с рисунком, картинками и резервными копиями. Вернуть её можно только из резервной копии портала.`
-            : `Ссылка на доску «${board.title}» исчезнет из портала; сама доска в другом сервисе останется.`,
-        acceptLabel: 'Удалить',
+            ? T.list.deleteExcalidraw(board.title)
+            : T.list.deleteLink(board.title),
+        acceptLabel: T.list.delete,
         accept: () => {
           this.api.remove(board.id).subscribe(() => {
             this.load();
@@ -310,7 +307,7 @@ export class BoardsPage implements OnInit {
     const items: MenuItem[] = [];
     if (board.kind === 'EXCALIDRAW') {
       items.push({
-        label: 'Резервные копии',
+        label: T.list.backups,
         icon: 'pi pi-history',
         command: () => {
           this.openBackups(board);
@@ -319,14 +316,14 @@ export class BoardsPage implements OnInit {
     }
     items.push(
       {
-        label: 'Изменить',
+        label: T.list.edit,
         icon: 'pi pi-pencil',
         command: () => {
           this.openEdit(board);
         },
       },
       {
-        label: 'Удалить…',
+        label: T.list.deleteItem,
         icon: 'pi pi-trash',
         styleClass: 'tb-menu-item--danger',
         command: () => {

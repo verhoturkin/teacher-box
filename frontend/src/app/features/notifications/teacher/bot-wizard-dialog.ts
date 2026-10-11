@@ -29,6 +29,7 @@ import { ChannelSetup, ChannelType, LinkCode } from '../data-access/notification
 import { CHANNEL_NAMES } from '../notification-labels';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { T } from '../i18n/texts';
 
 /** Wizard steps: create a bot, check its token, connect the teacher's account, send a test message. */
 export type WizardStep = 1 | 2 | 3 | 4;
@@ -45,7 +46,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
   if (code !== null && MESSENGER_ERRORS.has(code) && error instanceof HttpErrorResponse) {
     const body: unknown = error.error;
     if (isProblemDetail(body) && body.detail !== undefined && body.detail !== '') {
-      return `${message}. Ответ мессенджера: ${body.detail}`;
+      return T.wizard.messengerAnswer(message, body.detail);
     }
   }
   return message;
@@ -69,14 +70,14 @@ function describeMessengerError(error: unknown, fallback: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="'Подключение ' + name()"
+      [header]="t.title(name())"
       [(visible)]="visible"
       [modal]="true"
       appendTo="body"
       styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
-      <tb-help-button topic="teacher/notifications" label="Подробнее о ботах" />
+      <tb-help-button topic="teacher/notifications" [label]="t.more" />
       <ol class="tb-wizard">
         <li
           class="tb-wizard__step"
@@ -85,7 +86,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
         >
           <button type="button" class="tb-wizard__header" (click)="go(1)">
             <span class="tb-wizard__number">1</span>
-            <span>Создайте бота</span>
+            <span>{{ t.step1 }}</span>
           </button>
           @if (step() === 1) {
             <div class="tb-wizard__body">
@@ -93,59 +94,41 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 @case ('TELEGRAM') {
                   <ol class="tb-wizard__howto">
                     <li>
-                      Откройте
+                      {{ t.tgOpen }}
                       <a href="https://t.me/BotFather" target="_blank" rel="noopener"
                         >&#64;BotFather</a
                       >
-                      в Telegram и отправьте команду <code>/newbot</code>.
+                      {{ t.tgSend }} <code>/newbot</code>.
                     </li>
                     <li>
-                      Придумайте имя бота и его адрес — адрес должен заканчиваться на
+                      {{ t.tgName }}
                       <code>bot</code>.
                     </li>
-                    <li>
-                      BotFather пришлёт токен вида <code>123456789:AAF…</code> — скопируйте его.
-                    </li>
+                    <li>{{ t.tgToken }} <code>123456789:AAF…</code> {{ t.tgCopy }}</li>
                   </ol>
                 }
                 @case ('VK') {
                   <ol class="tb-wizard__howto">
-                    <li>
-                      Создайте сообщество ВКонтакте (можно закрытое). «Управление» → «Сообщения»:
-                      включите.
-                    </li>
-                    <li>
-                      «Работа с API» → «Ключи доступа»: создайте ключ с правом «Сообщения
-                      сообщества» и скопируйте его.
-                    </li>
-                    <li>
-                      «Работа с API» → «Long Poll API»: включите, версия API 5.199; в «Типах
-                      событий» отметьте «Входящее сообщение».
-                    </li>
-                    <li>
-                      «Сообщения» → «Настройки для бота»: включите «Возможности ботов» — тогда под
-                      сообщениями будут кнопки меню.
-                    </li>
-                    <li>Номер сообщества — цифры из адреса вида <code>club123456</code>.</li>
+                    <li>{{ t.vkCommunity }}</li>
+                    <li>{{ t.vkKey }}</li>
+                    <li>{{ t.vkLongPoll }}</li>
+                    <li>{{ t.vkButtons }}</li>
+                    <li>{{ t.vkNumber }} <code>club123456</code>.</li>
                   </ol>
                 }
                 @case ('MAX') {
                   <ol class="tb-wizard__howto">
                     <li>
-                      Создайте бота на платформе MAX для партнёров (<a
-                        href="https://dev.max.ru"
-                        target="_blank"
-                        rel="noopener"
-                        >dev.max.ru</a
-                      >).
+                      {{ t.maxCreate
+                      }}<a href="https://dev.max.ru" target="_blank" rel="noopener">dev.max.ru</a>).
                     </li>
-                    <li>Скопируйте токен бота.</li>
+                    <li>{{ t.maxCopy }}</li>
                   </ol>
                 }
               }
               <div class="tb-actions">
                 <p-button
-                  label="Бот создан, дальше"
+                  [label]="t.created"
                   icon="pi pi-arrow-right"
                   iconPos="right"
                   (onClick)="go(2)"
@@ -162,14 +145,11 @@ function describeMessengerError(error: unknown, fallback: string): string {
         >
           <button type="button" class="tb-wizard__header" (click)="go(2)">
             <span class="tb-wizard__number">2</span>
-            <span>Вставьте токен</span>
+            <span>{{ t.step2 }}</span>
           </button>
           @if (step() === 2 && bot()?.fromEnvironment === true) {
             <div class="tb-wizard__body">
-              <p class="tb-muted">
-                Этот бот задан администратором портала — токен меняется в его настройках: попросите
-                администратора.
-              </p>
+              <p class="tb-muted">{{ t.fromEnvironment }}</p>
             </div>
           } @else if (step() === 2) {
             <form
@@ -180,15 +160,12 @@ function describeMessengerError(error: unknown, fallback: string): string {
             >
               @if (bot(); as current) {
                 @if (current.configured) {
-                  <p class="tb-muted">
-                    Бот {{ current.botName ?? '' }} уже подключён. Чтобы заменить его, вставьте
-                    токен другого бота.
-                  </p>
+                  <p class="tb-muted">{{ t.replace(current.botName ?? '') }}</p>
                 }
               }
               <div class="tb-field">
                 <label for="bot-token">{{
-                  channel() === 'VK' ? 'Ключ доступа сообщества' : 'Токен бота'
+                  channel() === 'VK' ? t.vkKeyLabel : t.tokenLabel
                 }}</label>
                 <p-password
                   inputId="bot-token"
@@ -204,7 +181,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
               </div>
               @if (channel() === 'VK') {
                 <div class="tb-field">
-                  <label for="bot-group">Номер сообщества</label>
+                  <label for="bot-group">{{ t.community }}</label>
                   <p-inputnumber
                     inputId="bot-group"
                     formControlName="groupId"
@@ -221,7 +198,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   severity="success"
                   type="submit"
-                  label="Проверить и сохранить"
+                  [label]="t.checkAndSave"
                   icon="pi pi-check"
                   [loading]="pending()"
                 />
@@ -242,20 +219,20 @@ function describeMessengerError(error: unknown, fallback: string): string {
             (click)="go(3)"
           >
             <span class="tb-wizard__number">3</span>
-            <span>Подключите свой аккаунт</span>
+            <span>{{ t.step3 }}</span>
           </button>
           @if (step() === 3) {
             <div class="tb-wizard__body">
               @if (bot()?.botName; as botName) {
-                <p-message severity="success" styleClass="tb-form-message"
-                  >Бот {{ botName }} работает.</p-message
-                >
+                <p-message severity="success" styleClass="tb-form-message">{{
+                  t.works(botName)
+                }}</p-message>
               }
               @if (teacherLinked()) {
-                <p>Ваш аккаунт {{ name() }} уже подключён — уведомления будут приходить и вам.</p>
+                <p>{{ t.linked(name()) }}</p>
                 <div class="tb-actions">
                   <p-button
-                    label="Далее"
+                    [label]="t.next"
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     (onClick)="go(4)"
@@ -264,16 +241,16 @@ function describeMessengerError(error: unknown, fallback: string): string {
               } @else if (linkCode(); as code) {
                 <tb-link-code-view [code]="code" />
               } @else {
-                <p>Чтобы уведомления приходили и вам, подключите свой аккаунт к боту.</p>
+                <p>{{ t.linkHint }}</p>
                 <div class="tb-actions">
                   <p-button
-                    label="Подключить мой аккаунт"
+                    [label]="t.connectMine"
                     icon="pi pi-link"
                     [loading]="pending()"
                     (onClick)="connect()"
                   />
                   <p-button
-                    label="Пропустить"
+                    [label]="t.skip"
                     severity="secondary"
                     [text]="true"
                     (onClick)="close()"
@@ -292,23 +269,23 @@ function describeMessengerError(error: unknown, fallback: string): string {
             (click)="go(4)"
           >
             <span class="tb-wizard__number">4</span>
-            <span>Проверьте связь</span>
+            <span>{{ t.step4 }}</span>
           </button>
           @if (step() === 4) {
             <div class="tb-wizard__body">
               @if (tested()) {
-                <p-message severity="success" styleClass="tb-form-message">
-                  Тестовое сообщение отправлено. Если оно пришло в {{ name() }} — всё готово.
-                </p-message>
+                <p-message severity="success" styleClass="tb-form-message">{{
+                  t.testSent(name())
+                }}</p-message>
               } @else {
-                <p>Отправим вам тестовое сообщение через бота.</p>
+                <p>{{ t.testHint }}</p>
               }
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
               <div class="tb-actions">
                 <p-button
-                  label="Отправить тестовое сообщение"
+                  [label]="t.sendTest"
                   icon="pi pi-send"
                   class="tb-tonal"
                   severity="success"
@@ -316,7 +293,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                   (onClick)="sendTest()"
                 />
                 @if (tested()) {
-                  <p-button label="Готово" icon="pi pi-check" (onClick)="close()" />
+                  <p-button [label]="t.done" icon="pi pi-check" (onClick)="close()" />
                 }
               </div>
             </div>
@@ -403,6 +380,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
   `,
 })
 export class BotWizardDialog {
+  protected readonly t = T.wizard;
   private readonly api = inject(NotificationsApi);
   private watch: Subscription | null = null;
 
@@ -477,7 +455,7 @@ export class BotWizardDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeMessengerError(error, 'Не удалось проверить токен'));
+          this.error.set(describeMessengerError(error, T.wizard.checkFailed));
         },
       });
   }
@@ -509,7 +487,7 @@ export class BotWizardDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeMessengerError(error, 'Не удалось отправить тестовое сообщение'));
+        this.error.set(describeMessengerError(error, T.wizard.testFailed));
       },
     });
   }

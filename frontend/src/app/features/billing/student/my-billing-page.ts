@@ -9,6 +9,7 @@ import { LedgerList } from '../ledger/ledger-list';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from '../i18n/texts';
 
 /** Student: own balance and history of lessons and payments. */
 @Component({
@@ -16,37 +17,37 @@ import { PageHeader } from '@shared/ui/page-header';
   imports: [HelpButton, Card, MoneyPipe, BalanceAmount, LedgerList, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Оплаты">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/billing" />
     </tb-page-header>
-    <tb-load-state [state]="state" what="оплаты" (retry)="load()">
+    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (ledger(); as ledger) {
         <div class="tb-stats">
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Баланс</span>
+              <span class="tb-muted">{{ t.balance }}</span>
               <span class="tb-stat__value"
                 ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
               /></span>
               <small class="tb-muted">
                 @if (ledger.balance < 0) {
-                  Столько нужно оплатить за прошедшие занятия.
+                  {{ t.toPay }}
                 } @else if (ledger.balance > 0) {
-                  Эта сумма пойдёт в счёт следующих занятий.
+                  {{ t.prepaid }}
                 } @else {
-                  Всё оплачено.
+                  {{ t.settled }}
                 }
               </small>
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Цена занятия</span>
+              <span class="tb-muted">{{ t.lessonPrice }}</span>
               <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
             </div>
           </p-card>
         </div>
-        <p-card header="История">
+        <p-card [header]="t.history">
           <tb-ledger-list [ledger]="ledger" />
         </p-card>
       }
@@ -54,6 +55,7 @@ import { PageHeader } from '@shared/ui/page-header';
   `,
 })
 export class MyBillingPage implements OnInit {
+  protected readonly t = T.myBilling;
   private readonly api = inject(BillingApi);
 
   protected readonly ledger = signal<StudentLedger | null>(null);

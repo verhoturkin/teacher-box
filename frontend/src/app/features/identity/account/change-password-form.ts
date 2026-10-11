@@ -14,6 +14,7 @@ import { PASSWORD_MIN_LENGTH, fieldsMatch } from '@shared/forms/validators';
 import { IdentityApi } from '../data-access/identity-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors';
+import { T } from '../i18n/texts';
 
 /**
  * Current password, new password and its confirmation. The new session replaces the current one
@@ -46,7 +47,7 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
         </p-password>
       </div>
       <div class="tb-field">
-        <label for="next">Новый пароль</label>
+        <label for="next">{{ t.next }}</label>
         <p-password
           inputId="next"
           formControlName="next"
@@ -58,10 +59,10 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
           <ng-template #showicon><tb-password-toggle /></ng-template>
           <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
         </p-password>
-        <small class="tb-hint">Не короче 8 символов</small>
+        <small class="tb-hint">{{ t.nextHint }}</small>
       </div>
       <div class="tb-field">
-        <label for="confirm">Повторите новый пароль</label>
+        <label for="confirm">{{ t.confirm }}</label>
         <p-password
           inputId="confirm"
           formControlName="confirm"
@@ -74,7 +75,7 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
           <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
         </p-password>
         @if (form.hasError('fieldsMismatch') && form.controls.confirm.dirty) {
-          <small class="tb-error">Пароли не совпадают</small>
+          <small class="tb-error">{{ t.mismatch }}</small>
         }
       </div>
       @if (error(); as message) {
@@ -89,16 +90,17 @@ import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors'
           [loading]="pending()"
         />
       </div>
-      <small class="tb-hint">После смены пароля все остальные устройства выйдут из аккаунта.</small>
+      <small class="tb-hint">{{ t.othersSignedOut }}</small>
     </form>
   `,
 })
 export class ChangePasswordForm {
+  protected readonly t = T.changePassword;
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
 
-  readonly currentLabel = input('Текущий пароль');
-  readonly submitLabel = input('Сменить пароль');
+  readonly currentLabel = input(T.changePassword.current);
+  readonly submitLabel = input(T.changePassword.submit);
   /** A section of a page (the account) rather than the main step (the first setup): tonal. */
   readonly tonal = input(false);
   /** A step of the wizard: a transition in the colour of the portal, not a green confirmation (ADR-0026). */
@@ -142,7 +144,7 @@ export class ChangePasswordForm {
           'password.weak': this.form.controls.next,
         };
         if (!showAtField(error, fields)) {
-          this.error.set(describeError(error, 'Не удалось сменить пароль. Попробуйте позже'));
+          this.error.set(describeError(error, T.changePassword.failed));
         }
       },
     });

@@ -6,6 +6,7 @@ import { Portal } from './portal';
 import { MAX_ADDRESS_LENGTH } from './portal-address';
 import { FieldErrors } from '@shared/ui/field-errors';
 import { PortalAddressWarnings } from './portal-address-warnings';
+import { CORE_T } from '@core/i18n/texts';
 
 /**
  * The address of the portal in a form: the field, «Как в браузере» and the warnings about addresses
@@ -17,7 +18,7 @@ import { PortalAddressWarnings } from './portal-address-warnings';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-field" tbFieldErrors>
-      <label [for]="inputId()">Адрес портала</label>
+      <label [for]="inputId()">{{ t.label }}</label>
       <div class="tb-copy-row">
         <input
           pInputText
@@ -30,27 +31,18 @@ import { PortalAddressWarnings } from './portal-address-warnings';
           class="tb-grow"
         />
         @if (!fromEnvironment()) {
-          <p-button label="Как в браузере" severity="secondary" (onClick)="useOpenedAt()" />
+          <p-button [label]="t.asInBrowser" severity="secondary" (onClick)="useOpenedAt()" />
         }
       </div>
       @if (fromEnvironment() && administrator()) {
-        <small class="tb-hint">
-          Адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL) — поменять его можно там.
-        </small>
+        <small class="tb-hint">{{ t.fromServer }}</small>
       } @else if (fromEnvironment()) {
-        <small class="tb-hint">
-          Адрес задан администратором портала — чтобы его поменять, попросите администратора.
-        </small>
+        <small class="tb-hint">{{ t.fromAdministrator }}</small>
       } @else {
-        <small class="tb-hint">
-          По этому адресу ученики открывают портал. С него начинаются ссылки-приглашения, ссылки в
-          сообщениях ботов и подписка на календарь.
-        </small>
+        <small class="tb-hint">{{ t.hint }}</small>
       }
       @if (control().invalid && control().touched) {
-        <small class="tb-error"
-          >Нужен адрес вида https://school.example.com — без пути после адреса.</small
-        >
+        <small class="tb-error">{{ t.invalid }}</small>
       }
       <tb-portal-address-warnings [address]="value()" />
     </div>
@@ -65,6 +57,7 @@ export class PortalAddressField {
   readonly administrator = input(false);
   readonly inputId = input('portal-address');
 
+  protected readonly t = CORE_T.portalAddress;
   protected readonly maxLength = MAX_ADDRESS_LENGTH;
   protected readonly value = signal('');
 

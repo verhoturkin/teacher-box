@@ -15,9 +15,11 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** The word the teacher types to confirm the reset. */
-export const RESET_WORD = 'СБРОСИТЬ';
+export const RESET_WORD = T.reset.word;
 
 /** Teacher: deleting all data of the portal after a backup (ADR-0014). */
 @Component({
@@ -41,41 +43,31 @@ export const RESET_WORD = 'СБРОСИТЬ';
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >Полный сброс <tb-help-button topic="teacher/backups"
+            >{{ t.title }} <tb-help-button topic="teacher/backups"
           /></span>
         </div>
       </ng-template>
-      <p>
-        Удаляет все данные портала: учеников и группы, занятия и расписание, оплаты, задания и
-        файлы, уведомления и подключения мессенджеров, комнаты видеовстреч, доски, историю ИИ,
-        подключения Google и Яндекса, название и адрес портала.
-      </p>
-      <p class="tb-muted">
-        Остаются вход учителя и администратора (с прежними паролями) и резервные копии. Перед
-        сбросом портал сам сделает копию — из неё всё можно вернуть.
-      </p>
+      <p>{{ t.about }}</p>
+      <p class="tb-muted">{{ t.stays }}</p>
       <p-button
         class="tb-tonal"
-        label="Сбросить все данные…"
+        [label]="t.open"
         icon="pi pi-trash"
         severity="danger"
         (onClick)="open()"
       />
     </p-card>
     <p-dialog
-      header="Сбросить все данные?"
+      [header]="t.header"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
       [draggable]="false"
     >
-      <p>
-        Все ученики, занятия, оплаты и задания будут удалены. Копия перед сбросом останется в
-        «Резервных копиях».
-      </p>
+      <p>{{ t.warning }}</p>
       <form tbFieldErrors id="reset-form" class="tb-form" [formGroup]="form" (ngSubmit)="reset()">
         <div class="tb-field">
-          <label for="reset-password">Ваш пароль</label>
+          <label for="reset-password">{{ t.password }}</label>
           <p-password
             inputId="reset-password"
             formControlName="password"
@@ -89,7 +81,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
           </p-password>
         </div>
         <div class="tb-field">
-          <label for="reset-word">Напишите «{{ word }}»</label>
+          <label for="reset-word">{{ t.typeWord(word) }}</label>
           <input pInputText id="reset-word" formControlName="word" autocomplete="off" />
         </div>
         @if (error(); as message) {
@@ -98,7 +90,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
@@ -106,7 +98,7 @@ export const RESET_WORD = 'СБРОСИТЬ';
         <p-button
           type="submit"
           tbSubmitFor="reset-form"
-          label="Сбросить"
+          [label]="t.reset"
           severity="danger"
           [disabled]="!confirmed()"
           [loading]="pending()"
@@ -116,6 +108,8 @@ export const RESET_WORD = 'СБРОСИТЬ';
   `,
 })
 export class ResetCard {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.reset;
   private readonly api = inject(SettingsApi);
   private readonly portal = inject(Portal);
   private readonly router = inject(Router);
@@ -151,7 +145,7 @@ export class ResetCard {
       next: (result) => {
         this.pending.set(false);
         this.visible.set(false);
-        this.snackbar.success(`Данные удалены. Копия перед сбросом: ${result.backup}`);
+        this.snackbar.success(T.reset.done(result.backup));
         for (const hint of result.hints) {
           // a step left to do after the reset stays until it is read
           this.snackbar.notice(hint);
@@ -161,7 +155,7 @@ export class ResetCard {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сбросить данные. Попробуйте позже'));
+        this.error.set(describeError(error, T.reset.failed));
       },
     });
   }

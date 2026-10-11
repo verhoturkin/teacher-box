@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 
+import { SHARED_T } from '@shared/i18n/texts';
 /**
  * The header of a page (ADR-0018): «back» as an icon on nested pages, the title with the «?» of
  * the help, a line of details under it and the actions on the right, the main one last.
@@ -54,5 +55,5 @@ export class PageHeader {
   /** The link of «back» on a nested page; none on a section page. */
   readonly back = input<string | readonly unknown[] | null>(null);
   /** Where «back» leads, e.g. «Все задания»: its name and tooltip. */
-  readonly backLabel = input('Назад');
+  readonly backLabel = input(SHARED_T.common.back);
 }

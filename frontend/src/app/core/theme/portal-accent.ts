@@ -8,6 +8,7 @@ import {
   colorScheme,
   lowestContrast,
 } from './color-scheme';
+import { CORE_T } from '@core/i18n/texts';
 import { schemeTokens } from './teacher-box-preset';
 
 /**
@@ -15,12 +16,12 @@ import { schemeTokens } from './teacher-box-preset';
  * whose shades are built here. The roles are tones with the contrast 4.5:1 in both themes.
  */
 export const ACCENTS = [
-  { value: 'indigo', label: 'Индиго' },
-  { value: 'blue', label: 'Синий' },
-  { value: 'teal', label: 'Бирюзовый' },
-  { value: 'emerald', label: 'Изумрудный' },
-  { value: 'violet', label: 'Фиолетовый' },
-  { value: 'pink', label: 'Розовый' },
+  { value: 'indigo', label: CORE_T.accents.indigo },
+  { value: 'blue', label: CORE_T.accents.blue },
+  { value: 'teal', label: CORE_T.accents.teal },
+  { value: 'emerald', label: CORE_T.accents.emerald },
+  { value: 'violet', label: CORE_T.accents.violet },
+  { value: 'pink', label: CORE_T.accents.pink },
 ] as const;
 
 export type Accent = (typeof ACCENTS)[number]['value'];

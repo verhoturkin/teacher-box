@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { toIsoMonth } from '@shared/dates/iso-date';
-import { monthlyReport } from '@testing/billing-fixtures';
+import { monthlyReport, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { MonthlyReportPage } from './monthly-report-page';
 import { testProviders } from '@testing/setup';
@@ -32,12 +32,23 @@ describe('MonthlyReportPage', () => {
   }
 
   it('loads the current month', async () => {
-    backend
-      .expectOne(`/api/teacher/billing/reports/monthly?month=${toIsoMonth(new Date())}`)
-      .flush(monthlyReport());
+    backend.expectOne(`/api/teacher/billing/reports/monthly?month=${toIsoMonth(new Date())}`).flush(
+      monthlyReport({
+        payments: [
+          {
+            studentName: 'Иван Петров',
+            studentAvatar: '/api/public/avatars/ivan',
+            payment: payment(),
+          },
+        ],
+      }),
+    );
     await fixture.whenStable();
 
     expect(text()).toContain('Поступления 5 000 ₽');
+    expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/ivan',
+    );
     expect(text()).toContain('Начислено за занятия 3 000 ₽');
     expect(text()).toContain('пропусков: 1, отменено: 1');
     expect(text()).toContain('Проведено');

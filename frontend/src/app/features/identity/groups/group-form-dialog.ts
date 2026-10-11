@@ -25,6 +25,9 @@ import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { locale } from '@core/i18n/language';
 
 /** A saved group with its lesson price (minor units). */
 export interface SavedGroup {
@@ -58,46 +61,45 @@ export interface SavedGroup {
     >
       <form tbFieldErrors id="group-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="group-name">Название</label>
+          <label for="group-name">{{ t.name }}</label>
           <input
             pInputText
             id="group-name"
             formControlName="name"
             autocomplete="off"
-            placeholder="Например, ОГЭ 9 класс"
+            [placeholder]="t.namePlaceholder"
           />
         </div>
         <div class="tb-field">
-          <label for="group-members">Ученики</label>
+          <label for="group-members">{{ t.members }}</label>
           <p-multiselect
             inputId="group-members"
             formControlName="memberIds"
             [options]="memberOptions()"
             optionLabel="displayName"
             optionValue="id"
-            placeholder="Кто занимается в группе"
+            [placeholder]="t.membersPlaceholder"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-field">
-          <label for="group-price">Цена занятия для каждого ученика</label>
+          <label for="group-price">{{ t.price }}</label>
           <p-inputnumber
             inputId="group-price"
             formControlName="price"
             mode="currency"
+            currencyDisplay="narrowSymbol"
             [currency]="currency()"
-            locale="ru-RU"
+            [locale]="locale"
             [min]="0"
             [fluid]="true"
           />
-          <small class="tb-hint"
-            >Спишется с каждого, кто был на занятии или пропустил его без предупреждения.</small
-          >
+          <small class="tb-hint">{{ t.priceHint }}</small>
         </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
@@ -106,14 +108,14 @@ export interface SavedGroup {
       <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="group-form"
@@ -123,6 +125,9 @@ export interface SavedGroup {
   `,
 })
 export class GroupFormDialog {
+  protected readonly locale = locale();
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.groupForm;
   private readonly api = inject(IdentityApi);
   private readonly billing = inject(BillingApi);
 
@@ -136,7 +141,9 @@ export class GroupFormDialog {
   readonly currency = input('RUB');
   readonly saved = output<SavedGroup>();
 
-  protected readonly title = computed(() => (this.group() === null ? 'Новая группа' : 'Группа'));
+  protected readonly title = computed(() =>
+    this.group() === null ? T.groupForm.newGroup : T.groupForm.group,
+  );
   /** The room is set up for a saved group that is not archived. */
   protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
     const group = this.group();
@@ -199,7 +206,7 @@ export class GroupFormDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сохранить. Попробуйте позже'));
+        this.error.set(describeError(error, T.groupForm.failed));
       },
     });
   }

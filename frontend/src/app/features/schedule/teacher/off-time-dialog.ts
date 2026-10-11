@@ -27,10 +27,12 @@ import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { fromTime, toTime } from './series-dialog';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 const KIND_OPTIONS: readonly { label: string; value: OffTimeKind }[] = [
-  { label: 'Один раз', value: 'ONCE' },
-  { label: 'Каждую неделю', value: 'WEEKLY' },
+  { label: T.offTime.once, value: 'ONCE' },
+  { label: T.offTime.weekly, value: 'WEEKLY' },
 ];
 
 /** Controls of each kind of off time; the controls of the other kind are disabled. */
@@ -57,18 +59,16 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="offTime() === null ? 'Нерабочее время' : 'Изменить нерабочее время'"
+      [header]="offTime() === null ? t.newTitle : t.editTitle"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
       [draggable]="false"
     >
       <form tbFieldErrors id="off-time-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-        <p class="tb-hint">
-          Ученики увидят это время занятым и не смогут попросить перенести занятие на него.
-        </p>
+        <p class="tb-hint">{{ t.hint }}</p>
         <div class="tb-field">
-          <span id="off-time-kind-label">Повтор</span>
+          <span id="off-time-kind-label">{{ t.repeat }}</span>
           <p-selectbutton
             formControlName="kind"
             [options]="kinds"
@@ -80,7 +80,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
         </div>
         @if (weekly()) {
           <div class="tb-field">
-            <span id="off-time-weekdays-label">Дни недели</span>
+            <span id="off-time-weekdays-label">{{ t.weekdays }}</span>
             <p-selectbutton
               formControlName="weekdays"
               [options]="weekdays"
@@ -92,7 +92,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
           </div>
           <div class="tb-row">
             <div class="tb-field">
-              <label for="off-time-start-time">С</label>
+              <label for="off-time-start-time">{{ t.from }}</label>
               <p-datepicker
                 inputId="off-time-start-time"
                 formControlName="startTime"
@@ -104,7 +104,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
               />
             </div>
             <div class="tb-field">
-              <label for="off-time-end-time">По</label>
+              <label for="off-time-end-time">{{ t.to }}</label>
               <p-datepicker
                 inputId="off-time-end-time"
                 formControlName="endTime"
@@ -117,14 +117,14 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
             </div>
           </div>
           <small class="tb-hint">
-            Если «по» раньше «с», время заканчивается на следующий день; 00:00–00:00 — весь день.
+            {{ t.nextDay }}
             @if (otherTimeZone(); as zone) {
-              Время — по часовому поясу портала: {{ zone }}.
+              {{ t.zone(zone) }}
             }
           </small>
           <div class="tb-row">
             <div class="tb-field">
-              <label for="off-time-starts-on">С даты</label>
+              <label for="off-time-starts-on">{{ t.fromDate }}</label>
               <p-datepicker
                 inputId="off-time-starts-on"
                 formControlName="startsOn"
@@ -136,7 +136,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
               />
             </div>
             <div class="tb-field">
-              <label for="off-time-ends-on">По дату (необязательно)</label>
+              <label for="off-time-ends-on">{{ t.toDate }}</label>
               <p-datepicker
                 inputId="off-time-ends-on"
                 formControlName="endsOn"
@@ -152,7 +152,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
         } @else {
           <div class="tb-row">
             <div class="tb-field">
-              <label for="off-time-starts-at">С</label>
+              <label for="off-time-starts-at">{{ t.from }}</label>
               <p-datepicker
                 inputId="off-time-starts-at"
                 formControlName="startsAt"
@@ -167,7 +167,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
               />
             </div>
             <div class="tb-field">
-              <label for="off-time-ends-at">По</label>
+              <label for="off-time-ends-at">{{ t.to }}</label>
               <p-datepicker
                 inputId="off-time-ends-at"
                 formControlName="endsAt"
@@ -184,12 +184,12 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
           </div>
         }
         <div class="tb-field">
-          <label for="off-time-note">Подпись (видите только вы)</label>
+          <label for="off-time-note">{{ t.note }}</label>
           <input
             pInputText
             id="off-time-note"
             formControlName="note"
-            placeholder="Например, обед или отпуск"
+            [placeholder]="t.notePlaceholder"
             autocomplete="off"
           />
         </div>
@@ -199,14 +199,14 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="off-time-form"
@@ -216,6 +216,8 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
   `,
 })
 export class OffTimeDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.offTime;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -301,7 +303,7 @@ export class OffTimeDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сохранить нерабочее время'));
+        this.error.set(describeError(error, T.offTime.failed));
       },
     });
   }

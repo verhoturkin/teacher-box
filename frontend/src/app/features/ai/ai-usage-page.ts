@@ -24,28 +24,25 @@ import {
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
-import { CountPipe } from '@shared/text/plural';
 import { monthLabel } from '@shared/dates/iso-date';
+import { T } from './i18n/texts';
 
-export const FEATURE_LABELS: Record<AiFeature, string> = {
-  HOMEWORK_DRAFT: 'Черновики заданий',
-  REVIEW_DRAFT: 'Черновики проверки',
-};
+export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 
 /** Names of `TEACHERBOX_AI_PROVIDER` values. */
 export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
   anthropic: 'Anthropic (Claude)',
   gemini: 'Google Gemini',
-  'openai-compatible': 'OpenAI-совместимый API',
+  'openai-compatible': T.openAiCompatible,
 };
 
 const STATUS_LABELS: Record<
   AiRequestStatus,
   { label: string; severity: 'success' | 'danger' | 'warn' }
 > = {
-  SUCCEEDED: { label: 'Готово', severity: 'success' },
-  FAILED: { label: 'Ошибка', severity: 'danger' },
-  REFUSED: { label: 'Отказ модели', severity: 'warn' },
+  SUCCEEDED: { label: T.statuses.SUCCEEDED, severity: 'success' },
+  FAILED: { label: T.statuses.FAILED, severity: 'danger' },
+  REFUSED: { label: T.statuses.REFUSED, severity: 'warn' },
 };
 
 /** Teacher: whether the AI assistant is configured and how many tokens it used this month. */
@@ -55,7 +52,6 @@ const STATUS_LABELS: Record<
     HelpButton,
     DatePipe,
     DecimalPipe,
-    CountPipe,
     Card,
     ProgressBar,
     TableModule,
@@ -67,7 +63,7 @@ const STATUS_LABELS: Record<
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="ИИ-помощник">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/ai" />
     </tb-page-header>
     @if (status(); as status) {
@@ -75,27 +71,27 @@ const STATUS_LABELS: Record<
         <p-card>
           <tb-empty-state
             icon="pi-sparkles"
-            title="ИИ-помощник не настроен"
-            hint="Это настраивает администратор портала. Чтобы получать черновики заданий и проверок, попросите его подключить ИИ-помощника."
+            [title]="t.notConfigured"
+            [hint]="t.notConfiguredHint"
           />
         </p-card>
       } @else {
         <div class="tb-stack">
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Модель</span>
+              <span class="tb-muted">{{ t.model }}</span>
               <span class="tb-stat__value">{{ status.model }}</span>
               <small class="tb-muted">{{ providerName(status.provider) }}</small>
             </div>
           </p-card>
           @if (report(); as report) {
-            <p-card [header]="'Использование за ' + monthName(report.month)">
+            <p-card [header]="t.usageIn(monthName(report.month))">
               <p>
-                Токенов: {{ report.usedTokens | number }}
+                {{ t.tokens((report.usedTokens | number) ?? '') }}
                 @if (report.monthlyTokenLimit > 0) {
-                  из {{ report.monthlyTokenLimit | number }}
+                  {{ t.ofLimit((report.monthlyTokenLimit | number) ?? '') }}
                 } @else {
-                  (без лимита)
+                  {{ t.noLimit }}
                 }
               </p>
               @if (report.monthlyTokenLimit > 0) {
@@ -103,45 +99,39 @@ const STATUS_LABELS: Record<
                   [value]="percent()"
                   [showValue]="false"
                   styleClass="tb-usage-bar"
-                  tbProgressLabel="Израсходовано токенов за месяц"
+                  [tbProgressLabel]="t.used"
                 />
               }
               <ul class="tb-usage-features">
                 @for (feature of report.features; track feature.feature) {
                   <li>
-                    {{ featureLabels[feature.feature] }}:
-                    {{ feature.requests | count: 'запрос' : 'запроса' : 'запросов' }},
-                    {{
-                      feature.inputTokens + feature.outputTokens
-                        | count: 'токен' : 'токена' : 'токенов'
-                    }}
+                    {{ featureLabels[feature.feature] }}: {{ t.requestCount(feature.requests) }},
+                    {{ t.tokenCount(feature.inputTokens + feature.outputTokens) }}
                   </li>
                 }
               </ul>
             </p-card>
-            <p-card header="Последние запросы">
+            <p-card [header]="t.recent">
               @if (report.recent.length === 0) {
-                <tb-empty-state
-                  [compact]="true"
-                  icon="pi-sparkles"
-                  title="Запросов в этом месяце не было"
-                />
+                <tb-empty-state [compact]="true" icon="pi-sparkles" [title]="t.noRequests" />
               } @else {
                 <p-table [value]="report.recent" styleClass="tb-cards">
                   <ng-template #header>
                     <tr>
-                      <th>Когда</th>
-                      <th>Что</th>
-                      <th>Результат</th>
-                      <th class="tb-num">Токены</th>
-                      <th>Время</th>
+                      <th>{{ t.when }}</th>
+                      <th>{{ t.what }}</th>
+                      <th>{{ t.result }}</th>
+                      <th class="tb-num">{{ t.tokensColumn }}</th>
+                      <th>{{ t.time }}</th>
                     </tr>
                   </ng-template>
                   <ng-template #body [tbRowType]="report.recent" let-row>
                     <tr>
-                      <td data-label="Когда">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                      <td data-label="Что">{{ featureLabels[row.feature] }}</td>
-                      <td data-label="Результат">
+                      <td [attr.data-label]="t.when">
+                        {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+                      </td>
+                      <td [attr.data-label]="t.what">{{ featureLabels[row.feature] }}</td>
+                      <td [attr.data-label]="t.result">
                         <p-tag
                           [value]="statusLabel(row).label"
                           [severity]="statusLabel(row).severity"
@@ -150,10 +140,12 @@ const STATUS_LABELS: Record<
                           <small class="tb-muted tb-usage-error">{{ row.error }}</small>
                         }
                       </td>
-                      <td data-label="Токены" class="tb-num">
+                      <td [attr.data-label]="t.tokensColumn" class="tb-num">
                         {{ row.inputTokens + row.outputTokens | number }}
                       </td>
-                      <td data-label="Время">{{ row.durationMs / 1000 | number: '1.0-1' }} с</td>
+                      <td [attr.data-label]="t.time">
+                        {{ t.seconds((row.durationMs / 1000 | number: '1.0-1') ?? '') }}
+                      </td>
                     </tr>
                   </ng-template>
                 </p-table>
@@ -178,6 +170,7 @@ const STATUS_LABELS: Record<
   `,
 })
 export class AiUsagePage implements OnInit {
+  protected readonly t = T.usage;
   private readonly api = inject(AiApi);
 
   protected readonly featureLabels = FEATURE_LABELS;

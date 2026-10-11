@@ -1,0 +1,161 @@
+import type { Translation } from '@core/i18n/language';
+import type { ru } from './ru';
+
+export const en: Translation<typeof ru> = {
+  page: {
+    title: 'Settings',
+    portal: 'Portal',
+    portalSummary: 'Name, logo and colour of the portal',
+    calendar: 'Calendar and calls',
+    calendarSummary: 'Google Calendar, video meetings and lesson links',
+    deliveries: 'Failed deliveries',
+    deliveriesSummary: 'Notifications that did not reach the messenger',
+    allDelivered: 'All notifications are delivered',
+    when: 'When',
+    to: 'To',
+    where: 'Where',
+    error: 'Error',
+    you: 'You',
+    data: 'Data',
+    dataSummary: 'Backups, restore and full reset',
+  },
+  portal: {
+    title: 'Portal',
+    name: 'Name',
+    nameHint:
+      'Shown in the portal header, the browser tab, on the sign-in page and in the calendar.',
+    color: 'Colour',
+    ownColor: 'Own colour',
+    ownColorField: 'Own colour, #rrggbb',
+    lightTheme: 'Light theme',
+    darkTheme: 'Dark theme',
+    adjusted:
+      'To keep the text readable, buttons and links will be darker than the chosen colour (lighter in the dark theme), as in the samples.',
+    likeSuccess:
+      'Confirmation buttons («Save», «Accept») are green — with this portal colour the main action of a section will be hard to tell from them.',
+    likeError:
+      'Cancel and delete buttons are red — with this portal colour the main action of a section will look like them.',
+    colorHint: 'Buttons, links and highlights of the portal are in this colour.',
+    logo: 'Logo',
+    logoFile: 'Logo file',
+    upload: 'Upload',
+    uploadLogo: 'Upload logo',
+    removeLogo: 'Remove logo',
+    logoHint:
+      'PNG, JPEG, WebP or SVG up to 1 MB, preferably square. Shown in the header, on the sign-in page and in the browser tab.',
+    poorLight:
+      'Text on buttons of this colour will be hard to read in the light theme — choose a more saturated or darker colour.',
+    poorDark:
+      'Text on buttons of this colour will be hard to read in the dark theme — choose a more saturated or darker colour.',
+    poorBoth:
+      'Text on buttons of this colour will be hard to read in both themes — choose a more saturated or darker colour.',
+    saved: 'Portal settings saved',
+    logoTooLarge: 'The file is larger than 1 MB',
+  },
+  backups: {
+    title: 'Backups',
+    create: 'Back up now',
+    about:
+      'A backup of the database and the files is made automatically every night; the latest backups are kept. Backups made before a restore or a reset stay until the teacher deletes them.',
+    teacherOnly: 'Only the teacher can download a backup: backups hold the students’ data.',
+    what: 'the list of backups',
+    empty: 'No backups yet',
+    actions: (name: string) => `Actions: ${name}`,
+    kinds: {
+      SCHEDULED: 'scheduled',
+      MANUAL: 'manual',
+      BEFORE_RESTORE: 'before a restore',
+      BEFORE_RESET: 'before a reset',
+    },
+    created: (name: string) => `Backup ${name} created`,
+    deleteHeader: 'Delete the backup?',
+    deleteMessage: (name: string) => `The backup ${name} will be deleted for good.`,
+    delete: 'Delete',
+    restore: 'Restore…',
+    download: 'Download',
+    deleteItem: 'Delete…',
+  },
+  restore: {
+    title: 'Restore from a backup',
+    replaceBefore: 'All data of the portal will be replaced with the backup of',
+    replaceAfter:
+      '. Everything added later (students, lessons, payments, assignments) will be lost.',
+    beforeRestore:
+      'Before the restore the portal backs up its current state — you can go back to it. The portal restarts and is unavailable for about a minute; then sign in with the password that was valid at the time of the backup.',
+    password: 'Your password',
+    restarting: 'The portal is restarting…',
+    keepOpen: 'Do not close the page: the result will appear here as soon as the portal is up.',
+    manualBefore:
+      'The backup will be restored at the next start of the portal. Restart it — for example, with',
+    manualAfter: 'on the server.',
+    done: 'The backup is restored. Sign in again — with the password that was valid at the time of the backup.',
+    failed: 'The backup could not be restored; the data stays as it was.',
+    reason: (reason: string) => `Reason: ${reason}`,
+    silent:
+      'The portal has not answered for a long time. Check that the server is running (it needs a container restart policy) and refresh the page.',
+    restore: 'Restore',
+    signInAgain: 'Sign in again',
+    error: 'Could not restore the backup. Try again later',
+  },
+  reset: {
+    title: 'Full reset',
+    about:
+      'Deletes all data of the portal: students and groups, lessons and schedule, payments, assignments and files, notifications and messenger connections, meeting rooms, boards, AI history, Google and Yandex connections, the name and the address of the portal.',
+    stays:
+      'The sign-in of the teacher and the administrator (with the same passwords) and the backups stay. Before the reset the portal makes a backup — everything can be restored from it.',
+    open: 'Reset all data…',
+    header: 'Reset all data?',
+    warning:
+      'All students, lessons, payments and assignments will be deleted. The backup made before the reset stays in «Backups».',
+    password: 'Your password',
+    word: 'RESET',
+    typeWord: (word: string) => `Type «${word}»`,
+    reset: 'Reset',
+    done: (backup: string) => `Data deleted. Backup before the reset: ${backup}`,
+    failed: 'Could not reset the data. Try again later',
+  },
+  setup: {
+    title: 'Initial setup',
+    intro:
+      'A few short steps and the portal is ready. All of it can be changed later in «Settings».',
+    steps: 'Setup steps',
+    stepPassword: 'Password',
+    stepAbout: 'About you',
+    stepAddress: 'Address',
+    stepPrice: 'Lessons',
+    stepNext: 'Done',
+    passwordTitle: 'Choose your password',
+    passwordText:
+      'The portal made the password for the first sign-in itself and wrote it to the server log. Replace it with your own — the old password stops working then.',
+    currentPassword: 'The password you signed in with',
+    next: 'Next',
+    back: 'Back',
+    aboutTitle: 'About you',
+    teacherName: 'Your name',
+    teacherNameHint: 'This is how students see you in the portal and in the bot’s messages.',
+    portalName: 'Portal name',
+    portalNameHint:
+      'For example, «English with Maria». Shown in the header, on the sign-in page and in the calendar.',
+    addressTitle: 'Portal address',
+    timeZone: (zone: string) => `Time zone of the portal: ${zone}.`,
+    otherZone: (zone: string) =>
+      `This computer is in another time zone (${zone}). The portal counts lesson times in its own time zone; the portal administrator can change it.`,
+    priceTitle: 'Lesson price',
+    priceText:
+      'Held lessons are charged to the student’s balance at this price. New students and groups get it; each student’s price can be changed separately.',
+    price: 'Price of one lesson',
+    doneTitle: 'Done!',
+    doneText: 'The portal is set up. The rest can be connected when needed:',
+    messengers: 'Messengers',
+    messengersText: '— notifications and actions through a bot in Telegram, VK or MAX.',
+    meetings: 'Video meetings',
+    meetingsText: '— permanent lesson links in Yandex Telemost.',
+    google: 'Google Calendar',
+    googleText: '— lessons in your calendar.',
+    ai: 'AI assistant',
+    aiText: '— drafts of assignments and reviews (turned on on the server).',
+    startWith: 'Start with the main thing: add a student and plan the first lesson.',
+    home: 'Go to the home page',
+    skip: 'Skip the setup',
+  },
+};

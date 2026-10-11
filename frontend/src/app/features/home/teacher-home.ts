@@ -22,6 +22,7 @@ import { QuickActions } from './quick-actions';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from './i18n/texts';
 
 /**
  * Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules one under
@@ -43,17 +44,13 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Главная">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/first-steps" />
     </tb-page-header>
     <div class="tb-stack">
       <tb-quick-actions />
       @if (!state.ready()) {
-        <tb-load-state
-          [state]="state"
-          what="занятия, задания, уведомления и финансы"
-          (retry)="load()"
-        />
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
       }
       @if (schedule()?.next; as next) {
         <tb-upcoming-lesson-widget [lesson]="next" />
@@ -77,6 +74,7 @@ import { PageHeader } from '@shared/ui/page-header';
   `,
 })
 export class TeacherHome implements OnInit {
+  protected readonly t = T.teacherHome;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);

@@ -1,6 +1,7 @@
 import { GlobalPassThrough } from 'primeng/config';
+import { CORE_T } from '@core/i18n/texts';
 
-const CLOSE = { root: { 'aria-label': 'Закрыть' } };
+const CLOSE = { root: { 'aria-label': CORE_T.close } };
 
 /**
  * Attributes PrimeNG components do not set by themselves (ADR-0024): the title of a card is a

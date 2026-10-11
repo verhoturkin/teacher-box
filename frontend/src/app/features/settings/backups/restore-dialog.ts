@@ -21,6 +21,8 @@ import { BackupsApi, BackupsArea } from './backups-api';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
 
@@ -44,7 +46,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Восстановление из копии"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       [closable]="stage() !== 'restarting'"
@@ -56,15 +58,11 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
         @switch (stage()) {
           @case ('confirm') {
             <p>
-              Все данные портала заменятся данными из копии от
+              {{ t.replaceBefore }}
               <strong>{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</strong
-              >. Всё, что добавлено позже (ученики, занятия, оплаты, задания), пропадёт.
+              >{{ t.replaceAfter }}
             </p>
-            <p class="tb-muted">
-              Перед восстановлением портал сам сделает копию текущего состояния — к нему можно будет
-              вернуться. Портал перезапустится и примерно минуту будет недоступен; войти потом нужно
-              с паролем, который действовал на момент копии.
-            </p>
+            <p class="tb-muted">{{ t.beforeRestore }}</p>
             <form
               tbFieldErrors
               id="restore-form"
@@ -73,7 +71,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
               (ngSubmit)="restore()"
             >
               <div class="tb-field">
-                <label for="restore-password">Ваш пароль</label>
+                <label for="restore-password">{{ t.password }}</label>
                 <p-password
                   inputId="restore-password"
                   formControlName="password"
@@ -92,34 +90,30 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
             </form>
           }
           @case ('restarting') {
-            <p><i class="pi pi-spin pi-spinner" aria-hidden="true"></i> Портал перезапускается…</p>
-            <p class="tb-muted">
-              Не закрывайте страницу: как только портал заработает, здесь будет итог.
-            </p>
+            <p><i class="pi pi-spin pi-spinner" aria-hidden="true"></i> {{ t.restarting }}</p>
+            <p class="tb-muted">{{ t.keepOpen }}</p>
           }
           @case ('manual') {
             <p-message severity="info" styleClass="tb-form-message">
-              Копия будет восстановлена при следующем запуске портала. Перезапустите его — например,
-              командой <code>docker compose restart</code> на сервере.
+              {{ t.manualBefore }} <code>docker compose restart</code> {{ t.manualAfter }}
             </p-message>
           }
           @case ('done') {
             <p-message severity="success" styleClass="tb-form-message">
-              Копия восстановлена. Войдите снова — с паролем, который действовал на момент копии.
+              {{ t.done }}
             </p-message>
           }
           @case ('failed') {
             <p-message severity="error" styleClass="tb-form-message">
-              Восстановить копию не удалось, данные остались прежними.
+              {{ t.failed }}
               @if (failure(); as reason) {
-                Причина: {{ reason }}
+                {{ t.reason(reason) }}
               }
             </p-message>
           }
           @case ('silent') {
             <p-message severity="warn" styleClass="tb-form-message">
-              Портал долго не отвечает. Проверьте, что сервер запущен (на нём должна быть политика
-              перезапуска контейнера), и обновите страницу.
+              {{ t.silent }}
             </p-message>
           }
         }
@@ -128,7 +122,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
         @switch (stage()) {
           @case ('confirm') {
             <p-button
-              label="Отмена"
+              [label]="c.cancel"
               severity="secondary"
               [text]="true"
               (onClick)="visible.set(false)"
@@ -136,13 +130,13 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
             <p-button
               type="submit"
               tbSubmitFor="restore-form"
-              label="Восстановить"
+              [label]="t.restore"
               severity="danger"
               [loading]="pending()"
             />
           }
           @case ('done') {
-            <p-button label="Войти снова" icon="pi pi-sign-in" (onClick)="signInAgain()" />
+            <p-button [label]="t.signInAgain" icon="pi pi-sign-in" (onClick)="signInAgain()" />
           }
         }
       </ng-template>
@@ -150,6 +144,8 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
   `,
 })
 export class RestoreDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.restore;
   private readonly api = inject(BackupsApi);
   private readonly auth = inject(AuthService);
   private readonly pollMs = inject(RESTART_POLL_MS);
@@ -260,7 +256,7 @@ export class RestoreDialog {
 
   private fail(error: unknown): void {
     this.pending.set(false);
-    this.error.set(describeError(error, 'Не удалось восстановить копию. Попробуйте позже'));
+    this.error.set(describeError(error, T.restore.error));
   }
 
   private stopPolling(): void {

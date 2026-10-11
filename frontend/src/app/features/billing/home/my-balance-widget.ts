@@ -5,6 +5,7 @@ import { Card } from 'primeng/card';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { MyBillingSummary } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
+import { T } from '../i18n/texts';
 
 /** Student's home: balance, lesson price and the latest payment. */
 @Component({
@@ -13,28 +14,31 @@ import { BalanceAmount } from '../ledger/balance-amount';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let billing = summary();
-    <p-card header="Баланс">
+    <p-card [header]="t.title">
       <div class="tb-stat">
         <span class="tb-stat__value"
           ><tb-balance-amount [balance]="billing.balance" [currency]="billing.currency"
         /></span>
-        <small class="tb-muted"
-          >Занятие стоит {{ billing.lessonPrice | money: billing.currency }}</small
-        >
+        <small class="tb-muted">{{
+          t.lessonPrice((billing.lessonPrice | money: billing.currency) ?? '')
+        }}</small>
         @if (billing.lastPayment; as payment) {
-          <small class="tb-muted">
-            Последняя оплата: {{ payment.amount | money: billing.currency }},
-            {{ payment.paidOn | date: 'dd.MM.yyyy' }}
-          </small>
+          <small class="tb-muted">{{
+            t.lastPayment(
+              (payment.amount | money: billing.currency) ?? '',
+              (payment.paidOn | date: 'dd.MM.yyyy') ?? ''
+            )
+          }}</small>
         }
       </div>
       <div class="tb-widget-footer">
         <span></span>
-        <a routerLink="/cabinet/billing">История оплат</a>
+        <a routerLink="/cabinet/billing">{{ t.history }}</a>
       </div>
     </p-card>
   `,
 })
 export class MyBalanceWidget {
+  protected readonly t = T.myBalance;
   readonly summary = input.required<MyBillingSummary>();
 }

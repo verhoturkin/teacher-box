@@ -3,13 +3,14 @@ import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from '@features/textbooks/parts';
 import { BoundTextbook } from '../data-access/homework.models';
+import { T } from '../i18n/texts';
 
 /** «Учебник · с. 12-14» or «Учебник · весь учебник». */
 export function boundPagesText(textbook: BoundTextbook): string {
   return [
     TEXTBOOK_KIND_LABELS[textbook.kind],
     textbook.course,
-    textbook.pages === null ? 'целиком' : `с. ${textbook.pages}`,
+    textbook.pages === null ? T.textbooks.whole : T.textbooks.pages(textbook.pages),
   ]
     .filter((part) => part !== null)
     .join(' · ');
@@ -28,7 +29,8 @@ const EXTENSIONS: Readonly<Record<string, string>> = {
 /** The name to save the student's download under: «Spotlight 5 (с. 12-14).pdf». */
 export function boundTextbookFilename(textbook: BoundTextbook, contentType: string): string {
   const extension = EXTENSIONS[contentType.split(';')[0]?.trim() ?? ''] ?? 'pdf';
-  const pages = textbook.pages !== null && extension === 'pdf' ? ` (с. ${textbook.pages})` : '';
+  const pages =
+    textbook.pages !== null && extension === 'pdf' ? ` (${T.textbooks.pages(textbook.pages)})` : '';
   return `${textbook.title}${pages}.${extension}`;
 }
 
@@ -42,7 +44,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (textbooks().length > 0) {
-      <ul class="tb-list tb-textbook-list" aria-label="Учебники задания">
+      <ul class="tb-list tb-textbook-list" [attr.aria-label]="t.list">
         @for (textbook of textbooks(); track textbook.textbookId) {
           <li>
             <span class="tb-list__lead" aria-hidden="true"
@@ -53,7 +55,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                 <button
                   type="button"
                   class="tb-list__title tb-link-button"
-                  [attr.aria-label]="'Открыть ' + textbook.title"
+                  [attr.aria-label]="t.open(textbook.title)"
                   (click)="opened.emit(textbook)"
                 >
                   {{ textbook.title }}
@@ -70,8 +72,8 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
-                  [pTooltip]="'Скачать ' + textbook.title"
-                  [ariaLabel]="'Скачать ' + textbook.title"
+                  [pTooltip]="t.download(textbook.title)"
+                  [ariaLabel]="t.download(textbook.title)"
                   (onClick)="download.emit(textbook)"
                 />
               </div>
@@ -84,8 +86,8 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'На доску: ' + textbook.title"
-                    [ariaLabel]="'На доску: ' + textbook.title"
+                    [pTooltip]="t.toBoard(textbook.title)"
+                    [ariaLabel]="t.toBoard(textbook.title)"
                     (onClick)="toBoard.emit(textbook)"
                   />
                 }
@@ -94,8 +96,8 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
-                  [pTooltip]="'Страницы: ' + textbook.title"
-                  [ariaLabel]="'Страницы: ' + textbook.title"
+                  [pTooltip]="t.editPages(textbook.title)"
+                  [ariaLabel]="t.editPages(textbook.title)"
                   (onClick)="edit.emit(textbook)"
                 />
                 <p-button
@@ -103,8 +105,8 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                   [text]="true"
                   [rounded]="true"
                   severity="danger"
-                  [pTooltip]="'Убрать из задания: ' + textbook.title"
-                  [ariaLabel]="'Убрать из задания: ' + textbook.title"
+                  [pTooltip]="t.unbind(textbook.title)"
+                  [ariaLabel]="t.unbind(textbook.title)"
                   (onClick)="remove.emit(textbook)"
                 />
               </div>
@@ -122,6 +124,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
   `,
 })
 export class TextbookList {
+  protected readonly t = T.textbooks;
   readonly textbooks = input.required<readonly BoundTextbook[]>();
   /** The student: a tap on the title opens the bound pages, the button saves them. */
   readonly downloadable = input(false);

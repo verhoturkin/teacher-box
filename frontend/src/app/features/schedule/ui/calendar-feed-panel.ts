@@ -19,6 +19,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
 
 /**
  * Subscription to the schedule from Google, Apple or Yandex Calendar by a secret link. The link is
@@ -29,40 +30,43 @@ import { Busy } from '@shared/ui/busy';
   imports: [DatePipe, Button, Card, InputText, Tooltip, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Календарь на телефоне">
-      <tb-load-state [state]="state" what="ссылку календаря" [compact]="true" (retry)="load()">
+    <p-card [header]="t.title">
+      <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
         @if (feed(); as feed) {
           @if (url(); as link) {
-            <p>Скопируйте ссылку и добавьте её в календарь. Больше она показана не будет.</p>
+            <p>{{ t.copyHint }}</p>
             <div class="tb-field">
-              <label for="calendar-feed-link">Ссылка на календарь</label>
+              <label for="calendar-feed-link">{{ t.link }}</label>
               <div class="tb-copy-row">
                 <input pInputText id="calendar-feed-link" class="tb-grow" [value]="link" readonly />
                 <p-button
                   icon="pi pi-copy"
                   [text]="true"
-                  pTooltip="Копировать ссылку"
+                  [pTooltip]="t.copy"
                   [rounded]="true"
                   severity="secondary"
-                  ariaLabel="Копировать ссылку"
+                  [ariaLabel]="t.copy"
                   (onClick)="copy(link)"
                 />
               </div>
             </div>
             <ul class="tb-muted tb-feed-help">
-              <li>Google Календарь: «Другие календари» → «+» → «Добавить по URL».</li>
-              <li>iPhone и Mac: <a [href]="webcal()">открыть в Календаре</a>.</li>
-              <li>Яндекс Календарь: «Новый календарь» → «Импорт» → «По ссылке».</li>
+              <li>{{ t.google }}</li>
+              <li>
+                {{ t.appleBefore }} <a [href]="webcal()">{{ t.apple }}</a
+                >.
+              </li>
+              <li>{{ t.yandex }}</li>
             </ul>
-            <small class="tb-muted">Google обновляет подписки раз в несколько часов.</small>
+            <small class="tb-muted">{{ t.refresh }}</small>
           } @else if (feed.enabled) {
-            <p class="tb-muted">Ссылка создана {{ feed.createdAt | date: 'dd.MM.yyyy' }}.</p>
+            <p class="tb-muted">{{ t.created((feed.createdAt | date: 'dd.MM.yyyy') ?? '') }}</p>
           } @else {
-            <p class="tb-muted">Занятия могут появляться в календаре на телефоне.</p>
+            <p class="tb-muted">{{ t.about }}</p>
           }
           <div class="tb-actions">
             <p-button
-              [label]="feed.enabled ? 'Новая ссылка' : 'Получить ссылку'"
+              [label]="feed.enabled ? t.renew : t.get"
               icon="pi pi-link"
               class="tb-tonal"
               severity="success"
@@ -71,7 +75,7 @@ import { Busy } from '@shared/ui/busy';
             />
             @if (feed.enabled) {
               <p-button
-                label="Отключить"
+                [label]="t.disable"
                 severity="danger"
                 [text]="true"
                 [loading]="busy.is('disable')"
@@ -95,6 +99,7 @@ import { Busy } from '@shared/ui/busy';
   `,
 })
 export class CalendarFeedPanel implements OnInit {
+  protected readonly t = T.feed;
   protected readonly busy = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
@@ -144,7 +149,7 @@ export class CalendarFeedPanel implements OnInit {
 
   copy(link: string): void {
     if (this.clipboard.copy(link)) {
-      this.snackbar.success('Ссылка в буфере обмена');
+      this.snackbar.success(T.feed.copied);
     }
   }
 }

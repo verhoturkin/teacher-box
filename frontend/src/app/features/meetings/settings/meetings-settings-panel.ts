@@ -9,6 +9,7 @@ import { HelpButton } from '@features/help/parts';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { CallsStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
+import { T } from '../i18n/texts';
 
 /**
  * Video meetings: whether the built-in calls are on (ADR-0030), where the external links of students
@@ -23,44 +24,39 @@ import { MeetingPreferences } from '../telemost';
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >Видеовстречи <tb-help-button topic="teacher/calls"
+            >{{ t.title }} <tb-help-button topic="teacher/calls"
           /></span>
         </div>
       </ng-template>
       @switch (calls()) {
         @case ('OK') {
           <p>
-            Звонки в портале включены: у каждого ученика и группы своя комната —
-            <a class="tb-link" routerLink="/teacher/calls">раздел «Звонки»</a>.
+            {{ t.onBefore }}
+            <a class="tb-link" routerLink="/teacher/calls">{{ t.onLink }}</a
+            >.
           </p>
         }
         @case ('UNREACHABLE') {
-          <p-message severity="warn" styleClass="tb-form-message">
-            Звонки в портале включены, но сервер звонков не отвечает. Сообщите администратору
-            портала.
-          </p-message>
+          <p-message severity="warn" styleClass="tb-form-message">{{ t.unreachable }}</p-message>
         }
         @case ('OFF') {
-          <p>Звонки в портале не настроены — их включает администратор портала.</p>
+          <p>{{ t.off }}</p>
         }
       }
-      <p>
-        Вместо комнаты портала у ученика или группы может быть постоянная ссылка на внешнюю
-        видеосвязь (Телемост, Zoom и другие): её задают в разделе «Ученики» (строка «Видеовстреча» в
-        карточке).
-      </p>
+      <p>{{ t.external }}</p>
       <label class="tb-switch" for="meetings-open-in-app">
         <p-toggleswitch
           inputId="meetings-open-in-app"
           [ngModel]="openInApp()"
           (ngModelChange)="setOpenInApp($event)"
         />
-        Открывать встречи Телемоста в приложении на этом компьютере
+        {{ t.openInApp }}
       </label>
     </p-card>
   `,
 })
 export class MeetingsSettingsPanel implements OnInit {
+  protected readonly t = T.settings;
   private readonly api = inject(MeetingsApi);
   private readonly preferences = inject(MeetingPreferences);
 

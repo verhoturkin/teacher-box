@@ -21,6 +21,8 @@ import { InitialsPipe } from '@shared/ui/initials';
 import { CallDevices, DeviceList, mediaErrorText } from './call-devices';
 import { CallMedia } from './call-engine';
 import { CallSession, CallTarget } from './call-session';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 interface DeviceOption {
   readonly label: string;
@@ -37,7 +39,7 @@ interface DeviceOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="'Звонок: ' + target().title"
+      [header]="t.title(target().title)"
       [visible]="true"
       [modal]="true"
       [draggable]="false"
@@ -55,7 +57,7 @@ interface DeviceOption {
               autoplay
               playsinline
               [muted]="true"
-              aria-label="Изображение с камеры"
+              [attr.aria-label]="t.preview"
             ></video>
           } @else {
             <span class="tb-call-tile__avatar" aria-hidden="true">{{ name() | initials }}</span>
@@ -69,7 +71,7 @@ interface DeviceOption {
             icon="pi pi-microphone"
             [rounded]="true"
             [severity]="media().microphone ? 'secondary' : 'danger'"
-            ariaLabel="Микрофон"
+            [ariaLabel]="t.microphone"
             [tbAttributes]="{ 'aria-pressed': media().microphone ? 'true' : 'false' }"
             (onClick)="update({ microphone: !media().microphone })"
           />
@@ -78,21 +80,21 @@ interface DeviceOption {
             icon="pi pi-video"
             [rounded]="true"
             [severity]="media().camera ? 'secondary' : 'danger'"
-            ariaLabel="Камера"
+            [ariaLabel]="t.camera"
             [tbAttributes]="{ 'aria-pressed': media().camera ? 'true' : 'false' }"
             (onClick)="update({ camera: !media().camera })"
           />
         </div>
         @if (!supported) {
           <p-message severity="error" styleClass="tb-form-message">
-            Этот браузер не умеет видеозвонки. Откройте портал в Chrome, Edge, Firefox или Safari.
+            {{ t.unsupported }}
           </p-message>
         } @else if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
         @if (microphones().length > 1) {
           <div class="tb-field">
-            <label for="call-microphone">Микрофон</label>
+            <label for="call-microphone">{{ t.microphone }}</label>
             <p-select
               inputId="call-microphone"
               [options]="microphones()"
@@ -107,7 +109,7 @@ interface DeviceOption {
         }
         @if (cameras().length > 1) {
           <div class="tb-field">
-            <label for="call-camera">Камера</label>
+            <label for="call-camera">{{ t.camera }}</label>
             <p-select
               inputId="call-camera"
               [options]="cameras()"
@@ -121,17 +123,19 @@ interface DeviceOption {
           </div>
         }
         @if (switching(); as current) {
-          <p class="tb-muted">Звонок «{{ current }}» завершится.</p>
+          <p class="tb-muted">{{ t.switching(current) }}</p>
         }
       </div>
       <ng-template #footer>
-        <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="cancel()" />
-        <p-button label="Войти" icon="pi pi-video" [disabled]="!supported" (onClick)="join()" />
+        <p-button [label]="c.cancel" severity="secondary" [text]="true" (onClick)="cancel()" />
+        <p-button [label]="t.join" icon="pi pi-video" [disabled]="!supported" (onClick)="join()" />
       </ng-template>
     </p-dialog>
   `,
 })
 export class CallPrejoin {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.prejoin;
   private readonly session = inject(CallSession);
   private readonly devices = inject(CallDevices);
 
@@ -146,8 +150,10 @@ export class CallPrejoin {
   private readonly auth = inject(AuthService);
   protected readonly name = computed(() => this.auth.user()?.displayName ?? '');
   private readonly list = signal<DeviceList>({ microphones: [], cameras: [] });
-  protected readonly microphones = computed(() => options(this.list().microphones, 'Микрофон'));
-  protected readonly cameras = computed(() => options(this.list().cameras, 'Камера'));
+  protected readonly microphones = computed(() =>
+    options(this.list().microphones, T.prejoin.microphone),
+  );
+  protected readonly cameras = computed(() => options(this.list().cameras, T.prejoin.camera));
   private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
   private request = 0;
 

@@ -1,4 +1,5 @@
 import { IntegrationState, LogLevelName } from './data-access/admin.models';
+import { T } from './i18n/texts';
 
 export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 
@@ -21,9 +22,9 @@ export function levelSeverity(level: string): TagSeverity {
 export const INTEGRATION_TAGS: Readonly<
   Record<IntegrationState, { label: string; severity: TagSeverity }>
 > = {
-  OK: { label: 'Работает', severity: 'success' },
-  FAILED: { label: 'Ошибка', severity: 'danger' },
-  NOT_CONFIGURED: { label: 'Не подключено', severity: 'secondary' },
+  OK: { label: T.integrationStates.OK, severity: 'success' },
+  FAILED: { label: T.integrationStates.FAILED, severity: 'danger' },
+  NOT_CONFIGURED: { label: T.integrationStates.NOT_CONFIGURED, severity: 'secondary' },
 };
 
 /** «ru.teacherbox.notifications.telegram.TelegramChannel» → «telegram.TelegramChannel». */
@@ -38,10 +39,10 @@ export function formatUptime(seconds: number): string {
   const hours = Math.floor((seconds % 86_400) / 3_600);
   const minutes = Math.floor((seconds % 3_600) / 60);
   if (days > 0) {
-    return `${String(days)} д ${String(hours)} ч`;
+    return T.uptime.days(days, hours);
   }
   if (hours > 0) {
-    return `${String(hours)} ч ${String(minutes)} мин`;
+    return T.uptime.hours(hours, minutes);
   }
-  return `${String(minutes)} мин`;
+  return T.uptime.minutes(minutes);
 }

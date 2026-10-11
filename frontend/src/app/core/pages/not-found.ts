@@ -4,6 +4,7 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
+import { CORE_T } from '@core/i18n/texts';
 
 /**
  * «Страница не найдена» inside the frame of the role (ADR-0026): the header, the navigation and the
@@ -15,22 +16,20 @@ import { PageHeader } from '@shared/ui/page-header';
   imports: [RouterLink, ButtonDirective, ButtonIcon, ButtonLabel, Card, EmptyState, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Страница не найдена" />
+    <tb-page-header [title]="t.title" />
     <p-card>
-      <tb-empty-state
-        icon="pi-compass"
-        title="Такой страницы нет"
-        hint="Ссылка могла устареть или в адресе опечатка. Вернитесь на главную и найдите нужный раздел в меню."
-      >
+      <tb-empty-state icon="pi-compass" [title]="t.empty" [hint]="t.hint">
         <a pButton routerLink="/">
           <i pButtonIcon aria-hidden="true" class="pi pi-home"></i>
-          <span pButtonLabel>На главную</span>
+          <span pButtonLabel>{{ t.home }}</span>
         </a>
       </tb-empty-state>
     </p-card>
   `,
 })
-export class NotFound {}
+export class NotFound {
+  protected readonly t = CORE_T.notFound;
+}
 
 /** The same page for a visitor who is not signed in: there is no frame, so it brings its own `main`. */
 @Component({

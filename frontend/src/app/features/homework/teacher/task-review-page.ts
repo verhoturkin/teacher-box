@@ -31,6 +31,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import { T } from '../i18n/texts';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -66,17 +67,17 @@ import { pageDetail } from '@core/routing/page-detail';
       </tb-page-header>
 
       <div class="tb-stack">
-        <p-card header="Ответы ученика">
+        <p-card [header]="t.answers">
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </p-card>
 
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
-          <p-card header="Проверка">
+          <p-card [header]="t.review">
             <form tbFieldErrors class="tb-form tb-form--narrow" [formGroup]="form">
               @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
                 <div>
                   <p-button
-                    label="Черновик проверки"
+                    [label]="t.draft"
                     icon="pi pi-sparkles"
                     severity="secondary"
                     [loading]="drafting()"
@@ -86,23 +87,21 @@ import { pageDetail } from '@core/routing/page-detail';
               }
               @if (suggestion(); as decision) {
                 <p-message severity="info" styleClass="tb-form-message">
-                  ИИ предлагает
-                  {{ decision === 'ACCEPT' ? 'принять работу' : 'вернуть работу на доработку' }}.
-                  Проверьте черновик перед отправкой.
+                  {{ decision === 'ACCEPT' ? t.suggestsAccept : t.suggestsReturn }}
                 </p-message>
               }
               <div class="tb-field">
-                <label for="review-grade">Оценка</label>
+                <label for="review-grade">{{ t.grade }}</label>
                 <input
                   pInputText
                   id="review-grade"
                   formControlName="grade"
                   autocomplete="off"
-                  placeholder="например, 5"
+                  [placeholder]="t.gradePlaceholder"
                 />
               </div>
               <div class="tb-field">
-                <label for="review-comment">Комментарий</label>
+                <label for="review-comment">{{ t.comment }}</label>
                 <textarea
                   pTextarea
                   id="review-comment"
@@ -114,7 +113,7 @@ import { pageDetail } from '@core/routing/page-detail';
                 @if (task.status === 'SUBMITTED') {
                   <p-button
                     severity="success"
-                    label="Принять"
+                    [label]="t.accept"
                     icon="pi pi-check"
                     [loading]="pending()"
                     (onClick)="review('ACCEPT')"
@@ -122,14 +121,14 @@ import { pageDetail } from '@core/routing/page-detail';
                 }
                 <p-button
                   class="tb-tonal"
-                  label="Вернуть на доработку"
+                  [label]="t.return"
                   icon="pi pi-replay"
                   severity="danger"
                   [loading]="pending()"
                   (onClick)="review('RETURN')"
                 />
                 <p-button
-                  label="На доску"
+                  [label]="t.toBoard"
                   icon="pi pi-th-large"
                   [text]="true"
                   [disabled]="commentValue().trim() === ''"
@@ -139,13 +138,13 @@ import { pageDetail } from '@core/routing/page-detail';
             </form>
           </p-card>
         } @else if (task.teacherComment) {
-          <p-card header="Ваш комментарий">
+          <p-card [header]="t.yourComment">
             <p class="tb-pre">{{ task.teacherComment }}</p>
             <small class="tb-muted">{{ task.reviewedAt | date: 'dd.MM.yyyy HH:mm' }}</small>
           </p-card>
         }
 
-        <p-card [header]="'Задание: ' + task.assignment.title">
+        <p-card [header]="t.assignment(task.assignment.title)">
           <tb-markdown [text]="task.assignment.description" />
           <tb-attachment-list
             [attachments]="task.assignment.attachments"
@@ -155,21 +154,18 @@ import { pageDetail } from '@core/routing/page-detail';
       </div>
       <tb-to-board-dialog
         [(visible)]="boardVisible"
-        [title]="'Разбор: ' + task.assignment.title"
+        [title]="t.boardTitle(task.assignment.title)"
         [markdown]="reviewText()"
         [students]="[task.studentId]"
       />
     } @else {
-      <tb-page-header
-        title="Проверка работы"
-        back="/teacher/homework/review"
-        backLabel="На проверку"
-      />
-      <tb-load-state [state]="state" what="работу" (retry)="load()" />
+      <tb-page-header [title]="t.title" back="/teacher/homework/review" [backLabel]="t.back" />
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,
 })
 export class TaskReviewPage implements OnInit {
+  protected readonly t = T.review;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
@@ -204,9 +200,7 @@ export class TaskReviewPage implements OnInit {
     const grade = this.gradeValue().trim();
     return grade === ''
       ? this.commentValue()
-      : `**Оценка: ${grade}**
-
-${this.commentValue()}`;
+      : `${T.review.gradeLine(grade)}\n\n${this.commentValue()}`;
   });
 
   protected readonly state = new LoadState();
@@ -242,9 +236,7 @@ ${this.commentValue()}`;
         next: (reviewed) => {
           this.pending.set(false);
           this.show(reviewed);
-          this.snackbar.success(
-            decision === 'ACCEPT' ? 'Работа принята' : 'Работа возвращена на доработку',
-          );
+          this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
         },
         error: () => {
           this.pending.set(false);

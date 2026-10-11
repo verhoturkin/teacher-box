@@ -11,12 +11,13 @@ import {
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { injectMobile } from '@core/layout/mobile';
-import { CountPipe } from '@shared/text/plural';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
 import { CallSelf } from './call-self';
 import { CallSession } from './call-session';
 import { CallTile } from './call-tile';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * The full call window over the portal: the stage (see `stageLayout`), the floating toolbar, the
@@ -24,7 +25,7 @@ import { CallTile } from './call-tile';
  */
 @Component({
   selector: 'tb-call-window',
-  imports: [Button, Message, CountPipe, CallControls, CallSelf, CallTile],
+  imports: [Button, Message, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-call-window',
@@ -41,14 +42,14 @@ import { CallTile } from './call-tile';
       <span class="tb-call-window__meta">
         @switch (session.phase()) {
           @case ('connecting') {
-            Подключение…
+            {{ t.connecting }}
           }
           @case ('reconnecting') {
-            <span class="tb-call-window__warning">Связь прервалась, переподключаемся…</span>
+            <span class="tb-call-window__warning">{{ t.reconnecting }}</span>
           }
           @case ('connected') {
             {{ elapsed() }} ·
-            {{ session.participants().length | count: 'участник' : 'участника' : 'участников' }}
+            {{ t.participants(session.participants().length) }}
           }
         }
       </span>
@@ -60,25 +61,25 @@ import { CallTile } from './call-tile';
         <p role="alert">{{ session.endText() }}</p>
         <div class="tb-actions">
           <p-button
-            label="Закрыть"
+            [label]="c.close"
             severity="secondary"
             [text]="true"
             (onClick)="session.close()"
           />
-          <p-button label="Войти снова" icon="pi pi-video" (onClick)="session.retry()" />
+          <p-button [label]="t.retry" icon="pi pi-video" (onClick)="session.retry()" />
         </div>
       </div>
     } @else if (session.phase() === 'connecting') {
       <div class="tb-call-window__end" role="status">
         <span class="tb-call-spinner" aria-hidden="true"></span>
-        <p>Подключение к звонку…</p>
+        <p>{{ t.joining }}</p>
       </div>
     } @else {
       @if (session.audioBlocked()) {
         <p-message severity="info" styleClass="tb-call-window__notice">
-          <span>Браузер приостановил звук.</span>
+          <span>{{ t.audioBlocked }}</span>
           <p-button
-            label="Включить звук"
+            [label]="t.startAudio"
             severity="secondary"
             [text]="true"
             (onClick)="session.startAudio()"
@@ -108,7 +109,7 @@ import { CallTile } from './call-tile';
           </div>
         }
         @if (layout().kind === 'alone') {
-          <p class="tb-call-stage__waiting">Пока в комнате только вы</p>
+          <p class="tb-call-stage__waiting">{{ t.alone }}</p>
         }
       </div>
     }
@@ -117,6 +118,8 @@ import { CallTile } from './call-tile';
   `,
 })
 export class CallWindow implements AfterViewInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.window;
   protected readonly session = inject(CallSession);
 
   /** The time in the call, `m:ss`. */

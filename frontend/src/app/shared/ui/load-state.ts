@@ -2,11 +2,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Signal, computed, signal } from '@angular/core';
 import { EMPTY, MonoTypeOperatorFunction, catchError, defer, tap } from 'rxjs';
 import { errorMessage } from '@core/http/error-messages';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Loading, failed or loaded (ADR-0025). */
 export type LoadStatus = 'loading' | 'error' | 'ready';
 
-const UNKNOWN_ERROR = 'Что-то пошло не так. Попробуйте ещё раз или чуть позже';
+const UNKNOWN_ERROR = SHARED_T.load.unknownError;
 
 /**
  * The state of what a page or a section loads (ADR-0025): the empty state is shown only after the

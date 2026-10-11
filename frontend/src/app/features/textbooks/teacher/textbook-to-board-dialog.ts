@@ -14,6 +14,7 @@ import { ToBoardDialog } from '@features/boards/parts';
 import { textbookPageUrl } from '../data-access/textbooks-api';
 import { TextbookFormat } from '../data-access/textbooks.models';
 import { MAX_BOARD_PAGES, parsePages } from '../page-ranges';
+import { T } from '../i18n/texts';
 
 /** The textbook whose pages go on a board. */
 export interface BoardTextbook {
@@ -40,13 +41,13 @@ export interface BoardTextbook {
     >
       @if (multiPage()) {
         <div class="tb-field tb-textbook-pages">
-          <label for="board-pages">Страницы</label>
+          <label for="board-pages">{{ t.pages }}</label>
           <input
             pInputText
             id="board-pages"
             [ngModel]="pagesText()"
             (ngModelChange)="pagesText.set($event)"
-            placeholder="Например, 12-14"
+            [placeholder]="t.pagesPlaceholder"
             autocomplete="off"
             [attr.aria-invalid]="parsed() === null"
             aria-describedby="board-pages-hint"
@@ -65,6 +66,7 @@ export interface BoardTextbook {
   `,
 })
 export class TextbookToBoardDialog {
+  protected readonly t = T.toBoard;
   readonly visible = model(false);
   readonly textbook = input<BoardTextbook | null>(null);
   /** The students of an assignment: only their boards; `null` — every board. */
@@ -87,8 +89,8 @@ export class TextbookToBoardDialog {
   protected readonly pagesHint = computed(() => {
     const count = this.textbook()?.pageCount ?? 0;
     return this.parsed() === null
-      ? `Страницы от 1 до ${String(count)}, не больше ${String(MAX_BOARD_PAGES)} за раз — например, 12-14.`
-      : `В учебнике ${String(count)} с. Страницы встанут в ряд во фрейме.`;
+      ? T.toBoard.pagesInvalid(count, MAX_BOARD_PAGES)
+      : T.toBoard.pagesHint(count);
   });
   /** The pictures of the chosen pages; none while the pages are wrong. */
   readonly material = computed(() => {
@@ -96,7 +98,9 @@ export class TextbookToBoardDialog {
     const parsed = this.parsed();
     if (textbook === null || textbook.format === 'DOCUMENT') return null;
     return {
-      title: this.multiPage() ? `${textbook.title}, с. ${parsed?.text ?? ''}` : textbook.title,
+      title: this.multiPage()
+        ? T.toBoard.title(textbook.title, parsed?.text ?? '')
+        : textbook.title,
       mode: 'pages' as const,
       pictures: (parsed?.pages ?? []).map((page) => textbookPageUrl(textbook.id, page)),
     };

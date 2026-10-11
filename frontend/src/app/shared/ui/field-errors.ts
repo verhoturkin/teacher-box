@@ -11,20 +11,11 @@ import { Subscription } from 'rxjs';
 import { AbstractControl, NgControl, ValidationErrors, Validators } from '@angular/forms';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
+import { SHARED_T } from '@shared/i18n/texts';
+
+const T = SHARED_T.fields;
 
 let nextId = 0;
-
-function characters(count: number): string {
-  const tens = count % 100;
-  const ones = count % 10;
-  if (tens >= 11 && tens <= 14) {
-    return 'символов';
-  }
-  if (ones === 1) {
-    return 'символ';
-  }
-  return ones >= 2 && ones <= 4 ? 'символа' : 'символов';
-}
 
 function numberOf(value: unknown, key: string): number {
   if (typeof value === 'object' && value !== null) {
@@ -47,27 +38,27 @@ export function errorText(errors: ValidationErrors | null): string | null {
     return server;
   }
   if ('required' in errors) {
-    return 'Заполните поле';
+    return T.required;
   }
   if ('email' in errors) {
-    return 'Неверный адрес e-mail';
+    return T.email;
   }
   if ('minlength' in errors) {
     const length = numberOf(errors['minlength'], 'requiredLength');
-    return `Не короче ${String(length)} ${characters(length)}`;
+    return T.minLength(length);
   }
   if ('maxlength' in errors) {
     const length = numberOf(errors['maxlength'], 'requiredLength');
-    return `Не длиннее ${String(length)} ${characters(length)}`;
+    return T.maxLength(length);
   }
   if ('min' in errors) {
-    return `Не меньше ${String(numberOf(errors['min'], 'min'))}`;
+    return T.min(numberOf(errors['min'], 'min'));
   }
   if ('max' in errors) {
-    return `Не больше ${String(numberOf(errors['max'], 'max'))}`;
+    return T.max(numberOf(errors['max'], 'max'));
   }
   if ('pattern' in errors) {
-    return 'Неверный формат';
+    return T.pattern;
   }
   return null;
 }
@@ -199,7 +190,7 @@ export function showAtField(
   if (control === undefined) {
     return false;
   }
-  control.setErrors({ server: describeError(error, 'Проверьте значение') });
+  control.setErrors({ server: describeError(error, T.checkValue) });
   control.markAsTouched();
   return true;
 }

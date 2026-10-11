@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { InitialsPipe } from '@shared/ui/initials';
 import { CallParticipant, MediaRef } from './call-engine';
+import { T } from '../i18n/texts';
 
 /**
  * One participant of the call: their camera or shared screen, or their initials while the camera is
@@ -53,6 +54,7 @@ import { CallParticipant, MediaRef } from './call-engine';
   `,
 })
 export class CallTile {
+  protected readonly t = T.tile;
   readonly participant = input.required<CallParticipant>();
   /** Shows the shared screen instead of the camera. */
   readonly screen = input(false);
@@ -62,8 +64,8 @@ export class CallTile {
   );
   protected readonly caption = computed(() => {
     const person = this.participant();
-    const name = person.local ? `${person.name} (вы)` : person.name;
-    return this.screen() ? `Экран: ${name}` : name;
+    const name = person.local ? T.you(person.name) : person.name;
+    return this.screen() ? T.tile.screen(name) : name;
   });
   protected readonly weak = computed(
     () => this.participant().quality === 'poor' || this.participant().quality === 'lost',
@@ -72,11 +74,11 @@ export class CallTile {
   protected readonly label = computed(() => {
     const parts = [this.caption()];
     if (!this.screen()) {
-      parts.push(this.participant().microphone ? 'микрофон включён' : 'микрофон выключен');
-      parts.push(this.participant().camera ? 'камера включена' : 'камера выключена');
+      parts.push(this.participant().microphone ? T.tile.micOn : T.tile.micOff);
+      parts.push(this.participant().camera ? T.tile.cameraOn : T.tile.cameraOff);
     }
     if (this.weak()) {
-      parts.push('слабая связь');
+      parts.push(T.tile.weak);
     }
     return parts.join(', ');
   });

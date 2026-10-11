@@ -23,12 +23,10 @@ import { Role } from '@core/auth/auth.models';
 import { ChangePasswordForm } from './change-password-form';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
-const ROLE_LABELS: Readonly<Record<Role, string>> = {
-  TEACHER: 'Учитель',
-  STUDENT: 'Ученик',
-  ADMIN: 'Администратор',
-};
+const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 
 /**
  * Own account of the teacher, a student or the administrator: profile data and password change. The
@@ -49,7 +47,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Мой аккаунт" />
+    <tb-page-header [title]="t.title" />
     <div class="tb-stack">
       @if (account(); as account) {
         <p-card styleClass="tb-hero tb-account">
@@ -65,12 +63,12 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
                 type="file"
                 class="tb-sr-only"
                 accept="image/jpeg,image/png,image/webp"
-                aria-label="Файл фото"
+                [attr.aria-label]="t.photoFile"
                 (change)="uploadPhoto(photoFile)"
               />
               <div class="tb-account__photo">
                 <p-button
-                  [label]="account.avatar === null ? 'Загрузить фото' : 'Сменить фото'"
+                  [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
                   icon="pi pi-camera"
                   [loading]="busy.is('photo')"
                   (onClick)="photoFile.click()"
@@ -81,8 +79,8 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
                     severity="danger"
                     [text]="true"
                     [rounded]="true"
-                    pTooltip="Убрать фото"
-                    ariaLabel="Убрать фото"
+                    [pTooltip]="t.removePhoto"
+                    [ariaLabel]="t.removePhoto"
                     [loading]="busy.is('remove-photo')"
                     (onClick)="removePhoto()"
                   />
@@ -92,15 +90,15 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
           </div>
           <dl class="tb-account__facts">
             <div>
-              <dt>Логин</dt>
+              <dt>{{ t.login }}</dt>
               <dd>{{ account.login ?? '—' }}</dd>
             </div>
             <div>
-              <dt>E-mail</dt>
+              <dt>{{ t.email }}</dt>
               <dd>{{ account.email ?? '—' }}</dd>
             </div>
             <div>
-              <dt>Телефон</dt>
+              <dt>{{ t.phone }}</dt>
               <dd>{{ account.phone ?? '—' }}</dd>
             </div>
           </dl>
@@ -109,20 +107,18 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
       <div class="tb-account__forms">
         @if (account(); as account) {
           @if (isTeacher()) {
-            <p-card header="Имя">
+            <p-card [header]="t.name">
               <form class="tb-form tb-form--narrow" [formGroup]="nameForm" (ngSubmit)="rename()">
                 <div class="tb-field">
-                  <label for="account-name">Имя</label>
+                  <label for="account-name">{{ t.name }}</label>
                   <input pInputText id="account-name" formControlName="name" maxlength="100" />
-                  <small class="tb-hint"
-                    >Так вас видят ученики в портале и в сообщениях бота.</small
-                  >
+                  <small class="tb-hint">{{ t.teacherNameHint }}</small>
                 </div>
                 <div class="tb-form-actions">
                   <p-button
                     class="tb-tonal"
                     type="submit"
-                    label="Сохранить"
+                    [label]="c.save"
                     severity="success"
                     [disabled]="
                       nameForm.invalid ||
@@ -135,25 +131,22 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
             </p-card>
           }
           @if (isStudent()) {
-            <p-card header="Имя">
+            <p-card [header]="t.name">
               <form
                 class="tb-form tb-form--narrow"
                 [formGroup]="ownNameForm"
                 (ngSubmit)="renameSelf()"
               >
                 <div class="tb-field">
-                  <label for="account-own-name">Имя</label>
+                  <label for="account-own-name">{{ t.name }}</label>
                   <input pInputText id="account-own-name" formControlName="name" maxlength="100" />
-                  <small class="tb-hint"
-                    >Так портал обращается к вам. Учитель видит вас как «{{ account.profileName }}».
-                    Оставьте поле пустым, чтобы вернуть это имя.</small
-                  >
+                  <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
                 </div>
                 <div class="tb-form-actions">
                   <p-button
                     class="tb-tonal"
                     type="submit"
-                    label="Сохранить"
+                    [label]="c.save"
                     severity="success"
                     [disabled]="ownNameUnchanged(account)"
                     [loading]="renaming()"
@@ -163,7 +156,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
             </p-card>
           }
         }
-        <p-card header="Смена пароля">
+        <p-card [header]="t.changePassword">
           <tb-change-password-form [tonal]="true" (changed)="passwordChanged()" />
         </p-card>
       </div>
@@ -241,6 +234,8 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = {
   `,
 })
 export class AccountPage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.account;
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
@@ -282,7 +277,7 @@ export class AccountPage implements OnInit {
       next: (account) => {
         this.renaming.set(false);
         this.changed(account);
-        this.snackbar.success('Имя сохранено');
+        this.snackbar.success(T.account.nameSaved);
       },
       error: () => {
         this.renaming.set(false);
@@ -299,7 +294,7 @@ export class AccountPage implements OnInit {
       next: (account) => {
         this.renaming.set(false);
         this.changed(account);
-        this.snackbar.success('Имя сохранено');
+        this.snackbar.success(T.account.nameSaved);
       },
       error: () => {
         this.renaming.set(false);
@@ -322,12 +317,12 @@ export class AccountPage implements OnInit {
       .subscribe({
         next: (account) => {
           this.changed(account);
-          this.snackbar.success('Фото сохранено');
+          this.snackbar.success(T.account.photoSaved);
         },
         error: (error: unknown) => {
           // a failed request already shows its error; a picture the browser cannot open does not
           if (!(error instanceof HttpErrorResponse)) {
-            this.snackbar.error('Не удалось открыть картинку. Выберите фото в JPEG, PNG или WebP.');
+            this.snackbar.error(T.account.photoUnreadable);
           }
         },
       });
@@ -351,7 +346,7 @@ export class AccountPage implements OnInit {
   }
 
   protected passwordChanged(): void {
-    this.snackbar.success('Пароль изменён');
+    this.snackbar.success(T.account.passwordChanged);
   }
 
   private changed(account: Account): void {

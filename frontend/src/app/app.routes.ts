@@ -2,18 +2,22 @@ import { Routes } from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
+import { CORE_T } from '@core/i18n/texts';
+
+const N = CORE_T.titles;
+const NAV = CORE_T.nav;
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: redirectToHome },
   {
     path: 'login',
-    title: 'Вход',
+    title: N.signIn,
     canActivate: [guestGuard],
     loadComponent: () => import('@features/identity').then((m) => m.LoginPage),
   },
   {
     path: 'invite/:token',
-    title: 'Приглашение',
+    title: N.invite,
     loadComponent: () => import('@features/identity').then((m) => m.InvitePage),
   },
   {
@@ -24,7 +28,7 @@ export const routes: Routes = [
   {
     // The board editor takes the whole screen: outside the shell, same guards (ADR-0028).
     path: 'teacher/boards/:id',
-    title: 'Доска',
+    title: N.board,
     canActivate: [roleGuard('TEACHER'), setupGuard],
     canDeactivate: [canLeaveGuard],
     data: { area: 'teacher' },
@@ -32,7 +36,7 @@ export const routes: Routes = [
   },
   {
     path: 'cabinet/boards/:id',
-    title: 'Доска',
+    title: N.board,
     canActivate: [roleGuard('STUDENT')],
     canDeactivate: [canLeaveGuard],
     data: { area: 'cabinet' },
@@ -46,109 +50,109 @@ export const routes: Routes = [
     children: [
       {
         path: 'setup',
-        title: 'Первоначальная настройка',
+        title: N.setup,
         loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
       },
       {
         path: '',
-        title: 'Главная',
+        title: NAV.home,
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {
         path: 'students',
-        title: 'Ученики',
+        title: NAV.students,
         loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
       },
       {
         path: 'schedule',
-        title: 'Расписание',
+        title: NAV.schedule,
         loadComponent: () => import('@features/schedule').then((m) => m.SchedulePage),
       },
       {
         path: 'homework',
-        title: 'Задания',
+        title: NAV.homework,
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
       },
       {
         path: 'homework/review',
-        title: 'На проверку',
+        title: N.reviewQueue,
         loadComponent: () => import('@features/homework').then((m) => m.ReviewQueuePage),
       },
       {
         path: 'homework/tasks/:taskId',
-        title: 'Проверка работы',
+        title: N.taskReview,
         loadComponent: () => import('@features/homework').then((m) => m.TaskReviewPage),
       },
       {
         path: 'homework/:assignmentId',
-        title: 'Задание',
+        title: N.assignment,
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentPage),
       },
       {
         path: 'textbooks',
-        title: 'Учебники',
+        title: NAV.textbooks,
         loadComponent: () => import('@features/textbooks').then((m) => m.TextbooksPage),
       },
       {
         path: 'billing',
-        title: 'Оплаты',
+        title: NAV.billing,
         loadComponent: () => import('@features/billing').then((m) => m.BillingOverviewPage),
       },
       {
         path: 'billing/report',
-        title: 'Отчёт за месяц',
+        title: N.monthlyReport,
         loadComponent: () => import('@features/billing').then((m) => m.MonthlyReportPage),
       },
       {
         path: 'billing/students/:studentId',
-        title: 'История оплат',
+        title: N.ledger,
         loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
       },
       {
         path: 'boards',
-        title: 'Доски',
+        title: NAV.boards,
         loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
       {
         path: 'calls',
-        title: 'Звонки',
+        title: NAV.calls,
         loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
       },
       {
         path: 'settings',
-        title: 'Настройки',
+        title: NAV.settings,
         loadComponent: () => import('@features/settings').then((m) => m.SettingsPage),
       },
       {
         path: 'ai',
-        title: 'ИИ-помощник',
+        title: NAV.ai,
         loadComponent: () => import('@features/ai').then((m) => m.AiUsagePage),
       },
       {
         path: 'notifications',
-        title: 'Уведомления',
+        title: NAV.notifications,
         loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
       },
       {
         path: 'help',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'teacher' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'help/:topic',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'teacher' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'account',
-        title: 'Мой аккаунт',
+        title: N.account,
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
       {
         path: '**',
-        title: 'Страница не найдена',
+        title: N.notFound,
         loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
       },
     ],
@@ -160,64 +164,64 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        title: 'Главная',
+        title: NAV.home,
         loadComponent: () => import('@features/home').then((m) => m.StudentHome),
       },
       {
         path: 'schedule',
-        title: 'Расписание',
+        title: NAV.schedule,
         loadComponent: () => import('@features/schedule').then((m) => m.MySchedulePage),
       },
       {
         path: 'homework',
-        title: 'Задания',
+        title: NAV.homework,
         loadComponent: () => import('@features/homework').then((m) => m.MyHomeworkPage),
       },
       {
         path: 'homework/:taskId',
-        title: 'Задание',
+        title: N.assignment,
         loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
       },
       {
         path: 'textbooks',
-        title: 'Учебники',
+        title: NAV.textbooks,
         loadComponent: () => import('@features/textbooks').then((m) => m.MyTextbooksPage),
       },
       {
         path: 'billing',
-        title: 'Оплаты',
+        title: NAV.billing,
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
       },
       {
         path: 'boards',
-        title: 'Мои доски',
+        title: NAV.myBoards,
         loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
         path: 'notifications',
-        title: 'Уведомления',
+        title: NAV.notifications,
         loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
       },
       {
         path: 'help',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'cabinet' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'help/:topic',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'cabinet' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'account',
-        title: 'Мой аккаунт',
+        title: N.account,
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
       {
         path: '**',
-        title: 'Страница не найдена',
+        title: N.notFound,
         loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
       },
     ],
@@ -230,66 +234,66 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'logs' },
       {
         path: 'logs',
-        title: 'Журнал',
+        title: NAV.log,
         loadComponent: () => import('@features/admin').then((m) => m.LogPage),
       },
       {
         path: 'status',
-        title: 'Состояние',
+        title: NAV.status,
         loadComponent: () => import('@features/admin').then((m) => m.StatusPage),
       },
       {
         path: 'events',
-        title: 'События',
+        title: NAV.events,
         loadComponent: () => import('@features/admin').then((m) => m.EventsPage),
       },
       {
         path: 'integrations',
-        title: 'Интеграции',
+        title: NAV.integrations,
         loadComponent: () => import('@features/admin').then((m) => m.IntegrationsPage),
       },
       {
         path: 'backups',
-        title: 'Копии',
+        title: NAV.backups,
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
         path: 'settings',
-        title: 'Настройки',
+        title: NAV.settings,
         loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
       },
       {
         path: 'diagnostics',
-        title: 'Диагностика',
+        title: NAV.diagnostics,
         loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),
       },
       {
         path: 'help',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'admin' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'help/:topic',
-        title: 'Справка',
+        title: N.help,
         data: { area: 'admin' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
       {
         path: 'account',
-        title: 'Мой аккаунт',
+        title: N.account,
         loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
       },
       {
         path: '**',
-        title: 'Страница не найдена',
+        title: N.notFound,
         loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
       },
     ],
   },
   {
     path: '**',
-    title: 'Страница не найдена',
+    title: N.notFound,
     loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFoundPage),
   },
 ];

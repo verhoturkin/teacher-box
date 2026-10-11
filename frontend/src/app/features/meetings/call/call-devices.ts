@@ -1,5 +1,6 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { AudioProcessing, CallMedia, DEFAULT_AUDIO_PROCESSING } from './call-engine';
+import { T } from '../i18n/texts';
 
 /** Microphones and cameras of this device. */
 export interface DeviceList {
@@ -23,14 +24,14 @@ export function mediaErrorText(error: unknown): string {
   switch (name) {
     case 'NotAllowedError':
     case 'SecurityError':
-      return 'Браузер не дал доступ к камере и микрофону. Разрешите его в настройках сайта.';
+      return T.devices.denied;
     case 'NotFoundError':
     case 'OverconstrainedError':
-      return 'Камера или микрофон не найдены.';
+      return T.devices.notFound;
     case 'NotReadableError':
-      return 'Камера или микрофон заняты другой программой.';
+      return T.devices.busy;
     default:
-      return 'Не удалось включить камеру или микрофон.';
+      return T.devices.failed;
   }
 }
 

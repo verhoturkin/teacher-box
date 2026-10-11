@@ -1,11 +1,8 @@
 import { formatFileSize } from '@shared/files/file-size';
 import { MyTextbook, Textbook, TextbookFormat, TextbookKind } from './data-access/textbooks.models';
+import { T } from './i18n/texts';
 
-export const TEXTBOOK_KIND_LABELS: Readonly<Record<TextbookKind, string>> = {
-  TEXTBOOK: 'Учебник',
-  WORKBOOK: 'Рабочая тетрадь',
-  OTHER: 'Другое',
-};
+export const TEXTBOOK_KIND_LABELS: Readonly<Record<TextbookKind, string>> = T.kinds;
 
 export const TEXTBOOK_KIND_ICONS: Readonly<Record<TextbookKind, string>> = {
   TEXTBOOK: 'pi pi-book',
@@ -13,11 +10,7 @@ export const TEXTBOOK_KIND_ICONS: Readonly<Record<TextbookKind, string>> = {
   OTHER: 'pi pi-file',
 };
 
-export const TEXTBOOK_FORMAT_LABELS: Readonly<Record<TextbookFormat, string>> = {
-  IMAGE: 'картинка',
-  PDF: 'PDF',
-  DOCUMENT: 'Word',
-};
+export const TEXTBOOK_FORMAT_LABELS: Readonly<Record<TextbookFormat, string>> = T.formats;
 
 /** Files a textbook takes (the backend checks them by content). */
 export const TEXTBOOK_FILES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif';
@@ -31,7 +24,7 @@ export function isDocumentFile(name: string): boolean {
 
 /** «120 с.»; nothing when unknown. */
 export function pagesText(pageCount: number | null): string | null {
-  return pageCount === null ? null : `${String(pageCount)} с.`;
+  return pageCount === null ? null : T.pages(pageCount);
 }
 
 /** «PDF, 120 с., 4,2 МБ». */
@@ -48,9 +41,9 @@ export function fileText(textbook: Pick<Textbook, 'format' | 'pageCount' | 'size
 /** The students and groups of a textbook in one line; those who are gone are skipped. */
 export function textbookMembersText(textbook: Textbook): string {
   const names = textbook.members.flatMap((member) =>
-    member.name === null ? [] : [member.type === 'GROUP' ? `группа «${member.name}»` : member.name],
+    member.name === null ? [] : [member.type === 'GROUP' ? T.group(member.name) : member.name],
   );
-  return names.length === 0 ? 'ученикам не открыт' : names.join(', ');
+  return names.length === 0 ? T.notOpened : names.join(', ');
 }
 
 /** «Учебник · Английский · PDF, 120 с., 4,2 МБ». */

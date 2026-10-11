@@ -6,6 +6,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { BoardsApi } from '../data-access/boards-api';
 import { MyBoard } from '../data-access/boards.models';
 import { MyBoardList } from './my-board-list';
+import { T } from '../i18n/texts';
 
 /** Boards shown on the card; the rest are on «Мои доски». */
 export const CARD_BOARDS = 3;
@@ -20,18 +21,19 @@ export const CARD_BOARDS = 3;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (state.status() === 'error') {
-      <p-card header="Мои доски">
-        <tb-load-state [state]="state" what="доски" [compact]="true" (retry)="load()" />
+      <p-card [header]="t.title">
+        <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()" />
       </p-card>
     } @else if (boards().length > 0) {
-      <p-card header="Мои доски">
+      <p-card [header]="t.title">
         <tb-my-board-list [boards]="boards().slice(0, cardBoards)" />
-        <a class="tb-link" routerLink="/cabinet/boards">Все доски ({{ boards().length }})</a>
+        <a class="tb-link" routerLink="/cabinet/boards">{{ t.all(boards().length) }}</a>
       </p-card>
     }
   `,
 })
 export class MyBoardsCard implements OnInit {
+  protected readonly t = T.myCard;
   private readonly api = inject(BoardsApi);
 
   protected readonly cardBoards = CARD_BOARDS;

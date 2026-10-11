@@ -1,7 +1,8 @@
 import { Confirmation } from 'primeng/api';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Closing a dialog without a consequence: one word, a neutral text button (ADR-0026). */
-const REJECT_LABEL = 'Отмена';
+const REJECT_LABEL = SHARED_T.common.cancel;
 
 /** A confirmation whose rejection is fixed: «Отмена», a neutral text button. */
 export type ConfirmationRequest = Omit<Confirmation, 'rejectLabel' | 'rejectButtonProps'>;

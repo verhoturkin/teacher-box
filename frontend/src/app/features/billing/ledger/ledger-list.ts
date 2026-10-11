@@ -8,6 +8,7 @@ import { LESSON_STATUS_HINTS, LESSON_STATUS_LABELS } from '../billing-labels';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { ledgerEntries } from './ledger-entries';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
 
 /** Rows shown at first and added by «Показать ещё». */
 export const LEDGER_PAGE = 20;
@@ -23,9 +24,9 @@ export const LEDGER_PAGE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (entries().length === 0) {
-      <tb-empty-state icon="pi-wallet" title="Пока нет ни занятий, ни оплат" />
+      <tb-empty-state icon="pi-wallet" [title]="t.empty" />
     } @else {
-      <ul class="tb-list" aria-label="История">
+      <ul class="tb-list" [attr.aria-label]="t.history">
         @for (entry of visible(); track entry.id) {
           <li [class.tb-inactive]="entry.inactive">
             <span class="tb-list__lead" aria-hidden="true"
@@ -35,9 +36,9 @@ export const LEDGER_PAGE = 20;
               @case ('lesson') {
                 <div class="tb-list__text">
                   <span class="tb-list__title"
-                    ><span class="tb-ledger__operation"
-                      >Занятие, {{ entry.lesson.durationMinutes }} мин</span
-                    >
+                    ><span class="tb-ledger__operation">{{
+                      t.lesson(entry.lesson.durationMinutes)
+                    }}</span>
                     @if (entry.lesson.status !== 'CONDUCTED') {
                       <p-tag
                         [value]="lessonStatusLabels[entry.lesson.status]"
@@ -66,8 +67,8 @@ export const LEDGER_PAGE = 20;
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      [pTooltip]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
-                      [ariaLabel]="'Снять начисление за ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [pTooltip]="t.cancelCharge((entry.date | date: 'dd.MM.yyyy') ?? '')"
+                      [ariaLabel]="t.cancelCharge((entry.date | date: 'dd.MM.yyyy') ?? '')"
                       (onClick)="cancelLesson.emit(entry.lesson)"
                     />
                   }
@@ -76,9 +77,9 @@ export const LEDGER_PAGE = 20;
               @case ('payment') {
                 <div class="tb-list__text">
                   <span class="tb-list__title"
-                    ><span class="tb-ledger__operation">Оплата</span>
+                    ><span class="tb-ledger__operation">{{ t.payment }}</span>
                     @if (entry.payment.voidedAt) {
-                      <p-tag value="Аннулирована" severity="secondary" />
+                      <p-tag [value]="t.voided" severity="secondary" />
                     }
                   </span>
                   <span class="tb-list__supporting">
@@ -101,8 +102,8 @@ export const LEDGER_PAGE = 20;
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      [pTooltip]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
-                      [ariaLabel]="'Аннулировать оплату от ' + (entry.date | date: 'dd.MM.yyyy')"
+                      [pTooltip]="t.voidPayment((entry.date | date: 'dd.MM.yyyy') ?? '')"
+                      [ariaLabel]="t.voidPayment((entry.date | date: 'dd.MM.yyyy') ?? '')"
                       (onClick)="voidPayment.emit(entry.payment)"
                     />
                   }
@@ -113,12 +114,13 @@ export const LEDGER_PAGE = 20;
         }
       </ul>
       @if (visible().length < entries().length) {
-        <p-button label="Показать ещё" [text]="true" (onClick)="showMore()" />
+        <p-button [label]="t.showMore" [text]="true" (onClick)="showMore()" />
       }
     }
   `,
 })
 export class LedgerList {
+  protected readonly t = T.ledger;
   readonly ledger = input.required<StudentLedger>();
   /** Teacher mode: lessons can be cancelled and payments voided. */
   readonly editable = input(false);

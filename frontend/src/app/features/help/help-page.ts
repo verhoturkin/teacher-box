@@ -21,6 +21,7 @@ import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from './i18n/texts';
 
 /**
  * The help of an area (`/<area>/help/<topic>`): the contents with search on top, the chosen article
@@ -41,7 +42,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Справка" />
+    <tb-page-header [title]="t.help" />
     <div class="tb-stack">
       <p-card styleClass="tb-help__contents">
         <p-iconfield>
@@ -49,11 +50,11 @@ import { EmptyState } from '@shared/ui/empty-state';
           <input
             pInputText
             [formControl]="search"
-            placeholder="Поиск по справке"
-            aria-label="Поиск по справке"
+            [placeholder]="t.search"
+            [attr.aria-label]="t.search"
           />
         </p-iconfield>
-        <nav aria-label="Статьи справки">
+        <nav [attr.aria-label]="t.articles">
           <ul class="tb-help__list">
             @for (article of found(); track article.id) {
               <li>
@@ -72,8 +73,8 @@ import { EmptyState } from '@shared/ui/empty-state';
                   <tb-empty-state
                     [compact]="true"
                     icon="pi-search"
-                    title="Ничего не нашлось"
-                    hint="Попробуйте другие слова"
+                    [title]="t.notFoundTitle"
+                    [hint]="t.notFoundHint"
                   />
                 </li>
               }
@@ -84,7 +85,7 @@ import { EmptyState } from '@shared/ui/empty-state';
       <p-card class="tb-help__article-card" styleClass="tb-help__article">
         @if (current(); as article) {
           @if (missing()) {
-            <p class="tb-muted">Такой статьи нет — вот «{{ article.title }}».</p>
+            <p class="tb-muted">{{ t.missing(article.title) }}</p>
           }
           <h2 class="tb-help__title">{{ article.title }}</h2>
           <p class="tb-help__summary">{{ article.summary }}</p>
@@ -143,6 +144,7 @@ import { EmptyState } from '@shared/ui/empty-state';
   `,
 })
 export class HelpPage {
+  protected readonly t = T;
   private readonly library = inject(HelpLibrary);
 
   /** Route data: whose help. */

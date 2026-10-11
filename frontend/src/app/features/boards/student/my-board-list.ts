@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MyBoard } from '../data-access/boards.models';
 import { boardRoute } from '../boards-labels';
+import { T } from '../i18n/texts';
 
 /** The student's boards as a list: an Excalidraw board opens in the portal, an external one in a new tab. */
 @Component({
@@ -26,13 +27,13 @@ import { boardRoute } from '../boards-labels';
             }
             <span class="tb-list__supporting">
               @if (board.groupNames.length > 0) {
-                {{ board.groupNames.length > 1 ? 'группы' : 'группа' }}
+                {{ board.groupNames.length > 1 ? t.groups : t.group }}
                 «{{ board.groupNames.join('», «') }}» ·
               }
               @if (board.kind === 'EXCALIDRAW') {
-                изменена {{ board.updatedAt | date: 'dd.MM.yyyy HH:mm' }}
+                {{ t.changed((board.updatedAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               } @else {
-                внешняя доска
+                {{ t.external }}
               }
             </span>
           </div>
@@ -42,6 +43,7 @@ import { boardRoute } from '../boards-labels';
   `,
 })
 export class MyBoardList {
+  protected readonly t = T.myList;
   readonly boards = input<readonly MyBoard[]>([]);
 
   protected route(boardId: string): string {

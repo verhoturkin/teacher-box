@@ -6,6 +6,7 @@ import { JoinLessonButton } from '@features/meetings/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
+import { T } from '../i18n/texts';
 
 /** Teacher's home, on top: the nearest lesson with «Начать урок» and the boards of the student or group. */
 @Component({
@@ -13,7 +14,7 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
   imports: [RouterLink, Card, Avatar, JoinLessonButton, BoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Следующее занятие" styleClass="tb-upcoming tb-hero">
+    <p-card [header]="t.title" styleClass="tb-upcoming tb-hero">
       @let next = lesson();
       <div class="tb-upcoming__body">
         <div class="tb-upcoming__info">
@@ -32,9 +33,9 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
         </div>
         <div class="tb-actions">
           @if (next.joinUrl; as url) {
-            <tb-join-lesson-button [url]="url" label="Начать урок" [teacher]="true" />
+            <tb-join-lesson-button [url]="url" [label]="t.start" [teacher]="true" />
           }
-          <a routerLink="/teacher/schedule">Расписание</a>
+          <a routerLink="/teacher/schedule">{{ t.schedule }}</a>
         </div>
       </div>
     </p-card>
@@ -73,6 +74,7 @@ import { formatLessonTime, lessonWith } from '../schedule-labels';
   `,
 })
 export class UpcomingLessonWidget {
+  protected readonly t = T.upcoming;
   readonly lesson = input.required<ScheduledLesson>();
 
   protected readonly with = lessonWith;

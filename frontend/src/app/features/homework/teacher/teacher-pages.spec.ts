@@ -335,12 +335,13 @@ describe('ReviewQueuePage', () => {
     backend
       .expectOne('/api/teacher/homework/review-queue')
       .flush([
-        reviewQueueItem(),
+        reviewQueueItem({ studentAvatar: '/api/public/avatars/anna' }),
         reviewQueueItem({ taskId: 't-2', submittedAt: null, dueAt: '2026-09-10T15:00:00Z' }),
       ]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Анна Дроби 05.09.2026');
+    expect(hostElement(fixture).querySelectorAll('tb-avatar img')).toHaveLength(1);
     expect(
       hostElement(fixture).querySelectorAll('a[href="/teacher/homework/tasks/t-1"]'),
     ).toHaveLength(1);

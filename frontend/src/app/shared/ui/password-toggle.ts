@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+import { SHARED_T } from '@shared/i18n/texts';
 /**
  * «Показать пароль» of a password field (ADR-0024): a 40×40 icon button inside the field instead of
  * PrimeNG's bare icon, reachable with Tab and named. It goes into the `#showicon` and `#hideicon`
@@ -19,7 +20,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     <button
       type="button"
       class="tb-password-toggle"
-      [attr.aria-label]="shown() ? 'Скрыть пароль' : 'Показать пароль'"
+      [attr.aria-label]="shown() ? t.hide : t.show"
       [attr.aria-pressed]="shown()"
     >
       <i [class]="shown() ? 'pi pi-eye-slash' : 'pi pi-eye'" aria-hidden="true"></i>
@@ -63,6 +64,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   `,
 })
 export class PasswordToggle {
+  protected readonly t = SHARED_T.password;
   /** The password is shown (the button hides it). */
   readonly shown = input(false);
 }

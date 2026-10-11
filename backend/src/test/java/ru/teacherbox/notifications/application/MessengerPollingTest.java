@@ -89,6 +89,24 @@ class MessengerPollingTest {
     }
 
     @Test
+    void refusedLinkButtonsGoAgainAsText() {
+        MessengerChannel telegram = mock(MessengerChannel.class);
+        when(telegram.type()).thenReturn(ChannelType.TELEGRAM);
+        when(telegram.poll()).thenReturn(List.of(new IncomingMessage("1", null, "доски")));
+        OutgoingMessage boards = new OutgoingMessage("Ваши доски:", List.of(
+                List.of(new OutgoingButton("Алгебра", null, "http://192.168.1.5/cabinet/boards/1")),
+                List.of(new OutgoingButton("Меню", "token:0", null))));
+        when(engine.handle(any(), any())).thenReturn(boards);
+        doThrow(new DeliveryException("Telegram 400: Wrong HTTP URL", true)).when(telegram).send("1", boards);
+
+        assertThat(new MessengerPolling(channels(telegram), engine, health).pollOnce(telegram)).isEqualTo(1);
+
+        verify(telegram).send("1", new OutgoingMessage("Ваши доски:\nАлгебра: http://192.168.1.5/cabinet/boards/1",
+                List.of(List.of(new OutgoingButton("Меню", "token:0", null)))));
+        assertThat(OutgoingMessage.text("ответ").hasLinks()).isFalse();
+    }
+
+    @Test
     void pollsInBackgroundAndSurvivesErrors() {
         AtomicInteger polls = new AtomicInteger();
         FakeMessengerChannel replies = new FakeMessengerChannel(ChannelType.MAX);

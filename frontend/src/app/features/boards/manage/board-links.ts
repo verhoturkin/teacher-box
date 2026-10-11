@@ -4,6 +4,7 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { boardRoute } from '../boards-labels';
+import { T } from '../i18n/texts';
 
 /**
  * Links to the boards of a lesson's student (with their groups' boards) or group; nothing while there
@@ -16,7 +17,7 @@ import { boardRoute } from '../boards-labels';
   template: `
     @if (boards().length > 0) {
       <div class="tb-board-links">
-        <span class="tb-muted">Доски:</span>
+        <span class="tb-muted">{{ t.boards }}</span>
         @for (board of boards(); track board.id) {
           @if (board.kind === 'EXCALIDRAW') {
             <a class="tb-link" [routerLink]="route(board.id)"
@@ -41,6 +42,7 @@ import { boardRoute } from '../boards-labels';
   `,
 })
 export class BoardLinks {
+  protected readonly t = T.links;
   private readonly api = inject(BoardsApi);
 
   readonly studentId = input<string | null>(null);

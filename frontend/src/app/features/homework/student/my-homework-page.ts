@@ -19,6 +19,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from '../i18n/texts';
 
 /** Student: own tasks; the ones that need work come first. */
 @Component({
@@ -37,28 +38,28 @@ import { PageHeader } from '@shared/ui/page-header';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Задания">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/homework" />
     </tb-page-header>
     <p-card>
-      <tb-load-state [state]="state" what="задания" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th class="tb-col-main">Задание</th>
-              <th>Срок</th>
-              <th>Статус</th>
+              <th class="tb-col-main">{{ t.assignment }}</th>
+              <th>{{ t.due }}</th>
+              <th>{{ t.status }}</th>
             </tr>
           </ng-template>
           <ng-template #body let-task [tbRowType]="tasks()">
             <tr>
-              <td data-label="Задание">
+              <td [attr.data-label]="t.assignment">
                 <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
               </td>
-              <td data-label="Срок" [class.tb-negative]="task.overdue">
-                {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : 'без срока' }}
+              <td [attr.data-label]="t.due" [class.tb-negative]="task.overdue">
+                {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : noDueDate }}
               </td>
-              <td data-label="Статус">
+              <td [attr.data-label]="t.status">
                 <tb-task-status
                   [status]="task.status"
                   [overdue]="task.overdue"
@@ -72,8 +73,8 @@ import { PageHeader } from '@shared/ui/page-header';
               <td colspan="3">
                 <tb-empty-state
                   icon="pi-pen-to-square"
-                  title="Заданий пока нет"
-                  hint="Здесь появятся задания от учителя"
+                  [title]="t.emptyTitle"
+                  [hint]="t.emptyHint"
                 />
               </td>
             </tr>
@@ -84,6 +85,8 @@ import { PageHeader } from '@shared/ui/page-header';
   `,
 })
 export class MyHomeworkPage implements OnInit {
+  protected readonly noDueDate = T.noDueDate;
+  protected readonly t = T.mine;
   private readonly api = inject(HomeworkApi);
 
   private readonly all = signal<MyTask[]>([]);

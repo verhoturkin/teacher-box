@@ -41,6 +41,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -74,18 +76,14 @@ export function nextMonday(date: Date): Date {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Расписание">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/schedule" />
     </tb-page-header>
     <div class="tb-stack">
-      <p-card header="Ближайшие занятия">
-        <tb-load-state [state]="upcomingState" what="ближайшие занятия" (retry)="reload()">
+      <p-card [header]="t.upcoming">
+        <tb-load-state [state]="upcomingState" [what]="t.whatUpcoming" (retry)="reload()">
           @if (upcoming().length === 0) {
-            <tb-empty-state
-              icon="pi-calendar"
-              title="На этой неделе занятий больше нет"
-              hint="Следующие занятия — в календаре"
-            />
+            <tb-empty-state icon="pi-calendar" [title]="t.noMoreTitle" [hint]="t.noMoreHint" />
           } @else {
             <ul class="tb-list tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {
@@ -107,7 +105,7 @@ export function nextMonday(date: Date): Date {
                         severity="secondary"
                         [text]="true"
                         [rounded]="true"
-                        [ariaLabel]="'Занятие: ' + time(lesson)"
+                        [ariaLabel]="t.lesson(time(lesson))"
                         (onClick)="openSheet(lesson)"
                       />
                     </div>
@@ -123,9 +121,9 @@ export function nextMonday(date: Date): Date {
                       @if (lesson.pendingRequests[0]; as request) {
                         <p-button
                           severity="danger"
-                          label="Отозвать"
+                          [label]="t.withdraw"
                           [text]="true"
-                          [ariaLabel]="'Отозвать запрос: ' + time(lesson)"
+                          [ariaLabel]="t.withdrawOf(time(lesson))"
                           [loading]="actions.is('withdraw-' + request.id)"
                           (onClick)="withdraw(request)"
                         />
@@ -140,7 +138,7 @@ export function nextMonday(date: Date): Date {
       </p-card>
 
       @if (requests().length > 0) {
-        <p-card header="Мои запросы">
+        <p-card [header]="t.requests">
           <ul class="tb-list tb-schedule-list">
             @for (request of requests(); track request.id) {
               <li>
@@ -149,11 +147,11 @@ export function nextMonday(date: Date): Date {
                   <span class="tb-list__title">
                     {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
                     @if (request.groupName !== null) {
-                      · группа «{{ request.groupName }}»
+                      · {{ t.group(request.groupName) }}
                     }
                   </span>
                   @if (request.answer !== null) {
-                    <span class="tb-list__supporting">Учитель: {{ request.answer }}</span>
+                    <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
                   }
                 </div>
                 <div class="tb-list__trail">
@@ -171,7 +169,7 @@ export function nextMonday(date: Date): Date {
         @if (calendarState.status() === 'error') {
           <tb-load-state
             [state]="calendarState"
-            what="календарь"
+            [what]="t.whatCalendar"
             [compact]="true"
             (retry)="loadCalendar()"
           />
@@ -179,7 +177,7 @@ export function nextMonday(date: Date): Date {
         <tb-schedule-calendar
           [lessons]="calendarLessons()"
           [busy]="busy()"
-          busyTitle="Занято"
+          [busyTitle]="t.busy"
           [showStudent]="false"
           initialView="listWeek"
           [loaded]="calendarState.ready()"
@@ -192,7 +190,7 @@ export function nextMonday(date: Date): Date {
     <p-drawer
       tbModalDrawer
       [blockScroll]="true"
-      ariaCloseLabel="Закрыть"
+      [ariaCloseLabel]="c.close"
       [visible]="sheetLesson() !== null"
       (visibleChange)="$event || closeSheet()"
       position="bottom"
@@ -215,7 +213,7 @@ export function nextMonday(date: Date): Date {
           <p-button
             class="tb-tonal"
             severity="danger"
-            label="Отозвать запрос"
+            [label]="t.withdrawRequest"
             icon="pi pi-undo"
             [fluid]="true"
             [loading]="actions.is('withdraw-' + request.id)"
@@ -236,6 +234,8 @@ export function nextMonday(date: Date): Date {
   `,
 })
 export class MySchedulePage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.mine;
   protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
@@ -319,14 +319,14 @@ export class MySchedulePage implements OnInit {
   }
 
   onSent(): void {
-    this.snackbar.success('Учитель получит ваш запрос');
+    this.snackbar.success(T.mine.sent);
     this.reload();
   }
 
   withdraw(request: ChangeRequest): void {
     this.actions.guard('withdraw-' + request.id, this.api.withdraw(request.id)).subscribe(() => {
       this.closeSheet();
-      this.snackbar.success('Запрос отозван');
+      this.snackbar.success(T.mine.withdrawn);
       this.reload();
     });
   }

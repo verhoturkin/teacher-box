@@ -14,6 +14,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Busy } from '@shared/ui/busy';
 import { NotificationList } from './notification-list';
+import { T } from '../i18n/texts';
 
 export const PAGE_SIZE = 20;
 
@@ -33,15 +34,15 @@ interface InboxPart {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
-      <tb-load-state [state]="state" what="уведомления" (retry)="reload()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
         @if (unreadPart(); as part) {
           @if (part.items.length === 0) {
-            <tb-empty-state icon="pi-bell" title="Новых уведомлений нет" />
+            <tb-empty-state icon="pi-bell" [title]="t.nothing" />
           } @else {
             <div class="tb-inbox-header">
-              <span class="tb-muted">Непрочитанных: {{ unread() }}</span>
+              <span class="tb-muted">{{ t.unread(unread()) }}</span>
               <p-button
-                label="Прочитать все"
+                [label]="t.readAll"
                 icon="pi pi-check"
                 severity="secondary"
                 [loading]="busy.is('all')"
@@ -49,7 +50,7 @@ interface InboxPart {
               />
             </div>
             <tb-notification-list
-              label="Непрочитанные"
+              [label]="t.unreadList"
               [items]="part.items"
               [busy]="busy"
               (opened)="open($event)"
@@ -57,7 +58,7 @@ interface InboxPart {
             />
             @if (part.items.length < part.total) {
               <p-button
-                label="Показать ещё"
+                [label]="t.more"
                 [text]="true"
                 [loading]="busy.is('more-unread')"
                 (onClick)="loadMore()"
@@ -67,7 +68,7 @@ interface InboxPart {
         }
         <div class="tb-inbox-read">
           <p-button
-            label="Прочитанные"
+            [label]="t.read"
             [icon]="readOpen() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
             iconPos="right"
             [text]="true"
@@ -78,20 +79,20 @@ interface InboxPart {
             }"
             (onClick)="toggleRead()"
           />
-          <div id="tb-inbox-read" role="region" aria-label="Прочитанные">
+          <div id="tb-inbox-read" role="region" [attr.aria-label]="t.read">
             @if (readOpen()) {
               <tb-load-state
                 [state]="readState"
-                what="прочитанные уведомления"
+                [what]="t.whatRead"
                 [compact]="true"
                 (retry)="loadRead(0)"
               >
                 @if (readPart(); as part) {
                   @if (part.items.length === 0) {
-                    <tb-empty-state icon="pi-inbox" title="Прочитанных уведомлений нет" />
+                    <tb-empty-state icon="pi-inbox" [title]="t.noRead" />
                   } @else {
                     <tb-notification-list
-                      label="Прочитанные уведомления"
+                      [label]="t.readList"
                       [items]="part.items"
                       [busy]="busy"
                       (opened)="open($event)"
@@ -99,7 +100,7 @@ interface InboxPart {
                     />
                     @if (part.items.length < part.total) {
                       <p-button
-                        label="Показать ещё"
+                        [label]="t.more"
                         [text]="true"
                         [loading]="busy.is('more-read')"
                         (onClick)="loadMoreRead()"
@@ -137,6 +138,7 @@ interface InboxPart {
   `,
 })
 export class InboxPanel implements OnInit {
+  protected readonly t = T.inbox;
   protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly unreadCounter = inject(UnreadNotifications);

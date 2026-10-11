@@ -12,13 +12,15 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
   selector: 'tb-review-queue-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     DatePipe,
     RouterLink,
@@ -33,38 +35,38 @@ import { InitialsPipe } from '@shared/ui/initials';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="На проверку" back="/teacher/homework" backLabel="Задания">
+    <tb-page-header [title]="t.title" back="/teacher/homework" [backLabel]="t.back">
       <tb-help-button help topic="teacher/homework" />
     </tb-page-header>
     <p-card>
-      <tb-load-state [state]="state" what="работы на проверку" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         <p-table [value]="items()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
           <ng-template #header>
             <tr>
-              <th class="tb-col-main">Ученик</th>
-              <th>Задание</th>
-              <th>Сдано</th>
-              <th>Срок</th>
-              <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+              <th class="tb-col-main">{{ t.student }}</th>
+              <th>{{ t.assignment }}</th>
+              <th>{{ t.submitted }}</th>
+              <th>{{ t.due }}</th>
+              <th class="tb-actions-column">
+                <span class="tb-sr-only">{{ c.actions }}</span>
+              </th>
             </tr>
           </ng-template>
           <ng-template #body let-item [tbRowType]="items()">
             <tr>
-              <td data-label="Ученик">
+              <td [attr.data-label]="t.student">
                 <div class="tb-person">
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    item.studentName | initials
-                  }}</span>
+                  <tb-avatar [name]="item.studentName" [photo]="item.studentAvatar" />
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ item.studentName }}</span>
                   </div>
                 </div>
               </td>
-              <td data-label="Задание">{{ item.title }}</td>
-              <td data-label="Сдано">
+              <td [attr.data-label]="t.assignment">{{ item.title }}</td>
+              <td [attr.data-label]="t.submitted">
                 {{ item.submittedAt ? (item.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
               </td>
-              <td data-label="Срок">
+              <td [attr.data-label]="t.due">
                 {{ item.dueAt ? (item.dueAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
               </td>
               <td class="tb-actions-column">
@@ -72,9 +74,9 @@ import { InitialsPipe } from '@shared/ui/initials';
                   pButton
                   [routerLink]="['/teacher/homework/tasks', item.taskId]"
                   [text]="true"
-                  [attr.aria-label]="'Проверить: ' + item.studentName + ', ' + item.title"
+                  [attr.aria-label]="t.reviewOf(item.studentName, item.title)"
                 >
-                  <span pButtonLabel>Проверить</span>
+                  <span pButtonLabel>{{ t.review }}</span>
                 </a>
               </td>
             </tr>
@@ -84,8 +86,8 @@ import { InitialsPipe } from '@shared/ui/initials';
               <td colspan="5">
                 <tb-empty-state
                   icon="pi-check-circle"
-                  title="Всё проверено"
-                  hint="Новые ответы учеников появятся здесь"
+                  [title]="t.emptyTitle"
+                  [hint]="t.emptyHint"
                 />
               </td>
             </tr>
@@ -96,6 +98,8 @@ import { InitialsPipe } from '@shared/ui/initials';
   `,
 })
 export class ReviewQueuePage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.queue;
   private readonly api = inject(HomeworkApi);
 
   protected readonly items = signal<ReviewQueueItem[]>([]);

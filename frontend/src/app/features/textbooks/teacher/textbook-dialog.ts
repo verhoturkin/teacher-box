@@ -34,6 +34,8 @@ import {
   TEXTBOOK_MAX_SIZE,
   isDocumentFile,
 } from '../textbooks-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student or a group the teacher can share a textbook with. */
 export interface MemberOption {
@@ -62,7 +64,7 @@ export interface MemberOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="textbook() === null ? 'Новый учебник' : 'Изменить учебник'"
+      [header]="textbook() === null ? t.newTextbook : t.editTextbook"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -71,7 +73,7 @@ export interface MemberOption {
       <form tbFieldErrors id="textbook-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         @if (textbook() === null) {
           <div class="tb-field tb-field--required">
-            <span id="textbook-file-label">Файл</span>
+            <span id="textbook-file-label">{{ t.file }}</span>
             <input
               #picker
               type="file"
@@ -82,7 +84,7 @@ export interface MemberOption {
             />
             <div class="tb-textbook-file">
               <p-button
-                [label]="file() === null ? 'Выбрать файл' : 'Другой файл'"
+                [label]="file() === null ? t.chooseFile : t.otherFile"
                 icon="pi pi-paperclip"
                 severity="secondary"
                 (onClick)="picker.click()"
@@ -92,14 +94,14 @@ export interface MemberOption {
                 <small class="tb-muted">{{ size(chosen.size) }}</small>
               }
             </div>
-            <small class="tb-hint">PDF, Word (DOC, DOCX) или картинка — до 100 МБ.</small>
+            <small class="tb-hint">{{ t.fileHint }}</small>
             @if (fileError(); as message) {
               <small class="tb-field__error" role="alert">{{ message }}</small>
             }
           </div>
         }
         <div class="tb-field tb-field__header">
-          <span id="textbook-kind-label">Вид</span>
+          <span id="textbook-kind-label">{{ t.kind }}</span>
           <p-selectbutton
             formControlName="kind"
             [options]="kinds"
@@ -110,23 +112,23 @@ export interface MemberOption {
           />
         </div>
         <div class="tb-field tb-field--required">
-          <label for="textbook-title">Название</label>
+          <label for="textbook-title">{{ t.title }}</label>
           <input
             pInputText
             id="textbook-title"
             formControlName="title"
-            placeholder="Например, Spotlight 5"
+            [placeholder]="t.titlePlaceholder"
             autocomplete="off"
             aria-required="true"
           />
         </div>
         <div class="tb-field">
-          <label for="textbook-course">Курс</label>
+          <label for="textbook-course">{{ t.course }}</label>
           <input
             pInputText
             id="textbook-course"
             formControlName="course"
-            placeholder="Например, Английский, 5 класс"
+            [placeholder]="t.coursePlaceholder"
             autocomplete="off"
             list="textbook-courses"
           />
@@ -138,7 +140,7 @@ export interface MemberOption {
         </div>
         @if (document()) {
           <div class="tb-field">
-            <label for="textbook-pages">Число страниц</label>
+            <label for="textbook-pages">{{ t.pageCount }}</label>
             <p-inputnumber
               inputId="textbook-pages"
               formControlName="pageCount"
@@ -146,38 +148,38 @@ export interface MemberOption {
               [max]="10000"
               [useGrouping]="false"
             />
-            <small class="tb-hint">У PDF портал считает страницы сам, у Word — укажите.</small>
+            <small class="tb-hint">{{ t.pageCountHint }}</small>
           </div>
         }
         <div class="tb-field">
-          <label for="textbook-students">Ученики</label>
+          <label for="textbook-students">{{ t.students }}</label>
           <p-multiselect
             inputId="textbook-students"
             formControlName="studentIds"
             [options]="studentOptions()"
             optionLabel="name"
             optionValue="id"
-            placeholder="Кому открыт учебник"
+            [placeholder]="t.studentsPlaceholder"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-field">
-          <label for="textbook-groups">Группы</label>
+          <label for="textbook-groups">{{ t.groups }}</label>
           <p-multiselect
             inputId="textbook-groups"
             formControlName="groupIds"
             [options]="groupOptions()"
             optionLabel="name"
             optionValue="id"
-            placeholder="Все ученики группы"
+            [placeholder]="t.groupsPlaceholder"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
@@ -189,14 +191,14 @@ export interface MemberOption {
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          [label]="textbook() === null ? 'Добавить' : 'Сохранить'"
+          [label]="textbook() === null ? t.add : c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="textbook-form"
@@ -219,6 +221,8 @@ export interface MemberOption {
   `,
 })
 export class TextbookDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.dialog;
   private readonly api = inject(TextbooksApi);
 
   readonly visible = model(false);
@@ -287,9 +291,7 @@ export class TextbookDialog {
       return;
     }
     this.file.set(file);
-    this.fileError.set(
-      file.size > TEXTBOOK_MAX_SIZE ? 'Файл больше 100 МБ — портал его не примет.' : null,
-    );
+    this.fileError.set(file.size > TEXTBOOK_MAX_SIZE ? T.dialog.tooLarge : null);
     if (this.form.controls.title.value.trim() === '') {
       this.form.controls.title.setValue(file.name.replace(/\.[^.]+$/, ''));
     }
@@ -303,7 +305,7 @@ export class TextbookDialog {
     const textbook = this.textbook();
     const file = this.file();
     if (textbook === null && file === null) {
-      this.fileError.set('Выберите файл.');
+      this.fileError.set(T.dialog.chooseFileError);
     }
     if (!revealErrors(this.form) || this.pending() || this.fileError() !== null) {
       return;
@@ -334,7 +336,7 @@ export class TextbookDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сохранить. Попробуйте позже'));
+        this.error.set(describeError(error, T.dialog.failed));
       },
     });
   }
@@ -348,7 +350,7 @@ export class TextbookDialog {
       .filter(
         (member) => member.type === type && !options.some((option) => option.id === member.id),
       )
-      .map((member) => ({ id: member.id, name: member.name ?? 'Нет в списке' }));
+      .map((member) => ({ id: member.id, name: member.name ?? T.dialog.notInList }));
     return [...options, ...missing];
   }
 }

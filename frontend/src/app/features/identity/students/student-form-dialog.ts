@@ -21,6 +21,8 @@ import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Creates a student (when `student` is null) or edits an existing one. */
 @Component({
@@ -47,34 +49,32 @@ import { SubmitFor } from '@shared/ui/submit-for';
     >
       <form tbFieldErrors id="student-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="displayName">Имя и фамилия</label>
+          <label for="displayName">{{ t.name }}</label>
           <input pInputText id="displayName" formControlName="displayName" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="email">E-mail</label>
+          <label for="email">{{ t.email }}</label>
           <input pInputText id="email" type="email" formControlName="email" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="phone">Телефон</label>
+          <label for="phone">{{ t.phone }}</label>
           <input pInputText id="phone" formControlName="phone" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="note">Заметка (видна только вам)</label>
+          <label for="note">{{ t.note }}</label>
           <textarea pTextarea id="note" formControlName="note" rows="3"></textarea>
         </div>
         @if (student(); as student) {
           <div class="tb-field">
-            <label for="login">Логин</label>
+            <label for="login">{{ t.login }}</label>
             <input
               pInputText
               id="login"
               readonly
-              [value]="student.login ?? 'Ещё не выбран'"
+              [value]="student.login ?? t.noLogin"
               aria-describedby="login-hint"
             />
-            <small id="login-hint" class="tb-hint"
-              >Логин ученик выбирает сам, когда входит по приглашению.</small
-            >
+            <small id="login-hint" class="tb-hint">{{ t.loginHint }}</small>
           </div>
         }
         @if (error(); as message) {
@@ -84,14 +84,14 @@ import { SubmitFor } from '@shared/ui/submit-for';
       <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="student-form"
@@ -101,6 +101,8 @@ import { SubmitFor } from '@shared/ui/submit-for';
   `,
 })
 export class StudentFormDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.studentForm;
   private readonly api = inject(IdentityApi);
 
   readonly visible = model(false);
@@ -110,7 +112,7 @@ export class StudentFormDialog {
   readonly updated = output<Student>();
 
   protected readonly title = computed(() =>
-    this.student() === null ? 'Новый ученик' : 'Изменить ученика',
+    this.student() === null ? T.studentForm.newStudent : T.studentForm.editStudent,
   );
   /** The room is set up for a saved student who still has access. */
   protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
@@ -161,7 +163,7 @@ export class StudentFormDialog {
     this.error.set(null);
     const onError = (error: unknown): void => {
       this.pending.set(false);
-      this.error.set(describeError(error, 'Не удалось сохранить. Попробуйте позже'));
+      this.error.set(describeError(error, T.studentForm.failed));
     };
     if (student === null) {
       this.api.createStudent(profile).subscribe({

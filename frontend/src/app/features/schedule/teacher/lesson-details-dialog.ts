@@ -38,6 +38,8 @@ import {
 } from '../schedule-labels';
 import { Avatar } from '@shared/ui/avatar';
 import { AttendanceDialog } from './attendance-dialog';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * A lesson with the teacher's actions: change it, mark the outcome (the attendance of a group) after
@@ -74,7 +76,7 @@ import { AttendanceDialog } from './attendance-dialog';
     >
       <ng-template #header let-labelledBy="ariaLabelledBy">
         <div class="tb-dialog-head">
-          <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">Занятие</span>
+          <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">{{ t.title }}</span>
           @if (lesson(); as lesson) {
             <span class="tb-dialog-head__actions">
               @if (lesson.status === 'SCHEDULED') {
@@ -83,8 +85,8 @@ import { AttendanceDialog } from './attendance-dialog';
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"
-                  pTooltip="Изменить занятие"
-                  ariaLabel="Изменить занятие"
+                  [pTooltip]="t.edit"
+                  [ariaLabel]="t.edit"
                   (onClick)="editLesson()"
                 />
               }
@@ -94,8 +96,8 @@ import { AttendanceDialog } from './attendance-dialog';
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"
-                  pTooltip="Другие действия"
-                  ariaLabel="Другие действия"
+                  [pTooltip]="t.more"
+                  [ariaLabel]="t.more"
                   aria-haspopup="menu"
                   (onClick)="menu.toggle($event)"
                 />
@@ -113,16 +115,16 @@ import { AttendanceDialog } from './attendance-dialog';
           </div>
           <div>{{ time() }}</div>
           @if (lesson.originalStartsAt !== null) {
-            <small class="tb-muted">Перенесено с {{ start(lesson.originalStartsAt) }}</small>
+            <small class="tb-muted">{{ t.movedFrom(start(lesson.originalStartsAt)) }}</small>
           }
           @if (lesson.topic !== null) {
-            <div>Тема: {{ lesson.topic }}</div>
+            <div>{{ t.topic(lesson.topic) }}</div>
           }
           @if (lesson.joinUrl; as url) {
             <div>
               <tb-join-lesson-button
                 [url]="url"
-                label="Начать урок"
+                [label]="t.start"
                 [teacher]="true"
                 [tonal]="true"
               />
@@ -135,18 +137,18 @@ import { AttendanceDialog } from './attendance-dialog';
             />
           }
           @if (lesson.cancelReason !== null) {
-            <div class="tb-muted">Причина отмены: {{ lesson.cancelReason }}</div>
+            <div class="tb-muted">{{ t.cancelReason(lesson.cancelReason) }}</div>
           }
           @if (lesson.groupId !== null) {
             <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
                 <li>
                   <tb-avatar
-                    [name]="participant.studentName ?? 'Ученик'"
+                    [name]="participant.studentName ?? c.student"
                     [photo]="participant.studentAvatar"
                   />
                   <div class="tb-list__text">
-                    <span class="tb-list__title">{{ participant.studentName ?? 'Ученик' }}</span>
+                    <span class="tb-list__title">{{ participant.studentName ?? c.student }}</span>
                   </div>
                   @if (participant.attendance !== 'EXPECTED') {
                     <div class="tb-list__trail">
@@ -162,10 +164,10 @@ import { AttendanceDialog } from './attendance-dialog';
           }
           @for (request of lesson.pendingRequests; track request.id) {
             <div class="tb-lesson-details__request">
-              {{ lesson.groupId === null ? 'Запрос ученика' : (request.studentName ?? 'Ученик') }}:
+              {{ lesson.groupId === null ? t.studentRequest : (request.studentName ?? c.student) }}:
               {{ kind(request) }}
               @if (request.proposedStartsAt !== null) {
-                на {{ start(request.proposedStartsAt) }}
+                {{ t.to(start(request.proposedStartsAt)) }}
               }
               @if (request.comment !== null) {
                 — «{{ request.comment }}»
@@ -176,18 +178,18 @@ import { AttendanceDialog } from './attendance-dialog';
 
         @if (deleting()) {
           <p-message severity="warn" styleClass="tb-lesson-details__cancel">
-            Занятие исчезнет из расписания, календарей и отчётов.
+            {{ t.deleteWarning }}
             @if (lesson.status === 'SCHEDULED') {
-              Ученику придёт уведомление, что занятие отменено.
+              {{ t.deleteNotice }}
             }
           </p-message>
         }
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-lesson-details__cancel">
-            В это время уже есть другое занятие.
+            {{ t.overlap }}
             <p-button
               severity="success"
-              label="Всё равно восстановить"
+              [label]="t.restoreAnyway"
               [text]="true"
               (onClick)="restore(true)"
             />
@@ -201,7 +203,7 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (cancelling()) {
           <div class="tb-form tb-lesson-details__cancel">
             <div class="tb-field">
-              <label for="lesson-cancel-reason">Причина</label>
+              <label for="lesson-cancel-reason">{{ t.reason }}</label>
               <textarea
                 pTextarea
                 id="lesson-cancel-reason"
@@ -217,13 +219,13 @@ import { AttendanceDialog } from './attendance-dialog';
                   [binary]="true"
                   inputId="lesson-cancel-by-student"
                 />
-                <span>По просьбе ученика</span>
+                <span>{{ t.byStudent }}</span>
               </label>
             }
             @if (byStudent()) {
               <label class="tb-switch" for="lesson-cancel-charge">
                 <p-checkbox [(ngModel)]="charge" [binary]="true" inputId="lesson-cancel-charge" />
-                <span>Засчитать как пропуск (оплачивается)</span>
+                <span>{{ t.charge }}</span>
               </label>
             }
           </div>
@@ -233,26 +235,26 @@ import { AttendanceDialog } from './attendance-dialog';
         @if (lesson(); as lesson) {
           @if (deleting()) {
             <p-button
-              label="Отмена"
+              [label]="c.cancel"
               severity="secondary"
               [text]="true"
               (onClick)="deleting.set(false)"
             />
             <p-button
-              label="Удалить занятие"
+              [label]="t.deleteLesson"
               severity="danger"
               [loading]="pending()"
               (onClick)="deleteLesson()"
             />
           } @else if (cancelling()) {
             <p-button
-              label="Отмена"
+              [label]="c.cancel"
               severity="secondary"
               [text]="true"
               (onClick)="cancelling.set(false)"
             />
             <p-button
-              label="Отменить занятие"
+              [label]="t.cancelLesson"
               severity="danger"
               [loading]="pending()"
               (onClick)="cancel()"
@@ -260,24 +262,24 @@ import { AttendanceDialog } from './attendance-dialog';
           } @else if (lesson.status === 'CANCELLED') {
             <p-button
               severity="success"
-              label="Восстановить"
+              [label]="t.restore"
               icon="pi pi-replay"
               [loading]="pending()"
               (onClick)="restore()"
             />
           } @else if (started() && lesson.groupId !== null) {
             <p-button
-              label="Отметить посещаемость"
+              [label]="t.markAttendance"
               icon="pi pi-users"
               severity="success"
               (onClick)="markAttendance()"
             />
           } @else if (started()) {
-            <span class="tb-button-group" role="group" aria-label="Итог занятия">
+            <span class="tb-button-group" role="group" [attr.aria-label]="t.outcome">
               @if (lesson.status !== 'MISSED') {
                 <p-button
                   class="tb-tonal"
-                  label="Пропуск"
+                  [label]="t.missed"
                   severity="danger"
                   [loading]="pending()"
                   (onClick)="mark('MISSED')"
@@ -286,7 +288,7 @@ import { AttendanceDialog } from './attendance-dialog';
               @if (lesson.status !== 'CONDUCTED') {
                 <p-button
                   severity="success"
-                  label="Проведено"
+                  [label]="t.conducted"
                   [loading]="pending()"
                   (onClick)="mark('CONDUCTED')"
                 />
@@ -294,7 +296,7 @@ import { AttendanceDialog } from './attendance-dialog';
             </span>
           } @else {
             <p-button
-              label="Закрыть"
+              [label]="c.close"
               severity="secondary"
               [text]="true"
               (onClick)="visible.set(false)"
@@ -366,6 +368,8 @@ import { AttendanceDialog } from './attendance-dialog';
   `,
 })
 export class LessonDetailsDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.details;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -406,7 +410,7 @@ export class LessonDetailsDialog {
     const items: MenuItem[] = [];
     if (lesson.status === 'SCHEDULED') {
       items.push({
-        label: 'Отменить занятие…',
+        label: T.details.cancelItem,
         icon: 'pi pi-times-circle',
         command: () => {
           this.cancelling.set(true);
@@ -415,7 +419,7 @@ export class LessonDetailsDialog {
     }
     if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
       items.push({
-        label: 'Снять отметку',
+        label: T.details.unmark,
         icon: 'pi pi-undo',
         command: () => {
           this.reopen();
@@ -424,7 +428,7 @@ export class LessonDetailsDialog {
     }
     if (this.deletable()) {
       items.push({
-        label: 'Удалить…',
+        label: T.details.deleteItem,
         icon: 'pi pi-trash',
         styleClass: 'tb-menu-item--danger',
         command: () => {
@@ -547,7 +551,7 @@ export class LessonDetailsDialog {
         if (problemCode(error) === 'schedule.overlap') {
           this.overlap.set(true);
         } else {
-          this.error.set(describeError(error, 'Не удалось восстановить занятие'));
+          this.error.set(describeError(error, T.details.restoreFailed));
         }
       },
     });

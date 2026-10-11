@@ -28,6 +28,8 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, AssignmentInput } from '../data-access/homework.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student that can receive homework. */
 export interface StudentOption {
@@ -72,23 +74,23 @@ export interface StudentOption {
         (ngSubmit)="save()"
       >
         <div class="tb-field">
-          <label for="assignment-title">Название</label>
+          <label for="assignment-title">{{ t.title }}</label>
           <input pInputText id="assignment-title" formControlName="title" autocomplete="off" />
         </div>
         <div class="tb-field">
           <div class="tb-field__header">
-            <label for="assignment-description">Задание</label>
+            <label for="assignment-description">{{ t.assignment }}</label>
             <div class="tb-actions">
               @if (aiEnabled()) {
                 <p-button
-                  label="Сгенерировать с ИИ"
+                  [label]="t.generate"
                   icon="pi pi-sparkles"
                   [text]="true"
                   (onClick)="draftVisible.set(true)"
                 />
               }
               <p-button
-                label="На доску"
+                [label]="t.toBoard"
                 icon="pi pi-th-large"
                 [text]="true"
                 [disabled]="descriptionValue().trim() === ''"
@@ -99,7 +101,7 @@ export interface StudentOption {
                 [formControl]="mode"
                 optionLabel="label"
                 optionValue="value"
-                ariaLabel="Режим редактора"
+                [ariaLabel]="t.editorMode"
               />
             </div>
           </div>
@@ -110,9 +112,7 @@ export interface StudentOption {
               formControlName="description"
               rows="10"
             ></textarea>
-            <small class="tb-hint"
-              >Поддерживается Markdown: **жирный**, *курсив*, списки, ссылки.</small
-            >
+            <small class="tb-hint">{{ t.markdownHint }}</small>
           } @else {
             <div class="tb-preview">
               <tb-markdown [text]="descriptionValue()" />
@@ -120,7 +120,7 @@ export interface StudentOption {
           }
         </div>
         <div class="tb-field">
-          <label for="assignment-due">Срок сдачи</label>
+          <label for="assignment-due">{{ t.due }}</label>
           <p-datepicker
             inputId="assignment-due"
             formControlName="dueAt"
@@ -136,17 +136,17 @@ export interface StudentOption {
         </div>
         @if (assignment() === null) {
           <div class="tb-field">
-            <label for="assignment-students">Ученики</label>
+            <label for="assignment-students">{{ t.students }}</label>
             <p-multiselect
               inputId="assignment-students"
               formControlName="studentIds"
               [options]="students()"
               optionLabel="displayName"
               optionValue="id"
-              placeholder="Кому выдать"
+              [placeholder]="t.studentsPlaceholder"
               [filter]="true"
-              filterPlaceHolder="Поиск"
-              ariaFilterLabel="Поиск"
+              [filterPlaceHolder]="t.search"
+              [ariaFilterLabel]="t.search"
               display="chip"
               appendTo="body"
               [fluid]="true"
@@ -162,14 +162,14 @@ export interface StudentOption {
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          [label]="assignment() === null ? 'Выдать' : 'Сохранить'"
+          [label]="assignment() === null ? t.assign : c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="assignment-form"
@@ -192,6 +192,8 @@ export interface StudentOption {
   `,
 })
 export class AssignmentDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.dialog;
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
 
@@ -202,11 +204,11 @@ export class AssignmentDialog {
   readonly saved = output<AssignmentDetails>();
 
   protected readonly title = computed(() =>
-    this.assignment() === null ? 'Новое задание' : 'Изменить задание',
+    this.assignment() === null ? T.dialog.newAssignment : T.dialog.editAssignment,
   );
   protected readonly modes = [
-    { label: 'Текст', value: 'edit' },
-    { label: 'Просмотр', value: 'preview' },
+    { label: T.dialog.text, value: 'edit' },
+    { label: T.dialog.preview, value: 'preview' },
   ];
   readonly mode = new FormControl<'edit' | 'preview'>('edit', { nonNullable: true });
   protected readonly pending = signal(false);
@@ -299,7 +301,7 @@ export class AssignmentDialog {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось сохранить задание'));
+        this.error.set(describeError(error, T.dialog.failed));
       },
     });
   }

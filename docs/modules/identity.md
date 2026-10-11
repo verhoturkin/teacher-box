@@ -22,8 +22,9 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   key is the secret part of the link, a new photo gets a new key (immutable cache); the old file is deleted.
   Since 0.9.2 the teacher has a photo too (shown in the top bar and «Мой аккаунт»); the administrator has
   none (`account.no-photo`; `/api/me/avatar` is closed to the administrator). Other modules get the photo's address as
-  `StudentSummary.avatar` (0.9.2): billing (overview, debtors), meetings (call rooms), schedule (lessons and
-  their participants) pass it to their views.
+  `StudentSummary.avatar` (0.9.2): billing (overview, debtors, the monthly report's journal), meetings (call
+  rooms), schedule (lessons and their participants, requests), homework (an assignment's tasks, the review
+  queue) and notifications (the students' messengers) pass it to their views (all lists since 0.11.0).
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
 - Implements `shared.security.PasswordConfirmation`.

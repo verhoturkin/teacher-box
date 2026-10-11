@@ -14,6 +14,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { CallSession } from '../call/call-session';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { MyCall } from '../data-access/meetings.models';
+import { T } from '../i18n/texts';
 
 /** How often the card asks whether the teacher came in. */
 export const MY_CALLS_REFRESH_MS = 30_000;
@@ -28,11 +29,11 @@ export const MY_CALLS_REFRESH_MS = 30_000;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (state.status() === 'error') {
-      <p-card header="Видеозвонок">
-        <tb-load-state [state]="state" what="звонки" [compact]="true" (retry)="load()" />
+      <p-card [header]="t.title">
+        <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()" />
       </p-card>
     } @else if (calls().length > 0) {
-      <p-card header="Видеозвонок">
+      <p-card [header]="t.title">
         <ul class="tb-list">
           @for (call of calls(); track call.ownerId) {
             <li>
@@ -40,16 +41,16 @@ export const MY_CALLS_REFRESH_MS = 30_000;
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ call.title }}</span>
                 <span class="tb-list__supporting">{{
-                  call.teacherPresent ? 'Учитель уже в звонке' : 'Учитель пока не в звонке'
+                  call.teacherPresent ? t.teacherIn : t.teacherOut
                 }}</span>
               </div>
               <span class="tb-list__trail">
                 <p-button
-                  label="Войти"
+                  [label]="t.join"
                   icon="pi pi-video"
                   [severity]="call.teacherPresent ? 'primary' : 'secondary'"
                   [loading]="session.opening() === call.ownerId"
-                  [ariaLabel]="'Войти в звонок: ' + call.title"
+                  [ariaLabel]="t.joinOf(call.title)"
                   (onClick)="session.open(call.ownerId)"
                 />
               </span>
@@ -61,6 +62,7 @@ export const MY_CALLS_REFRESH_MS = 30_000;
   `,
 })
 export class MyCallsCard implements OnInit {
+  protected readonly t = T.myCalls;
   private readonly api = inject(MeetingsApi);
   protected readonly session = inject(CallSession);
 

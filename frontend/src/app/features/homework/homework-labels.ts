@@ -1,11 +1,7 @@
 import { TaskStatus } from './data-access/homework.models';
+import { T } from './i18n/texts';
 
-export const TASK_STATUS_LABELS: Readonly<Record<TaskStatus, string>> = {
-  ASSIGNED: 'Выдано',
-  SUBMITTED: 'На проверке',
-  RETURNED: 'На доработке',
-  ACCEPTED: 'Принято',
-};
+export const TASK_STATUS_LABELS: Readonly<Record<TaskStatus, string>> = T.statuses;
 
 export const TASK_STATUS_SEVERITIES: Readonly<
   Record<TaskStatus, 'warn' | 'danger' | 'success' | null>

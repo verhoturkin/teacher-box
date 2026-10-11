@@ -40,13 +40,15 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { pageDetail } from '@core/routing/page-detail';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
   selector: 'tb-assignment-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     DatePipe,
     ReactiveFormsModule,
@@ -77,24 +79,24 @@ import { InitialsPipe } from '@shared/ui/initials';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
-      <tb-page-header [title]="assignment.title" back="/teacher/homework" backLabel="Задания">
+      <tb-page-header [title]="assignment.title" back="/teacher/homework" [backLabel]="t.back">
         <tb-help-button help topic="teacher/homework" />
         <span meta>
           {{
             assignment.dueAt
-              ? 'Срок: ' + (assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
-              : 'Без срока'
+              ? t.due((assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+              : t.noDueDate
           }}
         </span>
         <p-button
-          label="На доску"
+          [label]="t.toBoard"
           icon="pi pi-th-large"
           severity="secondary"
           [disabled]="!assignment.description"
           (onClick)="boardVisible.set(true)"
         />
         <p-button
-          label="Изменить"
+          [label]="t.edit"
           icon="pi pi-pencil"
           severity="secondary"
           (onClick)="editVisible.set(true)"
@@ -102,13 +104,13 @@ import { InitialsPipe } from '@shared/ui/initials';
       </tb-page-header>
 
       <div class="tb-stack">
-        <p-card header="Задание">
+        <p-card [header]="t.assignment">
           @if (assignment.description) {
             <tb-markdown [text]="assignment.description" />
           } @else {
-            <p class="tb-muted">Текст задания не заполнен.</p>
+            <p class="tb-muted">{{ t.noText }}</p>
           }
-          <h3 class="tb-subtitle">Материалы</h3>
+          <h3 class="tb-subtitle">{{ t.materials }}</h3>
           <tb-attachment-list
             [attachments]="assignment.attachments"
             [removable]="true"
@@ -116,10 +118,10 @@ import { InitialsPipe } from '@shared/ui/initials';
             (remove)="confirmRemove($event)"
           />
           <div class="tb-inline">
-            <tb-file-picker [(files)]="newFiles" label="Добавить файлы" />
+            <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
             @if (newFiles().length > 0) {
               <p-button
-                label="Загрузить"
+                [label]="t.upload"
                 class="tb-tonal"
                 severity="success"
                 icon="pi pi-upload"
@@ -128,7 +130,7 @@ import { InitialsPipe } from '@shared/ui/initials';
               />
             }
           </div>
-          <h3 class="tb-subtitle">Учебники</h3>
+          <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
           <tb-textbook-list
             [textbooks]="assignment.textbooks"
             [editable]="true"
@@ -138,7 +140,7 @@ import { InitialsPipe } from '@shared/ui/initials';
           />
           <div class="tb-inline">
             <p-button
-              label="Привязать учебник"
+              [label]="t.bindTextbook"
               icon="pi pi-book"
               severity="secondary"
               (onClick)="openBind(null)"
@@ -146,36 +148,36 @@ import { InitialsPipe } from '@shared/ui/initials';
           </div>
         </p-card>
 
-        <p-card header="Ученики">
+        <p-card [header]="t.students">
           <p-table [value]="assignment.tasks" dataKey="taskId" styleClass="tb-cards">
             <ng-template #header>
               <tr>
-                <th class="tb-col-main">Ученик</th>
-                <th>Статус</th>
-                <th>Сдано</th>
-                <th class="tb-actions-column"><span class="tb-sr-only">Действия</span></th>
+                <th class="tb-col-main">{{ t.student }}</th>
+                <th>{{ t.status }}</th>
+                <th>{{ t.submitted }}</th>
+                <th class="tb-actions-column">
+                  <span class="tb-sr-only">{{ c.actions }}</span>
+                </th>
               </tr>
             </ng-template>
             <ng-template #body let-task [tbRowType]="assignment.tasks">
               <tr>
-                <td data-label="Ученик">
+                <td [attr.data-label]="t.student">
                   <div class="tb-person">
-                    <span class="tb-avatar" aria-hidden="true">{{
-                      task.studentName | initials
-                    }}</span>
+                    <tb-avatar [name]="task.studentName" [photo]="task.studentAvatar" />
                     <div class="tb-list__text">
                       <span class="tb-list__title">{{ task.studentName }}</span>
                     </div>
                   </div>
                 </td>
-                <td data-label="Статус">
+                <td [attr.data-label]="t.status">
                   <tb-task-status
                     [status]="task.status"
                     [overdue]="task.overdue"
                     [grade]="task.grade"
                   />
                 </td>
-                <td data-label="Сдано">
+                <td [attr.data-label]="t.submitted">
                   {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </td>
                 <td class="tb-actions-column">
@@ -184,14 +186,10 @@ import { InitialsPipe } from '@shared/ui/initials';
                     [routerLink]="['/teacher/homework/tasks', task.taskId]"
                     [text]="true"
                     [attr.aria-label]="
-                      (task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть') +
-                      ': ' +
-                      task.studentName
+                      t.action(task.status === 'SUBMITTED' ? t.review : t.open, task.studentName)
                     "
                   >
-                    <span pButtonLabel>{{
-                      task.status === 'SUBMITTED' ? 'Проверить' : 'Открыть'
-                    }}</span>
+                    <span pButtonLabel>{{ task.status === 'SUBMITTED' ? t.review : t.open }}</span>
                   </a>
                 </td>
               </tr>
@@ -199,14 +197,14 @@ import { InitialsPipe } from '@shared/ui/initials';
             <ng-template #emptymessage>
               <tr>
                 <td colspan="4">
-                  <tb-empty-state icon="pi-send" title="Задание ещё никому не выдано" />
+                  <tb-empty-state icon="pi-send" [title]="t.notAssigned" />
                 </td>
               </tr>
             </ng-template>
           </p-table>
           <div class="tb-inline tb-assign">
             <div class="tb-field tb-grow">
-              <label for="assign-students">Выдать ещё ученикам</label>
+              <label for="assign-students">{{ t.assignMore }}</label>
               <p-multiselect
                 inputId="assign-students"
                 [options]="unassigned()"
@@ -214,8 +212,8 @@ import { InitialsPipe } from '@shared/ui/initials';
                 optionLabel="displayName"
                 optionValue="id"
                 [filter]="true"
-                filterPlaceHolder="Поиск"
-                ariaFilterLabel="Поиск"
+                [filterPlaceHolder]="t.search"
+                [ariaFilterLabel]="t.search"
                 display="chip"
                 appendTo="body"
                 [fluid]="true"
@@ -224,7 +222,7 @@ import { InitialsPipe } from '@shared/ui/initials';
             <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
             <p-button
               class="tb-tonal"
-              label="Выдать"
+              [label]="t.assign"
               severity="success"
               [disabled]="selectedToAssign().length === 0"
               [loading]="busy.is('assign')"
@@ -259,13 +257,15 @@ import { InitialsPipe } from '@shared/ui/initials';
         [students]="taskStudents()"
       />
     } @else {
-      <tb-page-header title="Задание" back="/teacher/homework" backLabel="Задания" />
-      <tb-load-state [state]="state" what="задание" (retry)="load()" />
+      <tb-page-header [title]="t.assignment" back="/teacher/homework" [backLabel]="t.back" />
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
     <p-confirmdialog />
   `,
 })
 export class AssignmentPage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.page;
   protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
@@ -358,9 +358,9 @@ export class AssignmentPage implements OnInit {
     }
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Удалить файл?',
-        message: `Файл «${file.filename}» будет удалён без возможности восстановления.`,
-        acceptLabel: 'Удалить',
+        header: T.page.deleteHeader,
+        message: T.page.deleteMessage(file.filename),
+        acceptLabel: T.page.delete,
         accept: () => {
           this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
             this.details.set({
@@ -397,7 +397,7 @@ export class AssignmentPage implements OnInit {
     }
     this.api.unbindTextbook(assignment.id, textbook.textbookId).subscribe((updated) => {
       this.details.set(updated);
-      this.snackbar.success(`Учебник «${textbook.title}» убран из задания`);
+      this.snackbar.success(T.page.unbound(textbook.title));
     });
   }
 
@@ -420,7 +420,7 @@ export class AssignmentPage implements OnInit {
       .subscribe((updated) => {
         this.details.set(updated);
         this.toAssign.setValue([]);
-        this.snackbar.success('Задание выдано');
+        this.snackbar.success(T.page.assigned);
       });
   }
 }

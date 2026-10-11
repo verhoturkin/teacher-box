@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { Portal } from '@core/portal/portal';
 import { ThemeMode } from '@core/theme/theme-mode';
+import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
 import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
 import { Shell } from './shell';
@@ -111,6 +112,25 @@ describe('Shell', () => {
     expect(TestBed.inject(ThemeMode).choice()).toBe('dark');
     TestBed.inject(ThemeMode).choose('system');
     localStorage.clear();
+  });
+
+  it('switches the language under the theme (ADR-0035)', async () => {
+    const reload = vi.spyOn(pageReload, 'now').mockImplementation(() => undefined);
+    requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    const items = Array.from(document.body.querySelectorAll('a')).map((a) => a.textContent.trim());
+    const russian = items.findIndex((item) => item.includes('Русский (выбран)'));
+    expect(russian).toBeGreaterThan(items.findIndex((item) => item.includes('Тёмная тема')));
+    const english = Array.from(document.body.querySelectorAll('a')).find(
+      (element) => element.textContent.trim() === 'English',
+    );
+    english?.click();
+
+    expect(localStorage.getItem(LANGUAGE_KEY)).toBe('en');
+    expect(reload).toHaveBeenCalledOnce();
+    localStorage.clear();
+    forgetLanguage();
   });
 
   it('signs out from the user menu', async () => {

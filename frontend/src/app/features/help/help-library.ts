@@ -1,8 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HelpArticle, HelpArticleText } from './help.models';
 import { HELP_TOPICS, HelpArea } from './help-topics';
+import { Language, language, locale } from '@core/i18n/language';
 
-/** The articles of an area; their texts are loaded only when the help is opened. */
+type Articles = () => Promise<Readonly<Record<string, HelpArticleText>>>;
+
+/** The articles of each language (ADR-0035): a chunk per language and area, loaded when the help opens. */
+const ARTICLES: Readonly<Record<Language, Readonly<Record<HelpArea, Articles>>>> = {
+  ru: {
+    teacher: async () => (await import('./articles/teacher.ru')).TEACHER_ARTICLES,
+    cabinet: async () => (await import('./articles/student.ru')).STUDENT_ARTICLES,
+    admin: async () => (await import('./articles/admin.ru')).ADMIN_ARTICLES,
+  },
+  en: {
+    teacher: async () => (await import('./articles/teacher.en')).TEACHER_ARTICLES,
+    cabinet: async () => (await import('./articles/student.en')).STUDENT_ARTICLES,
+    admin: async () => (await import('./articles/admin.en')).ADMIN_ARTICLES,
+  },
+};
+
+/** The articles of an area in the current language; their texts are loaded only when the help is opened. */
 @Injectable({ providedIn: 'root' })
 export class HelpLibrary {
   async articles(area: HelpArea): Promise<HelpArticle[]> {
@@ -22,15 +39,8 @@ export class HelpLibrary {
     return (await this.articles(area)).find((article) => article.id === id) ?? null;
   }
 
-  private async texts(area: HelpArea): Promise<Readonly<Record<string, HelpArticleText>>> {
-    switch (area) {
-      case 'teacher':
-        return (await import('./articles/teacher')).TEACHER_ARTICLES;
-      case 'cabinet':
-        return (await import('./articles/student')).STUDENT_ARTICLES;
-      case 'admin':
-        return (await import('./articles/admin')).ADMIN_ARTICLES;
-    }
+  private texts(area: HelpArea): Promise<Readonly<Record<string, HelpArticleText>>> {
+    return ARTICLES[language()][area]();
   }
 }
 
@@ -42,7 +52,7 @@ export function searchable(text: string): string {
   return text
     .replace(/\]\([^)]*\)/g, ']')
     .replace(/[*#`[\]_>]/g, ' ')
-    .toLocaleLowerCase('ru')
+    .toLocaleLowerCase(locale())
     .replaceAll('ё', 'е');
 }
 

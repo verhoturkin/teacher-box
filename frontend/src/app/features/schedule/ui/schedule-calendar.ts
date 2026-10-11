@@ -23,10 +23,13 @@ import interactionPlugin from '@fullcalendar/angular/interaction';
 import listPlugin from '@fullcalendar/angular/list';
 import classicTheme from '@fullcalendar/angular/themes/classic';
 import timeGridPlugin from '@fullcalendar/angular/timegrid';
+import enGbLocale from 'fullcalendar/locales/en-gb';
 import ruLocale from 'fullcalendar/locales/ru';
 import { injectMobile } from '@core/layout/mobile';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { BusyTime, OffTimePeriod, ScheduledLesson } from '../data-access/schedule.models';
+import { Language, language } from '@core/i18n/language';
+import { T } from '../i18n/texts';
 
 /** Days `[from, to)` shown by the calendar (`yyyy-MM-dd`, browser time zone). */
 export interface CalendarRange {
@@ -41,10 +44,19 @@ export interface LessonMove {
   readonly revert: () => void;
 }
 
-/** An empty time range the teacher selected to plan a lesson. */
+const C = T.calendar;
+
+/** FullCalendar's texts and week of each language of the interface (ADR-0035). */
+const CALENDAR_LOCALES: Readonly<Record<Language, typeof ruLocale>> = {
+  ru: ruLocale,
+  en: enGbLocale,
+};
+
+/** An empty time range the teacher selected to plan a lesson; `allDay` — whole days of the month view. */
 export interface SlotSelection {
   readonly start: Date;
   readonly end: Date;
+  readonly allDay?: boolean;
 }
 
 /** A dropped lesson waiting on its card for «Перенести» or «Отменить перенос»; `saving` — confirmed. */
@@ -110,7 +122,7 @@ export class ScheduleCalendar {
     const mobile = this.mobile();
     return {
       plugins: [classicTheme, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
-      locale: ruLocale,
+      locale: CALENDAR_LOCALES[language()],
       initialView: mobile ? 'listWeek' : this.initialView(),
       initialDate: this.initialDate() ?? undefined,
       ...(mobile
@@ -132,18 +144,18 @@ export class ScheduleCalendar {
       buttonClass: (button: ButtonInfo) =>
         button.buttonGroup?.hasSelection === true ? 'tb-fc-segment' : 'tb-fc-button',
       buttonGroupClass: (group: ButtonGroupInfo) => (group.hasSelection ? 'tb-fc-segments' : ''),
-      listText: 'Список',
-      // hints for screen readers in Russian (ADR-0024)
-      eventsHint: 'Занятия',
-      timedText: 'Занятия по времени',
-      closeHint: 'Закрыть',
-      prevHint: 'Назад',
-      nextHint: 'Вперёд',
-      todayHint: 'Сегодня',
-      viewHint: (text: string) => `Вид: ${text}`,
-      navLinkHint: (dateText: string) => `Открыть ${dateText}`,
-      moreLinkHint: (count: number) => `Ещё занятий: ${String(count)}`,
-      noEventsText: this.loaded() ? 'Занятий нет' : 'Загрузка…',
+      listText: C.list,
+      // hints for screen readers in the language of the interface (ADR-0024, ADR-0035)
+      eventsHint: C.events,
+      timedText: C.timed,
+      closeHint: C.close,
+      prevHint: C.previous,
+      nextHint: C.next,
+      todayHint: C.today,
+      viewHint: C.view,
+      navLinkHint: C.open,
+      moreLinkHint: C.more,
+      noEventsText: this.loaded() ? C.noLessons : C.loading,
       // styled as the compact empty state of the widgets (styles.scss, ADR-0018)
       noEventsClass: 'tb-calendar-empty',
       firstDay: 1,
@@ -169,7 +181,7 @@ export class ScheduleCalendar {
         this.handleClick(info.event.id);
       },
       select: (info: DateSelectInfo) => {
-        this.slotSelect.emit({ start: info.start, end: info.end });
+        this.slotSelect.emit({ start: info.start, end: info.end, allDay: info.allDay });
       },
       eventDrop: (info: EventDropInfo) => {
         this.handleDrop(info.event.id, info.event.start, info.revert);
@@ -248,10 +260,10 @@ export class ScheduleCalendar {
     const actions = document.createElement('div');
     actions.className = 'tb-lesson-move';
     actions.append(
-      moveButton('pi pi-check', 'Перенести', () => {
+      moveButton('pi pi-check', C.move, () => {
         this.confirmMove();
       }),
-      moveButton('pi pi-times', 'Отменить перенос', () => {
+      moveButton('pi pi-times', C.undoMove, () => {
         this.cancelMove();
       }),
     );
@@ -274,10 +286,10 @@ export class ScheduleCalendar {
     const request = lesson.pendingRequests.length === 0 ? '' : '? ';
     if (this.showStudent() || lesson.groupId !== null) {
       const name =
-        lesson.groupId !== null ? (lesson.groupName ?? 'Группа') : (lesson.studentName ?? 'Ученик');
+        lesson.groupId !== null ? (lesson.groupName ?? C.group) : (lesson.studentName ?? T.student);
       return request + (lesson.topic === null ? name : `${name} · ${lesson.topic}`);
     }
-    return request + (lesson.topic ?? 'Занятие');
+    return request + (lesson.topic ?? C.lesson);
   }
 }
 
@@ -314,7 +326,7 @@ function moveButton(icon: string, label: string, action: () => void): HTMLButton
 function toOffTime(period: OffTimePeriod, index: number): EventInput {
   return {
     id: `off-${String(index)}`,
-    title: period.note ?? 'Нерабочее время',
+    title: period.note ?? C.offTime,
     start: period.start,
     end: period.end,
     display: 'background',

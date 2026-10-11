@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.billing.application.BillingViews.BillingSummary;
@@ -142,7 +144,7 @@ public class BillingQueryService {
         LocalDate to = month.atEndOfMonth();
         List<Lesson> monthLessons = lessons.findBetween(from, to);
         List<Payment> monthPayments = payments.findBetween(from, to);
-        Map<UUID, String> names = namesOf(Stream.concat(
+        Map<UUID, StudentSummary> students = studentsOf(Stream.concat(
                 monthLessons.stream().map(Lesson::studentId), monthPayments.stream().map(Payment::studentId))
                 .collect(Collectors.toSet()));
 
@@ -161,7 +163,7 @@ public class BillingQueryService {
             }
         }
         List<MonthlyStudentRow> rows = perStudent.entrySet().stream()
-                .map(entry -> new MonthlyStudentRow(entry.getKey(), nameOf(names, entry.getKey()),
+                .map(entry -> new MonthlyStudentRow(entry.getKey(), nameOf(students, entry.getKey()),
                         entry.getValue().lessons, entry.getValue().charged, entry.getValue().paid))
                 .sorted(Comparator.comparing(MonthlyStudentRow::displayName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
@@ -176,20 +178,28 @@ public class BillingQueryService {
                 count(monthLessons, LessonStatus.CANCELLED),
                 rows,
                 monthLessons.stream()
-                        .map(lesson -> new JournalLesson(nameOf(names, lesson.studentId()), LessonView.of(lesson)))
+                        .map(lesson -> new JournalLesson(nameOf(students, lesson.studentId()),
+                                avatarOf(students, lesson.studentId()), LessonView.of(lesson)))
                         .toList(),
                 monthPayments.stream()
-                        .map(payment -> new JournalPayment(nameOf(names, payment.studentId()), PaymentView.of(payment)))
+                        .map(payment -> new JournalPayment(nameOf(students, payment.studentId()),
+                                avatarOf(students, payment.studentId()), PaymentView.of(payment)))
                         .toList());
     }
 
-    private Map<UUID, String> namesOf(Set<UUID> ids) {
+    private Map<UUID, StudentSummary> studentsOf(Set<UUID> ids) {
         return directory.findStudents(ids).stream()
-                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
+                .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
     }
 
-    private static String nameOf(Map<UUID, String> names, UUID id) {
-        return names.getOrDefault(id, UNKNOWN_STUDENT);
+    private static String nameOf(Map<UUID, StudentSummary> students, UUID id) {
+        StudentSummary student = students.get(id);
+        return student == null ? UNKNOWN_STUDENT : student.displayName();
+    }
+
+    private static @Nullable String avatarOf(Map<UUID, StudentSummary> students, UUID id) {
+        StudentSummary student = students.get(id);
+        return student == null ? null : student.avatar();
     }
 
     private static int count(List<Lesson> lessons, LessonStatus status) {

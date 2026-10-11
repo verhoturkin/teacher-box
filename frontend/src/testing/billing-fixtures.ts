@@ -100,11 +100,23 @@ export function monthlyReport(overrides: Partial<MonthlyReport> = {}): MonthlyRe
       },
     ],
     lessons: [
-      { studentName: 'Иван Петров', lesson: lesson({ id: 'l-1', status: 'CONDUCTED' }) },
-      { studentName: 'Иван Петров', lesson: lesson({ id: 'l-2', status: 'MISSED', topic: null }) },
-      { studentName: 'Иван Петров', lesson: lesson({ id: 'l-3', status: 'CANCELLED' }) },
+      {
+        studentName: 'Иван Петров',
+        studentAvatar: null,
+        lesson: lesson({ id: 'l-1', status: 'CONDUCTED' }),
+      },
+      {
+        studentName: 'Иван Петров',
+        studentAvatar: null,
+        lesson: lesson({ id: 'l-2', status: 'MISSED', topic: null }),
+      },
+      {
+        studentName: 'Иван Петров',
+        studentAvatar: null,
+        lesson: lesson({ id: 'l-3', status: 'CANCELLED' }),
+      },
     ],
-    payments: [{ studentName: 'Иван Петров', payment: payment() }],
+    payments: [{ studentName: 'Иван Петров', studentAvatar: null, payment: payment() }],
     ...overrides,
   };
 }

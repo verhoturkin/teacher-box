@@ -29,13 +29,9 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
 
-const KINDS: Readonly<Record<BackupKind, string>> = {
-  SCHEDULED: 'по расписанию',
-  MANUAL: 'вручную',
-  BEFORE_RESTORE: 'перед восстановлением',
-  BEFORE_RESET: 'перед сбросом',
-};
+const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
 
 /**
  * Backups of the portal (ADR-0014): the teacher creates, downloads, restores and deletes them; the
@@ -63,11 +59,11 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >Резервные копии <tb-help-button [topic]="helpTopic()"
+            >{{ t.title }} <tb-help-button [topic]="helpTopic()"
           /></span>
           <div class="tb-card-title__actions">
             <p-button
-              label="Создать копию сейчас"
+              [label]="t.create"
               class="tb-tonal"
               severity="success"
               icon="pi pi-database"
@@ -78,17 +74,16 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
         </div>
       </ng-template>
       <p class="tb-muted">
-        Копия базы данных и файлов создаётся автоматически каждую ночь; хранятся последние копии.
-        Копии, сделанные перед восстановлением и сбросом, остаются, пока их не удалит учитель.
+        {{ t.about }}
         @if (isAdmin()) {
-          Скачать копию может только учитель: в копиях данные учеников.
+          {{ t.teacherOnly }}
         }
       </p>
-      <tb-load-state [state]="state" what="список копий" (retry)="reload()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
         @if (backups().length === 0) {
-          <tb-empty-state icon="pi-database" title="Копий пока нет" />
+          <tb-empty-state icon="pi-database" [title]="t.empty" />
         } @else {
-          <ul class="tb-list" aria-label="Резервные копии">
+          <ul class="tb-list" [attr.aria-label]="t.title">
             @for (backup of backups(); track backup.name) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-database"></i></span>
@@ -104,8 +99,8 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Действия: ' + backup.name"
-                    [ariaLabel]="'Действия: ' + backup.name"
+                    [pTooltip]="t.actions(backup.name)"
+                    [ariaLabel]="t.actions(backup.name)"
                     [loading]="busy.is('download-' + backup.name)"
                     [tbAttributes]="{
                       'aria-haspopup': 'menu',
@@ -132,6 +127,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = {
   `,
 })
 export class BackupsCard implements OnInit {
+  protected readonly t = T.backups;
   protected readonly busy = new Busy();
   private readonly api = inject(BackupsApi);
   private readonly fileSaver = inject(FileSaver);
@@ -178,7 +174,7 @@ export class BackupsCard implements OnInit {
     this.api.create(this.area()).subscribe({
       next: (backup) => {
         this.creating.set(false);
-        this.snackbar.success(`Копия ${backup.name} создана`);
+        this.snackbar.success(T.backups.created(backup.name));
         this.reload();
       },
       error: () => {
@@ -201,9 +197,9 @@ export class BackupsCard implements OnInit {
   confirmDelete(backup: BackupInfo): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Удалить копию?',
-        message: `Резервная копия ${backup.name} будет удалена без возможности восстановления.`,
-        acceptLabel: 'Удалить',
+        header: T.backups.deleteHeader,
+        message: T.backups.deleteMessage(backup.name),
+        acceptLabel: T.backups.delete,
         accept: () => {
           this.api.delete(backup.name).subscribe(() => {
             this.reload();
@@ -216,7 +212,7 @@ export class BackupsCard implements OnInit {
   private actionsOf(backup: BackupInfo): MenuItem[] {
     const items: MenuItem[] = [
       {
-        label: 'Восстановить…',
+        label: T.backups.restore,
         icon: 'pi pi-history',
         command: () => {
           this.openRestore(backup);
@@ -226,14 +222,14 @@ export class BackupsCard implements OnInit {
     if (!this.isAdmin()) {
       items.push(
         {
-          label: 'Скачать',
+          label: T.backups.download,
           icon: 'pi pi-download',
           command: () => {
             this.download(backup);
           },
         },
         {
-          label: 'Удалить…',
+          label: T.backups.deleteItem,
           icon: 'pi pi-trash',
           styleClass: 'tb-menu-item--danger',
           command: () => {

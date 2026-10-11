@@ -60,6 +60,7 @@ class StudentMessengersIntegrationTests {
         links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "6001", "@anya", true,
                 clock.instant()));
         UUID silent = directory.addStudent("Боря без мессенджеров");
+        directory.setAvatar(silent, "/api/public/avatars/borya");
         UUID gone = directory.addStudent("Ушедший", StudentStatus.DEACTIVATED);
         telegram.failWith(new DeliveryException("Forbidden: bot was blocked by the user", true));
         notifications.notify(connected, NotificationKind.MESSAGE, "Не дойдёт", null, null);
@@ -76,6 +77,8 @@ class StudentMessengersIntegrationTests {
                     assertThat(json).extractingPath("$[?(@.studentId == '" + silent + "')].channels").asArray()
                             .singleElement().asList().isEmpty();
                     assertThat(json).extractingPath("$[?(@.studentId == '" + gone + "')]").asArray().isEmpty();
+                    assertThat(json).extractingPath("$[?(@.studentId == '" + silent + "')].avatar").asArray()
+                            .containsExactly("/api/public/avatars/borya");
                 });
     }
 

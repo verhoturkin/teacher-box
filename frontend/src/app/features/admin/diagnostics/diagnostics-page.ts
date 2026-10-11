@@ -5,6 +5,7 @@ import { HelpButton } from '@features/help/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { AdminApi } from '../data-access/admin-api';
 import { PageHeader } from '@shared/ui/page-header';
+import { T } from '../i18n/texts';
 
 export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
 
@@ -14,17 +15,17 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
   imports: [HelpButton, Button, Card, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Диагностика">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Архив для разработчика</span>
+            <span class="tb-card-title__text">{{ t.archive }}</span>
             <div class="tb-card-title__actions">
               <p-button
-                label="Скачать архив"
+                [label]="t.download"
                 severity="secondary"
                 icon="pi pi-download"
                 [loading]="pending()"
@@ -33,20 +34,13 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
             </div>
           </div>
         </ng-template>
-        <p>
-          В архиве — последние файлы журнала (до 20 МБ), настройки портала с полностью скрытыми
-          паролями, токенами и ключами, состояние и версии. Данных учеников в нём нет, но в журнале
-          могут встречаться логины и идентификаторы.
-        </p>
+        <p>{{ t.about }}</p>
       </p-card>
-      <p-card header="Что отправить вместе с архивом">
+      <p-card [header]="t.send">
         <ol class="tb-send-list">
-          <li>Код ошибки из сообщения, которое видел учитель или ученик, и примерное время.</li>
-          <li>Что делали перед ошибкой и что ожидали увидеть.</li>
-          <li>
-            Если ошибку можно повторить — включите на «Журнале» подробный уровень (DEBUG) для
-            нужного раздела, повторите действие и скачайте архив снова.
-          </li>
+          <li>{{ t.code }}</li>
+          <li>{{ t.steps }}</li>
+          <li>{{ t.debug }}</li>
         </ol>
       </p-card>
     </div>
@@ -62,6 +56,7 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
   `,
 })
 export class DiagnosticsPage {
+  protected readonly t = T.diagnostics;
   private readonly api = inject(AdminApi);
   private readonly fileSaver = inject(FileSaver);
 

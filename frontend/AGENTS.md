@@ -22,7 +22,11 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - Lazy routes: `/teacher/**`, `/cabinet/**` (student), `/admin/**`, `/login`, `/invite/:token`.
 - HTTP models — `interface`/`type` in `features/<m>/data-access/*.models.ts`, 1:1 with backend DTOs.
 - Status → label/severity maps — `features/<m>/*-labels.ts`.
-- User help (Russian) — `features/help/articles/{teacher,student,admin}.ts`; a UI change updates its article.
+- **No UI text in templates or code** ([ADR-0035](../docs/adr/0035-interface-languages.md)): dictionaries
+  `features/<m>/i18n/{ru,en}.ts` (`T` from `i18n/texts.ts`), common words `SHARED_T`, the frame `CORE_T`; a new
+  text goes into `ru.ts` and `en.ts` together (design-system §14).
+- User help — `features/help/articles/{teacher,student,admin}.{ru,en}.ts`; a UI change updates its article in every
+  language.
 
 ## Conventions
 

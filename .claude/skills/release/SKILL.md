@@ -8,8 +8,8 @@ description: Finish a Teacher Box release — help articles, E2E spec, CHANGELOG
 Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
 `chore(release): X.Y.Z` (or as the plan's substeps say).
 
-1. **Help** (Russian, user-facing) — `frontend/src/app/features/help/articles/{teacher,student,admin}.ts`:
-   describe every user-visible change of the release; wording per `docs/glossary.md`. README if install,
+1. **Help** (user-facing, every language) — `frontend/src/app/features/help/articles/{teacher,student,admin}.{ru,en}.ts`:
+   describe every user-visible change of the release in each language; wording per `docs/glossary.md`. README if install,
    settings or integrations changed; `docs/operations.md` if operations changed.
 2. **E2E** — add `e2e/tests/version-X-Y-Z.spec.ts` (dashes) covering the release's scenarios; reuse helpers
    from existing specs. Compile check: `./scripts/verify.sh e2e`; full run `./scripts/e2e.sh` (needs Docker).

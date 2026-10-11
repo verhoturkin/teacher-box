@@ -12,6 +12,8 @@ import { Dialog } from 'primeng/dialog';
 import { CallStats } from './call-engine';
 import { CallSession } from './call-session';
 import { statsSections } from './call-stats';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** How often the details are read again, ms. */
 export const STATS_INTERVAL = 2000;
@@ -27,7 +29,7 @@ export const STATS_INTERVAL = 2000;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Сведения о связи"
+      [header]="t.title"
       [visible]="true"
       [modal]="true"
       [draggable]="false"
@@ -46,15 +48,17 @@ export const STATS_INTERVAL = 2000;
         </dl>
       }
       @if (sections().length < 2) {
-        <p class="tb-muted" role="status">Подробности появятся, когда пойдёт звук или видео.</p>
+        <p class="tb-muted" role="status">{{ t.later }}</p>
       }
       <ng-template #footer>
-        <p-button label="Закрыть" severity="secondary" [text]="true" (onClick)="closed.emit()" />
+        <p-button [label]="c.close" severity="secondary" [text]="true" (onClick)="closed.emit()" />
       </ng-template>
     </p-dialog>
   `,
 })
 export class CallStatsDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.stats;
   private readonly session = inject(CallSession);
 
   readonly closed = output();

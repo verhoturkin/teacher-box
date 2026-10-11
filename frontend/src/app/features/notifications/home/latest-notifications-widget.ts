@@ -13,6 +13,7 @@ import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { T } from '../i18n/texts';
 
 export const LATEST_COUNT = 5;
 
@@ -28,11 +29,11 @@ export const LATEST_COUNT = 5;
     <p-card>
       <ng-template #title>
         <div class="tb-card-title">
-          <span class="tb-card-title__text">Уведомления</span>
+          <span class="tb-card-title__text">{{ t.title }}</span>
           @if (items()?.length) {
             <div class="tb-card-title__actions">
               <p-button
-                label="Прочитать все"
+                [label]="t.readAll"
                 icon="pi pi-check"
                 severity="secondary"
                 [loading]="busy.is('all')"
@@ -42,12 +43,12 @@ export const LATEST_COUNT = 5;
           }
         </div>
       </ng-template>
-      <tb-load-state [state]="state" what="уведомления" [compact]="true" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
         @if (items(); as items) {
           @if (items.length === 0) {
-            <tb-empty-state icon="pi-bell" title="Новых уведомлений нет" />
+            <tb-empty-state icon="pi-bell" [title]="t.nothing" />
           } @else {
-            <ul class="tb-list tb-latest" aria-label="Непрочитанные уведомления">
+            <ul class="tb-list tb-latest" [attr.aria-label]="t.unreadList">
               @for (item of items; track item.id) {
                 <li>
                   <span class="tb-list__lead tb-list__lead--accent" aria-hidden="true"
@@ -72,8 +73,8 @@ export const LATEST_COUNT = 5;
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
-                      pTooltip="Отметить прочитанным"
-                      [ariaLabel]="'Отметить прочитанным: ' + item.title"
+                      [pTooltip]="t.markRead"
+                      [ariaLabel]="t.markReadOf(item.title)"
                       [loading]="busy.is('read-' + item.id)"
                       (onClick)="markRead(item)"
                     />
@@ -87,10 +88,10 @@ export const LATEST_COUNT = 5;
       <div class="tb-widget-footer">
         <span class="tb-muted">
           @if (unread() > 0) {
-            Непрочитанных: {{ unread() }}
+            {{ t.unread(unread()) }}
           }
         </span>
-        <a [routerLink]="link()">Все уведомления</a>
+        <a [routerLink]="link()">{{ t.all }}</a>
       </div>
     </p-card>
   `,
@@ -115,6 +116,7 @@ export const LATEST_COUNT = 5;
   `,
 })
 export class LatestNotificationsWidget implements OnInit {
+  protected readonly t = T.latest;
   protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
   private readonly unreadCounter = inject(UnreadNotifications);

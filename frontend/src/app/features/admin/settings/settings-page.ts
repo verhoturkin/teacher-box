@@ -33,6 +33,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { PageHeader } from '@shared/ui/page-header';
 import { FoldCard } from '@shared/ui/fold-card';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
 
@@ -50,44 +52,26 @@ interface Group {
 }
 
 /** The line under a section's title, by its key; an unknown section names its first settings. */
-const SUMMARIES: Readonly<Record<string, string>> = {
-  portal: 'Адрес портала и часовой пояс',
-  billing: 'Валюта и длительность занятия для оплат',
-  homework: 'Файлы ответов и напоминание о сроке сдачи',
-  schedule: 'Длительность, регулярные занятия, напоминания, Google Календарь',
-  meetings: 'Яндекс Телемост: приложение и токен',
-  boards: 'Ежедневные копии досок',
-  notifications: 'Боты Telegram, ВКонтакте и MAX, доставка сообщений',
-  ai: 'Сервис, модель, ключ и лимиты',
-  sessions: 'Сроки входа и приглашений, защита от подбора пароля',
-  backups: 'Расписание копий, сколько хранить, перезапуск',
-  log: 'Формат, размер и хранение журнала',
-  accounts: 'Логины и пароли учителя и администратора',
-  docker: 'Порт, домен, образ и ресурсы контейнера',
-};
+const SUMMARIES: Readonly<Record<string, string>> = T.settings.summaries;
 
 interface Option {
   readonly label: string;
   readonly value: string;
 }
 
-const SOURCE_LABELS: Readonly<Record<SettingSource, string>> = {
-  DEFAULT: 'по умолчанию',
-  ENVIRONMENT: 'из .env',
-  ADMIN: 'задано здесь',
-};
+const SOURCE_LABELS: Readonly<Record<SettingSource, string>> = T.settings.sources;
 
 const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
-  DURATION: 'например 15m, 24h, 7d',
-  DURATIONS: 'например 24h,1h',
-  DATA_SIZE: 'например 20MB',
-  CRON: 'например 0 30 3 * * *',
+  DURATION: T.settings.placeholders.DURATION,
+  DURATIONS: T.settings.placeholders.DURATIONS,
+  DATA_SIZE: T.settings.placeholders.DATA_SIZE,
+  CRON: T.settings.placeholders.CRON,
   ADDRESS: 'https://school.example.com',
   URL: 'https://…',
   PROXY: 'socks5://host:port',
-  TIME_ZONE: 'выберите часовой пояс',
+  TIME_ZONE: T.settings.placeholders.TIME_ZONE,
   CURRENCY: 'RUB',
-  NUMBER: 'число',
+  NUMBER: T.settings.placeholders.NUMBER,
 };
 
 /** A section: its fields, what cannot be changed here, the line under its title. */
@@ -136,27 +120,22 @@ function toGroup(settings: readonly AdminSetting[]): Group {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Настройки">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/settings" />
       <p-button
         severity="success"
-        label="Сохранить и перезапустить"
+        [label]="t.saveAndRestart"
         icon="pi pi-save"
         [disabled]="changes() === 0"
         (onClick)="openConfirm()"
       />
     </tb-page-header>
     <div class="tb-stack">
-      <p class="tb-hint">
-        Значения, заданные здесь, важнее файла .env и применяются после перезапуска портала. Пароли,
-        токены и ключи не показываются — их можно только задать заново.
-      </p>
+      <p class="tb-hint">{{ t.about }}</p>
       @if (settings()?.restartNeeded) {
-        <p-message severity="warn" styleClass="tb-form-message">
-          Сохранённые настройки применятся после перезапуска портала.
-        </p-message>
+        <p-message severity="warn" styleClass="tb-form-message">{{ t.restartNeeded }}</p-message>
       }
-      <tb-load-state [state]="state" what="настройки" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         <div class="tb-stack">
           @for (group of groups(); track group.section) {
             <tb-fold-card
@@ -190,7 +169,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
                           optionValue="value"
                           [filter]="true"
                           filterBy="label"
-                          filterPlaceholder="Город или смещение, например Moscow"
+                          [filterPlaceholder]="t.zoneFilter"
                           [placeholder]="placeholder(setting)"
                           [ngModel]="current(setting)"
                           (ngModelChange)="change(setting, $event)"
@@ -217,15 +196,15 @@ function toGroup(settings: readonly AdminSetting[]): Group {
                           [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
                         />
                         @if (edited(setting)) {
-                          <p-tag value="изменено" severity="warn" />
+                          <p-tag [value]="t.edited" severity="warn" />
                         }
                         @if (setting.source === 'ADMIN') {
                           <p-button
                             class="tb-setting__revert"
-                            label="Вернуть как в .env"
+                            [label]="t.revert"
                             severity="danger"
                             [text]="true"
-                            [ariaLabel]="'Вернуть как в .env: ' + setting.title"
+                            [ariaLabel]="t.revertOf(setting.title)"
                             (onClick)="revert(setting)"
                           />
                         }
@@ -274,7 +253,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
     </div>
 
     <p-dialog
-      header="Сохранить настройки"
+      [header]="t.confirmTitle"
       [(visible)]="confirmVisible"
       [modal]="true"
       [closable]="stage() !== 'restarting'"
@@ -284,12 +263,9 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       @switch (stage()) {
         @case ('confirm') {
           <form id="settings-confirm" class="tb-form" (ngSubmit)="save()">
-            <p>
-              Изменится настроек: {{ changes() }}. После сохранения портал перезапустится — на
-              минуту он будет недоступен всем.
-            </p>
+            <p>{{ t.changes(changes()) }}</p>
             <div class="tb-field">
-              <label for="settings-password">Ваш пароль</label>
+              <label for="settings-password">{{ t.password }}</label>
               <input
                 pInputText
                 id="settings-password"
@@ -305,43 +281,36 @@ function toGroup(settings: readonly AdminSetting[]): Group {
           </form>
         }
         @case ('restarting') {
-          <p>Портал перезапускается, чтобы применить настройки…</p>
+          <p>{{ t.restarting }}</p>
         }
         @case ('manual') {
-          <p>
-            Настройки сохранены. Портал запущен не в Docker — перезапустите его вручную, чтобы они
-            применились.
-          </p>
+          <p>{{ t.manual }}</p>
         }
         @case ('done') {
-          <p>Портал перезапущен, настройки применены.</p>
+          <p>{{ t.done }}</p>
         }
         @case ('silent') {
-          <p>
-            Портал не ответил за пять минут. Проверьте журнал контейнера: возможно, какое-то
-            значение мешает запуску — его можно исправить в файле config/settings.properties в папке
-            данных.
-          </p>
+          <p>{{ t.silent }}</p>
         }
       }
       <ng-template #footer>
         @if (stage() === 'confirm') {
           <p-button
-            label="Отмена"
+            [label]="c.cancel"
             severity="secondary"
             [text]="true"
             (onClick)="confirmVisible.set(false)"
           />
           <p-button
             severity="success"
-            label="Сохранить"
+            [label]="c.save"
             [loading]="pending()"
             [disabled]="password().trim() === ''"
             type="submit"
             tbSubmitFor="settings-confirm"
           />
         } @else if (stage() !== 'restarting') {
-          <p-button label="Готово" (onClick)="confirmVisible.set(false)" />
+          <p-button [label]="t.finish" (onClick)="confirmVisible.set(false)" />
         }
       </ng-template>
     </p-dialog>
@@ -374,6 +343,8 @@ function toGroup(settings: readonly AdminSetting[]): Group {
   `,
 })
 export class SettingsPage implements OnInit {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.settings;
   private readonly api = inject(AdminApi);
   private readonly pollMs = inject(RESTART_POLL_MS);
   private readonly router = inject(Router);
@@ -406,7 +377,7 @@ export class SettingsPage implements OnInit {
       .map((setting) => setting.value ?? '')
       .filter((value) => value !== '' && !known.some((zone) => zone.value === value));
     return [
-      { label: 'не задано', value: '' },
+      { label: T.settings.notSet, value: '' },
       ...[...new Set(unknown)].map((value) => ({ label: value, value })),
       ...known,
     ];
@@ -467,14 +438,14 @@ export class SettingsPage implements OnInit {
 
   protected shown(setting: AdminSetting): string {
     if (setting.secret) {
-      return setting.set ? 'задан' : 'не задан';
+      return setting.set ? T.settings.secretSet : T.settings.secretNotSet;
     }
-    return setting.value === null || setting.value === '' ? 'не задано' : setting.value;
+    return setting.value === null || setting.value === '' ? T.settings.notSet : setting.value;
   }
 
   protected placeholder(setting: AdminSetting): string {
     if (setting.secret) {
-      return setting.set ? 'задан — введите новый, чтобы сменить' : 'не задан';
+      return setting.set ? T.settings.secretReplace : T.settings.secretNotSet;
     }
     return PLACEHOLDERS[setting.kind] ?? '';
   }
@@ -483,11 +454,11 @@ export class SettingsPage implements OnInit {
     const values =
       setting.kind === 'BOOLEAN'
         ? [
-            { label: 'да (true)', value: 'true' },
-            { label: 'нет (false)', value: 'false' },
+            { label: T.settings.yes, value: 'true' },
+            { label: T.settings.no, value: 'false' },
           ]
         : setting.choices.map((choice) => ({ label: choice, value: choice }));
-    return [{ label: 'не задано', value: '' }, ...values];
+    return [{ label: T.settings.notSet, value: '' }, ...values];
   }
 
   protected type(setting: AdminSetting, event: Event): void {
@@ -537,8 +508,8 @@ export class SettingsPage implements OnInit {
         this.pending.set(false);
         this.error.set(
           problemCode(error) === 'settings.invalid'
-            ? (problemDetailText(error) ?? describeError(error, 'Значение не подходит'))
-            : describeError(error, 'Не удалось сохранить настройки'),
+            ? (problemDetailText(error) ?? describeError(error, T.settings.invalid))
+            : describeError(error, T.settings.failed),
         );
       },
     });

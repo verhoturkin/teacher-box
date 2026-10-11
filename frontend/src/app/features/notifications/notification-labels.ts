@@ -4,12 +4,10 @@ import {
   NotificationKind,
   NotificationTopic,
 } from './data-access/notifications.models';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
-export const CHANNEL_NAMES: Record<ChannelType, string> = {
-  TELEGRAM: 'Telegram',
-  VK: 'ВКонтакте',
-  MAX: 'MAX',
-};
+export const CHANNEL_NAMES: Record<ChannelType, string> = SHARED_T.messengers;
 
 export const CHANNEL_ICONS: Record<ChannelType, string> = {
   TELEGRAM: 'pi pi-telegram',
@@ -54,27 +52,27 @@ export const MUTABLE_TOPICS: readonly {
 }[] = [
   {
     topic: 'SCHEDULE',
-    label: 'Расписание',
-    hint: 'новые, перенесённые и отменённые занятия, запросы на перенос',
+    label: T.topics.SCHEDULE,
+    hint: T.topics.SCHEDULE_HINT,
     teacherOnly: false,
   },
   {
     topic: 'REMINDERS',
-    label: 'Напоминания',
-    hint: 'о скором занятии и сроке сдачи задания',
+    label: T.topics.REMINDERS,
+    hint: T.topics.REMINDERS_HINT,
     teacherOnly: false,
   },
   {
     topic: 'HOMEWORK',
-    label: 'Домашние задания',
-    hint: 'выдача, сдача и проверка работ',
+    label: T.topics.HOMEWORK,
+    hint: T.topics.HOMEWORK_HINT,
     teacherOnly: false,
   },
-  { topic: 'BILLING', label: 'Оплаты', hint: 'проведённые занятия и оплаты', teacherOnly: false },
+  { topic: 'BILLING', label: T.topics.BILLING, hint: T.topics.BILLING_HINT, teacherOnly: false },
   {
     topic: 'ACCOUNT',
-    label: 'Ученики и календарь',
-    hint: 'ученик принял приглашение, Google Календарь требует переподключения',
+    label: T.topics.ACCOUNT,
+    hint: T.topics.ACCOUNT_HINT,
     teacherOnly: true,
   },
 ];
@@ -83,7 +81,7 @@ export const CONNECTION_TAGS: Record<
   MessengerConnection,
   { readonly value: string; readonly severity: 'success' | 'info' | 'danger' }
 > = {
-  OK: { value: 'Работает', severity: 'success' },
-  PENDING: { value: 'Подключается', severity: 'info' },
-  ERROR: { value: 'Нет связи', severity: 'danger' },
+  OK: { value: T.connections.OK, severity: 'success' },
+  PENDING: { value: T.connections.PENDING, severity: 'info' },
+  ERROR: { value: T.connections.ERROR, severity: 'danger' },
 };

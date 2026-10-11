@@ -18,29 +18,28 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
+import { T } from '../i18n/texts';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
   selector: 'tb-student-messengers-panel',
-  imports: [InitialsPipe, EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
+  imports: [Avatar, EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Мессенджеры учеников">
-      <tb-load-state [state]="state" what="мессенджеры учеников" (retry)="load()">
+    <p-card [header]="t.title">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (students(); as students) {
           @if (students.length === 0) {
-            <tb-empty-state icon="pi-users" title="Учеников пока нет" />
+            <tb-empty-state icon="pi-users" [title]="t.empty" />
           } @else {
             <div class="tb-students-summary">
               <span>
-                Подключили мессенджер: <strong>{{ connectedCount() }}</strong> из
-                {{ students.length }}
+                {{ t.connectedBefore }} <strong>{{ connectedCount() }}</strong>
+                {{ t.of(students.length) }}
               </span>
               <p-button
-                [label]="
-                  selection().length > 0 ? 'Напомнить выбранным' : 'Напомнить всем без мессенджера'
-                "
+                [label]="selection().length > 0 ? t.remindSelected : t.remindAll"
                 icon="pi pi-bell"
                 class="tb-tonal"
                 severity="success"
@@ -59,34 +58,34 @@ import { InitialsPipe } from '@shared/ui/initials';
               <ng-template #header>
                 <tr>
                   <th class="tb-check-column"><p-tableHeaderCheckbox /></th>
-                  <th class="tb-col-main">Ученик</th>
-                  <th>Мессенджеры</th>
-                  <th>Доставка</th>
+                  <th class="tb-col-main">{{ t.student }}</th>
+                  <th>{{ t.messengers }}</th>
+                  <th>{{ t.delivery }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-row [tbRowType]="students">
                 <tr>
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
-                  <td data-label="Ученик">
+                  <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <span class="tb-avatar" aria-hidden="true">{{
-                        row.displayName | initials
-                      }}</span>
+                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ row.displayName }}</span>
                       </div>
                     </div>
                   </td>
-                  <td data-label="Мессенджеры">
+                  <td [attr.data-label]="t.messengers">
                     @if (row.channels.length === 0) {
-                      <span class="tb-muted">не подключены</span>
+                      <span class="tb-muted">{{ t.none }}</span>
                     } @else {
                       <span class="tb-student-channels">
                         @for (channel of row.channels; track channel.channel) {
                           <p-tag
                             [icon]="icons[channel.channel]"
                             [value]="
-                              names[channel.channel] + (channel.enabled ? '' : ' (на паузе)')
+                              channel.enabled
+                                ? names[channel.channel]
+                                : t.paused(names[channel.channel])
                             "
                             [severity]="channel.enabled ? 'success' : 'secondary'"
                           />
@@ -94,9 +93,9 @@ import { InitialsPipe } from '@shared/ui/initials';
                       </span>
                     }
                   </td>
-                  <td data-label="Доставка">
+                  <td [attr.data-label]="t.delivery">
                     @if (row.failedDeliveries > 0) {
-                      <p-tag [value]="'Не доставлено: ' + row.failedDeliveries" severity="danger" />
+                      <p-tag [value]="t.failed(row.failedDeliveries)" severity="danger" />
                     } @else {
                       <span class="tb-muted">—</span>
                     }
@@ -104,11 +103,7 @@ import { InitialsPipe } from '@shared/ui/initials';
                 </tr>
               </ng-template>
             </p-table>
-            <small class="tb-hint">
-              Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у
-              которых мессенджер уже подключён, его не получат. «Не доставлено» — сообщения за 30
-              дней, которые мессенджер не принял (например, ученик заблокировал бота).
-            </small>
+            <small class="tb-hint">{{ t.hint }}</small>
           }
         }
       </tb-load-state>
@@ -136,6 +131,7 @@ import { InitialsPipe } from '@shared/ui/initials';
   `,
 })
 export class StudentMessengersPanel implements OnInit {
+  protected readonly t = T.students;
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
 
@@ -178,7 +174,7 @@ export class StudentMessengersPanel implements OnInit {
     this.api.remindToConnect(selected).subscribe({
       next: (recipients) => {
         this.pending.set(false);
-        this.snackbar.success(`Получили учеников: ${String(recipients)}`);
+        this.snackbar.success(T.students.reminded(recipients));
       },
       error: () => {
         this.pending.set(false);

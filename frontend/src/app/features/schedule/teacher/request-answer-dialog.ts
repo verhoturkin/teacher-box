@@ -20,7 +20,9 @@ import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeRequest } from '../data-access/schedule.models';
-import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels';
+import { formatLessonStart, optionalText } from '../schedule-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * The teacher answers a student's request: a move is approved for the proposed (or another) time,
@@ -32,7 +34,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Запрос ученика"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -42,15 +44,17 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
         <div class="tb-form">
           <p>
             @if (request.groupId !== null && request.kind === 'CANCEL') {
-              <strong>{{ request.studentName ?? 'Ученик' }}</strong> не придёт на занятие группы «{{
-                request.groupName
-              }}» {{ start(request.lessonStartsAt) }}
+              <strong>{{ request.studentName ?? c.student }}</strong>
+              {{ t.groupAbsence(request.groupName ?? '', start(request.lessonStartsAt)) }}
             } @else {
-              <strong>{{ request.studentName ?? 'Ученик' }}</strong
-              >: {{ kinds[request.kind].toLowerCase() }} занятия
-              {{ start(request.lessonStartsAt) }}
+              <strong>{{ request.studentName ?? c.student }}</strong
+              >{{
+                request.kind === 'RESCHEDULE'
+                  ? t.asksReschedule(start(request.lessonStartsAt))
+                  : t.asksCancel(start(request.lessonStartsAt))
+              }}
               @if (request.groupId !== null) {
-                (группа «{{ request.groupName }}» — занятие перенесётся для всех)
+                {{ t.forAll(request.groupName ?? '') }}
               }
             }
           </p>
@@ -59,7 +63,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
           }
           @if (request.kind === 'RESCHEDULE') {
             <div class="tb-field">
-              <label for="answer-start">Новое время</label>
+              <label for="answer-start">{{ t.newTime }}</label>
               <p-datepicker
                 inputId="answer-start"
                 [(ngModel)]="startsAt"
@@ -75,19 +79,19 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
             </div>
           } @else {
             @if (request.late) {
-              <p class="tb-hint">Отмена поздняя — по правилам её можно засчитать как пропуск.</p>
+              <p class="tb-hint">{{ t.late }}</p>
             }
             <label class="tb-switch" for="answer-charge">
               <p-checkbox [(ngModel)]="charge" [binary]="true" inputId="answer-charge" />
-              <span>Засчитать как пропуск (оплачивается)</span>
+              <span>{{ t.charge }}</span>
             </label>
           }
           @if (busy()) {
             <p-message severity="warn" styleClass="tb-form-message">
-              В это время у вас другое занятие или дела в календаре.
+              {{ t.busy }}
               <p-button
                 severity="success"
-                label="Всё равно перенести"
+                [label]="t.moveAnyway"
                 [text]="true"
                 (onClick)="approve(true)"
               />
@@ -97,7 +101,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
             <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
           <div class="tb-field">
-            <label for="answer-comment">Комментарий ученику</label>
+            <label for="answer-comment">{{ t.comment }}</label>
             <textarea
               pTextarea
               id="answer-comment"
@@ -110,7 +114,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
       }
       <ng-template #footer>
         <p-button
-          label="Отклонить"
+          [label]="t.decline"
           severity="danger"
           [text]="true"
           [loading]="pending()"
@@ -118,7 +122,7 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
         />
         <p-button
           severity="success"
-          label="Согласовать"
+          [label]="t.approve"
           [loading]="pending()"
           (onClick)="approve()"
         />
@@ -127,13 +131,14 @@ import { KIND_LABELS, formatLessonStart, optionalText } from '../schedule-labels
   `,
 })
 export class RequestAnswerDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.answer;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
   readonly request = input<ChangeRequest | null>(null);
   readonly answered = output<ChangeRequest>();
 
-  protected readonly kinds = KIND_LABELS;
   protected readonly pending = signal(false);
   protected readonly startsAt = signal<Date | null>(null);
   protected readonly charge = signal(false);
@@ -196,7 +201,7 @@ export class RequestAnswerDialog {
         if (problemCode(error) === 'schedule.slot-busy') {
           this.busy.set(true);
         } else {
-          this.error.set(describeError(error, 'Не удалось ответить на запрос'));
+          this.error.set(describeError(error, T.answer.failed));
         }
       },
     });

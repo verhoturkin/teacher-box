@@ -22,6 +22,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import { T } from '../i18n/texts';
 
 /** Student: an assignment, the teacher's feedback and handing in an answer. */
 @Component({
@@ -46,13 +47,13 @@ import { pageDetail } from '@core/routing/page-detail';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <tb-page-header [title]="task.assignment.title" back="/cabinet/homework" backLabel="Задания">
+      <tb-page-header [title]="task.assignment.title" back="/cabinet/homework" [backLabel]="t.back">
         <tb-help-button help topic="cabinet/homework" />
         <span meta [class.tb-negative]="task.overdue">
           {{
             task.assignment.dueAt
-              ? 'Сдать до ' + (task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm')
-              : 'Без срока'
+              ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+              : t.noDueDate
           }}
         </span>
         <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
@@ -66,21 +67,21 @@ import { pageDetail } from '@core/routing/page-detail';
           >
             <div>
               <div class="tb-strong">
-                {{ task.status === 'ACCEPTED' ? 'Работа принята' : 'Нужно доработать' }}
+                {{ task.status === 'ACCEPTED' ? t.accepted : t.rework }}
               </div>
               <p class="tb-pre">{{ task.teacherComment }}</p>
             </div>
           </p-message>
         }
 
-        <p-card header="Задание">
+        <p-card [header]="t.assignment">
           <tb-markdown [text]="task.assignment.description" />
           <tb-attachment-list
             [attachments]="task.assignment.attachments"
             (download)="download($event)"
           />
           @if (task.assignment.textbooks.length > 0) {
-            <h3 class="tb-subtitle">Учебники</h3>
+            <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
             <tb-textbook-list
               [textbooks]="task.assignment.textbooks"
               [downloadable]="true"
@@ -91,10 +92,10 @@ import { pageDetail } from '@core/routing/page-detail';
         </p-card>
 
         @if (task.status !== 'ACCEPTED') {
-          <p-card [header]="task.submissions.length === 0 ? 'Ваш ответ' : 'Новый ответ'">
+          <p-card [header]="task.submissions.length === 0 ? t.yourAnswer : t.newAnswer">
             <div class="tb-form">
               <div class="tb-field">
-                <label for="answer-text">Текст ответа</label>
+                <label for="answer-text">{{ t.answerText }}</label>
                 <textarea pTextarea id="answer-text" [formControl]="text" rows="6"></textarea>
               </div>
               <tb-file-picker [(files)]="files" />
@@ -104,7 +105,7 @@ import { pageDetail } from '@core/routing/page-detail';
               <div class="tb-form-actions">
                 <p-button
                   severity="success"
-                  label="Отправить на проверку"
+                  [label]="t.submit"
                   icon="pi pi-send"
                   [loading]="pending()"
                   (onClick)="submit()"
@@ -114,17 +115,18 @@ import { pageDetail } from '@core/routing/page-detail';
           </p-card>
         }
 
-        <p-card header="Мои ответы">
+        <p-card [header]="t.myAnswers">
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </p-card>
       </div>
     } @else {
-      <tb-page-header title="Задание" back="/cabinet/homework" backLabel="Задания" />
-      <tb-load-state [state]="state" what="задание" (retry)="load()" />
+      <tb-page-header [title]="t.assignment" back="/cabinet/homework" [backLabel]="t.back" />
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,
 })
 export class MyTaskPage implements OnInit {
+  protected readonly t = T.myTask;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
@@ -163,7 +165,7 @@ export class MyTaskPage implements OnInit {
   submit(): void {
     const text = this.text.value.trim();
     if (text === '' && this.files().length === 0) {
-      this.error.set('Напишите ответ или прикрепите файл');
+      this.error.set(T.myTask.empty);
       return;
     }
     if (this.pending()) {
@@ -177,11 +179,11 @@ export class MyTaskPage implements OnInit {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
-        this.snackbar.success('Ответ отправлен учителю');
+        this.snackbar.success(T.myTask.sent);
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось отправить ответ'));
+        this.error.set(describeError(error, T.myTask.failed));
       },
     });
   }

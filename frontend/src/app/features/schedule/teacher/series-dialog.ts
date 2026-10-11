@@ -29,12 +29,14 @@ import { LessonStudent, MEETING_URL_PATTERN } from './lesson-dialog';
 import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 export const INTERVAL_OPTIONS = [
-  { label: 'Каждую неделю', value: 1 },
-  { label: 'Раз в 2 недели', value: 2 },
-  { label: 'Раз в 3 недели', value: 3 },
-  { label: 'Раз в 4 недели', value: 4 },
+  { label: T.series.every, value: 1 },
+  { label: T.series.every2, value: 2 },
+  { label: T.series.every3, value: 3 },
+  { label: T.series.every4, value: 4 },
 ];
 
 /**
@@ -59,7 +61,7 @@ export const INTERVAL_OPTIONS = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="series() === null ? 'Регулярные занятия' : 'Изменить регулярные занятия'"
+      [header]="series() === null ? t.newTitle : t.editTitle"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -67,7 +69,7 @@ export const INTERVAL_OPTIONS = [
     >
       <form tbFieldErrors id="series-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="series-student">С кем</label>
+          <label for="series-student">{{ t.with }}</label>
           <p-select
             inputId="series-student"
             formControlName="owner"
@@ -77,16 +79,16 @@ export const INTERVAL_OPTIONS = [
             optionGroupChildren="items"
             optionLabel="label"
             optionValue="value"
-            placeholder="Выберите ученика или группу"
+            [placeholder]="t.chooseOwner"
             [filter]="true"
-            filterPlaceholder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceholder]="t.search"
+            [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-field">
-          <span id="series-weekdays-label">Дни недели</span>
+          <span id="series-weekdays-label">{{ t.weekdays }}</span>
           <p-selectbutton
             formControlName="weekdays"
             [options]="weekdays"
@@ -98,7 +100,7 @@ export const INTERVAL_OPTIONS = [
         </div>
         <div class="tb-row">
           <div class="tb-field">
-            <label for="series-time">Время</label>
+            <label for="series-time">{{ t.time }}</label>
             <p-datepicker
               inputId="series-time"
               formControlName="startTime"
@@ -110,7 +112,7 @@ export const INTERVAL_OPTIONS = [
             />
           </div>
           <div class="tb-field">
-            <label for="series-duration">Длительность, мин</label>
+            <label for="series-duration">{{ t.duration }}</label>
             <p-inputnumber
               inputId="series-duration"
               formControlName="durationMinutes"
@@ -123,10 +125,10 @@ export const INTERVAL_OPTIONS = [
           </div>
         </div>
         @if (otherTimeZone(); as zone) {
-          <small class="tb-hint">Время указывается по часовому поясу портала: {{ zone }}.</small>
+          <small class="tb-hint">{{ t.zone(zone) }}</small>
         }
         <div class="tb-field">
-          <label for="series-interval">Повтор</label>
+          <label for="series-interval">{{ t.repeat }}</label>
           <p-select
             inputId="series-interval"
             formControlName="intervalWeeks"
@@ -139,9 +141,7 @@ export const INTERVAL_OPTIONS = [
         </div>
         <div class="tb-row">
           <div class="tb-field">
-            <label for="series-starts">{{
-              series() === null ? 'С даты' : 'Изменить с даты'
-            }}</label>
+            <label for="series-starts">{{ series() === null ? t.fromDate : t.changeFrom }}</label>
             <p-datepicker
               inputId="series-starts"
               formControlName="startsOn"
@@ -153,7 +153,7 @@ export const INTERVAL_OPTIONS = [
             />
           </div>
           <div class="tb-field">
-            <label for="series-ends">По дату (необязательно)</label>
+            <label for="series-ends">{{ t.toDate }}</label>
             <p-datepicker
               inputId="series-ends"
               formControlName="endsOn"
@@ -167,22 +167,22 @@ export const INTERVAL_OPTIONS = [
           </div>
         </div>
         <div class="tb-field">
-          <label for="series-topic">Тема</label>
+          <label for="series-topic">{{ t.topic }}</label>
           <input pInputText id="series-topic" formControlName="topic" autocomplete="off" />
         </div>
         <div class="tb-field">
-          <label for="series-url">Ссылка на онлайн-урок</label>
+          <label for="series-url">{{ t.url }}</label>
           <input pInputText id="series-url" formControlName="meetingUrl" autocomplete="off" />
           @if (form.controls.meetingUrl.invalid) {
-            <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
+            <small class="tb-error">{{ t.urlInvalid }}</small>
           }
         </div>
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
-            Некоторые занятия пересекаются с уже запланированными.
+            {{ t.overlap }}
             <p-button
               severity="success"
-              label="Всё равно сохранить"
+              [label]="t.saveAnyway"
               [text]="true"
               (onClick)="save(true)"
             />
@@ -194,14 +194,14 @@ export const INTERVAL_OPTIONS = [
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="series-form"
@@ -211,6 +211,8 @@ export const INTERVAL_OPTIONS = [
   `,
 })
 export class SeriesDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.series;
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
@@ -309,7 +311,7 @@ export class SeriesDialog {
         if (problemCode(error) === 'schedule.overlap') {
           this.overlap.set(true);
         } else {
-          this.error.set(describeError(error, 'Не удалось сохранить расписание'));
+          this.error.set(describeError(error, T.series.failed));
         }
       },
     });

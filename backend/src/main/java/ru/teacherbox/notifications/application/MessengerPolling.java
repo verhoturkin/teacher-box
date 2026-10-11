@@ -88,14 +88,23 @@ public class MessengerPolling implements SmartLifecycle {
             if (press != null) {
                 acknowledge(channel, message.externalId(), press);
             }
-            OutgoingMessage reply = engine.handle(channel.type(), message);
-            try {
-                channel.send(message.externalId(), reply);
-            } catch (DeliveryException e) {
-                log.warn("Could not reply in {}: {}", channel.type(), e.getMessage());
-            }
+            reply(channel, message.externalId(), engine.handle(channel.type(), message));
         }
         return messages.size();
+    }
+
+    /** A reply refused for its link buttons (e.g. the portal on a local address) goes again with the links in the text. */
+    private static void reply(MessengerChannel channel, String externalId, OutgoingMessage reply) {
+        try {
+            channel.send(externalId, reply);
+        } catch (DeliveryException e) {
+            if (e.isPermanent() && reply.hasLinks()) {
+                log.info("{} refused link buttons, sending the links as text: {}", channel.type(), e.getMessage());
+                reply(channel, externalId, reply.linksInText());
+                return;
+            }
+            log.warn("Could not reply in {}: {}", channel.type(), e.getMessage());
+        }
     }
 
     private static void acknowledge(MessengerChannel channel, String externalId, ButtonPress press) {

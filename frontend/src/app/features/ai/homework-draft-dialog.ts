@@ -20,6 +20,8 @@ import { AiApi } from './data-access/ai-api';
 import { HomeworkDraft } from './data-access/ai.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Asks the AI assistant for a draft of homework; the result goes to the assignment editor. */
 @Component({
@@ -38,7 +40,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Черновик задания с ИИ"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -52,27 +54,27 @@ import { SubmitFor } from '@shared/ui/submit-for';
         (ngSubmit)="generate()"
       >
         <div class="tb-field">
-          <label for="ai-topic">Тема</label>
+          <label for="ai-topic">{{ t.topic }}</label>
           <input
             pInputText
             id="ai-topic"
             formControlName="topic"
             autocomplete="off"
-            placeholder="например, сложение дробей"
+            [placeholder]="t.topicPlaceholder"
           />
         </div>
         <div class="tb-field">
-          <label for="ai-level">Уровень ученика</label>
+          <label for="ai-level">{{ t.level }}</label>
           <input
             pInputText
             id="ai-level"
             formControlName="level"
             autocomplete="off"
-            placeholder="например, 6 класс, базовый"
+            [placeholder]="t.levelPlaceholder"
           />
         </div>
         <div class="tb-field">
-          <label for="ai-count">Количество задач</label>
+          <label for="ai-count">{{ t.count }}</label>
           <p-inputnumber
             inputId="ai-count"
             formControlName="taskCount"
@@ -82,32 +84,30 @@ import { SubmitFor } from '@shared/ui/submit-for';
           />
         </div>
         <div class="tb-field">
-          <label for="ai-wishes">Пожелания</label>
+          <label for="ai-wishes">{{ t.wishes }}</label>
           <textarea
             pTextarea
             id="ai-wishes"
             formControlName="wishes"
             rows="3"
-            placeholder="формат, типы задач, на что обратить внимание"
+            [placeholder]="t.wishesPlaceholder"
           ></textarea>
         </div>
-        <small class="tb-hint"
-          >Черновик заменит название и текст задания — вы сможете их отредактировать.</small
-        >
+        <small class="tb-hint">{{ t.hint }}</small>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сгенерировать"
+          [label]="t.generate"
           icon="pi pi-sparkles"
           [loading]="pending()"
           type="submit"
@@ -118,6 +118,8 @@ import { SubmitFor } from '@shared/ui/submit-for';
   `,
 })
 export class HomeworkDraftDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.draft;
   private readonly api = inject(AiApi);
 
   readonly visible = model(false);
@@ -173,7 +175,7 @@ export class HomeworkDraftDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось получить черновик. Попробуйте ещё раз'));
+          this.error.set(describeError(error, T.draft.failed));
         },
       });
   }

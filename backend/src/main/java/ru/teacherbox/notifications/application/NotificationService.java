@@ -167,7 +167,7 @@ public class NotificationService {
         Map<UUID, Long> failed = deliveries.failedCountsSince(clock.instant().minus(PROBLEMS_WINDOW));
         return users.currentStudents().stream()
                 .sorted(Comparator.comparing(StudentSummary::displayName, String.CASE_INSENSITIVE_ORDER))
-                .map(student -> new StudentChannels(student.id(), student.displayName(),
+                .map(student -> new StudentChannels(student.id(), student.displayName(), student.avatar(),
                         linked.getOrDefault(student.id(), List.of()).stream().map(ChannelView::of).toList(),
                         failed.getOrDefault(student.id(), 0L)))
                 .toList();

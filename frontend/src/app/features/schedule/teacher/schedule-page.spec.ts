@@ -293,6 +293,12 @@ describe('SchedulePage', () => {
     page.onSlot({ start, end: new Date(2026, 9, 1, 19, 30) });
     await fixture.whenStable();
     expect(dialog.form.controls.durationMinutes.value).toBe(90);
+
+    // a day of the month view: the whole day is not a duration
+    page.onSlot({ start: new Date(2026, 9, 2), end: new Date(2026, 9, 3), allDay: true });
+    await fixture.whenStable();
+    expect(dialog.form.controls.durationMinutes.value).toBe(45);
+    expect(dialog.form.controls.startsAt.value).toEqual(new Date(2026, 9, 2, 10));
   });
 
   it('opens a new lesson from the home page', async () => {

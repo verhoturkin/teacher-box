@@ -8,6 +8,9 @@ import { MoneyPipe } from '@shared/money/money.pipe';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { BillingApi } from '../data-access/billing-api';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { locale } from '@core/i18n/language';
 
 /**
  * The lesson price of new students and groups, changed in place: the field takes the whole width
@@ -22,21 +25,22 @@ import { Snackbar } from '@core/snackbar/snackbar';
       @if (editing()) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">
-            <label for="default-price">Цена для новых учеников</label>
+            <label for="default-price">{{ t.label }}</label>
             <p-inputnumber
               inputId="default-price"
               formControlName="price"
               mode="currency"
+              currencyDisplay="narrowSymbol"
               [currency]="currency()"
-              locale="ru-RU"
+              [locale]="locale"
               [min]="0"
               [fluid]="true"
             />
-            <small class="tb-hint">Цена каждого ученика меняется в его истории оплат</small>
+            <small class="tb-hint">{{ t.hint }}</small>
           </div>
           <div class="tb-form-actions">
             <p-button
-              label="Отмена"
+              [label]="c.cancel"
               severity="secondary"
               [text]="true"
               (onClick)="editing.set(false)"
@@ -45,7 +49,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               class="tb-tonal"
               severity="success"
               type="submit"
-              label="Сохранить"
+              [label]="c.save"
               icon="pi pi-check"
               [loading]="pending()"
             />
@@ -53,26 +57,29 @@ import { Snackbar } from '@core/snackbar/snackbar';
         </form>
       } @else {
         <div class="tb-stat">
-          <span class="tb-muted">Цена для новых учеников</span>
+          <span class="tb-muted">{{ t.label }}</span>
           <span class="tb-stat__value">
             {{ price() | money: currency() }}
             <p-button
               icon="pi pi-pencil"
               severity="secondary"
               [text]="true"
-              pTooltip="Изменить цену для новых учеников"
+              [pTooltip]="t.edit"
               [rounded]="true"
-              ariaLabel="Изменить цену для новых учеников"
+              [ariaLabel]="t.edit"
               (onClick)="edit()"
             />
           </span>
-          <small class="tb-muted">цена каждого ученика меняется в его строке</small>
+          <small class="tb-muted">{{ t.rowHint }}</small>
         </div>
       }
     </p-card>
   `,
 })
 export class DefaultPriceCard {
+  protected readonly locale = locale();
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.defaultPrice;
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
 
@@ -104,7 +111,7 @@ export class DefaultPriceCard {
         this.pending.set(false);
         this.editing.set(false);
         this.changed.emit(saved);
-        this.snackbar.success('Новые ученики и группы получат эту цену');
+        this.snackbar.success(T.defaultPrice.saved);
       },
       error: () => {
         this.pending.set(false);

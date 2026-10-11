@@ -16,7 +16,7 @@ describe('appConfig', () => {
   });
 
   it('uses the Russian locale', () => {
-    expect(TestBed.inject(LOCALE_ID)).toBe('ru');
+    expect(TestBed.inject(LOCALE_ID)).toBe('ru-RU');
     expect(TestBed.inject(PrimeNG).translation.today).toBe('Сегодня');
   });
 
