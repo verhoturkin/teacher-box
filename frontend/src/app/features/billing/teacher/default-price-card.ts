@@ -30,6 +30,7 @@ import { locale } from '@core/i18n/language';
               inputId="default-price"
               formControlName="price"
               mode="currency"
+              currencyDisplay="narrowSymbol"
               [currency]="currency()"
               [locale]="locale"
               [min]="0"

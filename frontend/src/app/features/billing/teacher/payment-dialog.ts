@@ -77,6 +77,7 @@ import { locale } from '@core/i18n/language';
               inputId="payment-amount"
               formControlName="amount"
               mode="currency"
+              currencyDisplay="narrowSymbol"
               [currency]="currency()"
               [locale]="locale"
               [min]="0"

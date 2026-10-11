@@ -169,6 +169,7 @@ const STEPS: readonly Step[] = [
                   inputId="setup-price"
                   formControlName="price"
                   mode="currency"
+                  currencyDisplay="narrowSymbol"
                   [currency]="currency()"
                   [locale]="locale"
                   [min]="0"

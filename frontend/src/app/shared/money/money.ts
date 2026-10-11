@@ -28,6 +28,8 @@ export function formatMoney(minor: number, currency: string): string {
   return new Intl.NumberFormat(locale(), {
     style: 'currency',
     currency,
+    // «₽» in every language: `en-GB` writes the code «RUB» for a currency it has no symbol of
+    currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: Number.isInteger(major) ? 0 : fractionDigits(currency),
   }).format(major);
 }

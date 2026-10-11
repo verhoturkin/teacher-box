@@ -93,6 +93,7 @@ export interface SavedGroup {
             inputId="group-price"
             formControlName="price"
             mode="currency"
+            currencyDisplay="narrowSymbol"
             [currency]="currency()"
             [locale]="locale"
             [min]="0"

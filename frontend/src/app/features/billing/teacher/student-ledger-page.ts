@@ -99,6 +99,7 @@ import { locale } from '@core/i18n/language';
                   inputId="lesson-price-input"
                   formControlName="price"
                   mode="currency"
+                  currencyDisplay="narrowSymbol"
                   [currency]="ledger.currency"
                   [locale]="locale"
                   [min]="0"
