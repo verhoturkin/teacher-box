@@ -40,13 +40,13 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { pageDetail } from '@core/routing/page-detail';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
   selector: 'tb-assignment-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     DatePipe,
     ReactiveFormsModule,
@@ -160,9 +160,7 @@ import { InitialsPipe } from '@shared/ui/initials';
               <tr>
                 <td data-label="Ученик">
                   <div class="tb-person">
-                    <span class="tb-avatar" aria-hidden="true">{{
-                      task.studentName | initials
-                    }}</span>
+                    <tb-avatar [name]="task.studentName" [photo]="task.studentAvatar" />
                     <div class="tb-list__text">
                       <span class="tb-list__title">{{ task.studentName }}</span>
                     </div>

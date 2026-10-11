@@ -25,13 +25,13 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 
 /** Teacher: income and lessons of a month. */
 @Component({
   selector: 'tb-monthly-report-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     LoadStateView,
     DatePipe,
@@ -155,9 +155,7 @@ import { InitialsPipe } from '@shared/ui/initials';
                   <td data-label="Дата">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
                   <td data-label="Ученик">
                     <div class="tb-person">
-                      <span class="tb-avatar" aria-hidden="true">{{
-                        entry.studentName | initials
-                      }}</span>
+                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>
@@ -205,9 +203,7 @@ import { InitialsPipe } from '@shared/ui/initials';
                   <td data-label="Дата">{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
                   <td data-label="Ученик">
                     <div class="tb-person">
-                      <span class="tb-avatar" aria-hidden="true">{{
-                        entry.studentName | initials
-                      }}</span>
+                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>

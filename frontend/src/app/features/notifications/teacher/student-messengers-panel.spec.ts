@@ -19,7 +19,11 @@ describe('StudentMessengersPanel', () => {
     ],
     failedDeliveries: 2,
   });
-  const silent = studentMessengers({ studentId: 's-2', displayName: 'Пётр' });
+  const silent = studentMessengers({
+    studentId: 's-2',
+    displayName: 'Пётр',
+    avatar: '/api/public/avatars/petr',
+  });
 
   async function render(students: StudentMessengers[]): Promise<void> {
     TestBed.configureTestingModule({
@@ -78,6 +82,9 @@ describe('StudentMessengersPanel', () => {
     expect(text).toContain('Подключили мессенджер: 1 из 2');
     expect(text).toContain('Мария Telegram ВКонтакте (на паузе) Не доставлено: 2');
     expect(text).toContain('Пётр не подключены');
+    expect(hostElement(fixture).querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+      '/api/public/avatars/petr',
+    );
   });
 
   it('reminds everybody without a messenger', async () => {

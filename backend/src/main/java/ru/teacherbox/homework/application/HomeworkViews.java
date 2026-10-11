@@ -51,11 +51,16 @@ public final class HomeworkViews {
             int accepted) {
     }
 
-    /** Progress of one student on an assignment. */
+    /**
+     * Progress of one student on an assignment.
+     *
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     */
     public record TaskSummary(
             UUID taskId,
             UUID studentId,
             String studentName,
+            @Nullable String studentAvatar,
             TaskStatus status,
             @Nullable String grade,
             @Nullable Instant submittedAt,
@@ -104,12 +109,14 @@ public final class HomeworkViews {
             List<SubmissionView> submissions) {
     }
 
+    /** @param studentAvatar address of the student's photo; {@code null}: none */
     public record ReviewQueueItem(
             UUID taskId,
             UUID assignmentId,
             String title,
             UUID studentId,
             String studentName,
+            @Nullable String studentAvatar,
             @Nullable Instant submittedAt,
             @Nullable Instant dueAt) {
     }

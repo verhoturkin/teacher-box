@@ -55,16 +55,17 @@ public class ReviewService {
         Map<UUID, Assignment> byId = assignments
                 .findByIds(submitted.stream().map(HomeworkTask::assignmentId).distinct().toList()).stream()
                 .collect(Collectors.toMap(Assignment::id, Function.identity()));
-        Map<UUID, String> names = directory.findStudents(submitted.stream().map(HomeworkTask::studentId).toList())
-                .stream()
-                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
+        Map<UUID, StudentSummary> students = directory
+                .findStudents(submitted.stream().map(HomeworkTask::studentId).toList()).stream()
+                .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
         return submitted.stream()
                 .filter(task -> byId.containsKey(task.assignmentId()))
                 .map(task -> {
                     Assignment assignment = byId.get(task.assignmentId());
+                    StudentSummary student = students.get(task.studentId());
                     return new ReviewQueueItem(task.id(), assignment.id(), assignment.title(), task.studentId(),
-                            names.getOrDefault(task.studentId(), TaskDetailsAssembler.UNKNOWN_STUDENT),
-                            task.submittedAt(), assignment.dueAt());
+                            student == null ? TaskDetailsAssembler.UNKNOWN_STUDENT : student.displayName(),
+                            student == null ? null : student.avatar(), task.submittedAt(), assignment.dueAt());
                 })
                 .toList();
     }

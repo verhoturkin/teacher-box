@@ -12,13 +12,13 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 
 /** Teacher: submitted tasks waiting for review, oldest first. */
 @Component({
   selector: 'tb-review-queue-page',
   imports: [
-    InitialsPipe,
+    Avatar,
     EmptyState,
     DatePipe,
     RouterLink,
@@ -52,9 +52,7 @@ import { InitialsPipe } from '@shared/ui/initials';
             <tr>
               <td data-label="Ученик">
                 <div class="tb-person">
-                  <span class="tb-avatar" aria-hidden="true">{{
-                    item.studentName | initials
-                  }}</span>
+                  <tb-avatar [name]="item.studentName" [photo]="item.studentAvatar" />
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ item.studentName }}</span>
                   </div>

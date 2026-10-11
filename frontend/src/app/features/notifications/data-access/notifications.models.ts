@@ -115,6 +115,8 @@ export interface BotSettings {
 export interface StudentMessengers {
   readonly studentId: string;
   readonly displayName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly avatar: string | null;
   /** Only the connected messengers. */
   readonly channels: ChannelState[];
   /** Messages not delivered in the last 30 days. */

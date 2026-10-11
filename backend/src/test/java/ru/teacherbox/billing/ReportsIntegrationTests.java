@@ -61,6 +61,7 @@ class ReportsIntegrationTests {
     void monthlyReportAggregatesTheMonth() {
         UUID anna = directory.addStudent("Анна-отчёт");
         UUID boris = directory.addStudent("Борис-отчёт");
+        directory.setAvatar(boris, "/api/public/avatars/boris");
         lesson(anna, "2025-03-03", LessonStatus.CONDUCTED);
         lesson(anna, "2025-03-10", LessonStatus.MISSED);
         UUID cancelled = lesson(boris, "2025-03-12", LessonStatus.CONDUCTED);
@@ -85,7 +86,10 @@ class ReportsIntegrationTests {
                     assertThat(json).extractingPath("$.students[0].chargedLessons").isEqualTo(2);
                     assertThat(json).extractingPath("$.lessons.length()").isEqualTo(3);
                     assertThat(json).extractingPath("$.lessons[0].studentName").isEqualTo("Борис-отчёт");
+                    assertThat(json).extractingPath("$.lessons[0].studentAvatar").isEqualTo("/api/public/avatars/boris");
                     assertThat(json).extractingPath("$.payments.length()").isEqualTo(2);
+                    assertThat(json).extractingPath("$.payments[*].studentAvatar").asArray()
+                            .containsExactlyInAnyOrder("/api/public/avatars/boris", null);
                 });
     }
 

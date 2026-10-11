@@ -18,12 +18,12 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { InitialsPipe } from '@shared/ui/initials';
+import { Avatar } from '@shared/ui/avatar';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
 @Component({
   selector: 'tb-student-messengers-panel',
-  imports: [InitialsPipe, EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
+  imports: [Avatar, EmptyState, Button, Card, TableModule, Tag, RowType, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card header="Мессенджеры учеников">
@@ -69,9 +69,7 @@ import { InitialsPipe } from '@shared/ui/initials';
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
                   <td data-label="Ученик">
                     <div class="tb-person">
-                      <span class="tb-avatar" aria-hidden="true">{{
-                        row.displayName | initials
-                      }}</span>
+                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ row.displayName }}</span>
                       </div>

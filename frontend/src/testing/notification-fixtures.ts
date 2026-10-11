@@ -69,6 +69,7 @@ export function studentMessengers(overrides: Partial<StudentMessengers> = {}): S
   return {
     studentId: 's-1',
     displayName: 'Мария',
+    avatar: null,
     channels: [],
     failedDeliveries: 0,
     ...overrides,

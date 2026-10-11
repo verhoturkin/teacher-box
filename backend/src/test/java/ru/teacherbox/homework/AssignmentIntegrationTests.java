@@ -36,6 +36,7 @@ class AssignmentIntegrationTests {
     void createsAssignmentForStudents(AssertablePublishedEvents events) {
         UUID anna = directory.addStudent("Анна");
         UUID boris = directory.addStudent("Борис");
+        directory.setAvatar(anna, "/api/public/avatars/anna");
 
         MvcTestResult result = post("/api/teacher/homework/assignments", """
                 {"title":"Дроби","description":"Решить **№1-5**","dueAt":"2030-01-10T15:00:00Z",
@@ -46,6 +47,8 @@ class AssignmentIntegrationTests {
             assertThat(json).extractingPath("$.title").isEqualTo("Дроби");
             assertThat(json).extractingPath("$.dueAt").isEqualTo("2030-01-10T15:00:00Z");
             assertThat(json).extractingPath("$.tasks[*].studentName").asArray().containsExactly("Анна", "Борис");
+            assertThat(json).extractingPath("$.tasks[*].studentAvatar").asArray()
+                    .containsExactly("/api/public/avatars/anna", null);
             assertThat(json).extractingPath("$.tasks[*].status").asArray().containsOnly("ASSIGNED");
         });
         String id = JsonPath.read(body(result), "$.id");

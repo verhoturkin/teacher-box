@@ -41,7 +41,7 @@ ADR: [0035](adr/0035-interface-languages.md) — interface languages.
 
 ### Stage 148. Students' photos in the remaining lists (B, F)
 
-- [ ] 148.1 `StudentSummary.avatar` in `HomeworkViews.TaskSummary` / `ReviewQueueItem`,
+- [x] 148.1 `StudentSummary.avatar` in `HomeworkViews.TaskSummary` / `ReviewQueueItem`,
   `BillingViews.JournalLesson` / `JournalPayment` (the monthly report), `NotificationViews.StudentChannels`;
   `tb-avatar` instead of the initials in `homework/teacher/assignment-page.ts`, `review-queue-page.ts`,
   `billing/teacher/monthly-report-page.ts`, `notifications/teacher/student-messengers-panel.ts` (schedule

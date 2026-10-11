@@ -128,6 +128,7 @@ class SubmissionAndReviewIntegrationTests {
     @Test
     void teacherReviewsSubmissions(AssertablePublishedEvents events) {
         UUID student = directory.addStudent("Проверяемый");
+        directory.setAvatar(student, "/api/public/avatars/checked");
         String taskId = assignment("На проверку", student).tasks().getFirst().taskId().toString();
 
         assertThat(review(taskId, "ACCEPT", "5")).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
@@ -138,6 +139,10 @@ class SubmissionAndReviewIntegrationTests {
                 .hasStatusOk()
                 .bodyJson().extractingPath("$[?(@.taskId == '%s')].studentName".formatted(taskId)).asArray()
                 .containsExactly("Проверяемый");
+        assertThat(mvc.get().uri("/api/teacher/homework/review-queue").with(teacher()))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$[?(@.taskId == '%s')].studentAvatar".formatted(taskId)).asArray()
+                .containsExactly("/api/public/avatars/checked");
 
         assertThat(review(taskId, "RETURN", null)).hasStatusOk()
                 .bodyJson().extractingPath("$.status").isEqualTo("RETURNED");

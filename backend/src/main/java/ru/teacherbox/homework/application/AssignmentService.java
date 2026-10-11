@@ -173,12 +173,16 @@ public class AssignmentService {
     private AssignmentDetails details(Assignment assignment) {
         Instant now = clock.instant();
         List<HomeworkTask> assignmentTasks = tasks.findByAssignment(assignment.id());
-        Map<UUID, String> names = directory
+        Map<UUID, StudentSummary> students = directory
                 .findStudents(assignmentTasks.stream().map(HomeworkTask::studentId).toList()).stream()
-                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
-        Function<HomeworkTask, TaskSummary> summary = task -> new TaskSummary(task.id(), task.studentId(),
-                names.getOrDefault(task.studentId(), TaskDetailsAssembler.UNKNOWN_STUDENT), task.status(),
-                task.grade(), task.submittedAt(), task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
+                .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
+        Function<HomeworkTask, TaskSummary> summary = task -> {
+            StudentSummary student = students.get(task.studentId());
+            return new TaskSummary(task.id(), task.studentId(),
+                    student == null ? TaskDetailsAssembler.UNKNOWN_STUDENT : student.displayName(),
+                    student == null ? null : student.avatar(), task.status(), task.grade(), task.submittedAt(),
+                    task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
+        };
         return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
                 assignment.dueAt(), assignment.createdAt(), assignment.version(),
                 attachments.of(AttachmentOwner.ASSIGNMENT, assignment.id()).stream().map(AttachmentView::of).toList(),

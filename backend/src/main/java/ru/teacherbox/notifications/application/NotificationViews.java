@@ -110,9 +110,11 @@ public final class NotificationViews {
     /**
      * A student with the messengers they connected.
      *
+     * @param avatar           address of the student's photo; {@code null}: none
      * @param failedDeliveries messages that could not be delivered in the last 30 days
      */
-    public record StudentChannels(UUID studentId, String displayName, List<ChannelView> channels,
+    public record StudentChannels(UUID studentId, String displayName, @Nullable String avatar,
+            List<ChannelView> channels,
             long failedDeliveries) {
     }
 

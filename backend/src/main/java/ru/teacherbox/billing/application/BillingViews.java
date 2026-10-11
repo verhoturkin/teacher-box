@@ -114,12 +114,20 @@ public final class BillingViews {
             long paid) {
     }
 
-    /** A lesson of the month with the student's name (journal). */
-    public record JournalLesson(String studentName, LessonView lesson) {
+    /**
+     * A lesson of the month with the student's name (journal).
+     *
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     */
+    public record JournalLesson(String studentName, @Nullable String studentAvatar, LessonView lesson) {
     }
 
-    /** A payment of the month with the student's name. */
-    public record JournalPayment(String studentName, PaymentView payment) {
+    /**
+     * A payment of the month with the student's name.
+     *
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     */
+    public record JournalPayment(String studentName, @Nullable String studentAvatar, PaymentView payment) {
     }
 
     /**

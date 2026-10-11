@@ -77,11 +77,15 @@ export interface MonthlyStudentRow {
 
 export interface JournalLesson {
   readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
   readonly lesson: Lesson;
 }
 
 export interface JournalPayment {
   readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
   readonly payment: Payment;
 }
 
