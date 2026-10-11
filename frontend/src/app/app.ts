@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
 import { FocusReturn } from '@core/a11y/focus-return';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { CORE_T } from '@core/i18n/texts';
 import { CallHost } from '@features/meetings';
 
 /** The container of a message is a polite status (an error inside it is an alert, ADR-0024). */
@@ -25,7 +26,7 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
           <button
             type="button"
             class="tb-snackbar__close"
-            aria-label="Закрыть"
+            [attr.aria-label]="closeLabel"
             (click)="close($event)"
           >
             <i class="pi pi-times" aria-hidden="true"></i>
@@ -44,6 +45,7 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
 export class App {
   private readonly snackbar = inject(Snackbar);
   protected readonly pt = SNACKBAR_PT;
+  protected readonly closeLabel = CORE_T.close;
 
   constructor() {
     inject(FocusReturn).start();

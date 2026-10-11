@@ -29,8 +29,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { countOf } from '@shared/text/plural';
 import { formatMoney } from '@shared/money/money';
+import { T } from '../i18n/texts';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -58,27 +58,27 @@ import { formatMoney } from '@shared/money/money';
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Оплаты">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/billing" />
       <a pButton routerLink="report" severity="secondary">
         <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
-        <span pButtonLabel>Отчёт за месяц</span>
+        <span pButtonLabel>{{ t.report }}</span>
       </a>
       <p-button
         class="tb-page-fab"
-        label="Оплата"
+        [label]="t.payment"
         icon="pi pi-wallet"
         (onClick)="openPayment(null)"
         [disabled]="!overview()"
       />
     </tb-page-header>
 
-    <tb-load-state [state]="state" what="оплаты" (retry)="load()">
+    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (overview(); as overview) {
         <div class="tb-stats">
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Долг учеников</span>
+              <span class="tb-muted">{{ t.totalDebt }}</span>
               <span class="tb-stat__value" [class.tb-negative]="overview.totalDebt > 0">{{
                 overview.totalDebt | money: overview.currency
               }}</span>
@@ -86,7 +86,7 @@ import { formatMoney } from '@shared/money/money';
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Авансы</span>
+              <span class="tb-muted">{{ t.prepaid }}</span>
               <span class="tb-stat__value" [class.tb-positive]="overview.totalPrepaid > 0">{{
                 overview.totalPrepaid | money: overview.currency
               }}</span>
@@ -94,7 +94,7 @@ import { formatMoney } from '@shared/money/money';
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Должников</span>
+              <span class="tb-muted">{{ t.debtors }}</span>
               <span class="tb-stat__value">{{ debtorsCount() }}</span>
             </div>
           </p-card>
@@ -106,15 +106,15 @@ import { formatMoney } from '@shared/money/money';
         </div>
 
         <p-card>
-          <h2 class="tb-sr-only">Балансы учеников</h2>
+          <h2 class="tb-sr-only">{{ t.balances }}</h2>
           <div class="tb-toolbar">
             <label class="tb-switch" for="only-debtors">
               <p-toggleswitch inputId="only-debtors" [formControl]="onlyDebtors" />
-              Только должники
+              {{ t.onlyDebtors }}
             </label>
           </div>
           @if (rows().length > 0) {
-            <ul class="tb-list" aria-label="Балансы учеников">
+            <ul class="tb-list" [attr.aria-label]="t.balances">
               @for (row of rows(); track row.studentId) {
                 <li>
                   <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
@@ -135,8 +135,8 @@ import { formatMoney } from '@shared/money/money';
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
-                      [pTooltip]="'Записать оплату: ' + row.displayName"
-                      [ariaLabel]="'Записать оплату: ' + row.displayName"
+                      [pTooltip]="t.recordPayment(row.displayName)"
+                      [ariaLabel]="t.recordPayment(row.displayName)"
                       (onClick)="openPayment(row.studentId)"
                     />
                   </div>
@@ -144,13 +144,9 @@ import { formatMoney } from '@shared/money/money';
               }
             </ul>
           } @else if (overview.students.length === 0) {
-            <tb-empty-state
-              icon="pi-users"
-              title="Учеников пока нет"
-              hint="Добавьте учеников в разделе «Ученики»"
-            />
+            <tb-empty-state icon="pi-users" [title]="t.noStudentsTitle" [hint]="t.noStudentsHint" />
           } @else {
-            <tb-empty-state icon="pi-check-circle" title="Должников нет" />
+            <tb-empty-state icon="pi-check-circle" [title]="t.noDebtors" />
           }
         </p-card>
 
@@ -159,13 +155,14 @@ import { formatMoney } from '@shared/money/money';
           [students]="overview.students"
           [studentId]="selectedStudent()"
           [currency]="overview.currency"
-          (saved)="onSaved('Оплата сохранена')"
+          (saved)="onSaved(t.paymentSaved)"
         />
       }
     </tb-load-state>
   `,
 })
 export class BillingOverviewPage implements OnInit {
+  protected readonly t = T.overview;
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);
@@ -215,12 +212,12 @@ export class BillingOverviewPage implements OnInit {
   /** «1 500 ₽ за занятие · 3 занятия · последнее 01.09.2026», «отключён» first for a deactivated one. */
   protected details(row: StudentBalance, currency: string): string {
     return [
-      row.status === 'DEACTIVATED' ? 'отключён' : null,
-      `${formatMoney(row.lessonPrice, currency)} за занятие`,
-      countOf(row.chargedLessons, 'занятие', 'занятия', 'занятий'),
+      row.status === 'DEACTIVATED' ? T.overview.deactivated : null,
+      T.overview.perLesson(formatMoney(row.lessonPrice, currency)),
+      T.overview.lessons(row.chargedLessons),
       row.lastLessonDate === null
         ? null
-        : `последнее ${this.date.transform(row.lastLessonDate, 'dd.MM.yyyy') ?? ''}`,
+        : T.overview.lastLesson(this.date.transform(row.lastLessonDate, 'dd.MM.yyyy') ?? ''),
     ]
       .filter((part) => part !== null)
       .join(' · ');

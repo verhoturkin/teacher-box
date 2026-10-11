@@ -49,16 +49,16 @@ ADR: [0035](adr/0035-interface-languages.md) — interface languages.
 
 ### Stage 149. Interface languages (F)
 
-- [ ] 149.1 `core/i18n/language.ts`: the registry of languages (`ru`, `en`), the device setting `tb.language`,
+- [x] 149.1 `core/i18n/language.ts`: the registry of languages (`ru`, `en`), the device setting `tb.language`,
   `translations({ ru, en })` — a dictionary of the current language whose shape the compiler checks against
   the Russian one; locale of Angular, `Intl`, PrimeNG, FullCalendar and Excalidraw by the language;
   switching reloads the page. ADR-0035.
-- [ ] 149.2 The language in the user menu under the theme (`core/layout/shell.ts`), on the sign-in and
+- [x] 149.2 The language in the user menu under the theme (`core/layout/shell.ts`), on the sign-in and
   invitation pages.
 
 ### Stage 150. English interface (F)
 
-- [ ] 150.1 Core and shared: shell, navigation, routes' titles, errors (`core/http/error-messages.ts`),
+- [x] 150.1 Core and shared: shell, navigation, routes' titles, errors (`core/http/error-messages.ts`),
   PrimeNG texts, `shared/ui`, plurals by the language (`shared/text/plural.ts`), money and dates.
 - [ ] 150.2 Features: identity, settings, home, billing, homework, schedule, notifications, meetings, boards,
   textbooks, ai, admin — each with `i18n/ru.ts` + `i18n/en.ts`.

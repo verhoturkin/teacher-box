@@ -5,6 +5,7 @@ import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { OverlayBadge } from 'primeng/overlaybadge';
 import { Tooltip } from 'primeng/tooltip';
 import { switchMap, timer } from 'rxjs';
+import { CORE_T } from '@core/i18n/texts';
 import { UnreadNotifications } from './unread-notifications';
 
 /** How often the unread counter is refreshed. */
@@ -50,7 +51,7 @@ export class NotificationBell {
   });
   protected readonly label = computed(() => {
     const count = this.unread.count();
-    return count === 0 ? 'Уведомления' : `Уведомления, непрочитанных: ${String(count)}`;
+    return count === 0 ? CORE_T.bell.notifications : CORE_T.bell.unread(count);
   });
 
   constructor() {

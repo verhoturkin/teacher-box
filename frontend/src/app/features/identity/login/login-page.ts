@@ -20,6 +20,8 @@ import { describeError } from '@core/http/error-messages';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { PasswordToggle } from '@shared/ui/password-toggle';
+import { T } from '../i18n/texts';
+import { LanguagePicker } from '@core/i18n/language-picker';
 
 @Component({
   selector: 'tb-login-page',
@@ -32,28 +34,27 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
     Password,
     PortalLogo,
     PasswordToggle,
+    LanguagePicker,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
       <tb-portal-logo size="3rem" />
       <p-card
-        [header]="'Вход в ' + portalName()"
+        [header]="t.title(portalName())"
         styleClass="tb-auth-card"
         [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
       >
         @if (sessionExpired()) {
-          <p-message severity="info" styleClass="tb-form-message"
-            >Сессия истекла. Войдите снова</p-message
-          >
+          <p-message severity="info" styleClass="tb-form-message">{{ t.expired }}</p-message>
         }
         <form class="tb-form" [formGroup]="form" (ngSubmit)="submit()">
           <div class="tb-field">
-            <label for="login">Логин</label>
+            <label for="login">{{ t.login }}</label>
             <input pInputText id="login" formControlName="login" autocomplete="username" />
           </div>
           <div class="tb-field">
-            <label for="password">Пароль</label>
+            <label for="password">{{ t.password }}</label>
             <p-password
               inputId="password"
               formControlName="password"
@@ -72,17 +73,19 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
           <!-- Never disabled: Enter must always submit (also right after password manager autofill). -->
           <p-button
             type="submit"
-            label="Войти"
+            [label]="t.submit"
             icon="pi pi-sign-in"
             [loading]="pending()"
             [fluid]="true"
           />
         </form>
       </p-card>
+      <tb-language-picker />
     </main>
   `,
 })
 export class LoginPage {
+  protected readonly t = T.login;
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef);
@@ -107,7 +110,7 @@ export class LoginPage {
       return;
     }
     if (this.form.invalid) {
-      this.error.set('Введите логин и пароль');
+      this.error.set(T.login.required);
       this.focus(this.form.controls.login.invalid ? 'login' : 'password');
       return;
     }
@@ -120,7 +123,7 @@ export class LoginPage {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не удалось войти. Попробуйте позже'));
+        this.error.set(describeError(error, T.login.failed));
         // after a wrong password the focus is in the password, not lost on the page (ADR-0024)
         this.focus('password');
       },

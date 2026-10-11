@@ -32,6 +32,7 @@ import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Busy } from '@shared/ui/busy';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -57,10 +58,12 @@ import { Snackbar } from '@core/snackbar/snackbar';
     <p-card>
       <ng-template #title>
         <div class="tb-card-title">
-          <span class="tb-card-title__text">Группы <tb-help-button topic="teacher/groups" /></span>
+          <span class="tb-card-title__text"
+            >{{ t.title }} <tb-help-button topic="teacher/groups"
+          /></span>
           <div class="tb-card-title__actions">
             <p-button
-              label="Создать группу"
+              [label]="t.create"
               severity="secondary"
               icon="pi pi-users"
               (onClick)="openCreate()"
@@ -71,13 +74,13 @@ import { Snackbar } from '@core/snackbar/snackbar';
       <div class="tb-toolbar">
         <label class="tb-switch" for="show-archived">
           <p-toggleswitch inputId="show-archived" [formControl]="showArchived" />
-          Показывать архив
+          {{ t.showArchived }}
         </label>
       </div>
 
-      <tb-load-state [state]="state" what="группы" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (visibleGroups().length > 0) {
-          <ul class="tb-list" aria-label="Группы">
+          <ul class="tb-list" [attr.aria-label]="t.title">
             @for (group of visibleGroups(); track group.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
@@ -85,7 +88,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
                   <span class="tb-list__title">{{ group.name }}</span>
                   <span class="tb-list__supporting">
                     @if (group.members.length === 0) {
-                      Пока никого
+                      {{ t.nobody }}
                     } @else {
                       {{ memberNames(group) }}
                     }
@@ -93,15 +96,15 @@ import { Snackbar } from '@core/snackbar/snackbar';
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
                   @if (group.archivedAt) {
-                    <p-tag value="В архиве" severity="secondary" />
+                    <p-tag [value]="t.archived" severity="secondary" />
                   }
                   <p-button
                     icon="pi pi-ellipsis-v"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    [pTooltip]="'Действия: ' + group.name"
-                    [ariaLabel]="'Действия: ' + group.name"
+                    [pTooltip]="t.actions(group.name)"
+                    [ariaLabel]="t.actions(group.name)"
                     [loading]="busy.is('restore-' + group.id)"
                     [tbAttributes]="{
                       'aria-haspopup': 'menu',
@@ -114,17 +117,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
             }
           </ul>
         } @else if (groups().length === 0) {
-          <tb-empty-state
-            icon="pi-users"
-            title="Групп пока нет"
-            hint="Нажмите «Создать группу», если занимаетесь с несколькими учениками сразу"
-          />
+          <tb-empty-state icon="pi-users" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         } @else {
-          <tb-empty-state
-            icon="pi-box"
-            title="Все группы в архиве"
-            hint="Включите «Показывать архив»: вернуть группу можно в её меню «⋮»"
-          />
+          <tb-empty-state icon="pi-box" [title]="t.allArchivedTitle" [hint]="t.allArchivedHint" />
         }
       </tb-load-state>
     </p-card>
@@ -148,6 +143,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class GroupsPanel implements OnInit {
+  protected readonly t = T.groups;
   private readonly snackbar = inject(Snackbar);
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
@@ -221,7 +217,7 @@ export class GroupsPanel implements OnInit {
   }
 
   protected onSaved({ group, lessonPrice }: SavedGroup): void {
-    this.snackbar.success('Группа сохранена');
+    this.snackbar.success(T.groups.saved);
     this.replace(group);
     if (lessonPrice !== null) {
       this.prices.update((prices) => new Map(prices).set(group.id, lessonPrice));
@@ -232,10 +228,10 @@ export class GroupsPanel implements OnInit {
     this.confirmation.confirm(
       dangerConfirmation({
         key: 'groups',
-        header: 'Убрать группу в архив?',
-        message: `Регулярные занятия группы «${group.name}» остановятся, будущие занятия отменятся. Проведённые занятия и оплаты сохранятся.`,
+        header: T.groups.archiveHeader,
+        message: T.groups.archiveMessage(group.name),
         icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'В архив',
+        acceptLabel: T.groups.archive,
         accept: () => {
           this.api.archiveGroup(group.id).subscribe((saved) => {
             this.replace(saved);
@@ -258,7 +254,7 @@ export class GroupsPanel implements OnInit {
   private actionsOf(group: StudentGroup): MenuItem[] {
     const items: MenuItem[] = [
       {
-        label: 'Изменить',
+        label: T.groups.edit,
         icon: 'pi pi-pencil',
         command: () => {
           this.openEdit(group);
@@ -267,7 +263,7 @@ export class GroupsPanel implements OnInit {
     ];
     if (group.archivedAt === null) {
       items.push({
-        label: 'В архив…',
+        label: T.groups.archiveItem,
         icon: 'pi pi-inbox',
         styleClass: 'tb-menu-item--danger',
         command: () => {
@@ -276,7 +272,7 @@ export class GroupsPanel implements OnInit {
       });
     } else {
       items.push({
-        label: 'Вернуть из архива',
+        label: T.groups.restore,
         icon: 'pi pi-replay',
         command: () => {
           this.restore(group);

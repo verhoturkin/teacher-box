@@ -29,6 +29,9 @@ import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { locale } from '@core/i18n/language';
 
 /** Teacher: the history of one student, lesson price, corrections. */
 @Component({
@@ -52,14 +55,14 @@ import { pageDetail } from '@core/routing/page-detail';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!state.ready()) {
-      <tb-page-header title="Ученик" back="/teacher/billing" backLabel="Оплаты" />
-      <tb-load-state [state]="state" what="историю оплат" (retry)="reload()" />
+      <tb-page-header [title]="t.student" back="/teacher/billing" [backLabel]="t.back" />
+      <tb-load-state [state]="state" [what]="t.what" (retry)="reload()" />
     } @else if (ledger(); as ledger) {
-      <tb-page-header [title]="ledger.displayName" back="/teacher/billing" backLabel="Оплаты">
+      <tb-page-header [title]="ledger.displayName" back="/teacher/billing" [backLabel]="t.back">
         <tb-help-button help topic="teacher/billing" />
         <p-button
           class="tb-page-fab"
-          label="Оплата"
+          [label]="t.payment"
           icon="pi pi-wallet"
           (onClick)="paymentVisible.set(true)"
         />
@@ -68,7 +71,7 @@ import { pageDetail } from '@core/routing/page-detail';
       <div class="tb-stats">
         <p-card>
           <div class="tb-stat">
-            <span class="tb-muted">Баланс</span>
+            <span class="tb-muted">{{ t.balance }}</span>
             <span class="tb-stat__value"
               ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
             /></span>
@@ -76,13 +79,13 @@ import { pageDetail } from '@core/routing/page-detail';
         </p-card>
         <p-card>
           <div class="tb-stat">
-            <span class="tb-muted">Начислено за всё время</span>
+            <span class="tb-muted">{{ t.charged }}</span>
             <span class="tb-stat__value">{{ ledger.charged | money: ledger.currency }}</span>
           </div>
         </p-card>
         <p-card>
           <div class="tb-stat">
-            <span class="tb-muted">Оплачено за всё время</span>
+            <span class="tb-muted">{{ t.paid }}</span>
             <span class="tb-stat__value">{{ ledger.paid | money: ledger.currency }}</span>
           </div>
         </p-card>
@@ -91,20 +94,20 @@ import { pageDetail } from '@core/routing/page-detail';
             <!-- the field under its label across the card, the buttons under it (ADR-0018) -->
             <form class="tb-form" [formGroup]="priceForm" (ngSubmit)="savePrice()">
               <div class="tb-field">
-                <label for="lesson-price-input">Цена занятия</label>
+                <label for="lesson-price-input">{{ t.lessonPrice }}</label>
                 <p-inputnumber
                   inputId="lesson-price-input"
                   formControlName="price"
                   mode="currency"
                   [currency]="ledger.currency"
-                  locale="ru-RU"
+                  [locale]="locale"
                   [min]="0"
                   [fluid]="true"
                 />
               </div>
               <div class="tb-form-actions">
                 <p-button
-                  label="Отмена"
+                  [label]="c.cancel"
                   severity="secondary"
                   [text]="true"
                   (onClick)="cancelPrice()"
@@ -113,7 +116,7 @@ import { pageDetail } from '@core/routing/page-detail';
                   class="tb-tonal"
                   type="submit"
                   severity="success"
-                  label="Сохранить"
+                  [label]="c.save"
                   icon="pi pi-check"
                   [disabled]="price.invalid || !priceChanged()"
                   [loading]="savingPrice()"
@@ -122,7 +125,7 @@ import { pageDetail } from '@core/routing/page-detail';
             </form>
           } @else {
             <div class="tb-stat">
-              <span class="tb-muted">Цена занятия</span>
+              <span class="tb-muted">{{ t.lessonPrice }}</span>
               <span class="tb-stat__value">
                 {{ ledger.lessonPrice | money: ledger.currency }}
                 <p-button
@@ -130,8 +133,8 @@ import { pageDetail } from '@core/routing/page-detail';
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"
-                  pTooltip="Изменить цену занятия"
-                  ariaLabel="Изменить цену занятия"
+                  [pTooltip]="t.editPrice"
+                  [ariaLabel]="t.editPrice"
                   (onClick)="editingPrice.set(true)"
                 />
               </span>
@@ -140,7 +143,7 @@ import { pageDetail } from '@core/routing/page-detail';
         </p-card>
       </div>
 
-      <p-card header="История">
+      <p-card [header]="t.history">
         <tb-ledger-list
           [ledger]="ledger"
           [editable]="true"
@@ -161,6 +164,9 @@ import { pageDetail } from '@core/routing/page-detail';
   `,
 })
 export class StudentLedgerPage implements OnInit {
+  protected readonly locale = locale();
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.studentLedger;
   private readonly api = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
@@ -221,7 +227,7 @@ export class StudentLedgerPage implements OnInit {
         this.savingPrice.set(false);
         this.ledger.set({ ...ledger, lessonPrice: saved });
         this.editingPrice.set(false);
-        this.snackbar.success('Цена занятия изменена');
+        this.snackbar.success(T.studentLedger.priceChanged);
       },
       error: () => {
         this.savingPrice.set(false);
@@ -241,9 +247,11 @@ export class StudentLedgerPage implements OnInit {
     const ledger = this.ledger();
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Снять начисление?',
-        message: `Начисление ${ledger === null ? '' : formatMoney(lesson.price, ledger.currency)} будет снято. Запись останется в истории.`,
-        acceptLabel: 'Снять начисление',
+        header: T.studentLedger.cancelHeader,
+        message: T.studentLedger.cancelMessage(
+          ledger === null ? '' : formatMoney(lesson.price, ledger.currency),
+        ),
+        acceptLabel: T.studentLedger.cancelAccept,
         accept: () => {
           this.api.cancelLesson(lesson.id, null).subscribe(() => {
             this.reload();
@@ -257,9 +265,11 @@ export class StudentLedgerPage implements OnInit {
     const ledger = this.ledger();
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Аннулировать оплату?',
-        message: `Оплата ${ledger === null ? '' : formatMoney(payment.amount, ledger.currency)} перестанет учитываться. Запись останется в истории.`,
-        acceptLabel: 'Аннулировать',
+        header: T.studentLedger.voidHeader,
+        message: T.studentLedger.voidMessage(
+          ledger === null ? '' : formatMoney(payment.amount, ledger.currency),
+        ),
+        acceptLabel: T.studentLedger.voidAccept,
         accept: () => {
           this.api.voidPayment(payment.id, null).subscribe(() => {
             this.reload();

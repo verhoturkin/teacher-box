@@ -1,6 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { locale } from '@core/i18n/language';
 
-const RULES = new Intl.PluralRules('ru');
+/** Rules of the current language: in English «few» never comes, `few` and `many` are the same. */
+const RULES = new Intl.PluralRules(locale());
 
 /**
  * The form of a noun that agrees with the number: `plural(1, 'токен', 'токена', 'токенов')` is
@@ -20,7 +22,7 @@ export function plural(count: number, one: string, few: string, many: string): s
 
 /** «22 токена»: the number, a non-breaking space and the noun in the right form. */
 export function countOf(count: number, one: string, few: string, many: string): string {
-  return `${count.toLocaleString('ru-RU')}\u00A0${plural(count, one, few, many)}`;
+  return `${count.toLocaleString(locale())}\u00A0${plural(count, one, few, many)}`;
 }
 
 /**

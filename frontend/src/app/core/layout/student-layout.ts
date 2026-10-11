@@ -1,19 +1,20 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MenuItem } from 'primeng/api';
+import { CORE_T } from '@core/i18n/texts';
 import { Shell } from './shell';
 
 export const STUDENT_MENU: MenuItem[] = [
   {
-    label: 'Главная',
+    label: CORE_T.nav.home,
     icon: 'pi pi-home',
     routerLink: '/cabinet',
     routerLinkActiveOptions: { exact: true },
   },
-  { label: 'Расписание', icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
-  { label: 'Задания', icon: 'pi pi-pen-to-square', routerLink: '/cabinet/homework' },
-  { label: 'Учебники', icon: 'pi pi-book', routerLink: '/cabinet/textbooks' },
-  { label: 'Оплаты', icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
-  { label: 'Мои доски', icon: 'pi pi-th-large', routerLink: '/cabinet/boards' },
+  { label: CORE_T.nav.schedule, icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
+  { label: CORE_T.nav.homework, icon: 'pi pi-pen-to-square', routerLink: '/cabinet/homework' },
+  { label: CORE_T.nav.textbooks, icon: 'pi pi-book', routerLink: '/cabinet/textbooks' },
+  { label: CORE_T.nav.billing, icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
+  { label: CORE_T.nav.myBoards, icon: 'pi pi-th-large', routerLink: '/cabinet/boards' },
 ];
 
 /** The sections that lead the bottom bar on a phone. */

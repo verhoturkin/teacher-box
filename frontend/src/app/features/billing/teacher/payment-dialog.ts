@@ -25,6 +25,9 @@ import { BillingApi } from '../data-access/billing-api';
 import { BillingStudent, Payment } from '../data-access/billing.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { locale } from '@core/i18n/language';
 
 /** Registers a payment from a student. */
 @Component({
@@ -44,7 +47,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="Оплата"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -52,36 +55,36 @@ import { SubmitFor } from '@shared/ui/submit-for';
     >
       <form tbFieldErrors id="payment-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="payment-student">Ученик</label>
+          <label for="payment-student">{{ t.student }}</label>
           <p-select
             inputId="payment-student"
             formControlName="studentId"
             [options]="studentOptions()"
             optionLabel="label"
             optionValue="value"
-            placeholder="Выберите ученика"
+            [placeholder]="t.chooseStudent"
             [filter]="true"
-            filterPlaceholder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceholder]="t.search"
+            [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-row">
           <div class="tb-field">
-            <label for="payment-amount">Сумма</label>
+            <label for="payment-amount">{{ t.amount }}</label>
             <p-inputnumber
               inputId="payment-amount"
               formControlName="amount"
               mode="currency"
               [currency]="currency()"
-              locale="ru-RU"
+              [locale]="locale"
               [min]="0"
               [fluid]="true"
             />
           </div>
           <div class="tb-field">
-            <label for="payment-date">Дата оплаты</label>
+            <label for="payment-date">{{ t.date }}</label>
             <p-datepicker
               inputId="payment-date"
               formControlName="paidOn"
@@ -94,7 +97,7 @@ import { SubmitFor } from '@shared/ui/submit-for';
           </div>
         </div>
         <div class="tb-field">
-          <label for="payment-comment">Комментарий</label>
+          <label for="payment-comment">{{ t.comment }}</label>
           <input pInputText id="payment-comment" formControlName="comment" autocomplete="off" />
         </div>
         @if (error(); as message) {
@@ -103,14 +106,14 @@ import { SubmitFor } from '@shared/ui/submit-for';
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          label="Сохранить"
+          [label]="c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="payment-form"
@@ -120,6 +123,9 @@ import { SubmitFor } from '@shared/ui/submit-for';
   `,
 })
 export class PaymentDialog {
+  protected readonly locale = locale();
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.paymentDialog;
   private readonly api = inject(BillingApi);
 
   readonly visible = model(false);
@@ -185,7 +191,7 @@ export class PaymentDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось сохранить оплату'));
+          this.error.set(describeError(error, T.paymentDialog.failed));
         },
       });
   }

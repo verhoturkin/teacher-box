@@ -16,6 +16,8 @@ import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Portal } from '@core/portal/portal';
 import { IssuedInvite } from '../data-access/identity.models';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Shows an invitation link for the teacher to send to a student. */
 @Component({
@@ -36,21 +38,17 @@ import { IssuedInvite } from '../data-access/identity.models';
       </ng-template>
       @if (invite(); as invite) {
         <p>
-          @if (invite.purpose === 'ACTIVATION') {
-            Отправьте ученику эту ссылку — по ней он придумает логин и пароль.
-          } @else {
-            Отправьте ученику эту ссылку — по ней он задаст новый пароль.
-          }
-          Ссылка одноразовая и действует до {{ invite.expiresAt | date: 'dd.MM.yyyy HH:mm' }}.
+          {{ invite.purpose === 'ACTIVATION' ? t.activation : t.reset }}
+          {{ t.validUntil((invite.expiresAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
         </p>
         <div class="tb-field">
-          <label for="invite-link">Ссылка-приглашение</label>
+          <label for="invite-link">{{ t.link }}</label>
           <input pInputText id="invite-link" readonly [value]="link()" />
         </div>
       }
       <ng-template #footer>
         <p-button
-          label="Закрыть"
+          [label]="c.close"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
@@ -58,7 +56,7 @@ import { IssuedInvite } from '../data-access/identity.models';
         @if (invite()) {
           <p-button
             [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
-            [label]="copied() ? 'Скопировано' : 'Копировать ссылку'"
+            [label]="copied() ? t.copied : t.copy"
             severity="success"
             (onClick)="copy()"
           />
@@ -68,6 +66,8 @@ import { IssuedInvite } from '../data-access/identity.models';
   `,
 })
 export class InviteLinkDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.inviteLink;
   private readonly clipboard = inject(Clipboard);
   private readonly portal = inject(Portal);
 
@@ -77,7 +77,7 @@ export class InviteLinkDialog {
 
   protected readonly copied = signal(false);
   private readonly title = viewChild<ElementRef<HTMLElement>>('title');
-  protected readonly heading = computed(() => `Ссылка для ученика: ${this.studentName()}`);
+  protected readonly heading = computed(() => T.inviteLink.heading(this.studentName()));
   protected readonly link = computed(() => {
     const invite = this.invite();
     return invite === null ? '' : this.portal.link(`/invite/${invite.token}`);

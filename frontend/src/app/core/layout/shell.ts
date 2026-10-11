@@ -11,13 +11,17 @@ import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
+import { CORE_T } from '@core/i18n/texts';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { SideNav } from './side-nav';
 
+const T = CORE_T.shell;
+
 const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
-  { choice: 'light', label: 'Светлая тема', icon: 'pi pi-sun' },
-  { choice: 'dark', label: 'Тёмная тема', icon: 'pi pi-moon' },
-  { choice: 'system', label: 'Тема как в системе', icon: 'pi pi-desktop' },
+  { choice: 'light', label: T.lightTheme, icon: 'pi pi-sun' },
+  { choice: 'dark', label: T.darkTheme, icon: 'pi pi-moon' },
+  { choice: 'system', label: T.systemTheme, icon: 'pi pi-desktop' },
 ];
 
 /**
@@ -66,7 +70,7 @@ const NAV_ITEMS = 4;
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          [attr.aria-label]="compact() ? 'Меню пользователя' : userName() + ': меню пользователя'"
+          [attr.aria-label]="compact() ? t.userMenu : t.userMenuOf(userName())"
           aria-haspopup="menu"
           [attr.aria-expanded]="userOpen()"
           (click)="userMenu.toggle($event)"
@@ -99,7 +103,7 @@ const NAV_ITEMS = 4;
       </main>
     </div>
     @if (compact()) {
-      <nav class="tb-bottom-nav" aria-label="Разделы">
+      <nav class="tb-bottom-nav" [attr.aria-label]="sections">
         @for (item of navItems(); track item.label) {
           <a
             class="tb-bottom-nav__item"
@@ -118,7 +122,7 @@ const NAV_ITEMS = 4;
             type="button"
             class="tb-bottom-nav__item"
             [class.tb-bottom-nav__item--active]="moreActive()"
-            aria-label="Ещё разделы"
+            [attr.aria-label]="t.moreSections"
             aria-haspopup="menu"
             [attr.aria-expanded]="moreOpen()"
             [attr.aria-current]="moreActive() ? 'page' : null"
@@ -127,7 +131,7 @@ const NAV_ITEMS = 4;
             <span class="tb-bottom-nav__icon"
               ><i class="pi pi-ellipsis-h" aria-hidden="true"></i
             ></span>
-            <span class="tb-bottom-nav__label">Ещё</span>
+            <span class="tb-bottom-nav__label">{{ t.more }}</span>
           </button>
         }
       </nav>
@@ -149,6 +153,8 @@ export class Shell {
   private readonly auth = inject(AuthService);
   private readonly theme = inject(ThemeMode);
 
+  protected readonly t = T;
+  protected readonly sections = CORE_T.nav.sections;
   protected readonly portalName = inject(Portal).name;
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
@@ -208,23 +214,34 @@ export class Shell {
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
-    { label: 'Справка', icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
-    { label: 'Мой аккаунт', icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
+    { label: T.help, icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
+    { label: T.account, icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.
     // the chosen theme: its icon stays, the item is highlighted and says that it is chosen (ADR-0024)
     ...THEMES.map(({ choice, label, icon }) => ({
       icon,
       ...(this.theme.choice() === choice
-        ? { label: `${label} (выбрана)`, styleClass: 'tb-menu-item--selected' }
+        ? { label: T.chosenTheme(label), styleClass: 'tb-menu-item--selected' }
         : { label }),
       command: () => {
         this.theme.choose(choice);
       },
     })),
     { separator: true },
+    // the language under the theme (ADR-0035): another one reloads the page
+    ...LANGUAGES.map(({ code, name }) => ({
+      icon: 'pi pi-language',
+      ...(language() === code
+        ? { label: T.chosenLanguage(name), styleClass: 'tb-menu-item--selected' }
+        : { label: name }),
+      command: () => {
+        chooseLanguage(code);
+      },
+    })),
+    { separator: true },
     {
-      label: 'Выйти',
+      label: T.signOut,
       icon: 'pi pi-sign-out',
       command: () => {
         this.auth.logout().subscribe();

@@ -23,10 +23,12 @@ import interactionPlugin from '@fullcalendar/angular/interaction';
 import listPlugin from '@fullcalendar/angular/list';
 import classicTheme from '@fullcalendar/angular/themes/classic';
 import timeGridPlugin from '@fullcalendar/angular/timegrid';
+import enGbLocale from 'fullcalendar/locales/en-gb';
 import ruLocale from 'fullcalendar/locales/ru';
 import { injectMobile } from '@core/layout/mobile';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { BusyTime, OffTimePeriod, ScheduledLesson } from '../data-access/schedule.models';
+import { Language, language } from '@core/i18n/language';
 
 /** Days `[from, to)` shown by the calendar (`yyyy-MM-dd`, browser time zone). */
 export interface CalendarRange {
@@ -40,6 +42,12 @@ export interface LessonMove {
   readonly startsAt: Date;
   readonly revert: () => void;
 }
+
+/** FullCalendar's texts and week of each language of the interface (ADR-0035). */
+const CALENDAR_LOCALES: Readonly<Record<Language, typeof ruLocale>> = {
+  ru: ruLocale,
+  en: enGbLocale,
+};
 
 /** An empty time range the teacher selected to plan a lesson; `allDay` — whole days of the month view. */
 export interface SlotSelection {
@@ -111,7 +119,7 @@ export class ScheduleCalendar {
     const mobile = this.mobile();
     return {
       plugins: [classicTheme, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
-      locale: ruLocale,
+      locale: CALENDAR_LOCALES[language()],
       initialView: mobile ? 'listWeek' : this.initialView(),
       initialDate: this.initialDate() ?? undefined,
       ...(mobile

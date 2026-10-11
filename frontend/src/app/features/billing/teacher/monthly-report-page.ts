@@ -26,6 +26,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { T } from '../i18n/texts';
 
 /** Teacher: income and lessons of a month. */
 @Component({
@@ -48,7 +49,7 @@ import { Avatar } from '@shared/ui/avatar';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Отчёт за месяц" back="/teacher/billing" backLabel="Оплаты">
+    <tb-page-header [title]="t.title" back="/teacher/billing" [backLabel]="t.back">
       <tb-help-button help topic="teacher/billing" />
     </tb-page-header>
     <div class="tb-toolbar">
@@ -59,16 +60,16 @@ import { Avatar } from '@shared/ui/avatar';
         [showIcon]="true"
         [readonlyInput]="true"
         inputId="report-month"
-        ariaLabel="Месяц отчёта"
+        [ariaLabel]="t.month"
       />
     </div>
 
-    <tb-load-state [state]="state" what="отчёт" (retry)="load(month.value)">
+    <tb-load-state [state]="state" [what]="t.what" (retry)="load(month.value)">
       @if (report(); as report) {
         <div class="tb-stats">
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Поступления</span>
+              <span class="tb-muted">{{ t.income }}</span>
               <span class="tb-stat__value tb-positive">{{
                 report.income | money: report.currency
               }}</span>
@@ -76,47 +77,46 @@ import { Avatar } from '@shared/ui/avatar';
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Начислено за занятия</span>
+              <span class="tb-muted">{{ t.charged }}</span>
               <span class="tb-stat__value">{{ report.charged | money: report.currency }}</span>
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Занятия</span>
+              <span class="tb-muted">{{ t.lessons }}</span>
               <span class="tb-stat__value">{{ report.conductedLessons }}</span>
-              <small class="tb-muted"
-                >пропусков: {{ report.missedLessons }}, отменено:
-                {{ report.cancelledLessons }}</small
-              >
+              <small class="tb-muted">{{
+                t.missedAndCancelled(report.missedLessons, report.cancelledLessons)
+              }}</small>
             </div>
           </p-card>
         </div>
 
         <div class="tb-stack">
-          <p-card header="По ученикам">
+          <p-card [header]="t.byStudent">
             <p-table [value]="report.students" dataKey="studentId" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th class="tb-col-main">Ученик</th>
-                  <th>Занятий</th>
-                  <th class="tb-amount">Начислено</th>
-                  <th class="tb-amount">Оплачено</th>
+                  <th class="tb-col-main">{{ t.student }}</th>
+                  <th>{{ t.lessonsCount }}</th>
+                  <th class="tb-amount">{{ t.chargedColumn }}</th>
+                  <th class="tb-amount">{{ t.paid }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-row [tbRowType]="report.students">
                 <tr>
-                  <td data-label="Ученик">
+                  <td [attr.data-label]="t.student">
                     <a
                       [routerLink]="['/teacher/billing/students', row.studentId]"
                       class="tb-link"
                       >{{ row.displayName }}</a
                     >
                   </td>
-                  <td data-label="Занятий">{{ row.chargedLessons }}</td>
-                  <td data-label="Начислено" class="tb-amount">
+                  <td [attr.data-label]="t.lessonsCount">{{ row.chargedLessons }}</td>
+                  <td [attr.data-label]="t.chargedColumn" class="tb-amount">
                     {{ row.charged | money: report.currency }}
                   </td>
-                  <td data-label="Оплачено" class="tb-amount">
+                  <td [attr.data-label]="t.paid" class="tb-amount">
                     {{ row.paid | money: report.currency }}
                   </td>
                 </tr>
@@ -124,17 +124,14 @@ import { Avatar } from '@shared/ui/avatar';
               <ng-template #emptymessage>
                 <tr>
                   <td colspan="4">
-                    <tb-empty-state
-                      icon="pi-calendar"
-                      title="В этом месяце не было ни занятий, ни оплат"
-                    />
+                    <tb-empty-state icon="pi-calendar" [title]="t.emptyMonth" />
                   </td>
                 </tr>
               </ng-template>
             </p-table>
           </p-card>
 
-          <p-card header="Журнал занятий">
+          <p-card [header]="t.journal">
             <p-table
               [value]="report.lessons"
               [paginator]="report.lessons.length > 20"
@@ -143,17 +140,17 @@ import { Avatar } from '@shared/ui/avatar';
             >
               <ng-template #header>
                 <tr>
-                  <th>Дата</th>
-                  <th class="tb-col-main">Ученик</th>
-                  <th>Тема</th>
-                  <th>Итог</th>
-                  <th class="tb-amount">Стоимость</th>
+                  <th>{{ t.date }}</th>
+                  <th class="tb-col-main">{{ t.student }}</th>
+                  <th>{{ t.topic }}</th>
+                  <th>{{ t.outcome }}</th>
+                  <th class="tb-amount">{{ t.price }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.lessons">
                 <tr [class.tb-inactive]="entry.lesson.status === 'CANCELLED'">
-                  <td data-label="Дата">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
-                  <td data-label="Ученик">
+                  <td [attr.data-label]="t.date">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
+                  <td [attr.data-label]="t.student">
                     <div class="tb-person">
                       <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
@@ -161,8 +158,8 @@ import { Avatar } from '@shared/ui/avatar';
                       </div>
                     </div>
                   </td>
-                  <td data-label="Тема">{{ entry.lesson.topic ?? '' }}</td>
-                  <td data-label="Итог">
+                  <td [attr.data-label]="t.topic">{{ entry.lesson.topic ?? '' }}</td>
+                  <td [attr.data-label]="t.outcome">
                     <p-tag
                       [value]="lessonStatusLabels[entry.lesson.status]"
                       [attr.title]="lessonStatusHints[entry.lesson.status] ?? null"
@@ -175,33 +172,35 @@ import { Avatar } from '@shared/ui/avatar';
                       "
                     />
                   </td>
-                  <td data-label="Стоимость" class="tb-amount">
+                  <td [attr.data-label]="t.price" class="tb-amount">
                     {{ entry.lesson.price | money: report.currency }}
                   </td>
                 </tr>
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="5"><tb-empty-state icon="pi-calendar" title="Занятий нет" /></td>
+                  <td colspan="5"><tb-empty-state icon="pi-calendar" [title]="t.noLessons" /></td>
                 </tr>
               </ng-template>
             </p-table>
           </p-card>
 
-          <p-card header="Оплаты">
+          <p-card [header]="t.payments">
             <p-table [value]="report.payments" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th>Дата</th>
-                  <th class="tb-col-main">Ученик</th>
-                  <th>Комментарий</th>
-                  <th class="tb-amount">Сумма</th>
+                  <th>{{ t.date }}</th>
+                  <th class="tb-col-main">{{ t.student }}</th>
+                  <th>{{ t.comment }}</th>
+                  <th class="tb-amount">{{ t.amount }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.payments">
                 <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
-                  <td data-label="Дата">{{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}</td>
-                  <td data-label="Ученик">
+                  <td [attr.data-label]="t.date">
+                    {{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}
+                  </td>
+                  <td [attr.data-label]="t.student">
                     <div class="tb-person">
                       <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
@@ -209,15 +208,15 @@ import { Avatar } from '@shared/ui/avatar';
                       </div>
                     </div>
                   </td>
-                  <td data-label="Комментарий">{{ entry.payment.comment ?? '' }}</td>
-                  <td data-label="Сумма" class="tb-amount">
+                  <td [attr.data-label]="t.comment">{{ entry.payment.comment ?? '' }}</td>
+                  <td [attr.data-label]="t.amount" class="tb-amount">
                     {{ entry.payment.amount | money: report.currency }}
                   </td>
                 </tr>
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="4"><tb-empty-state icon="pi-wallet" title="Оплат нет" /></td>
+                  <td colspan="4"><tb-empty-state icon="pi-wallet" [title]="t.noPayments" /></td>
                 </tr>
               </ng-template>
             </p-table>
@@ -228,6 +227,7 @@ import { Avatar } from '@shared/ui/avatar';
   `,
 })
 export class MonthlyReportPage implements OnInit {
+  protected readonly t = T.report;
   private readonly api = inject(BillingApi);
   private readonly destroyRef = inject(DestroyRef);
 

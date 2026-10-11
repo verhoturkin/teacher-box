@@ -10,6 +10,7 @@ import { LoadState } from './load-state';
  *
  * `<tb-load-state [state]="state" what="задания" (retry)="load()">…</tb-load-state>`
  */
+import { SHARED_T } from '@shared/i18n/texts';
 @Component({
   selector: 'tb-load-state',
   imports: [Button, ProgressSpinner],
@@ -19,19 +20,19 @@ import { LoadState } from './load-state';
     @switch (state().status()) {
       @case ('loading') {
         <div class="tb-load-state__loading" role="status">
-          <p-progressspinner ariaLabel="Загрузка" />
-          <span class="tb-sr-only">Загрузка…</span>
+          <p-progressspinner [ariaLabel]="t.load.loading" />
+          <span class="tb-sr-only">{{ t.common.loading }}</span>
         </div>
       }
       @case ('error') {
         <div class="tb-load-state__error" role="alert">
           <i class="pi pi-exclamation-circle tb-load-state__icon" aria-hidden="true"></i>
-          <p class="tb-load-state__title">Не удалось загрузить {{ what() }}</p>
+          <p class="tb-load-state__title">{{ t.load.failed(what()) }}</p>
           @if (state().error(); as error) {
             <p class="tb-load-state__detail">{{ error }}</p>
           }
           <p-button
-            label="Повторить"
+            [label]="t.common.retry"
             icon="pi pi-refresh"
             severity="secondary"
             (onClick)="retry.emit()"
@@ -99,9 +100,10 @@ import { LoadState } from './load-state';
   `,
 })
 export class LoadStateView {
+  protected readonly t = SHARED_T;
   readonly state = input.required<LoadState>();
   /** What failed to load, in the accusative: «задания», «расписание». */
-  readonly what = input('данные');
+  readonly what = input(SHARED_T.load.data);
   /** A widget or a panel: less room while loading. */
   readonly compact = input(false);
   readonly retry = output();

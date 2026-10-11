@@ -1,3 +1,4 @@
+import { locale } from '@core/i18n/language';
 /**
  * Calendar dates (`yyyy-MM-dd`) exchanged with the backend. Conversions use local date parts so
  * that a date picked in the UI never shifts because of the time zone.
@@ -31,7 +32,7 @@ export function monthLabel(yearMonth: string): string {
   if (year === undefined || month === undefined || Number.isNaN(year) || Number.isNaN(month)) {
     return yearMonth;
   }
-  return new Date(year, month - 1, 1).toLocaleDateString('ru-RU', {
+  return new Date(year, month - 1, 1).toLocaleDateString(locale(), {
     month: 'long',
     year: 'numeric',
   });

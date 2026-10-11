@@ -1,5 +1,6 @@
-import { registerLocaleData } from '@angular/common';
+import { DOCUMENT, registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import localeEnGb from '@angular/common/locales/en-GB';
 import localeRu from '@angular/common/locales/ru';
 import {
   ApplicationConfig,
@@ -15,7 +16,7 @@ import {
   withComponentInputBinding,
   withInMemoryScrolling,
 } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { MessageService, Translation } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { authInterceptor } from '@core/auth/auth.interceptor';
@@ -23,6 +24,8 @@ import { ReportingErrorHandler } from '@core/errors/reporting-error-handler';
 import { AuthService } from '@core/auth/auth.service';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { PASS_THROUGH } from '@core/a11y/pass-through';
+import { Language, language, locale } from '@core/i18n/language';
+import { PRIMENG_EN } from '@core/i18n/primeng-en';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
 import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
@@ -31,6 +34,10 @@ import { SystemBars } from '@core/theme/system-bars';
 import { DARK_CLASS, ThemeMode } from '@core/theme/theme-mode';
 
 registerLocaleData(localeRu);
+registerLocaleData(localeEnGb);
+
+/** Built-in texts of PrimeNG in each language of the interface (ADR-0035). */
+const PRIMENG_TEXTS: Readonly<Record<Language, Translation>> = { ru: PRIMENG_RU, en: PRIMENG_EN };
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -46,17 +53,18 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(AuthService).restore()),
     provideAppInitializer(() => inject(Portal).load()),
     provideAppInitializer(() => {
+      inject(DOCUMENT).documentElement.lang = language();
       inject(ThemeMode).apply();
       inject(SystemBars);
     }),
     providePrimeNG({
       theme: { preset: TeacherBoxPreset, options: { darkModeSelector: `.${DARK_CLASS}` } },
-      translation: PRIMENG_RU,
+      translation: PRIMENG_TEXTS[language()],
       pt: PASS_THROUGH,
       ripple: true,
     }),
     MessageService,
-    { provide: LOCALE_ID, useValue: 'ru' },
+    { provide: LOCALE_ID, useFactory: locale },
     { provide: TitleStrategy, useClass: AppTitleStrategy },
   ],
 };

@@ -39,6 +39,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
@@ -68,11 +69,11 @@ import { Busy } from '@shared/ui/busy';
   providers: [ConfirmationService, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Ученики">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/students" />
       <p-button
         class="tb-page-fab"
-        label="Добавить ученика"
+        [label]="t.add"
         icon="pi pi-user-plus"
         (onClick)="openCreate()"
       />
@@ -80,26 +81,26 @@ import { Busy } from '@shared/ui/busy';
 
     <div class="tb-stack">
       <p-card>
-        <h2 class="tb-sr-only">Список учеников</h2>
+        <h2 class="tb-sr-only">{{ t.list }}</h2>
         <div class="tb-toolbar">
           <p-iconfield>
             <p-inputicon styleClass="pi pi-search" />
             <input
               pInputText
               [formControl]="search"
-              placeholder="Поиск по имени"
-              aria-label="Поиск по имени"
+              [placeholder]="t.search"
+              [attr.aria-label]="t.search"
             />
           </p-iconfield>
           <label class="tb-switch" for="show-deactivated">
             <p-toggleswitch inputId="show-deactivated" [formControl]="showDeactivated" />
-            Показывать отключённых
+            {{ t.showDeactivated }}
           </label>
         </div>
 
-        <tb-load-state [state]="state" what="учеников" (retry)="loadStudents()">
+        <tb-load-state [state]="state" [what]="t.what" (retry)="loadStudents()">
           @if (visibleStudents().length > 0) {
-            <ul class="tb-list" aria-label="Ученики">
+            <ul class="tb-list" [attr.aria-label]="t.title">
               @for (student of visibleStudents(); track student.id) {
                 <li>
                   <tb-avatar [name]="student.displayName" [photo]="student.avatar" />
@@ -126,8 +127,8 @@ import { Busy } from '@shared/ui/busy';
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
-                      [pTooltip]="'Действия: ' + student.displayName"
-                      [ariaLabel]="'Действия: ' + student.displayName"
+                      [pTooltip]="t.actions(student.displayName)"
+                      [ariaLabel]="t.actions(student.displayName)"
                       [loading]="
                         busy.is('invite-' + student.id) || busy.is('reactivate-' + student.id)
                       "
@@ -142,17 +143,9 @@ import { Busy } from '@shared/ui/busy';
               }
             </ul>
           } @else if (students().length === 0) {
-            <tb-empty-state
-              icon="pi-user-plus"
-              title="Учеников пока нет"
-              hint="Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение"
-            />
+            <tb-empty-state icon="pi-user-plus" [title]="t.emptyTitle" [hint]="t.emptyHint" />
           } @else {
-            <tb-empty-state
-              icon="pi-search"
-              title="Никого не найдено"
-              hint="Измените запрос или включите показ отключённых учеников"
-            />
+            <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
           }
         </tb-load-state>
       </p-card>
@@ -181,6 +174,7 @@ import { Busy } from '@shared/ui/busy';
   `,
 })
 export class StudentsPage implements OnInit {
+  protected readonly t = T.students;
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -246,8 +240,8 @@ export class StudentsPage implements OnInit {
   /** The tooltip of the name: the login and the note (one per line), or none. */
   protected details(student: Student): string {
     return [
-      student.login === null ? null : `Логин: ${student.login}`,
-      student.note === null ? null : `Заметка: ${student.note}`,
+      student.login === null ? null : T.students.login(student.login),
+      student.note === null ? null : T.students.note(student.note),
     ]
       .filter((line) => line !== null)
       .join('\n');
@@ -260,7 +254,7 @@ export class StudentsPage implements OnInit {
       return '';
     }
     const until = this.date.transform(invite.expiresAt, 'dd.MM.yyyy') ?? '';
-    return `${INVITE_PURPOSE_LABELS[invite.purpose]} до ${until}`;
+    return T.students.inviteUntil(INVITE_PURPOSE_LABELS[invite.purpose], until);
   }
 
   protected openMenu(student: Student, event: Event): void {
@@ -285,7 +279,7 @@ export class StudentsPage implements OnInit {
 
   protected onUpdated(student: Student): void {
     this.replace(student);
-    this.snackbar.success(`Сохранено: ${student.displayName}`);
+    this.snackbar.success(T.students.saved(student.displayName));
   }
 
   protected reissueInvite(student: Student): void {
@@ -303,10 +297,10 @@ export class StudentsPage implements OnInit {
   protected confirmDeactivate(student: Student): void {
     this.confirmation.confirm(
       dangerConfirmation({
-        header: 'Отключить доступ?',
-        message: `${student.displayName} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
+        header: T.students.deactivateHeader,
+        message: T.students.deactivateMessage(student.displayName),
         icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'Отключить',
+        acceptLabel: T.students.deactivate,
         accept: () => {
           this.api.deactivate(student.id).subscribe((saved) => {
             this.replace(saved);
@@ -327,7 +321,7 @@ export class StudentsPage implements OnInit {
   private actionsOf(student: Student): MenuItem[] {
     const items: MenuItem[] = [
       {
-        label: 'Изменить',
+        label: T.students.edit,
         icon: 'pi pi-pencil',
         command: () => {
           this.openEdit(student);
@@ -336,7 +330,7 @@ export class StudentsPage implements OnInit {
     ];
     if (student.status === 'DEACTIVATED') {
       items.push({
-        label: 'Вернуть доступ',
+        label: T.students.reactivate,
         icon: 'pi pi-replay',
         command: () => {
           this.reactivate(student);
@@ -345,14 +339,14 @@ export class StudentsPage implements OnInit {
     } else {
       items.push(
         {
-          label: student.status === 'ACTIVE' ? 'Сбросить пароль' : 'Новое приглашение',
+          label: student.status === 'ACTIVE' ? T.students.resetPassword : T.students.newInvite,
           icon: 'pi pi-link',
           command: () => {
             this.reissueInvite(student);
           },
         },
         {
-          label: 'Отключить доступ…',
+          label: T.students.deactivateItem,
           icon: 'pi pi-ban',
           styleClass: 'tb-menu-item--danger',
           command: () => {

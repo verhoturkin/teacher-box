@@ -48,3 +48,4 @@ commit.
 | [0032](0032-ready-images-and-installer.md) | Ready GHCR images (amd64/arm64), `compose.yaml` without the repository, Caddy profile, `install.sh` and `teacherbox` | active | README, [operations](../operations.md) |
 | [0033](0033-textbooks.md) | Textbooks: module `textbooks`, PDF pages rendered by PDFBox, `homework` → `textbooks::api`, pages on a board in a frame | active | [textbooks](../modules/textbooks.md) |
 | [0034](0034-md3-colors-from-material-color-utilities.md) | MD3 colours from `@material/material-color-utilities`: Fidelity scheme (spec 2025) from the portal colour, custom success/warning | active | design-system |
+| [0035](0035-interface-languages.md) | Interface languages: TypeScript dictionaries per module checked by the compiler, language per device, switching reloads the page | active | design-system |

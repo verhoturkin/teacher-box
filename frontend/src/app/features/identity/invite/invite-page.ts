@@ -26,6 +26,8 @@ import { IdentityApi } from '../data-access/identity-api';
 import { InviteInfo } from '../data-access/identity.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors';
+import { T } from '../i18n/texts';
+import { LanguagePicker } from '@core/i18n/language-picker';
 
 type InviteState =
   | { readonly kind: 'loading' }
@@ -47,6 +49,7 @@ type InviteState =
     PortalLogo,
     PasswordToggle,
     FieldErrors,
+    LanguagePicker,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -54,48 +57,43 @@ type InviteState =
       <tb-portal-logo size="3rem" />
       @switch (state().kind) {
         @case ('loading') {
-          <p-progress-spinner ariaLabel="Загрузка приглашения" />
+          <p-progress-spinner [ariaLabel]="t.loading" />
         }
         @case ('invalid') {
           <p-card
-            header="Приглашение недействительно"
+            [header]="t.invalidTitle"
             styleClass="tb-auth-card"
             [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
           >
-            <p>
-              Ссылка устарела или уже была использована. Попросите учителя прислать новое
-              приглашение.
-            </p>
+            <p>{{ t.invalidText }}</p>
           </p-card>
         }
         @case ('ready') {
           @if (invite(); as invite) {
             <p-card
-              [header]="'Здравствуйте, ' + invite.displayName + '!'"
+              [header]="t.hello(invite.displayName)"
               styleClass="tb-auth-card"
               [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
             >
               <p class="tb-muted">
                 @if (isActivation()) {
-                  Придумайте логин и пароль для входа в «{{ portalName() }}».
+                  {{ t.activation(portalName()) }}
                 } @else {
-                  Задайте новый пароль для логина <strong>{{ invite.login }}</strong
-                  >.
+                  {{ t.resetBefore }} <strong>{{ invite.login }}</strong
+                  >{{ t.resetAfter }}
                 }
-                Ссылка действует до {{ invite.expiresAt | date: 'dd.MM.yyyy HH:mm' }}.
+                {{ t.validUntil((invite.expiresAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               </p>
               <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="submit()">
                 @if (isActivation()) {
                   <div class="tb-field">
-                    <label for="login">Логин</label>
+                    <label for="login">{{ t.login }}</label>
                     <input pInputText id="login" formControlName="login" autocomplete="username" />
-                    <small class="tb-hint"
-                      >Латинские буквы, цифры, «.», «-», «_» — от 3 до 50 символов</small
-                    >
+                    <small class="tb-hint">{{ t.loginHint }}</small>
                   </div>
                 }
                 <div class="tb-field">
-                  <label for="password">Пароль</label>
+                  <label for="password">{{ t.password }}</label>
                   <p-password
                     inputId="password"
                     formControlName="password"
@@ -107,10 +105,10 @@ type InviteState =
                     <ng-template #showicon><tb-password-toggle /></ng-template>
                     <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
                   </p-password>
-                  <small class="tb-hint">Не короче 8 символов</small>
+                  <small class="tb-hint">{{ t.passwordHint }}</small>
                 </div>
                 <div class="tb-field">
-                  <label for="confirm">Повторите пароль</label>
+                  <label for="confirm">{{ t.confirm }}</label>
                   <p-password
                     inputId="confirm"
                     formControlName="confirm"
@@ -123,7 +121,7 @@ type InviteState =
                     <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
                   </p-password>
                   @if (form.hasError('fieldsMismatch') && form.controls.confirm.dirty) {
-                    <small class="tb-error">Пароли не совпадают</small>
+                    <small class="tb-error">{{ t.mismatch }}</small>
                   }
                 </div>
                 @if (error(); as message) {
@@ -132,7 +130,7 @@ type InviteState =
                 <p-button
                   severity="success"
                   type="submit"
-                  [label]="isActivation() ? 'Создать аккаунт' : 'Сохранить пароль'"
+                  [label]="isActivation() ? t.createAccount : t.savePassword"
                   [loading]="pending()"
                   [fluid]="true"
                 />
@@ -141,10 +139,12 @@ type InviteState =
           }
         }
       }
+      <tb-language-picker />
     </main>
   `,
 })
 export class InvitePage implements OnInit {
+  protected readonly t = T.invite;
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -218,7 +218,7 @@ export class InvitePage implements OnInit {
         if (showAtField(error, fields)) {
           return;
         }
-        this.error.set(describeError(error, 'Не удалось сохранить. Попробуйте позже'));
+        this.error.set(describeError(error, T.invite.failed));
       },
     });
   }

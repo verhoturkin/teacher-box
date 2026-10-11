@@ -13,6 +13,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { IdentityApi } from '../data-access/identity-api';
 import { StudentGroup } from '../data-access/identity.models';
+import { T } from '../i18n/texts';
 
 /**
  * Adds all students of a group to a selection of students: the host merges the emitted ids into
@@ -25,7 +26,7 @@ import { StudentGroup } from '../data-access/identity.models';
   template: `
     @if (groups().length > 0) {
       <div class="tb-field">
-        <label [for]="inputId()">Добавить группу</label>
+        <label [for]="inputId()">{{ t.add }}</label>
         <p-select
           [inputId]="inputId()"
           [formControl]="choice"
@@ -39,6 +40,7 @@ import { StudentGroup } from '../data-access/identity.models';
   `,
 })
 export class GroupPicker implements OnInit {
+  protected readonly t = T.groupPicker;
   private readonly api = inject(IdentityApi);
   private readonly destroyRef = inject(DestroyRef);
 

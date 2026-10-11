@@ -33,6 +33,7 @@ import {
   ExcalidrawLoader,
   ExcalidrawModules,
 } from './excalidraw-loader';
+import { Language, language } from '@core/i18n/language';
 
 /** The portal theme the canvas follows. */
 export type BoardTheme = 'light' | 'dark';
@@ -61,6 +62,9 @@ export interface BoardCanvasReady {
 const UI_OPTIONS: ExcalidrawProps['UIOptions'] = {
   canvasActions: { loadScene: false, saveToActiveFile: false, toggleTheme: null },
 };
+
+/** Excalidraw's own interface in each language of the portal (ADR-0035). */
+const EXCALIDRAW_LANGUAGES: Readonly<Record<Language, string>> = { ru: 'ru-RU', en: 'en' };
 
 /**
  * Excalidraw as an Angular component: the border of the React island (ADR-0028). The scene is read once,
@@ -193,7 +197,7 @@ export class BoardCanvas {
     return {
       initialData: this.initialData,
       theme: this.theme(),
-      langCode: 'ru-RU',
+      langCode: EXCALIDRAW_LANGUAGES[language()],
       UIOptions: UI_OPTIONS,
       // No embedded web pages on a board: a link stays a link.
       validateEmbeddable: () => false,

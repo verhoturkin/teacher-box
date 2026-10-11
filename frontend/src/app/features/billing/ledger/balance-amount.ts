@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { MoneyPipe } from '@shared/money/money.pipe';
+import { T } from '../i18n/texts';
 
 /** A balance with its meaning: debt (red), prepayment (green) or settled. */
 @Component({
@@ -9,9 +10,9 @@ import { MoneyPipe } from '@shared/money/money.pipe';
   template: `
     <span [class]="cssClass()">
       @if (balance() < 0) {
-        долг {{ -balance() | money: currency() }}
+        {{ t.debt((-balance() | money: currency()) ?? '') }}
       } @else if (balance() > 0) {
-        аванс {{ balance() | money: currency() }}
+        {{ t.prepaid((balance() | money: currency()) ?? '') }}
       } @else {
         {{ 0 | money: currency() }}
       }
@@ -19,6 +20,7 @@ import { MoneyPipe } from '@shared/money/money.pipe';
   `,
 })
 export class BalanceAmount {
+  protected readonly t = T.balance;
   readonly balance = input.required<number>();
   readonly currency = input.required<string>();
 

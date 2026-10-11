@@ -3,7 +3,7 @@
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
 ADR-0017–0027 and the call window of ADR-0030, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
-[`glossary.md`](glossary.md) (Russian).
+[`glossary.md`](glossary.md) (Russian and English); texts live in dictionaries (§14).
 
 Where it lives: preset `core/theme/teacher-box-preset.ts`, colour scheme `core/theme/color-scheme.ts`,
 tokens and shared classes `src/styles.scss`, components `shared/ui/*`, breakpoints `core/layout/mobile.ts`.
@@ -120,7 +120,8 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
   `--tb-spring-fast-spatial`; same in the rail.
 - **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
-  (settings, help, account, theme, sign out; a student's photo instead of the person icon). No cabinet name.
+  (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
+  name.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
 - **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
@@ -343,3 +344,19 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   container), the end of a call with its reason (`role="alert"`), «Закрыть» and «Войти снова»; blocked sound —
   an info message with «Включить звук». Joins and leaves are announced in a polite live region.
 
+
+## 14. Texts and languages (ADR-0035)
+
+- **No text in templates or code:** every word the user reads comes from a dictionary — `core/i18n/{ru,en}.ts`
+  (the frame), `shared/i18n/{ru,en}.ts` (common words: `SHARED_T.common.cancel`, `.save`, `.close`…) or the
+  feature's `i18n/{ru,en}.ts` (`T`, from `i18n/texts.ts`). A component keeps its part as
+  `protected readonly t = T.<part>` (and `c = SHARED_T.common`) and binds it: `{{ t.title }}`,
+  `[label]="t.add"`, `[attr.aria-label]="t.list"`. Texts with numbers or names are functions of the dictionary
+  (`t.saved(name)`, `countOf` for plurals); a date or an amount is formatted before it goes in.
+- Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`), and
+  `expectComplete` tests it. Wording of both languages follows [`glossary.md`](glossary.md).
+- **Language switch** — in the user menu under the themes: each language in its own name with `pi-language`,
+  the chosen one highlighted with «(выбран)» / «(selected)»; on the sign-in and invitation pages — the
+  `tb-language-picker` row under the card. Switching reloads the page.
+- Numbers, money and dates use the locale of the language (`locale()`: `ru-RU`, `en-GB`); fixed formats
+  `dd.MM.yyyy` / `HH:mm` stay in both languages.

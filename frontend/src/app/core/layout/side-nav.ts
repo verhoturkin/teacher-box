@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem } from 'primeng/api';
+import { CORE_T } from '@core/i18n/texts';
 
 /**
  * The sections of the role on a wide screen (ADR-0017, ADR-0019, ADR-0024): the expanded
@@ -14,7 +15,7 @@ import { MenuItem } from 'primeng/api';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'navigation',
-    'aria-label': 'Разделы',
+    '[attr.aria-label]': 'sections',
     '[class.tb-side-nav--rail]': 'rail()',
   },
   template: `
@@ -41,4 +42,6 @@ export class SideNav {
   readonly items = input.required<MenuItem[]>();
   /** The narrow rail instead of the expanded one. */
   readonly rail = input(false);
+
+  protected readonly sections = CORE_T.nav.sections;
 }
