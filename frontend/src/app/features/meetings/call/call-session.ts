@@ -25,6 +25,7 @@ import {
   CallSnapshot,
   CallStats,
 } from './call-engine';
+import { T } from '../i18n/texts';
 
 /**
  * Where the call is: `connecting` → `connected` (⇄ `reconnecting`) → `idle` when the user leaves, or
@@ -48,10 +49,10 @@ const LIVE: ReadonlySet<CallPhase> = new Set(['connecting', 'connected', 'reconn
 
 /** What the window says when a call ended by itself. */
 export const END_TEXTS: Readonly<Record<CallEndReason | 'failed', string>> = {
-  removed: 'Звонок завершён: доступ к комнате закрыт.',
-  replaced: 'Вы вошли в этот звонок на другой вкладке или устройстве.',
-  lost: 'Связь со звонком потеряна.',
-  failed: 'Не удалось подключиться к звонку. Проверьте интернет и попробуйте ещё раз.',
+  removed: T.session.removed,
+  replaced: T.session.replaced,
+  lost: T.session.lost,
+  failed: T.session.failed,
 };
 
 /**
@@ -137,7 +138,7 @@ export class CallSession {
       },
       error: (error: unknown) => {
         this.opening.set(null);
-        this.snackbar.error(describeError(error, 'Не удалось открыть звонок'));
+        this.snackbar.error(describeError(error, T.session.openFailed));
       },
     });
   }
@@ -233,7 +234,7 @@ export class CallSession {
     const sharing = this.screen();
     await this.run(
       (connection) => connection.setScreenShare(!sharing),
-      () => 'Не удалось показать экран',
+      () => T.session.screenFailed,
       true,
     );
   }
@@ -247,7 +248,7 @@ export class CallSession {
     this.devices.remember(media);
     await this.run(
       (connection) => connection.switchDevice(kind, deviceId),
-      () => 'Не удалось переключить устройство',
+      () => T.session.deviceFailed,
     );
   }
 
@@ -257,7 +258,7 @@ export class CallSession {
     this.devices.rememberAudioProcessing(processing);
     await this.run(
       (connection) => connection.setAudioProcessing(processing),
-      () => 'Не удалось изменить обработку звука',
+      () => T.session.processingFailed,
     );
   }
 
@@ -277,7 +278,7 @@ export class CallSession {
   async startAudio(): Promise<void> {
     await this.run(
       (connection) => connection.startAudio(),
-      () => 'Не удалось включить звук',
+      () => T.session.audioFailed,
     );
   }
 
@@ -343,8 +344,8 @@ export class CallSession {
     const came = after.filter((person) => !known.has(person.id)).map((person) => person.name);
     const left = before.filter((person) => !present.has(person.id)).map((person) => person.name);
     const parts = [
-      ...came.map((name) => `${name} в звонке`),
-      ...left.map((name) => `${name} вышел из звонка`),
+      ...came.map((name) => T.session.came(name)),
+      ...left.map((name) => T.session.left(name)),
     ];
     if (parts.length > 0) {
       this.announcement.set(parts.join('. '));

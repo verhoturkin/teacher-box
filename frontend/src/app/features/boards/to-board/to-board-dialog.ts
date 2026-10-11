@@ -22,6 +22,8 @@ import { Board } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS, boardMembersText, boardRoute } from '../boards-labels';
 import { BoardClipboard } from './board-clipboard';
 import { BoardInsert, InsertMode, PagesMaterial } from './board-insert';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** What happened to the material. */
 export interface Placed {
@@ -43,7 +45,7 @@ export interface Placed {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      header="На доску"
+      [header]="t.title"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -60,21 +62,21 @@ export interface Placed {
         <ng-content />
         <p class="tb-muted">{{ hint() }}</p>
         @if (needsClipboard() && !richClipboard) {
-          <p class="tb-muted">Картинкой можно копировать, только когда портал открыт по https.</p>
+          <p class="tb-muted">{{ t.https }}</p>
         }
         <div class="tb-field tb-to-board">
-          <label for="to-board-board">Доска</label>
+          <label for="to-board-board">{{ t.board }}</label>
           <p-select
             inputId="to-board-board"
             [options]="sorted()"
             optionLabel="title"
             optionValue="id"
             [(ngModel)]="chosen"
-            placeholder="Выберите доску"
+            [placeholder]="t.choose"
             [filter]="true"
             filterBy="title"
-            filterPlaceholder="Поиск по названию"
-            emptyFilterMessage="Таких досок нет"
+            [filterPlaceholder]="t.search"
+            [emptyFilterMessage]="t.noBoards"
             appendTo="body"
             [fluid]="true"
           >
@@ -92,16 +94,15 @@ export interface Placed {
       @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
           @if (placed.mode === 'pages') {
-            Доска открылась в новой вкладке, страницы уже на ней.
+            {{ t.pagesPlaced }}
           } @else if (placed.board.kind === 'EXCALIDRAW') {
-            Доска открылась в новой вкладке, материал уже на ней.
+            {{ t.materialPlaced }}
           } @else {
-            {{ placed.mode === 'image' ? 'Картинка' : 'Текст' }} в буфере обмена. На доске нажмите
-            Ctrl+V.
+            {{ placed.mode === 'image' ? t.imageCopied : t.textCopied }}
           }
-          <a [href]="placed.href" target="_blank" rel="noopener"
-            >Открыть доску «{{ placed.board.title }}»</a
-          >
+          <a [href]="placed.href" target="_blank" rel="noopener">{{
+            t.openBoard(placed.board.title)
+          }}</a>
         </p-message>
       }
       @if (error(); as message) {
@@ -109,21 +110,21 @@ export interface Placed {
       }
       <ng-template #footer>
         <p-button
-          label="Закрыть"
+          [label]="c.close"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         @if (pages(); as material) {
           <p-button
-            label="На доску"
+            [label]="t.title"
             icon="pi pi-th-large"
             [disabled]="chosenBoard() === null || material.pictures.length === 0"
             (onClick)="placePages(material)"
           />
         } @else {
           <p-button
-            label="Картинкой"
+            [label]="t.asImage"
             icon="pi pi-image"
             severity="secondary"
             [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
@@ -131,7 +132,7 @@ export interface Placed {
             (onClick)="place('image')"
           />
           <p-button
-            label="Текстом"
+            [label]="t.asText"
             icon="pi pi-copy"
             [disabled]="chosenBoard() === null"
             [loading]="copying()"
@@ -150,6 +151,8 @@ export interface Placed {
   `,
 })
 export class ToBoardDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.toBoard;
   private readonly api = inject(BoardsApi);
   private readonly clipboard = inject(BoardClipboard);
   private readonly insert = inject(BoardInsert);
@@ -185,13 +188,11 @@ export class ToBoardDialog {
     return this.boards().filter((board) => !pages || board.kind === 'EXCALIDRAW');
   });
   protected readonly emptyTitle = computed(() => {
-    if (this.students() !== null) return 'У учеников задания досок нет';
-    return this.pages() === null ? 'Досок пока нет' : 'Досок Excalidraw пока нет';
+    if (this.students() !== null) return T.toBoard.noStudentBoards;
+    return this.pages() === null ? T.toBoard.noBoards2 : T.toBoard.noExcalidraw;
   });
   protected readonly emptyHint = computed(() =>
-    this.students() === null
-      ? 'Создайте доску в разделе «Доски».'
-      : 'Откройте доску ученикам задания или их группе в разделе «Доски».',
+    this.students() === null ? T.toBoard.createHint : T.toBoard.openHint,
   );
   protected readonly chosenBoard = computed(
     () => this.sorted().find((board) => board.id === this.chosen()) ?? null,
@@ -200,10 +201,10 @@ export class ToBoardDialog {
   protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
   protected readonly hint = computed(() =>
     this.pages() !== null
-      ? 'Выберите доску: она откроется в новой вкладке, страницы встанут справа от рисунка — в ряд, во фрейме.'
+      ? T.toBoard.pagesHint
       : this.needsClipboard()
-        ? 'Материал скопируется, а доска откроется в новой вкладке — нажмите на ней Ctrl+V (на Mac — Cmd+V).'
-        : 'Доска откроется в новой вкладке, материал появится в центре.',
+        ? T.toBoard.clipboardHint
+        : T.toBoard.centreHint,
   );
 
   constructor() {
@@ -253,9 +254,7 @@ export class ToBoardDialog {
       }
       this.open({ mode, board, href: board.url ?? '' });
     } catch {
-      this.error.set(
-        'Браузер не дал скопировать материал. Попробуйте ещё раз или скопируйте текст вручную.',
-      );
+      this.error.set(T.toBoard.copyFailed);
     } finally {
       this.copying.set(false);
     }

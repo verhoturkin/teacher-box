@@ -9,6 +9,7 @@ import { Portal } from '@core/portal/portal';
 import { callOwnerOf } from '../call/call-links';
 import { CallSession } from '../call/call-session';
 import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost';
+import { T } from '../i18n/texts';
 
 /**
  * Opens the video meeting of a lesson. A built-in room (`<portal>/call/<ownerId>`, ADR-0030) opens the
@@ -47,8 +48,8 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
           styleClass="tb-split__more"
           icon="pi pi-chevron-down"
           [severity]="tonal() ? 'secondary' : 'primary'"
-          pTooltip="Другие способы открыть встречу"
-          ariaLabel="Другие способы открыть встречу"
+          [pTooltip]="t.other"
+          [ariaLabel]="t.other"
           [tbAttributes]="{
             'aria-haspopup': 'menu',
             'aria-expanded': menuOpen() ? 'true' : 'false',
@@ -79,13 +80,14 @@ import { MeetingPreferences, isTelemostLink, telemostAppLink } from '../telemost
   `,
 })
 export class JoinLessonButton {
+  protected readonly t = T.join;
   private readonly navigation = inject(ExternalNavigation);
   private readonly preferences = inject(MeetingPreferences);
   private readonly portal = inject(Portal);
   protected readonly session = inject(CallSession);
 
   readonly url = input.required<string>();
-  readonly label = input('Войти в урок');
+  readonly label = input(T.join.label);
   /** The teacher may open Telemost in the desktop application. */
   readonly teacher = input(false);
   /** A secondary action next to others (ADR-0018): the tonal button. */
@@ -103,7 +105,7 @@ export class JoinLessonButton {
   protected readonly menuOpen = signal(false);
   protected readonly items = computed<MenuItem[]>(() => [
     {
-      label: 'Открыть в браузере',
+      label: T.join.inBrowser,
       icon: 'pi pi-external-link',
       url: this.url(),
       target: '_blank',

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { ADMIN_ARTICLES } from './articles/admin';
-import { STUDENT_ARTICLES } from './articles/student';
-import { TEACHER_ARTICLES } from './articles/teacher';
+import { ADMIN_ARTICLES } from './articles/admin.ru';
+import { STUDENT_ARTICLES } from './articles/student.ru';
+import { TEACHER_ARTICLES } from './articles/teacher.ru';
 import { HelpLibrary, searchArticles, searchable } from './help-library';
 import { HelpArticleText } from './help.models';
 import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';

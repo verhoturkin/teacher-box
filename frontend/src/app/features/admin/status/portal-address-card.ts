@@ -9,6 +9,7 @@ import { HelpButton } from '@features/help/parts';
 import { AdminApi } from '../data-access/admin-api';
 import { revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
 
 /** Administrator: the address of the portal (a setting of the server); the name is the teacher's. */
 @Component({
@@ -20,7 +21,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >Адрес портала <tb-help-button topic="admin/backups"
+            >{{ t.title }} <tb-help-button topic="admin/backups"
           /></span>
         </div>
       </ng-template>
@@ -36,7 +37,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
               <p-button
                 class="tb-tonal"
                 type="submit"
-                label="Сохранить адрес"
+                [label]="t.save"
                 severity="success"
                 [loading]="pending()"
               />
@@ -48,6 +49,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class PortalAddressCard implements OnInit {
+  protected readonly t = T.addressCard;
   private readonly api = inject(AdminApi);
   private readonly portal = inject(Portal);
   private readonly snackbar = inject(Snackbar);
@@ -75,7 +77,7 @@ export class PortalAddressCard implements OnInit {
         this.pending.set(false);
         this.show(settings);
         this.portal.set(settings);
-        this.snackbar.success('Адрес портала сохранён');
+        this.snackbar.success(T.addressCard.saved);
       },
       error: () => {
         this.pending.set(false);

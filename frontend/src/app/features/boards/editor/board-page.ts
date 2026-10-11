@@ -36,25 +36,26 @@ import { BoardSync, SaveStatus } from './board-sync';
 import type { BoardLibrary, BoardMenuItem, BoardMenuSetting } from './excalidraw-loader';
 import { elementsOf, libraryItemsOf, sharedAppState } from './excalidraw-data';
 import { insertMaterial } from './material-insert';
+import { T } from '../i18n/texts';
 
 /** Device setting: what the mouse wheel does on boards. */
 export const WHEEL_KEY = 'tb.board.wheel';
 
 const THEMES: readonly { readonly choice: ThemeChoice; readonly label: string }[] = [
-  { choice: 'light', label: 'Светлая' },
-  { choice: 'dark', label: 'Тёмная' },
-  { choice: 'system', label: 'Как в системе' },
+  { choice: 'light', label: T.editor.light },
+  { choice: 'dark', label: T.editor.dark },
+  { choice: 'system', label: T.editor.system },
 ];
 
 const WHEELS: readonly { readonly wheel: BoardWheel; readonly label: string }[] = [
-  { wheel: 'zoom', label: 'Масштаб' },
-  { wheel: 'scroll', label: 'Прокрутка (тачпад)' },
+  { wheel: 'zoom', label: T.editor.zoom },
+  { wheel: 'scroll', label: T.editor.scroll },
 ];
 
 const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
-  saved: 'Сохранено',
-  saving: 'Сохранение…',
-  offline: 'Нет связи — повторим',
+  saved: T.editor.saved,
+  saving: T.editor.saving,
+  offline: T.editor.offline,
 };
 
 /**
@@ -84,7 +85,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
           <i pButtonIcon class="pi pi-arrow-left"></i>
           <span pButtonLabel>{{ backLabel() }}</span>
         </a>
-        <h1 class="tb-board-page__title">{{ content()?.title ?? 'Доска' }}</h1>
+        <h1 class="tb-board-page__title">{{ content()?.title ?? t.board }}</h1>
         @if (sync(); as board) {
           <span
             class="tb-board-page__status"
@@ -95,7 +96,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
         }
       </header>
       <main class="tb-board-page__body">
-        <tb-load-state [state]="state" what="доску" (retry)="load()">
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
           @if (content(); as board) {
             @if (board.kind === 'EXCALIDRAW') {
               <tb-board-canvas
@@ -113,12 +114,10 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
               />
             } @else {
               <div class="tb-board-page__external">
-                <p-message severity="info">
-                  Это внешняя доска — она открывается в своём сервисе.
-                </p-message>
+                <p-message severity="info">{{ t.external }}</p-message>
                 <a pButton [href]="externalUrl()" target="_blank" rel="noopener">
                   <i pButtonIcon class="pi pi-external-link"></i>
-                  <span pButtonLabel>Открыть доску</span>
+                  <span pButtonLabel>{{ t.openBoard }}</span>
                 </a>
               </div>
             }
@@ -200,6 +199,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
   `,
 })
 export class BoardPage implements OnInit, CanLeave {
+  protected readonly t = T.editor;
   private readonly api = inject(BoardsApi);
   private readonly router = inject(Router);
   private readonly themeMode = inject(ThemeMode);
@@ -226,7 +226,9 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly backLink = computed(() =>
     this.teacher() ? '/teacher/boards' : '/cabinet/boards',
   );
-  protected readonly backLabel = computed(() => (this.teacher() ? 'Доски' : 'Мои доски'));
+  protected readonly backLabel = computed(() =>
+    this.teacher() ? T.editor.boards : T.editor.myBoards,
+  );
   protected readonly theme = computed(() => (this.themeMode.dark() ? 'dark' : 'light'));
   protected readonly initialScene = computed<ExcalidrawInitialDataState | null>(() => {
     const content = this.content();
@@ -241,7 +243,7 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly externalUrl = computed(() => this.content()?.url ?? null);
   protected readonly menu = computed<BoardMenuItem[]>(() => [
     {
-      label: 'Вернуться к доскам',
+      label: T.editor.back,
       onSelect: () => {
         void this.router.navigateByUrl(this.backLink());
       },
@@ -249,7 +251,7 @@ export class BoardPage implements OnInit, CanLeave {
     ...(this.teacher()
       ? [
           {
-            label: 'Резервные копии',
+            label: T.editor.backups,
             onSelect: () => {
               this.backupsVisible.set(true);
             },
@@ -265,7 +267,7 @@ export class BoardPage implements OnInit, CanLeave {
   );
   protected readonly settings = computed<BoardMenuSetting[]>(() => [
     {
-      title: 'Тема',
+      title: T.editor.theme,
       items: THEMES.map(({ choice, label }) => ({
         label,
         checked: this.themeMode.choice() === choice,
@@ -275,7 +277,7 @@ export class BoardPage implements OnInit, CanLeave {
       })),
     },
     {
-      label: 'Сетка',
+      label: T.editor.grid,
       checked: this.grid(),
       onSelect: () => {
         this.editor?.updateScene({
@@ -285,7 +287,7 @@ export class BoardPage implements OnInit, CanLeave {
       },
     },
     {
-      title: 'Колесо мыши',
+      title: T.editor.wheel,
       items: WHEELS.map(({ wheel, label }) => ({
         label,
         checked: this.wheel() === wheel,
@@ -363,10 +365,9 @@ export class BoardPage implements OnInit, CanLeave {
     return new Promise((resolve) => {
       this.confirmation.confirm(
         dangerConfirmation({
-          header: 'Уйти без сохранения?',
-          message:
-            'Нет связи с порталом: последние изменения доски не сохранены. Если уйти, они пропадут.',
-          acceptLabel: 'Уйти',
+          header: T.editor.leaveHeader,
+          message: T.editor.leaveMessage,
+          acceptLabel: T.editor.leave,
           accept: () => {
             resolve(true);
           },

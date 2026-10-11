@@ -34,6 +34,7 @@ import {
   ExcalidrawModules,
 } from './excalidraw-loader';
 import { Language, language } from '@core/i18n/language';
+import { T } from '../i18n/texts';
 
 /** The portal theme the canvas follows. */
 export type BoardTheme = 'light' | 'dark';
@@ -77,7 +78,12 @@ const EXCALIDRAW_LANGUAGES: Readonly<Record<Language, string>> = { ru: 'ru-RU', 
   template: `
     <div #surface class="tb-board-canvas__surface" [attr.aria-busy]="!state.ready()"></div>
     @if (!state.ready()) {
-      <tb-load-state class="tb-board-canvas__state" [state]="state" what="доску" (retry)="load()" />
+      <tb-load-state
+        class="tb-board-canvas__state"
+        [state]="state"
+        [what]="what"
+        (retry)="load()"
+      />
     }
   `,
   styles: `
@@ -103,6 +109,7 @@ const EXCALIDRAW_LANGUAGES: Readonly<Record<Language, string>> = { ru: 'ru-RU', 
   `,
 })
 export class BoardCanvas {
+  protected readonly what = T.editor.what;
   /** The scene to start with; read when the editor mounts. */
   readonly scene = input<ExcalidrawInitialDataState | null>(null);
   readonly theme = input<BoardTheme>('light');

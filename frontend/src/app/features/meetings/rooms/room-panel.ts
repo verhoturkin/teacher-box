@@ -11,6 +11,7 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { MeetingRoom, RoomOwnerRef } from '../data-access/meetings.models';
+import { T } from '../i18n/texts';
 
 /** An http(s) address; spaces around it are trimmed when it is saved. */
 const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
@@ -27,23 +28,23 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
   template: `
     @if (owner(); as owner) {
       <section class="tb-form" aria-labelledby="room-panel-title">
-        <h3 id="room-panel-title" class="tb-subtitle">Видеовстреча</h3>
+        <h3 id="room-panel-title" class="tb-subtitle">{{ t.title }}</h3>
         @if (room(); as room) {
           <div class="tb-room-link">
             <a [href]="room.joinUrl" target="_blank" rel="noopener">{{ room.joinUrl }}</a>
             <p-button
               icon="pi pi-copy"
               [text]="true"
-              pTooltip="Копировать ссылку"
+              [pTooltip]="t.copy"
               [rounded]="true"
               severity="secondary"
-              ariaLabel="Копировать ссылку"
+              [ariaLabel]="t.copy"
               (onClick)="copy(room.joinUrl)"
             />
           </div>
           <div class="tb-actions">
             <p-button
-              [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
+              [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
               icon="pi pi-send"
               class="tb-tonal"
               severity="success"
@@ -51,7 +52,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               (onClick)="share(room.ownerId)"
             />
             <p-button
-              label="Удалить ссылку"
+              [label]="t.remove"
               icon="pi pi-trash"
               severity="danger"
               [text]="true"
@@ -60,20 +61,13 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             />
           </div>
           @if (callsOn()) {
-            <small class="tb-hint"
-              >В занятиях эта ссылка заменяет комнату портала. Удалите её, чтобы вести уроки в
-              портале.</small
-            >
+            <small class="tb-hint">{{ t.replacesRoom }}</small>
           }
         } @else if (callsOn()) {
-          <p class="tb-muted">
-            Уроки идут в комнате портала (раздел «Звонки»): её ссылка попадает в напоминания,
-            календарь и кнопку «Войти в урок». Можно задать ссылку на внешнюю видеосвязь — тогда
-            занятия поведут по ней.
-          </p>
+          <p class="tb-muted">{{ t.portalRoom }}</p>
           <div class="tb-actions">
             <p-button
-              [label]="owner.type === 'GROUP' ? 'Отправить группе' : 'Отправить ученику'"
+              [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
               icon="pi pi-send"
               class="tb-tonal"
               severity="success"
@@ -83,13 +77,11 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           </div>
         } @else {
           <p class="tb-muted">
-            Постоянная ссылка: по ней
-            {{ owner.type === 'GROUP' ? 'группа приходит' : 'ученик приходит' }}
-            на все уроки. Ссылка попадёт в напоминания, календарь и кнопку «Войти в урок».
+            {{ owner.type === 'GROUP' ? t.permanentGroup : t.permanentStudent }}
           </p>
         }
         <div class="tb-field">
-          <label for="room-link">Ссылка на встречу</label>
+          <label for="room-link">{{ t.link }}</label>
           <div class="tb-copy-row">
             <input
               pInputText
@@ -101,7 +93,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
               (keydown.enter)="$event.preventDefault(); save()"
             />
             <p-button
-              [label]="room() === null ? 'Добавить ссылку' : 'Заменить ссылку'"
+              [label]="room() === null ? t.add : t.replace"
               severity="secondary"
               [text]="true"
               [disabled]="link.invalid || link.value.trim() === ''"
@@ -110,7 +102,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             />
           </div>
           @if (link.invalid) {
-            <small class="tb-error">Ссылка должна начинаться с http:// или https://</small>
+            <small class="tb-error">{{ t.invalid }}</small>
           }
         </div>
         @if (error(); as message) {
@@ -143,6 +135,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
   `,
 })
 export class RoomPanel {
+  protected readonly t = T.room;
   private readonly api = inject(MeetingsApi);
   private readonly clipboard = inject(Clipboard);
   private readonly snackbar = inject(Snackbar);
@@ -191,13 +184,13 @@ export class RoomPanel {
 
   share(ownerId: string): void {
     this.run(this.api.share(ownerId), (recipients) => {
-      this.snackbar.success(`Ссылка отправлена, получателей: ${String(recipients)}`);
+      this.snackbar.success(T.room.sent(recipients));
     });
   }
 
   copy(text: string): void {
     if (this.clipboard.copy(text)) {
-      this.snackbar.success('Ссылка в буфере обмена');
+      this.snackbar.success(T.room.copied);
     }
   }
 
@@ -215,7 +208,7 @@ export class RoomPanel {
         this.callsOn.set(calls !== null && calls.status !== 'OFF');
       },
       error: () => {
-        this.error.set('Не удалось загрузить видеовстречу. Откройте окно ещё раз');
+        this.error.set(T.room.loadFailed);
       },
     });
   }
@@ -233,7 +226,7 @@ export class RoomPanel {
       },
       error: (error: unknown) => {
         this.pending.set(false);
-        this.error.set(describeError(error, 'Не получилось. Попробуйте позже'));
+        this.error.set(describeError(error, T.room.failed));
       },
     });
   }

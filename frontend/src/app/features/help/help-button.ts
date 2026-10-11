@@ -8,6 +8,8 @@ import { HelpArticleView } from './help-article-view';
 import { HelpLibrary } from './help-library';
 import { HelpArticle } from './help.models';
 import { HELP_TITLES, HelpTopic, helpUrl } from './help-topics';
+import { T } from './i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * «?» (or «Подробнее») next to a heading: opens the help article in a side panel without leaving
@@ -37,14 +39,14 @@ import { HELP_TITLES, HelpTopic, helpUrl } from './help-topics';
       position="right"
       appendTo="body"
       [blockScroll]="true"
-      ariaCloseLabel="Закрыть"
-      [header]="article()?.title ?? 'Справка'"
+      [ariaCloseLabel]="c.close"
+      [header]="article()?.title ?? t.help"
       styleClass="tb-help-drawer"
     >
       @if (article(); as current) {
         <tb-help-article [body]="current.body" (navigated)="visible.set(false)" />
         <p>
-          <a [routerLink]="url()" (click)="visible.set(false)">Вся справка</a>
+          <a [routerLink]="url()" (click)="visible.set(false)">{{ t.all }}</a>
         </p>
       }
     </p-drawer>
@@ -61,6 +63,8 @@ import { HELP_TITLES, HelpTopic, helpUrl } from './help-topics';
   `,
 })
 export class HelpButton {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T;
   private readonly library = inject(HelpLibrary);
 
   readonly topic = input.required<HelpTopic>();
@@ -71,7 +75,7 @@ export class HelpButton {
   protected readonly article = signal<HelpArticle | null>(null);
   protected readonly url = computed(() => helpUrl(this.topic()));
   /** «Справка: Расписание и запросы»: the buttons of a page are told apart (ADR-0026). */
-  protected readonly name = computed(() => `Справка: ${HELP_TITLES[this.topic()]}`);
+  protected readonly name = computed(() => T.helpOf(HELP_TITLES[this.topic()]));
 
   async open(): Promise<void> {
     this.article.set(await this.library.article(this.topic()));

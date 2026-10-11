@@ -1,3 +1,5 @@
+import { T } from './i18n/texts';
+
 /**
  * Topics of the help (ADR: none — a part of the interface). Links to the help are typed with
  * {@link HelpTopic}, so a link to a missing article does not compile.
@@ -67,35 +69,4 @@ export function helpUrl(topic: HelpTopic): string {
  * The titles of the articles: the name of a «?» is «Справка: <title>», so that the buttons of a
  * page are told apart (WCAG 2.4.6). A test keeps them equal to the titles of the articles.
  */
-export const HELP_TITLES: Readonly<Record<HelpTopic, string>> = {
-  'teacher/first-steps': 'Первые шаги',
-  'teacher/setup': 'Первоначальная настройка',
-  'teacher/students': 'Ученики и приглашения',
-  'teacher/groups': 'Группы',
-  'teacher/schedule': 'Расписание и запросы',
-  'teacher/calls': 'Звонки',
-  'teacher/meetings': 'Видеовстречи',
-  'teacher/boards': 'Доски',
-  'teacher/homework': 'Домашние задания',
-  'teacher/textbooks': 'Учебники',
-  'teacher/ai': 'ИИ-помощник',
-  'teacher/billing': 'Оплаты',
-  'teacher/notifications': 'Уведомления и боты',
-  'teacher/bot': 'Что умеет бот',
-  'teacher/calendars': 'Календари',
-  'teacher/settings': 'Настройки',
-  'teacher/appearance': 'Оформление и телефон',
-  'teacher/backups': 'Резервные копии и полный сброс',
-  'teacher/faq': 'Частые вопросы',
-  'cabinet/login': 'Вход, пароль и профиль',
-  'cabinet/schedule': 'Расписание и перенос',
-  'cabinet/lesson': 'Урок и доска',
-  'cabinet/homework': 'Задания',
-  'cabinet/textbooks': 'Учебники',
-  'cabinet/billing': 'Оплаты',
-  'cabinet/bot': 'Бот в мессенджере',
-  'cabinet/appearance': 'Телефон и тема',
-  'admin/diagnostics': 'Журнал и диагностика',
-  'admin/backups': 'Резервные копии и адрес портала',
-  'admin/settings': 'Настройки портала',
-};
+export const HELP_TITLES: Readonly<Record<HelpTopic, string>> = T.titles;

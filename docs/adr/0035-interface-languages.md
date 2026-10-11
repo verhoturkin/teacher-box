@@ -38,7 +38,7 @@
   приглашения — строка языков под карточкой.
 - **Новый язык:** строка в `LANGUAGES`, файл `xx.ts` рядом с каждым `ru.ts` (компилятор назовёт все словари,
   где его нет), переводы PrimeNG в `app.config.ts`, локали FullCalendar и Excalidraw, справка
-  `features/help/articles/xx/`.
+  `features/help/articles/*.xx.ts`.
 - Тест `expectComplete` (`@testing/i18n`) каждого словаря проверяет ключи и вызывает все функции перевода.
 
 ## Последствия

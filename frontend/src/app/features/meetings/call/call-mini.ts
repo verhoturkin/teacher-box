@@ -6,6 +6,7 @@ import { injectCornerDrag } from './call-corner';
 import { miniView } from './call-layout';
 import { CallSession } from './call-session';
 import { CallTile } from './call-tile';
+import { T } from '../i18n/texts';
 
 /**
  * The minimized call: on a computer a floating window with whoever matters now (a shared screen, the
@@ -18,7 +19,7 @@ import { CallTile } from './call-tile';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'region',
-    'aria-label': 'Звонок',
+    '[attr.aria-label]': 't.call',
     '[class]':
       "'tb-call-mini tb-call-mini--' + place.corner() + (mobile() ? ' tb-call-mini--bar' : '')",
     '[class.tb-call-mini--dragging]': 'place.dragging()',
@@ -35,7 +36,7 @@ import { CallTile } from './call-tile';
       <span class="tb-call-mini__title">
         <span class="tb-call-mini__name">{{ session.target()?.title }}</span>
         <span class="tb-call-mini__time">{{
-          session.phase() === 'reconnecting' ? 'Переподключение…' : elapsed()
+          session.phase() === 'reconnecting' ? t.reconnecting : elapsed()
         }}</span>
       </span>
       @if (!mobile()) {
@@ -44,7 +45,7 @@ import { CallTile } from './call-tile';
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          ariaLabel="Переместить окно звонка"
+          [ariaLabel]="t.move"
           (onClick)="place.next()"
         />
       }
@@ -62,6 +63,7 @@ import { CallTile } from './call-tile';
   `,
 })
 export class CallMini {
+  protected readonly t = T.mini;
   protected readonly session = inject(CallSession);
   protected readonly mobile = injectMobile();
 

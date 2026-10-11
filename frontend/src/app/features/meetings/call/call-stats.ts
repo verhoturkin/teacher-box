@@ -6,6 +6,7 @@ import {
   CallTransport,
   CallVideo,
 } from './call-engine';
+import { T } from '../i18n/texts';
 
 /** An `RTCStatsReport` (or a `Map` in tests): every entry is a dictionary with `id` and `type`. */
 export interface StatsReport {
@@ -149,27 +150,13 @@ export interface StatsSection {
   readonly rows: readonly { readonly label: string; readonly value: string }[];
 }
 
-const QUALITY_TEXTS: Readonly<Record<CallQuality, string>> = {
-  excellent: 'отличная',
-  good: 'хорошая',
-  poor: 'слабая',
-  lost: 'потеряна',
-  unknown: 'неизвестна',
-};
+const S = T.stats;
 
-const CANDIDATE_TEXTS: Readonly<Record<string, string>> = {
-  host: 'прямое',
-  srflx: 'через NAT',
-  prflx: 'через NAT',
-  relay: 'через ретранслятор TURN',
-};
+const QUALITY_TEXTS: Readonly<Record<CallQuality, string>> = S.quality;
 
-const LIMIT_TEXTS: Readonly<Record<string, string>> = {
-  none: 'нет',
-  bandwidth: 'скорость канала',
-  cpu: 'процессор',
-  other: 'другое',
-};
+const CANDIDATE_TEXTS: Readonly<Record<string, string>> = S.candidates;
+
+const LIMIT_TEXTS: Readonly<Record<string, string>> = S.limits;
 
 /** What «Сведения о связи» shows: people, the connection, sound and video. */
 export function statsSections(
@@ -178,9 +165,9 @@ export function statsSections(
 ): StatsSection[] {
   const sections: StatsSection[] = [
     {
-      title: 'Качество связи',
+      title: S.connectionQuality,
       rows: participants.map((person) => ({
-        label: person.local ? `${person.name} (вы)` : person.name,
+        label: person.local ? T.you(person.name) : person.name,
         value: QUALITY_TEXTS[person.quality],
       })),
     },
@@ -194,11 +181,11 @@ export function statsSections(
   if (transport !== null) {
     const protocol = transport.protocol?.toUpperCase() ?? null;
     sections.push({
-      title: 'Соединение',
+      title: S.connection,
       rows: [
-        ...line('Протокол', protocol),
+        ...line(S.protocol, protocol),
         ...line(
-          'Путь',
+          S.path,
           transport.candidate === null
             ? null
             : (CANDIDATE_TEXTS[transport.candidate] ?? transport.candidate) +
@@ -207,19 +194,16 @@ export function statsSections(
                   : ` (${transport.relayProtocol.toUpperCase()})`),
         ),
         ...line(
-          'Сервер',
+          S.server,
           transport.remoteAddress === null
             ? null
             : `${transport.remoteAddress}${transport.remotePort === null ? '' : `:${String(transport.remotePort)}`}`,
         ),
-        ...line('Порт браузера', transport.localPort === null ? null : String(transport.localPort)),
+        ...line(S.browserPort, transport.localPort === null ? null : String(transport.localPort)),
+        ...line(S.roundTrip, transport.roundTrip === null ? null : S.ms(transport.roundTrip)),
         ...line(
-          'Задержка (туда и обратно)',
-          transport.roundTrip === null ? null : `${String(transport.roundTrip)} мс`,
-        ),
-        ...line(
-          'Скорость отправки (оценка)',
-          transport.outgoingBitrate === null ? null : `${String(transport.outgoingBitrate)} кбит/с`,
+          S.sendRate,
+          transport.outgoingBitrate === null ? null : S.kbps(transport.outgoingBitrate),
         ),
       ],
     });
@@ -230,39 +214,33 @@ export function statsSections(
       ? []
       : [
           ...line(
-            'Входящий: потери пакетов',
-            `${String(audio.packetsLost)} из ${String(audio.packetsLost + audio.packetsReceived)}`,
+            S.packetsLost,
+            S.lostOf(audio.packetsLost, audio.packetsLost + audio.packetsReceived),
           ),
-          ...line('Входящий: джиттер', audio.jitter === null ? null : `${String(audio.jitter)} мс`),
-          ...line(
-            'Входящий: восстановлено браузером',
-            audio.concealed === null ? null : `${String(audio.concealed)} %`,
-          ),
+          ...line(S.jitter, audio.jitter === null ? null : S.ms(audio.jitter)),
+          ...line(S.concealed, audio.concealed === null ? null : `${String(audio.concealed)} %`),
         ]),
-    ...line(
-      'Исходящий: потери на сервере',
-      stats.audioOutLoss === null ? null : `${String(stats.audioOutLoss)} %`,
-    ),
+    ...line(S.serverLoss, stats.audioOutLoss === null ? null : `${String(stats.audioOutLoss)} %`),
   ];
   if (sound.length > 0) {
-    sections.push({ title: 'Звук', rows: sound });
+    sections.push({ title: S.sound, rows: sound });
   }
   const pictures = [
-    ...line('Отправляется', videoText(stats.videoOut)),
+    ...line(S.sending, videoText(stats.videoOut)),
     ...line(
-      'Ограничение отправки',
+      S.sendLimit,
       stats.videoOutLimit === null
         ? null
         : (LIMIT_TEXTS[stats.videoOutLimit] ?? stats.videoOutLimit),
     ),
-    ...line('Принимается', videoText(stats.videoIn)),
+    ...line(S.receiving, videoText(stats.videoIn)),
   ];
   if (pictures.length > 0) {
-    sections.push({ title: 'Видео', rows: pictures });
+    sections.push({ title: S.video, rows: pictures });
   }
   if (stats.serverVersion !== null) {
     sections.push({
-      title: 'Сервер звонков',
+      title: S.callServer,
       rows: [{ label: 'LiveKit', value: stats.serverVersion }],
     });
   }
@@ -274,5 +252,5 @@ function videoText(video: CallVideo | null): string | null {
     return null;
   }
   const size = `${String(video.width)}×${String(video.height)}`;
-  return video.frameRate === null ? size : `${size}, ${String(video.frameRate)} кадр/с`;
+  return video.frameRate === null ? size : S.fps(size, video.frameRate);
 }

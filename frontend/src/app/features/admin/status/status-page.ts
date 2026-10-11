@@ -19,6 +19,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { T } from '../i18n/texts';
 
 /** Administrator: version, uptime, memory, disk, database and health of the instance, the portal address. */
 @Component({
@@ -36,16 +37,16 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Состояние">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
-      <p-button label="Обновить" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
+      <p-button [label]="t.refresh" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
     </tb-page-header>
-    <tb-load-state [state]="state" what="состояние портала" (retry)="load()">
+    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (status(); as status) {
         <div class="tb-stats">
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Проверки</span>
+              <span class="tb-muted">{{ t.checks }}</span>
               <span class="tb-stat__value">
                 <p-tag
                   [value]="status.health"
@@ -61,52 +62,54 @@ import { LoadStateView } from '@shared/ui/load-state-view';
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Версия</span>
-              <span class="tb-stat__value">{{ status.version ?? 'разработка' }}</span>
+              <span class="tb-muted">{{ t.version }}</span>
+              <span class="tb-stat__value">{{ status.version ?? t.development }}</span>
               @if (status.builtAt !== null) {
-                <small class="tb-muted"
-                  >сборка {{ status.builtAt | date: 'dd.MM.yyyy HH:mm' }}</small
-                >
+                <small class="tb-muted">{{
+                  t.built((status.builtAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+                }}</small>
               }
               <small class="tb-muted">Java {{ status.javaVersion }}</small>
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Работает</span>
+              <span class="tb-muted">{{ t.uptime }}</span>
               <span class="tb-stat__value">{{ uptime() }}</span>
-              <small class="tb-muted">с {{ status.startedAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+              <small class="tb-muted">{{
+                t.since((status.startedAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+              }}</small>
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Память</span>
+              <span class="tb-muted">{{ t.memory }}</span>
               <span class="tb-stat__value">{{ size(status.heapUsed) }}</span>
-              <small class="tb-muted">из {{ size(status.heapMax) }}</small>
+              <small class="tb-muted">{{ t.of(size(status.heapMax)) }}</small>
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">Свободно на диске</span>
+              <span class="tb-muted">{{ t.disk }}</span>
               <span class="tb-stat__value" [class.tb-negative]="lowDisk()">{{
                 size(status.diskFree)
               }}</span>
-              <small class="tb-muted">из {{ size(status.diskTotal) }}</small>
+              <small class="tb-muted">{{ t.of(size(status.diskTotal)) }}</small>
               @if (lowDisk()) {
-                <p-tag severity="danger" icon="pi pi-exclamation-triangle" value="Мало места" />
+                <p-tag severity="danger" icon="pi pi-exclamation-triangle" [value]="t.lowDisk" />
               }
             </div>
           </p-card>
           <p-card>
             <div class="tb-stat">
-              <span class="tb-muted">База данных</span>
+              <span class="tb-muted">{{ t.database }}</span>
               <span class="tb-stat__value">{{ size(status.dataSize) }}</span>
-              <small class="tb-muted">журналы: {{ size(status.logsSize) }}</small>
+              <small class="tb-muted">{{ t.logs(size(status.logsSize)) }}</small>
             </div>
           </p-card>
         </div>
         <p class="tb-muted tb-status-data">
-          Данные: {{ status.dataDir }} · часовой пояс {{ status.timeZone }}
+          {{ t.data(status.dataDir, status.timeZone) }}
         </p>
       }
     </tb-load-state>
@@ -126,6 +129,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
   `,
 })
 export class StatusPage implements OnInit {
+  protected readonly t = T.status;
   private readonly api = inject(AdminApi);
 
   protected readonly status = signal<SystemStatus | null>(null);

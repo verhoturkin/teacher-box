@@ -8,6 +8,7 @@ import { CallDevices, DeviceList } from './call-devices';
 import { AudioProcessing } from './call-engine';
 import { CallSession } from './call-session';
 import { CallStatsDialog } from './call-stats-dialog';
+import { T } from '../i18n/texts';
 
 /**
  * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (error-coloured while
@@ -18,14 +19,14 @@ import { CallStatsDialog } from './call-stats-dialog';
   selector: 'tb-call-controls',
   imports: [Button, Menu, ButtonAttributes, CallStatsDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'tb-call-controls', role: 'toolbar', 'aria-label': 'Управление звонком' },
+  host: { class: 'tb-call-controls', role: 'toolbar', '[attr.aria-label]': 't.toolbar' },
   template: `
     <p-button
       [styleClass]="toggleClass(session.microphone())"
       icon="pi pi-microphone"
       [rounded]="true"
       [severity]="session.microphone() ? 'secondary' : 'danger'"
-      [ariaLabel]="'Микрофон'"
+      [ariaLabel]="t.microphone"
       [tbAttributes]="{ 'aria-pressed': session.microphone() ? 'true' : 'false' }"
       [disabled]="!connected()"
       (onClick)="session.toggleMicrophone()"
@@ -35,7 +36,7 @@ import { CallStatsDialog } from './call-stats-dialog';
       icon="pi pi-video"
       [rounded]="true"
       [severity]="session.camera() ? 'secondary' : 'danger'"
-      [ariaLabel]="'Камера'"
+      [ariaLabel]="t.camera"
       [tbAttributes]="{ 'aria-pressed': session.camera() ? 'true' : 'false' }"
       [disabled]="!connected()"
       (onClick)="session.toggleCamera()"
@@ -47,7 +48,7 @@ import { CallStatsDialog } from './call-stats-dialog';
           icon="pi pi-desktop"
           [rounded]="true"
           [severity]="session.screen() ? undefined : 'secondary'"
-          [ariaLabel]="'Показ экрана'"
+          [ariaLabel]="t.screen"
           [tbAttributes]="{ 'aria-pressed': session.screen() ? 'true' : 'false' }"
           [disabled]="!connected()"
           (onClick)="session.toggleScreen()"
@@ -58,7 +59,7 @@ import { CallStatsDialog } from './call-stats-dialog';
         icon="pi pi-cog"
         [rounded]="true"
         severity="secondary"
-        ariaLabel="Настройки звонка"
+        [ariaLabel]="t.settings"
         [tbAttributes]="{ 'aria-haspopup': 'menu', 'aria-expanded': menuOpen() ? 'true' : 'false' }"
         [disabled]="!connected()"
         (onClick)="openDevices($event, menu)"
@@ -81,7 +82,7 @@ import { CallStatsDialog } from './call-stats-dialog';
         icon="pi pi-window-minimize"
         [rounded]="true"
         severity="secondary"
-        ariaLabel="Свернуть"
+        [ariaLabel]="t.minimize"
         (onClick)="session.minimize()"
       />
     } @else {
@@ -90,7 +91,7 @@ import { CallStatsDialog } from './call-stats-dialog';
         icon="pi pi-window-maximize"
         [rounded]="true"
         severity="secondary"
-        ariaLabel="Развернуть"
+        [ariaLabel]="t.expand"
         (onClick)="session.expand()"
       />
     }
@@ -99,12 +100,13 @@ import { CallStatsDialog } from './call-stats-dialog';
       icon="pi pi-phone"
       [rounded]="true"
       severity="danger"
-      ariaLabel="Выйти из звонка"
+      [ariaLabel]="t.leave"
       (onClick)="session.leave()"
     />
   `,
 })
 export class CallControls {
+  protected readonly t = T.controls;
   protected readonly session = inject(CallSession);
   private readonly devices = inject(CallDevices);
 
@@ -133,7 +135,7 @@ export class CallControls {
       label,
       items:
         devices.length === 0
-          ? [{ label: 'Не найдено', disabled: true }]
+          ? [{ label: T.controls.notFound, disabled: true }]
           : devices.map((device, index) => {
               const selected = chosen === null ? index === 0 : chosen === device.deviceId;
               return {
@@ -156,21 +158,21 @@ export class CallControls {
       },
     });
     return [
-      group('Микрофон', 'audioinput', list.microphones, media.microphoneId),
-      group('Камера', 'videoinput', list.cameras, media.cameraId),
+      group(T.controls.microphone, 'audioinput', list.microphones, media.microphoneId),
+      group(T.controls.camera, 'videoinput', list.cameras, media.cameraId),
       {
-        label: 'Обработка звука',
+        label: T.controls.processing,
         items: [
-          toggle('Эхоподавление', 'echoCancellation'),
-          toggle('Шумоподавление', 'noiseSuppression'),
-          toggle('Автоусиление громкости', 'autoGainControl'),
+          toggle(T.controls.echo, 'echoCancellation'),
+          toggle(T.controls.noise, 'noiseSuppression'),
+          toggle(T.controls.gain, 'autoGainControl'),
         ],
       },
       {
-        label: 'Связь',
+        label: T.controls.network,
         items: [
           {
-            label: 'Сведения о связи',
+            label: T.controls.stats,
             icon: 'pi pi-chart-bar',
             command: () => {
               this.statsOpen.set(true);

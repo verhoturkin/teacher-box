@@ -13,6 +13,7 @@ import {
   type CallStats,
   type MediaRef,
 } from './call-engine';
+import { T } from '../i18n/texts';
 
 /*
  * The parts of `livekit-client` the calls use — a narrow contract so tests pass a fake room. Values are
@@ -321,7 +322,7 @@ class LiveKitCall implements CallConnection {
   private view(participant: LkParticipant, local: boolean): CallParticipant {
     return {
       id: participant.identity,
-      name: participant.name?.trim() ? participant.name : 'Участник',
+      name: participant.name?.trim() ? participant.name : T.participant,
       local,
       speaking: participant.isSpeaking,
       microphone: participant.isMicrophoneEnabled,

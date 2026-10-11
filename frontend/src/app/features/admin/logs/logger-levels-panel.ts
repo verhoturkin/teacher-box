@@ -13,12 +13,13 @@ import { LEVELS, levelSeverity } from '../admin-labels';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { T } from '../i18n/texts';
 
 export const DURATIONS: readonly { readonly label: string; readonly minutes: number }[] = [
-  { label: '15 минут', minutes: 15 },
-  { label: '30 минут', minutes: 30 },
-  { label: '1 час', minutes: 60 },
-  { label: '4 часа', minutes: 240 },
+  { label: T.levels.m15, minutes: 15 },
+  { label: T.levels.m30, minutes: 30 },
+  { label: T.levels.h1, minutes: 60 },
+  { label: T.levels.h4, minutes: 240 },
 ];
 
 /** Temporary log levels: more details for a part of the application, the previous level comes back by itself. */
@@ -37,26 +38,23 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card header="Подробный журнал">
-      <p class="tb-muted">
-        Уровень DEBUG записывает больше подробностей для выбранного раздела. Через заданное время
-        уровень вернётся сам.
-      </p>
+    <p-card [header]="t.title">
+      <p class="tb-muted">{{ t.about }}</p>
       <form tbFieldErrors class="tb-levels-form" [formGroup]="form" (ngSubmit)="apply()">
         <div class="tb-field tb-levels-form__name">
-          <label for="logger-name">Раздел журнала</label>
+          <label for="logger-name">{{ t.section }}</label>
           <p-select
             inputId="logger-name"
             formControlName="name"
             [options]="names()"
             [editable]="true"
-            placeholder="например ru.teacherbox.notifications"
+            [placeholder]="t.sectionPlaceholder"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-field">
-          <label for="logger-level">Уровень</label>
+          <label for="logger-level">{{ t.level }}</label>
           <p-select
             inputId="logger-level"
             formControlName="level"
@@ -65,7 +63,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
           />
         </div>
         <div class="tb-field">
-          <label for="logger-minutes">На сколько</label>
+          <label for="logger-minutes">{{ t.duration }}</label>
           <p-select
             inputId="logger-minutes"
             formControlName="minutes"
@@ -78,7 +76,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
         <p-button
           class="tb-tonal"
           type="submit"
-          label="Применить"
+          [label]="t.apply"
           severity="success"
           [loading]="pending()"
         />
@@ -86,28 +84,28 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
       <p-table [value]="loggers()" styleClass="tb-cards">
         <ng-template #header>
           <tr>
-            <th>Раздел</th>
-            <th>Уровень</th>
-            <th>Вернётся</th>
+            <th>{{ logSection }}</th>
+            <th>{{ t.level }}</th>
+            <th>{{ t.reverts }}</th>
             <th></th>
           </tr>
         </ng-template>
         <ng-template #body let-logger [tbRowType]="loggers()">
           <tr>
-            <td data-label="Раздел" class="tb-logger-name">{{ logger.name }}</td>
-            <td data-label="Уровень">
+            <td [attr.data-label]="logSection" class="tb-logger-name">{{ logger.name }}</td>
+            <td [attr.data-label]="t.level">
               <p-tag [value]="logger.effectiveLevel" [severity]="severity(logger.effectiveLevel)" />
             </td>
-            <td data-label="Вернётся">
+            <td [attr.data-label]="t.reverts">
               {{ logger.revertAt === null ? '—' : (logger.revertAt | date: 'dd.MM HH:mm') }}
             </td>
             <td class="tb-row-actions">
               @if (logger.revertAt !== null) {
                 <p-button
-                  label="Вернуть"
+                  [label]="t.revert"
                   severity="danger"
                   [text]="true"
-                  [ariaLabel]="'Вернуть: ' + logger.name"
+                  [ariaLabel]="t.revertOf(logger.name)"
                   [loading]="busy.is(logger.name)"
                   (onClick)="revert(logger.name)"
                 />
@@ -143,6 +141,8 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
   `,
 })
 export class LoggerLevelsPanel implements OnInit {
+  protected readonly logSection = T.log.section;
+  protected readonly t = T.levels;
   protected readonly busy = new Busy();
   private readonly api = inject(AdminApi);
   private readonly snackbar = inject(Snackbar);
@@ -179,7 +179,7 @@ export class LoggerLevelsPanel implements OnInit {
     this.api.changeLevel(name.trim(), level, minutes).subscribe({
       next: (changed) => {
         this.pending.set(false);
-        this.snackbar.success(`Уровень изменён: ${changed.name} — ${changed.effectiveLevel}`);
+        this.snackbar.success(T.levels.changed(changed.name, changed.effectiveLevel));
         this.reload();
       },
       error: () => {

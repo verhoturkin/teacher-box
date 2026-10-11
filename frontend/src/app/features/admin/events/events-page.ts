@@ -14,6 +14,8 @@ import { Busy } from '@shared/ui/busy';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** Administrator: events not processed yet and failed deliveries to messengers, with a retry. */
 @Component({
@@ -31,18 +33,18 @@ import { Snackbar } from '@core/snackbar/snackbar';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="События">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Необработанные события</span>
+            <span class="tb-card-title__text">{{ t.pending }}</span>
             @if (events().length > 0) {
               <div class="tb-card-title__actions">
                 <p-button
-                  label="Повторить все"
+                  [label]="t.retryAll"
                   icon="pi pi-replay"
                   class="tb-tonal"
                   severity="success"
@@ -53,38 +55,36 @@ import { Snackbar } from '@core/snackbar/snackbar';
             }
           </div>
         </ng-template>
-        <p class="tb-muted">
-          Действия, которые портал ещё не довёл до конца: например, уведомление не создано из-за
-          сбоя. Обычно они повторяются сами после перезапуска; здесь их можно отправить повторно
-          сразу.
-        </p>
-        <tb-load-state [state]="eventsState" what="события" (retry)="loadEvents()">
+        <p class="tb-muted">{{ t.about }}</p>
+        <tb-load-state [state]="eventsState" [what]="t.what" (retry)="loadEvents()">
           @if (events().length === 0) {
-            <tb-empty-state icon="pi-check-circle" title="Всё обработано" />
+            <tb-empty-state icon="pi-check-circle" [title]="t.allDone" />
           } @else {
             <p-table [value]="events()" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th>Когда</th>
-                  <th>Событие</th>
-                  <th>Обработчик</th>
-                  <th class="tb-num">Попыток</th>
+                  <th>{{ t.when }}</th>
+                  <th>{{ t.event }}</th>
+                  <th>{{ t.listener }}</th>
+                  <th class="tb-num">{{ t.attempts }}</th>
                   <th></th>
                 </tr>
               </ng-template>
               <ng-template #body let-event [tbRowType]="events()">
                 <tr>
-                  <td data-label="Когда">{{ event.publishedAt | date: 'dd.MM HH:mm:ss' }}</td>
-                  <td data-label="Событие">{{ event.eventType }}</td>
-                  <td data-label="Обработчик" class="tb-mono" [title]="event.listener">
+                  <td [attr.data-label]="t.when">
+                    {{ event.publishedAt | date: 'dd.MM HH:mm:ss' }}
+                  </td>
+                  <td [attr.data-label]="t.event">{{ event.eventType }}</td>
+                  <td [attr.data-label]="t.listener" class="tb-mono" [title]="event.listener">
                     {{ short(event.listener) }}
                   </td>
-                  <td data-label="Попыток" class="tb-num">{{ event.attempts }}</td>
+                  <td [attr.data-label]="t.attempts" class="tb-num">{{ event.attempts }}</td>
                   <td class="tb-row-actions">
                     <p-button
-                      label="Повторить"
+                      [label]="t.retry"
                       [text]="true"
-                      [ariaLabel]="'Повторить: ' + event.eventType"
+                      [ariaLabel]="t.retryOf(event.eventType)"
                       [loading]="busy.is('event-' + event.id)"
                       (onClick)="resubmit([event.id])"
                     />
@@ -99,11 +99,11 @@ import { Snackbar } from '@core/snackbar/snackbar';
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Неудачные доставки в мессенджеры</span>
+            <span class="tb-card-title__text">{{ t.deliveries }}</span>
             @if (deliveries().length > 0) {
               <div class="tb-card-title__actions">
                 <p-button
-                  label="Отправить все повторно"
+                  [label]="t.resendAll"
                   icon="pi pi-replay"
                   class="tb-tonal"
                   severity="success"
@@ -114,33 +114,39 @@ import { Snackbar } from '@core/snackbar/snackbar';
             }
           </div>
         </ng-template>
-        <tb-load-state [state]="deliveriesState" what="доставки" (retry)="loadDeliveries()">
+        <tb-load-state
+          [state]="deliveriesState"
+          [what]="t.whatDeliveries"
+          (retry)="loadDeliveries()"
+        >
           @if (deliveries().length === 0) {
-            <tb-empty-state icon="pi-check-circle" title="Все сообщения доставлены" />
+            <tb-empty-state icon="pi-check-circle" [title]="t.allDelivered" />
           } @else {
             <p-table [value]="deliveries()" styleClass="tb-cards">
               <ng-template #header>
                 <tr>
-                  <th>Когда</th>
-                  <th>Мессенджер</th>
-                  <th>Получатель</th>
-                  <th>Ошибка</th>
+                  <th>{{ t.when }}</th>
+                  <th>{{ t.messenger }}</th>
+                  <th>{{ t.recipient }}</th>
+                  <th>{{ t.error }}</th>
                   <th></th>
                 </tr>
               </ng-template>
               <ng-template #body let-delivery [tbRowType]="deliveries()">
                 <tr>
-                  <td data-label="Когда">{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
-                  <td data-label="Мессенджер">{{ channelName(delivery.channel) }}</td>
-                  <td data-label="Получатель" class="tb-mono">{{ delivery.recipientId }}</td>
-                  <td data-label="Ошибка" class="tb-error-cell tb-cell-wide">
+                  <td [attr.data-label]="t.when">{{ delivery.createdAt | date: 'dd.MM HH:mm' }}</td>
+                  <td [attr.data-label]="t.messenger">{{ channelName(delivery.channel) }}</td>
+                  <td [attr.data-label]="t.recipient" class="tb-mono">
+                    {{ delivery.recipientId }}
+                  </td>
+                  <td [attr.data-label]="t.error" class="tb-error-cell tb-cell-wide">
                     {{ delivery.error ?? '—' }}
                   </td>
                   <td class="tb-row-actions">
                     <p-button
-                      label="Повторить"
+                      [label]="t.retry"
                       [text]="true"
-                      [ariaLabel]="'Повторить: ' + delivery.channel + ', ' + delivery.recipientId"
+                      [ariaLabel]="t.retryOf(delivery.channel + ', ' + delivery.recipientId)"
                       [loading]="busy.is('delivery-' + delivery.id)"
                       (onClick)="retry([delivery.id])"
                     />
@@ -170,8 +176,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
   `,
 })
 export class EventsPage implements OnInit {
+  protected readonly t = T.events;
   protected channelName(channel: string): string {
-    const names: Record<string, string> = { TELEGRAM: 'Telegram', VK: 'ВКонтакте', MAX: 'MAX' };
+    const names: Record<string, string> = SHARED_T.messengers;
     return names[channel] ?? channel;
   }
 
@@ -197,7 +204,7 @@ export class EventsPage implements OnInit {
     this.busy
       .guard(this.key('event', ids, 'events'), this.api.resubmitEvents(ids))
       .subscribe((count) => {
-        this.snackbar.success(`Отправлено повторно событий: ${String(count)}`);
+        this.snackbar.success(T.events.eventsResent(count));
         this.loadEvents();
       });
   }
@@ -206,7 +213,7 @@ export class EventsPage implements OnInit {
     this.busy
       .guard(this.key('delivery', ids, 'deliveries'), this.api.retryDeliveries(ids))
       .subscribe((count) => {
-        this.snackbar.success(`Отправлено повторно сообщений: ${String(count)}`);
+        this.snackbar.success(T.events.messagesResent(count));
         this.loadDeliveries();
       });
   }

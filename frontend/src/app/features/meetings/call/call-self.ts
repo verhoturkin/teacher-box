@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CallParticipant } from './call-engine';
 import { CallSide, injectCornerDrag } from './call-corner';
 import { CallTile } from './call-tile';
+import { T } from '../i18n/texts';
 
 const SIDES: Readonly<Record<string, CallSide>> = {
   ArrowUp: 'top',
@@ -23,7 +24,7 @@ const SIDES: Readonly<Record<string, CallSide>> = {
     '[class.tb-call-self--dragging]': 'place.dragging()',
     '[style.translate]': 'place.offset()',
     tabindex: '0',
-    'aria-description': 'Перетащите или сдвиньте стрелками в другой угол',
+    '[attr.aria-description]': 't.move',
     '(pointerdown)': 'place.start($event)',
     '(pointermove)': 'place.move($event)',
     '(pointerup)': 'place.end()',
@@ -33,6 +34,7 @@ const SIDES: Readonly<Record<string, CallSide>> = {
   template: `<tb-call-tile [participant]="participant()" />`,
 })
 export class CallSelf {
+  protected readonly t = T.self;
   readonly participant = input.required<CallParticipant>();
 
   protected readonly place = injectCornerDrag('tb-call-self-corner');

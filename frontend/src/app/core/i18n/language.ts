@@ -82,9 +82,13 @@ type Dictionaries<T> = Readonly<Record<typeof SOURCE, T>> &
 
 /**
  * The dictionary of the current language: `translations({ ru, en })`. The Russian dictionary is the source;
- * a missing or extra key in another one is a compile error.
+ * a missing or extra key in another one is a compile error. Each section is taken from the language of the
+ * moment it is read (a component reads its section when it is created), so the dictionaries do not depend
+ * on the order in which modules load.
  */
 export function translations<T extends object>(dictionaries: Dictionaries<T>): Translation<T>;
 export function translations(dictionaries: Readonly<Record<Language, object>>): object {
-  return dictionaries[language()];
+  return new Proxy(dictionaries[SOURCE], {
+    get: (_source, key): unknown => Reflect.get(dictionaries[language()], key),
+  });
 }

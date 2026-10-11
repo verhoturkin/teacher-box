@@ -14,7 +14,6 @@ import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
-import { countOf } from '@shared/text/plural';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
 import { LoadState } from '@shared/ui/load-state';
@@ -23,6 +22,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { CallSession } from '../call/call-session';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { CallCard, CallsOverview } from '../data-access/meetings.models';
+import { T } from '../i18n/texts';
 
 /** How often the page asks who is in the rooms while it is visible. */
 export const CALLS_REFRESH_MS = 10_000;
@@ -44,35 +44,26 @@ interface RoomStatus {
   imports: [Button, Card, Message, Tag, HelpButton, EmptyState, Avatar, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Звонки">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/calls" />
     </tb-page-header>
 
     <p-card>
-      <h2 class="tb-sr-only">Комнаты учеников и групп</h2>
-      <tb-load-state [state]="state" what="комнаты" (retry)="load()">
+      <h2 class="tb-sr-only">{{ t.rooms }}</h2>
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (overview(); as overview) {
           @if (overview.status === 'OFF') {
-            <tb-empty-state
-              icon="pi-video"
-              title="Звонки в портале не настроены"
-              hint="Их включает администратор портала: нужен сервер звонков LiveKit. Пока уроки идут по внешним ссылкам."
-            />
+            <tb-empty-state icon="pi-video" [title]="t.offTitle" [hint]="t.offHint" />
           } @else {
             @if (overview.status === 'UNREACHABLE') {
-              <p-message severity="warn" styleClass="tb-form-message">
-                Сервер звонков не отвечает: не видно, кто в комнатах. Войти, скорее всего, тоже не
-                получится.
-              </p-message>
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                t.unreachable
+              }}</p-message>
             }
             @if (overview.rooms.length === 0) {
-              <tb-empty-state
-                icon="pi-users"
-                title="Пока нет учеников и групп"
-                hint="У каждого ученика и каждой группы появится своя комната."
-              />
+              <tb-empty-state icon="pi-users" [title]="t.emptyTitle" [hint]="t.emptyHint" />
             } @else {
-              <ul class="tb-list" aria-label="Комнаты">
+              <ul class="tb-list" [attr.aria-label]="t.list">
                 @for (room of overview.rooms; track room.ownerId) {
                   <li>
                     @if (room.ownerType === 'GROUP') {
@@ -90,18 +81,18 @@ interface RoomStatus {
                       <p-tag [value]="status(room).label" [severity]="status(room).severity" />
                       @if (current() === room.ownerId) {
                         <p-button
-                          label="Развернуть"
+                          [label]="t.expand"
                           icon="pi pi-window-maximize"
                           severity="secondary"
-                          [ariaLabel]="'Развернуть звонок: ' + room.name"
+                          [ariaLabel]="t.expandOf(room.name)"
                           (onClick)="session.expand()"
                         />
                       } @else {
                         <p-button
-                          label="Войти"
+                          [label]="t.join"
                           icon="pi pi-video"
                           severity="secondary"
-                          [ariaLabel]="'Войти в звонок: ' + room.name"
+                          [ariaLabel]="t.joinOf(room.name)"
                           [loading]="session.opening() === room.ownerId"
                           (onClick)="session.open(room.ownerId)"
                         />
@@ -118,6 +109,7 @@ interface RoomStatus {
   `,
 })
 export class CallsPage implements OnInit {
+  protected readonly t = T.calls;
   private readonly api = inject(MeetingsApi);
   private readonly document = inject(DOCUMENT);
   protected readonly session = inject(CallSession);
@@ -163,26 +155,28 @@ export class CallsPage implements OnInit {
 
   protected status(room: CallCard): RoomStatus {
     if (room.teacherPresent || this.current() === room.ownerId) {
-      return { label: 'Вы в звонке', severity: undefined };
+      return { label: T.calls.inCall, severity: undefined };
     }
     if (room.waiting.length > 0) {
-      return { label: `Ждут: ${String(room.waiting.length)}`, severity: 'warn' };
+      return { label: T.calls.waiting(room.waiting.length), severity: 'warn' };
     }
-    return { label: 'Пусто', severity: 'secondary' };
+    return { label: T.calls.empty, severity: 'secondary' };
   }
 
   /** Who is there, or what the room is. */
   protected details(room: CallCard): string {
     const parts: string[] = [];
     if (room.waiting.length > 0) {
-      parts.push(`В звонке: ${room.waiting.map((name) => name.trim() || 'Участник').join(', ')}`);
+      parts.push(
+        T.calls.present(room.waiting.map((name) => name.trim() || T.participant).join(', ')),
+      );
     } else if (room.ownerType === 'GROUP') {
-      parts.push(`Группа, ${countOf(room.members, 'ученик', 'ученика', 'учеников')}`);
+      parts.push(T.calls.group(room.members));
     } else {
-      parts.push('Комната ученика');
+      parts.push(T.calls.studentRoom);
     }
     if (room.externalLink) {
-      parts.push('в занятиях — своя ссылка');
+      parts.push(T.calls.ownLink);
     }
     return parts.join(' · ');
   }

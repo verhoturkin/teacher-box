@@ -60,10 +60,10 @@ ADR: [0035](adr/0035-interface-languages.md) — interface languages.
 
 - [x] 150.1 Core and shared: shell, navigation, routes' titles, errors (`core/http/error-messages.ts`),
   PrimeNG texts, `shared/ui`, plurals by the language (`shared/text/plural.ts`), money and dates.
-- [ ] 150.2 Features: identity, settings, home, billing, homework, schedule, notifications, meetings, boards,
+- [x] 150.2 Features: identity, settings, home, billing, homework, schedule, notifications, meetings, boards,
   textbooks, ai, admin — each with `i18n/ru.ts` + `i18n/en.ts`.
-- [ ] 150.3 Help articles in English (`features/help/articles/en/`).
-- [ ] 150.4 `docs/glossary.md` — English words of the terms; `docs/design-system.md` — texts through the
+- [x] 150.3 Help articles in English (`features/help/articles/*.en.ts`, loaded by the language).
+- [x] 150.4 `docs/glossary.md` — English words of the terms; `docs/design-system.md` — texts through the
   dictionaries.
 
 ### Stage 151. Release 0.11.0

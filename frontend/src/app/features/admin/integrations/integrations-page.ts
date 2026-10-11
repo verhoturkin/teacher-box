@@ -16,13 +16,12 @@ import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { CountPipe } from '@shared/text/plural';
+import { T } from '../i18n/texts';
 
 /** Administrator: connection to the messengers, the AI provider and Google; the log of AI requests. */
 @Component({
   selector: 'tb-integrations-page',
   imports: [
-    CountPipe,
     DatePipe,
     DecimalPipe,
     Button,
@@ -38,17 +37,17 @@ import { CountPipe } from '@shared/text/plural';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Интеграции">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
       <p-card>
         <ng-template #title>
           <div class="tb-card-title">
-            <span class="tb-card-title__text">Проверка связи</span>
+            <span class="tb-card-title__text">{{ t.check }}</span>
             <div class="tb-card-title__actions">
               <p-button
-                label="Проверить"
+                [label]="t.run"
                 severity="secondary"
                 icon="pi pi-refresh"
                 [loading]="checking()"
@@ -57,10 +56,7 @@ import { CountPipe } from '@shared/text/plural';
             </div>
           </div>
         </ng-template>
-        <p class="tb-muted">
-          Портал обращается к каждому сервису так же, как при работе (через настроенный прокси). ИИ
-          проверяется без расхода токенов.
-        </p>
+        <p class="tb-muted">{{ t.about }}</p>
         @if (error(); as message) {
           <p-message severity="error">{{ message }}</p-message>
         }
@@ -72,7 +68,7 @@ import { CountPipe } from '@shared/text/plural';
                 <p-tag [value]="tags[check.state].label" [severity]="tags[check.state].severity" />
                 <span class="tb-checks__detail">{{ check.detail }}</span>
                 @if (check.state !== 'NOT_CONFIGURED') {
-                  <small class="tb-muted">{{ check.millis }}&nbsp;мс</small>
+                  <small class="tb-muted">{{ t.ms(check.millis) }}</small>
                 }
               </li>
             }
@@ -80,40 +76,42 @@ import { CountPipe } from '@shared/text/plural';
         }
       </p-card>
 
-      <p-card header="Запросы к ИИ">
-        <tb-load-state [state]="aiState" what="запросы к ИИ" (retry)="loadAi()">
+      <p-card [header]="t.ai">
+        <tb-load-state [state]="aiState" [what]="t.whatAi" (retry)="loadAi()">
           @if (ai(); as ai) {
             @if (ai.enabled) {
               <p>
-                {{ ai.provider }} · {{ ai.model }} · в этом месяце
-                {{ ai.usedThisMonth | count: 'токен' : 'токена' : 'токенов' }}
+                {{ ai.provider }} · {{ ai.model }} · {{ t.thisMonth }}
+                {{ t.tokens(ai.usedThisMonth) }}
                 @if (ai.monthlyTokenLimit > 0) {
-                  из {{ ai.monthlyTokenLimit | number }}
+                  {{ t.ofLimit((ai.monthlyTokenLimit | number) ?? '') }}
                 }
               </p>
             } @else {
-              <p class="tb-muted">ИИ-помощник не настроен (TEACHERBOX_AI_PROVIDER).</p>
+              <p class="tb-muted">{{ t.aiOff }}</p>
             }
           }
           @if (usage(); as usage) {
             @if (usage.recent.length === 0) {
-              <tb-empty-state icon="pi-sparkles" title="В этом месяце запросов не было" />
+              <tb-empty-state icon="pi-sparkles" [title]="t.noRequests" />
             } @else {
               <p-table [value]="usage.recent" styleClass="tb-cards">
                 <ng-template #header>
                   <tr>
-                    <th>Когда</th>
-                    <th>Что</th>
-                    <th>Итог</th>
-                    <th class="tb-num">Токены</th>
-                    <th>Время</th>
+                    <th>{{ t.when }}</th>
+                    <th>{{ t.what }}</th>
+                    <th>{{ t.result }}</th>
+                    <th class="tb-num">{{ t.tokensColumn }}</th>
+                    <th>{{ t.time }}</th>
                   </tr>
                 </ng-template>
                 <ng-template #body let-request [tbRowType]="usage.recent">
                   <tr>
-                    <td data-label="Когда">{{ request.createdAt | date: 'dd.MM HH:mm' }}</td>
-                    <td data-label="Что">{{ request.feature }}</td>
-                    <td data-label="Итог">
+                    <td [attr.data-label]="t.when">
+                      {{ request.createdAt | date: 'dd.MM HH:mm' }}
+                    </td>
+                    <td [attr.data-label]="t.what">{{ request.feature }}</td>
+                    <td [attr.data-label]="t.result">
                       <p-tag
                         [value]="requestStatus(request.status).label"
                         [severity]="requestStatus(request.status).severity"
@@ -122,10 +120,12 @@ import { CountPipe } from '@shared/text/plural';
                         <small class="tb-negative">{{ request.error }}</small>
                       }
                     </td>
-                    <td data-label="Токены" class="tb-num">
+                    <td [attr.data-label]="t.tokensColumn" class="tb-num">
                       {{ request.inputTokens | number }} / {{ request.outputTokens | number }}
                     </td>
-                    <td data-label="Время">{{ request.durationMs / 1000 | number: '1.1-1' }} с</td>
+                    <td [attr.data-label]="t.time">
+                      {{ t.seconds((request.durationMs / 1000 | number: '1.1-1') ?? '') }}
+                    </td>
                   </tr>
                 </ng-template>
               </p-table>
@@ -176,6 +176,7 @@ import { CountPipe } from '@shared/text/plural';
   `,
 })
 export class IntegrationsPage implements OnInit {
+  protected readonly t = T.integrations;
   /** The result of a request to the AI as a tag, not the raw name of the status. */
   protected requestStatus(status: string): {
     label: string;
@@ -183,11 +184,11 @@ export class IntegrationsPage implements OnInit {
   } {
     switch (status) {
       case 'SUCCEEDED':
-        return { label: 'Готово', severity: 'success' };
+        return { label: T.integrations.done, severity: 'success' };
       case 'FAILED':
-        return { label: 'Ошибка', severity: 'danger' };
+        return { label: T.integrations.failed, severity: 'danger' };
       case 'REFUSED':
-        return { label: 'Отказ модели', severity: 'warn' };
+        return { label: T.integrations.refused, severity: 'warn' };
       default:
         return { label: status, severity: 'secondary' };
     }
@@ -228,7 +229,7 @@ export class IntegrationsPage implements OnInit {
       },
       error: (error: unknown) => {
         this.checking.set(false);
-        this.error.set(describeError(error, 'Не удалось выполнить проверку'));
+        this.error.set(describeError(error, T.integrations.checkFailed));
       },
     });
   }

@@ -28,6 +28,8 @@ import { SubmitFor } from '@shared/ui/submit-for';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board, BoardInput, BoardKind } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS } from '../boards-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 export const BOARD_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
@@ -63,7 +65,7 @@ export interface BoardDefaults {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="board() === null ? 'Новая доска' : 'Изменить доску'"
+      [header]="board() === null ? t.newBoard : t.editBoard"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -72,7 +74,7 @@ export interface BoardDefaults {
       <form tbFieldErrors id="board-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         @if (board() === null) {
           <div class="tb-field tb-field__header">
-            <span id="board-kind-label">Вид доски</span>
+            <span id="board-kind-label">{{ t.kind }}</span>
             <p-selectbutton
               formControlName="kind"
               [options]="kinds"
@@ -85,19 +87,19 @@ export interface BoardDefaults {
           </div>
         }
         <div class="tb-field tb-field--required">
-          <label for="board-title">Название</label>
+          <label for="board-title">{{ t.title }}</label>
           <input
             pInputText
             id="board-title"
             formControlName="title"
-            placeholder="Например, Алгебра"
+            [placeholder]="t.titlePlaceholder"
             autocomplete="off"
             aria-required="true"
           />
         </div>
         @if (kind() === 'LINK') {
           <div class="tb-field tb-field--required">
-            <label for="board-url">Ссылка на доску</label>
+            <label for="board-url">{{ t.url }}</label>
             <input
               pInputText
               id="board-url"
@@ -106,38 +108,38 @@ export interface BoardDefaults {
               autocomplete="off"
               aria-required="true"
             />
-            <small class="tb-hint">Откройте к доске доступ по ссылке, например в Холсте.</small>
+            <small class="tb-hint">{{ t.urlHint }}</small>
           </div>
         }
         <div class="tb-field">
-          <label for="board-students">Ученики</label>
+          <label for="board-students">{{ t.students }}</label>
           <p-multiselect
             inputId="board-students"
             formControlName="studentIds"
             [options]="studentOptions()"
             optionLabel="name"
             optionValue="id"
-            placeholder="Кому открыта доска"
+            [placeholder]="t.studentsPlaceholder"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
           />
         </div>
         <div class="tb-field">
-          <label for="board-groups">Группы</label>
+          <label for="board-groups">{{ t.groups }}</label>
           <p-multiselect
             inputId="board-groups"
             formControlName="groupIds"
             [options]="groupOptions()"
             optionLabel="name"
             optionValue="id"
-            placeholder="Все ученики группы"
+            [placeholder]="t.groupsPlaceholder"
             [filter]="true"
-            filterPlaceHolder="Поиск"
-            ariaFilterLabel="Поиск"
+            [filterPlaceHolder]="t.search"
+            [ariaFilterLabel]="t.search"
             display="chip"
             appendTo="body"
             [fluid]="true"
@@ -149,14 +151,14 @@ export interface BoardDefaults {
       </form>
       <ng-template #footer>
         <p-button
-          label="Отмена"
+          [label]="c.cancel"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
         />
         <p-button
           severity="success"
-          [label]="board() === null ? 'Создать' : 'Сохранить'"
+          [label]="board() === null ? c.create : c.save"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="board-form"
@@ -166,6 +168,8 @@ export interface BoardDefaults {
   `,
 })
 export class BoardDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.dialog;
   private readonly api = inject(BoardsApi);
 
   readonly visible = model(false);
@@ -201,9 +205,7 @@ export class BoardDialog {
   /** The kind of the board: chosen for a new one, fixed for an existing one. */
   protected readonly kind = computed(() => this.board()?.kind ?? this.chosenKind());
   protected readonly kindHint = computed(() =>
-    this.kind() === 'EXCALIDRAW'
-      ? 'Рисуете вместе с учениками прямо в портале; доска сохраняется сама.'
-      : 'Доска в другом сервисе — портал хранит только её название и ссылку.',
+    this.kind() === 'EXCALIDRAW' ? T.dialog.excalidrawHint : T.dialog.linkHint,
   );
   /** Members the board already has stay choosable even when they left. */
   readonly studentOptions = computed(() => this.withMembers(this.students(), 'STUDENT'));
@@ -255,7 +257,7 @@ export class BoardDialog {
         },
         error: (error: unknown) => {
           this.pending.set(false);
-          this.error.set(describeError(error, 'Не удалось сохранить. Попробуйте позже'));
+          this.error.set(describeError(error, T.dialog.failed));
         },
       },
     );
@@ -270,7 +272,7 @@ export class BoardDialog {
       .filter(
         (member) => member.type === type && !options.some((option) => option.id === member.id),
       )
-      .map((member) => ({ id: member.id, name: member.name ?? 'Нет в списке' }));
+      .map((member) => ({ id: member.id, name: member.name ?? T.dialog.notInList }));
     return [...options, ...missing];
   }
 }

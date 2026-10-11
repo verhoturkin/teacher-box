@@ -16,22 +16,23 @@ import { levelSeverity, shortLogger } from '../admin-labels';
 import { LoggerLevelsPanel } from './logger-levels-panel';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
+import { T } from '../i18n/texts';
 
 export const PERIODS: readonly { readonly label: string; readonly minutes: number | null }[] = [
-  { label: 'Последний час', minutes: 60 },
-  { label: 'Последние сутки', minutes: 1_440 },
-  { label: 'Последние 7 дней', minutes: 10_080 },
-  { label: 'Всё время', minutes: null },
+  { label: T.log.hour, minutes: 60 },
+  { label: T.log.day, minutes: 1_440 },
+  { label: T.log.week, minutes: 10_080 },
+  { label: T.log.always, minutes: null },
 ];
 
 export const MIN_LEVELS: readonly {
   readonly label: string;
   readonly level: LogLevelName | null;
 }[] = [
-  { label: 'Все уровни', level: null },
-  { label: 'INFO и важнее', level: 'INFO' },
-  { label: 'WARN и ERROR', level: 'WARN' },
-  { label: 'Только ERROR', level: 'ERROR' },
+  { label: T.log.allLevels, level: null },
+  { label: T.log.infoUp, level: 'INFO' },
+  { label: T.log.warnUp, level: 'WARN' },
+  { label: T.log.errorOnly, level: 'ERROR' },
 ];
 
 export const LOG_LIMIT = 200;
@@ -57,16 +58,16 @@ export const LOG_LIMIT = 200;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header title="Журнал">
+    <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
     </tb-page-header>
     <div class="tb-stack">
       <p-card>
-        <h2 class="tb-sr-only">Поиск по журналу</h2>
+        <h2 class="tb-sr-only">{{ t.search }}</h2>
         <form class="tb-log-filters" [formGroup]="form" (ngSubmit)="search()">
           <!-- every filter has its label on the outline: it stays when the field is filled (ADR-0024) -->
           <div class="tb-field">
-            <label for="log-period">Период</label>
+            <label for="log-period">{{ t.period }}</label>
             <p-select
               inputId="log-period"
               formControlName="minutes"
@@ -77,7 +78,7 @@ export const LOG_LIMIT = 200;
             />
           </div>
           <div class="tb-field">
-            <label for="log-level">Уровень</label>
+            <label for="log-level">{{ t.level }}</label>
             <p-select
               inputId="log-level"
               formControlName="level"
@@ -88,20 +89,20 @@ export const LOG_LIMIT = 200;
             />
           </div>
           <div class="tb-field">
-            <label for="log-request">Код ошибки</label>
+            <label for="log-request">{{ t.code }}</label>
             <input pInputText id="log-request" formControlName="requestId" />
           </div>
           <div class="tb-field">
-            <label for="log-text">Текст</label>
+            <label for="log-text">{{ t.text }}</label>
             <input pInputText id="log-text" formControlName="text" />
           </div>
           <div class="tb-field">
-            <label for="log-logger">Раздел (логгер)</label>
+            <label for="log-logger">{{ t.logger }}</label>
             <input pInputText id="log-logger" formControlName="logger" />
           </div>
           <p-button
             type="submit"
-            label="Найти"
+            [label]="t.find"
             severity="secondary"
             icon="pi pi-search"
             [loading]="loading()"
@@ -112,49 +113,45 @@ export const LOG_LIMIT = 200;
 
       @if (result(); as result) {
         <p-card>
-          <h2 class="tb-sr-only">Записи журнала</h2>
+          <h2 class="tb-sr-only">{{ t.entries }}</h2>
           @if (!result.available) {
-            <p-message severity="warn">
-              Журнал не пишется в файл (параметр logging.file.name пуст) — искать негде.
-            </p-message>
+            <p-message severity="warn">{{ t.noFile }}</p-message>
           } @else if (result.entries.length === 0) {
-            <tb-empty-state [compact]="true" icon="pi-search" title="Ничего не найдено" />
+            <tb-empty-state [compact]="true" icon="pi-search" [title]="t.nothing" />
           } @else {
             @if (result.truncated) {
-              <p class="tb-muted">
-                Показаны последние {{ result.entries.length }} записей — уточните поиск.
-              </p>
+              <p class="tb-muted">{{ t.truncated(result.entries.length) }}</p>
             }
             <p-table [value]="result.entries" styleClass="tb-cards tb-log-table">
               <ng-template #header>
                 <tr>
-                  <th>Время</th>
-                  <th>Уровень</th>
-                  <th>Раздел</th>
-                  <th>Сообщение</th>
+                  <th>{{ t.time }}</th>
+                  <th>{{ t.level }}</th>
+                  <th>{{ t.section }}</th>
+                  <th>{{ t.message }}</th>
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="result.entries">
                 <tr>
-                  <td data-label="Время" class="tb-log-time">
+                  <td [attr.data-label]="t.time" class="tb-log-time">
                     {{ entry.timestamp | date: 'dd.MM HH:mm:ss' }}
                   </td>
-                  <td data-label="Уровень">
+                  <td [attr.data-label]="t.level">
                     <p-tag [value]="entry.level" [severity]="severity(entry.level)" />
                   </td>
-                  <td data-label="Раздел" class="tb-log-logger" [title]="entry.logger">
+                  <td [attr.data-label]="t.section" class="tb-log-logger" [title]="entry.logger">
                     {{ short(entry.logger) }}
                   </td>
-                  <td data-label="Сообщение" class="tb-log-message tb-cell-wide">
+                  <td [attr.data-label]="t.message" class="tb-log-message tb-cell-wide">
                     <div>{{ entry.message }}</div>
                     @if (entry.requestId !== null) {
                       <button type="button" class="tb-log-code" (click)="findRequest(entry)">
-                        код {{ entry.requestId }}
+                        {{ t.requestCode(entry.requestId) }}
                       </button>
                     }
                     @if (entry.error !== null) {
                       <details>
-                        <summary>Подробности ошибки</summary>
+                        <summary>{{ t.details }}</summary>
                         <pre>{{ entry.error }}</pre>
                       </details>
                     }
@@ -218,6 +215,7 @@ export const LOG_LIMIT = 200;
   `,
 })
 export class LogPage implements OnInit {
+  protected readonly t = T.log;
   private readonly api = inject(AdminApi);
 
   /** A request code from the address (`?requestId=`). */

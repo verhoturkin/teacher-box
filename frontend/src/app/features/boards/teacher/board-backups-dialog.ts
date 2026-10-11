@@ -22,6 +22,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { BoardsApi } from '../data-access/boards-api';
 import { BoardBackup } from '../data-access/boards.models';
 import { BOARD_BACKUP_KIND_LABELS } from '../boards-labels';
+import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
 
 /** What the teacher is about to do with a copy: asked inside the dialog, never in a second one. */
 interface PendingAction {
@@ -39,20 +41,17 @@ interface PendingAction {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="'Резервные копии: ' + title()"
+      [header]="t.title(title())"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
       <div class="tb-form">
-        <p class="tb-muted">
-          Портал копирует каждую изменённую доску раз в сутки. Сделайте свою копию перед большими
-          изменениями.
-        </p>
+        <p class="tb-muted">{{ t.about }}</p>
         <div class="tb-form-actions">
           <p-button
-            label="Сделать копию"
+            [label]="t.create"
             icon="pi pi-copy"
             severity="secondary"
             [loading]="busy() === 'create'"
@@ -66,21 +65,20 @@ interface PendingAction {
           >
             <span>
               @if (action.kind === 'restore') {
-                Вернуть рисунок от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}? Текущий
-                рисунок сохранится копией — его тоже можно будет вернуть.
+                {{ t.restoreQuestion((action.backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               } @else {
-                Удалить копию от {{ action.backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}?
+                {{ t.deleteQuestion((action.backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               }
             </span>
             <span class="tb-inline">
               <p-button
-                label="Отмена"
+                [label]="c.cancel"
                 severity="secondary"
                 [text]="true"
                 (onClick)="confirming.set(null)"
               />
               <p-button
-                [label]="action.kind === 'restore' ? 'Восстановить' : 'Удалить'"
+                [label]="action.kind === 'restore' ? t.restore : t.delete"
                 [severity]="action.kind === 'restore' ? 'success' : 'danger'"
                 [loading]="busy() === action.kind"
                 (onClick)="confirm(action)"
@@ -91,7 +89,7 @@ interface PendingAction {
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
-        <tb-load-state [state]="state" what="копии" (retry)="load()">
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
           @if (backups().length > 0) {
             <ul class="tb-list">
               @for (backup of backups(); track backup.id) {
@@ -107,11 +105,9 @@ interface PendingAction {
                   </div>
                   <span class="tb-list__trail">
                     <p-button
-                      label="Восстановить"
+                      [label]="t.restore"
                       [text]="true"
-                      [ariaLabel]="
-                        'Восстановить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
-                      "
+                      [ariaLabel]="t.restoreOf((backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '')"
                       (onClick)="ask('restore', backup)"
                     />
                     <p-button
@@ -119,12 +115,8 @@ interface PendingAction {
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
-                      [pTooltip]="
-                        'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
-                      "
-                      [ariaLabel]="
-                        'Удалить копию от ' + (backup.createdAt | date: 'dd.MM.yyyy HH:mm')
-                      "
+                      [pTooltip]="t.deleteOf((backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '')"
+                      [ariaLabel]="t.deleteOf((backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '')"
                       (onClick)="ask('delete', backup)"
                     />
                   </span>
@@ -135,15 +127,15 @@ interface PendingAction {
             <tb-empty-state
               [compact]="true"
               icon="pi-history"
-              title="Копий пока нет"
-              hint="Ежедневная копия появится после первых изменений на доске."
+              [title]="t.emptyTitle"
+              [hint]="t.emptyHint"
             />
           }
         </tb-load-state>
       </div>
       <ng-template #footer>
         <p-button
-          label="Закрыть"
+          [label]="c.close"
           severity="secondary"
           [text]="true"
           (onClick)="visible.set(false)"
@@ -159,6 +151,8 @@ interface PendingAction {
   `,
 })
 export class BoardBackupsDialog {
+  protected readonly c = SHARED_T.common;
+  protected readonly t = T.backups;
   private readonly api = inject(BoardsApi);
 
   readonly visible = model(false);
@@ -238,7 +232,7 @@ export class BoardBackupsDialog {
       },
       error: (error: unknown) => {
         this.busy.set(null);
-        this.error.set(describeError(error, 'Не получилось. Попробуйте позже'));
+        this.error.set(describeError(error, T.backups.failed));
       },
     });
   }
