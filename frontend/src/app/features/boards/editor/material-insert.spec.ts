@@ -3,10 +3,13 @@ import {
   BESIDE_GAP,
   FRAME_PADDING,
   PAGE_GAP,
+  InsertAccess,
   TEXT_WIDTH,
   insertMaterial,
   viewportCentre,
 } from './material-insert';
+
+type Listener = Parameters<NonNullable<InsertAccess['onChange']>>[0];
 
 describe('insertMaterial', () => {
   const island = fakeExcalidraw();
@@ -45,6 +48,40 @@ describe('insertMaterial', () => {
       y: 300,
     });
     expect(state.updates).toEqual([expect.objectContaining({ captureUpdate: 'IMMEDIATELY' })]);
+  });
+
+  it('waits until the editor has loaded its drawing', async () => {
+    const { access, state } = fakeScene();
+    state.appState = { ...state.appState, isLoading: true };
+    const listeners: Listener[] = [];
+    const stop = vi.fn();
+    const loading: InsertAccess = {
+      ...access,
+      onChange: (listener) => {
+        listeners.push(listener);
+        return stop;
+      },
+    };
+    const appState = (isLoading: boolean) => ({ ...access.getAppState(), isLoading });
+
+    const inserted = insertMaterial(
+      loading,
+      island.modules,
+      { title: 'Дроби', markdown: '', mode: 'text' },
+      picture,
+      noPictures,
+    );
+    await Promise.resolve();
+    listeners[0]?.([], appState(true), {});
+    await Promise.resolve();
+    expect(state.updates).toEqual([]);
+
+    // the loaded drawing replaces the scene, then the material goes on it
+    state.elements = [anElement('loaded', 1)];
+    listeners[0]?.([], appState(false), {});
+    await inserted;
+    expect(stop).toHaveBeenCalledOnce();
+    expect(state.elements.map((element) => element.id)).toEqual(['loaded', 'new-0']);
   });
 
   it('puts a picture of a material at the centre with its file', async () => {

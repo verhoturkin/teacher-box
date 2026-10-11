@@ -21,8 +21,9 @@ export const FRAME_PADDING = 40;
 /** Between the drawing and the frame of new pages, scene pixels. */
 export const BESIDE_GAP = 80;
 
-/** The scene, and scrolling to new pages when the editor can. */
-export type InsertAccess = SceneAccess & Partial<Pick<ExcalidrawImperativeAPI, 'scrollToContent'>>;
+/** The scene, and scrolling to new pages and waiting for the initial data when the editor can. */
+export type InsertAccess = SceneAccess &
+  Partial<Pick<ExcalidrawImperativeAPI, 'scrollToContent' | 'onChange'>>;
 
 /** Fetches a page picture by its API address (with the user's token). */
 export type PictureSource = (url: string) => Promise<Blob>;
@@ -46,6 +47,25 @@ export function viewportCentre(appState: {
 }
 
 /**
+ * Resolves once the editor has loaded its initial data. Excalidraw hands out its API before that, and the
+ * loaded drawing replaces whatever was put on the scene meanwhile (a text came at once and was lost).
+ */
+export function sceneLoaded(access: InsertAccess): Promise<void> {
+  const subscribe = access.onChange;
+  if (!access.getAppState().isLoading || subscribe === undefined) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    const stop = subscribe((_elements, appState) => {
+      if (!appState.isLoading) {
+        stop();
+        resolve();
+      }
+    });
+  });
+}
+
+/**
  * Puts a material at the centre of the view: a task or a draft as a text element or as a picture of the
  * formatted text; pages of a textbook as pictures in a row inside a frame (ADR-0033). It is saved like any
  * change.
@@ -57,6 +77,7 @@ export async function insertMaterial(
   clipboard: Pick<BoardClipboard, 'picture'>,
   pictures: PictureSource,
 ): Promise<void> {
+  await sceneLoaded(access);
   const centre = viewportCentre(access.getAppState());
   const skeletons =
     material.mode === 'pages'

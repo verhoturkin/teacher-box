@@ -25,7 +25,9 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 - **Bot dialogs:** `ChatEngine` collects `shared.chat.ChatAction` beans from all modules (it does not know
   them): role menu, `/menu`, `/cancel`, `/help`; dialog state in `chat_dialogs` (30 min); buttons carry only
   a token, values in `chat_buttons`, one press consumes the set; notifications may carry action buttons;
-  teacher changes audited (`AuditLog.bot`); the teacher can turn bot control off (`chat_settings`).
+  teacher changes audited (`AuditLog.bot`); the teacher can turn bot control off (`chat_settings`). A reply
+  the messenger refuses for its link buttons (Telegram takes no portal on a local address) goes again with
+  the links in the text (`MessengerPolling`, 0.11.0).
 - Broadcasts and «напомнить подключить» for the teacher. `MessengerIntegrationCheck` for diagnostics.
 
 ## Contract

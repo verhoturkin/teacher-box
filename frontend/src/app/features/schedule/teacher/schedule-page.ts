@@ -67,6 +67,8 @@ import { Busy } from '@shared/ui/busy';
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
 const CLICK_SELECTION_MINUTES = 30;
+/** A day picked in the month view has no time: the lesson starts at this hour with the default duration. */
+const ALL_DAY_START_HOUR = 10;
 
 /**
  * The teacher's schedule, one card under another (ADR-0021): students' requests and lessons waiting
@@ -502,12 +504,18 @@ export class SchedulePage implements OnInit {
   }
 
   onSlot(selection: SlotSelection): void {
-    const minutes = Math.round((selection.end.getTime() - selection.start.getTime()) / 60_000);
     this.editing.set(null);
-    this.slot.set({
-      start: selection.start,
-      durationMinutes: minutes > CLICK_SELECTION_MINUTES ? minutes : this.defaultDuration(),
-    });
+    if (selection.allDay === true) {
+      const start = new Date(selection.start);
+      start.setHours(ALL_DAY_START_HOUR, 0, 0, 0);
+      this.slot.set({ start, durationMinutes: this.defaultDuration() });
+    } else {
+      const minutes = Math.round((selection.end.getTime() - selection.start.getTime()) / 60_000);
+      this.slot.set({
+        start: selection.start,
+        durationMinutes: minutes > CLICK_SELECTION_MINUTES ? minutes : this.defaultDuration(),
+      });
+    }
     this.lessonDialogVisible.set(true);
   }
 

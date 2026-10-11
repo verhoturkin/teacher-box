@@ -41,10 +41,11 @@ export interface LessonMove {
   readonly revert: () => void;
 }
 
-/** An empty time range the teacher selected to plan a lesson. */
+/** An empty time range the teacher selected to plan a lesson; `allDay` — whole days of the month view. */
 export interface SlotSelection {
   readonly start: Date;
   readonly end: Date;
+  readonly allDay?: boolean;
 }
 
 /** A dropped lesson waiting on its card for «Перенести» or «Отменить перенос»; `saving` — confirmed. */
@@ -169,7 +170,7 @@ export class ScheduleCalendar {
         this.handleClick(info.event.id);
       },
       select: (info: DateSelectInfo) => {
-        this.slotSelect.emit({ start: info.start, end: info.end });
+        this.slotSelect.emit({ start: info.start, end: info.end, allDay: info.allDay });
       },
       eventDrop: (info: EventDropInfo) => {
         this.handleDrop(info.event.id, info.event.start, info.revert);
