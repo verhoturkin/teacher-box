@@ -18,7 +18,6 @@ import {
 import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
-import { AssignmentDialog } from './assignment-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -56,9 +55,8 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('AssignmentsPage', () => {
-  it('lists assignments and creates a new one', async () => {
+  it('lists assignments and links a new one to the editor', async () => {
     const { backend } = configure();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
     backend
@@ -75,21 +73,7 @@ describe('AssignmentsPage', () => {
     expect(readableText(host)).toContain('без срока');
     expect(readableText(host)).toContain('0 из 2');
 
-    buttonByText(host, 'Новое задание').click();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    await fixture.whenStable();
-    const dialog = fixture.debugElement
-      .query(By.directive(AssignmentDialog))
-      .injector.get(AssignmentDialog);
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.students().map((student) => student.displayName)).toEqual([
-      'Анна',
-      'Борис',
-      'Вера',
-    ]);
-
-    dialog.saved.emit(assignmentDetails({ id: 'a-9' }));
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
+    expect(host.querySelector('a.tb-page-fab')?.getAttribute('href')).toBe('/new');
     fixture.destroy();
   });
 
@@ -111,21 +95,15 @@ describe('AssignmentsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
 
-  it('opens the form of a new assignment from the home page', async () => {
+  it('opens the editor of a new assignment from the home page', async () => {
     const { backend } = configure();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     fixture.componentRef.setInput('create', 'assignment');
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend.expectOne('/api/teacher/homework/assignments').flush([]);
-    await fixture.whenStable();
 
-    expect(
-      fixture.debugElement
-        .query(By.directive(AssignmentDialog))
-        .injector.get(AssignmentDialog)
-        .visible(),
-    ).toBe(true);
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], { replaceUrl: true });
+    backend.expectNone('/api/teacher/homework/assignments');
     fixture.destroy();
   });
 });

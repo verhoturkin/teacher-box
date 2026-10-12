@@ -19,7 +19,7 @@ import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
-import { Textbook, TextbooksApi } from '@features/textbooks/parts';
+import { Textbook, TextbooksApi, parsePages } from '@features/textbooks/parts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -27,12 +27,16 @@ import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
+/** Most pages bound at once, as the backend's `PageRanges` allows. */
+const MAX_BOUND_PAGES = 500;
+
 /** Pages like «12-14, 20» (the backend normalizes and checks them). */
 export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-–—]\s*\d+)?)*\s*$/;
 
 /**
  * Binds a textbook of «Учебники» to an assignment with its pages (ADR-0033), or changes the pages of a bound
- * one. Blank pages — the whole textbook.
+ * one. Blank pages — the whole textbook. Without an assignment (a new one in the editor) it only hands the choice
+ * over (`picked`), checked against the textbook's pages; the editor binds it after creating the assignment.
  */
 @Component({
   selector: 'tb-bind-textbook-dialog',
@@ -128,12 +132,14 @@ export class BindTextbookDialog {
   private readonly textbooksApi = inject(TextbooksApi);
 
   readonly visible = model(false);
-  readonly assignmentId = input.required<string>();
+  /** `null`: the assignment is not created yet — the choice goes to `picked`. */
+  readonly assignmentId = input<string | null>(null);
   /** The textbooks the assignment already has. */
   readonly taken = input<readonly BoundTextbook[]>([]);
   /** A bound textbook whose pages change; `null` binds a new one. */
   readonly bound = input<BoundTextbook | null>(null);
   readonly saved = output<AssignmentDetails>();
+  readonly picked = output<BoundTextbook>();
 
   protected readonly textbooks = signal<Textbook[]>([]);
   protected readonly loaded = signal(false);
@@ -198,20 +204,52 @@ export class BindTextbookDialog {
       return;
     }
     const pages = this.paged() ? this.pages.value.trim() : '';
+    const assignmentId = this.assignmentId();
+    if (assignmentId === null) {
+      this.pick(textbookId, pages);
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
-    this.homework
-      .bindTextbook(this.assignmentId(), textbookId, pages === '' ? null : pages)
-      .subscribe({
-        next: (assignment) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.saved.emit(assignment);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.bind.failed));
-        },
-      });
+    this.homework.bindTextbook(assignmentId, textbookId, pages === '' ? null : pages).subscribe({
+      next: (assignment) => {
+        this.pending.set(false);
+        this.visible.set(false);
+        this.saved.emit(assignment);
+      },
+      error: (error: unknown) => {
+        this.pending.set(false);
+        this.error.set(describeError(error, T.bind.failed));
+      },
+    });
+  }
+
+  /** A new assignment: the textbook and its normalized pages, checked here as the backend would. */
+  private pick(textbookId: string, pages: string): void {
+    const bound = this.bound();
+    const textbook = this.textbooks().find((candidate) => candidate.id === textbookId);
+    const base: BoundTextbook | null =
+      bound ??
+      (textbook === undefined
+        ? null
+        : {
+            textbookId,
+            kind: textbook.kind,
+            title: textbook.title,
+            course: textbook.course,
+            format: textbook.format,
+            pageCount: textbook.pageCount,
+            pages: null,
+          });
+    if (base === null) {
+      return;
+    }
+    const parsed = pages === '' ? null : parsePages(pages, base.pageCount, MAX_BOUND_PAGES);
+    if (pages !== '' && parsed === null) {
+      this.error.set(T.bind.beyond);
+      return;
+    }
+    this.visible.set(false);
+    this.picked.emit({ ...base, pages: parsed?.text ?? null });
   }
 }

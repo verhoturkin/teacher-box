@@ -9,6 +9,8 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -63,21 +65,30 @@ public class InteractivePages {
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder DECODER = Base64.getUrlDecoder();
 
+    /** Previews of unsaved pages kept at once; the oldest goes first. */
+    static final int MAX_PREVIEWS = 20;
+
     /** A link to the page and when it stops working. */
     public record PageLink(String url, Instant expiresAt) {
+    }
+
+    private record Preview(String html, Instant expiresAt) {
     }
 
     private final AssignmentRepository assignments;
     private final TaskRepository tasks;
     private final Clock clock;
     private final SecretKeySpec key;
+    private final SecureRandom random = new SecureRandom();
+    /** Unsaved pages of the editor by their random token; in memory, like the key. */
+    private final Map<String, Preview> previews = new LinkedHashMap<>();
 
     public InteractivePages(AssignmentRepository assignments, TaskRepository tasks, Clock clock) {
         this.assignments = assignments;
         this.tasks = tasks;
         this.clock = clock;
         byte[] secret = new byte[32];
-        new SecureRandom().nextBytes(secret);
+        random.nextBytes(secret);
         this.key = new SecretKeySpec(secret, ALGORITHM);
     }
 
@@ -98,18 +109,49 @@ public class InteractivePages {
                 .orElseThrow(() -> new NotFoundException("task.not-found", "Task not found"))));
     }
 
+    /** The teacher's link to a page not saved yet: the editor's preview, kept for the lifetime of a link. */
+    public PageLink previewLink(String html) {
+        Instant now = clock.instant();
+        Instant expiresAt = now.plus(LIFETIME);
+        byte[] bytes = new byte[24];
+        random.nextBytes(bytes);
+        String token = ENCODER.encodeToString(bytes);
+        synchronized (previews) {
+            previews.values().removeIf(preview -> !now.isBefore(preview.expiresAt()));
+            while (previews.size() >= MAX_PREVIEWS) {
+                previews.remove(previews.keySet().iterator().next());
+            }
+            previews.put(token, new Preview(html, expiresAt));
+        }
+        return new PageLink(PATH + token, expiresAt);
+    }
+
     /**
-     * The page a link leads to, with the bridge script.
+     * The page a link leads to, with the bridge script: a saved assignment by a signed link, an unsaved one by the
+     * token of its preview.
      *
      * @throws NotFoundException if the link is broken, expired or the assignment is no longer interactive
      */
     @Transactional(readOnly = true)
     public String page(String token) {
+        if (token.indexOf('.') < 0) {
+            return withBridge(preview(token));
+        }
         UUID assignmentId = verified(token);
         return assignments.findById(assignmentId)
                 .filter(assignment -> assignment.kind() == AssignmentKind.INTERACTIVE)
                 .map(assignment -> withBridge(Objects.requireNonNull(assignment.interactiveHtml())))
                 .orElseThrow(InteractivePages::notFound);
+    }
+
+    private String preview(String token) {
+        synchronized (previews) {
+            Preview preview = previews.get(token);
+            if (preview == null || !clock.instant().isBefore(preview.expiresAt())) {
+                throw notFound();
+            }
+            return preview.html();
+        }
     }
 
     static String withBridge(String html) {
@@ -132,9 +174,6 @@ public class InteractivePages {
 
     private UUID verified(String token) {
         int dot = token.indexOf('.');
-        if (dot < 0) {
-            throw notFound();
-        }
         byte[] payload;
         byte[] signature;
         try {

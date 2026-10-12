@@ -12,7 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
+import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
@@ -31,7 +31,7 @@ import { TextbookList } from '../ui/textbook-list';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
-import { AssignmentDialog, StudentOption } from './assignment-dialog';
+import { StudentOption } from './assignment-editor-page';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
@@ -56,6 +56,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     RouterLink,
     Button,
     ButtonDirective,
+    ButtonIcon,
     ButtonLabel,
     Card,
     ConfirmDialog,
@@ -68,7 +69,6 @@ import { SHARED_T } from '@shared/i18n/texts';
     TextbookList,
     FilePicker,
     TaskStatusTag,
-    AssignmentDialog,
     GroupPicker,
     ToBoardDialog,
     TextbookToBoardDialog,
@@ -98,12 +98,10 @@ import { SHARED_T } from '@shared/i18n/texts';
             (onClick)="boardVisible.set(true)"
           />
         }
-        <p-button
-          [label]="t.edit"
-          icon="pi pi-pencil"
-          severity="secondary"
-          (onClick)="editVisible.set(true)"
-        />
+        <a pButton severity="secondary" routerLink="edit">
+          <i pButtonIcon aria-hidden="true" class="pi pi-pencil"></i>
+          <span pButtonLabel>{{ t.edit }}</span>
+        </a>
       </tb-page-header>
 
       <div class="tb-stack">
@@ -235,11 +233,6 @@ import { SHARED_T } from '@shared/i18n/texts';
         </p-card>
       </div>
 
-      <tb-assignment-dialog
-        [(visible)]="editVisible"
-        [assignment]="assignment"
-        (saved)="details.set($event)"
-      />
       <tb-textbook-to-board-dialog
         [(visible)]="textbookBoardVisible"
         [textbook]="boardTextbook()"
@@ -290,7 +283,6 @@ export class AssignmentPage implements OnInit {
   constructor() {
     pageDetail(() => this.details()?.title);
   }
-  protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
   /** «На доску» puts the text, the pictures and the textbook pages of the assignment in a dated frame. */
   protected readonly board = computed(() => {

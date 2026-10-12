@@ -84,6 +84,18 @@ export const routes: Routes = [
         loadComponent: () => import('@features/homework').then((m) => m.TaskReviewPage),
       },
       {
+        path: 'homework/new',
+        title: N.newAssignment,
+        loadComponent: () => import('@features/homework').then((m) => m.AssignmentEditorPage),
+        canDeactivate: [canLeaveGuard],
+      },
+      {
+        path: 'homework/:assignmentId/edit',
+        title: N.editAssignment,
+        loadComponent: () => import('@features/homework').then((m) => m.AssignmentEditorPage),
+        canDeactivate: [canLeaveGuard],
+      },
+      {
         path: 'homework/:assignmentId',
         title: N.assignment,
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentPage),

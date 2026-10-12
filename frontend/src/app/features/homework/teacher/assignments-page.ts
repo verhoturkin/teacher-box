@@ -10,15 +10,13 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
-import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { HelpButton } from '@features/help/parts';
-import { IdentityApi } from '@features/identity/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
-import { AssignmentDetails, AssignmentSummary } from '../data-access/homework.models';
-import { AssignmentDialog, StudentOption } from './assignment-dialog';
+import { AssignmentSummary } from '../data-access/homework.models';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { LoadState } from '@shared/ui/load-state';
@@ -34,13 +32,12 @@ import { T } from '../i18n/texts';
     DatePipe,
     RouterLink,
     Badge,
-    Button,
     ButtonDirective,
+    ButtonIcon,
     ButtonLabel,
     Card,
     TableModule,
     RowType,
-    AssignmentDialog,
     PageHeader,
     LoadStateView,
   ],
@@ -54,7 +51,10 @@ import { T } from '../i18n/texts';
           <p-badge [value]="toReview()" severity="warn" />
         }
       </a>
-      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
+      <a pButton class="tb-page-fab" routerLink="new">
+        <i pButtonIcon aria-hidden="true" class="pi pi-plus"></i>
+        <span pButtonLabel>{{ t.create }}</span>
+      </a>
     </tb-page-header>
 
     <p-card>
@@ -100,19 +100,12 @@ import { T } from '../i18n/texts';
         </p-table>
       </tb-load-state>
     </p-card>
-
-    <tb-assignment-dialog
-      [(visible)]="dialogVisible"
-      [students]="students()"
-      (saved)="onCreated($event)"
-    />
   `,
 })
 export class AssignmentsPage implements OnInit {
   protected readonly noDueDate = T.noDueDate;
   protected readonly t = T.list;
   private readonly api = inject(HomeworkApi);
-  private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
 
   protected readonly assignments = signal<AssignmentSummary[]>([]);
@@ -120,14 +113,13 @@ export class AssignmentsPage implements OnInit {
   protected readonly toReview = computed(() =>
     this.assignments().reduce((sum, assignment) => sum + assignment.submitted, 0),
   );
-  protected readonly students = signal<StudentOption[]>([]);
-  protected readonly dialogVisible = signal(false);
-  /** `?create=...` from the quick actions of the home page: opens the form at once. */
+  /** `?create=...` from the quick actions of the home page: opens the editor at once. */
   readonly create = input<string>();
 
   ngOnInit(): void {
     if (this.create() === 'assignment') {
-      this.openCreate();
+      void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
+      return;
     }
     this.load();
   }
@@ -139,20 +131,5 @@ export class AssignmentsPage implements OnInit {
       .subscribe((assignments) => {
         this.assignments.set(assignments);
       });
-  }
-
-  protected openCreate(): void {
-    this.identity.listStudents().subscribe((students) => {
-      this.students.set(
-        students
-          .filter((student) => student.status !== 'DEACTIVATED')
-          .map((student) => ({ id: student.id, displayName: student.displayName })),
-      );
-      this.dialogVisible.set(true);
-    });
-  }
-
-  protected onCreated(assignment: AssignmentDetails): void {
-    void this.router.navigate(['/teacher/homework', assignment.id]);
   }
 }

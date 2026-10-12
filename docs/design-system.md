@@ -149,6 +149,11 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
+- **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
+  («Выдать» / «Сохранить») is the header's main action; content cards on the left, a sticky assistant column
+  (22 rem) on the right at `width >= 75em` (stacked under the content below); Markdown with its preview side by side
+  at `width >= 75em`, a «Текст / Просмотр» switch below; a segmented control of three or more long options becomes a
+  `p-select` at `width <= 48em`. Leaving with unsaved changes asks (`canLeaveGuard`, danger confirmation).
 
 ## 6. States and feedback
 

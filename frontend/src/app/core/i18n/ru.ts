@@ -29,6 +29,8 @@ export const ru = {
     reviewQueue: 'На проверку',
     taskReview: 'Проверка работы',
     assignment: 'Задание',
+    newAssignment: 'Новое задание',
+    editAssignment: 'Изменить задание',
     monthlyReport: 'Отчёт за месяц',
     ledger: 'История оплат',
     help: 'Справка',

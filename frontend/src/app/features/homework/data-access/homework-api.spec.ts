@@ -20,10 +20,11 @@ describe('HomeworkApi', () => {
   });
 
   it('calls the teacher endpoints', () => {
-    const input = { title: 'Дроби', description: null, dueAt: null };
+    const input = { title: 'Дроби', description: null, interactiveHtml: null, dueAt: null };
     api.assignments().subscribe();
     api.assignment('a-1').subscribe();
-    api.createAssignment(input, ['s-1']).subscribe();
+    api.createAssignment('BOARD', input).subscribe();
+    api.interactivePreview('<p>?</p>').subscribe();
     api.updateAssignment('a-1', input, 2).subscribe();
     api.assignStudents('a-1', ['s-2']).subscribe();
     api.removeMaterial('a-1', 'f-1').subscribe();
@@ -37,8 +38,11 @@ describe('HomeworkApi', () => {
     expect(
       backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body,
     ).toEqual({
+      kind: 'BOARD',
       ...input,
-      studentIds: ['s-1'],
+    });
+    expect(backend.expectOne('/api/teacher/homework/interactive-preview').request.body).toEqual({
+      html: '<p>?</p>',
     });
     expect(
       backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' }).request

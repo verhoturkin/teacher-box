@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.homework.application.AssignmentService;
@@ -110,6 +111,45 @@ class InteractivePageIntegrationTests {
 
         clock.advance(Duration.ofMinutes(5));
         assertThat(mvc.get().uri(url)).as("expired").hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void theTeacherPreviewsAnUnsavedPage() {
+        MvcTestResult link = preview("<p>Черновик</p>");
+        assertThat(link).hasStatusOk();
+        String url = JsonPath.read(AssignmentIntegrationTests.body(link), "$.url");
+
+        MvcTestResult page = mvc.get().uri(url).exchange();
+        assertThat(page).hasStatusOk().hasHeader("X-Frame-Options", "SAMEORIGIN");
+        assertThat(AssignmentIntegrationTests.body(page)).startsWith("<script>").endsWith("<p>Черновик</p>");
+
+        assertThat(mvc.post().uri("/api/teacher/homework/interactive-preview")
+                .with(TestUsers.student(directory.addStudent("Ученик")))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"html\":\"<p>x</p>\"}"))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(preview(" ")).hasStatus(HttpStatus.BAD_REQUEST);
+
+        clock.advance(Duration.ofMinutes(5));
+        assertThat(mvc.get().uri(url)).as("expired").hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void onlyTheLatestPreviewsAreKept() {
+        String first = JsonPath.read(AssignmentIntegrationTests.body(preview("<p>0</p>")), "$.url");
+        String second = JsonPath.read(AssignmentIntegrationTests.body(preview("<p>1</p>")), "$.url");
+        for (int i = 2; i <= 20; i++) {
+            preview("<p>" + i + "</p>");
+        }
+
+        assertThat(mvc.get().uri(first)).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri(second)).hasStatusOk();
+    }
+
+    private MvcTestResult preview(String html) {
+        return mvc.post().uri("/api/teacher/homework/interactive-preview")
+                .with(TestUsers.teacher(directory.teacherId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"html\":\"" + html + "\"}").exchange();
     }
 
     private static String flipped(String part) {

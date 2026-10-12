@@ -63,19 +63,20 @@ New ADRs:
 
 ### 166. Assignment editor page — redesign variant B (F)
 
-- [ ] 166.1 **F** Routes `/teacher/homework/new` and `/teacher/homework/:id/edit` replace `assignment-dialog.ts`
+- [x] 166.1 **F** Routes `/teacher/homework/new` and `/teacher/homework/:id/edit` replace `assignment-dialog.ts`
   (callers: `assignments-page.ts`, `assignment-page.ts`, home widgets; «Новое задание» navigates). Header: back,
   title, kind segmented control (create only), «Выдать» / «Сохранить». Leave-with-unsaved-changes prompt.
-- [ ] 166.2 **F** Left column by kind: title; written — Markdown editor with side-by-side preview at ≥ 1200 px,
+- [x] 166.2 **F, B** Left column by kind: title; written — Markdown editor with side-by-side preview at ≥ 1200 px,
   «На доску»; board — description only; interactive — HTML editor (monospace textarea) + live preview in
   `ui/interactive-frame.ts`. Below: chips — students (+ group), due date, textbooks (`bind-textbook-dialog.ts`),
-  files — only those the kind allows.
-- [ ] 166.3 **F** Due date default: on choosing students, if the teacher has not set the date, it becomes the start
+  files — only those the kind allows. *Preview of unsaved HTML: `POST /api/teacher/homework/interactive-preview`.*
+- [x] 166.3 **F** Due date default: on choosing students, if the teacher has not set the date, it becomes the start
   of the earliest next lesson of the chosen students (`ScheduleApi` from `@features/schedule/parts`; add
   `GET /api/teacher/schedule/next-lessons?studentIds=` **B** in `schedule` if missing), hint «до занятия <date>»;
-  no lesson — empty.
-- [ ] 166.4 **F** Mobile layout (one column, AI panel as a bottom sheet), design-system section for the editor page,
-  help articles (`features/help/articles/teacher.{ru,en}.ts`). Old `assignment-dialog.ts` and its spec removed.
+  no lesson — empty. *No backend endpoint: the editor reads `ScheduleApi.lessons` for 60 days.*
+- [x] 166.4 **F** Mobile layout (one column, AI panel as a bottom sheet), design-system section for the editor page,
+  help articles (`features/help/articles/teacher.{ru,en}.ts`). Old `assignment-dialog.ts` and its spec removed. *The AI panel stacks
+under the editor on narrow screens instead of a bottom sheet; the panel itself — 167.3.*
 
 ### 167. AI panel and prompt library (B, F)
 

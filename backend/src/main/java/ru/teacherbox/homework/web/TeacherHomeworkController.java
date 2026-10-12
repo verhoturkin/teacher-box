@@ -61,6 +61,9 @@ class TeacherHomeworkController {
             @NotNull Long version) {
     }
 
+    record PreviewRequest(@NotBlank @Size(max = Assignment.MAX_HTML) String html) {
+    }
+
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
     }
 
@@ -120,6 +123,12 @@ class TeacherHomeworkController {
     @GetMapping("/assignments/{assignmentId}/interactive-link")
     PageLink interactiveLink(@PathVariable UUID assignmentId) {
         return pages.teacherLink(assignmentId);
+    }
+
+    /** A short-lived link to an interactive page not saved yet: the editor's preview (ADR-0040). */
+    @PostMapping("/interactive-preview")
+    PageLink interactivePreview(@Valid @RequestBody PreviewRequest request) {
+        return pages.previewLink(request.html());
     }
 
     @PostMapping("/assignments/{assignmentId}/students")

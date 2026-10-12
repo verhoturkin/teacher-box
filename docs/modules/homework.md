@@ -55,11 +55,20 @@ Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDu
 
 ## Frontend
 
-`features/homework/`: `teacher/` (assignments, assignment page, review queue), `student/` (my tasks, task
+`features/homework/`: `teacher/` (assignments, assignment page, editor, review queue), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
 the download button saves them under `boundTextbookFilename`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
-`@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Kinds: the student's `my-task-page.ts` — written: the answer form; board: «Мои доски» and «Готово»;
+`@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
+`canLeaveGuard`; «Новое задание» and the home quick action lead there): kind chosen once (a select on phones);
+written / board — Markdown with its preview beside it at ≥ 75em, interactive — a description, the HTML and
+«Показать страницу» (`POST /api/teacher/homework/interactive-preview` — an unsaved page kept in memory under a random
+token for 5 minutes, at most 20); students (+ group), the due date — the start of the earliest scheduled lesson of the
+chosen students within 60 days (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it;
+textbooks and files of written homework (`BindTextbookDialog` without an assignment emits `picked`, checked by
+`parsePages`). A new assignment is created without students, gets its files and textbooks, then is given out — the
+notification goes with the materials in place; a material that fails leaves the assignment saved with an error
+toast. Kinds: the student's `my-task-page.ts` — written: the answer form; board: «Мои доски» and «Готово»;
 interactive: `ui/interactive-frame.ts` (`<iframe sandbox="allow-scripts">` of a link under
 `/api/public/homework/interactive/` only; listens to messages of its own frame — height, `teacherbox:result`, brought to
 the backend limits by `interactiveResult`) and «Готово» with the last result; `ui/submission-list.ts` shows «Отмечено

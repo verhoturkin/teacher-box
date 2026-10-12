@@ -148,6 +148,8 @@ export interface MyTask {
 export interface AssignmentInput {
   readonly title: string;
   readonly description: string | null;
+  /** The page of interactive homework; ignored for other kinds. */
+  readonly interactiveHtml: string | null;
   readonly dueAt: string | null;
 }
 

@@ -290,12 +290,17 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from an 
     body: `
 ## Give an assignment
 
-1. «Assignments» → «New assignment».
-2. Write the title and the text. The text can have **bold**, lists and links — the «Preview» switch shows what the student sees.
-3. Set the deadline and choose students (or a whole group at once).
-4. Click «Assign». Files can be attached on the assignment's page.
+1. «Assignments» → «New assignment» — the assignment editor opens.
+2. Choose the kind:
+   - **Written** — text, textbooks and files; the student answers with a text or a file;
+   - **On a board** — a description only; the assignment and the answer are on a board, the student presses «Done»;
+   - **Interactive** — a page with questions and checks (HTML code); the student solves it there and presses «Done», and you see the page's result. «Show the page» opens it as the student sees it.
+3. Write the title and the text. The text can have **bold**, lists and links — a wide screen shows what the student sees right beside it, a narrow one has the «Preview» switch.
+4. Choose students (or a whole group at once). The due date becomes the start of their next lesson by itself — you can change it.
+5. For written homework bind textbooks and add files right here.
+6. Click «Assign». Students are notified once the assignment has all its materials, and reminded before the deadline.
 
-Students get a notification, and a reminder before the deadline.
+The kind does not change after the assignment is created. «Edit» on the assignment's page opens the same editor; leaving it without saving asks first.
 
 ## A textbook for the assignment
 

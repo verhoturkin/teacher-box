@@ -4,7 +4,7 @@ import { assignmentDetails, boundTextbook } from '@testing/homework-fixtures';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
-import { AssignmentDetails } from '../data-access/homework.models';
+import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
 import { BindTextbookDialog, PAGES_PATTERN } from './bind-textbook-dialog';
 
 describe('BindTextbookDialog', () => {
@@ -32,6 +32,53 @@ describe('BindTextbookDialog', () => {
     await fixture.whenStable();
     return fixture.componentInstance;
   }
+
+  it('hands the choice over for an assignment not created yet', async () => {
+    fixture.componentRef.setInput('assignmentId', null);
+    const picked: BoundTextbook[] = [];
+    fixture.componentInstance.picked.subscribe((textbook) => picked.push(textbook));
+    const dialog = await open();
+    backend
+      .expectOne('/api/teacher/textbooks')
+      .flush([
+        aTextbook(),
+        aTextbook({ id: 'tb-3', format: 'IMAGE', title: 'Скан', pageCount: 1 }),
+      ]);
+    await fixture.whenStable();
+
+    dialog.textbook.setValue('tb-1');
+    dialog.pages.setValue('119-121');
+    dialog.save();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Таких страниц в учебнике нет');
+    expect(picked).toEqual([]);
+
+    dialog.pages.setValue(' 12 – 14, 3 ');
+    dialog.save();
+    expect(picked).toEqual([
+      expect.objectContaining({ textbookId: 'tb-1', title: aTextbook().title, pages: '3, 12-14' }),
+    ]);
+    expect(dialog.visible()).toBe(false);
+
+    await open();
+    dialog.textbook.setValue('tb-3');
+    await fixture.whenStable();
+    dialog.save();
+    expect(picked[1]).toEqual(expect.objectContaining({ textbookId: 'tb-3', pages: null }));
+
+    fixture.componentRef.setInput('bound', boundTextbook({ textbookId: 'tb-1', pages: '3' }));
+    await open();
+    dialog.pages.setValue('');
+    dialog.save();
+    expect(picked[2]).toEqual(expect.objectContaining({ textbookId: 'tb-1', pages: null }));
+    dialog.textbook.setValue('missing');
+    fixture.componentRef.setInput('bound', null);
+    dialog.save();
+    expect(picked).toHaveLength(3);
+    backend.match('/api/teacher/textbooks').forEach((request) => {
+      request.flush([]);
+    });
+  });
 
   it('binds a textbook not bound yet, with its pages', async () => {
     fixture.componentRef.setInput('taken', [boundTextbook({ textbookId: 'tb-2' })]);

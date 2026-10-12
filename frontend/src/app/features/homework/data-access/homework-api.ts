@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   AssignmentDetails,
   AssignmentInput,
+  AssignmentKind,
   AssignmentSummary,
   Attachment,
   HomeworkSummary,
@@ -39,8 +40,9 @@ export class HomeworkApi {
     });
   }
 
-  createAssignment(input: AssignmentInput, studentIds: string[]): Observable<AssignmentDetails> {
-    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, { ...input, studentIds });
+  /** Without students: the editor adds the materials first, then gives the assignment out. */
+  createAssignment(kind: AssignmentKind, input: AssignmentInput): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, { kind, ...input });
   }
 
   updateAssignment(
@@ -118,6 +120,15 @@ export class HomeworkApi {
     return this.http.get<PageLink>(`${TEACHER}/assignments/${id}/interactive-link`, {
       context: quietContext(),
     });
+  }
+
+  /** A short-lived link to an interactive page not saved yet: the editor's preview. */
+  interactivePreview(html: string): Observable<PageLink> {
+    return this.http.post<PageLink>(
+      `${TEACHER}/interactive-preview`,
+      { html },
+      { context: quietContext() },
+    );
   }
 
   // --- student ---

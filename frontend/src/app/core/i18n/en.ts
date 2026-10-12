@@ -31,6 +31,8 @@ export const en: Translation<typeof ru> = {
     reviewQueue: 'To review',
     taskReview: 'Reviewing work',
     assignment: 'Assignment',
+    newAssignment: 'New assignment',
+    editAssignment: 'Edit assignment',
     monthlyReport: 'Monthly report',
     ledger: 'Payment history',
     help: 'Help',
