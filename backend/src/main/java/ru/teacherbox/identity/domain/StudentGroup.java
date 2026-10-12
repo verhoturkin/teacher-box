@@ -19,6 +19,7 @@ public final class StudentGroup {
 
     public static final int MAX_NAME_LENGTH = 100;
     public static final int MAX_MEMBERS = 100;
+    public static final int MAX_TOPIC_LENGTH = 500;
 
     /** Who joined and who left the group in one change of its members. */
     public record MembersChange(List<UUID> added, List<UUID> removed) {
@@ -31,16 +32,18 @@ public final class StudentGroup {
     private final UUID id;
     private String name;
     private final Set<UUID> memberIds;
+    private @Nullable String defaultTopic;
     private @Nullable Instant archivedAt;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
-    private StudentGroup(UUID id, String name, Collection<UUID> memberIds, @Nullable Instant archivedAt,
-            Instant createdAt, Instant updatedAt, long version) {
+    private StudentGroup(UUID id, String name, Collection<UUID> memberIds, @Nullable String defaultTopic,
+            @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.memberIds = new LinkedHashSet<>(memberIds);
+        this.defaultTopic = defaultTopic;
         this.archivedAt = archivedAt;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt);
@@ -48,12 +51,18 @@ public final class StudentGroup {
     }
 
     public static StudentGroup create(UUID id, String name, Collection<UUID> memberIds, Instant now) {
-        return new StudentGroup(id, validName(name), validMembers(memberIds), null, now, now, 0);
+        return create(id, name, memberIds, null, now);
     }
 
-    public static StudentGroup restore(UUID id, String name, Collection<UUID> memberIds, @Nullable Instant archivedAt,
-            Instant createdAt, Instant updatedAt, long version) {
-        return new StudentGroup(id, name, memberIds, archivedAt, createdAt, updatedAt, version);
+    public static StudentGroup create(UUID id, String name, Collection<UUID> memberIds,
+            @Nullable String defaultTopic, Instant now) {
+        return new StudentGroup(id, validName(name), validMembers(memberIds), validTopic(defaultTopic), null, now, now,
+                0);
+    }
+
+    public static StudentGroup restore(UUID id, String name, Collection<UUID> memberIds, @Nullable String defaultTopic,
+            @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt, long version) {
+        return new StudentGroup(id, name, memberIds, defaultTopic, archivedAt, createdAt, updatedAt, version);
     }
 
     /** @return {@code true} if the name changed */
@@ -63,6 +72,21 @@ public final class StudentGroup {
             return false;
         }
         name = valid;
+        updatedAt = now;
+        return true;
+    }
+
+    /**
+     * Sets the topic new lessons with the group get; blank clears it.
+     *
+     * @return {@code true} if the topic changed
+     */
+    public boolean changeDefaultTopic(@Nullable String newTopic, Instant now) {
+        String valid = validTopic(newTopic);
+        if (Objects.equals(valid, defaultTopic)) {
+            return false;
+        }
+        defaultTopic = valid;
         updatedAt = now;
         return true;
     }
@@ -121,6 +145,14 @@ public final class StudentGroup {
         return trimmed;
     }
 
+    private static @Nullable String validTopic(@Nullable String topic) {
+        String trimmed = topic == null ? "" : topic.trim();
+        if (trimmed.length() > MAX_TOPIC_LENGTH) {
+            throw new BusinessRuleException("group.topic-invalid", "Default topic is too long");
+        }
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private static Set<UUID> validMembers(Collection<UUID> memberIds) {
         Set<UUID> unique = new LinkedHashSet<>(memberIds);
         if (unique.size() > MAX_MEMBERS) {
@@ -140,6 +172,10 @@ public final class StudentGroup {
 
     public List<UUID> memberIds() {
         return List.copyOf(memberIds);
+    }
+
+    public @Nullable String defaultTopic() {
+        return defaultTopic;
     }
 
     public boolean isArchived() {

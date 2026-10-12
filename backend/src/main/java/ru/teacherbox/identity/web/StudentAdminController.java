@@ -30,10 +30,11 @@ class StudentAdminController {
             @NotBlank @Size(max = 100) String displayName,
             @Size(max = 254) @Nullable String email,
             @Size(max = 32) @Nullable String phone,
-            @Size(max = 2000) @Nullable String note) {
+            @Size(max = 2000) @Nullable String note,
+            @Size(max = Profile.MAX_TOPIC_LENGTH) @Nullable String defaultTopic) {
 
         Profile profile() {
-            return new Profile(displayName, email, phone, note);
+            return new Profile(displayName, email, phone, note, defaultTopic);
         }
     }
 
@@ -42,10 +43,11 @@ class StudentAdminController {
             @Size(max = 254) @Nullable String email,
             @Size(max = 32) @Nullable String phone,
             @Size(max = 2000) @Nullable String note,
+            @Size(max = Profile.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
             @NotNull Long version) {
 
         Profile profile() {
-            return new Profile(displayName, email, phone, note);
+            return new Profile(displayName, email, phone, note, defaultTopic);
         }
     }
 

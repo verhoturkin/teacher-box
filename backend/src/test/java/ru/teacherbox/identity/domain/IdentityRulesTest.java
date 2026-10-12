@@ -38,6 +38,8 @@ class IdentityRulesTest {
         assertThat(profile.email()).isNull();
         assertThat(profile.phone()).isEqualTo("+7 900");
         assertThat(profile.note()).isEqualTo("заметка");
+        assertThat(profile.defaultTopic()).isNull();
+        assertThat(new Profile("A", null, null, null, " Физика ").defaultTopic()).isEqualTo("Физика");
         assertThat(Profile.named("A")).isEqualTo(new Profile("A", null, null, null));
     }
 
@@ -49,6 +51,7 @@ class IdentityRulesTest {
         assertThatThrownBy(() -> new Profile("A", "a@b.c".repeat(60), null, null)).hasMessageContaining("e-mail");
         assertThatThrownBy(() -> new Profile("A", null, "1".repeat(33), null)).hasMessageContaining("Phone");
         assertThatThrownBy(() -> new Profile("A", null, null, "n".repeat(2001))).hasMessageContaining("Note");
+        assertThatThrownBy(() -> new Profile("A", null, null, null, "t".repeat(501))).hasMessageContaining("topic");
         assertThat(new Profile("A", "user@mail.ru", null, null).email()).isEqualTo("user@mail.ru");
     }
 

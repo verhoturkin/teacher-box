@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,12 +27,14 @@ class GroupController {
 
     record GroupRequest(
             @NotBlank @Size(max = StudentGroup.MAX_NAME_LENGTH) String name,
-            @NotNull @Size(max = StudentGroup.MAX_MEMBERS) List<@NotNull UUID> memberIds) {
+            @NotNull @Size(max = StudentGroup.MAX_MEMBERS) List<@NotNull UUID> memberIds,
+            @Size(max = StudentGroup.MAX_TOPIC_LENGTH) @Nullable String defaultTopic) {
     }
 
     record UpdateGroupRequest(
             @NotBlank @Size(max = StudentGroup.MAX_NAME_LENGTH) String name,
             @NotNull @Size(max = StudentGroup.MAX_MEMBERS) List<@NotNull UUID> memberIds,
+            @Size(max = StudentGroup.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
             @NotNull Long version) {
     }
 
@@ -49,7 +52,7 @@ class GroupController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     GroupView create(@Valid @RequestBody GroupRequest request) {
-        return groups.create(request.name(), request.memberIds());
+        return groups.create(request.name(), request.memberIds(), request.defaultTopic());
     }
 
     @GetMapping("/{id}")
@@ -59,7 +62,8 @@ class GroupController {
 
     @PutMapping("/{id}")
     GroupView update(@PathVariable UUID id, @Valid @RequestBody UpdateGroupRequest request) {
-        return groups.update(id, request.name(), request.memberIds(), request.version());
+        return groups.update(id, request.name(), request.memberIds(), request.defaultTopic(),
+                request.version());
     }
 
     @PostMapping("/{id}/archive")

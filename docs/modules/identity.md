@@ -27,6 +27,10 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   queue) and notifications (the students' messengers) pass it to their views (all lists since 0.11.0).
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
+- **Default topic (0.13.0)** — a student (`users.default_topic`) and a group (`student_groups.default_topic`) may
+  have a topic up to 500 characters, returned in `StudentView` / `GroupView`; the teacher's lesson and series
+  dialogs fill it in for a new lesson (`schedule` itself stores only the lesson's own topic). Changing it
+  publishes no event.
 - **Language (0.11.1, ADR-0036)** — `users.language` (`ru` by default): the language of the interface the
   browser saves to the account (`PUT /api/me/language`, also open to the administrator); returned in `/api/me`
   and the session user. Other modules write notifications, bot messages and calendars in it

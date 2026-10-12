@@ -15,6 +15,7 @@ public record GroupView(
         UUID id,
         String name,
         List<Member> members,
+        @Nullable String defaultTopic,
         @Nullable Instant archivedAt,
         Instant createdAt,
         long version) {
@@ -28,7 +29,7 @@ public record GroupView(
                 .filter(Objects::nonNull)
                 .map(student -> new Member(student.id(), student.profile().displayName(), student.status()))
                 .toList();
-        return new GroupView(group.id(), group.name(), members, group.archivedAt(), group.createdAt(),
+        return new GroupView(group.id(), group.name(), members, group.defaultTopic(), group.archivedAt(), group.createdAt(),
                 group.version());
     }
 }

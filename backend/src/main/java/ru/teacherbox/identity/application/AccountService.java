@@ -76,7 +76,8 @@ public class AccountService {
     public AccountView rename(UUID userId, String displayName) {
         User user = load(userId);
         Profile profile = user.profile();
-        user.updateProfile(new Profile(displayName, profile.email(), profile.phone(), profile.note()), clock.instant());
+        user.updateProfile(new Profile(displayName, profile.email(), profile.phone(), profile.note(),
+                profile.defaultTopic()), clock.instant());
         users.update(user);
         return view(user);
     }

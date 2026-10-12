@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -44,10 +45,10 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupView create(String name, List<UUID> memberIds) {
+    public GroupView create(String name, List<UUID> memberIds, @Nullable String defaultTopic) {
         requireCurrentStudents(memberIds);
         Instant now = clock.instant();
-        StudentGroup group = StudentGroup.create(Ids.newId(), name, memberIds, now);
+        StudentGroup group = StudentGroup.create(Ids.newId(), name, memberIds, defaultTopic, now);
         groups.insert(group);
         events.publishEvent(new GroupCreated(group.id(), group.name(), group.memberIds(), now));
         return view(group);
@@ -66,12 +67,13 @@ public class GroupService {
     }
 
     /**
-     * Renames the group and replaces its members; new members must be current students.
+     * Renames the group, replaces its members and sets its default topic; new members must be current students.
      *
      * @throws OptimisticLockingFailureException if the group was changed after {@code expectedVersion}
      */
     @Transactional
-    public GroupView update(UUID groupId, String name, List<UUID> memberIds, long expectedVersion) {
+    public GroupView update(UUID groupId, String name, List<UUID> memberIds, @Nullable String defaultTopic,
+            long expectedVersion) {
         StudentGroup group = load(groupId);
         if (group.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Group " + groupId + " was modified");
@@ -83,7 +85,8 @@ public class GroupService {
         List<UUID> before = group.memberIds();
         boolean renamed = group.rename(name, now);
         MembersChange change = group.changeMembers(memberIds, now);
-        if (renamed || !group.memberIds().equals(before)) {
+        boolean topicChanged = group.changeDefaultTopic(defaultTopic, now);
+        if (renamed || topicChanged || !group.memberIds().equals(before)) {
             groups.update(group);
         }
         if (renamed || !change.isEmpty()) {

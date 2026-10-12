@@ -7,11 +7,14 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 /**
  * Personal data of a user. Values are trimmed; blank optional values become {@code null}.
  *
- * @param note private note of the teacher about a student (never shown to the student)
+ * @param note         private note of the teacher about a student (never shown to the student)
+ * @param defaultTopic topic of a new lesson with the student unless the teacher types another
  */
-public record Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note) {
+public record Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note,
+        @Nullable String defaultTopic) {
 
     public static final int MAX_NAME_LENGTH = 100;
+    public static final int MAX_TOPIC_LENGTH = 500;
 
     private static final Pattern EMAIL = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
 
@@ -32,6 +35,14 @@ public record Profile(String displayName, @Nullable String email, @Nullable Stri
         if (note != null && note.length() > 2000) {
             throw new BusinessRuleException("profile.note-invalid", "Note is too long");
         }
+        defaultTopic = blankToNull(defaultTopic);
+        if (defaultTopic != null && defaultTopic.length() > MAX_TOPIC_LENGTH) {
+            throw new BusinessRuleException("profile.topic-invalid", "Default topic is too long");
+        }
+    }
+
+    public Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note) {
+        this(displayName, email, phone, note, null);
     }
 
     public static Profile named(String displayName) {

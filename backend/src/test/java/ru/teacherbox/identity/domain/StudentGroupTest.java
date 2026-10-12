@@ -57,6 +57,20 @@ class StudentGroupTest {
     }
 
     @Test
+    void changesTheDefaultTopicOnlyWhenItChanges() {
+        StudentGroup group = StudentGroup.create(UUID.randomUUID(), "Группа", List.of(), " Алгебра ", NOW);
+
+        assertThat(group.defaultTopic()).isEqualTo("Алгебра");
+        assertThat(group.changeDefaultTopic("Алгебра ", NOW.plusSeconds(1))).isFalse();
+        assertThat(group.changeDefaultTopic(" ", NOW.plusSeconds(2))).isTrue();
+        assertThat(group.defaultTopic()).isNull();
+        assertThat(group.updatedAt()).isEqualTo(NOW.plusSeconds(2));
+        assertThat(group.changeDefaultTopic(null, NOW.plusSeconds(3))).isFalse();
+        assertThatThrownBy(() -> group.changeDefaultTopic("x".repeat(501), NOW))
+                .isInstanceOf(BusinessRuleException.class).hasFieldOrPropertyWithValue("code", "group.topic-invalid");
+    }
+
+    @Test
     void changesMembersAndReportsWhoJoinedAndLeft() {
         StudentGroup group = StudentGroup.create(UUID.randomUUID(), "Группа", List.of(ANNA, BORIS), NOW);
 

@@ -126,6 +126,31 @@ class GroupIntegrationTests {
     }
 
     @Test
+    void keepsTheDefaultTopicWithoutAnEvent(AssertablePublishedEvents events) {
+        UUID anna = student("Анна");
+        MvcTestResult created = postJson("/api/teacher/groups",
+                "{\"name\":\"ОГЭ\",\"memberIds\":%s,\"defaultTopic\":\" Математика ОГЭ \"}".formatted(ids(anna)));
+        assertThat(created).hasStatus(HttpStatus.CREATED)
+                .bodyJson().extractingPath("$.defaultTopic").isEqualTo("Математика ОГЭ");
+        UUID id = id(created);
+
+        MvcTestResult changed = mvc.put().uri("/api/teacher/groups/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"ОГЭ\",\"memberIds\":%s,\"defaultTopic\":\"Геометрия\",\"version\":0}"
+                        .formatted(ids(anna)))
+                .exchange();
+
+        assertThat(changed).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.defaultTopic").isEqualTo("Геометрия");
+            assertThat(json).extractingPath("$.version").isEqualTo(1);
+        });
+        assertThat(events.ofType(GroupChanged.class).matching(event -> event.groupId().equals(id))).isEmpty();
+        assertThat(update(id, "ОГЭ", 1, anna)).hasStatusOk()
+                .bodyJson().extractingPath("$.defaultTopic").isNull();
+    }
+
+    @Test
     void archivesAndRestores(AssertablePublishedEvents events) {
         UUID id = create("Летняя школа", student("Анна"));
 
