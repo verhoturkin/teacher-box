@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProp
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * Receives messages to the bots: one virtual thread per configured messenger runs long polling. A
@@ -115,10 +116,12 @@ public class MessengerPolling implements SmartLifecycle {
         }
     }
 
-    /** Shows the bot's commands in the messenger's menu. */
+    /** Shows the bot's commands in the messenger's menu, in each language. */
     static void publishCommands(MessengerChannel channel) {
         try {
-            channel.publishCommands(ChatEngine.COMMANDS);
+            for (Language language : Language.values()) {
+                channel.publishCommands(ChatEngine.commands(language), language);
+            }
         } catch (RuntimeException e) {
             log.warn("Could not publish the bot's commands to {}: {}", channel.type(), e.getMessage());
         }

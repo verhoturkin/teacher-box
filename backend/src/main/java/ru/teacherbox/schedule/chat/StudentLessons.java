@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.ParticipantView;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.shared.chat.ChatText;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** A student's upcoming lessons as the bot shows them. */
@@ -69,10 +70,10 @@ class StudentLessons {
     }
 
     /** «пн 29.09, 18:30–19:30 — группа «ОГЭ» — Дроби». */
-    String describe(LessonView lesson) {
-        StringBuilder text = new StringBuilder(ChatText.range(lesson.startsAt(), lesson.endsAt(), zone));
+    String describe(LessonView lesson, Language language) {
+        StringBuilder text = new StringBuilder(ChatText.range(lesson.startsAt(), lesson.endsAt(), zone, language));
         if (lesson.groupName() != null) {
-            text.append(" — группа «").append(lesson.groupName()).append('»');
+            text.append(ScheduleChatTexts.of(language).inGroup(lesson.groupName()));
         }
         if (lesson.topic() != null) {
             text.append(" — ").append(lesson.topic());
@@ -81,8 +82,8 @@ class StudentLessons {
     }
 
     /** «пн 29.09 18:30 · ОГЭ», for a button. */
-    String label(LessonView lesson) {
-        String when = ChatText.shortDayTime(lesson.startsAt(), zone);
+    String label(LessonView lesson, Language language) {
+        String when = ChatText.shortDayTime(lesson.startsAt(), zone, language);
         return lesson.groupName() == null ? when : when + " · " + lesson.groupName();
     }
 

@@ -30,6 +30,11 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   teacher changes audited (`AuditLog.bot`); the teacher can turn bot control off (`chat_settings`). A reply
   the messenger refuses for its link buttons (Telegram takes no portal on a local address) goes again with
   the links in the text (`MessengerPolling`, 0.11.0).
+- **Bot language (0.11.1, ADR-0036):** the bot answers in the language of the account the chat acts for
+  (`ChatUser.language`, `BotMessages`; actions take it for their titles — `ChatAction.title(Language)` — and
+  texts, `shared.chat.ChatKit`/`ChatText`/`ChatPicker` for buttons and dates); a chat without an account gets
+  the teacher's language; typed words of both languages work («меню»/«menu», «да»/«yes», «сегодня»/«today»).
+  The commands in Telegram's menu are published per language (`language_code`): Russian by default.
 - Broadcasts and «напомнить подключить» for the teacher. `MessengerIntegrationCheck` for diagnostics.
 
 ## Contract

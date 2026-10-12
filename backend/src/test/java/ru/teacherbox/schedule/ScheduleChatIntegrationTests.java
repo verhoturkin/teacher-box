@@ -33,6 +33,7 @@ import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeMeetingRooms;
 import ru.teacherbox.testing.FakeStudentGroups;
@@ -91,6 +92,11 @@ class ScheduleChatIntegrationTests {
 
         requests.request(anna, groupLesson, ChangeKind.CANCEL, null, null);
         assertThat(lessons.start(user).reply().text()).contains("группа «ОГЭ» (вы предупредили, что не придёте)");
+
+        ChatStep.Done english = done(lessons.start(new ChatUser(anna, Role.STUDENT, Language.EN)));
+        assertThat(english.reply().text()).startsWith("Upcoming lessons:")
+                .contains("— Дроби (your request awaits an answer)", "group “ОГЭ” (you said you won't come)");
+        assertThat(url(english, "Join the nearest lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
     }
 
     @Test

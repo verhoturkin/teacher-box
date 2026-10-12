@@ -3,6 +3,7 @@ package ru.teacherbox.notifications.application;
 import java.util.List;
 import java.util.Optional;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * A messenger adapter (SPI), created by a {@link MessengerChannelFactory} when the messenger is
@@ -43,8 +44,11 @@ public interface MessengerChannel {
         // nothing to do in messengers where a button sends a message
     }
 
-    /** Shows the bot's commands in the messenger's menu, if it has one; best effort. */
-    default void publishCommands(List<BotCommand> commands) {
+    /**
+     * Shows the bot's commands in the messenger's menu, if it has one; best effort. The messenger shows a
+     * user the commands of the language of their app, the Russian ones otherwise.
+     */
+    default void publishCommands(List<BotCommand> commands, Language language) {
         // the messenger has no menu of commands
     }
 

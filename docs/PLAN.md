@@ -39,10 +39,12 @@ catalog and integration checks follow the language of the page. New ADR-0036.
 
 ### Stage 154. Bot messages in the user's language (B)
 
-- [ ] 154.1 `ChatUser.language`, `ChatAction.title(Language)`, `ChatKit` / `ChatText` by language
+- [x] 154.1 `ChatUser.language`, `ChatAction.title(Language)`, `ChatKit` / `ChatText` / `ChatPicker` by language
   («Да»/«Yes», pages, dates; typed words of both languages understood); `ChatEngine`, `ChannelService` replies
-  (unknown chats — the teacher's language), bot commands.
-- [ ] 154.2 Actions of `billing`, `schedule`, `meetings`, `boards` (`*/chat/*ChatAction`) in the user's language.
+  (unknown chats — the teacher's language), bot commands per language; actions of `billing`, `schedule`,
+  `meetings`, `boards` (`*/chat/*ChatAction`, dictionaries `*ChatTexts`); `ServerDictionariesTests` calls every
+  text of every dictionary in every language. *The SPI change needed every action at once, so the planned
+  154.2 is part of this substep.*
 
 ### Stage 155. Administrator texts and calendars (B)
 

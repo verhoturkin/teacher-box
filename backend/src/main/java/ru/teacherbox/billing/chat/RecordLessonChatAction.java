@@ -24,6 +24,7 @@ import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * The teacher adds a lesson that took place outside the schedule to the journal: a student or a
@@ -32,7 +33,6 @@ import ru.teacherbox.shared.error.DomainException;
 @Component
 class RecordLessonChatAction implements ChatAction {
 
-    static final String PROMPT = "С кем было занятие?";
     static final int DAYS_BACK = 7;
 
     private final TeacherBilling billing;
@@ -49,8 +49,8 @@ class RecordLessonChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Добавить занятие";
+    public String title(Language language) {
+        return BillingChatTexts.of(language).addLesson();
     }
 
     @Override
@@ -70,11 +70,12 @@ class RecordLessonChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
-        List<ChatPicker.Option> owners = billing.studentsAndGroups();
+        BillingChatTexts t = BillingChatTexts.of(user.language());
+        List<ChatPicker.Option> owners = billing.studentsAndGroups(user.language());
         if (owners.isEmpty()) {
-            return ChatStep.done("Учеников пока нет.");
+            return ChatStep.done(t.noStudents());
         }
-        return ChatStep.ask(ChatPicker.show(PROMPT, owners), ChatState.EMPTY.withStep("owner"));
+        return ChatStep.ask(ChatPicker.show(t.withWhom(), owners, user.language()), ChatState.EMPTY.withStep("owner"));
     }
 
     @Override
@@ -83,27 +84,31 @@ class RecordLessonChatAction implements ChatAction {
         if (step == null) {
             return start(user);
         }
+        Language language = user.language();
         return switch (step) {
-            case "owner" -> switch (ChatPicker.handle(PROMPT, billing.studentsAndGroups(), state, input)) {
-                case ChatPicker.Picked picked -> askDate(picked.state().with("owner", picked.id()), null);
+            case "owner" -> switch (ChatPicker.handle(BillingChatTexts.of(language).withWhom(),
+                    billing.studentsAndGroups(language), state, input, language)) {
+                case ChatPicker.Picked picked -> askDate(language, picked.state().with("owner", picked.id()), null);
                 case ChatPicker.Shown shown -> ChatStep.ask(shown.reply(), shown.state());
             };
-            case "date" -> date(state, input);
-            case "confirm" -> confirm(state, input);
+            case "date" -> date(language, state, input);
+            case "confirm" -> confirm(language, state, input);
             default -> start(user);
         };
     }
 
-    private ChatStep askDate(ChatState state, @Nullable String prefix) {
-        String question = "Когда было занятие? Выберите день или напишите дату, например 25.09.";
+    private ChatStep askDate(Language language, ChatState state, @Nullable String prefix) {
+        String question = BillingChatTexts.of(language).when();
         return ChatStep.ask(ChatReply.of(prefix == null ? question : prefix + "\n" + question)
-                .rows(ChatKit.dates(billing.today().minusDays(DAYS_BACK - 1), DAYS_BACK)), state.withStep("date"));
+                .rows(ChatKit.dates(billing.today().minusDays(DAYS_BACK - 1), DAYS_BACK, language)),
+                state.withStep("date"));
     }
 
-    private ChatStep date(ChatState state, ChatInput input) {
+    private ChatStep date(Language language, ChatState state, ChatInput input) {
+        BillingChatTexts t = BillingChatTexts.of(language);
         Optional<LocalDate> date = ChatKit.pastDate(input, billing.today());
         if (date.isEmpty() || date.get().isAfter(billing.today())) {
-            return askDate(state, date.isEmpty() ? "Не понял дату." : "Это день в будущем — занятие ещё не прошло.");
+            return askDate(language, state, date.isEmpty() ? t.dateNotUnderstood() : t.future());
         }
         String owner = state.get("owner").orElse("");
         String day = ChatText.date(date.get());
@@ -111,30 +116,30 @@ class RecordLessonChatAction implements ChatAction {
         if (owner.startsWith(TeacherBilling.GROUP)) {
             Optional<GroupSummary> group = group(owner);
             if (group.isEmpty()) {
-                return ChatStep.done("Этой группы уже нет среди текущих.");
+                return ChatStep.done(t.groupGone());
             }
             List<UUID> members = billing.members(group.get());
             if (members.isEmpty()) {
-                return ChatStep.done("В группе «" + group.get().name() + "» нет учеников.");
+                return ChatStep.done(t.noMembers(group.get().name()));
             }
             String price = TeacherBilling.money(billing.groupPrice(group.get().id()),
-                    Currency.getInstance(billing.currency(members.getFirst())));
-            return ChatKit.confirm("Добавить проведённое занятие группы «" + group.get().name() + "» " + day + ": "
-                    + members.size() + " " + students(members.size()) + " по " + price + "?", next);
+                    Currency.getInstance(billing.currency(members.getFirst())), language);
+            return ChatKit.confirm(t.confirmGroupLesson(group.get().name(), day, members.size(), price), next,
+                    language);
         }
         Optional<StudentSummary> student = student(owner);
         if (student.isEmpty()) {
-            return ChatStep.done("Этого ученика уже нет среди текущих.");
+            return ChatStep.done(t.studentGone());
         }
         String price = TeacherBilling.money(billing.studentPrice(student.get().id()),
-                Currency.getInstance(billing.currency(student.get().id())));
-        return ChatKit.confirm("Добавить проведённое занятие: " + student.get().displayName() + ", " + day + ", "
-                + price + "?", next);
+                Currency.getInstance(billing.currency(student.get().id())), language);
+        return ChatKit.confirm(t.confirmLesson(student.get().displayName(), day, price), next, language);
     }
 
-    private ChatStep confirm(ChatState state, ChatInput input) {
+    private ChatStep confirm(Language language, ChatState state, ChatInput input) {
+        BillingChatTexts t = BillingChatTexts.of(language);
         if (!ChatKit.confirmed(input)) {
-            return ChatStep.done("Хорошо, не добавляю.");
+            return ChatStep.done(t.notAdding());
         }
         String owner = state.get("owner").orElse("");
         LocalDate date = LocalDate.parse(state.get("date").orElseThrow());
@@ -143,27 +148,26 @@ class RecordLessonChatAction implements ChatAction {
             if (owner.startsWith(TeacherBilling.GROUP)) {
                 Optional<GroupSummary> group = group(owner);
                 if (group.isEmpty()) {
-                    return ChatStep.done("Этой группы уже нет среди текущих.");
+                    return ChatStep.done(t.groupGone());
                 }
                 long price = billing.groupPrice(group.get().id());
                 for (UUID member : billing.members(group.get())) {
                     recorded.add(service.recordLesson(new RecordLesson(member, date, null, price,
                             null, LessonStatus.CONDUCTED)).id());
                 }
-                return ChatStep.changed(ChatReply.of("Занятие группы добавлено в журнал: " + recorded.size() + " "
-                        + students(recorded.size()) + "."), "lessons-recorded group " + group.get().id() + " "
-                        + recorded);
+                return ChatStep.changed(ChatReply.of(t.groupLessonAdded(recorded.size())),
+                        "lessons-recorded group " + group.get().id() + " " + recorded);
             }
             Optional<StudentSummary> student = student(owner);
             if (student.isEmpty()) {
-                return ChatStep.done("Этого ученика уже нет среди текущих.");
+                return ChatStep.done(t.studentGone());
             }
             UUID lesson = service.recordLesson(new RecordLesson(student.get().id(), date, null, null, null,
                     LessonStatus.CONDUCTED)).id();
-            return ChatStep.changed(ChatReply.of("Занятие добавлено в журнал. У ученика "
-                    + billing.balance(student.get().id()) + "."), "lesson-recorded " + lesson);
+            return ChatStep.changed(ChatReply.of(t.lessonAdded(billing.balance(student.get().id(), language))),
+                    "lesson-recorded " + lesson);
         } catch (DomainException e) {
-            return ChatStep.done("Не получилось добавить занятие. Добавьте его на портале.");
+            return ChatStep.done(t.lessonFailed());
         }
     }
 
@@ -184,14 +188,5 @@ class RecordLessonChatAction implements ChatAction {
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
-    }
-
-    private static String students(int count) {
-        int lastTwo = count % 100;
-        int last = count % 10;
-        if (lastTwo >= 11 && lastTwo <= 14) {
-            return "учеников";
-        }
-        return last == 1 ? "ученик" : last >= 2 && last <= 4 ? "ученика" : "учеников";
     }
 }

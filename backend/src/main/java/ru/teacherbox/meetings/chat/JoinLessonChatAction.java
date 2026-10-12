@@ -13,6 +13,7 @@ import ru.teacherbox.shared.chat.ChatReply;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 
 /** A student: the links to the video rooms — their own and their groups'. */
 @Component
@@ -30,8 +31,8 @@ class JoinLessonChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Войти на урок";
+    public String title(Language language) {
+        return MeetingsChatTexts.of(language).joinLesson();
     }
 
     @Override
@@ -51,13 +52,14 @@ class JoinLessonChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
+        MeetingsChatTexts t = MeetingsChatTexts.of(user.language());
         List<MyRoomView> own = rooms.studentRooms(user.id());
         if (own.isEmpty()) {
-            return ChatStep.done("Ссылки на видеовстречу пока нет — учитель пришлёт её перед уроком.");
+            return ChatStep.done(t.noLink());
         }
-        ChatReply reply = ChatReply.of(own.size() == 1 ? "Ссылка на урок:" : "Ссылки на уроки:");
+        ChatReply reply = ChatReply.of(own.size() == 1 ? t.link() : t.links());
         for (MyRoomView room : own.subList(0, Math.min(own.size(), ChatKit.MAX_BUTTONS - 1))) {
-            String label = room.groupName() == null ? "Войти на урок" : "Группа «" + room.groupName() + "»";
+            String label = room.groupName() == null ? t.joinLesson() : t.group(room.groupName());
             reply = reply.row(ChatButton.link(label, room.joinUrl()));
         }
         return ChatStep.done(reply);

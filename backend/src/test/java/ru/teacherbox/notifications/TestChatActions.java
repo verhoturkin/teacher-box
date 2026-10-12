@@ -15,6 +15,7 @@ import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Actions of the bot for the tests of the dialogs: nothing like them exists in the notifications module. */
 public final class TestChatActions {
@@ -39,7 +40,7 @@ public final class TestChatActions {
         }
 
         @Override
-        public String title() {
+        public String title(Language language) {
             return "Отзыв";
         }
 
@@ -68,7 +69,7 @@ public final class TestChatActions {
             }
             if (state.at("text")) {
                 return ChatKit.text(input)
-                        .map(text -> ChatKit.confirm("Отправить «" + text + "»?", state.withStep("confirm").with("text", text)))
+                        .map(text -> ChatKit.confirm("Отправить «" + text + "»?", state.withStep("confirm").with("text", text), Language.RU))
                         .orElseGet(() -> ChatStep.ask(ChatReply.of("Нужен текст"), state));
             }
             if (ChatKit.confirmed(input)) {
@@ -98,7 +99,7 @@ public final class TestChatActions {
         }
 
         @Override
-        public String title() {
+        public String title(Language language) {
             return "Для учителя";
         }
 
@@ -137,7 +138,7 @@ public final class TestChatActions {
         }
 
         @Override
-        public String title() {
+        public String title(Language language) {
             return "Сломано";
         }
 

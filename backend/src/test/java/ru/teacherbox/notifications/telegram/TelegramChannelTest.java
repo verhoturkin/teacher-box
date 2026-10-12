@@ -33,6 +33,7 @@ import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 
 class TelegramChannelTest {
 
@@ -275,11 +276,17 @@ class TelegramChannelTest {
         server.expect(requestTo(API + "setMyCommands"))
                 .andExpect(jsonPath("$.commands[0].command").value("menu"))
                 .andExpect(jsonPath("$.commands[0].description").value("Главное меню"))
+                .andExpect(jsonPath("$.language_code").doesNotExist())
+                .andRespond(withSuccess("{\"ok\":true,\"result\":true}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "setMyCommands"))
+                .andExpect(jsonPath("$.commands[0].description").value("Main menu"))
+                .andExpect(jsonPath("$.language_code").value("en"))
                 .andRespond(withSuccess("{\"ok\":true,\"result\":true}", MediaType.APPLICATION_JSON));
 
         channel.acknowledge("42", new ButtonPress("abcdefghijkl:0", "cb1", "15", null));
         channel.acknowledge("42", new ButtonPress("abcdefghijkl:0", null, null, null));
-        channel.publishCommands(List.of(new BotCommand("menu", "Главное меню")));
+        channel.publishCommands(List.of(new BotCommand("menu", "Главное меню")), Language.RU);
+        channel.publishCommands(List.of(new BotCommand("menu", "Main menu")), Language.EN);
 
         server.verify();
     }

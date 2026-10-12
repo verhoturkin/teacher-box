@@ -24,6 +24,7 @@ import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -116,7 +117,7 @@ class TeacherBillingChatIntegrationTests {
         assertThat(who.reply().text()).startsWith("С кем было занятие?");
         ChatStep.Ask day = ask(lesson.next(teacher(), who.state(), new ChatInput.Choice("pick:s:" + boris)));
         assertThat(day.reply().text()).startsWith("Когда было занятие?");
-        assertThat(labels(day)).hasSize(7).last().isEqualTo(ChatKit.dateLabel(today()));
+        assertThat(labels(day)).hasSize(7).last().isEqualTo(ChatKit.dateLabel(today(), Language.RU));
         assertThat(ask(lesson.next(teacher(), day.state(), new ChatInput.Text("когда-то"))).reply().text())
                 .startsWith("Не понял дату.");
         assertThat(ask(lesson.next(teacher(), day.state(), new ChatInput.Choice("date:" + today().plusDays(1))))

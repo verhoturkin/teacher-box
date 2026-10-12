@@ -20,6 +20,7 @@ import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.i18n.Language;
 
 /** A student: the latest requests with the teacher's answers; an unanswered one can be taken back. */
 @Component
@@ -45,8 +46,8 @@ class MyRequestsChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Мои запросы";
+    public String title(Language language) {
+        return ScheduleChatTexts.of(language).myRequests();
     }
 
     @Override
@@ -66,15 +67,17 @@ class MyRequestsChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
+        Language language = user.language();
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         List<RequestView> latest = queries.studentRequests(user.id());
         if (latest.isEmpty()) {
-            return ChatStep.done("Запросов пока нет.");
+            return ChatStep.done(t.noRequests());
         }
-        StringBuilder text = new StringBuilder("Ваши запросы:");
+        StringBuilder text = new StringBuilder(t.yourRequests());
         latest.stream().limit(SHOWN).forEach(request -> {
-            text.append("\n• ").append(describe(request)).append(" — ").append(status(request.status()));
+            text.append("\n• ").append(describe(request, language)).append(" — ").append(t.requestStatus(request.status()));
             if (request.answer() != null) {
-                text.append("\n  Учитель: «").append(request.answer()).append('»');
+                text.append("\n  ").append(t.teacherAnswer(request.answer()));
             }
         });
         List<RequestView> pending = latest.stream()
@@ -84,10 +87,11 @@ class MyRequestsChatAction implements ChatAction {
         if (pending.isEmpty()) {
             return ChatStep.done(text.toString());
         }
-        ChatReply reply = ChatReply.of(text + "\n\nЗапрос без ответа можно отозвать.");
+        ChatReply reply = ChatReply.of(text + "\n\n" + t.canWithdraw());
         for (RequestView request : pending) {
-            reply = reply.row(ChatButton.choice(ChatIcons.WITHDRAW + " Отозвать: " + ChatText.shortDayTime(request.lessonStartsAt(),
-                    lessons.zone()), WITHDRAW + request.id()));
+            reply = reply.row(ChatButton.choice(ChatIcons.with(ChatIcons.WITHDRAW,
+                    t.withdraw(ChatText.shortDayTime(request.lessonStartsAt(), lessons.zone(), language))),
+                    WITHDRAW + request.id()));
         }
         return ChatStep.ask(reply, ChatState.EMPTY.withStep("list"));
     }
@@ -102,24 +106,26 @@ class MyRequestsChatAction implements ChatAction {
         if (request.isEmpty()) {
             return start(user);
         }
-        return ChatKit.confirm("Отозвать запрос: " + describe(request.get()) + "?",
-                ChatState.of("request", request.get().id().toString()).withStep("confirm"));
+        return ChatKit.confirm(ScheduleChatTexts.of(user.language()).confirmWithdraw(
+                describe(request.get(), user.language())),
+                ChatState.of("request", request.get().id().toString()).withStep("confirm"), user.language());
     }
 
     private ChatStep withdraw(ChatUser user, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(user.language());
         if (!ChatKit.confirmed(input)) {
-            return ChatStep.done("Хорошо, запрос остаётся.");
+            return ChatStep.done(t.requestStays());
         }
         Optional<UUID> id = state.id("request");
         if (id.isEmpty() || pending(user, id.get().toString()).isEmpty()) {
-            return ChatStep.done("Этот запрос уже нельзя отозвать: учитель ответил на него.");
+            return ChatStep.done(t.cannotWithdraw());
         }
         try {
             requests.withdraw(user.id(), id.get());
         } catch (DomainException e) {
-            return ChatStep.done("Этот запрос уже нельзя отозвать: учитель ответил на него.");
+            return ChatStep.done(t.cannotWithdraw());
         }
-        return ChatStep.changed(ChatReply.of("Запрос отозван."), "request-withdrawn " + id.get());
+        return ChatStep.changed(ChatReply.of(t.withdrawn()), "request-withdrawn " + id.get());
     }
 
     private Optional<RequestView> pending(ChatUser user, String id) {
@@ -128,23 +134,13 @@ class MyRequestsChatAction implements ChatAction {
                 .findFirst();
     }
 
-    private String describe(RequestView request) {
-        String when = ChatText.dayTime(request.lessonStartsAt(), lessons.zone());
+    private String describe(RequestView request, Language language) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        String when = ChatText.dayTime(request.lessonStartsAt(), lessons.zone(), language);
         if (request.kind() == ChangeKind.RESCHEDULE) {
-            return request.proposedStartsAt() == null
-                    ? "перенос занятия " + when
-                    : "перенос занятия " + when + " на " + ChatText.dayTime(request.proposedStartsAt(), lessons.zone());
+            return t.myMove(when, request.proposedStartsAt() == null ? null
+                    : ChatText.dayTime(request.proposedStartsAt(), lessons.zone(), language));
         }
-        return request.groupId() != null ? "не приду на занятие " + when : "отмена занятия " + when;
-    }
-
-    static String status(RequestStatus status) {
-        return switch (status) {
-            case PENDING -> "ждёт ответа";
-            case APPROVED -> "принят";
-            case DECLINED -> "отклонён";
-            case WITHDRAWN -> "отозван";
-            case OUTDATED -> "устарел";
-        };
+        return request.groupId() != null ? t.myAbsence(when) : t.myCancel(when);
     }
 }

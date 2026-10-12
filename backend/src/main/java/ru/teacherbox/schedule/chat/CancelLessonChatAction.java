@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.application.ChangeRequestService;
 import ru.teacherbox.shared.chat.ChatIcons;
+import ru.teacherbox.shared.i18n.Language;
 
 /** A student asks to cancel a lesson; in a group lesson — says they will not come. */
 @Component
@@ -19,8 +20,8 @@ class CancelLessonChatAction extends LessonChangeChatAction {
     }
 
     @Override
-    public String title() {
-        return "Отменить занятие";
+    public String title(Language language) {
+        return ScheduleChatTexts.of(language).cancelLesson();
     }
 
     @Override

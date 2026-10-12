@@ -1,6 +1,7 @@
 package ru.teacherbox.shared.chat;
 
 import java.util.Optional;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * Something the bot can do, e.g. show the schedule or record a payment (SPI, ADR-0013). A module
@@ -10,15 +11,16 @@ import java.util.Optional;
  * <p>An action checks access like a REST endpoint does: a student sees and changes only their own
  * data. It changes only its module's data, through the module's services, and asks for confirmation
  * before a change ({@link ChatKit#confirm}). Expected refusals are answered with a clear text; an
- * exception ends the dialog with a general apology.
+ * exception ends the dialog with a general apology. Its texts are in the language of the user
+ * ({@link ChatUser#language()}, ADR-0036).
  */
 public interface ChatAction {
 
     /** A unique id: lower-case letters, digits, dots and dashes, up to 32 characters (e.g. {@code schedule.cancel}). */
     String id();
 
-    /** The menu item, e.g. «Расписание». */
-    String title();
+    /** The menu item in the user's language, e.g. «Расписание» (ADR-0036). */
+    String title(Language language);
 
     /** The icon before the title in the menu ({@link ChatIcons}); none by default. */
     default String icon() {

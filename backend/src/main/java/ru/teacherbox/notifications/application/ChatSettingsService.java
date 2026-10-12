@@ -9,6 +9,7 @@ import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.persistence.ChatRepository;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 
 /** What the bots can do and whether the teacher manages the portal through them. */
@@ -51,6 +52,8 @@ public class ChatSettingsService {
     }
 
     private List<String> titles(ChatUser user) {
-        return actions.availableTo(user).stream().map(ChatAction::title).toList();
+        // the teacher reads them on the settings page: in the language of the page
+        Language language = Language.current();
+        return actions.availableTo(user).stream().map(action -> action.title(language)).toList();
     }
 }

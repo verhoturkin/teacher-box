@@ -16,6 +16,7 @@ import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -55,5 +56,10 @@ class JoinLessonChatIntegrationTests {
         ChatStep both = done(join.next(user, ChatState.EMPTY, new ChatInput.Text("?")));
         assertThat(both.reply().text()).isEqualTo("Ссылки на уроки:");
         assertThat(url(both, "Группа «ОГЭ»")).isEqualTo("https://zoom.us/j/2");
+
+        ChatStep english = done(join.start(new ChatUser(student, Role.STUDENT, Language.EN)));
+        assertThat(english.reply().text()).isEqualTo("Lesson links:");
+        assertThat(url(english, "Join the lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
+        assertThat(url(english, "Group “ОГЭ”")).isEqualTo("https://zoom.us/j/2");
     }
 }

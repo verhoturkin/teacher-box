@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.application.NotificationViews.ChannelView;
 import ru.teacherbox.notifications.application.NotificationViews.LinkCodeView;
 import ru.teacherbox.notifications.domain.ChannelLink;
@@ -17,6 +18,7 @@ import ru.teacherbox.notifications.domain.LinkCodes;
 import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.LinkCodeRepository;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
@@ -28,17 +30,6 @@ import ru.teacherbox.shared.error.NotFoundException;
 @Service
 public class ChannelService {
 
-    static final String REPLY_LINKED =
-            "Готово! Уведомления с портала учителя будут приходить сюда. Отключить: /stop";
-    static final String REPLY_INVALID_CODE =
-            "Код не найден или устарел. Получите новый код в личном кабинете, раздел «Уведомления».";
-    static final String REPLY_HELP = "Здравствуйте! Это бот уведомлений портала учителя. Чтобы получать уведомления, "
-            + "откройте в личном кабинете раздел «Уведомления», нажмите «Подключить» и отправьте сюда полученный код.";
-    static final String REPLY_ALREADY_LINKED =
-            "Этот чат получает уведомления с портала учителя. Отключить: /stop";
-    static final String REPLY_STOPPED =
-            "Уведомления отключены. Подключить снова можно в личном кабинете, раздел «Уведомления».";
-    static final String REPLY_NOT_LINKED = "Этот чат не подключён к уведомлениям.";
     static final String UNLINKED = "Messenger disconnected";
 
     private final MessengerChannels channels;
@@ -46,15 +37,17 @@ public class ChannelService {
     private final LinkCodeRepository codes;
     private final DeliveryRepository deliveries;
     private final NotificationsProperties properties;
+    private final UserDirectory users;
     private final Clock clock;
 
     public ChannelService(MessengerChannels channels, ChannelLinkRepository links, LinkCodeRepository codes,
-            DeliveryRepository deliveries, NotificationsProperties properties, Clock clock) {
+            DeliveryRepository deliveries, NotificationsProperties properties, UserDirectory users, Clock clock) {
         this.channels = channels;
         this.links = links;
         this.codes = codes;
         this.deliveries = deliveries;
         this.properties = properties;
+        this.users = users;
         this.clock = clock;
     }
 
@@ -107,34 +100,43 @@ public class ChannelService {
     /**
      * Handles a private message to the bot: a code connects the account, {@code /stop} disconnects it.
      *
-     * @return the reply to send back
+     * @return the reply to send back, in the language of the chat's account (the teacher's for a chat
+     *         not connected yet, ADR-0036)
      */
     @Transactional
     public String handleIncoming(ChannelType type, IncomingMessage message) {
         String text = message.text().strip();
+        List<ChannelLink> linked = links.findByExternal(type, message.externalId());
+        BotMessages t = BotMessages.of(language(linked));
         if (text.toLowerCase(Locale.ROOT).startsWith("/stop")) {
-            return stop(type, message.externalId());
+            for (ChannelLink link : linked) {
+                unlink(link.recipientId(), type);
+            }
+            return linked.isEmpty() ? t.notLinked() : t.stopped();
         }
         Optional<String> code = LinkCodes.find(text);
         if (code.isEmpty()) {
-            return links.findByExternal(type, message.externalId()).isEmpty() ? REPLY_HELP : REPLY_ALREADY_LINKED;
+            return linked.isEmpty() ? t.howToConnect() : t.alreadyLinked();
         }
         Instant now = clock.instant();
         String hash = LinkCodes.hash(code.get());
         Optional<LinkCode> linkCode = codes.find(hash, type).filter(candidate -> candidate.isUsable(now));
         if (linkCode.isEmpty() || !codes.markUsed(hash, now)) {
-            return REPLY_INVALID_CODE;
+            return t.invalidCode();
         }
-        links.save(new ChannelLink(Ids.newId(), linkCode.get().recipientId(), type, message.externalId(),
-                message.displayName(), true, now));
-        return REPLY_LINKED;
+        UUID recipient = linkCode.get().recipientId();
+        links.save(new ChannelLink(Ids.newId(), recipient, type, message.externalId(), message.displayName(), true,
+                now));
+        return BotMessages.of(users.language(recipient)).linked();
     }
 
-    private String stop(ChannelType type, String externalId) {
-        List<ChannelLink> linked = links.findByExternal(type, externalId);
-        for (ChannelLink link : linked) {
-            unlink(link.recipientId(), type);
-        }
-        return linked.isEmpty() ? REPLY_NOT_LINKED : REPLY_STOPPED;
+    /** How to connect, for a chat not connected yet: in the language of the portal, i.e. the teacher's. */
+    String howToConnect() {
+        return BotMessages.of(language(List.of())).howToConnect();
+    }
+
+    /** The language of the chat's first account, or the teacher's for a chat without accounts. */
+    private Language language(List<ChannelLink> linked) {
+        return users.language(linked.isEmpty() ? users.teacherId() : linked.getFirst().recipientId());
     }
 }

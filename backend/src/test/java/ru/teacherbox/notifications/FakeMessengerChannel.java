@@ -13,6 +13,7 @@ import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.OutgoingButton;
 import ru.teacherbox.notifications.application.OutgoingMessage;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.testing.ChatSteps;
 
 /**
@@ -117,7 +118,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
     }
 
     @Override
-    public void publishCommands(List<BotCommand> published) {
+    public void publishCommands(List<BotCommand> published, Language language) {
         commands.addAll(published);
     }
 

@@ -191,7 +191,7 @@ class MaxChannelTest {
                 .andExpect(jsonPath("$.message.attachments").isEmpty())
                 .andRespond(withSuccess("{\"success\": true}", MediaType.APPLICATION_JSON));
         server.expect(requestTo(API + "/answers?callback_id=cb2"))
-                .andExpect(jsonPath("$.notification").value("Принято"))
+                .andExpect(jsonPath("$.notification").value("✓"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
                         .body("{\"message\": \"callback expired\"}"));
         server.expect(requestTo(API + "/answers?callback_id=cb3")).andRespond(request -> {

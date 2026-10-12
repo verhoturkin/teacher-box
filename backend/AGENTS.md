@@ -37,7 +37,8 @@ Each business module is a direct subpackage of `ru.teacherbox` ([ADR-0001](../do
 | Full reset | SPI `shared.reset.DataReset` — **every new table goes into the module's `tables()` and `erase()`**, or `ResetIntegrationTest` fails |
 | Admin / bot audit | `shared.diagnostics.AuditLog` (no personal data) |
 | External service health | SPI `shared.diagnostics.IntegrationCheck` (collected by `platform`) |
-| Messenger bot action | SPI `shared.chat.ChatAction` + helpers in `shared.chat` ([ADR-0013](../docs/adr/0013-bot-dialogs.md)); checks rights like REST, changes only its own module |
+| Messenger bot action | SPI `shared.chat.ChatAction` + helpers in `shared.chat` ([ADR-0013](../docs/adr/0013-bot-dialogs.md)); checks rights like REST, changes only its own module; texts in `ChatUser.language()` |
+| Texts the server writes (notifications, bot, calendars, admin answers) | a dictionary `enum` per module with a constant per `shared.i18n.Language` and `of(Language)` ([ADR-0036](../docs/adr/0036-server-texts-in-the-users-language.md)); for a recipient — `UserDirectory.language(id)`, in an answer — `Language.current()`; `ServerDictionariesTests` calls every text |
 | Domain errors | exceptions from `shared.error` → `ProblemDetail` (RFC 9457) in `platform` |
 
 `platform` infra is auto-configuration (`META-INF/spring/...AutoConfiguration.imports`); `shared` and
