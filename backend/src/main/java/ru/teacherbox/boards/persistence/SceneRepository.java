@@ -163,6 +163,11 @@ public class SceneRepository {
                 .query(SceneRepository::mapFile).list();
     }
 
+    /** The images of every board. */
+    public List<BoardFile> findAllFiles() {
+        return jdbc.sql(SELECT_FILE).query(SceneRepository::mapFile).list();
+    }
+
     public void deleteFile(UUID boardId, String fileId) {
         jdbc.sql("delete from boards.board_files where board_id = :boardId and file_id = :fileId")
                 .param("boardId", boardId).param("fileId", fileId).update();

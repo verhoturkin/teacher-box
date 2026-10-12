@@ -3,8 +3,10 @@ package ru.teacherbox.boards.application;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -130,6 +132,25 @@ public class BoardBackupService {
             log.info("Daily copies of {} boards made", changed.size());
         }
         return changed.size();
+    }
+
+    /**
+     * Keys of the images no scene refers to — those only copies keep, or not saved into a scene yet: the portal
+     * backup leaves them out with the copies (ADR-0037).
+     */
+    @Transactional(readOnly = true)
+    public Set<String> filesOutsideScenes() {
+        Map<UUID, Set<String>> used = new HashMap<>();
+        Set<String> keys = new HashSet<>();
+        for (BoardFile file : scenes.findAllFiles()) {
+            Set<String> fileIds = used.computeIfAbsent(file.boardId(), boardId -> scenes.find(boardId)
+                    .map(scene -> SceneElements.fileIds(SceneElements.valid(json.readTree(scene.elements()))))
+                    .orElseGet(Set::of));
+            if (!fileIds.contains(file.fileId())) {
+                keys.add(file.fileKey());
+            }
+        }
+        return keys;
     }
 
     /** Deletes the images neither the scene nor any copy refers to (older than {@link #UPLOAD_GRACE}). */

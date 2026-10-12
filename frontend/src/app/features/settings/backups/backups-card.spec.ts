@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { FileSaver } from '@shared/files/file-saver';
 import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
-import { BackupInfo } from '../data-access/settings.models';
+import { BackupInfo, DriveStatus } from '../data-access/settings.models';
+import { DriveStore } from './drive-store';
 import { BackupsArea } from './backups-api';
 import { BackupsCard } from './backups-card';
 import { RESTART_POLL_MS } from '@shared/restart/restart-wait';
@@ -20,6 +21,19 @@ const BEFORE_RESET: BackupInfo = {
   ...SCHEDULED,
   name: 'teacherbox-20260926-120000-000.zip',
   kind: 'BEFORE_RESET',
+};
+const DRIVE: DriveStatus = {
+  clientConfigured: true,
+  clientFromEnvironment: false,
+  clientId: 'id',
+  connected: true,
+  account: 'teacher@example.com',
+  connectedAt: '2026-10-01T10:00:00Z',
+  lastUploadAt: null,
+  lastUploadName: null,
+  lastError: null,
+  running: null,
+  callbackPath: '/api/public/backups/google/callback',
 };
 const OLD: BackupInfo = {
   ...SCHEDULED,
@@ -153,5 +167,56 @@ describe('BackupsCard', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Восстановление из копии');
     expect(bodyText()).toContain('Все данные портала заменятся данными из копии');
+  });
+
+  it('marks the backups in the Google Drive and sends one there', async () => {
+    TestBed.configureTestingModule({
+      imports: [BackupsCard],
+      providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
+    });
+    const drive = TestBed.inject(DriveStore);
+    drive.status.set(DRIVE);
+    drive.files.set([{ id: '1', name: SCHEDULED.name, size: 1, createdAt: null }]);
+    backend = TestBed.inject(HttpTestingController);
+    vi.spyOn(TestBed.inject(MessageService), 'add');
+    fixture = TestBed.createComponent(BackupsCard);
+    fixture.detectChanges();
+    backend.expectOne('/api/teacher/backups').flush([BEFORE_RESET, SCHEDULED]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(readableText(host)).toContain('по расписанию · 2,5 МБ · в Google Диске');
+    expect(readableText(host)).not.toContain('перед сбросом · 2,5 МБ · в Google Диске');
+    expect([...drive.local()]).toEqual([BEFORE_RESET.name, SCHEDULED.name]);
+
+    buttonByText(host, `Действия: ${BEFORE_RESET.name}`).click();
+    await fixture.whenStable();
+    menuItemByText('Отправить в Google Диск').click();
+    backend
+      .expectOne({
+        method: 'POST',
+        url: `/api/teacher/backups/google/uploads/${BEFORE_RESET.name}`,
+      })
+      .flush(DRIVE);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+    backend.expectOne('/api/teacher/backups/google').flush(DRIVE);
+    backend.expectOne('/api/teacher/backups/google/files').flush([]);
+
+    buttonByText(host, 'Создать копию сейчас').click();
+    backend.expectOne({ method: 'POST', url: '/api/teacher/backups' }).flush(SCHEDULED);
+    backend.expectOne('/api/teacher/backups').flush([SCHEDULED]);
+    backend.expectOne('/api/teacher/backups/google').flush({ ...DRIVE, connected: false });
+
+    drive.arrived.update((count) => count + 1);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/backups').flush([SCHEDULED]);
+  });
+
+  it('does not offer the Google Drive without a connection', async () => {
+    const host = await render();
+
+    buttonByText(host, `Действия: ${SCHEDULED.name}`).click();
+    await fixture.whenStable();
+    expect(() => menuItemByText('Отправить в Google Диск')).toThrow();
   });
 });

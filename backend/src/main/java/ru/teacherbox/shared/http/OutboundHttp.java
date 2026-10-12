@@ -23,6 +23,15 @@ public final class OutboundHttp {
      */
     public static ClientHttpRequestFactory requestFactory(Duration connectTimeout, Duration readTimeout,
             @Nullable OutboundProxy proxy) {
+        return new BufferingClientHttpRequestFactory(streamingRequestFactory(connectTimeout, readTimeout, proxy));
+    }
+
+    /**
+     * Like {@link #requestFactory} but bodies are streamed, not held in memory: for large uploads and
+     * downloads. A request body of known length still goes with {@code Content-Length}.
+     */
+    public static ClientHttpRequestFactory streamingRequestFactory(Duration connectTimeout, Duration readTimeout,
+            @Nullable OutboundProxy proxy) {
         ClientHttpRequestFactory factory;
         if (proxy == null) {
             HttpClient client = HttpClient.newBuilder()
@@ -39,6 +48,6 @@ public final class OutboundHttp {
             proxied.setReadTimeout(readTimeout);
             factory = proxied;
         }
-        return new BufferingClientHttpRequestFactory(factory);
+        return factory;
     }
 }

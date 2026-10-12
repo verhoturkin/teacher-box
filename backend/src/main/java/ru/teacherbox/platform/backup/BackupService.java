@@ -12,20 +12,31 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.shared.backup.BackupExclusions;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
-/** Creates, lists and rotates backups in {@code <data-dir>/backups}. */
+/**
+ * Creates, lists and rotates backups in {@code <data-dir>/backups}; what the modules leave out
+ * ({@link BackupExclusions}, ADR-0037) stays out.
+ */
 public class BackupService {
 
     private static final Logger log = LoggerFactory.getLogger(BackupService.class);
@@ -48,9 +59,12 @@ public class BackupService {
     private final InstanceTimeZone timeZone;
     private final @Nullable String appVersion;
     private final Clock clock;
+    private final Supplier<List<BackupExclusions>> exclusions;
+    private final ApplicationEventPublisher events;
 
     public BackupService(JdbcClient jdbc, Path dataDir, BackupProperties properties, InstanceTimeZone timeZone,
-            @Nullable String appVersion, Clock clock) {
+            @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions,
+            ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.dataDir = dataDir;
         this.backupDir = dataDir.resolve("backups");
@@ -58,6 +72,8 @@ public class BackupService {
         this.timeZone = timeZone;
         this.appVersion = appVersion;
         this.clock = clock;
+        this.exclusions = exclusions;
+        this.events = events;
     }
 
     /** A backup by the teacher or the administrator. */
@@ -75,10 +91,14 @@ public class BackupService {
             Files.createDirectories(backupDir);
             Path target = uniqueTarget(now);
             Path partial = backupDir.resolve(target.getFileName() + ".part");
+            // the files left out are found before the dump, so that it cannot refer to them
+            List<BackupExclusions> excluded = exclusions.get();
+            Set<String> skippedFiles = skippedFiles(excluded);
             try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(partial))) {
                 writeManifest(zip, now, kind);
-                writeDatabase(zip);
-                writeFiles(zip);
+                writeDatabase(zip, new BackupDump(excluded.stream()
+                        .flatMap(module -> module.tables().stream()).toList()));
+                writeFiles(zip, skippedFiles);
             } catch (IOException | RuntimeException e) {
                 Files.deleteIfExists(partial);
                 throw e;
@@ -87,6 +107,7 @@ public class BackupService {
             BackupInfo info = info(target);
             log.info("Backup {} created ({}, {} bytes)", info.name(), kind, info.size());
             rotate();
+            events.publishEvent(new BackupCreated(info, kind));
             return info;
         } catch (IOException e) {
             throw new UncheckedIOException("Backup failed", e);
@@ -122,6 +143,50 @@ public class BackupService {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Whether the name is one a backup of the portal has, e.g. {@code teacherbox-20261012-033000-000.zip}. */
+    public static boolean isBackupName(String name) {
+        return BackupArchive.isValidName(name);
+    }
+
+    /**
+     * Takes a backup made elsewhere (a copy from Google Drive): {@code writer} writes the archive into a
+     * temporary file, which becomes a backup if it is one.
+     *
+     * @throws ConflictException     if a backup with the name is already here
+     * @throws BusinessRuleException if the file is not a backup of the portal
+     */
+    public synchronized BackupInfo adopt(String name, Consumer<Path> writer) {
+        if (!BackupArchive.isValidName(name)) {
+            throw notABackup();
+        }
+        Path target = backupDir.resolve(name);
+        if (Files.exists(target)) {
+            throw new ConflictException("backup.exists", "The backup is already on the server");
+        }
+        try {
+            Files.createDirectories(backupDir);
+            Path partial = backupDir.resolve(name + ".part");
+            try {
+                writer.accept(partial);
+                if (BackupArchive.manifest(partial).isEmpty() || !BackupArchive.hasDatabase(partial)) {
+                    throw notABackup();
+                }
+                Files.move(partial, target, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                Files.deleteIfExists(partial);
+            }
+            BackupInfo info = info(target);
+            log.info("Backup {} taken from elsewhere ({} bytes)", info.name(), info.size());
+            return info;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static BusinessRuleException notABackup() {
+        return new BusinessRuleException("backup.damaged", "The file is not a backup of the portal");
     }
 
     /** Version of the running portal; {@code null} in development. */
@@ -165,15 +230,27 @@ public class BackupService {
         zip.closeEntry();
     }
 
+    /** Paths below {@code files/} of the files the modules leave out. */
+    private static Set<String> skippedFiles(List<BackupExclusions> excluded) {
+        Set<String> paths = new HashSet<>();
+        for (BackupExclusions module : excluded) {
+            module.files().forEach(key -> paths.add(module.namespace() + "/" + key));
+        }
+        return paths;
+    }
+
     /** Streams the H2 {@code SCRIPT} result (one SQL statement per row) into the archive. */
-    private void writeDatabase(ZipOutputStream zip) throws IOException {
+    private void writeDatabase(ZipOutputStream zip, BackupDump dump) throws IOException {
         zip.putNextEntry(new ZipEntry(BackupArchive.DATABASE));
         // Not closed on purpose: that would close the zip stream; flushed before the entry ends.
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(zip, StandardCharsets.UTF_8));
         jdbc.sql("SCRIPT").query((java.sql.ResultSet rs) -> {
             try {
-                writer.write(rs.getString(1));
-                writer.newLine();
+                String row = rs.getString(1);
+                if (dump.keep(row)) {
+                    writer.write(row);
+                    writer.newLine();
+                }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -182,7 +259,7 @@ public class BackupService {
         zip.closeEntry();
     }
 
-    private void writeFiles(ZipOutputStream zip) throws IOException {
+    private void writeFiles(ZipOutputStream zip, Set<String> skipped) throws IOException {
         Path files = dataDir.resolve("files");
         if (!Files.isDirectory(files)) {
             return;
@@ -193,6 +270,9 @@ public class BackupService {
         }
         for (Path file : regularFiles) {
             String relative = files.relativize(file).toString().replace('\\', '/');
+            if (skipped.contains(relative)) {
+                continue;
+            }
             zip.putNextEntry(new ZipEntry(BackupArchive.FILES + relative));
             Files.copy(file, zip);
             zip.closeEntry();

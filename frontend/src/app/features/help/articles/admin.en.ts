@@ -43,7 +43,7 @@ HTTPS comes from the built-in Caddy: it gets a certificate for the domain of the
     body: `
 ## Backups
 
-The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data.
+The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data. Google Drive for the backups is connected by the teacher too; whether it works is shown in «Integrations».
 
 To restore a backup:
 

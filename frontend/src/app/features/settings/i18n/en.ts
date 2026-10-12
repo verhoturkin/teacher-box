@@ -17,7 +17,7 @@ export const en: Translation<typeof ru> = {
     error: 'Error',
     you: 'You',
     data: 'Data',
-    dataSummary: 'Backups, restore and full reset',
+    dataSummary: 'Backups, Google Drive, restore and full reset',
   },
   portal: {
     title: 'Portal',
@@ -74,6 +74,58 @@ export const en: Translation<typeof ru> = {
     restore: 'Restore…',
     download: 'Download',
     deleteItem: 'Delete…',
+    inDrive: 'in Google Drive',
+    sendToDrive: 'Send to Google Drive',
+    sending: (name: string) => `Backup ${name} is being sent to Google Drive`,
+  },
+  drive: {
+    title: 'Google Drive',
+    connectedResult: 'Google Drive is connected. New backups will go there automatically.',
+    denied: 'Access to Google Drive was not granted.',
+    expired: 'The connection link has expired — press “Connect Google Drive” again.',
+    failed: 'Google Drive could not be connected.',
+    connected: 'Connected',
+    since: (date: string) => `since ${date}`,
+    account: (account: string) => `Account: ${account}`,
+    about: (portal: string) =>
+      `Every scheduled and manual backup goes to the folder “${portal}” in your Google Drive; the newest backups are kept there, as on the server. Backups made before a restore or a reset stay on the server only.`,
+    lastUpload: (date: string, name: string) => `Last backup in the Drive: ${date} (${name})`,
+    uploading: (name: string) => `Backup ${name} is being sent to Google Drive…`,
+    downloading: (name: string) => `Backup ${name} is coming to the server…`,
+    lost: 'Google no longer accepts the portal’s access. Connect Google Drive again.',
+    disconnect: 'Disconnect',
+    willCreate: (portal: string) =>
+      `The portal will create the folder “${portal}” in your Google Drive and put the backups there. It does not see other files of the Drive.`,
+    connect: 'Connect Google Drive',
+    editClient: 'Change the OAuth client',
+    setupIntro:
+      'The portal needs its own Google OAuth client — it is free and done once. The names below are from the English interface of the console.',
+    open: 'Open',
+    project:
+      'and click the project picker at the top → “New project”, enter a name (e.g. Teacher Box) → “Create” and select the new project.',
+    steps: [
+      '“APIs & Services” → “Library”: find “Google Drive API” and click “Enable”.',
+      'Menu ☰ → “Google Auth Platform” → “Get started”: “App name” — the portal’s name, “User support email” — your address → “Next”; “Audience” — “External” → “Next”; “Contact information” — your address → “Next”; agree to the policy → “Continue” → “Create”.',
+      '“Data Access” → “Add or remove scopes”: tick .../auth/drive.file (Google Drive API: only the files this app creates) → “Update” → “Save”.',
+      '“Audience” → “Publish app” → “Confirm”. Otherwise Google withdraws the access after 7 days; access to the app’s own files (drive.file) needs no verification by Google.',
+    ],
+    client:
+      '“Clients” → “Create client”: “Application type” — “Web application”, “Name” — any; under “Authorized redirect URIs” click “Add URI” and paste the address below → “Create”.',
+    copyAddress: 'Copy the address',
+    httpsHint:
+      'The portal needs an HTTPS address. Without one, connect the Drive once with the portal opened at http://localhost (e.g. through an SSH tunnel).',
+    copyClient:
+      'Copy the Client ID and the Client secret from the dialog here (or click “Download JSON”): Google shows the secret only once. If the secret is lost, open the client in “Clients” and create a new secret.',
+    copied: 'The address is in the clipboard',
+    files: 'Backups in Google Drive',
+    filesWhat: 'backups in Google Drive',
+    noFiles: 'No backups in Google Drive yet',
+    onServer: 'on the server',
+    bringBack: 'Bring to the server',
+    bringBackLabel: (name: string) => `Bring to the server: ${name}`,
+    bringing: (name: string) => `Backup ${name} is coming to the server — then it can be restored`,
+    restoreHint:
+      'After a disaster: connect the same Google Drive to the new portal, bring a backup to the server and restore it.',
   },
   restore: {
     title: 'Restore from a backup',
@@ -102,7 +154,7 @@ export const en: Translation<typeof ru> = {
     about:
       'Deletes all data of the portal: students and groups, lessons and schedule, payments, assignments and files, notifications and messenger connections, meeting rooms, boards, AI history, Google and Yandex connections, the name and the address of the portal.',
     stays:
-      'The sign-in of the teacher and the administrator (with the same passwords) and the backups stay. Before the reset the portal makes a backup — everything can be restored from it.',
+      'The sign-in of the teacher and the administrator (with the same passwords), the backups and their Google Drive connection stay. Before the reset the portal makes a backup — everything can be restored from it.',
     open: 'Reset all data…',
     header: 'Reset all data?',
     warning:

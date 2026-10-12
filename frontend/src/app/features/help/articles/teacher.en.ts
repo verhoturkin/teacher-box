@@ -480,7 +480,7 @@ Students can make such a link too — it has only their lessons.
 - **Portal** — the name, address, colour and logo of the portal ([Look, language and phone](/teacher/help/appearance)).
 - **Calendar and calls** — connecting Google Calendar ([Calendars](/teacher/help/calendars)) and video meetings ([Video meetings](/teacher/help/meetings)).
 - **Failed deliveries** — messages that did not reach the messenger (the number next to the name); the portal administrator can resend them.
-- **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup and restore it ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
+- **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
 
 Messengers are connected in «Notifications» → «Messengers», the AI assistant is set up by the portal administrator.
 
@@ -559,13 +559,31 @@ Before deleting, the portal asks again: the red button in the window does the ac
     title: 'Backups and full reset',
     summary: 'How to make a backup, restore it and start all over',
     body: `
-Every night the portal backs up all the data: students, schedule, payments, assignments with their files.
+Every night the portal backs up all the data: students, schedule, payments, assignments with their files, the current drawing of every board. The copies of the boards themselves (daily and yours) are not in this backup — after it is restored, boards keep only their current drawing.
 
 ## Make and download a backup
 
 «Settings» → «Backups» → «Back up now». To download a backup, click «⋮» in its row → «Download» — keep the backup not only on the server.
 
-Under the date of a backup you see where it comes from (scheduled, manual, before a restore or before a reset) and its size. The portal does not delete backups made before a restore or a reset by itself.
+Under the date of a backup you see where it comes from (scheduled, manual, before a restore or before a reset), its size and whether it is in Google Drive. The portal does not delete backups made before a restore or a reset by itself.
+
+## Backups in Google Drive
+
+So that the backups are not lost with the server, connect Google Drive: «Settings» → «Data» → «Google Drive». The portal needs its own Google OAuth client — free, done once. The steps are in the panel too (with the redirect address and a copy button):
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) with the Google account whose Drive will keep the backups. Click the project picker at the top → «New project», enter a name → «Create» and select the new project.
+2. «APIs & Services» → «Library»: find «Google Drive API» → «Enable».
+3. Menu ☰ → «Google Auth Platform» → «Get started»: the app name and your address → «Next»; «Audience» — «External» → «Next»; a contact address → «Next»; agree to the policy → «Continue» → «Create».
+4. «Data Access» → «Add or remove scopes»: tick .../auth/drive.file → «Update» → «Save».
+5. «Audience» → «Publish app» → «Confirm» — otherwise Google withdraws the access after 7 days. This access needs no verification by Google.
+6. «Clients» → «Create client»: type «Web application», under «Authorized redirect URIs» → «Add URI» paste the address from the panel → «Create».
+7. Copy the Client ID and the Client secret from the dialog (the secret is shown only once) into the «Google Drive» panel → «Save».
+
+Then click «Connect Google Drive» and allow the access.
+
+The portal creates a folder named after the portal in the Drive and sends every scheduled and manual backup there; the newest backups are kept, as on the server. The portal does not see other files of the Drive. Any backup can be sent by hand: «⋮» in its row → «Send to Google Drive». The «Google Drive» panel shows when the last backup went there, and the error if it did not.
+
+**After a disaster:** install the portal again, connect the same Google Drive, click «Bring to the server» next to a backup in «Backups in Google Drive» — it appears among the «Backups» and can be restored.
 
 ## Restore a backup
 
@@ -579,7 +597,7 @@ If the restore fails, the data stays as it was, and the window shows the reason.
 
 ## Full reset
 
-«Settings» → «Full reset» deletes everything: students and groups, lessons, payments, assignments, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in and all backups stay.
+«Settings» → «Full reset» deletes everything: students and groups, lessons, payments, assignments, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in, all backups and their Google Drive connection stay.
 
 1. Click «Reset all data…».
 2. Enter your password and the word «RESET».

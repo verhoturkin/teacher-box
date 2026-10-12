@@ -15,6 +15,7 @@ import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { GoogleCalendarPanel } from '@features/schedule/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { BackupsCard } from './backups/backups-card';
+import { DrivePanel } from './backups/drive-panel';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import { ResetCard } from './reset-card';
@@ -42,7 +43,7 @@ function isSection(value: unknown): value is Section {
 /**
  * Teacher: the portal, the calendar and calls, delivery problems, backups and reset.
  * Full width; the sections fold (design system §4), the open ones are in the address; Google's
- * redirect (`?google=...`) opens the calendar.
+ * redirect opens the calendar (`?google=...`) or the data with the Drive of the backups (`?drive=...`).
  */
 @Component({
   selector: 'tb-settings-page',
@@ -54,6 +55,7 @@ function isSection(value: unknown): value is Section {
     MeetingsSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
+    DrivePanel,
     ResetCard,
     TableModule,
     RowType,
@@ -138,6 +140,7 @@ function isSection(value: unknown): value is Section {
         <ng-template>
           <div class="tb-stack">
             <tb-backups-card />
+            <tb-drive-panel />
             <tb-reset-card />
           </div>
         </ng-template>
@@ -159,12 +162,17 @@ export class SettingsPage implements OnInit {
   readonly open = input<string>();
   /** The result of Google's redirect: the calendar is open to show it. */
   readonly google = input<string>();
+  /** The result of Google's redirect for the Drive of the backups: the data section is open to show it. */
+  readonly drive = input<string>();
 
   protected readonly failed = signal<FailedDelivery[]>([]);
   protected readonly opened = computed<ReadonlySet<Section>>(() => {
     const sections: unknown[] = (this.open() ?? '').split(',');
     if (this.google() !== undefined) {
       sections.push('calendar');
+    }
+    if (this.drive() !== undefined) {
+      sections.push('data');
     }
     return new Set(sections.filter(isSection));
   });

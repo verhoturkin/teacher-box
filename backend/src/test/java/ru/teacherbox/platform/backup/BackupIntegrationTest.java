@@ -162,14 +162,17 @@ class BackupIntegrationTest {
     }
 
     @Test
-    void aBoardKeepsItsSceneCopiesAndImagesThroughABackup(@TempDir Path target) throws IOException, SQLException {
+    void aBoardKeepsOnlyItsSceneAndItsImagesThroughABackup(@TempDir Path target) throws IOException, SQLException {
         MvcTestResult created = mvc.post().uri("/api/teacher/boards").with(TestUsers.teacher(TEACHER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"kind\":\"EXCALIDRAW\",\"title\":\"Доска\"}").exchange();
         String board = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
         byte[] png = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0, 0, 0, 13};
+        byte[] unused = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0, 0, 0, 14};
         assertThat(mvc.put().uri("/api/boards/" + board + "/files/img1").with(TestUsers.teacher(TEACHER))
                 .contentType("image/png").content(png)).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.put().uri("/api/boards/" + board + "/files/img2").with(TestUsers.teacher(TEACHER))
+                .contentType("image/png").content(unused)).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(mvc.put().uri("/api/boards/" + board + "/scene").with(TestUsers.teacher(TEACHER))
                 .contentType(MediaType.APPLICATION_JSON).content("""
                         {"elements":[{"id":"i","type":"image","fileId":"img1","version":1,"versionNonce":1}],
@@ -186,12 +189,17 @@ class BackupIntegrationTest {
         try (Connection connection = DriverManager.getConnection(url, "sa", "");
                 ResultSet rows = connection.createStatement().executeQuery("""
                         select s.elements, (select count(*) from boards.board_backups b where b.board_id = s.board_id),
-                            (select f.file_key from boards.board_files f where f.board_id = s.board_id)
+                            (select f.file_key from boards.board_files f where f.board_id = s.board_id
+                                and f.file_id = 'img1'),
+                            (select f.file_key from boards.board_files f where f.board_id = s.board_id
+                                and f.file_id = 'img2')
                         from boards.board_scenes s where s.board_id = '%s'""".formatted(board))) {
             assertThat(rows.next()).isTrue();
             assertThat(rows.getString(1)).contains("\"fileId\":\"img1\"");
-            assertThat(rows.getInt(2)).isEqualTo(1);
+            assertThat(rows.getInt(2)).as("copies stay out").isZero();
             assertThat(target.resolve("files/boards").resolve(rows.getString(3))).hasBinaryContent(png);
+            assertThat(target.resolve("files/boards").resolve(rows.getString(4)))
+                    .as("an image no scene uses stays out").doesNotExist();
         }
     }
 

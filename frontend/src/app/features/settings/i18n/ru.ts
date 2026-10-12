@@ -15,7 +15,7 @@ export const ru = {
     error: 'Ошибка',
     you: 'Вы',
     data: 'Данные',
-    dataSummary: 'Резервные копии, восстановление и полный сброс',
+    dataSummary: 'Резервные копии, Google Диск, восстановление и полный сброс',
   },
   portal: {
     title: 'Портал',
@@ -72,6 +72,58 @@ export const ru = {
     restore: 'Восстановить…',
     download: 'Скачать',
     deleteItem: 'Удалить…',
+    inDrive: 'в Google Диске',
+    sendToDrive: 'Отправить в Google Диск',
+    sending: (name: string) => `Копия ${name} отправляется в Google Диск`,
+  },
+  drive: {
+    title: 'Google Диск',
+    connectedResult: 'Google Диск подключён. Новые копии будут уходить в него автоматически.',
+    denied: 'Доступ к Google Диску не предоставлен.',
+    expired: 'Ссылка подключения устарела — нажмите «Подключить Google Диск» ещё раз.',
+    failed: 'Не удалось подключить Google Диск.',
+    connected: 'Подключён',
+    since: (date: string) => `с ${date}`,
+    account: (account: string) => `Аккаунт: ${account}`,
+    about: (portal: string) =>
+      `Каждая копия по расписанию и ручная уходит в папку «${portal}» в вашем Google Диске; там хранятся последние копии, как и на сервере. Копии перед восстановлением и сбросом остаются только на сервере.`,
+    lastUpload: (date: string, name: string) => `Последняя копия в Диске: ${date} (${name})`,
+    uploading: (name: string) => `Копия ${name} отправляется в Google Диск…`,
+    downloading: (name: string) => `Копия ${name} переносится на сервер…`,
+    lost: 'Google больше не принимает доступ портала. Подключите Google Диск заново.',
+    disconnect: 'Отключить',
+    willCreate: (portal: string) =>
+      `Портал создаст в вашем Google Диске папку «${portal}» и будет класть в неё резервные копии. Другие файлы Диска он не видит.`,
+    connect: 'Подключить Google Диск',
+    editClient: 'Изменить OAuth-клиент',
+    setupIntro:
+      'Порталу нужен свой OAuth-клиент Google — это бесплатно и делается один раз. Названия ниже — из английского интерфейса консоли.',
+    open: 'Откройте',
+    project:
+      'и вверху нажмите на выбор проекта → «New project», введите название (например, Teacher Box) → «Create» и выберите созданный проект.',
+    steps: [
+      '«APIs & Services» → «Library»: найдите «Google Drive API» и нажмите «Enable».',
+      'Меню ☰ → «Google Auth Platform» → «Get started»: «App name» — название портала, «User support email» — ваш адрес → «Next»; «Audience» — «External» → «Next»; «Contact information» — ваш адрес → «Next»; отметьте согласие с политикой → «Continue» → «Create».',
+      '«Data Access» → «Add or remove scopes»: отметьте .../auth/drive.file (Google Drive API: только файлы, созданные этим приложением) → «Update» → «Save».',
+      '«Audience» → «Publish app» → «Confirm». Без этого Google отключает доступ через 7 дней; доступ к своим файлам (drive.file) не требует проверки приложения в Google.',
+    ],
+    client:
+      '«Clients» → «Create client»: «Application type» — «Web application», «Name» — любое; в «Authorized redirect URIs» нажмите «Add URI» и вставьте адрес ниже → «Create».',
+    copyAddress: 'Копировать адрес',
+    httpsHint:
+      'Нужен HTTPS-адрес портала. Без него подключите Диск один раз, открыв портал по http://localhost (например, через SSH-туннель).',
+    copyClient:
+      'В открывшемся окне скопируйте сюда Client ID и Client secret (или нажмите «Download JSON»): секрет Google показывает только один раз. Если секрет потерян, откройте клиент в «Clients» и создайте новый секрет.',
+    copied: 'Адрес в буфере обмена',
+    files: 'Копии в Google Диске',
+    filesWhat: 'копии в Google Диске',
+    noFiles: 'В Google Диске пока нет копий',
+    onServer: 'есть на сервере',
+    bringBack: 'Перенести на сервер',
+    bringBackLabel: (name: string) => `Перенести на сервер: ${name}`,
+    bringing: (name: string) => `Копия ${name} переносится на сервер — потом её можно восстановить`,
+    restoreHint:
+      'После аварии: подключите тот же Google Диск к новому порталу, перенесите копию на сервер и восстановите её.',
   },
   restore: {
     title: 'Восстановление из копии',
@@ -99,7 +151,7 @@ export const ru = {
     about:
       'Удаляет все данные портала: учеников и группы, занятия и расписание, оплаты, задания и файлы, уведомления и подключения мессенджеров, комнаты видеовстреч, доски, историю ИИ, подключения Google и Яндекса, название и адрес портала.',
     stays:
-      'Остаются вход учителя и администратора (с прежними паролями) и резервные копии. Перед сбросом портал сам сделает копию — из неё всё можно вернуть.',
+      'Остаются вход учителя и администратора (с прежними паролями), резервные копии и подключение Google Диска для них. Перед сбросом портал сам сделает копию — из неё всё можно вернуть.',
     open: 'Сбросить все данные…',
     header: 'Сбросить все данные?',
     warning:

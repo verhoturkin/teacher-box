@@ -15,6 +15,41 @@ export interface BackupInfo {
   readonly version: string | null;
 }
 
+/** What the server does with the Google Drive in the background. */
+export interface DriveRunning {
+  readonly task: 'UPLOAD' | 'DOWNLOAD';
+  /** The backup's file name. */
+  readonly name: string;
+}
+
+/** Mirrors `DriveStatus` of the backend (ADR-0037). */
+export interface DriveStatus {
+  readonly clientConfigured: boolean;
+  /** The OAuth client comes from environment variables and cannot be changed here. */
+  readonly clientFromEnvironment: boolean;
+  readonly clientId: string | null;
+  readonly connected: boolean;
+  /** Address of the Google account. */
+  readonly account: string | null;
+  readonly connectedAt: string | null;
+  readonly lastUploadAt: string | null;
+  readonly lastUploadName: string | null;
+  /** Why the last upload or download failed, or why the connection was lost. */
+  readonly lastError: string | null;
+  readonly running: DriveRunning | null;
+  /** Path of the redirect URI to register in Google Cloud. */
+  readonly callbackPath: string;
+}
+
+/** Mirrors `CloudBackup` of the backend: a backup in the Google Drive. */
+export interface CloudBackup {
+  readonly id: string;
+  readonly name: string;
+  /** Bytes. */
+  readonly size: number;
+  readonly createdAt: string | null;
+}
+
 /** Mirrors `RestoreRequested` of the backend. */
 export interface RestoreRequested {
   readonly archive: string;
