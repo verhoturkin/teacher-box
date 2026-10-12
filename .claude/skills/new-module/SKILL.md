@@ -13,7 +13,7 @@ Backend (`backend/src/main/java/ru/teacherbox/<m>/`, see `backend/AGENTS.md`):
 2. Packages `api/` (`@NamedInterface("api")` in its `package-info.java`), `domain/`, `application/`,
    `persistence/`, `web/`; `@NullMarked` in each.
 3. Schema `<m>`: `src/main/resources/db/migration/<m>/V1__create_<m>_schema.sql`; bean
-   `ModuleMigrations.initializer(dataSource, "<m>")` in the module configuration. Tables `<m>.<table>`,
+   `ModuleMigrations.initializer(migrationConnection, "<m>")` (`MigrationConnection`) in the module configuration. Tables `<m>.<table>`,
    `version` column on mutable ones.
 4. `DataReset` bean listing **all** tables in `tables()` and clearing them in `erase()` (`ResetIntegrationTest`).
 5. Settings: `@ConfigurationProperties("teacherbox.<m>")` record; each env var via skill `new-setting`.

@@ -55,7 +55,8 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 - DB — `JdbcClient` with explicit SQL; table names schema-prefixed (`billing.payments`), unquoted; mutable
   tables have `version` (optimistic locking `UPDATE ... WHERE id = ? AND version = ?`). No SQL, FKs or JOINs to
   other schemas; only UUIDs cross module boundaries.
-- Migrations — bean `ModuleMigrations.initializer(dataSource, "<module>")` in the module config, scripts in
+- Migrations — bean `ModuleMigrations.initializer(migrationConnection, "<module>")` in the module config (a
+  `MigrationConnection` outside the pool — H2 check constraints keep the session that altered the table), scripts in
   `src/main/resources/db/migration/<module>/V<n>__<description>.sql`, own history table.
 - Config — typed `@ConfigurationProperties` records, prefix `teacherbox.<module>`. A new env var → `.env.example`
   + `platform.settings.SettingsCatalog` (a test compares them) + README (skill `new-setting`).

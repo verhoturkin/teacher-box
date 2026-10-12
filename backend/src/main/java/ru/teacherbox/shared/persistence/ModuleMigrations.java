@@ -13,11 +13,12 @@ import org.springframework.boot.flyway.autoconfigure.FlywayMigrationInitializer;
  * <p>Usage in a module configuration:
  * <pre>{@code
  * @Bean
- * FlywayMigrationInitializer billingMigrations(DataSource dataSource) {
- *     return ModuleMigrations.initializer(dataSource, "billing");
+ * FlywayMigrationInitializer billingMigrations(MigrationConnection connection) {
+ *     return ModuleMigrations.initializer(connection, "billing");
  * }
  * }</pre>
  * Spring Boot detects {@link FlywayMigrationInitializer} beans, so JDBC beans are initialized after migrations.
+ * Migrations run on the {@link MigrationConnection}, not on the pool — see why there.
  */
 public final class ModuleMigrations {
 
@@ -26,8 +27,8 @@ public final class ModuleMigrations {
     private ModuleMigrations() {
     }
 
-    public static FlywayMigrationInitializer initializer(DataSource dataSource, String module) {
-        return new FlywayMigrationInitializer(flyway(dataSource, module));
+    public static FlywayMigrationInitializer initializer(MigrationConnection connection, String module) {
+        return new FlywayMigrationInitializer(flyway(connection.dataSource(), module));
     }
 
     public static Flyway flyway(DataSource dataSource, String module) {
