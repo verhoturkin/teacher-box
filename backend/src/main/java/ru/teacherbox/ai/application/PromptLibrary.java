@@ -8,7 +8,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.ai.application.AiViews.PromptView;
-import ru.teacherbox.ai.domain.PromptKind;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.SavedPrompt;
 import ru.teacherbox.ai.persistence.PromptRepository;
 import ru.teacherbox.shared.Ids;
@@ -32,7 +32,7 @@ public class PromptLibrary {
     }
 
     @Transactional
-    public PromptView create(String title, String text, @Nullable PromptKind kind) {
+    public PromptView create(String title, String text, @Nullable HomeworkKind kind) {
         SavedPrompt prompt = SavedPrompt.create(Ids.newId(), title, text, kind, clock.instant());
         prompts.insert(prompt);
         return PromptView.of(prompt);
@@ -42,7 +42,7 @@ public class PromptLibrary {
      * @throws OptimisticLockingFailureException if the prompt was changed after {@code expectedVersion}
      */
     @Transactional
-    public PromptView update(UUID id, String title, String text, @Nullable PromptKind kind, long expectedVersion) {
+    public PromptView update(UUID id, String title, String text, @Nullable HomeworkKind kind, long expectedVersion) {
         SavedPrompt prompt = prompts.findById(id).orElseThrow(PromptLibrary::notFound);
         if (prompt.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Prompt " + id + " was modified");

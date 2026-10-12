@@ -55,8 +55,9 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('AssignmentsPage', () => {
-  it('lists assignments and links a new one to the editor', async () => {
+  it('lists assignments and opens the editor of a new one', async () => {
     const { backend } = configure();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
     backend
@@ -73,7 +74,8 @@ describe('AssignmentsPage', () => {
     expect(readableText(host)).toContain('без срока');
     expect(readableText(host)).toContain('0 из 2');
 
-    expect(host.querySelector('a.tb-page-fab')?.getAttribute('href')).toBe('/new');
+    buttonByText(host, 'Новое задание').click();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
     fixture.destroy();
   });
 

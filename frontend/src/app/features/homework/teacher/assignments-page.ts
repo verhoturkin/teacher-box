@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { HelpButton } from '@features/help/parts';
@@ -32,8 +32,8 @@ import { T } from '../i18n/texts';
     DatePipe,
     RouterLink,
     Badge,
+    Button,
     ButtonDirective,
-    ButtonIcon,
     ButtonLabel,
     Card,
     TableModule,
@@ -51,10 +51,7 @@ import { T } from '../i18n/texts';
           <p-badge [value]="toReview()" severity="warn" />
         }
       </a>
-      <a pButton class="tb-page-fab" routerLink="new">
-        <i pButtonIcon aria-hidden="true" class="pi pi-plus"></i>
-        <span pButtonLabel>{{ t.create }}</span>
-      </a>
+      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
     </tb-page-header>
 
     <p-card>
@@ -122,6 +119,10 @@ export class AssignmentsPage implements OnInit {
       return;
     }
     this.load();
+  }
+
+  protected openCreate(): void {
+    void this.router.navigate(['/teacher/homework/new']);
   }
 
   protected load(): void {

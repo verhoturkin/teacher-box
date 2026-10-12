@@ -3,15 +3,19 @@ package ru.teacherbox.ai.application;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.PageLook;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.domain.AiFeature;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import tools.jackson.core.JacksonException;
@@ -24,21 +28,39 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AiAssistant {
 
-    static final String HOMEWORK_PROMPT = "homework-draft";
-    static final String REVIEW_PROMPT = "review-draft";
-    static final String PROMPT_VERSION = "v1";
+    static final String HOMEWORK_PROMPT = "homework-draft.%s.v2";
+    static final String HOMEWORK_KIND_PROMPT = "homework-kind.%s.v1";
+    static final String REVIEW_PROMPT = "review-draft.%s.v1";
     static final int MAX_TITLE = 200;
+    /** As much as an interactive assignment keeps. */
+    static final int MAX_HTML = 200_000;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
             "title", property("string", "Короткое название задания"),
             "description", property("string", "Текст задания в Markdown"));
+    static final Map<String, Object> INTERACTIVE_SCHEMA = object(
+            "title", property("string", "Короткое название задания"),
+            "description", property("string", "Одна-две фразы для ученика: что сделать на странице"),
+            "html", property("string", "Вся HTML-страница задания с проверкой ответов"));
+
+    /** Anything a sandboxed page could not load anyway, or that would reach outside it. */
+    private static final Pattern EXTERNAL = Pattern.compile(
+            "<script[^>]*\\ssrc\\s*=|<(?:link|iframe|object|embed|base)\\b"
+                    + "|\\b(?:src|href|action|poster)\\s*=\\s*[\"']?\\s*(?:https?:)?//"
+                    + "|url\\(\\s*[\"']?\\s*(?:https?:)?//|@import",
+            Pattern.CASE_INSENSITIVE);
     static final Map<String, Object> REVIEW_SCHEMA = object(
             "comment", property("string", "Черновик отзыва для ученика"),
             "grade", property("string", "Оценка «2»–«5» или пустая строка"),
             "accept", property("boolean", "true — принять работу, false — вернуть на доработку"));
 
-    private record HomeworkAnswer(@Nullable String title, @Nullable String description) {
+    private record HomeworkAnswer(@Nullable String title, @Nullable String description, @Nullable String html) {
     }
+
+    private static final Map<HomeworkKind, String> KIND_NAMES = Map.of(
+            HomeworkKind.WRITTEN, "письменное",
+            HomeworkKind.BOARD, "на доске",
+            HomeworkKind.INTERACTIVE, "интерактивное");
 
     private record ReviewAnswer(@Nullable String comment, @Nullable String grade, @Nullable Boolean accept) {
     }
@@ -55,23 +77,40 @@ public class AiAssistant {
         this.json = json;
     }
 
+    /**
+     * A draft of homework of the brief's kind from the teacher's request; an interactive one comes with its page,
+     * which must stay inside the sandbox (ADR-0040).
+     */
     public HomeworkDraft homeworkDraft(HomeworkBrief brief) {
+        boolean interactive = brief.kind() == HomeworkKind.INTERACTIVE;
+        PageLook look = brief.look();
+        String kindRules = prompts.render(HOMEWORK_KIND_PROMPT.formatted(brief.kind().name().toLowerCase(Locale.ROOT)),
+                Map.of("font", look.font(), "primary", look.primary(), "surface", look.surface(),
+                        "text", look.text()));
         Map<String, String> values = Map.of(
-                "topic", brief.topic().strip(),
-                "level", orDash(brief.level()),
-                "taskCount", Integer.toString(brief.taskCount()),
-                "wishes", orDash(brief.wishes()));
-        LlmRequest request = new LlmRequest(prompt(HOMEWORK_PROMPT, "system", Map.of()),
-                prompt(HOMEWORK_PROMPT, "user", values), "homework_draft", HOMEWORK_SCHEMA);
+                "kind", KIND_NAMES.get(brief.kind()),
+                "title", orDash(brief.title()),
+                "prompt", brief.prompt().strip());
+        LlmRequest request = new LlmRequest(
+                prompts.render(HOMEWORK_PROMPT.formatted("system"), Map.of("kindRules", kindRules)),
+                prompts.render(HOMEWORK_PROMPT.formatted("user"), values),
+                interactive ? "interactive_homework_draft" : "homework_draft",
+                interactive ? INTERACTIVE_SCHEMA : HOMEWORK_SCHEMA);
         return call(AiFeature.HOMEWORK_DRAFT, request, HomeworkAnswer.class, answer -> {
             String title = answer.title() == null ? "" : answer.title().strip();
             String description = answer.description() == null ? "" : answer.description().strip();
-            if (title.isEmpty() || description.isEmpty()) {
+            String html = answer.html() == null ? "" : answer.html().strip();
+            if (title.isEmpty() || description.isEmpty() || interactive && !sandboxed(html)) {
                 return null;
             }
             return new HomeworkDraft(title.length() > MAX_TITLE ? title.substring(0, MAX_TITLE) : title,
-                    description);
+                    description, interactive ? html : null);
         });
+    }
+
+    /** A whole page that loads nothing from outside; anything else is an unusable answer. */
+    static boolean sandboxed(String html) {
+        return !html.isEmpty() && html.length() <= MAX_HTML && !EXTERNAL.matcher(html).find();
     }
 
     public ReviewDraft reviewDraft(ReviewBrief brief) {
@@ -79,8 +118,8 @@ public class AiAssistant {
                 "title", brief.title().strip(),
                 "description", orDash(brief.description()),
                 "answer", brief.answer().strip());
-        LlmRequest request = new LlmRequest(prompt(REVIEW_PROMPT, "system", Map.of()),
-                prompt(REVIEW_PROMPT, "user", values), "review_draft", REVIEW_SCHEMA);
+        LlmRequest request = new LlmRequest(prompts.render(REVIEW_PROMPT.formatted("system"), Map.of()),
+                prompts.render(REVIEW_PROMPT.formatted("user"), values), "review_draft", REVIEW_SCHEMA);
         return call(AiFeature.REVIEW_DRAFT, request, ReviewAnswer.class, answer -> {
             String comment = answer.comment() == null ? "" : answer.comment().strip();
             if (comment.isEmpty() || answer.accept() == null) {
@@ -150,10 +189,6 @@ public class AiAssistant {
             case INVALID_ANSWER -> new BusinessRuleException("ai.invalid-answer", "The model returned an unusable answer");
             case UNAVAILABLE -> new BusinessRuleException("ai.unavailable", "The AI provider is unavailable");
         };
-    }
-
-    private String prompt(String name, String part, Map<String, String> values) {
-        return prompts.render(name + "." + part + "." + PROMPT_VERSION, values);
     }
 
     private static String orDash(@Nullable String value) {

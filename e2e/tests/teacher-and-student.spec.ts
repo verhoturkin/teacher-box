@@ -101,13 +101,14 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .click();
   // The main action of the page; the empty list offers the same button
   await page.locator('tb-page-header').getByRole('button', { name: 'Новое задание' }).click();
-  await page.locator('#assignment-title').fill(HOMEWORK_TITLE);
-  await page.locator('#assignment-description').fill('1. Сложите 1/2 и 1/3');
+  // The editor page (0.14.0): written homework is the default kind.
+  await page.locator('#editor-title').fill(HOMEWORK_TITLE);
+  await page.locator('#editor-text').fill('1. Сложите 1/2 и 1/3');
   // PrimeNG puts the id on a hidden input; the component itself opens the list.
-  await page.locator('p-multiselect:has(#assignment-students)').click();
+  await page.locator('p-multiselect:has(#editor-students)').click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Выдать' }).click();
+  await page.locator('tb-page-header').getByRole('button', { name: 'Выдать' }).click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
   const studentRow = page.getByRole('row', { name: new RegExp(STUDENT_NAME) });
   await expect(studentRow).toContainText('Выдано');

@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
-import ru.teacherbox.ai.domain.PromptKind;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.domain.SavedPrompt;
 
@@ -16,12 +16,29 @@ public final class AiViews {
     private AiViews() {
     }
 
-    /** What the teacher wants the homework to be about. */
-    public record HomeworkBrief(String topic, @Nullable String level, int taskCount, @Nullable String wishes) {
+    /**
+     * What the teacher wants: the kind of homework and the request in their own words.
+     *
+     * @param title what the teacher already called the assignment, if anything
+     * @param look  the portal's colours and font, for the page of interactive homework
+     */
+    public record HomeworkBrief(HomeworkKind kind, String prompt, @Nullable String title, PageLook look) {
     }
 
-    /** A draft of an assignment for the homework editor. */
-    public record HomeworkDraft(String title, String description) {
+    /** The look of the portal an interactive page should follow: CSS colours and a font family. */
+    public record PageLook(String font, String primary, String surface, String text) {
+
+        /** For a request that names none. */
+        public static final PageLook DEFAULT = new PageLook("system-ui, sans-serif", "#1b6b5a", "#ffffff",
+                "#1a1c1b");
+    }
+
+    /**
+     * A draft of an assignment for the homework editor.
+     *
+     * @param html the page of interactive homework; {@code null} for other kinds
+     */
+    public record HomeworkDraft(String title, String description, @Nullable String html) {
     }
 
     /** Texts of the task and the student's answer; the frontend sends them explicitly. */
@@ -84,7 +101,7 @@ public final class AiViews {
     }
 
     /** A prompt of the library; {@code kind} {@code null} — for any kind of homework. */
-    public record PromptView(UUID id, String title, String text, @Nullable PromptKind kind, Instant updatedAt,
+    public record PromptView(UUID id, String title, String text, @Nullable HomeworkKind kind, Instant updatedAt,
             long version) {
 
         static PromptView of(SavedPrompt prompt) {

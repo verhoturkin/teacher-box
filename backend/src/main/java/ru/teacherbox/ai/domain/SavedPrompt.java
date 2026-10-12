@@ -15,12 +15,12 @@ public final class SavedPrompt {
     private final UUID id;
     private String title;
     private String text;
-    private @Nullable PromptKind kind;
+    private @Nullable HomeworkKind kind;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
-    private SavedPrompt(UUID id, String title, String text, @Nullable PromptKind kind, Instant createdAt,
+    private SavedPrompt(UUID id, String title, String text, @Nullable HomeworkKind kind, Instant createdAt,
             Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.title = title;
@@ -32,17 +32,17 @@ public final class SavedPrompt {
     }
 
     /** @param kind {@code null} — for any kind */
-    public static SavedPrompt create(UUID id, String title, String text, @Nullable PromptKind kind, Instant now) {
+    public static SavedPrompt create(UUID id, String title, String text, @Nullable HomeworkKind kind, Instant now) {
         return new SavedPrompt(id, valid(title, MAX_TITLE, "ai.prompt-title-invalid"),
                 valid(text, MAX_TEXT, "ai.prompt-text-invalid"), kind, now, now, 0);
     }
 
-    public static SavedPrompt restore(UUID id, String title, String text, @Nullable PromptKind kind,
+    public static SavedPrompt restore(UUID id, String title, String text, @Nullable HomeworkKind kind,
             Instant createdAt, Instant updatedAt, long version) {
         return new SavedPrompt(id, title, text, kind, createdAt, updatedAt, version);
     }
 
-    public void update(String newTitle, String newText, @Nullable PromptKind newKind, Instant now) {
+    public void update(String newTitle, String newText, @Nullable HomeworkKind newKind, Instant now) {
         title = valid(newTitle, MAX_TITLE, "ai.prompt-title-invalid");
         text = valid(newText, MAX_TEXT, "ai.prompt-text-invalid");
         kind = newKind;
@@ -74,7 +74,7 @@ public final class SavedPrompt {
         return text;
     }
 
-    public @Nullable PromptKind kind() {
+    public @Nullable HomeworkKind kind() {
         return kind;
     }
 

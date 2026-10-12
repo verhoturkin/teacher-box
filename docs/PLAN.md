@@ -82,15 +82,17 @@ under the editor on narrow screens instead of a bottom sheet; the panel itself �
 
 - [x] 167.1 **B** `ai`: `prompts` table (title ≤ 100, text ≤ 4000, kind `WRITTEN` / `BOARD` / `INTERACTIVE` or
   any, version); CRUD `/api/teacher/ai/prompts`; in the full reset; ADMIN — 403. Tests.
-- [ ] 167.2 **B** One draft endpoint `POST /api/teacher/ai/homework-draft` `{kind, prompt, title?, sources[]}`
+- [x] 167.2 **B** One draft endpoint `POST /api/teacher/ai/homework-draft` `{kind, prompt, title?, look?}`
   (replaces topic / level / count — prompt version v2; the old v1 fields dropped with the old dialog). Kind
   `INTERACTIVE` appends the fixed system requirement (`homework-interactive.system.v1.txt`, short: only a single
   HTML document, no external resources, portal look via CSS variables passed in the prompt, report the result with
-  `postMessage`); output validated: one document, no `<script src>`, no external URLs.
-- [ ] 167.3 **F** `features/ai/homework-ai-panel.ts` (replaces `homework-draft-dialog.ts`): prompt library
+  `postMessage`); output validated: one document, no `<script src>`, no external URLs. *Kind rules —
+  `homework-kind.<kind>.v1.txt`; `look` — the portal's colours and font from the frontend; `sources[]` — 168.2.*
+- [x] 167.3 **F** `features/ai/homework-ai-panel.ts` (replaces `homework-draft-dialog.ts`): prompt library
   dropdown + quick chips, sources (bound textbooks / files of the assignment), prompt field, «Сгенерировать»,
   «Сохранить промт», draft preview with «Вставить» / «Заменить»; HTML drafts preview in the sandboxed frame.
-  Library management (rename, delete) on `/teacher/ai`.
+  Library management (rename, delete) on `/teacher/ai`. *Sources come with 168; an HTML draft is previewed by the
+  editor's «Показать страницу» right after «Заменить».*
 
 ### 168. AI from textbook pages and files (B)
 

@@ -132,9 +132,6 @@ export const en: Translation<typeof ru> = {
     leaveHeader: 'Leave without saving?',
     leaveMessage: 'The changes to the assignment will be lost.',
     leave: 'Leave',
-    ai: 'AI assistant',
-    aiHint: 'A draft of the assignment on a topic: you check and fix it before giving it out.',
-    generate: 'Generate with AI',
   },
   list: {
     title: 'Assignments',

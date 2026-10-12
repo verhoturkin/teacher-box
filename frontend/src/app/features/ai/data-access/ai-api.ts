@@ -1,15 +1,19 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
-import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import {
   AiStatus,
   HomeworkBrief,
   HomeworkDraft,
+  PromptInput,
   ReviewBrief,
   ReviewDraft,
+  SavedPrompt,
   UsageReport,
 } from './ai.models';
+
+const PROMPTS = '/api/teacher/ai/prompts';
 
 /** HTTP client of the AI module (teacher only). */
 @Injectable({ providedIn: 'root' })
@@ -39,6 +43,23 @@ export class AiApi {
     return this.http.post<HomeworkDraft>('/api/teacher/ai/homework-draft', brief, {
       context: new HttpContext().set(SKIP_ERROR_TOAST, true),
     });
+  }
+
+  /** The teacher's library of prompts, by title. */
+  prompts(): Observable<SavedPrompt[]> {
+    return this.http.get<SavedPrompt[]>(PROMPTS, { context: quietContext() });
+  }
+
+  savePrompt(input: PromptInput): Observable<SavedPrompt> {
+    return this.http.post<SavedPrompt>(PROMPTS, input);
+  }
+
+  updatePrompt(id: string, input: PromptInput, version: number): Observable<SavedPrompt> {
+    return this.http.put<SavedPrompt>(`${PROMPTS}/${id}`, { ...input, version });
+  }
+
+  deletePrompt(id: string): Observable<unknown> {
+    return this.http.delete(`${PROMPTS}/${id}`);
   }
 
   reviewDraft(brief: ReviewBrief): Observable<ReviewDraft> {

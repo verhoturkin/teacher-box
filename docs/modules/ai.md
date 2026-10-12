@@ -21,6 +21,12 @@ homework data; the frontend sends the texts. Schema `ai`. ADRs: [0006](../adr/00
   (`WRITTEN` / `BOARD` / `INTERACTIVE`, blank — any); listed by title, optimistic locking, in the full reset; kept
   whether the AI is configured or not.
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
+- Homework draft (`POST homework-draft` `{kind, prompt ≤ 4000, title?, look?}`, prompts `homework-draft.*.v2` +
+  `homework-kind.<kind>.v1`): the kind's rules go into the system prompt; `INTERACTIVE` asks for `{title,
+  description, html}` — one sandboxed page in the portal's `look` (font, `#rrggbb` primary / surface / text; blank —
+  `PageLook.DEFAULT`) that reports with `teacherbox.result(...)`. A page that loads anything (`<script src>`, `<link>`,
+  `<iframe>`, `<object>`, `<embed>`, `<base>`, external `src` / `href` / `url()`, `@import`) or is over 200 000
+  characters is an invalid answer.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
 
 ## Data, REST
@@ -30,4 +36,4 @@ usage metadata).
 
 ## Frontend
 
-`features/ai/`: homework draft dialog, AI usage page (`/teacher/ai`); embedded via `parts.ts`.
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant: library chips and select, request, draft with «Заменить» / «Вставить в конец» / «Отбросить», «Сохранить промт»; `page-look.ts` reads the portal's colours and font for interactive pages), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.

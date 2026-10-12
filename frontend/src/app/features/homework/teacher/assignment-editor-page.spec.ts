@@ -354,13 +354,44 @@ describe('AssignmentEditorPage', () => {
   it('puts an AI draft into the editor', async () => {
     const { page, host } = await create([], true);
 
+    for (const request of backend.match('/api/teacher/ai/prompts')) {
+      request.flush([]);
+    }
     expect(readableText(host)).toContain('ИИ-помощник');
-    page.applyDraft({ title: 'Проценты', description: '1. Найдите 10%' });
+    page.applyDraft({
+      draft: { title: 'Проценты', description: '1. Найдите 10%', html: null },
+      mode: 'replace',
+    });
     await fixture.whenStable();
-
     expect(page.form.controls.title.value).toBe('Проценты');
     expect(page.mode.value).toBe('preview');
     expect(page.canLeave()).not.toBe(true);
+
+    page.form.patchValue({ title: '' });
+    page.applyDraft({
+      draft: { title: 'Ещё', description: '2. Найдите 20%', html: null },
+      mode: 'insert',
+    });
+    expect(page.form.controls.title.value).toBe('Ещё');
+    expect(page.form.controls.description.value).toBe('1. Найдите 10%\n\n2. Найдите 20%');
+  });
+
+  it('puts an AI page into interactive homework and shows it', async () => {
+    const { page } = await create([], true);
+    backend.match('/api/teacher/ai/prompts').forEach((request) => {
+      request.flush([]);
+    });
+    page.kind.setValue('INTERACTIVE');
+
+    page.applyDraft({
+      draft: { title: 'Тест', description: 'Ответьте', html: '<p>?</p>' },
+      mode: 'replace',
+    });
+
+    expect(page.form.controls.interactiveHtml.value).toBe('<p>?</p>');
+    expect(backend.expectOne('/api/teacher/homework/interactive-preview').request.body).toEqual({
+      html: '<p>?</p>',
+    });
   });
 
   it('shows a failed load with «Повторить»', async () => {

@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
 import ru.teacherbox.ai.domain.RequestStatus;
@@ -29,7 +30,8 @@ class AiUnitTest {
         AiAssistant assistant = new AiAssistant(new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
                 prompts, usage, JsonMapper.builder().build());
 
-        assertThatThrownBy(() -> assistant.homeworkDraft(new HomeworkBrief("Дроби", null, 3, null)))
+        assertThatThrownBy(() -> assistant.homeworkDraft(
+                new HomeworkBrief(HomeworkKind.WRITTEN, "Дроби", null, AiViews.PageLook.DEFAULT)))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);
@@ -50,6 +52,22 @@ class AiUnitTest {
     }
 
     @Test
+    void anInteractivePageStaysInsideTheSandbox() {
+        assertThat(AiAssistant.sandboxed("<p>?</p><script>teacherbox.result({score: 1})</script>")).isTrue();
+        assertThat(AiAssistant.sandboxed("<form onsubmit='check(); return false'><img src='data:image/png,x'>"))
+                .isTrue();
+        assertThat(AiAssistant.sandboxed("")).isFalse();
+        assertThat(AiAssistant.sandboxed("x".repeat(AiAssistant.MAX_HTML + 1))).isFalse();
+        assertThat(AiAssistant.sandboxed("<SCRIPT type=module SRC=x.js></script>")).isFalse();
+        assertThat(AiAssistant.sandboxed("<link rel=stylesheet href=a.css>")).isFalse();
+        assertThat(AiAssistant.sandboxed("<img src=\"https://example.com/a.png\">")).isFalse();
+        assertThat(AiAssistant.sandboxed("<a href=//example.com>")).isFalse();
+        assertThat(AiAssistant.sandboxed("<style>body { background: url( 'http://x/y.png') }</style>")).isFalse();
+        assertThat(AiAssistant.sandboxed("<style>@import 'a.css';</style>")).isFalse();
+        assertThat(AiAssistant.sandboxed("<iframe srcdoc='x'></iframe>")).isFalse();
+    }
+
+    @Test
     void extractsJsonFromChattyAnswers() {
         assertThat(AiAssistant.extractJson("```json\n{\"a\": 1}\n```")).isEqualTo("{\"a\": 1}");
         assertThat(AiAssistant.extractJson("{\"a\": {\"b\": 2}}")).isEqualTo("{\"a\": {\"b\": 2}}");
@@ -59,13 +77,13 @@ class AiUnitTest {
 
     @Test
     void rendersVersionedPrompts() {
-        String prompt = prompts.render("homework-draft.user.v1",
-                Map.of("topic", "Дроби $1", "level", "5", "taskCount", "3", "wishes", "—"));
+        String prompt = prompts.render("homework-draft.user.v2",
+                Map.of("kind", "письменное", "title", "—", "prompt", "Дроби $1"));
 
-        assertThat(prompt).startsWith("Составь домашнее задание.").contains("Тема: Дроби $1");
+        assertThat(prompt).startsWith("Тип задания: письменное").contains("Дроби $1");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");
-        assertThatThrownBy(() -> prompts.render("homework-draft.user.v1", Map.of("topic", "x")))
-                .hasMessageContaining("{{level}}");
+        assertThatThrownBy(() -> prompts.render("homework-draft.user.v2", Map.of("kind", "x")))
+                .hasMessageContaining("{{title}}");
         assertThatThrownBy(() -> prompts.render("missing.v1", Map.of()))
                 .hasMessageContaining("Prompt not found");
     }

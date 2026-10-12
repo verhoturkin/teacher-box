@@ -1,9 +1,9 @@
 package ru.teacherbox.ai.web;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.YearMonth;
 import org.jspecify.annotations.Nullable;
@@ -18,20 +18,35 @@ import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.PageLook;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
+import ru.teacherbox.ai.domain.HomeworkKind;
+import ru.teacherbox.ai.domain.SavedPrompt;
 
 /** The teacher's AI assistant. Texts are sent by the frontend: the module reads no other data. */
 @RestController
 @RequestMapping("/api/teacher/ai")
 class TeacherAiController {
 
+    /** The portal's colours ({@code #rrggbb}) and font for an interactive page. */
+    record LookRequest(
+            @NotBlank @Size(max = 100) @Pattern(regexp = FONT) String font,
+            @NotBlank @Pattern(regexp = COLOR) String primary,
+            @NotBlank @Pattern(regexp = COLOR) String surface,
+            @NotBlank @Pattern(regexp = COLOR) String text) {
+    }
+
+    /**
+     * @param title what the teacher already called the assignment
+     * @param look  blank — the default look
+     */
     record HomeworkDraftRequest(
-            @NotBlank @Size(max = 300) String topic,
-            @Size(max = 100) @Nullable String level,
-            @Min(1) @Max(20) int taskCount,
-            @Size(max = 2_000) @Nullable String wishes) {
+            @NotNull HomeworkKind kind,
+            @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,
+            @Size(max = 200) @Nullable String title,
+            @Valid @Nullable LookRequest look) {
     }
 
     record ReviewDraftRequest(
@@ -39,6 +54,10 @@ class TeacherAiController {
             @Size(max = 20_000) @Nullable String description,
             @NotBlank @Size(max = 20_000) String answer) {
     }
+
+    static final String COLOR = "#[0-9a-fA-F]{6}";
+    /** Font names, commas, quotes and spaces: nothing that could end the CSS declaration. */
+    static final String FONT = "[\\p{L}\\p{N} ,'\"-]+";
 
     private final AiAssistant assistant;
     private final AiUsage usage;
@@ -55,8 +74,10 @@ class TeacherAiController {
 
     @PostMapping("/homework-draft")
     HomeworkDraft homeworkDraft(@Valid @RequestBody HomeworkDraftRequest request) {
-        return assistant.homeworkDraft(
-                new HomeworkBrief(request.topic(), request.level(), request.taskCount(), request.wishes()));
+        LookRequest look = request.look();
+        return assistant.homeworkDraft(new HomeworkBrief(request.kind(), request.prompt(), request.title(),
+                look == null ? PageLook.DEFAULT
+                        : new PageLook(look.font(), look.primary(), look.surface(), look.text())));
     }
 
     @PostMapping("/review-draft")

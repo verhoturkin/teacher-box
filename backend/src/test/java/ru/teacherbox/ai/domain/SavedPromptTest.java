@@ -18,8 +18,8 @@ class SavedPromptTest {
         assertThat(prompt.title()).isEqualTo("Тест");
         assertThat(prompt.text()).isEqualTo("Сделай тест");
 
-        prompt.update("Тест 2", "Текст", PromptKind.BOARD, NOW.plusSeconds(1));
-        assertThat(prompt.kind()).isEqualTo(PromptKind.BOARD);
+        prompt.update("Тест 2", "Текст", HomeworkKind.BOARD, NOW.plusSeconds(1));
+        assertThat(prompt.kind()).isEqualTo(HomeworkKind.BOARD);
         assertThat(prompt.updatedAt()).isEqualTo(NOW.plusSeconds(1));
 
         assertThatThrownBy(() -> prompt.update("   ", "Текст", null, NOW))

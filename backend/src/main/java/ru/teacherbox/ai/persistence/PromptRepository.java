@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-import ru.teacherbox.ai.domain.PromptKind;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.SavedPrompt;
 
 @Repository
@@ -73,7 +73,7 @@ public class PromptRepository {
     }
 
     private static String kindName(SavedPrompt prompt) {
-        PromptKind kind = prompt.kind();
+        HomeworkKind kind = prompt.kind();
         return kind == null ? null : kind.name();
     }
 
@@ -83,7 +83,7 @@ public class PromptRepository {
                 rs.getObject("id", UUID.class),
                 rs.getString("title"),
                 rs.getString("text"),
-                kind == null ? null : PromptKind.valueOf(kind),
+                kind == null ? null : HomeworkKind.valueOf(kind),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

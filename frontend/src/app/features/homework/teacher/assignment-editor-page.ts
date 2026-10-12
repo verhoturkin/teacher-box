@@ -30,7 +30,7 @@ import { describeError } from '@core/http/error-messages';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi, HomeworkDraft, HomeworkDraftDialog } from '@features/ai/parts';
+import { AiApi, AppliedDraft, HomeworkAiPanel } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
@@ -89,7 +89,7 @@ const KINDS: readonly AssignmentKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
     SelectButton,
     Textarea,
     GroupPicker,
-    HomeworkDraftDialog,
+    HomeworkAiPanel,
     ToBoardDialog,
     HelpButton,
     MarkdownView,
@@ -308,26 +308,16 @@ const KINDS: readonly AssignmentKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
 
         @if (aiEnabled()) {
           <aside class="tb-editor__aside">
-            <p-card [header]="t.ai">
-              <p class="tb-muted">{{ t.aiHint }}</p>
-              <p-button
-                [label]="t.generate"
-                icon="pi pi-sparkles"
-                severity="secondary"
-                (onClick)="draftVisible.set(true)"
-              />
-            </p-card>
+            <tb-homework-ai-panel
+              [kind]="kindValue()"
+              [title]="titleValue()"
+              [hasText]="textValue().trim() !== ''"
+              (applied)="applyDraft($event)"
+            />
           </aside>
         }
       </div>
 
-      @if (aiEnabled()) {
-        <tb-homework-draft-dialog
-          [(visible)]="draftVisible"
-          [topic]="titleValue()"
-          (generated)="applyDraft($event)"
-        />
-      }
       <tb-to-board-dialog
         [(visible)]="boardVisible"
         [title]="titleValue()"
@@ -528,7 +518,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     ...this.chosenStudents(),
   ]);
   protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
-  protected readonly draftVisible = signal(false);
   protected readonly previewUrl = signal<string | null>(null);
   protected readonly previewing = signal(false);
   protected readonly previewError = signal<string | null>(null);
@@ -628,11 +617,31 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     control.markAsDirty();
   }
 
-  /** Puts an AI draft into the editor; the teacher reviews it before saving. */
-  applyDraft(draft: HomeworkDraft): void {
-    this.form.patchValue({ title: draft.title, description: draft.description });
+  /**
+   * Puts an AI draft into the editor; the teacher reviews it before saving. «Заменить» takes its title, text and page;
+   * «Вставить» adds its text after the teacher's and keeps the title the teacher wrote.
+   */
+  applyDraft({ draft, mode }: AppliedDraft): void {
+    const value = this.form.getRawValue();
+    if (mode === 'insert') {
+      this.form.patchValue({
+        title: value.title.trim() === '' ? draft.title : value.title,
+        description: `${value.description.trimEnd()}
+
+${draft.description}`,
+      });
+    } else {
+      this.form.patchValue({
+        title: draft.title,
+        description: draft.description,
+        interactiveHtml: draft.html ?? value.interactiveHtml,
+      });
+    }
     this.form.markAsDirty();
     this.mode.setValue('preview');
+    if (draft.html !== null) {
+      this.showPreview();
+    }
   }
 
   protected showPreview(): void {

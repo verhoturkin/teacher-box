@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.ai.application.AiViews.PromptView;
 import ru.teacherbox.ai.application.PromptLibrary;
-import ru.teacherbox.ai.domain.PromptKind;
+import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.SavedPrompt;
 
 /** The teacher's library of prompts. */
@@ -31,13 +31,13 @@ class TeacherPromptsController {
     record PromptRequest(
             @NotBlank @Size(max = SavedPrompt.MAX_TITLE) String title,
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String text,
-            @Nullable PromptKind kind) {
+            @Nullable HomeworkKind kind) {
     }
 
     record UpdatePromptRequest(
             @NotBlank @Size(max = SavedPrompt.MAX_TITLE) String title,
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String text,
-            @Nullable PromptKind kind,
+            @Nullable HomeworkKind kind,
             @NotNull Long version) {
     }
 

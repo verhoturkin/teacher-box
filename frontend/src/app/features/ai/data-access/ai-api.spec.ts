@@ -44,14 +44,31 @@ describe('AiApi', () => {
 
   it('calls the assistant endpoints', () => {
     api.status().subscribe();
-    api.homeworkDraft({ topic: 'Дроби', level: null, taskCount: 3, wishes: null }).subscribe();
+    const brief = { kind: 'WRITTEN' as const, prompt: 'Дроби', title: null, look: null };
+    api.homeworkDraft(brief).subscribe();
+    const input = { title: 'Тест', text: 'Сделай тест', kind: null };
+    api.prompts().subscribe();
+    api.savePrompt(input).subscribe();
+    api.updatePrompt('p-1', input, 2).subscribe();
+    api.deletePrompt('p-1').subscribe();
     api.reviewDraft({ title: 'Дроби', description: null, answer: '2/5' }).subscribe();
     api.usage().subscribe();
     api.usage('2026-08').subscribe();
 
     backend.expectOne('/api/teacher/ai/status');
     const draft = backend.expectOne('/api/teacher/ai/homework-draft');
-    expect(draft.request.body).toEqual({ topic: 'Дроби', level: null, taskCount: 3, wishes: null });
+    expect(draft.request.body).toEqual(brief);
+    backend.expectOne({ method: 'GET', url: '/api/teacher/ai/prompts' });
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' }).request.body,
+    ).toEqual(input);
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/ai/prompts/p-1' }).request.body,
+    ).toEqual({
+      ...input,
+      version: 2,
+    });
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/prompts/p-1' });
     expect(draft.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     expect(backend.expectOne('/api/teacher/ai/review-draft').request.body).toEqual({
       title: 'Дроби',
