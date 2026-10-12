@@ -3,12 +3,16 @@ package ru.teacherbox.billing.domain;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.money.Money;
 
-/** A payment from a student. A wrong payment is voided (and stays visible), never deleted. */
+/**
+ * A payment from a student, possibly with a receipt. A wrong payment is voided (and stays visible), never
+ * deleted.
+ */
 public final class Payment {
 
     private final UUID id;
@@ -19,9 +23,10 @@ public final class Payment {
     private final Instant createdAt;
     private @Nullable Instant voidedAt;
     private @Nullable String voidReason;
+    private @Nullable Receipt receipt;
 
     private Payment(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
-            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
+            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason, @Nullable Receipt receipt) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(studentId);
         this.amount = Objects.requireNonNull(amount);
@@ -30,6 +35,7 @@ public final class Payment {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.voidedAt = voidedAt;
         this.voidReason = voidReason;
+        this.receipt = receipt;
     }
 
     public static Payment record(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
@@ -38,12 +44,30 @@ public final class Payment {
             throw new BusinessRuleException("payment.amount-invalid", "Payment amount must be positive");
         }
         return new Payment(id, studentId, amount, paidOn, Texts.optional(comment, "payment.comment-invalid"), now,
-                null, null);
+                null, null, null);
     }
 
     public static Payment restore(UUID id, UUID studentId, Money amount, LocalDate paidOn, @Nullable String comment,
-            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason) {
-        return new Payment(id, studentId, amount, paidOn, comment, createdAt, voidedAt, voidReason);
+            Instant createdAt, @Nullable Instant voidedAt, @Nullable String voidReason, @Nullable Receipt receipt) {
+        return new Payment(id, studentId, amount, paidOn, comment, createdAt, voidedAt, voidReason, receipt);
+    }
+
+    /**
+     * Attaches the receipt, replacing the one before.
+     *
+     * @return the replaced receipt, whose file is no longer needed
+     */
+    public Optional<Receipt> attachReceipt(Receipt newReceipt) {
+        Optional<Receipt> previous = Optional.ofNullable(receipt);
+        receipt = Objects.requireNonNull(newReceipt);
+        return previous;
+    }
+
+    /** @return the removed receipt, whose file is no longer needed */
+    public Optional<Receipt> removeReceipt() {
+        Optional<Receipt> previous = Optional.ofNullable(receipt);
+        receipt = null;
+        return previous;
     }
 
     public void voidPayment(@Nullable String reason, Instant now) {
@@ -93,5 +117,9 @@ public final class Payment {
 
     public @Nullable String voidReason() {
         return voidReason;
+    }
+
+    public @Nullable Receipt receipt() {
+        return receipt;
     }
 }

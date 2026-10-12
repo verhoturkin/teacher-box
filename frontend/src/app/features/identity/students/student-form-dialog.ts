@@ -64,6 +64,18 @@ import { SHARED_T } from '@shared/i18n/texts';
           <label for="note">{{ t.note }}</label>
           <textarea pTextarea id="note" formControlName="note" rows="3"></textarea>
         </div>
+        <div class="tb-field">
+          <label for="defaultTopic">{{ t.defaultTopic }}</label>
+          <input
+            pInputText
+            id="defaultTopic"
+            formControlName="defaultTopic"
+            autocomplete="off"
+            [placeholder]="t.defaultTopicPlaceholder"
+            aria-describedby="default-topic-hint"
+          />
+          <small id="default-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
+        </div>
         @if (student(); as student) {
           <div class="tb-field">
             <label for="login">{{ t.login }}</label>
@@ -129,6 +141,7 @@ export class StudentFormDialog {
     email: ['', [Validators.email, Validators.maxLength(254)]],
     phone: ['', [Validators.maxLength(32)]],
     note: ['', [Validators.maxLength(2000)]],
+    defaultTopic: ['', [Validators.maxLength(500)]],
   });
 
   constructor() {
@@ -142,6 +155,7 @@ export class StudentFormDialog {
           email: student?.email ?? '',
           phone: student?.phone ?? '',
           note: student?.note ?? '',
+          defaultTopic: student?.defaultTopic ?? '',
         });
       }
     });
@@ -157,6 +171,7 @@ export class StudentFormDialog {
       email: value.email === '' ? null : value.email,
       phone: value.phone === '' ? null : value.phone,
       note: value.note === '' ? null : value.note,
+      defaultTopic: value.defaultTopic.trim() === '' ? null : value.defaultTopic.trim(),
     };
     const student = this.student();
     this.pending.set(true);

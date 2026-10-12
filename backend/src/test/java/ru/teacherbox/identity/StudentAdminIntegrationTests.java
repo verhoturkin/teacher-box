@@ -93,6 +93,26 @@ class StudentAdminIntegrationTests {
     }
 
     @Test
+    void keepsTheDefaultTopic() {
+        MvcTestResult created = create("{\"displayName\":\"Ника\",\"defaultTopic\":\" Физика \"}");
+        assertThat(created).hasStatus(HttpStatus.CREATED)
+                .bodyJson().extractingPath("$.student.defaultTopic").isEqualTo("Физика");
+        UUID id = UUID.fromString(JsonPath.read(body(created), "$.student.id"));
+
+        assertThat(mvc.put().uri("/api/teacher/students/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Ника\",\"defaultTopic\":\"Химия\",\"version\":0}"))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.defaultTopic").isEqualTo("Химия");
+        assertThat(mvc.put().uri("/api/teacher/students/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Ника\",\"defaultTopic\":\"%s\",\"version\":1}".formatted("x".repeat(501))))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void unknownStudentIsNotFound() {
         assertThat(get("/api/teacher/students/" + UUID.randomUUID()))
                 .hasStatus(HttpStatus.NOT_FOUND)

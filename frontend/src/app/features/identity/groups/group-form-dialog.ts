@@ -101,6 +101,17 @@ export interface SavedGroup {
           />
           <small class="tb-hint">{{ t.priceHint }}</small>
         </div>
+        <div class="tb-field">
+          <label for="group-topic">{{ t.defaultTopic }}</label>
+          <input
+            pInputText
+            id="group-topic"
+            formControlName="defaultTopic"
+            autocomplete="off"
+            aria-describedby="group-topic-hint"
+          />
+          <small id="group-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
+        </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
@@ -167,6 +178,7 @@ export class GroupFormDialog {
     name: ['', [Validators.required, Validators.maxLength(100)]],
     memberIds: [[] as string[]],
     price: [null as number | null, [Validators.min(0)]],
+    defaultTopic: ['', [Validators.maxLength(500)]],
   });
 
   constructor() {
@@ -180,6 +192,7 @@ export class GroupFormDialog {
           name: group?.name ?? '',
           memberIds: group?.members.map((member) => member.id) ?? [],
           price: price === null ? null : toMajorUnits(price, this.currency()),
+          defaultTopic: group?.defaultTopic ?? '',
         });
       }
     });
@@ -190,7 +203,12 @@ export class GroupFormDialog {
       return;
     }
     const value = this.form.getRawValue();
-    const input = { name: value.name, memberIds: value.memberIds };
+    const topic = value.defaultTopic.trim();
+    const input = {
+      name: value.name,
+      memberIds: value.memberIds,
+      defaultTopic: topic === '' ? null : topic,
+    };
     const group = this.group();
     const request =
       group === null

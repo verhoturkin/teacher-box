@@ -23,7 +23,14 @@ import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { optionalText } from '../schedule-labels';
-import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
+import {
+  LessonGroup,
+  OwnerValue,
+  followDefaultTopic,
+  ownerIds,
+  ownerOptions,
+  ownerValue,
+} from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
@@ -33,6 +40,8 @@ import { SHARED_T } from '@shared/i18n/texts';
 export interface LessonStudent {
   readonly id: string;
   readonly displayName: string;
+  /** Topic of a new lesson with the student, if the teacher set one. */
+  readonly defaultTopic?: string | null;
 }
 
 /** Prefilled time of a new lesson (e.g. selected in the calendar). */
@@ -206,6 +215,12 @@ export class LessonDialog {
   });
 
   constructor() {
+    followDefaultTopic(
+      this.form.controls.owner,
+      this.form.controls.topic,
+      () => ({ students: this.students(), groups: this.groups() }),
+      () => this.lesson() === null,
+    );
     // Opening or another lesson/slot resets the form; later inputs (settings, students) keep what is typed.
     effect(() => {
       this.lesson();

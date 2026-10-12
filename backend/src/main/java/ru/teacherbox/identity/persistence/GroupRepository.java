@@ -20,12 +20,12 @@ import ru.teacherbox.identity.domain.StudentGroup;
 public class GroupRepository {
 
     private static final String SELECT = """
-            select id, name, archived_at, created_at, updated_at, version
+            select id, name, default_topic, archived_at, created_at, updated_at, version
             from identity.student_groups
             """;
 
     /** A group row before its members are loaded. */
-    private record Row(UUID id, String name, @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt,
+    private record Row(UUID id, String name, @Nullable String defaultTopic, @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt,
             long version) {
     }
 
@@ -37,11 +37,13 @@ public class GroupRepository {
 
     public void insert(StudentGroup group) {
         jdbc.sql("""
-                insert into identity.student_groups (id, name, archived_at, created_at, updated_at, version)
-                values (:id, :name, :archivedAt, :createdAt, :updatedAt, :version)
+                insert into identity.student_groups (id, name, default_topic, archived_at, created_at, updated_at,
+                    version)
+                values (:id, :name, :defaultTopic, :archivedAt, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", group.id())
                 .param("name", group.name())
+                .param("defaultTopic", group.defaultTopic())
                 .param("archivedAt", group.archivedAt())
                 .param("createdAt", group.createdAt())
                 .param("updatedAt", group.updatedAt())
@@ -58,12 +60,13 @@ public class GroupRepository {
     public void update(StudentGroup group) {
         int updated = jdbc.sql("""
                 update identity.student_groups
-                set name = :name, archived_at = :archivedAt, updated_at = :updatedAt, version = version + 1
+                set name = :name, default_topic = :defaultTopic, archived_at = :archivedAt, updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
                 .param("id", group.id())
                 .param("version", group.version())
                 .param("name", group.name())
+                .param("defaultTopic", group.defaultTopic())
                 .param("archivedAt", group.archivedAt())
                 .param("updatedAt", group.updatedAt())
                 .update();
@@ -141,7 +144,7 @@ public class GroupRepository {
                         .add(entry.getValue()));
         return rows.stream()
                 .map(row -> StudentGroup.restore(row.id(), row.name(), members.getOrDefault(row.id(), List.of()),
-                        row.archivedAt(), row.createdAt(), row.updatedAt(), row.version()))
+                        row.defaultTopic(), row.archivedAt(), row.createdAt(), row.updatedAt(), row.version()))
                 .toList();
     }
 
@@ -149,6 +152,7 @@ public class GroupRepository {
         return new Row(
                 rs.getObject("id", UUID.class),
                 rs.getString("name"),
+                rs.getString("default_topic"),
                 rs.getObject("archived_at", Instant.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),

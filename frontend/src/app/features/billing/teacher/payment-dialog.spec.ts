@@ -5,6 +5,7 @@ import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { Payment } from '../data-access/billing.models';
 import { PaymentDialog } from './payment-dialog';
 import { testProviders } from '@testing/setup';
+import { MessageService } from 'primeng/api';
 
 describe('PaymentDialog', () => {
   let fixture: ComponentFixture<PaymentDialog>;
@@ -56,6 +57,63 @@ describe('PaymentDialog', () => {
 
     expect(saved).toHaveLength(1);
     expect(dialog.visible()).toBe(false);
+  });
+
+  it('attaches the chosen receipt to the recorded payment', async () => {
+    const saved: Payment[] = [];
+    fixture.componentInstance.saved.subscribe((value) => saved.push(value));
+    const dialog = fixture.componentInstance;
+    const picker = requireElement(document.body, 'input[type="file"]', HTMLInputElement);
+    const big = new File(['x'], 'big.pdf');
+    Object.defineProperty(big, 'size', { value: 10 * 1024 * 1024 + 1 });
+    Object.defineProperty(picker, 'files', { value: [big], configurable: true });
+    picker.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Чек — до 10 МБ');
+
+    const file = new File(['%PDF'], 'чек.pdf', { type: 'application/pdf' });
+    Object.defineProperty(picker, 'files', { value: [file], configurable: true });
+    picker.dispatchEvent(new Event('change'));
+    Object.defineProperty(picker, 'files', { value: [], configurable: true });
+    picker.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(bodyText()).toContain('чек.pdf');
+    expect(bodyText()).not.toContain('Чек — до 10 МБ');
+    dialog.form.patchValue({ amount: 1000 });
+    dialog.save();
+
+    backend.expectOne('/api/teacher/billing/payments').flush(payment());
+    const attach = backend.expectOne('/api/teacher/billing/payments/p-1/receipt');
+    expect(attach.request.body).toBeInstanceOf(FormData);
+    attach.flush(
+      payment({ receipt: { filename: 'чек.pdf', contentType: 'application/pdf', size: 4 } }),
+    );
+    await fixture.whenStable();
+
+    expect(saved[0]?.receipt?.filename).toBe('чек.pdf');
+  });
+
+  it('keeps the payment when its receipt is not attached', async () => {
+    const saved: Payment[] = [];
+    const errors = vi.spyOn(TestBed.inject(MessageService), 'add');
+    fixture.componentInstance.saved.subscribe((value) => saved.push(value));
+    const dialog = fixture.componentInstance;
+    dialog.receipt.set(new File(['x'], 'x.txt'));
+    await fixture.whenStable();
+    buttonByText(document.body, 'Без чека').click();
+    expect(dialog.receipt()).toBeNull();
+    dialog.receipt.set(new File(['x'], 'x.txt'));
+    dialog.form.patchValue({ amount: 1000 });
+    dialog.save();
+
+    backend.expectOne('/api/teacher/billing/payments').flush(payment());
+    backend
+      .expectOne('/api/teacher/billing/payments/p-1/receipt')
+      .flush({ code: 'receipt.type-not-allowed' }, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+
+    expect(saved).toEqual([payment()]);
+    expect(errors).toHaveBeenCalled();
   });
 
   it('keeps the student chosen in the list when opened without one', async () => {

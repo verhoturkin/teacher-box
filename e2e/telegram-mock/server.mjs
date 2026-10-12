@@ -2,7 +2,9 @@
 //
 //   /bot<token>/getMe | getUpdates | sendMessage  - the bot API; only MOCK_TOKEN is accepted,
 //                                                   other methods (answerCallbackQuery, ...) succeed
-//   POST /inject {"text": "...", "chatId": 777}     - a private message from a test user (chat 777 by default)
+//   POST /inject {"text": "...", "chatId": 777}     - a private message from a test user (chat 777 by default);
+//                                                   with "document": {"name", "base64"} it carries a file
+//                                                   (the text is its caption), served by getFile and /file/
 //   POST /press {"data": "...", "chatId": 777}      - the user presses an inline button with the callback data
 //   GET  /sent                                      - messages the bot has sent, with their buttons
 //   GET  /health                                    - for docker compose --wait
@@ -15,6 +17,7 @@ const MAX_POLL_MS = 2_000;
 
 const queue = [];
 const sent = [];
+const files = new Map();
 let updateId = 100;
 
 function json(response, status, body) {
@@ -68,19 +71,31 @@ createServer(async (request, response) => {
     return json(response, 200, sent);
   }
   if (url.pathname === '/inject' && request.method === 'POST') {
-    const { text, chatId } = await body(request);
+    const { text, chatId, document } = await body(request);
     const chat = Number(chatId ?? 777);
     updateId += 1;
-    queue.push({
-      update_id: updateId,
-      message: {
-        message_id: updateId,
-        from: user(chat),
-        chat: { id: chat, type: 'private' },
-        date: Math.floor(Date.now() / 1000),
-        text: String(text ?? ''),
-      },
-    });
+    const message = {
+      message_id: updateId,
+      from: user(chat),
+      chat: { id: chat, type: 'private' },
+      date: Math.floor(Date.now() / 1000),
+    };
+    if (document === undefined) {
+      message.text = String(text ?? '');
+    } else {
+      const fileId = `file-${String(updateId)}`;
+      const content = Buffer.from(String(document.base64), 'base64');
+      files.set(fileId, content);
+      message.document = {
+        file_id: fileId,
+        file_name: String(document.name),
+        file_size: content.length,
+      };
+      if (text) {
+        message.caption = String(text);
+      }
+    }
+    queue.push({ update_id: updateId, message });
     return json(response, 200, { ok: true });
   }
   if (url.pathname === '/press' && request.method === 'POST') {
@@ -98,6 +113,18 @@ createServer(async (request, response) => {
     });
     return json(response, 200, { ok: true });
   }
+  const file = /^\/file\/bot[^/]+\/(.+)$/.exec(url.pathname);
+  if (file !== null) {
+    const content = files.get(file[1]);
+    if (content === undefined) {
+      return json(response, 404, { ok: false, description: 'Not Found' });
+    }
+    response.writeHead(200, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': content.length,
+    });
+    return response.end(content);
+  }
   const match = /^\/bot([^/]+)\/(\w+)$/.exec(url.pathname);
   if (match === null) {
     return json(response, 404, { ok: false, description: 'Not Found' });
@@ -112,6 +139,11 @@ createServer(async (request, response) => {
       return json(response, 200, { ok: true, result: { id: 1, is_bot: true, username: BOT } });
     case 'getUpdates':
       return updates(response);
+    case 'getFile':
+      return json(response, 200, {
+        ok: true,
+        result: { file_id: payload.file_id, file_path: payload.file_id },
+      });
     case 'sendMessage':
       sent.push({
         chatId: String(payload.chat_id),

@@ -86,7 +86,7 @@ The student's groups are in the «Groups» card under the students ([Groups](/te
 
 The «⋮» button right of the status opens the menu:
 
-- **Edit** — name, contacts, note and video meeting.
+- **Edit** — name, contacts, note, default topic and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and assignments stays.
 - **Give access back** — for students whose access is off (turn on «Show turned off»).
@@ -101,11 +101,11 @@ A group is students who study together. A group has its own lesson price: it is 
 ## Create a group
 
 1. «Students» → the «Groups» card under the list of students → «Create group».
-2. Enter the name, tick the students and set the price of one lesson for each.
+2. Enter the name, tick the students and set the price of one lesson for each. A default topic is optional.
 
 ## Group card
 
-The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
+The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price, default topic and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
 
 ## Group lessons
 
@@ -128,6 +128,8 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 
 - **One-off:** «Schedule» → «Lesson». Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
+
+**Default topic.** If a student or a group has a default topic (in the «Edit» window of the student or group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -371,6 +373,12 @@ Students in «Payments» are a list, a line per student: photo, name, lesson pri
 
 «Payments» → «Payment» (or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
 
+## Payment receipt
+
+A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the student's history — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
+
+The easiest way is to forward the receipt to the bot: send a photo or a PDF, the bot asks who paid and how much and records the payment with the receipt ([What the bot can do](/teacher/help/bot)).
+
 ## Lessons outside the schedule
 
 Lessons are charged when you mark them in the schedule. If a lesson took place but is not in the schedule, add it to «Schedule» backdated and mark it «Held» — or record it through the bot («Add lesson»).
@@ -431,6 +439,7 @@ Send the bot /menu — buttons with actions appear. The bot speaks Russian.
 - **Unmarked** — past lessons without a mark.
 - **Requests** — accept or decline students' requests with an answer. The buttons are right under the request notification too.
 - **Record payment** — choose a student and the amount (1, 4 or 8 lessons at their price, or any).
+- **Receipt** — send the bot a photo or a PDF of a receipt (up to 10 MB); it asks for the student and the amount and records the payment with this receipt.
 - **Add lesson** — one held outside the schedule, with a student or a group.
 
 ## For students

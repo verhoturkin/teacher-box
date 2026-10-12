@@ -12,6 +12,7 @@ const STUDENT: Student = {
   email: 'maria@example.com',
   phone: null,
   note: '5 класс',
+  defaultTopic: null,
   status: 'ACTIVE',
   login: 'maria',
   createdAt: '2026-09-01T10:00:00Z',
@@ -70,6 +71,7 @@ describe('StudentFormDialog', () => {
       email: null,
       phone: '+7 900',
       note: null,
+      defaultTopic: null,
     });
     const response: CreatedStudent = {
       student: { ...STUDENT, id: 's-2', displayName: 'Пётр', status: 'INVITED' },
@@ -126,6 +128,7 @@ describe('StudentFormDialog', () => {
     expect(requireElement(document.body, '#note', HTMLTextAreaElement).value).toBe('5 класс');
 
     typeInto(field('email'), '');
+    typeInto(field('defaultTopic'), ' Физика ');
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
 
@@ -135,6 +138,7 @@ describe('StudentFormDialog', () => {
       email: null,
       phone: null,
       note: '5 класс',
+      defaultTopic: 'Физика',
       version: 2,
     });
     request.flush({ ...STUDENT, email: null, version: 3 });

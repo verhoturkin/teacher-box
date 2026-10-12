@@ -13,6 +13,12 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
   (the record stays in history as cancelled).
 - The teacher can also record a lesson manually and cancel a charge («Снять начисление»).
 - Payments — recorded by the teacher, voided if entered by mistake (`PaymentVoided`).
+- **Receipts (0.13.0, ADR-0038)** — one per payment (`payments.receipt_*`): a JPEG, PNG, WebP, HEIC picture or a
+  PDF up to 10 MB, the type recognized by the first bytes (`domain/Receipt`), files in the namespace `billing`.
+  The teacher attaches, replaces and removes it (a replaced file is deleted after the commit); the teacher and
+  the student of the payment download it (another student gets 404). A receipt sent to the bot is kept in
+  `pending_receipts` until the payment is recorded with it (`ReceiptService.recordWithPending`, one
+  transaction); pending ones older than a day are removed nightly.
 - Prices: default lesson price (set in the first-run wizard, stored in DB), per-student price, per-group price
   (created on `GroupCreated` with the default price). Default lesson duration —
   `TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION`.
@@ -26,15 +32,18 @@ Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoi
 
 ## Data
 
-`student_accounts`, `lessons`, `payments`, `group_prices`, `settings` (default lesson price).
+`student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`, `settings` (default
+lesson price).
 
 ## REST and bot
 
-`/api/teacher/billing/**` (overview, summary, students/{id}, lessons, payments, prices, groups,
-reports/monthly), `/api/me/billing` (+ `/summary`). Bot actions (`billing/chat`): record a payment, record a
+`/api/teacher/billing/**` (overview, summary, students/{id}, lessons, payments, `payments/{id}/receipt` —
+`PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly), `/api/me/billing` (+ `/summary`,
+`/payments/{id}/receipt`). Bot actions (`billing/chat`): record a payment, record a
 lesson, the student's payments.
 
 ## Frontend
 
-`features/billing/`: `teacher/` (payments page, student ledger, monthly report), `student/` (own payments),
-`ledger/`, `home/` (finance widgets), `billing-labels.ts`.
+`features/billing/`: `teacher/` (payments page, student ledger, monthly report; the payment dialog takes an
+optional receipt), `student/` (own payments), `ledger/` (the receipt opens from its payment row; the teacher
+attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `billing-labels.ts`.

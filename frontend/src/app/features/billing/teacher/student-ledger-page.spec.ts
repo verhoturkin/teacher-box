@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { LedgerList } from '../ledger/ledger-list';
 import { PaymentDialog } from './payment-dialog';
 import { StudentLedgerPage } from './student-ledger-page';
 import { testProviders } from '@testing/setup';
@@ -122,6 +123,37 @@ describe('StudentLedgerPage', () => {
     await fixture.whenStable();
 
     expect(text()).toContain('долг 1 500 ₽');
+  });
+
+  it('attaches and removes receipts and reloads', async () => {
+    const list = fixture.debugElement.query(By.directive(LedgerList)).injector.get(LedgerList);
+    const big = new File(['x'], 'big.pdf');
+    Object.defineProperty(big, 'size', { value: 10 * 1024 * 1024 + 1 });
+    list.attachReceipt.emit({ payment: payment(), file: big });
+    backend.expectNone('/api/teacher/billing/payments/p-1/receipt');
+
+    list.attachReceipt.emit({ payment: payment(), file: new File(['%PDF'], 'a.pdf') });
+    await fixture.whenStable();
+    expect(list.receiptBusy()).toBe('p-1');
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/billing/payments/p-1/receipt' })
+      .flush(payment());
+    backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
+    await fixture.whenStable();
+    expect(list.receiptBusy()).toBeNull();
+
+    list.attachReceipt.emit({ payment: payment(), file: new File(['x'], 'a.txt') });
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/billing/payments/p-1/receipt' })
+      .flush({ code: 'receipt.type-not-allowed' }, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+    expect(list.receiptBusy()).toBeNull();
+
+    list.removeReceipt.emit(payment());
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/billing/payments/p-1/receipt' })
+      .flush(payment());
+    backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
   });
 
   it('shows a failed load with «Повторить» and the way back', async () => {

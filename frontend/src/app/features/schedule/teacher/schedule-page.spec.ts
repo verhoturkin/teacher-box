@@ -174,7 +174,7 @@ describe('SchedulePage', () => {
       .query(By.directive(LessonDialog))
       .injector.get(LessonDialog);
 
-    expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ' }]);
+    expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ', defaultTopic: null }]);
     expect(text).toContain('Группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
     await fixture.whenStable();

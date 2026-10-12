@@ -15,6 +15,11 @@ enum BillingChatTexts {
         @Override String groupGone() { return "Этой группы уже нет среди текущих."; }
         @Override String group(String name) { return "Группа «" + name + "»"; }
         @Override String whoPaid() { return "Кто оплатил?"; }
+        @Override String receiptReceived() { return "Чек получен — запишу оплату с ним."; }
+        @Override String notAReceipt() {
+            return "Это не похоже на чек: пришлите фото (JPEG, PNG, WebP, HEIC) или PDF до 10 МБ.";
+        }
+        @Override String withReceipt(String question) { return withoutQuestionMark(question) + ", с чеком?"; }
         @Override String howMuch(String student) {
             return "Сколько оплатил(а) " + student + "? Выберите или напишите сумму, например 3000.";
         }
@@ -79,6 +84,11 @@ enum BillingChatTexts {
             return "Record the payment: " + student + ", " + amount + ", " + date + "?";
         }
         @Override String notRecording() { return "OK, not recording it."; }
+        @Override String receiptReceived() { return "Receipt received — I'll record the payment with it."; }
+        @Override String notAReceipt() {
+            return "This doesn't look like a receipt: send a photo (JPEG, PNG, WebP, HEIC) or a PDF up to 10 MB.";
+        }
+        @Override String withReceipt(String question) { return withoutQuestionMark(question) + ", with the receipt?"; }
         @Override String paymentFailed() { return "Couldn't record the payment. Record it on the portal."; }
         @Override String paymentRecorded(String balance) { return "Payment recorded. The student has " + balance + "."; }
         @Override String withWhom() { return "Who was the lesson with?"; }
@@ -152,6 +162,17 @@ enum BillingChatTexts {
     abstract String notRecording();
 
     abstract String paymentFailed();
+
+    abstract String receiptReceived();
+
+    abstract String notAReceipt();
+
+    /** The question to confirm a payment, saying the receipt goes with it. */
+    abstract String withReceipt(String question);
+
+    private static String withoutQuestionMark(String question) {
+        return question.endsWith("?") ? question.substring(0, question.length() - 1) : question;
+    }
 
     /** @param balance {@link #debt}, {@link #credit} or {@link #noDebt} */
     abstract String paymentRecorded(String balance);

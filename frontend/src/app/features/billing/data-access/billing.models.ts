@@ -25,6 +25,15 @@ export interface Payment {
   readonly createdAt: string;
   readonly voidedAt: string | null;
   readonly voidReason: string | null;
+  /** The receipt the teacher attached; downloaded by the payment's id. */
+  readonly receipt: Receipt | null;
+}
+
+/** Mirrors `ReceiptView` of the backend. */
+export interface Receipt {
+  readonly filename: string;
+  readonly contentType: string;
+  readonly size: number;
 }
 
 /** What the lesson and payment dialogs need to know about a student. */

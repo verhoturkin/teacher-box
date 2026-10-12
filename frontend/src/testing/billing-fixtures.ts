@@ -62,6 +62,7 @@ export function payment(overrides: Partial<Payment> = {}): Payment {
     createdAt: '2026-09-03T10:00:00Z',
     voidedAt: null,
     voidReason: null,
+    receipt: null,
     ...overrides,
   };
 }

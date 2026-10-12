@@ -51,6 +51,26 @@ describe('BillingApi', () => {
     });
   });
 
+  it('attaches, removes and downloads receipts', () => {
+    const file = new File(['%PDF'], 'чек.pdf', { type: 'application/pdf' });
+    api.attachReceipt('p-1', file).subscribe();
+    api.removeReceipt('p-1').subscribe();
+    api.receipt('p-1', false).subscribe();
+    api.receipt('p-1', true).subscribe();
+
+    const attach = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/billing/payments/p-1/receipt',
+    });
+    expect(attach.request.body).toBeInstanceOf(FormData);
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/billing/payments/p-1/receipt' });
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/teacher/billing/payments/p-1/receipt' }).request
+        .responseType,
+    ).toBe('blob');
+    backend.expectOne({ method: 'GET', url: '/api/me/billing/payments/p-1/receipt' });
+  });
+
   it('changes the lesson price', () => {
     let saved = 0;
     api.changeLessonPrice('s-1', 200_000).subscribe((price) => {

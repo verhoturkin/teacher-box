@@ -11,6 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable, catchError, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
 import { Dialog } from 'primeng/dialog';
@@ -21,7 +22,9 @@ import { Select } from 'primeng/select';
 import { describeError } from '@core/http/error-messages';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { toMinorUnits } from '@shared/money/money';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { BillingApi } from '../data-access/billing-api';
+import { RECEIPT_ACCEPT, RECEIPT_MAX_SIZE } from '../receipts';
 import { BillingStudent, Payment } from '../data-access/billing.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
@@ -101,6 +104,38 @@ import { locale } from '@core/i18n/language';
           <label for="payment-comment">{{ t.comment }}</label>
           <input pInputText id="payment-comment" formControlName="comment" autocomplete="off" />
         </div>
+        <div class="tb-field">
+          <span id="payment-receipt-label">{{ t.receipt }}</span>
+          <input
+            #picker
+            type="file"
+            class="tb-sr-only"
+            [accept]="receiptAccept"
+            aria-labelledby="payment-receipt-label"
+            (change)="onPicked(picker)"
+          />
+          <div class="tb-receipt-file">
+            <p-button
+              [label]="receipt() === null ? t.chooseReceipt : t.otherReceipt"
+              icon="pi pi-paperclip"
+              severity="secondary"
+              (onClick)="picker.click()"
+            />
+            @if (receipt(); as chosen) {
+              <span class="tb-receipt-file__name">{{ chosen.name }}</span>
+              <p-button
+                [label]="t.clearReceipt"
+                severity="secondary"
+                [text]="true"
+                (onClick)="receipt.set(null)"
+              />
+            }
+          </div>
+          <small class="tb-hint">{{ t.receiptHint }}</small>
+          @if (receiptError(); as message) {
+            <small class="tb-field__error" role="alert">{{ message }}</small>
+          }
+        </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
@@ -122,12 +157,30 @@ import { locale } from '@core/i18n/language';
       </ng-template>
     </p-dialog>
   `,
+  styles: `
+    .tb-receipt-file {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-receipt-file__name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+  `,
 })
 export class PaymentDialog {
   protected readonly locale = locale();
   protected readonly c = SHARED_T.common;
   protected readonly t = T.paymentDialog;
   private readonly api = inject(BillingApi);
+  private readonly snackbar = inject(Snackbar);
+  protected readonly receiptAccept = RECEIPT_ACCEPT;
+  /** The receipt to attach once the payment is recorded. */
+  readonly receipt = signal<File | null>(null);
+  protected readonly receiptError = signal<string | null>(null);
 
   readonly visible = model(false);
   readonly students = input.required<readonly BillingStudent[]>();
@@ -159,10 +212,40 @@ export class PaymentDialog {
       if (this.visible()) {
         untracked(() => {
           this.error.set(null);
+          this.receipt.set(null);
+          this.receiptError.set(null);
           this.form.reset({ studentId, amount: null, paidOn: new Date(), comment: '' });
         });
       }
     });
+  }
+
+  protected onPicked(element: HTMLInputElement): void {
+    const file = element.files?.[0] ?? null;
+    element.value = '';
+    if (file === null) {
+      return;
+    }
+    if (file.size > RECEIPT_MAX_SIZE) {
+      this.receiptError.set(T.paymentDialog.receiptTooLarge);
+      return;
+    }
+    this.receiptError.set(null);
+    this.receipt.set(file);
+  }
+
+  /** The recorded payment with its receipt; a receipt that fails leaves the payment recorded. */
+  private withReceipt(payment: Payment): Observable<Payment> {
+    const file = this.receipt();
+    if (file === null) {
+      return of(payment);
+    }
+    return this.api.attachReceipt(payment.id, file).pipe(
+      catchError(() => {
+        this.snackbar.error(T.paymentDialog.receiptFailed);
+        return of(payment);
+      }),
+    );
   }
 
   save(): void {
@@ -184,6 +267,7 @@ export class PaymentDialog {
         paidOn: toIsoDate(value.paidOn),
         comment: value.comment.trim() === '' ? null : value.comment.trim(),
       })
+      .pipe(switchMap((payment) => this.withReceipt(payment)))
       .subscribe({
         next: (payment) => {
           this.pending.set(false);

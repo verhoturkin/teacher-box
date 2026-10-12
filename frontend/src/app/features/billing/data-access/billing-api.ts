@@ -71,6 +71,25 @@ export class BillingApi {
     return this.http.post<Payment>('/api/teacher/billing/payments', request);
   }
 
+  /** Attaches a receipt (a picture or a PDF), replacing the one before. */
+  attachReceipt(paymentId: string, file: File): Observable<Payment> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.put<Payment>(`/api/teacher/billing/payments/${paymentId}/receipt`, form);
+  }
+
+  removeReceipt(paymentId: string): Observable<Payment> {
+    return this.http.delete<Payment>(`/api/teacher/billing/payments/${paymentId}/receipt`);
+  }
+
+  /** The receipt of a payment: the teacher's endpoint, or the student's own (`mine`). */
+  receipt(paymentId: string, mine: boolean): Observable<Blob> {
+    const area = mine ? 'me' : 'teacher';
+    return this.http.get(`/api/${area}/billing/payments/${paymentId}/receipt`, {
+      responseType: 'blob',
+    });
+  }
+
   voidPayment(paymentId: string, reason: string | null): Observable<Payment> {
     return this.http.post<Payment>(`/api/teacher/billing/payments/${paymentId}/void`, { reason });
   }

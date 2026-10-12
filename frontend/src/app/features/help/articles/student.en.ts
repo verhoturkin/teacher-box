@@ -116,7 +116,7 @@ Click the title to open the textbook in a new tab (a Word file is downloaded), a
 - **Lesson price**;
 - **History** — held lessons and your payments, a line for each: the date, the details and the amount. The latest 20 are shown first, the rest with «Show more».
 
-A lesson is charged when the teacher marks it held (or missed without notice). The teacher records a payment when they receive it.
+A lesson is charged when the teacher marks it held (or missed without notice). The teacher records a payment when they receive it. If the teacher attached a receipt to a payment, its row has a receipt button that opens it (a HEIC photo is downloaded).
 
 If something does not add up — write to the teacher.
 `,

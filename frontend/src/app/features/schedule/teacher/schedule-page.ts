@@ -460,14 +460,18 @@ export class SchedulePage implements OnInit {
       this.students.set(
         students
           .filter((student) => student.status !== 'DEACTIVATED')
-          .map((student) => ({ id: student.id, displayName: student.displayName })),
+          .map((student) => ({
+            id: student.id,
+            displayName: student.displayName,
+            defaultTopic: student.defaultTopic,
+          })),
       );
     });
     this.identity.listGroups().subscribe((groups) => {
       this.groups.set(
         groups
           .filter((group) => group.archivedAt === null && group.members.length > 0)
-          .map((group) => ({ id: group.id, name: group.name })),
+          .map((group) => ({ id: group.id, name: group.name, defaultTopic: group.defaultTopic })),
       );
     });
     this.loadSidePanels();

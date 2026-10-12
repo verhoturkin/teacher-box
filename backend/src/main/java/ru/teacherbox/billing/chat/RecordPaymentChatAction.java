@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.BillingService.RecordPayment;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
+import ru.teacherbox.billing.application.ReceiptService;
+import ru.teacherbox.billing.domain.Receipt;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatFile;
 import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
@@ -21,22 +24,29 @@ import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.DomainException;
 import ru.teacherbox.shared.i18n.Language;
 
-/** The teacher records a payment: student → amount (1, 4 or 8 lessons, or typed) → confirmation. */
+/**
+ * The teacher records a payment: student → amount (1, 4 or 8 lessons, or typed) → confirmation. A picture or a
+ * PDF sent to the bot starts the same dialog and becomes the payment's receipt (ADR-0038).
+ */
 @Component
 class RecordPaymentChatAction implements ChatAction {
 
     static final String AMOUNT = "amount:";
     static final List<Integer> LESSONS = List.of(1, 4, 8);
+    static final String RECEIPT = "receipt.";
 
     private final TeacherBilling billing;
     private final BillingService service;
+    private final ReceiptService receipts;
 
-    RecordPaymentChatAction(TeacherBilling billing, BillingService service) {
+    RecordPaymentChatAction(TeacherBilling billing, BillingService service, ReceiptService receipts) {
         this.billing = billing;
         this.service = service;
+        this.receipts = receipts;
     }
 
     @Override
@@ -72,6 +82,34 @@ class RecordPaymentChatAction implements ChatAction {
             return ChatStep.done(t.noStudents());
         }
         return ChatStep.ask(ChatPicker.show(t.whoPaid(), students, user.language()), ChatState.EMPTY.withStep("student"));
+    }
+
+    @Override
+    public boolean takesFiles(ChatUser user) {
+        return user.isTeacher();
+    }
+
+    /** Keeps the file as a pending receipt and asks who paid. */
+    @Override
+    public ChatStep received(ChatUser user, ChatFile file) {
+        BillingChatTexts t = BillingChatTexts.of(user.language());
+        List<ChatPicker.Option> students = billing.students();
+        if (students.isEmpty()) {
+            return ChatStep.done(t.noStudents());
+        }
+        Receipt receipt;
+        try {
+            receipt = receipts.keepPending(file.name(), file.content());
+        } catch (BusinessRuleException e) {
+            return ChatStep.done(t.notAReceipt());
+        }
+        ChatState state = ChatState.EMPTY.withStep("student")
+                .with(RECEIPT + "key", receipt.key())
+                .with(RECEIPT + "name", receipt.filename())
+                .with(RECEIPT + "type", receipt.contentType())
+                .with(RECEIPT + "size", Long.toString(receipt.size()));
+        return ChatStep.ask(ChatPicker.show(t.receiptReceived() + "\n" + t.whoPaid(), students, user.language()),
+                state);
     }
 
     @Override
@@ -128,6 +166,9 @@ class RecordPaymentChatAction implements ChatAction {
         Currency currency = Currency.getInstance(billing.currency(student.id()));
         String question = t.confirmPayment(student.displayName(),
                 TeacherBilling.money(amount.get(), currency, user.language()), ChatText.date(billing.today()));
+        if (receipt(state).isPresent()) {
+            question = t.withReceipt(question);
+        }
         return ChatKit.confirm(question, state.with("amount", amount.get().toString()).withStep("confirm"),
                 user.language());
     }
@@ -138,14 +179,29 @@ class RecordPaymentChatAction implements ChatAction {
             return ChatStep.done(t.notRecording());
         }
         PaymentView payment;
+        RecordPayment command = new RecordPayment(student.id(), Long.parseLong(state.get("amount").orElseThrow()),
+                billing.today(), null);
+        Optional<Receipt> receipt = receipt(state);
         try {
-            payment = service.recordPayment(new RecordPayment(student.id(), Long.parseLong(state.get("amount").orElseThrow()),
-                    billing.today(), null));
+            payment = receipt.isPresent()
+                    ? receipts.recordWithPending(command, receipt.get())
+                    : service.recordPayment(command);
         } catch (DomainException e) {
             return ChatStep.done(t.paymentFailed());
         }
         return ChatStep.changed(ChatReply.of(t.paymentRecorded(billing.balance(student.id(), user.language()))),
                 "payment " + payment.id());
+    }
+
+    /** The receipt sent to the bot that the dialog started with, if any. */
+    private static Optional<Receipt> receipt(ChatState state) {
+        Optional<String> key = state.get(RECEIPT + "key");
+        if (key.isEmpty()) {
+            return Optional.empty();
+        }
+        return number(state.get(RECEIPT + "size").orElse("")).map(size -> new Receipt(key.get(),
+                state.get(RECEIPT + "name").orElse("receipt"), state.get(RECEIPT + "type").orElse("application/pdf"),
+                size));
     }
 
     private static Optional<Long> number(String text) {

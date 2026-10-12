@@ -6,6 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatFile;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatOffer;
@@ -90,7 +91,7 @@ public final class TestChatActions {
         }
     }
 
-    /** The teacher only; offers nothing. */
+    /** The teacher only; offers nothing; takes files. */
     public static final class TeacherOnly implements ChatAction {
 
         @Override
@@ -121,6 +122,16 @@ public final class TestChatActions {
         @Override
         public ChatStep next(ChatUser user, ChatState state, ChatInput input) {
             return ChatStep.done("Только учителю");
+        }
+
+        @Override
+        public boolean takesFiles(ChatUser user) {
+            return true;
+        }
+
+        @Override
+        public ChatStep received(ChatUser user, ChatFile file) {
+            return ChatStep.done("Файл " + file.name() + ", " + file.content().length + " Б, «" + file.caption() + "»");
         }
 
         @Override

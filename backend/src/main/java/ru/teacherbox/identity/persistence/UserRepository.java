@@ -21,7 +21,7 @@ import ru.teacherbox.shared.security.Role;
 public class UserRepository {
 
     private static final String SELECT = """
-            select id, role, login, password_hash, display_name, email, phone, note, own_name, avatar_key,
+            select id, role, login, password_hash, display_name, email, phone, note, default_topic, own_name, avatar_key,
                    avatar_type, status,
                    failed_logins, locked_until, password_change_required, created_at, updated_at, version
             from identity.users
@@ -36,10 +36,10 @@ public class UserRepository {
     public void insert(User user) {
         jdbc.sql("""
                 insert into identity.users (id, role, teacher_marker, login, password_hash, display_name, email,
-                    phone, note, own_name, avatar_key, avatar_type, status, failed_logins, locked_until,
-                    password_change_required, created_at, updated_at, version)
+                    phone, note, default_topic, own_name, avatar_key, avatar_type, status, failed_logins,
+                    locked_until, password_change_required, created_at, updated_at, version)
                 values (:id, :role, :teacherMarker, :login, :passwordHash, :displayName, :email,
-                    :phone, :note, :ownName, :avatarKey, :avatarType, :status, :failedLogins, :lockedUntil,
+                    :phone, :note, :defaultTopic, :ownName, :avatarKey, :avatarType, :status, :failedLogins, :lockedUntil,
                     :passwordChangeRequired, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", user.id())
@@ -51,6 +51,7 @@ public class UserRepository {
                 .param("email", user.profile().email())
                 .param("phone", user.profile().phone())
                 .param("note", user.profile().note())
+                .param("defaultTopic", user.profile().defaultTopic())
                 .param("ownName", user.ownName())
                 .param("avatarKey", user.avatar() == null ? null : user.avatar().key())
                 .param("avatarType", user.avatar() == null ? null : user.avatar().contentType())
@@ -73,7 +74,7 @@ public class UserRepository {
         int updated = jdbc.sql("""
                 update identity.users
                 set login = :login, password_hash = :passwordHash, display_name = :displayName, email = :email,
-                    phone = :phone, note = :note, own_name = :ownName, avatar_key = :avatarKey,
+                    phone = :phone, note = :note, default_topic = :defaultTopic, own_name = :ownName, avatar_key = :avatarKey,
                     avatar_type = :avatarType, status = :status, failed_logins = :failedLogins,
                     locked_until = :lockedUntil, password_change_required = :passwordChangeRequired,
                     updated_at = :updatedAt, version = version + 1
@@ -87,6 +88,7 @@ public class UserRepository {
                 .param("email", user.profile().email())
                 .param("phone", user.profile().phone())
                 .param("note", user.profile().note())
+                .param("defaultTopic", user.profile().defaultTopic())
                 .param("ownName", user.ownName())
                 .param("avatarKey", user.avatar() == null ? null : user.avatar().key())
                 .param("avatarType", user.avatar() == null ? null : user.avatar().contentType())
@@ -192,7 +194,7 @@ public class UserRepository {
                 rs.getString("login"),
                 rs.getString("password_hash"),
                 new Profile(rs.getString("display_name"), rs.getString("email"), rs.getString("phone"),
-                        rs.getString("note")),
+                        rs.getString("note"), rs.getString("default_topic")),
                 rs.getString("own_name"),
                 avatarKey == null ? null : new Avatar(avatarKey, rs.getString("avatar_type")),
                 AccountStatus.valueOf(rs.getString("status")),

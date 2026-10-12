@@ -21,6 +21,7 @@ public record StudentView(
         @Nullable String email,
         @Nullable String phone,
         @Nullable String note,
+        @Nullable String defaultTopic,
         AccountStatus status,
         @Nullable String login,
         Instant createdAt,
@@ -33,7 +34,7 @@ public record StudentView(
 
     static StudentView of(User user, @Nullable Invite pendingInvite) {
         return new StudentView(user.id(), user.profile().displayName(), AccountService.avatarUrl(user.avatar()),
-                user.profile().email(), user.profile().phone(), user.profile().note(), user.status(), user.login(),
+                user.profile().email(), user.profile().phone(), user.profile().note(), user.profile().defaultTopic(), user.status(), user.login(),
                 user.createdAt(), user.version(),
                 pendingInvite == null ? null : new PendingInvite(pendingInvite.purpose(), pendingInvite.expiresAt()));
     }

@@ -9,6 +9,7 @@ import ru.teacherbox.billing.domain.BalanceTotals;
 import ru.teacherbox.billing.domain.Lesson;
 import ru.teacherbox.billing.domain.LessonStatus;
 import ru.teacherbox.billing.domain.Payment;
+import ru.teacherbox.billing.domain.Receipt;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.api.StudentSummary;
 
@@ -48,12 +49,19 @@ public final class BillingViews {
             @Nullable String comment,
             Instant createdAt,
             @Nullable Instant voidedAt,
-            @Nullable String voidReason) {
+            @Nullable String voidReason,
+            @Nullable ReceiptView receipt) {
 
         static PaymentView of(Payment payment) {
+            Receipt receipt = payment.receipt();
             return new PaymentView(payment.id(), payment.studentId(), payment.amount().amountMinor(),
-                    payment.paidOn(), payment.comment(), payment.createdAt(), payment.voidedAt(), payment.voidReason());
+                    payment.paidOn(), payment.comment(), payment.createdAt(), payment.voidedAt(), payment.voidReason(),
+                    receipt == null ? null : new ReceiptView(receipt.filename(), receipt.contentType(), receipt.size()));
         }
+    }
+
+    /** The receipt of a payment: downloaded by its payment's id. */
+    public record ReceiptView(String filename, String contentType, long size) {
     }
 
     /**

@@ -1,5 +1,6 @@
 package ru.teacherbox.notifications.max;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import ru.teacherbox.notifications.application.ButtonPress;
 import ru.teacherbox.notifications.application.DeliveryException;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.MessengerHttp;
@@ -99,14 +101,50 @@ public class MaxChannel implements MessengerChannel {
         return messages;
     }
 
-    private static Optional<IncomingMessage> fromMessage(JsonNode message) {
+    private Optional<IncomingMessage> fromMessage(JsonNode message) {
         JsonNode sender = message.path("sender");
         String text = message.path("body").path("text").asString("");
-        if (!"dialog".equals(message.path("recipient").path("chat_type").asString("")) || text.isEmpty()
+        IncomingFile file = file(message.path("body").path("attachments"));
+        if (!"dialog".equals(message.path("recipient").path("chat_type").asString("")) || (text.isEmpty() && file == null)
                 || !sender.has("user_id") || sender.path("is_bot").asBoolean()) {
             return Optional.empty();
         }
-        return Optional.of(new IncomingMessage(sender.path("user_id").asString(), displayName(sender), text));
+        return Optional.of(new IncomingMessage(sender.path("user_id").asString(), displayName(sender), text, null,
+                file));
+    }
+
+    /** The first picture or file of the message; {@code null} if none. */
+    private @Nullable IncomingFile file(JsonNode attachments) {
+        for (JsonNode attachment : attachments) {
+            String url = attachment.path("payload").path("url").asString("");
+            if (url.isEmpty()) {
+                continue;
+            }
+            switch (attachment.path("type").asString("")) {
+                case "image" -> {
+                    return incoming("photo.jpg", -1, url);
+                }
+                case "file" -> {
+                    return incoming(attachment.path("filename").asString("document"),
+                            attachment.path("size").asLong(-1), url);
+                }
+                default -> {
+                    // not a picture or a document
+                }
+            }
+        }
+        return null;
+    }
+
+    private IncomingFile incoming(String name, long size, String url) {
+        return new IncomingFile(name, size, () -> {
+            try {
+                byte[] content = http.get().uri(URI.create(url)).retrieve().body(byte[].class);
+                return content == null ? new byte[0] : content;
+            } catch (RestClientException e) {
+                throw new IllegalStateException("MAX file: " + e.getMessage());
+            }
+        });
     }
 
     /** The user pressed "Start", possibly via a link with a start parameter. */

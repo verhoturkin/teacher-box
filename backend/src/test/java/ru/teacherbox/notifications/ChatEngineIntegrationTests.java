@@ -20,6 +20,7 @@ import ru.teacherbox.notifications.application.ChannelService;
 import ru.teacherbox.notifications.application.ChatEngine;
 import ru.teacherbox.notifications.application.ChatSettingsService;
 import ru.teacherbox.notifications.application.DeliveryDispatcher;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.NotificationService;
 import ru.teacherbox.notifications.application.NotificationsHousekeeping;
@@ -31,6 +32,7 @@ import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.Ids;
+import ru.teacherbox.shared.chat.ChatFile;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -332,6 +334,33 @@ class ChatEngineIntegrationTests {
         clock.advance(Duration.ofDays(-3));
         assertThat(press("8801", menu, "Отзыв").text()).startsWith("Эта кнопка уже не действует.");
         clock.advance(Duration.ofDays(3));
+    }
+
+    @Test
+    void givesAFileToTheActionThatTakesFiles() {
+        connect(directory.teacherId(), "8901");
+        UUID student = directory.addStudent("Без файлов");
+        connect(student, "8902");
+
+        assertThat(send("8901", new IncomingFile("чек.pdf", 3, () -> new byte[] {1, 2, 3})).text())
+                .isEqualTo("Файл чек.pdf, 3 Б, «за октябрь»");
+        assertThat(send("8902", new IncomingFile("a.jpg", 1, () -> new byte[] {1})).text())
+                .startsWith("С файлами бот пока ничего не делает.");
+        assertThat(send("8901", new IncomingFile("big.pdf", ChatFile.MAX_SIZE + 1, () -> new byte[0])).text())
+                .startsWith("Файл слишком большой");
+        assertThat(send("8901", new IncomingFile("big.pdf", -1, () -> new byte[(int) ChatFile.MAX_SIZE + 1])).text())
+                .startsWith("Файл слишком большой");
+        assertThat(send("8901", new IncomingFile("lost.pdf", -1, () -> {
+            throw new IllegalStateException("gone");
+        })).text()).startsWith("Не получилось получить файл");
+
+        settings.setTeacherActions(false);
+        assertThat(send("8901", new IncomingFile("a.pdf", 1, () -> new byte[] {1})).text())
+                .doesNotStartWith("Файл");
+    }
+
+    private OutgoingMessage send(String externalId, IncomingFile file) {
+        return engine.handle(ChannelType.TELEGRAM, new IncomingMessage(externalId, null, " за октябрь ", null, file));
     }
 
     private void connect(UUID recipient, String externalId) {

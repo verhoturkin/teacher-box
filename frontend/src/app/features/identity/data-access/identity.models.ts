@@ -13,6 +13,8 @@ export interface Student {
   readonly email: string | null;
   readonly phone: string | null;
   readonly note: string | null;
+  /** Topic of a new lesson with the student unless the teacher types another. */
+  readonly defaultTopic: string | null;
   readonly status: AccountStatus;
   readonly login: string | null;
   readonly createdAt: string;
@@ -41,6 +43,7 @@ export interface StudentProfileInput {
   readonly email: string | null;
   readonly phone: string | null;
   readonly note: string | null;
+  readonly defaultTopic: string | null;
 }
 
 export interface InviteInfo {
@@ -73,6 +76,8 @@ export interface StudentGroup {
   readonly id: string;
   readonly name: string;
   readonly members: readonly GroupMember[];
+  /** Topic of a new lesson with the group unless the teacher types another. */
+  readonly defaultTopic: string | null;
   readonly archivedAt: string | null;
   readonly createdAt: string;
   readonly version: number;
@@ -87,4 +92,5 @@ export interface GroupMember {
 export interface GroupInput {
   readonly name: string;
   readonly memberIds: readonly string[];
+  readonly defaultTopic: string | null;
 }

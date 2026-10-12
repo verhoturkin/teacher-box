@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClientResponseException;
 import ru.teacherbox.notifications.application.BotCommand;
 import ru.teacherbox.notifications.application.ButtonPress;
 import ru.teacherbox.notifications.application.DeliveryException;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.MessengerHttp;
@@ -24,7 +25,8 @@ import tools.jackson.databind.JsonNode;
 
 /**
  * Telegram Bot API: {@code sendMessage} with an inline keyboard and {@code getUpdates} long polling of
- * messages and pressed buttons ({@code callback_query}). The account is connected by the deep link
+ * messages and pressed buttons ({@code callback_query}). A photo or a document of a message is downloaded with
+ * {@code getFile} when the bot takes it. The account is connected by the deep link
  * {@code t.me/<bot>?start=<code>} or by sending the code to the bot.
  */
 public class TelegramChannel implements MessengerChannel {
@@ -87,14 +89,51 @@ public class TelegramChannel implements MessengerChannel {
                 continue;
             }
             JsonNode message = update.path("message");
-            String text = message.path("text").asString("");
-            if (!"private".equals(message.path("chat").path("type").asString("")) || text.isEmpty()) {
+            IncomingFile file = file(message);
+            String text = message.path(file == null ? "text" : "caption").asString("");
+            if (!"private".equals(message.path("chat").path("type").asString("")) || (text.isEmpty() && file == null)) {
                 continue;
             }
             messages.add(new IncomingMessage(message.path("chat").path("id").asString(),
-                    displayName(message.path("from")), text));
+                    displayName(message.path("from")), text, null, file));
         }
         return messages;
+    }
+
+    /** The largest size of a photo, or a document; {@code null} if the message has neither. */
+    private @Nullable IncomingFile file(JsonNode message) {
+        JsonNode photos = message.path("photo");
+        if (photos.isArray() && !photos.isEmpty()) {
+            JsonNode largest = photos.path(photos.size() - 1);
+            return incoming("photo.jpg", largest);
+        }
+        JsonNode document = message.path("document");
+        if (document.has("file_id")) {
+            return incoming(document.path("file_name").asString("document"), document);
+        }
+        return null;
+    }
+
+    private IncomingFile incoming(String name, JsonNode file) {
+        String fileId = file.path("file_id").asString();
+        return new IncomingFile(name, file.path("file_size").asLong(-1), () -> download(fileId));
+    }
+
+    /** {@code getFile} gives the path of the file, the content is under {@code /file/bot<token>/}. */
+    private byte[] download(String fileId) {
+        String path = call("getFile", Map.of("file_id", fileId)).path("result").path("file_path").asString("");
+        if (path.isEmpty()) {
+            throw new IllegalStateException("Telegram getFile returned no path");
+        }
+        try {
+            byte[] content = http.get()
+                    .uri("/file/bot" + token + "/" + path)
+                    .retrieve()
+                    .body(byte[].class);
+            return content == null ? new byte[0] : content;
+        } catch (RestClientException e) {
+            throw new IllegalStateException("Telegram file: " + MessengerHttp.redact(e.getMessage(), token));
+        }
     }
 
     /** A pressed button in a private chat with the bot. */
