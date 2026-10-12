@@ -339,7 +339,7 @@ describe('AssignmentPage', () => {
 
     dialog.toAssign.setValue(['s-3']);
     await fixture.whenStable();
-    dialog.assign();
+    buttonByText(document.body, 'Выдать').click();
     const request = backend.expectOne('/api/teacher/homework/assignments/a-1/students');
     expect(request.request.body).toEqual({ studentIds: ['s-3'] });
     request.flush(assignmentDetails());

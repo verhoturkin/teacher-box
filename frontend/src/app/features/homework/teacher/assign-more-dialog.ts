@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { MultiSelect } from 'primeng/multiselect';
@@ -36,7 +36,7 @@ import { StudentOption } from './assignment-editor-page';
       styleClass="tb-dialog tb-dialog--wide"
       [draggable]="false"
     >
-      <form id="assign-more-form" class="tb-assign" (ngSubmit)="assign()">
+      <form id="assign-more-form" class="tb-assign" [formGroup]="form" (ngSubmit)="assign()">
         <div class="tb-field">
           <label for="assign-students">{{ t.students }}</label>
           <p-multiselect
@@ -101,6 +101,8 @@ export class AssignMoreDialog {
 
   private readonly students = signal<StudentOption[]>([]);
   readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
+  /** `ngSubmit` needs a form directive: without it «Выдать» would submit the page. */
+  protected readonly form = new FormGroup({ students: this.toAssign });
   /** The groups chosen. */
   protected readonly groups = signal<readonly string[]>([]);
   protected readonly unassigned = computed(() => {
