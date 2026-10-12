@@ -89,7 +89,7 @@ test('an assignment for a group goes on its board and the student is led there',
   await expect(page.getByText('Тип задания')).toHaveCount(0);
   await page.locator('#editor-title').fill(TITLE);
   await page.locator('#editor-text').fill('Нарисуйте **схему** круговорота воды');
-  await page.getByRole('radio', { name: 'Просмотр' }).click();
+  await page.getByRole('button', { name: 'Просмотр', exact: true }).click();
   await expect(page.locator('.tb-preview strong')).toHaveText('схему');
   await expect(page.locator('#editor-text')).toHaveCount(0);
 
@@ -112,7 +112,7 @@ test('an assignment for a group goes on its board and the student is led there',
   const tab = await opened;
   await expect(tab).toHaveURL(new RegExp(`/teacher/boards/${board.id}$`));
   await tab.close();
-  await dialog.getByRole('button', { name: 'Закрыть' }).click();
+  await dialog.getByRole('button', { name: 'Закрыть' }).last().click();
 
   await expect(page.getByRole('heading', { name: TITLE })).toBeVisible();
   await expect(
