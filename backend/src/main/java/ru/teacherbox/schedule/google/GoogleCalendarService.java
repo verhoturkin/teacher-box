@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import ru.teacherbox.schedule.application.CalendarTexts;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.application.ScheduleDirectory;
 import ru.teacherbox.schedule.application.ScheduleNames;
@@ -256,12 +257,14 @@ public class GoogleCalendarService {
                 }
             }
             ScheduleNames names = directory.namesOf(pending);
+            CalendarTexts texts = CalendarTexts.of(directory.language(directory.teacherId()));
             for (Lesson lesson : pending.subList(0, Math.min(pending.size(), SYNC_BATCH))) {
                 if (lesson.status() == LessonStatus.CANCELLED) {
                     api.deleteEvent(token, calendarId, eventId(lesson.id()));
                     repository.forget(lesson.id());
                 } else {
-                    api.putEvent(token, calendarId, eventId(lesson.id()), event(lesson, names.title(lesson), names.joinUrl(lesson)));
+                    api.putEvent(token, calendarId, eventId(lesson.id()),
+                            event(lesson, names.title(lesson), names.joinUrl(lesson), texts));
                     repository.markSynced(lesson.id(), lesson.version(), clock.instant());
                 }
                 changed++;
@@ -326,25 +329,27 @@ public class GoogleCalendarService {
         return lessonId.toString().replace("-", "");
     }
 
-    Map<String, Object> event(Lesson lesson, @Nullable String studentName, @Nullable String joinUrl) {
-        String name = studentName == null ? "ученик" : studentName;
+    /** The event of a lesson in the teacher's language (ADR-0036). */
+    Map<String, Object> event(Lesson lesson, @Nullable String studentName, @Nullable String joinUrl,
+            CalendarTexts texts) {
+        String name = studentName == null ? texts.aStudent() : studentName;
         Map<String, Object> event = new LinkedHashMap<>();
-        event.put("summary", "Урок: " + name + (lesson.topic() == null ? "" : " — " + lesson.topic()));
+        event.put("summary", texts.lessonWith(name) + (lesson.topic() == null ? "" : " — " + lesson.topic()));
         List<String> description = new ArrayList<>();
         if (lesson.topic() != null) {
-            description.add("Тема: " + lesson.topic());
+            description.add(texts.topic(lesson.topic()));
         }
         if (joinUrl != null) {
-            description.add("Ссылка на урок: " + joinUrl);
+            description.add(texts.link(joinUrl));
             event.put("location", joinUrl);
         }
         switch (lesson.status()) {
             case CONDUCTED -> {
-                description.add("Проведено");
+                description.add(texts.conducted());
                 event.put("colorId", "10");
             }
             case MISSED -> {
-                description.add("Пропуск");
+                description.add(texts.missed());
                 event.put("colorId", "6");
             }
             default -> {

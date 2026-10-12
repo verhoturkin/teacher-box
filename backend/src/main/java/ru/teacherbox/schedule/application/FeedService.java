@@ -67,7 +67,8 @@ public class FeedService {
     }
 
     /**
-     * @return the calendar of the link's owner, or empty for an unknown link or a deactivated student
+     * @return the calendar of the link's owner in their language, or empty for an unknown link or a
+     *         deactivated student
      */
     @Transactional(readOnly = true)
     public Optional<String> calendar(String token) {
@@ -82,23 +83,24 @@ public class FeedService {
         Instant from = now.minus(PAST);
         Instant to = now.plus(properties.horizon()).plus(FUTURE_MARGIN);
         UUID ownerId = owner.get();
+        CalendarTexts texts = CalendarTexts.of(directory.language(ownerId));
         if (ownerId.equals(directory.teacherId())) {
             List<Lesson> all = lessons.findStartingBetween(from, to);
             ScheduleNames names = directory.namesOf(all);
-            return Optional.of(IcsWriter.calendar(portal.name() + " — занятия", all,
-                    lesson -> "Урок: " + Objects.requireNonNullElse(names.title(lesson),
-                            lesson.isGroup() ? "группа" : "ученик")
+            return Optional.of(IcsWriter.calendar(texts.teacherCalendar(portal.name()), all,
+                    lesson -> texts.lessonWith(Objects.requireNonNullElse(names.title(lesson),
+                            lesson.isGroup() ? texts.aGroup() : texts.aStudent()))
                             + (lesson.topic() == null ? "" : " — " + lesson.topic()),
-                    names::joinUrl, now));
+                    names::joinUrl, now, texts));
         }
         if (!directory.isCurrentStudent(ownerId)) {
             return Optional.empty();
         }
         List<Lesson> own = lessons.findStartingBetween(ownerId, from, to);
         ScheduleNames names = directory.namesOf(own);
-        return Optional.of(IcsWriter.calendar("Занятия — " + portal.name(), own,
-                lesson -> (lesson.isGroup() ? "Занятие группы «" + names.group(lesson.groupId()) + "»" : "Занятие")
-                        + (lesson.topic() == null ? "" : ": " + lesson.topic()),
-                names::joinUrl, now));
+        return Optional.of(IcsWriter.calendar(texts.studentCalendar(portal.name()), own,
+                lesson -> (lesson.isGroup() ? texts.groupLesson(String.valueOf(names.group(lesson.groupId())))
+                        : texts.lesson()) + (lesson.topic() == null ? "" : ": " + lesson.topic()),
+                names::joinUrl, now, texts));
     }
 }

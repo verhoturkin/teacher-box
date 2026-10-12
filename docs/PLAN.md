@@ -52,7 +52,7 @@ catalog and integration checks follow the language of the page. New ADR-0036.
   (`*IntegrationCheck`, `LlmClient.ping(Language)`, `GoogleCalendarService.checkConnection`) in the language of the
   request; also the student's own call room title (`CallService`), «unknown student» in answers and the note
   after a full reset.
-- [ ] 155.2 Calendar feeds (`FeedService`, `IcsWriter`) in the language of the feed's owner; Google Calendar
+- [x] 155.2 Calendar feeds (`FeedService`, `IcsWriter`) in the language of the feed's owner; Google Calendar
   events (`GoogleCalendarService`) in the teacher's language.
 
 ### Stage 156. Release 0.11.1
