@@ -26,7 +26,14 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonSeries, SeriesPlanned, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { LessonStudent, MEETING_URL_PATTERN } from './lesson-dialog';
-import { LessonGroup, OwnerValue, ownerIds, ownerOptions, ownerValue } from './lesson-owner';
+import {
+  LessonGroup,
+  OwnerValue,
+  followDefaultTopic,
+  ownerIds,
+  ownerOptions,
+  ownerValue,
+} from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
@@ -260,6 +267,12 @@ export class SeriesDialog {
   });
 
   constructor() {
+    followDefaultTopic(
+      this.form.controls.owner,
+      this.form.controls.topic,
+      () => ({ students: this.students(), groups: this.groups() }),
+      () => this.series() === null,
+    );
     // Opening or another series resets the form; later inputs (settings, students) keep what is typed.
     effect(() => {
       this.series();

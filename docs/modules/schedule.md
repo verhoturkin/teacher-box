@@ -65,5 +65,6 @@ Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher)
 
 `features/schedule/`: `teacher/` (calendar — FullCalendar, lesson dialog, series, off-time, requests),
 `student/` (my schedule, bottom sheet on the phone), `ui/` (lesson actions), `home/` widgets,
-`schedule-labels.ts`. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson
+`schedule-labels.ts`. A new lesson or series gets the default topic of the chosen student or group
+(`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) unless the teacher typed a topic. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson
 waits at the new time with «Перенести» / «Отменить перенос» on its card; only «Перенести» sends the edit.

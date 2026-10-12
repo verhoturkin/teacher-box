@@ -86,7 +86,7 @@ The student's groups are in the «Groups» card under the students ([Groups](/te
 
 The «⋮» button right of the status opens the menu:
 
-- **Edit** — name, contacts, note and video meeting.
+- **Edit** — name, contacts, note, default topic and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and assignments stays.
 - **Give access back** — for students whose access is off (turn on «Show turned off»).
@@ -101,11 +101,11 @@ A group is students who study together. A group has its own lesson price: it is 
 ## Create a group
 
 1. «Students» → the «Groups» card under the list of students → «Create group».
-2. Enter the name, tick the students and set the price of one lesson for each.
+2. Enter the name, tick the students and set the price of one lesson for each. A default topic is optional.
 
 ## Group card
 
-The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
+The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price, default topic and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
 
 ## Group lessons
 
@@ -128,6 +128,8 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 
 - **One-off:** «Schedule» → «Lesson». Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
+
+**Default topic.** If a student or a group has a default topic (in the «Edit» window of the student or group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 

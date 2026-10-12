@@ -129,6 +129,17 @@ describe('SeriesDialog', () => {
     expect(saved).toHaveLength(1);
   });
 
+  it('fills in the default topic of the chosen student', async () => {
+    fixture.componentRef.setInput('students', [
+      { id: 's-1', displayName: 'Иван', defaultTopic: 'Английский' },
+    ]);
+    const dialog = await open();
+
+    dialog.form.controls.owner.setValue('student:s-1');
+
+    expect(dialog.form.controls.topic.value).toBe('Английский');
+  });
+
   it('does not send an incomplete series', async () => {
     const dialog = await open();
 

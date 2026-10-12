@@ -75,6 +75,8 @@ export const en: Translation<typeof ru> = {
     search: 'Search',
     price: 'Lesson price for each student',
     priceHint: 'Charged to everyone who came to the lesson or missed it without notice.',
+    defaultTopic: 'Default topic',
+    defaultTopicHint: 'Filled in for a new lesson or series with the group.',
     failed: 'Could not save. Try again later',
   },
   groupPicker: {
@@ -117,6 +119,9 @@ export const en: Translation<typeof ru> = {
     email: 'Email',
     phone: 'Phone',
     note: 'Note (only you see it)',
+    defaultTopic: 'Default topic',
+    defaultTopicPlaceholder: 'For example, Exam maths',
+    defaultTopicHint: 'Filled in for a new lesson or series with the student.',
     login: 'Login',
     noLogin: 'Not chosen yet',
     loginHint: 'The student chooses the login when they open the invitation.',

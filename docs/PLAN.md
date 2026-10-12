@@ -30,7 +30,7 @@ download by the messenger adapters, receipts kept by `billing`).
 
 - [x] 160.1 B: `identity` — `default_topic` of a student and a group (migration `V*__default_topic.sql`),
   in `StudentProfile` / group commands and views, `PUT /api/teacher/students/{id}`, `/groups/{id}`; tests.
-- [ ] 160.2 F: field «Тема по умолчанию» in `identity/students/student-form-dialog.ts` and
+- [x] 160.2 F: field «Тема по умолчанию» in `identity/students/student-form-dialog.ts` and
   `identity/groups/group-form-dialog.ts`; `schedule/teacher/lesson-dialog.ts` and `series-dialog.ts` fill an
   empty, untouched topic with the default of the chosen student or group; help articles.
 

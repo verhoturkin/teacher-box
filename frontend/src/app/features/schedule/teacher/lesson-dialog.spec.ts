@@ -140,6 +140,37 @@ describe('LessonDialog', () => {
     );
   });
 
+  it('fills in the default topic of the chosen student or group', async () => {
+    fixture.componentRef.setInput('students', [
+      { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },
+      { id: 's-2', displayName: 'Мария', defaultTopic: null },
+    ]);
+    fixture.componentRef.setInput('groups', [
+      { id: 'g-1', name: 'ОГЭ', defaultTopic: 'Математика' },
+    ]);
+    const dialog = await open();
+    const topic = dialog.form.controls.topic;
+
+    dialog.form.controls.owner.setValue('student:s-1');
+    expect(topic.value).toBe('Физика');
+    dialog.form.controls.owner.setValue('group:g-1');
+    expect(topic.value).toBe('Математика');
+    dialog.form.controls.owner.setValue('student:s-2');
+    expect(topic.value).toBe('');
+
+    topic.setValue('Своя тема');
+    dialog.form.controls.owner.setValue('student:s-1');
+    expect(topic.value).toBe('Своя тема');
+  });
+
+  it('keeps the topic of a planned lesson', async () => {
+    fixture.componentRef.setInput('students', [
+      { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },
+    ]);
+    const dialog = await open(scheduledLesson({ topic: null }));
+    expect(dialog.form.controls.topic.value).toBe('');
+  });
+
   it('changes a planned lesson', async () => {
     const lesson = scheduledLesson({ topic: 'Степени', meetingUrl: 'https://zoom.us/j/2' });
     const dialog = await open(lesson);

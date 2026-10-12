@@ -21,7 +21,13 @@ describe('IdentityApi', () => {
   });
 
   it('calls the student management endpoints', () => {
-    const profile = { displayName: 'Иван', email: null, phone: null, note: null };
+    const profile = {
+      displayName: 'Иван',
+      email: null,
+      phone: null,
+      note: null,
+      defaultTopic: null,
+    };
     api.listStudents().subscribe();
     api.createStudent(profile).subscribe();
     api.updateStudent('id-1', profile, 3).subscribe();
