@@ -37,7 +37,7 @@ ADR: 0037 — backups in Google Drive and what the portal backup leaves out.
 
 ### Stage 158. Backups in Google Drive (B, F)
 
-- [ ] 158.1 B: `platform/backup/drive/` — `DriveApi` (Google OAuth, Drive v3 with scope `drive.file`: folder,
+- [x] 158.1 B: `platform/backup/drive/` — `DriveApi` (Google OAuth, Drive v3 with scope `drive.file`: folder,
   resumable upload, list, download, delete, account), the connection in `<data-dir>/google-drive.json` (survives
   a restore and a full reset, like the local backups), `CloudBackupService` (status, OAuth client from the
   interface or `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET`, authorize / callback, disconnect, upload of every

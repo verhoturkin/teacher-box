@@ -26,6 +26,6 @@ class ScheduledBackupTest {
 
     @Test
     void rejectsKeepingNoBackups() {
-        assertThatThrownBy(() -> new BackupProperties("-", 0, false)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new BackupProperties("-", 0, false, null)).isInstanceOf(IllegalArgumentException.class);
     }
 }

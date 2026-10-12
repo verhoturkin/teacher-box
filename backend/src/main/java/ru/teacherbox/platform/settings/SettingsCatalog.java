@@ -181,7 +181,16 @@ public final class SettingsCatalog {
                                 "Copies made before a restore or a reset are always kept."))
                 .add("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after a restore"),
                         BOOLEAN, w("true в Docker; false — перезапускать портал вручную.",
-                                "true in Docker; false — restart the portal by hand."));
+                                "true in Docker; false — restart the portal by hand."))
+                .add("TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID",
+                        w("Google Диск: идентификатор клиента OAuth", "Google Drive: OAuth client ID"), TEXT,
+                        w("Копии в Google Диске учителя. Можно ввести и в «Настройках» учителя; эта переменная важнее.",
+                                "Copies in the teacher's Google Drive. Can also be entered in the teacher's “Settings”; "
+                                        + "this variable wins."))
+                .secret("TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET",
+                        w("Google Диск: секрет клиента OAuth", "Google Drive: OAuth client secret"))
+                .add("TEACHERBOX_BACKUP_GOOGLE_PROXY", w("Google Диск: прокси", "Google Drive: proxy"), PROXY,
+                        w("Если Google недоступен напрямую.", "If Google can't be reached directly."));
 
         b.group("log", w("Журнал", "Log"))
                 .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),

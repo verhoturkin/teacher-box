@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -24,7 +25,10 @@ import java.util.zip.ZipOutputStream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.backup.BackupExclusions;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.time.InstanceTimeZone;
@@ -56,9 +60,11 @@ public class BackupService {
     private final @Nullable String appVersion;
     private final Clock clock;
     private final Supplier<List<BackupExclusions>> exclusions;
+    private final ApplicationEventPublisher events;
 
     public BackupService(JdbcClient jdbc, Path dataDir, BackupProperties properties, InstanceTimeZone timeZone,
-            @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions) {
+            @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions,
+            ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.dataDir = dataDir;
         this.backupDir = dataDir.resolve("backups");
@@ -67,6 +73,7 @@ public class BackupService {
         this.appVersion = appVersion;
         this.clock = clock;
         this.exclusions = exclusions;
+        this.events = events;
     }
 
     /** A backup by the teacher or the administrator. */
@@ -100,6 +107,7 @@ public class BackupService {
             BackupInfo info = info(target);
             log.info("Backup {} created ({}, {} bytes)", info.name(), kind, info.size());
             rotate();
+            events.publishEvent(new BackupCreated(info, kind));
             return info;
         } catch (IOException e) {
             throw new UncheckedIOException("Backup failed", e);
@@ -135,6 +143,50 @@ public class BackupService {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Whether the name is one a backup of the portal has, e.g. {@code teacherbox-20261012-033000-000.zip}. */
+    public static boolean isBackupName(String name) {
+        return BackupArchive.isValidName(name);
+    }
+
+    /**
+     * Takes a backup made elsewhere (a copy from Google Drive): {@code writer} writes the archive into a
+     * temporary file, which becomes a backup if it is one.
+     *
+     * @throws ConflictException     if a backup with the name is already here
+     * @throws BusinessRuleException if the file is not a backup of the portal
+     */
+    public synchronized BackupInfo adopt(String name, Consumer<Path> writer) {
+        if (!BackupArchive.isValidName(name)) {
+            throw notABackup();
+        }
+        Path target = backupDir.resolve(name);
+        if (Files.exists(target)) {
+            throw new ConflictException("backup.exists", "The backup is already on the server");
+        }
+        try {
+            Files.createDirectories(backupDir);
+            Path partial = backupDir.resolve(name + ".part");
+            try {
+                writer.accept(partial);
+                if (BackupArchive.manifest(partial).isEmpty() || !BackupArchive.hasDatabase(partial)) {
+                    throw notABackup();
+                }
+                Files.move(partial, target, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                Files.deleteIfExists(partial);
+            }
+            BackupInfo info = info(target);
+            log.info("Backup {} taken from elsewhere ({} bytes)", info.name(), info.size());
+            return info;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static BusinessRuleException notABackup() {
+        return new BusinessRuleException("backup.invalid-archive", "The file is not a backup of the portal");
     }
 
     /** Version of the running portal; {@code null} in development. */

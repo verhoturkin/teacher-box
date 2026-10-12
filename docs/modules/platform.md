@@ -28,6 +28,17 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   tables are covered. What a module leaves out of the backup — SPI `shared.backup.BackupExclusions` (ADR-0037):
   rows of its tables (dropped from the H2 `SCRIPT` with their `SYSTEM_LOB_STREAM` parts, `BackupDump`) and files
   of its namespace (found before the dump).
+- `backup/drive/` — copies in the teacher's Google Drive (ADR-0037): `DriveApi` (OAuth, Drive v3, scope
+  `drive.file`; uploads and downloads streamed through `OutboundHttp.streamingRequestFactory`), the connection in
+  `<data-dir>/google-drive.json` (`DriveConnectionStore`; survives restore and reset), `CloudBackupService`: after
+  `BackupCreated` of a scheduled or manual backup it uploads it in the background (one task at a time) into the
+  portal's folder and keeps the newest `TEACHERBOX_BACKUP_KEEP` there; a rejected token disconnects with an error.
+  OAuth client — `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET` or entered by the teacher; proxy
+  `TEACHERBOX_BACKUP_GOOGLE_PROXY`. REST (teacher): `GET|DELETE /api/teacher/backups/google`, `PUT …/client`,
+  `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is
+  adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
+  `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
+  `DriveIntegrationCheck` for the administrator (no account address).
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example` (test),
   values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
   Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a

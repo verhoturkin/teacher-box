@@ -12,7 +12,7 @@ public enum BackupKind {
     BEFORE_RESET;
 
     /** Kept until someone deletes it. */
-    boolean isRotated() {
+    public boolean isRotated() {
         return this == SCHEDULED || this == MANUAL;
     }
 }

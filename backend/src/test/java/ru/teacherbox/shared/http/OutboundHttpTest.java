@@ -57,6 +57,41 @@ class OutboundHttpTest {
     }
 
     @Test
+    void streamedFilesGoWithTheirLengthDirectlyAndThroughAProxy() throws IOException {
+        AtomicReference<String> contentLength = new AtomicReference<>();
+        AtomicReference<String> received = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        server.createContext("/", exchange -> {
+            contentLength.set(exchange.getRequestHeaders().getFirst("Content-Length"));
+            received.set(new String(exchange.getRequestBody().readAllBytes(), UTF_8));
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+        });
+        server.start();
+        java.nio.file.Path file = java.nio.file.Files.createTempFile("upload-", ".zip");
+        try {
+            java.nio.file.Files.writeString(file, BODY);
+            int port = server.getAddress().getPort();
+            for (OutboundProxy proxy : new OutboundProxy[] {null,
+                    new OutboundProxy(OutboundProxy.Type.HTTP, "127.0.0.1", port)}) {
+                received.set(null);
+                RestClient.builder()
+                        .requestFactory(OutboundHttp.streamingRequestFactory(TIMEOUT, TIMEOUT, proxy))
+                        .build()
+                        .put().uri("http://127.0.0.1:" + port + "/upload")
+                        .body(new org.springframework.core.io.FileSystemResource(file))
+                        .retrieve().toBodilessEntity();
+
+                assertThat(received.get()).isEqualTo(BODY);
+                assertThat(contentLength.get()).isEqualTo(String.valueOf(BODY.getBytes(UTF_8).length));
+            }
+        } finally {
+            server.stop(0);
+            java.nio.file.Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
     void socksProxyConnectsToTheTargetHost() throws IOException {
         try (Socks5Server proxy = new Socks5Server()) {
             String answer = post(new OutboundProxy(OutboundProxy.Type.SOCKS, "localhost", proxy.port()));
