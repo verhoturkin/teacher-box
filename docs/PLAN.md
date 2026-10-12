@@ -17,42 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.12.0
-
-Goals: copies of the portal backups in the teacher's Google Drive besides the local ones (a disaster on the server
-no longer takes the backups with it; a copy from the cloud can be brought back to the server and restored); the
-portal backup keeps only the current version of each board — its copies (daily and the teacher's) and the images
-only they use stay out, so backups do not grow with the board history.
-
-ADR: 0037 — backups in Google Drive and what the portal backup leaves out.
-
-### Stage 157. Only the current board in the portal backup (B)
-
-- [x] 157.1 SPI `shared.backup.BackupExclusions` (tables whose rows stay out, files of the module's namespace that
-  stay out); `platform/backup/BackupService.writeDatabase` drops the H2 `SCRIPT` rows of those tables together
-  with their `SYSTEM_LOB_STREAM` parts (`BackupDump`), `writeFiles` skips the files;
-  `boards/application/BoardsBackupExclusions`: `boards.board_backups` and the images no scene uses (rows of
-  images without a file are removed by `BoardBackupService.collectGarbage` as before). Docs: `boards.md`,
-  `platform.md`.
-
-### Stage 158. Backups in Google Drive (B, F)
-
-- [x] 158.1 B: `platform/backup/drive/` — `DriveApi` (Google OAuth, Drive v3 with scope `drive.file`: folder,
-  resumable upload, list, download, delete, account), the connection in `<data-dir>/google-drive.json` (survives
-  a restore and a full reset, like the local backups), `CloudBackupService` (status, OAuth client from the
-  interface or `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET`, authorize / callback, disconnect, upload of every
-  scheduled and manual backup after `BackupCreated` in the background, rotation to `TEACHERBOX_BACKUP_KEEP`,
-  list, upload of a chosen backup, download of a cloud copy to the server for a restore),
-  `TEACHERBOX_BACKUP_GOOGLE_PROXY`; REST `/api/teacher/backups/google/**`,
-  `/api/public/backups/google/callback`; `DriveIntegrationCheck`. ADR-0037, `platform.md`.
-- [x] 158.2 F: `settings/backups/drive-panel.ts` in the teacher's backups card — client, connect / disconnect,
-  last upload and error, cloud copies with «Перенести на сервер»; «Отправить в Google Диск» in a backup's menu and
-  a cloud mark on backups that are already there; return from Google (`?drive=`).
-
-### Stage 159. Release 0.12.0
-
-- [ ] 159.1 Skill `release`: help, E2E `version-0-12-0.spec.ts`, CHANGELOG, version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
