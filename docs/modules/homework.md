@@ -63,4 +63,6 @@ the download button saves them under `boundTextbookFilename`), `teacher/bind-tex
 interactive: `ui/interactive-frame.ts` (`<iframe sandbox="allow-scripts">` of a link under
 `/api/public/homework/interactive/` only; listens to messages of its own frame — height, `teacherbox:result`, brought to
 the backend limits by `interactiveResult`) and «Готово» with the last result; `ui/submission-list.ts` shows «Отмечено
-«Готово»» and the page's result. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+«Готово»» and the page's result. «На доску» of a written or board assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the
+pictures — png / jpeg / webp / gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image —
+its picture, a document — none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.

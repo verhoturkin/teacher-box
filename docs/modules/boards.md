@@ -125,6 +125,9 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   Excalidraw boards and projects the page field of `textbooks`) — the editor fetches the pictures
   (`BoardsApi.picture`), puts them in a row (150 dpi pictures at half size, 24 px apart, tops aligned) inside a frame with
   40 px padding named after the textbook and its pages — 80 px to the right of everything on the board, tops at the
-  drawing's top (on an empty board — at the view centre), and scrolls the view to them (`scrollToContent`).
+  drawing's top (on an empty board — at the view centre), and scrolls the view to them (`scrollToContent`). A written
+  assignment (`AssignmentMaterial`, `ToBoardDialog [frame] [pictures]`): the same row in a frame named «<title> ·
+  <date>», the task first — a text element (measured by converting it once) or the picture of its formatted text —
+  then the pictures; an external board gets the text only.
 
 Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

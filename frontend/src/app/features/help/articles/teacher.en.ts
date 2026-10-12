@@ -279,7 +279,7 @@ The «To a board» button is on the assignment's page, in the assignment editor 
 - **As text** — it can be edited on the board;
 - **As a picture** — as it is, handy for formulas and tables.
 
-An Excalidraw board opens in a new tab with the material already at the centre. For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
+An Excalidraw board opens in a new tab with the material already at the centre. An assignment sent from its page goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the assignment). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
 
 Pages of a textbook can be put on a board too — from «Textbooks» or from an assignment's textbook ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
 `,

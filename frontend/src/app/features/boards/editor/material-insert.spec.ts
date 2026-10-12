@@ -162,6 +162,103 @@ describe('insertMaterial', () => {
     ]);
   });
 
+  it('puts a written assignment in a dated frame: the text, then its pictures', async () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => Promise.resolve(),
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(1240);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(1754);
+    const fetched: string[] = [];
+    const pictures = (url: string): Promise<Blob> => {
+      fetched.push(url);
+      return Promise.resolve(new Blob(['png'], { type: 'image/png' }));
+    };
+    const measuring = {
+      convertToExcalidrawElements: vi.fn(
+        (skeletons: Parameters<typeof island.modules.convertToExcalidrawElements>[0]) =>
+          island.modules
+            .convertToExcalidrawElements(skeletons)
+            .map((element) =>
+              element.type === 'text' ? { ...element, width: 300, height: 200 } : element,
+            ),
+      ),
+    };
+    const { access, state } = fakeScene();
+    const scrollToContent = vi.fn();
+
+    await insertMaterial(
+      { ...access, scrollToContent },
+      measuring,
+      {
+        title: 'Дроби',
+        markdown: 'Решите',
+        mode: 'assignment',
+        frame: 'Дроби · 12.10.2026',
+        text: 'text',
+        pictures: ['/api/f/1', '/api/p/2'],
+      },
+      picture,
+      pictures,
+    );
+
+    expect(fetched).toEqual(['/api/f/1', '/api/p/2']);
+    // the view centre is (400, 300): the text 300 wide, two pages 620 wide, gaps of 24; the pages are taller
+    const rowWidth = 300 + 2 * 620 + 2 * PAGE_GAP;
+    const left = 400 - rowWidth / 2;
+    const top = 300 - 877 / 2;
+    expect(state.elements).toEqual([
+      expect.objectContaining({ type: 'text', text: 'Дроби\n\nРешите', x: left, y: top }),
+      expect.objectContaining({ type: 'image', x: left + 300 + PAGE_GAP, y: top, width: 620 }),
+      expect.objectContaining({ type: 'image', x: left + 300 + 620 + 2 * PAGE_GAP, y: top }),
+      expect.objectContaining({
+        type: 'frame',
+        name: 'Дроби · 12.10.2026',
+        children: ['page-0', 'page-1', 'page-2'],
+        x: left - FRAME_PADDING,
+        y: top - FRAME_PADDING,
+        width: rowWidth + 2 * FRAME_PADDING,
+        height: 877 + 2 * FRAME_PADDING,
+      }),
+    ]);
+    expect(scrollToContent).toHaveBeenCalled();
+  });
+
+  it('puts the task of an assignment as a picture of its text, alone in its frame', async () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => Promise.resolve(),
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(1600);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(400);
+    const { access, state } = fakeScene();
+
+    await insertMaterial(
+      access,
+      island.modules,
+      {
+        title: 'Дроби',
+        markdown: 'Решите',
+        mode: 'assignment',
+        frame: 'Дроби · 12.10.2026',
+        text: 'image',
+        pictures: [],
+      },
+      picture,
+      noPictures,
+    );
+
+    expect(picture.picture).toHaveBeenCalled();
+    expect(state.elements).toEqual([
+      expect.objectContaining({ type: 'image', x: 0, y: 200, width: 800, height: 200 }),
+      expect.objectContaining({
+        type: 'frame',
+        children: ['page-0'],
+        width: 800 + 2 * FRAME_PADDING,
+      }),
+    ]);
+  });
+
   it('puts pages to the right of the drawing and shows them', async () => {
     Object.defineProperty(HTMLImageElement.prototype, 'decode', {
       configurable: true,

@@ -2,7 +2,8 @@
  * Parts of the textbooks feature that other features embed: the API, types and labels for homework.
  * Pages are in index.ts.
  */
-export { TextbooksApi } from './data-access/textbooks-api';
+export { TextbooksApi, textbookPageUrl } from './data-access/textbooks-api';
+export { MAX_BOARD_PAGES, parsePages } from './page-ranges';
 export type {
   MyTextbook,
   Textbook,

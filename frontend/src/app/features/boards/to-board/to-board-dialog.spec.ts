@@ -63,6 +63,33 @@ describe('ToBoardDialog', () => {
     expect(bodyText()).toContain('Открыть доску «Физика»');
   });
 
+  it('puts a written assignment in a dated frame with its pictures', async () => {
+    const dialog = await show();
+    fixture.componentRef.setInput('frame', 'Дроби · 12.10.2026');
+    fixture.componentRef.setInput('pictures', ['/api/teacher/homework/attachments/f-1']);
+    backend
+      .expectOne('/api/teacher/boards')
+      .flush([aBoard({ title: 'Физика' }), aLinkBoard({ id: 'link-1', title: 'Miro' })]);
+    await fixture.whenStable();
+    const put = vi.spyOn(insert, 'put');
+
+    expect(bodyText()).toContain('задание появится во фрейме');
+    await dialog.place('text');
+
+    expect(put).toHaveBeenCalledWith('board-1', {
+      title: 'Дроби',
+      markdown: 'Решите',
+      mode: 'assignment',
+      frame: 'Дроби · 12.10.2026',
+      text: 'text',
+      pictures: ['/api/teacher/homework/attachments/f-1'],
+    });
+
+    dialog.chosen.set('link-1');
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Скопируется только текст задания');
+  });
+
   it('copies the material for an external board chosen in the list and opens it', async () => {
     const dialog = await show();
     backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);

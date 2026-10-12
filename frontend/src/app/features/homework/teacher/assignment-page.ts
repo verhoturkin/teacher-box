@@ -24,6 +24,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
+import { assignmentBoard } from './assignment-board';
 import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
@@ -88,13 +89,15 @@ import { SHARED_T } from '@shared/i18n/texts';
               : t.noDueDate
           }}
         </span>
-        <p-button
-          [label]="t.toBoard"
-          icon="pi pi-th-large"
-          severity="secondary"
-          [disabled]="!assignment.description"
-          (onClick)="boardVisible.set(true)"
-        />
+        @if (assignment.kind !== 'INTERACTIVE') {
+          <p-button
+            [label]="t.toBoard"
+            icon="pi pi-th-large"
+            severity="secondary"
+            [disabled]="!assignment.description"
+            (onClick)="boardVisible.set(true)"
+          />
+        }
         <p-button
           [label]="t.edit"
           icon="pi pi-pencil"
@@ -255,6 +258,8 @@ import { SHARED_T } from '@shared/i18n/texts';
         [title]="assignment.title"
         [markdown]="assignment.description ?? ''"
         [students]="taskStudents()"
+        [frame]="board()?.frame ?? null"
+        [pictures]="board()?.pictures ?? []"
       />
     } @else {
       <tb-page-header [title]="t.assignment" back="/teacher/homework" [backLabel]="t.back" />
@@ -287,6 +292,13 @@ export class AssignmentPage implements OnInit {
   }
   protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
+  /** «На доску» puts the text, the pictures and the textbook pages of the assignment in a dated frame. */
+  protected readonly board = computed(() => {
+    const assignment = this.details();
+    return assignment === null || !this.boardVisible()
+      ? null
+      : assignmentBoard(assignment, new Date());
+  });
   protected readonly bindVisible = signal(false);
   protected readonly textbookBoardVisible = signal(false);
   protected readonly boardTextbook = signal<BoardTextbook | null>(null);
