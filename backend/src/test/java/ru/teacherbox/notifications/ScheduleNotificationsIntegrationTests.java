@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.Scenario;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.InboxRepository;
@@ -229,6 +230,45 @@ class ScheduleNotificationsIntegrationTests {
                         .isEqualTo("Через 1 час. Ссылка на урок: https://zoom.us/j/1"));
         assertThat(inbox.findPage(last, 0, 10).getFirst().body())
                 .isEqualTo("Через 1 час. Тема: Дроби. Ссылка на урок: https://zoom.us/j/1");
+    }
+
+    @Test
+    void eachRecipientReadsTheScheduleInTheirLanguage(Scenario scenario) {
+        UUID student = directory.addStudent("Newcomer");
+        directory.setLanguage(student, Language.EN);
+        InboxNotification single = latest(scenario, student,
+                new LessonScheduled(UUID.randomUUID(), null, List.of(student), START, 60, "Fractions", Instant.now()));
+        assertThat(single.title()).isEqualTo("New lesson: Thursday, 01.10 at 18:00");
+        assertThat(single.body()).isEqualTo("Topic: Fractions");
+
+        UUID regular = directory.addStudent("Regular");
+        directory.setLanguage(regular, Language.EN);
+        InboxNotification series = latest(scenario, regular, new SeriesScheduled(UUID.randomUUID(), null,
+                List.of(regular), List.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY), LocalTime.of(18, 0), 60, 2,
+                LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 31), Instant.now()));
+        assertThat(series.title()).isEqualTo("Regular lessons on Tuesdays and Thursdays at 18:00");
+        assertThat(series.body()).isEqualTo("From 01.10.2026 to 31.12.2026, every 2 weeks.");
+
+        UUID reminded = directory.addStudent("Reminded");
+        directory.setLanguage(reminded, Language.EN);
+        InboxNotification soon = latest(scenario, reminded, new LessonStartingSoon(UUID.randomUUID(), null,
+                List.of(reminded), START, 60, "Fractions", "https://zoom.us/j/1", Duration.ofHours(24), false,
+                Instant.now()));
+        assertThat(soon.title()).isEqualTo("Lesson soon: Thursday, 01.10 at 18:00");
+        assertThat(soon.body()).isEqualTo("In 24 hours. Topic: Fractions. Lesson link: https://zoom.us/j/1");
+
+        directory.setLanguage(directory.teacherId(), Language.EN);
+        try {
+            UUID asks = directory.addStudent("Asks");
+            scenario.publish(new LessonChangeRequested(UUID.randomUUID(), UUID.randomUUID(), asks, null,
+                            ChangeKind.RESCHEDULE, START, LATER, "Later?", false, false, Instant.now()))
+                    .andWaitForStateChange(() -> teacherNotifications("Asks asks to move a lesson"),
+                            list -> !list.isEmpty())
+                    .andVerify(list -> assertThat(list.getFirst().body()).isEqualTo(
+                            "Lesson: Thursday, 01.10 at 18:00. Proposes: Friday, 02.10 at 19:30. Comment: Later?"));
+        } finally {
+            directory.setLanguage(directory.teacherId(), Language.RU);
+        }
     }
 
     @Test

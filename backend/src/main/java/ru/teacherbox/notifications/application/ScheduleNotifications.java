@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import org.jspecify.annotations.Nullable;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -26,11 +27,13 @@ import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.api.SeriesScheduled;
 import ru.teacherbox.schedule.api.SeriesStopped;
 import ru.teacherbox.shared.chat.ChatSubject;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * Schedule events → notifications: students learn about new, moved and cancelled lessons (all
  * participants of a group lesson) and the answers to their requests; the teacher gets the
- * students' requests. Both get reminders (the teacher only the last one before a lesson).
+ * students' requests. Both get reminders (the teacher only the last one before a lesson). Each
+ * recipient reads them in their language (ADR-0036).
  */
 @Component
 class ScheduleNotifications {
@@ -53,23 +56,24 @@ class ScheduleNotifications {
 
     @ApplicationModuleListener
     void on(LessonScheduled event) {
-        List<String> body = new ArrayList<>();
-        group(event.groupId()).ifPresent(name -> body.add("Группа «" + name + "»."));
-        if (event.topic() != null) {
-            body.add("Тема: " + event.topic());
-        }
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED,
-                "Новое занятие: " + texts.lessonTime(event.startsAt()), join(body));
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED, (t, language) -> {
+            List<String> body = new ArrayList<>();
+            group(event.groupId()).ifPresent(name -> body.add(t.group(name)));
+            if (event.topic() != null) {
+                body.add(t.topic(event.topic()));
+            }
+            return new Message(t.newLesson(texts.lessonTime(event.startsAt(), language)), join(body));
+        });
     }
 
     @ApplicationModuleListener
     void on(SeriesScheduled event) {
-        String body = group(event.groupId()).map(name -> "Группа «" + name + "». ").orElse("")
-                + "С " + texts.date(event.startsOn())
-                + (event.endsOn() == null ? "" : " по " + texts.date(event.endsOn()))
-                + (event.intervalWeeks() == 1 ? "" : ", раз в " + event.intervalWeeks() + " недели") + ".";
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED,
-                "Регулярные занятия " + texts.weekly(event.weekdays(), event.startTime()), body);
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED, (t, language) -> new Message(
+                t.series(texts.weekly(event.weekdays(), event.startTime(), language)),
+                group(event.groupId()).map(name -> t.group(name) + " ").orElse("")
+                        + t.seriesDates(texts.date(event.startsOn()),
+                                event.endsOn() == null ? null : texts.date(event.endsOn()))
+                        + (event.intervalWeeks() == 1 ? "" : t.everyWeeks(event.intervalWeeks())) + "."));
     }
 
     @ApplicationModuleListener
@@ -77,10 +81,10 @@ class ScheduleNotifications {
         if (event.replaced()) {
             return;
         }
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED,
-                "Регулярные занятия завершены",
-                group(event.groupId()).map(name -> "Группа «" + name + "». ").orElse("")
-                        + "Занятия по расписанию с " + texts.date(event.from()) + " отменены.");
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED, (t, language) -> new Message(
+                t.seriesStopped(),
+                group(event.groupId()).map(name -> t.group(name) + " ").orElse("")
+                        + t.seriesStoppedFrom(texts.date(event.from()))));
     }
 
     @ApplicationModuleListener
@@ -88,10 +92,10 @@ class ScheduleNotifications {
         List<UUID> recipients = event.studentIds().stream()
                 .filter(studentId -> !studentId.equals(event.requestedBy()))
                 .toList();
-        notifyStudents(recipients, NotificationKind.SCHEDULE_LESSON_MOVED,
-                "Занятие перенесено на " + texts.lessonTime(event.startsAt()),
-                group(event.groupId()).map(name -> "Группа «" + name + "». ").orElse("")
-                        + "Было: " + texts.lessonTime(event.previousStartsAt()) + ".");
+        notifyStudents(recipients, NotificationKind.SCHEDULE_LESSON_MOVED, (t, language) -> new Message(
+                t.moved(texts.lessonTime(event.startsAt(), language)),
+                group(event.groupId()).map(name -> t.group(name) + " ").orElse("")
+                        + t.was(texts.lessonTime(event.previousStartsAt(), language))));
     }
 
     @ApplicationModuleListener
@@ -99,16 +103,17 @@ class ScheduleNotifications {
         if (event.byRequest()) {
             return;
         }
-        List<String> body = new ArrayList<>();
-        group(event.groupId()).ifPresent(name -> body.add("Группа «" + name + "»."));
-        if (event.reason() != null) {
-            body.add("Причина: " + event.reason());
-        }
-        if (event.charged()) {
-            body.add("Занятие засчитано как пропуск.");
-        }
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED,
-                "Занятие " + texts.lessonTime(event.startsAt()) + " отменено", join(body));
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED, (t, language) -> {
+            List<String> body = new ArrayList<>();
+            group(event.groupId()).ifPresent(name -> body.add(t.group(name)));
+            if (event.reason() != null) {
+                body.add(t.reason(event.reason()));
+            }
+            if (event.charged()) {
+                body.add(t.countedAsMissed());
+            }
+            return new Message(t.cancelled(texts.lessonTime(event.startsAt(), language)), join(body));
+        });
     }
 
     /** For the students a deleted planned lesson that has not passed is a cancelled one. */
@@ -117,9 +122,9 @@ class ScheduleNotifications {
         if (!event.planned() || !event.startsAt().isAfter(event.occurredAt())) {
             return;
         }
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED,
-                "Занятие " + texts.lessonTime(event.startsAt()) + " отменено",
-                group(event.groupId()).map(name -> "Группа «" + name + "».").orElse(null));
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_CANCELLED, (t, language) -> new Message(
+                t.cancelled(texts.lessonTime(event.startsAt(), language)),
+                group(event.groupId()).map(t::group).orElse(null)));
     }
 
     @ApplicationModuleListener
@@ -127,65 +132,67 @@ class ScheduleNotifications {
         if (!event.startsAt().isAfter(event.occurredAt())) {
             return;
         }
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED,
-                "Занятие " + texts.lessonTime(event.startsAt()) + " снова в расписании",
-                group(event.groupId()).map(name -> "Группа «" + name + "». ").orElse("")
-                        + "Отмена занятия снята.");
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED, (t, language) -> new Message(
+                t.restored(texts.lessonTime(event.startsAt(), language)),
+                group(event.groupId()).map(name -> t.group(name) + " ").orElse("") + t.cancellationWithdrawn()));
     }
 
     @ApplicationModuleListener
     void on(LessonChangeRequested event) {
-        String student = name(event.studentId());
+        UUID teacher = users.teacherId();
+        Language language = users.language(teacher);
+        ScheduleMessages t = ScheduleMessages.of(language);
+        String student = name(event.studentId(), t);
         String groupName = group(event.groupId()).orElse(null);
         List<String> body = new ArrayList<>();
-        body.add("Занятие: " + texts.lessonTime(event.startsAt())
-                + (groupName == null ? "" : ", группа «" + groupName + "»") + ".");
+        body.add(t.requestedLesson(texts.lessonTime(event.startsAt(), language), groupName));
         if (event.proposedStartsAt() != null) {
-            body.add("Предлагает: " + texts.lessonTime(event.proposedStartsAt()) + ".");
+            body.add(t.proposes(texts.lessonTime(event.proposedStartsAt(), language)));
         }
         if (event.late()) {
-            body.add(groupName == null ? "Поздняя отмена." : "Поздно — решите, засчитать ли пропуск.");
+            body.add(groupName == null ? t.lateCancellation() : t.lateAbsence());
         }
         if (event.comment() != null) {
-            body.add("Комментарий: " + event.comment());
+            body.add(t.comment(event.comment()));
         }
         String title;
         if (event.kind() == ChangeKind.RESCHEDULE) {
-            title = student + " просит перенести занятие";
+            title = t.asksToMove(student);
         } else if (groupName != null) {
-            title = student + " не придёт на занятие группы";
+            title = t.wontCome(student);
         } else {
-            title = student + " просит отменить занятие";
+            title = t.asksToCancel(student);
         }
         ChatSubject subject = event.accepted() ? null
                 : new ChatSubject(LessonChangeRequested.CHAT_SUBJECT, event.requestId());
-        notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_REQUEST, title, join(body), TEACHER_LINK,
-                subject);
+        notifications.notify(teacher, NotificationKind.SCHEDULE_REQUEST, title, join(body), TEACHER_LINK, subject);
     }
 
     @ApplicationModuleListener
     void on(LessonChangeResolved event) {
+        Language language = users.language(event.studentId());
+        ScheduleMessages t = ScheduleMessages.of(language);
+        String when = texts.lessonTime(event.startsAt(), language);
         boolean absence = event.groupId() != null && event.kind() == ChangeKind.CANCEL;
         String title;
         List<String> body = new ArrayList<>();
         if (!event.approved()) {
             if (event.kind() == ChangeKind.RESCHEDULE) {
-                title = "Перенос занятия не согласован";
+                title = t.moveDeclined();
             } else {
-                title = absence ? "Пропуск занятия не согласован" : "Отмена занятия не согласована";
+                title = absence ? t.absenceDeclined() : t.cancelDeclined();
             }
-            body.add("Занятие остаётся: " + texts.lessonTime(event.startsAt()) + ".");
+            body.add(t.lessonStays(when));
         } else if (event.kind() == ChangeKind.RESCHEDULE) {
-            title = "Перенос согласован: " + texts.lessonTime(event.startsAt());
+            title = t.moveAgreed(when);
         } else {
-            title = absence ? "Учитель знает, что вас не будет " + texts.lessonTime(event.startsAt())
-                    : "Отмена занятия " + texts.lessonTime(event.startsAt()) + " согласована";
+            title = absence ? t.absenceKnown(when) : t.cancelAgreed(when);
             if (event.charged()) {
-                body.add("Отмена поздняя, занятие засчитано как пропуск.");
+                body.add(t.lateCharged());
             }
         }
         if (event.comment() != null) {
-            body.add("Комментарий учителя: " + event.comment());
+            body.add(t.teacherComment(event.comment()));
         }
         notifications.notify(event.studentId(), NotificationKind.SCHEDULE_REQUEST_ANSWERED, title, join(body),
                 STUDENT_LINK);
@@ -193,33 +200,49 @@ class ScheduleNotifications {
 
     @ApplicationModuleListener
     void on(LessonStartingSoon event) {
-        String when = texts.lessonTime(event.startsAt());
-        String in = "Через " + texts.duration(event.before()) + ".";
-        String link = event.meetingUrl() == null ? "" : " Ссылка на урок: " + event.meetingUrl();
         String groupName = group(event.groupId()).orElse(null);
-        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_REMINDER, "Скоро занятие: " + when,
-                in + (groupName == null ? "" : " Группа «" + groupName + "».")
-                        + (event.topic() == null ? "" : " Тема: " + event.topic() + ".") + link);
+        notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_REMINDER, (t, language) -> {
+            List<String> body = new ArrayList<>();
+            body.add(t.in(texts.duration(event.before(), language)));
+            if (groupName != null) {
+                body.add(t.group(groupName));
+            }
+            if (event.topic() != null) {
+                body.add(t.topic(event.topic()) + ".");
+            }
+            if (event.meetingUrl() != null) {
+                body.add(t.meetingLink(event.meetingUrl()));
+            }
+            return new Message(t.soonForStudent(texts.lessonTime(event.startsAt(), language)), join(body));
+        });
         if (event.lastBefore()) {
-            String with = groupName != null ? "группа «" + groupName + "»"
-                    : event.studentIds().isEmpty() ? "ученик" : name(event.studentIds().getFirst());
-            notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_REMINDER,
-                    "Скоро урок: " + with + ", " + when, in + link, TEACHER_LINK);
+            UUID teacher = users.teacherId();
+            Language language = users.language(teacher);
+            ScheduleMessages t = ScheduleMessages.of(language);
+            String with = groupName != null ? t.groupOf(groupName)
+                    : event.studentIds().isEmpty() ? t.aStudent() : name(event.studentIds().getFirst(), t);
+            String in = t.in(texts.duration(event.before(), language));
+            notifications.notify(teacher, NotificationKind.SCHEDULE_REMINDER,
+                    t.soonForTeacher(with, texts.lessonTime(event.startsAt(), language)),
+                    event.meetingUrl() == null ? in : in + " " + t.meetingLink(event.meetingUrl()), TEACHER_LINK);
         }
     }
 
     @ApplicationModuleListener
     void on(GoogleCalendarDisconnected event) {
-        notifications.notify(users.teacherId(), NotificationKind.SCHEDULE_CALENDAR, "Google Календарь отключён",
-                "Google больше не принимает доступ портала, занятия не попадают в календарь. "
-                        + "Подключите календарь заново в настройках.",
-                "/teacher/settings?open=calendar");
+        UUID teacher = users.teacherId();
+        ScheduleMessages t = ScheduleMessages.of(users.language(teacher));
+        notifications.notify(teacher, NotificationKind.SCHEDULE_CALENDAR, t.calendarDisconnected(),
+                t.calendarDisconnectedBody(), "/teacher/settings?open=calendar");
     }
 
-    private void notifyStudents(Collection<UUID> studentIds, NotificationKind kind, String title,
-            @Nullable String body) {
+    /** Each student gets the message in their language. */
+    private void notifyStudents(Collection<UUID> studentIds, NotificationKind kind,
+            BiFunction<ScheduleMessages, Language, Message> message) {
         for (UUID studentId : studentIds) {
-            notifications.notify(studentId, kind, title, body, STUDENT_LINK);
+            Language language = users.language(studentId);
+            Message written = message.apply(ScheduleMessages.of(language), language);
+            notifications.notify(studentId, kind, written.title(), written.body(), STUDENT_LINK);
         }
     }
 
@@ -227,8 +250,8 @@ class ScheduleNotifications {
         return groupId == null ? Optional.empty() : groups.findGroup(groupId).map(GroupSummary::name);
     }
 
-    private String name(UUID studentId) {
-        return users.findStudent(studentId).map(StudentSummary::displayName).orElse("Ученик");
+    private String name(UUID studentId, ScheduleMessages t) {
+        return users.findStudent(studentId).map(StudentSummary::displayName).orElse(t.unknownStudent());
     }
 
     private static @Nullable String join(List<String> parts) {

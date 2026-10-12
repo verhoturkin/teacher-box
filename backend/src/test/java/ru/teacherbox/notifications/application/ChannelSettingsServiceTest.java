@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.notifications.FakeMessengerChannel;
 import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
 import ru.teacherbox.notifications.domain.ChannelLink;
@@ -48,6 +49,7 @@ class ChannelSettingsServiceTest {
         when(telegram.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.TELEGRAM));
         when(max.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.MAX));
         when(users.teacherId()).thenReturn(UUID.randomUUID());
+        when(users.language(any())).thenReturn(Language.RU);
         StaticListableBeanFactory beans = new StaticListableBeanFactory();
         beans.addBean("polling", polling);
         ObjectProvider<MessengerPolling> pollingProvider = beans.getBeanProvider(MessengerPolling.class);

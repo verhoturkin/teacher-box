@@ -8,8 +8,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 ## Rules
 
 - Listens to domain events of other modules (producers don't know it) and turns each into an **inbox** record
-  plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — Russian templates in
-  the module; preferences per topic (`Preferences`, `NotificationTopic`).
+  plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — templates in
+  the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
+  `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
+  it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
 - `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h, `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`);
   permanent errors (4xx except 429, VK "no access") fail at once. Deactivated students get inbox only.
 - Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling, `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`),

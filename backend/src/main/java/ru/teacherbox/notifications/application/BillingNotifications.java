@@ -1,5 +1,7 @@
 package ru.teacherbox.notifications.application;
 
+import ru.teacherbox.shared.i18n.Language;
+import ru.teacherbox.identity.api.UserDirectory;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.billing.api.LessonCancelled;
@@ -8,7 +10,7 @@ import ru.teacherbox.billing.api.PaymentRecorded;
 import ru.teacherbox.billing.api.PaymentVoided;
 import ru.teacherbox.notifications.domain.NotificationKind;
 
-/** Billing events → notifications to the student with the new balance. */
+/** Billing events → notifications to the student with the new balance, in the student's language. */
 @Component
 class BillingNotifications {
 
@@ -16,18 +18,22 @@ class BillingNotifications {
 
     private final NotificationService notifications;
     private final NotificationTexts texts;
+    private final UserDirectory users;
 
-    BillingNotifications(NotificationService notifications, NotificationTexts texts) {
+    BillingNotifications(NotificationService notifications, NotificationTexts texts, UserDirectory users) {
         this.notifications = notifications;
         this.texts = texts;
+        this.users = users;
     }
 
     @ApplicationModuleListener
     void on(LessonRecorded event) {
+        Language language = users.language(event.studentId());
+        NotificationMessages t = NotificationMessages.of(language);
         String date = texts.date(event.lessonDate());
         notifications.notify(event.studentId(), NotificationKind.LESSON_RECORDED,
-                event.missed() ? "Пропуск занятия " + date : "Занятие " + date,
-                "Стоимость: " + texts.money(event.price()) + ". " + texts.balance(event.balanceAfter()),
+                event.missed() ? t.lessonMissed(date) : t.lessonRecorded(date),
+                t.price(texts.money(event.price(), language)) + " " + texts.balance(event.balanceAfter(), language),
                 LINK);
     }
 
@@ -38,25 +44,29 @@ class BillingNotifications {
      */
     @ApplicationModuleListener
     void on(LessonCancelled event) {
+        Language language = users.language(event.studentId());
+        NotificationMessages t = NotificationMessages.of(language);
         notifications.notify(event.studentId(), NotificationKind.LESSON_CANCELLED,
-                "Начисление за занятие " + texts.date(event.lessonDate()) + " снято",
-                "Занятие не оплачивается. " + texts.balance(event.balanceAfter()),
+                t.chargeRemoved(texts.date(event.lessonDate())),
+                t.notCharged() + " " + texts.balance(event.balanceAfter(), language),
                 LINK);
     }
 
     @ApplicationModuleListener
     void on(PaymentRecorded event) {
+        Language language = users.language(event.studentId());
         notifications.notify(event.studentId(), NotificationKind.PAYMENT_RECORDED,
-                "Получена оплата " + texts.money(event.amount()),
-                texts.balance(event.balanceAfter()),
+                NotificationMessages.of(language).paymentRecorded(texts.money(event.amount(), language)),
+                texts.balance(event.balanceAfter(), language),
                 LINK);
     }
 
     @ApplicationModuleListener
     void on(PaymentVoided event) {
+        Language language = users.language(event.studentId());
         notifications.notify(event.studentId(), NotificationKind.PAYMENT_VOIDED,
-                "Оплата " + texts.money(event.amount()) + " аннулирована",
-                texts.balance(event.balanceAfter()),
+                NotificationMessages.of(language).paymentVoided(texts.money(event.amount(), language)),
+                texts.balance(event.balanceAfter(), language),
                 LINK);
     }
 }

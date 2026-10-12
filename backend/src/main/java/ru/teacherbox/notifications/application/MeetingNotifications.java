@@ -1,5 +1,6 @@
 package ru.teacherbox.notifications.application;
 
+import ru.teacherbox.identity.api.UserDirectory;
 import java.util.UUID;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -14,20 +15,22 @@ class MeetingNotifications {
 
     private final NotificationService notifications;
     private final StudentGroups groups;
+    private final UserDirectory users;
 
-    MeetingNotifications(NotificationService notifications, StudentGroups groups) {
+    MeetingNotifications(NotificationService notifications, StudentGroups groups, UserDirectory users) {
         this.notifications = notifications;
         this.groups = groups;
+        this.users = users;
     }
 
     @ApplicationModuleListener
     void on(MeetingLinkShared event) {
         String group = event.groupId() == null ? null
                 : groups.findGroup(event.groupId()).map(GroupSummary::name).orElse(null);
-        String body = (group == null ? "По этой ссылке проходят наши уроки: "
-                : "По этой ссылке проходят уроки группы «" + group + "»: ") + event.joinUrl();
         for (UUID studentId : event.studentIds()) {
-            notifications.notify(studentId, NotificationKind.MEETING_LINK, "Ссылка на урок", body,
+            NotificationMessages t = NotificationMessages.of(users.language(studentId));
+            notifications.notify(studentId, NotificationKind.MEETING_LINK, t.meetingLink(),
+                    group == null ? t.ourLessons(event.joinUrl()) : t.groupLessons(group, event.joinUrl()),
                     ScheduleNotifications.STUDENT_LINK);
         }
     }

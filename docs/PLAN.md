@@ -33,7 +33,7 @@ catalog and integration checks follow the language of the page. New ADR-0036.
 
 ### Stage 153. Inbox notifications in the recipient's language (B)
 
-- [ ] 153.1 `notifications/application/NotificationTexts` per language (dates, money, durations, weekdays);
+- [x] 153.1 `notifications/application/NotificationTexts` per language (dates, money, durations, weekdays);
   texts of `Schedule/Homework/Billing/Meeting/StudentNotifications`, the reminder to connect a messenger and
   the test message — in the recipient's language.
 

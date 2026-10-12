@@ -6,22 +6,27 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Component;
+import ru.teacherbox.shared.i18n.Language;
+import ru.teacherbox.shared.i18n.Plural;
 import ru.teacherbox.shared.money.Money;
 import ru.teacherbox.shared.money.MoneyFormat;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
-/** Formatting of amounts and dates in Russian notification texts. */
+/** Formatting of amounts, dates and durations in notification texts, in the recipient's language (ADR-0036). */
 @Component
 public class NotificationTexts {
 
-    private static final Locale RUSSIAN = Locale.of("ru", "RU");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-    private static final DateTimeFormatter LESSON_TIME = DateTimeFormatter.ofPattern("EEEE, dd.MM 'в' HH:mm", RUSSIAN);
+    private static final DateTimeFormatter LESSON_TIME_RU = DateTimeFormatter.ofPattern("EEEE, dd.MM 'в' HH:mm",
+            Language.RU.locale());
+    private static final DateTimeFormatter LESSON_TIME_EN = DateTimeFormatter.ofPattern("EEEE, dd.MM 'at' HH:mm",
+            Language.EN.locale());
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
     private static final Map<DayOfWeek, String> ON_WEEKDAYS = Map.of(
             DayOfWeek.MONDAY, "понедельникам", DayOfWeek.TUESDAY, "вторникам", DayOfWeek.WEDNESDAY, "средам",
@@ -34,16 +39,19 @@ public class NotificationTexts {
         this.timeZone = timeZone;
     }
 
-    /** "1 500 ₽", "99,50 ₽", "−200 ₽" (plain spaces, fraction only when not zero). */
-    public String money(Money money) {
-        return MoneyFormat.russian(money);
+    /** "1 500 ₽", "99,50 ₽", "−200 ₽"; "₽1,500" in English. */
+    public String money(Money money, Language language) {
+        return MoneyFormat.format(money, language);
     }
 
-    /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽". */
-    public String balance(Money balance) {
-        return balance.isNegative()
-                ? "Задолженность: " + money(balance.negate())
-                : "Баланс: " + money(balance);
+    /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽"; "Balance: ₽1,500" or "Debt: ₽1,500". */
+    public String balance(Money balance, Language language) {
+        boolean debt = balance.isNegative();
+        String amount = money(debt ? balance.negate() : balance, language);
+        return switch (language) {
+            case RU -> (debt ? "Задолженность: " : "Баланс: ") + amount;
+            case EN -> (debt ? "Debt: " : "Balance: ") + amount;
+        };
     }
 
     public String date(LocalDate date) {
@@ -55,44 +63,51 @@ public class NotificationTexts {
         return DATE_TIME.format(instant.atZone(timeZone.zoneId()));
     }
 
-    /** "вторник, 01.10 в 18:00" in the instance time zone. */
-    public String lessonTime(Instant instant) {
-        return LESSON_TIME.format(instant.atZone(timeZone.zoneId()));
+    /** "вторник, 01.10 в 18:00", "Tuesday, 01.10 at 18:00" in the instance time zone. */
+    public String lessonTime(Instant instant, Language language) {
+        DateTimeFormatter format = switch (language) {
+            case RU -> LESSON_TIME_RU;
+            case EN -> LESSON_TIME_EN;
+        };
+        return format.format(instant.atZone(timeZone.zoneId()));
     }
 
-    /** "по вторникам и четвергам в 18:00". */
-    public String weekly(List<DayOfWeek> weekdays, LocalTime time) {
-        List<String> days = weekdays.stream().sorted().map(ON_WEEKDAYS::get).toList();
-        String joined = days.size() == 1 ? days.getFirst()
-                : String.join(", ", days.subList(0, days.size() - 1)) + " и " + days.getLast();
-        return "по " + joined + " в " + TIME.format(time);
+    /** "по вторникам и четвергам в 18:00", "on Tuesdays and Thursdays at 18:00". */
+    public String weekly(List<DayOfWeek> weekdays, LocalTime time, Language language) {
+        List<DayOfWeek> sorted = weekdays.stream().sorted().toList();
+        return switch (language) {
+            case RU -> "по " + list(sorted.stream().map(ON_WEEKDAYS::get).toList(), " и ") + " в " + TIME.format(time);
+            case EN -> "on " + list(sorted.stream()
+                    .map(day -> day.getDisplayName(TextStyle.FULL, Locale.UK) + "s")
+                    .toList(), " and ") + " at " + TIME.format(time);
+        };
     }
 
-    /** "1 час", "24 часа", "30 минут", "2 дня" (days from two days on). */
-    public String duration(Duration duration) {
+    /** "1 час", "24 часа", "30 минут", "2 дня" (days from two days on); "1 hour", "2 days". */
+    public String duration(Duration duration, Language language) {
         long minutes = duration.toMinutes();
         if (minutes >= 2 * 24 * 60 && minutes % (24 * 60) == 0) {
-            return plural(minutes / (24 * 60), "день", "дня", "дней");
+            long days = minutes / (24 * 60);
+            return days + " " + switch (language) {
+                case RU -> Plural.russian(days, "день", "дня", "дней");
+                case EN -> Plural.english(days, "day", "days");
+            };
         }
         if (minutes > 0 && minutes % 60 == 0) {
-            return plural(minutes / 60, "час", "часа", "часов");
+            long hours = minutes / 60;
+            return hours + " " + switch (language) {
+                case RU -> Plural.russian(hours, "час", "часа", "часов");
+                case EN -> Plural.english(hours, "hour", "hours");
+            };
         }
-        return plural(minutes, "минуту", "минуты", "минут");
+        return minutes + " " + switch (language) {
+            case RU -> Plural.russian(minutes, "минуту", "минуты", "минут");
+            case EN -> Plural.english(minutes, "minute", "minutes");
+        };
     }
 
-    static String plural(long count, String one, String few, String many) {
-        long lastTwo = count % 100;
-        long last = count % 10;
-        String word;
-        if (lastTwo >= 11 && lastTwo <= 14) {
-            word = many;
-        } else if (last == 1) {
-            word = one;
-        } else if (last >= 2 && last <= 4) {
-            word = few;
-        } else {
-            word = many;
-        }
-        return count + " " + word;
+    private static String list(List<String> items, String and) {
+        return items.size() == 1 ? items.getFirst()
+                : String.join(", ", items.subList(0, items.size() - 1)) + and + items.getLast();
     }
 }
