@@ -19,6 +19,7 @@ import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * Claude through the official Anthropic Java SDK (Messages API). The answer format is enforced
@@ -87,9 +88,13 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
 
     /** The Models API: no tokens are spent. */
     @Override
-    public String ping() {
+    public String ping(Language language) {
         try {
-            return "Модель " + client.models().retrieve(model).displayName() + " доступна";
+            String name = client.models().retrieve(model).displayName();
+            return switch (language) {
+                case RU -> "Модель " + name + " доступна";
+                case EN -> "Model " + name + " is available";
+            };
         } catch (AnthropicServiceException e) {
             throw new LlmException(LlmException.Reason.UNAVAILABLE,
                     "Anthropic API " + e.statusCode() + ": " + e.getMessage());

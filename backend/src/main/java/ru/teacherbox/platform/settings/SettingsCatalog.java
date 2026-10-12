@@ -22,9 +22,14 @@ import java.util.List;
 import java.util.Optional;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
 
-/** Every variable of {@code .env.example} with its section and description (ADR-0016). */
+/**
+ * Every variable of {@code .env.example} with its section and description (ADR-0016), in each language of
+ * the interface (ADR-0036).
+ */
 public final class SettingsCatalog {
 
+    /** No hint. */
+    private static final Wording NONE = new Wording("", "");
     private static final List<SettingDefinition> ALL = build();
 
     private SettingsCatalog() {
@@ -42,175 +47,239 @@ public final class SettingsCatalog {
     private static List<SettingDefinition> build() {
         Builder b = new Builder();
 
-        b.group("portal", "Портал")
-                .add("TEACHERBOX_PUBLIC_URL", "Адрес портала", ADDRESS,
-                        "Все ссылки портала начинаются с него. Если задан, важнее адреса из «Настройки» → «Портал».")
-                .add("TEACHERBOX_TIMEZONE", "Часовой пояс учителя", TIME_ZONE,
-                        "По нему считаются даты занятий и отчёты за месяц, например Europe/Moscow.");
+        b.group("portal", w("Портал", "Portal"))
+                .add("TEACHERBOX_PUBLIC_URL", w("Адрес портала", "Portal address"), ADDRESS,
+                        w("Все ссылки портала начинаются с него. Если задан, важнее адреса из «Настройки» → «Портал».",
+                                "Every link of the portal starts with it. When set, it wins over the address in "
+                                        + "“Settings” → “Portal”."))
+                .add("TEACHERBOX_TIMEZONE", w("Часовой пояс учителя", "Teacher's time zone"), TIME_ZONE,
+                        w("По нему считаются даты занятий и отчёты за месяц, например Europe/Moscow.",
+                                "Lesson dates and monthly reports follow it, e.g. Europe/Moscow."));
 
-        b.group("billing", "Оплаты")
-                .add("TEACHERBOX_BILLING_CURRENCY", "Валюта", CURRENCY, "Код ISO 4217, например RUB.")
-                .add("TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION", "Длительность занятия, минут", NUMBER, "");
+        b.group("billing", w("Оплаты", "Payments"))
+                .add("TEACHERBOX_BILLING_CURRENCY", w("Валюта", "Currency"), CURRENCY,
+                        w("Код ISO 4217, например RUB.", "ISO 4217 code, e.g. RUB."))
+                .add("TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION",
+                        w("Длительность занятия, минут", "Lesson length, minutes"), NUMBER, NONE);
 
-        b.group("homework", "Домашние задания")
-                .add("TEACHERBOX_HOMEWORK_MAX_FILE_SIZE", "Наибольший размер файла", DATA_SIZE,
-                        "Например 20MB; больше 25MB сервер не примет.")
-                .add("TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD", "Файлов за одну отправку", NUMBER, "")
-                .add("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", "Напоминание о сроке сдачи за", DURATION, "Например 24h.");
+        b.group("homework", w("Домашние задания", "Homework"))
+                .add("TEACHERBOX_HOMEWORK_MAX_FILE_SIZE", w("Наибольший размер файла", "Largest file size"), DATA_SIZE,
+                        w("Например 20MB; больше 25MB сервер не примет.",
+                                "E.g. 20MB; the server accepts at most 25MB."))
+                .add("TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD", w("Файлов за одну отправку", "Files per upload"),
+                        NUMBER, NONE)
+                .add("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", w("Напоминание о сроке сдачи за", "Deadline reminder before"),
+                        DURATION, w("Например 24h.", "E.g. 24h."));
 
-        b.group("schedule", "Расписание")
-                .add("TEACHERBOX_SCHEDULE_DEFAULT_DURATION", "Длительность занятия по умолчанию, минут", NUMBER, "")
-                .add("TEACHERBOX_SCHEDULE_HORIZON", "Регулярные занятия создаются вперёд на", DURATION,
-                        "Например 84d.")
-                .add("TEACHERBOX_SCHEDULE_LATE_CANCELLATION", "Поздняя отмена — позже чем за", DURATION,
-                        "Позднюю отмену учитель может засчитать как пропуск.")
-                .add("TEACHERBOX_SCHEDULE_REMINDERS", "Напоминания о занятии за", DURATIONS,
-                        "Через запятую, например 24h,1h; пусто — без напоминаний.")
-                .add("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID", "Google: идентификатор клиента OAuth", TEXT,
-                        "Можно ввести и в «Настройках» учителя; эта переменная важнее.")
-                .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET", "Google: секрет клиента OAuth")
-                .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", "Google: прокси", PROXY, "Если Google недоступен напрямую.");
+        b.group("schedule", w("Расписание", "Schedule"))
+                .add("TEACHERBOX_SCHEDULE_DEFAULT_DURATION",
+                        w("Длительность занятия по умолчанию, минут", "Default lesson length, minutes"), NUMBER, NONE)
+                .add("TEACHERBOX_SCHEDULE_HORIZON",
+                        w("Регулярные занятия создаются вперёд на", "Regular lessons are planned ahead for"), DURATION,
+                        w("Например 84d.", "E.g. 84d."))
+                .add("TEACHERBOX_SCHEDULE_LATE_CANCELLATION",
+                        w("Поздняя отмена — позже чем за", "Late cancellation — later than"), DURATION,
+                        w("Позднюю отмену учитель может засчитать как пропуск.",
+                                "The teacher may count a late cancellation as missed."))
+                .add("TEACHERBOX_SCHEDULE_REMINDERS", w("Напоминания о занятии за", "Lesson reminders before"),
+                        DURATIONS, w("Через запятую, например 24h,1h; пусто — без напоминаний.",
+                                "Separated by commas, e.g. 24h,1h; empty — no reminders."))
+                .add("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID",
+                        w("Google: идентификатор клиента OAuth", "Google: OAuth client ID"), TEXT,
+                        w("Можно ввести и в «Настройках» учителя; эта переменная важнее.",
+                                "Can also be entered in the teacher's “Settings”; this variable wins."))
+                .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET",
+                        w("Google: секрет клиента OAuth", "Google: OAuth client secret"))
+                .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", w("Google: прокси", "Google: proxy"), PROXY,
+                        w("Если Google недоступен напрямую.", "If Google can't be reached directly."));
 
-        b.group("meetings", "Видеозвонки")
+        b.group("meetings", w("Видеозвонки", "Video calls"))
                 // the LiveKit container reads them from .env too, so they change only there
-                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", "LiveKit: ключ API")
-                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET", "LiveKit: секрет API (не короче 32 символов)")
-                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", "LiveKit: адрес для портала", URL,
-                        "Браузеры всегда подключаются к <адрес портала>/livekit.");
+                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", w("LiveKit: ключ API", "LiveKit: API key"))
+                .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET",
+                        w("LiveKit: секрет API (не короче 32 символов)", "LiveKit: API secret (at least 32 characters)"))
+                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", w("LiveKit: адрес для портала", "LiveKit: address for the portal"),
+                        URL, w("Браузеры всегда подключаются к <адрес портала>/livekit.",
+                                "Browsers always connect to <portal address>/livekit."));
 
-        b.group("boards", "Доски")
-                .add("TEACHERBOX_BOARDS_BACKUP_CRON", "Расписание копий досок", CRON,
-                        "Ежедневная копия каждой изменённой доски, например 0 0 3 * * *; - — выключить.")
-                .add("TEACHERBOX_BOARDS_BACKUP_KEEP", "Сколько ежедневных копий доски хранить", NUMBER,
-                        "Копии, сделанные учителем, не считаются.");
+        b.group("boards", w("Доски", "Boards"))
+                .add("TEACHERBOX_BOARDS_BACKUP_CRON", w("Расписание копий досок", "Board copies schedule"), CRON,
+                        w("Ежедневная копия каждой изменённой доски, например 0 0 3 * * *; - — выключить.",
+                                "A daily copy of every changed board, e.g. 0 0 3 * * *; - — off."))
+                .add("TEACHERBOX_BOARDS_BACKUP_KEEP",
+                        w("Сколько ежедневных копий доски хранить", "Daily copies of a board to keep"), NUMBER,
+                        w("Копии, сделанные учителем, не считаются.", "Copies made by the teacher don't count."));
 
-        b.group("notifications", "Уведомления и боты")
-                .secret("TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", "Telegram: токен бота")
-                .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", "Telegram: прокси", PROXY,
-                        "Если Telegram заблокирован в сети сервера.")
-                .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL", "Telegram: адрес Bot API", URL,
-                        "Свой сервер Bot API вместо api.telegram.org.")
-                .secret("TEACHERBOX_NOTIFICATIONS_VK_TOKEN", "ВКонтакте: токен сообщества")
-                .add("TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID", "ВКонтакте: номер сообщества", NUMBER,
-                        "Число из адреса club<номер>.")
-                .secret("TEACHERBOX_NOTIFICATIONS_MAX_TOKEN", "MAX: токен бота")
-                .add("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "Попыток доставки сообщения", NUMBER, "")
-                .add("TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL", "Код подключения мессенджера действует", DURATION,
-                        "Например 15m.");
+        b.group("notifications", w("Уведомления и боты", "Notifications and bots"))
+                .secret("TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", w("Telegram: токен бота", "Telegram: bot token"))
+                .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", w("Telegram: прокси", "Telegram: proxy"), PROXY,
+                        w("Если Telegram заблокирован в сети сервера.", "If Telegram is blocked in the server's network."))
+                .add("TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL", w("Telegram: адрес Bot API", "Telegram: Bot API address"),
+                        URL, w("Свой сервер Bot API вместо api.telegram.org.",
+                                "Your own Bot API server instead of api.telegram.org."))
+                .secret("TEACHERBOX_NOTIFICATIONS_VK_TOKEN", w("ВКонтакте: токен сообщества", "VK: community token"))
+                .add("TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID", w("ВКонтакте: номер сообщества", "VK: community number"),
+                        NUMBER, w("Число из адреса club<номер>.", "The number from the address club<number>."))
+                .secret("TEACHERBOX_NOTIFICATIONS_MAX_TOKEN", w("MAX: токен бота", "MAX: bot token"))
+                .add("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", w("Попыток доставки сообщения", "Delivery attempts"),
+                        NUMBER, NONE)
+                .add("TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL",
+                        w("Код подключения мессенджера действует", "Messenger connection code is valid for"), DURATION,
+                        w("Например 15m.", "E.g. 15m."));
 
-        b.group("ai", "ИИ-помощник")
-                .choice("TEACHERBOX_AI_PROVIDER", "Сервис ИИ", "Пусто — ИИ выключен.",
+        b.group("ai", w("ИИ-помощник", "AI assistant"))
+                .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),
+                        w("Пусто — ИИ выключен.", "Empty — AI is off."),
                         List.of("anthropic", "gemini", "openai-compatible"))
-                .secret("TEACHERBOX_AI_API_KEY", "Ключ API")
-                .add("TEACHERBOX_AI_MODEL", "Модель", TEXT, "Пусто — модель сервиса по умолчанию.")
-                .add("TEACHERBOX_AI_BASE_URL", "Адрес API", URL, "Для OpenAI-совместимых сервисов обязателен.")
-                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "Токенов в месяц", NUMBER, "0 — без ограничения.")
-                .add("TEACHERBOX_AI_PROXY", "Прокси", PROXY, "Сервисы ИИ недоступны из России напрямую.")
-                .choice("TEACHERBOX_AI_EFFORT", "Усилие (только Anthropic)", "Пусто — по умолчанию модели.",
+                .secret("TEACHERBOX_AI_API_KEY", w("Ключ API", "API key"))
+                .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT,
+                        w("Пусто — модель сервиса по умолчанию.", "Empty — the service's default model."))
+                .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API address"), URL,
+                        w("Для OpenAI-совместимых сервисов обязателен.", "Required for OpenAI-compatible services."))
+                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER,
+                        w("0 — без ограничения.", "0 — no limit."))
+                .add("TEACHERBOX_AI_PROXY", w("Прокси", "Proxy"), PROXY,
+                        w("Сервисы ИИ недоступны из России напрямую.", "AI services can't be reached from Russia directly."))
+                .choice("TEACHERBOX_AI_EFFORT", w("Усилие (только Anthropic)", "Effort (Anthropic only)"),
+                        w("Пусто — по умолчанию модели.", "Empty — the model's default."),
                         List.of("low", "medium", "high", "xhigh", "max"))
-                .add("TEACHERBOX_AI_FALLBACKS", "Запасная модель при отказе (только Anthropic)", BOOLEAN, "")
-                .add("TEACHERBOX_AI_MAX_TOKENS", "Токенов в ответе", NUMBER, "")
-                .add("TEACHERBOX_AI_TIMEOUT", "Время ожидания ответа", DURATION, "Например 120s.");
+                .add("TEACHERBOX_AI_FALLBACKS",
+                        w("Запасная модель при отказе (только Anthropic)", "Fallback model on refusal (Anthropic only)"),
+                        BOOLEAN, NONE)
+                .add("TEACHERBOX_AI_MAX_TOKENS", w("Токенов в ответе", "Tokens per answer"), NUMBER, NONE)
+                .add("TEACHERBOX_AI_TIMEOUT", w("Время ожидания ответа", "Answer timeout"), DURATION,
+                        w("Например 120s.", "E.g. 120s."));
 
-        b.group("sessions", "Сеансы и вход")
-                .add("TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", "Токен доступа действует", DURATION, "Например 15m.")
-                .add("TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL", "Вход помнится", DURATION, "Например 30d.")
-                .add("TEACHERBOX_IDENTITY_INVITE_TTL", "Приглашение действует", DURATION, "Например 7d.")
-                .add("TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS", "Неудачных входов до блокировки", NUMBER, "")
-                .add("TEACHERBOX_IDENTITY_LOCK_DURATION", "Блокировка после неудачных входов", DURATION,
-                        "Например 15m.")
-                .secret("TEACHERBOX_SECURITY_JWT_SECRET", "Секрет токенов доступа",
-                        "Не короче 32 символов; после смены всем нужно войти заново.")
-                .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS", "Попыток входа за период", NUMBER,
-                        "0 — без ограничения.")
-                .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD", "Период подсчёта попыток", DURATION,
-                        "Например 1m.");
+        b.group("sessions", w("Сеансы и вход", "Sessions and sign-in"))
+                .add("TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", w("Токен доступа действует", "Access token is valid for"),
+                        DURATION, w("Например 15m.", "E.g. 15m."))
+                .add("TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL", w("Вход помнится", "Sign-in is remembered for"), DURATION,
+                        w("Например 30d.", "E.g. 30d."))
+                .add("TEACHERBOX_IDENTITY_INVITE_TTL", w("Приглашение действует", "Invitation is valid for"), DURATION,
+                        w("Например 7d.", "E.g. 7d."))
+                .add("TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS",
+                        w("Неудачных входов до блокировки", "Failed sign-ins before a lock"), NUMBER, NONE)
+                .add("TEACHERBOX_IDENTITY_LOCK_DURATION",
+                        w("Блокировка после неудачных входов", "Lock after failed sign-ins"), DURATION,
+                        w("Например 15m.", "E.g. 15m."))
+                .secret("TEACHERBOX_SECURITY_JWT_SECRET", w("Секрет токенов доступа", "Access token secret"),
+                        w("Не короче 32 символов; после смены всем нужно войти заново.",
+                                "At least 32 characters; after a change everyone signs in again."))
+                .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS",
+                        w("Попыток входа за период", "Sign-in attempts per period"), NUMBER,
+                        w("0 — без ограничения.", "0 — no limit."))
+                .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD",
+                        w("Период подсчёта попыток", "Period of counting attempts"), DURATION,
+                        w("Например 1m.", "E.g. 1m."));
 
-        b.group("backups", "Резервные копии")
-                .add("TEACHERBOX_BACKUP_CRON", "Расписание копий", CRON,
-                        "Cron из 6 частей, например 0 30 3 * * * (каждую ночь в 3:30); - — выключить.")
-                .add("TEACHERBOX_BACKUP_KEEP", "Сколько копий хранить", NUMBER,
-                        "Копии перед восстановлением и сбросом хранятся всегда.")
-                .add("TEACHERBOX_BACKUP_RESTART", "Перезапуск после восстановления", BOOLEAN,
-                        "true в Docker; false — перезапускать портал вручную.");
+        b.group("backups", w("Резервные копии", "Backups"))
+                .add("TEACHERBOX_BACKUP_CRON", w("Расписание копий", "Backup schedule"), CRON,
+                        w("Cron из 6 частей, например 0 30 3 * * * (каждую ночь в 3:30); - — выключить.",
+                                "Cron of 6 parts, e.g. 0 30 3 * * * (every night at 3:30); - — off."))
+                .add("TEACHERBOX_BACKUP_KEEP", w("Сколько копий хранить", "Backups to keep"), NUMBER,
+                        w("Копии перед восстановлением и сбросом хранятся всегда.",
+                                "Copies made before a restore or a reset are always kept."))
+                .add("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after a restore"),
+                        BOOLEAN, w("true в Docker; false — перезапускать портал вручную.",
+                                "true in Docker; false — restart the portal by hand."));
 
-        b.group("log", "Журнал")
-                .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", "Формат журнала в консоли",
-                        "Пусто — обычный текст; JSON для сборщиков журналов.", List.of("ecs", "logstash", "gelf"))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", "Размер файла журнала", DATA_SIZE,
-                        "Например 10MB.")
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP", "Все файлы журнала не больше", DATA_SIZE,
-                        "Например 100MB.")
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", "Дней журнала хранить", NUMBER, "");
+        b.group("log", w("Журнал", "Log"))
+                .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),
+                        w("Пусто — обычный текст; JSON для сборщиков журналов.",
+                                "Empty — plain text; JSON for log collectors."),
+                        List.of("ecs", "logstash", "gelf"))
+                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", w("Размер файла журнала", "Log file size"),
+                        DATA_SIZE, w("Например 10MB.", "E.g. 10MB."))
+                .add("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
+                        w("Все файлы журнала не больше", "All log files at most"), DATA_SIZE,
+                        w("Например 100MB.", "E.g. 100MB."))
+                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", w("Дней журнала хранить", "Days of log to keep"),
+                        NUMBER, NONE);
 
-        b.group("accounts", "Учётные записи")
-                .account("TEACHERBOX_IDENTITY_TEACHER_LOGIN", "Логин учителя", false)
-                .account("TEACHERBOX_IDENTITY_TEACHER_PASSWORD", "Пароль учителя", true)
-                .account("TEACHERBOX_IDENTITY_TEACHER_NAME", "Имя учителя", false)
-                .account("TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD", "Сброс пароля учителя", false)
-                .account("TEACHERBOX_IDENTITY_ADMIN_LOGIN", "Логин администратора", false)
-                .account("TEACHERBOX_IDENTITY_ADMIN_PASSWORD", "Пароль администратора", true);
+        b.group("accounts", w("Учётные записи", "Accounts"))
+                .account("TEACHERBOX_IDENTITY_TEACHER_LOGIN", w("Логин учителя", "Teacher's login"), false)
+                .account("TEACHERBOX_IDENTITY_TEACHER_PASSWORD", w("Пароль учителя", "Teacher's password"), true)
+                .account("TEACHERBOX_IDENTITY_TEACHER_NAME", w("Имя учителя", "Teacher's name"), false)
+                .account("TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD",
+                        w("Сброс пароля учителя", "Teacher's password reset"), false)
+                .account("TEACHERBOX_IDENTITY_ADMIN_LOGIN", w("Логин администратора", "Administrator's login"), false)
+                .account("TEACHERBOX_IDENTITY_ADMIN_PASSWORD", w("Пароль администратора", "Administrator's password"),
+                        true);
 
-        b.group("docker", "Docker")
-                .docker("TEACHERBOX_HTTP_PORT", "Порт веб-интерфейса на сервере", NUMBER)
-                .docker("TEACHERBOX_DOMAIN", "Домен портала для HTTPS (Caddy)", TEXT)
-                .docker("TEACHERBOX_VERSION", "Версия образа", TEXT)
-                .docker("TEACHERBOX_MEMORY_LIMIT", "Память контейнера", TEXT)
-                .docker("TEACHERBOX_CPU_LIMIT", "Процессоры контейнера", TEXT)
-                .docker("JAVA_TOOL_OPTIONS", "Параметры Java", TEXT)
-                .docker("COMPOSE_PROFILES", "Профили Compose (calls — звонки)", TEXT)
-                .docker("TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP", "LiveKit: искать публичный IP через STUN", TEXT)
-                .docker("TEACHERBOX_LIVEKIT_NODE_IP", "LiveKit: публичный IP сервера", TEXT)
-                .docker("TEACHERBOX_LIVEKIT_MEMORY_LIMIT", "LiveKit: память контейнера", TEXT)
-                .docker("TEACHERBOX_LIVEKIT_CPU_LIMIT", "LiveKit: процессоры контейнера", TEXT);
+        b.group("docker", w("Docker", "Docker"))
+                .docker("TEACHERBOX_HTTP_PORT", w("Порт веб-интерфейса на сервере", "Web interface port on the server"),
+                        NUMBER)
+                .docker("TEACHERBOX_DOMAIN", w("Домен портала для HTTPS (Caddy)", "Portal domain for HTTPS (Caddy)"),
+                        TEXT)
+                .docker("TEACHERBOX_VERSION", w("Версия образа", "Image version"), TEXT)
+                .docker("TEACHERBOX_MEMORY_LIMIT", w("Память контейнера", "Container memory"), TEXT)
+                .docker("TEACHERBOX_CPU_LIMIT", w("Процессоры контейнера", "Container CPUs"), TEXT)
+                .docker("JAVA_TOOL_OPTIONS", w("Параметры Java", "Java options"), TEXT)
+                .docker("COMPOSE_PROFILES", w("Профили Compose (calls — звонки)", "Compose profiles (calls — video calls)"),
+                        TEXT)
+                .docker("TEACHERBOX_LIVEKIT_USE_EXTERNAL_IP",
+                        w("LiveKit: искать публичный IP через STUN", "LiveKit: find the public IP through STUN"), TEXT)
+                .docker("TEACHERBOX_LIVEKIT_NODE_IP", w("LiveKit: публичный IP сервера", "LiveKit: server's public IP"),
+                        TEXT)
+                .docker("TEACHERBOX_LIVEKIT_MEMORY_LIMIT", w("LiveKit: память контейнера", "LiveKit: container memory"),
+                        TEXT)
+                .docker("TEACHERBOX_LIVEKIT_CPU_LIMIT", w("LiveKit: процессоры контейнера", "LiveKit: container CPUs"),
+                        TEXT);
 
         return List.copyOf(b.settings);
     }
 
+    private static Wording w(String ru, String en) {
+        return new Wording(ru, en);
+    }
+
     private static final class Builder {
+
+        private static final Wording DOCKER_ONLY = w("Docker Compose читает её до запуска портала: меняется только в .env.",
+                "Docker Compose reads it before the portal starts: it changes only in .env.");
+        private static final Wording IN_MY_ACCOUNT = w("Учётные записи меняются в «Мой аккаунт».",
+                "Accounts are changed in “My account”.");
 
         private final List<SettingDefinition> settings = new ArrayList<>();
         private String section = "";
-        private String group = "";
+        private Wording group = NONE;
 
-        Builder group(String key, String name) {
+        Builder group(String key, Wording name) {
             section = key;
             group = name;
             return this;
         }
 
-        Builder add(String name, String title, SettingKind kind, String hint) {
+        Builder add(String name, Wording title, SettingKind kind, Wording hint) {
             return put(name, title, hint, kind, List.of(), false, EDITABLE);
         }
 
-        Builder choice(String name, String title, String hint, List<String> choices) {
+        Builder choice(String name, Wording title, Wording hint, List<String> choices) {
             return put(name, title, hint, CHOICE, choices, false, EDITABLE);
         }
 
-        Builder secret(String name, String title) {
-            return secret(name, title, "");
+        Builder secret(String name, Wording title) {
+            return secret(name, title, NONE);
         }
 
-        Builder secret(String name, String title, String hint) {
+        Builder secret(String name, Wording title, Wording hint) {
             return put(name, title, hint, TEXT, List.of(), true, EDITABLE);
         }
 
         /** A secret that Docker Compose also passes to another container: read-only in the UI. */
-        Builder dockerSecret(String name, String title) {
-            return put(name, title, "Docker Compose читает её до запуска портала: меняется только в .env.", TEXT,
-                    List.of(), true, DOCKER);
+        Builder dockerSecret(String name, Wording title) {
+            return put(name, title, DOCKER_ONLY, TEXT, List.of(), true, DOCKER);
         }
 
-        Builder docker(String name, String title, SettingKind kind) {
-            return put(name, title, "Docker Compose читает её до запуска портала: меняется только в .env.", kind,
-                    List.of(), false, DOCKER);
+        Builder docker(String name, Wording title, SettingKind kind) {
+            return put(name, title, DOCKER_ONLY, kind, List.of(), false, DOCKER);
         }
 
-        Builder account(String name, String title, boolean secret) {
-            return put(name, title, "Учётные записи меняются в «Мой аккаунт».", TEXT, List.of(), secret, ACCOUNT);
+        Builder account(String name, Wording title, boolean secret) {
+            return put(name, title, IN_MY_ACCOUNT, TEXT, List.of(), secret, ACCOUNT);
         }
 
-        private Builder put(String name, String title, String hint, SettingKind kind, List<String> choices,
+        private Builder put(String name, Wording title, Wording hint, SettingKind kind, List<String> choices,
                 boolean secret, Access access) {
             settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access));
             return this;

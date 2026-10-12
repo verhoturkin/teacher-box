@@ -64,7 +64,7 @@ public class ReviewService {
                     Assignment assignment = byId.get(task.assignmentId());
                     StudentSummary student = students.get(task.studentId());
                     return new ReviewQueueItem(task.id(), assignment.id(), assignment.title(), task.studentId(),
-                            student == null ? TaskDetailsAssembler.UNKNOWN_STUDENT : student.displayName(),
+                            student == null ? TaskDetailsAssembler.unknownStudent() : student.displayName(),
                             student == null ? null : student.avatar(), task.submittedAt(), assignment.dueAt());
                 })
                 .toList();

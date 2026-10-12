@@ -41,6 +41,7 @@ import ru.teacherbox.billing.persistence.StudentAccountRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** Balances, histories and reports. */
@@ -48,7 +49,6 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 @Transactional(readOnly = true)
 public class BillingQueryService {
 
-    private static final String UNKNOWN_STUDENT = "Неизвестный ученик";
     private static final int TOP_DEBTORS = 5;
 
     private final StudentAccountRepository accounts;
@@ -194,7 +194,7 @@ public class BillingQueryService {
 
     private static String nameOf(Map<UUID, StudentSummary> students, UUID id) {
         StudentSummary student = students.get(id);
-        return student == null ? UNKNOWN_STUDENT : student.displayName();
+        return student == null ? unknownStudent() : student.displayName();
     }
 
     private static @Nullable String avatarOf(Map<UUID, StudentSummary> students, UUID id) {
@@ -211,5 +211,13 @@ public class BillingQueryService {
         private int lessons;
         private long charged;
         private long paid;
+    }
+
+    /** In the language of the page (ADR-0036). */
+    private static String unknownStudent() {
+        return switch (Language.current()) {
+            case RU -> "Неизвестный ученик";
+            case EN -> "Unknown student";
+        };
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -186,11 +187,12 @@ class AnthropicLlmClientTest {
         });
 
         try (AnthropicLlmClient client = client(null, false)) {
-            assertThat(client.ping()).isEqualTo("Модель Claude Opus 5 доступна");
+            assertThat(client.ping(Language.RU)).isEqualTo("Модель Claude Opus 5 доступна");
             assertThat(path.get()).isEqualTo("/v1/models/claude-opus-5");
+            assertThat(client.ping(Language.EN)).isEqualTo("Model Claude Opus 5 is available");
 
             modelStatus.set(401);
-            assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class, e -> {
+            assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOfSatisfying(LlmException.class, e -> {
                 assertThat(e.reason()).isEqualTo(LlmException.Reason.UNAVAILABLE);
                 assertThat(e.getMessage()).contains("401");
             });
@@ -206,7 +208,7 @@ class AnthropicLlmClientTest {
         try (AnthropicLlmClient client = new AnthropicLlmClient(AnthropicOkHttpClient.builder()
                 .apiKey("test-key").baseUrl("http://127.0.0.1:" + closedPort).maxRetries(0).build(),
                 "claude-opus-5", null, false, 16000)) {
-            assertThatThrownBy(client::ping).isInstanceOf(LlmException.class);
+            assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOf(LlmException.class);
         }
     }
 

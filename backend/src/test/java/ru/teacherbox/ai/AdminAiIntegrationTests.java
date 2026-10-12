@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import ru.teacherbox.ai.application.LlmException;
@@ -48,6 +49,12 @@ class AdminAiIntegrationTests {
                     assertThat(json).extractingPath("$[?(@.name == 'ИИ (fake)')].detail").asArray()
                             .containsExactly("Модель fake-model доступна");
                 });
+
+        assertThat(mvc.post().uri("/api/admin/integrations/check").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                .with(TestUsers.admin(UUID.randomUUID())))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$[?(@.name == 'AI (fake)')].detail").asArray()
+                .containsExactly("Model fake-model is available");
 
         llm.failPing(new LlmException(LlmException.Reason.UNAVAILABLE, "Provider 401: Invalid API key"));
         assertThat(mvc.post().uri("/api/admin/integrations/check").with(TestUsers.admin(UUID.randomUUID())))

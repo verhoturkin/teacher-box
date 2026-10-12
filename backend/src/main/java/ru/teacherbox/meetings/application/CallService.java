@@ -22,14 +22,13 @@ import ru.teacherbox.meetings.domain.RoomOwner;
 import ru.teacherbox.meetings.persistence.RoomRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.CurrentUser;
 
 /** Built-in calls (ADR-0030): joining the room of a current student or an active group. */
 @Service
 public class CallService {
 
-    /** A student's own room as the student sees it. */
-    static final String OWN_ROOM_TITLE = "Урок";
 
     /**
      * Everything the browser needs to join.
@@ -126,7 +125,7 @@ public class CallService {
         String teacher = users.teacherId().toString();
         Map<String, List<CallServer.Participant>> occupied = occupied().orElse(Map.of());
         List<MyCallView> rooms = new ArrayList<>();
-        rooms.add(new MyCallView(studentId, RoomOwner.STUDENT, OWN_ROOM_TITLE, present(occupied, studentId, teacher)));
+        rooms.add(new MyCallView(studentId, RoomOwner.STUDENT, ownRoomTitle(), present(occupied, studentId, teacher)));
         for (GroupSummary group : groups.groupsOf(studentId)) {
             rooms.add(new MyCallView(group.id(), RoomOwner.GROUP, group.name(),
                     present(occupied, group.id(), teacher)));
@@ -141,7 +140,7 @@ public class CallService {
         }
         Owner owner = accessible(user, ownerId).orElseThrow(CallService::roomNotFound);
         String room = CallRooms.name(owner.id());
-        String title = user.isTeacher() || owner.type() == RoomOwner.GROUP ? owner.name() : OWN_ROOM_TITLE;
+        String title = user.isTeacher() || owner.type() == RoomOwner.GROUP ? owner.name() : ownRoomTitle();
         String token = server.token(new CallServer.Grant(room, user.id().toString(), user.displayName(),
                 user.isTeacher()));
         return new JoinView(token, room, title);
@@ -189,5 +188,13 @@ public class CallService {
 
     private static NotFoundException roomNotFound() {
         return new NotFoundException("meetings.room-not-found", "The room does not exist");
+    }
+
+    /** A student's own room as the student sees it, in the language of the page (ADR-0036). */
+    static String ownRoomTitle() {
+        return switch (Language.current()) {
+            case RU -> "Урок";
+            case EN -> "Lesson";
+        };
     }
 }

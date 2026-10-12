@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
+import ru.teacherbox.shared.i18n.Language;
 
 /** The catalog of the administrator's settings follows {@code .env.example} (ADR-0016). */
 class SettingsCatalogTest {
@@ -46,8 +47,14 @@ class SettingsCatalogTest {
                 .doesNotHaveDuplicates()
                 .hasSameSizeAs(SettingsCatalog.all().stream().map(SettingDefinition::section).distinct().toList());
         assertThat(SettingsCatalog.all()).allSatisfy(setting -> {
-            assertThat(setting.title()).isNotBlank();
-            assertThat(setting.group()).isNotBlank();
+            for (Language language : Language.values()) {
+                assertThat(setting.title().in(language)).isNotBlank();
+                assertThat(setting.group().in(language)).isNotBlank();
+                assertThat(setting.hint().in(language).isEmpty()).as(setting.name() + " has a hint in every language")
+                        .isEqualTo(setting.hint().ru().isEmpty());
+            }
+            assertThat(setting.title().en()).doesNotContainPattern("[\\u0400-\\u04FF]");
+            assertThat(setting.hint().en()).doesNotContainPattern("[\\u0400-\\u04FF]");
             assertThat(setting.section()).matches("[a-z]+");
             assertThat(setting.kind() == SettingKind.CHOICE).isEqualTo(!setting.choices().isEmpty());
         });

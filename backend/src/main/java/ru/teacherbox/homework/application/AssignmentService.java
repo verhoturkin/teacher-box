@@ -179,7 +179,7 @@ public class AssignmentService {
         Function<HomeworkTask, TaskSummary> summary = task -> {
             StudentSummary student = students.get(task.studentId());
             return new TaskSummary(task.id(), task.studentId(),
-                    student == null ? TaskDetailsAssembler.UNKNOWN_STUDENT : student.displayName(),
+                    student == null ? TaskDetailsAssembler.unknownStudent() : student.displayName(),
                     student == null ? null : student.avatar(), task.status(), task.grade(), task.submittedAt(),
                     task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
         };

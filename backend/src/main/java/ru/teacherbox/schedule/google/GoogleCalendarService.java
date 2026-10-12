@@ -32,6 +32,7 @@ import ru.teacherbox.schedule.persistence.GoogleRepository;
 import ru.teacherbox.schedule.persistence.GoogleRepository.PendingAuthorization;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
@@ -286,16 +287,20 @@ public class GoogleCalendarService {
      * @return what was found, or {@code null} when Google Calendar is not connected
      * @throws GoogleException if Google does not answer or no longer accepts the access
      */
-    public @Nullable String checkConnection() {
+    public @Nullable String checkConnection(Language language) {
         GoogleConnection connection = connection();
         String calendarId = connection.calendarId();
         if (!connection.isConnected() || calendarId == null) {
             return null;
         }
         try {
-            return api.calendarExists(token(connection), calendarId)
-                    ? "Календарь портала доступен"
-                    : "Календарь портала удалён в Google — синхронизация создаст его заново";
+            boolean exists = api.calendarExists(token(connection), calendarId);
+            return switch (language) {
+                case RU -> exists ? "Календарь портала доступен"
+                        : "Календарь портала удалён в Google — синхронизация создаст его заново";
+                case EN -> exists ? "The portal's calendar is available"
+                        : "The portal's calendar was deleted in Google — the sync will create it again";
+            };
         } catch (GoogleAuthException e) {
             lost(e);
             throw e;

@@ -7,6 +7,7 @@ import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Scripted language model: answers are queued by the test, requests are remembered. */
 public final class FakeLlmClient implements LlmClient {
@@ -62,10 +63,10 @@ public final class FakeLlmClient implements LlmClient {
     }
 
     @Override
-    public synchronized String ping() {
+    public synchronized String ping(Language language) {
         if (pingError != null) {
             throw pingError;
         }
-        return "Модель fake-model доступна";
+        return language == Language.RU ? "Модель fake-model доступна" : "Model fake-model is available";
     }
 }

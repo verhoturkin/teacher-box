@@ -30,8 +30,11 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
   Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a
   `section` key (`ai`, `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`).
+  Sections, titles, hints and value problems come in the language of the request (`Accept-Language`,
+  `Wording` pairs `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
-  incomplete Modulith events with resubmit, integration checks (`IntegrationCheck` beans), diagnostics archive.
+  incomplete Modulith events with resubmit, integration checks (`IntegrationCheck` beans; names and answers in
+  the language of the request, `Language.current()`), diagnostics archive.
   Admin actions → `teacherbox.audit` logger.
 - Logs — JSON (ECS) in `/data/logs/teacher-box.log` with rotation; console plain text; no personal data.
 
