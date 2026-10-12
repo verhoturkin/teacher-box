@@ -373,6 +373,12 @@ Students in «Payments» are a list, a line per student: photo, name, lesson pri
 
 «Payments» → «Payment» (or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
 
+## Payment receipt
+
+A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the student's history — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
+
+The easiest way is to forward the receipt to the bot: send a photo or a PDF, the bot asks who paid and how much and records the payment with the receipt ([What the bot can do](/teacher/help/bot)).
+
 ## Lessons outside the schedule
 
 Lessons are charged when you mark them in the schedule. If a lesson took place but is not in the schedule, add it to «Schedule» backdated and mark it «Held» — or record it through the bot («Add lesson»).
@@ -433,6 +439,7 @@ Send the bot /menu — buttons with actions appear. The bot speaks Russian.
 - **Unmarked** — past lessons without a mark.
 - **Requests** — accept or decline students' requests with an answer. The buttons are right under the request notification too.
 - **Record payment** — choose a student and the amount (1, 4 or 8 lessons at their price, or any).
+- **Receipt** — send the bot a photo or a PDF of a receipt (up to 10 MB); it asks for the student and the amount and records the payment with this receipt.
 - **Add lesson** — one held outside the schedule, with a student or a group.
 
 ## For students

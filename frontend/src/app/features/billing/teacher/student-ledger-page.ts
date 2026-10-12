@@ -22,6 +22,8 @@ import { BillingStudent, Lesson, Payment, StudentLedger } from '../data-access/b
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerList } from '../ledger/ledger-list';
 import { PaymentDialog } from './payment-dialog';
+import { RECEIPT_MAX_SIZE } from '../receipts';
+import { describeError } from '@core/http/error-messages';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -148,8 +150,11 @@ import { locale } from '@core/i18n/language';
         <tb-ledger-list
           [ledger]="ledger"
           [editable]="true"
+          [receiptBusy]="receiptBusy()"
           (cancelLesson)="confirmCancel($event)"
           (voidPayment)="confirmVoid($event)"
+          (attachReceipt)="attachReceipt($event.payment, $event.file)"
+          (removeReceipt)="confirmRemoveReceipt($event)"
         />
       </p-card>
 
@@ -171,6 +176,8 @@ export class StudentLedgerPage implements OnInit {
   private readonly api = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
+  /** The id of the payment whose receipt is being saved. */
+  protected readonly receiptBusy = signal<string | null>(null);
 
   /** Route parameter. */
   readonly studentId = input.required<string>();
@@ -255,6 +262,41 @@ export class StudentLedgerPage implements OnInit {
         acceptLabel: T.studentLedger.cancelAccept,
         accept: () => {
           this.api.cancelLesson(lesson.id, null).subscribe(() => {
+            this.reload();
+          });
+        },
+      }),
+    );
+  }
+
+  protected attachReceipt(payment: Payment, file: File): void {
+    if (file.size > RECEIPT_MAX_SIZE) {
+      this.snackbar.error(T.studentLedger.receiptTooLarge);
+      return;
+    }
+    this.receiptBusy.set(payment.id);
+    this.api.attachReceipt(payment.id, file).subscribe({
+      next: () => {
+        this.receiptBusy.set(null);
+        this.snackbar.success(T.studentLedger.receiptAttached);
+        this.reload();
+      },
+      error: (error: unknown) => {
+        this.receiptBusy.set(null);
+        this.snackbar.error(describeError(error, T.studentLedger.receiptFailed));
+      },
+    });
+  }
+
+  protected confirmRemoveReceipt(payment: Payment): void {
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: T.studentLedger.removeReceiptHeader,
+        message: T.studentLedger.removeReceiptMessage,
+        acceptLabel: T.studentLedger.removeReceiptAccept,
+        accept: () => {
+          this.api.removeReceipt(payment.id).subscribe(() => {
+            this.snackbar.success(T.studentLedger.receiptRemoved);
             this.reload();
           });
         },

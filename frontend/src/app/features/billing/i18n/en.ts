@@ -38,6 +38,11 @@ export const en: Translation<typeof ru> = {
     voided: 'Voided',
     voidPayment: (date: string) => `Void the payment of ${date}`,
     showMore: 'Show more',
+    openReceipt: (date: string) => `Open the receipt of the payment of ${date}`,
+    receiptActions: (date: string) => `Receipt of the payment of ${date}`,
+    attachReceipt: 'Attach a receipt',
+    replaceReceipt: 'Replace the receipt',
+    removeReceipt: 'Remove the receipt',
   },
   myBilling: {
     title: 'Payments',
@@ -112,6 +117,14 @@ export const en: Translation<typeof ru> = {
     date: 'Payment date',
     comment: 'Comment',
     failed: 'Could not save the payment',
+    receipt: 'Receipt',
+    chooseReceipt: 'Choose a file',
+    otherReceipt: 'Another file',
+    clearReceipt: 'No receipt',
+    receiptHint: 'Optional: a photo or a PDF up to 10 MB.',
+    receiptTooLarge: 'A receipt is up to 10 MB',
+    receiptFailed:
+      'The payment is recorded, but the receipt was not attached. Attach it in the student history.',
   },
   studentLedger: {
     student: 'Student',
@@ -133,5 +146,12 @@ export const en: Translation<typeof ru> = {
     voidMessage: (amount: string) =>
       `The payment of ${amount} will no longer count. The record stays in the history.`,
     voidAccept: 'Void',
+    removeReceiptHeader: 'Remove the receipt?',
+    removeReceiptMessage: 'The receipt file will be deleted. The payment stays.',
+    removeReceiptAccept: 'Remove the receipt',
+    receiptAttached: 'Receipt attached',
+    receiptRemoved: 'Receipt removed',
+    receiptTooLarge: 'A receipt is up to 10 MB',
+    receiptFailed: 'Could not attach the receipt',
   },
 };

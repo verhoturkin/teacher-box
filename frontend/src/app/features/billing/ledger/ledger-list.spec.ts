@@ -1,7 +1,11 @@
+import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { Mock } from 'vitest';
+import { FileOpener } from '@shared/files/file-opener';
+import { testProviders } from '@testing/setup';
 import { providePrimeNG } from 'primeng/config';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { buttonByText, hostElement, requireElement } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, requireElement } from '@testing/dom';
 import { Lesson, Payment } from '../data-access/billing.models';
 import { BalanceAmount } from './balance-amount';
 import { ledgerEntries } from './ledger-entries';
@@ -158,5 +162,103 @@ describe('BalanceAmount', () => {
     fixture.componentRef.setInput('balance', 0);
     await fixture.whenStable();
     expect(hostElement(fixture).querySelector('.tb-muted')?.textContent.trim()).toBe('0 ₽');
+  });
+});
+
+describe('LedgerList receipts', () => {
+  let fixture: ComponentFixture<LedgerList>;
+  let backend: HttpTestingController;
+  let opener: { open: Mock<FileOpener['open']> };
+
+  const RECEIPT = { filename: 'чек.pdf', contentType: 'application/pdf', size: 10 };
+
+  beforeEach(() => {
+    opener = { open: vi.fn<FileOpener['open']>() };
+    TestBed.configureTestingModule({
+      imports: [LedgerList],
+      providers: [...testProviders(), { provide: FileOpener, useValue: opener }],
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(LedgerList);
+  });
+
+  afterEach(() => {
+    backend.verify();
+    fixture.destroy();
+  });
+
+  function opened(call: number): Parameters<FileOpener['open']> {
+    const args = opener.open.mock.calls[call];
+    if (args === undefined) {
+      throw new Error(`The file opener was not called ${String(call + 1)} times`);
+    }
+    return args;
+  }
+
+  it('opens the receipt of an own payment for the student', async () => {
+    fixture.componentRef.setInput(
+      'ledger',
+      ledger({ payments: [payment({ receipt: RECEIPT }), payment({ id: 'p-2' })] }),
+    );
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(host.querySelectorAll('button[aria-label^="Открыть чек оплаты от "]')).toHaveLength(1);
+    expect(host.querySelector('button[aria-label^="Чек оплаты от "]')).toBeNull();
+    requireElement(host, 'button[aria-label^="Открыть чек оплаты от "]', HTMLButtonElement).click();
+
+    const [content, showable, filename] = opened(0);
+    expect(showable).toBe(true);
+    expect(filename(new Blob())).toBe('чек.pdf');
+    content.subscribe();
+    backend.expectOne('/api/me/billing/payments/p-1/receipt').flush(new Blob(['%PDF']));
+  });
+
+  it('lets the teacher attach, replace and remove a receipt from the menu', async () => {
+    const attached: { payment: Payment; file: File }[] = [];
+    const removed: Payment[] = [];
+    fixture.componentInstance.attachReceipt.subscribe((event) => attached.push(event));
+    fixture.componentInstance.removeReceipt.subscribe((value) => removed.push(value));
+    fixture.componentRef.setInput('editable', true);
+    fixture.componentRef.setInput(
+      'ledger',
+      ledger({
+        payments: [
+          payment({ id: 'with', receipt: { ...RECEIPT, contentType: 'image/heic' } }),
+          payment({ id: 'without', paidOn: '2026-09-01' }),
+        ],
+      }),
+    );
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const menus = host.querySelectorAll<HTMLButtonElement>('button[aria-label^="Чек оплаты от "]');
+    expect(menus).toHaveLength(2);
+
+    requireElement(host, 'button[aria-label^="Открыть чек оплаты от "]', HTMLButtonElement).click();
+    const [content, showable] = opened(0);
+    expect(showable).toBe(false);
+    content.subscribe();
+    backend.expectOne('/api/teacher/billing/payments/with/receipt').flush(new Blob(['x']));
+
+    menus[0]?.click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Заменить чек');
+    menuItemByText('Убрать чек').click();
+    expect(removed.map((value) => value.id)).toEqual(['with']);
+
+    menus[1]?.click();
+    await fixture.whenStable();
+    const picker = requireElement(host, 'input[type="file"]', HTMLInputElement);
+    const click = vi.spyOn(picker, 'click').mockImplementation(() => undefined);
+    menuItemByText('Прикрепить чек').click();
+    expect(click).toHaveBeenCalled();
+    const file = new File(['%PDF'], 'check.pdf', { type: 'application/pdf' });
+    Object.defineProperty(picker, 'files', { value: [file], configurable: true });
+    picker.dispatchEvent(new Event('change'));
+
+    expect(attached.map((event) => [event.payment.id, event.file])).toEqual([['without', file]]);
+    Object.defineProperty(picker, 'files', { value: [], configurable: true });
+    picker.dispatchEvent(new Event('change'));
+    expect(attached).toHaveLength(1);
   });
 });

@@ -45,7 +45,7 @@ download by the messenger adapters, receipts kept by `billing`).
   (`photo`, `doc`), `MaxChannel` (`image`, `file`); `ChatEngine` hands a file to the first action that takes it;
   `billing/chat/RecordPaymentChatAction` takes a teacher's file as a receipt → student → amount → confirm →
   payment with the receipt.
-- [ ] 161.3 F: receipts in `billing/ledger/` (attach / replace / remove, download), in the payment dialog
+- [x] 161.3 F: receipts in `billing/ledger/` (attach / replace / remove, download), in the payment dialog
   (optional file), in `billing/student/` (download); help articles (portal and bot).
 
 ### Stage 162. Release 0.13.0

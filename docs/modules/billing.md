@@ -44,5 +44,6 @@ lesson, the student's payments.
 
 ## Frontend
 
-`features/billing/`: `teacher/` (payments page, student ledger, monthly report), `student/` (own payments),
-`ledger/`, `home/` (finance widgets), `billing-labels.ts`.
+`features/billing/`: `teacher/` (payments page, student ledger, monthly report; the payment dialog takes an
+optional receipt), `student/` (own payments), `ledger/` (the receipt opens from its payment row; the teacher
+attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `billing-labels.ts`.

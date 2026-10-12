@@ -37,6 +37,11 @@ export const ru = {
     voided: 'Аннулирована',
     voidPayment: (date: string) => `Аннулировать оплату от ${date}`,
     showMore: 'Показать ещё',
+    openReceipt: (date: string) => `Открыть чек оплаты от ${date}`,
+    receiptActions: (date: string) => `Чек оплаты от ${date}`,
+    attachReceipt: 'Прикрепить чек',
+    replaceReceipt: 'Заменить чек',
+    removeReceipt: 'Убрать чек',
   },
   myBilling: {
     title: 'Оплаты',
@@ -111,6 +116,13 @@ export const ru = {
     date: 'Дата оплаты',
     comment: 'Комментарий',
     failed: 'Не удалось сохранить оплату',
+    receipt: 'Чек',
+    chooseReceipt: 'Выбрать файл',
+    otherReceipt: 'Другой файл',
+    clearReceipt: 'Без чека',
+    receiptHint: 'По желанию: фото или PDF до 10 МБ.',
+    receiptTooLarge: 'Чек — до 10 МБ',
+    receiptFailed: 'Оплата записана, но чек не прикрепился. Прикрепите его в истории ученика.',
   },
   studentLedger: {
     student: 'Ученик',
@@ -132,5 +144,12 @@ export const ru = {
     voidMessage: (amount: string) =>
       `Оплата ${amount} перестанет учитываться. Запись останется в истории.`,
     voidAccept: 'Аннулировать',
+    removeReceiptHeader: 'Убрать чек?',
+    removeReceiptMessage: 'Файл чека будет удалён. Оплата останется.',
+    removeReceiptAccept: 'Убрать чек',
+    receiptAttached: 'Чек прикреплён',
+    receiptRemoved: 'Чек убран',
+    receiptTooLarge: 'Чек — до 10 МБ',
+    receiptFailed: 'Не удалось прикрепить чек',
   },
 };
