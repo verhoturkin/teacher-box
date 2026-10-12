@@ -54,7 +54,8 @@ test('the teacher sets up Google Drive for the backups', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/settings?open=data');
   const drive = page.locator('#drive');
-  await expect(drive.getByText('Google Drive API')).toBeVisible();
+  await expect(drive.getByText(/«Library».*Google Drive API/)).toBeVisible();
+  await expect(drive.getByText(/«Publish app»/)).toBeVisible();
   await expect(drive.getByText('/api/public/backups/google/callback')).toBeVisible();
 
   await drive.locator('#drive-client-id').fill('e2e-client.apps.googleusercontent.com');
