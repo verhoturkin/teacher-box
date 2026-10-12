@@ -41,6 +41,9 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 
 Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon` → `notifications`.
 
+`AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
+file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.
+
 ## Data
 
 `assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages).

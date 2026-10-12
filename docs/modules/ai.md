@@ -1,7 +1,8 @@
 # ai
 
-LLM features for the teacher: homework draft and review draft. Depends on: `shared` **only** — it never reads
-homework data; the frontend sends the texts. Schema `ai`. ADRs: [0006](../adr/0006-ai-integration.md),
+LLM features for the teacher: homework draft and review draft. Depends on: `shared`, `textbooks::api`,
+`homework::api` — only to read the sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md)); other
+texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integration.md),
 [0009](../adr/0009-external-integrations.md). **Load the `claude-api` skill before changing LLM code.**
 
 ## Rules

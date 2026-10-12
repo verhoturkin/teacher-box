@@ -79,7 +79,7 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `billing` | `shared`, `identity::api`, `schedule::api` (events only: lesson outcome → charge) |
    | `homework` | `shared`, `identity::api`, `textbooks::api` (summaries and pages of bound textbooks) |
    | `notifications` | `shared`, `identity::api` (events and facades), `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (events only) |
-   | `ai` | `shared` |
+   | `ai` | `shared`, `textbooks::api`, `homework::api` (sources of drafts, ADR-0039) |
    | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
    | `meetings` | `shared`, `identity::api` |
    | `boards` | `shared`, `identity::api` |

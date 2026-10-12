@@ -96,8 +96,8 @@ under the editor on narrow screens instead of a bottom sheet; the panel itself �
 
 ### 168. AI from textbook pages and files (B)
 
-- [ ] 168.1 **B** ADR-0039; `package-info.java` of `ai` allows `textbooks::api`, `homework::api`; table in
-  `AGENTS.md` §4.2. `homework::api.AssignmentFiles.content(assignmentId, attachmentId)`.
+- [x] 168.1 **B** ADR-0039; `package-info.java` of `ai` allows `textbooks::api`, `homework::api`; table in
+  `AGENTS.md` §4.2. `homework::api.AssignmentFiles.file(assignmentId, attachmentId)`.
 - [ ] 168.2 **B** Sources in `AiAssistant`: textbook pages via `Textbooks.content` (PDF cut; ≤ 20 pages, ≤ 20 MB,
   `ai.source-too-large`), images and PDFs of the assignment; `LlmRequest` gets attachments; Anthropic adapter — `document`
   / `image` blocks, OpenAI-compatible — page pictures (`PdfPages.picture` via a new `Textbooks.pagePicture`) as

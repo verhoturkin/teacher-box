@@ -1,6 +1,7 @@
 package ru.teacherbox.homework;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.JsonPath;
 import java.io.UnsupportedEncodingException;
@@ -17,8 +18,10 @@ import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.homework.api.AssignmentFiles;
 import ru.teacherbox.homework.api.HomeworkAssigned;
 import ru.teacherbox.identity.api.StudentStatus;
+import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.TestUsers;
 
@@ -31,6 +34,9 @@ class AssignmentIntegrationTests {
 
     @Autowired
     FakeUserDirectory directory;
+
+    @Autowired
+    AssignmentFiles files;
 
     @Test
     void createsAssignmentForStudents(AssertablePublishedEvents events) {
@@ -197,6 +203,23 @@ class AssignmentIntegrationTests {
                 .hasStatus(HttpStatus.NOT_FOUND);
         assertThat(mvc.delete().uri("/api/teacher/homework/assignments/" + UUID.randomUUID() + "/attachments/"
                 + attachmentId).with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void otherModulesReadTheFilesOfAnAssignment() throws Exception {
+        String id = createdId("Для ИИ", List.of());
+        String other = createdId("Другое", List.of());
+        MvcTestResult uploaded = upload(id, new MockMultipartFile("files", "Задачи.pdf", null,
+                "%PDF-1.4 test".getBytes(StandardCharsets.UTF_8)));
+        UUID attachment = UUID.fromString(JsonPath.read(body(uploaded), "$[0].id"));
+
+        AssignmentFiles.AssignmentFile file = files.file(UUID.fromString(id), attachment);
+        assertThat(file.filename()).isEqualTo("Задачи.pdf");
+        assertThat(file.contentType()).isEqualTo("application/pdf");
+        assertThat(file.size()).isEqualTo(13);
+        assertThat(file.content().getContentAsByteArray()).startsWith("%PDF".getBytes(StandardCharsets.UTF_8));
+        assertThatThrownBy(() -> files.file(UUID.fromString(other), attachment))
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
