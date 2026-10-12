@@ -65,14 +65,32 @@ docker compose cp backend:/data/backups ./teacherbox-backups
 «перед сбросом» остаются только на сервере. Портал видит в Диске только созданные им файлы (доступ
 `drive.file`).
 
-Подключение — «Настройки» → «Резервные копии» → «Google Диск»:
+Порталу нужен свой OAuth-клиент Google (бесплатно, делается один раз):
 
-1. В [Google Cloud Console](https://console.cloud.google.com/) включите Google Drive API в проекте
-   (можно в том же, что для Google Календаря; новый проект настройте, как для календаря в README).
-2. У OAuth-клиента типа «Web application» добавьте адрес перенаправления
-   `https://<адрес портала>/api/public/backups/google/callback`.
-3. Вставьте Client ID и Client secret (или задайте `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID` / `_SECRET`) и
-   нажмите «Подключить Google Диск». Если Google недоступен напрямую — `TEACHERBOX_BACKUP_GOOGLE_PROXY`.
+1. Откройте [Google Cloud Console](https://console.cloud.google.com/) (войдите в Google-аккаунт, в Диск
+   которого пойдут копии). Вверху нажмите на выбор проекта → «New project», введите название (например,
+   Teacher Box) → «Create» и выберите созданный проект. Названия ниже — из английского интерфейса консоли.
+2. «APIs & Services» → «Library»: найдите «Google Drive API» и нажмите «Enable».
+3. Меню ☰ → «Google Auth Platform» → «Get started»:
+   - «App information»: «App name» — название портала, «User support email» — ваш адрес → «Next»;
+   - «Audience»: «External» → «Next»;
+   - «Contact information»: ваш адрес → «Next»;
+   - отметьте согласие с «Google API Services: User Data Policy» → «Continue» → «Create».
+4. «Data Access» → «Add or remove scopes»: отметьте `.../auth/drive.file` (Google Drive API) → «Update» →
+   «Save».
+5. «Audience» → «Publish app» → «Confirm». В режиме «Testing» Google отключает доступ через 7 дней. Доступ
+   `drive.file` (только файлы, созданные приложением) не требует проверки приложения в Google.
+6. «Clients» → «Create client»: «Application type» — «Web application», «Name» — любое; в «Authorized
+   redirect URIs» нажмите «Add URI» и вставьте `https://<адрес портала>/api/public/backups/google/callback`
+   (точный адрес с кнопкой копирования показан в панели «Google Диск») → «Create».
+7. В открывшемся окне скопируйте Client ID и Client secret (или нажмите «Download JSON») — секрет Google
+   показывает только один раз; если он потерян, откройте клиент в «Clients» и создайте новый секрет.
+8. Вставьте их в портале: «Настройки» → «Данные» → «Google Диск» → «Сохранить» (или задайте
+   `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID` / `_SECRET`), нажмите «Подключить Google Диск» и разрешите доступ.
+
+Для перенаправления нужен HTTPS-адрес портала; без него подключите Диск один раз, открыв портал по
+`http://localhost` (например, через SSH-туннель). Если Google недоступен с сервера напрямую —
+`TEACHERBOX_BACKUP_GOOGLE_PROXY`.
 
 Там же видно, когда ушла последняя копия и почему не ушла. Любую копию с сервера можно отправить в Диск
 из её меню («Отправить в Google Диск»). Подключение хранится в `/data/google-drive.json` и не

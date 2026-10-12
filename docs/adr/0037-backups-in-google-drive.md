@@ -37,8 +37,10 @@
   `platform` не может зависеть от `schedule`, а `schedule` — от `platform`; общий клиент Google в `shared` не
   выносим ради двух вызовов.
 - OAuth-клиент — из `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID` / `_SECRET` или введённый учителем (переменные
-  главнее, как у календаря). Можно взять тот же клиент, что для календаря: включить Drive API и добавить
-  redirect URI `<адрес портала>/api/public/backups/google/callback`. Прокси — `TEACHERBOX_BACKUP_GOOGLE_PROXY`.
+  главнее, как у календаря). Свой клиент Google Cloud с Drive API, областью `drive.file` и redirect URI
+  `<адрес портала>/api/public/backups/google/callback`; приложение публикуется («In production»), иначе Google
+  отзывает доступ через 7 дней (`drive.file` — нечувствительная область, проверка Google не нужна). Прокси —
+  `TEACHERBOX_BACKUP_GOOGLE_PROXY`.
 - Подключение хранится в файле `<data-dir>/google-drive.json`, а не в базе: оно относится к серверу, как сами
   копии, и переживает восстановление и полный сброс — после аварии новый портал подключает тот же Диск и
   видит старые копии.

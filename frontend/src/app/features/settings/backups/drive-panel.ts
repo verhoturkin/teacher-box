@@ -175,6 +175,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
               }
             </div>
           } @else {
+            <p class="tb-muted">{{ t.setupIntro }}</p>
             <ol class="tb-drive-steps">
               <li>
                 {{ t.open }}
@@ -183,9 +184,11 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
                 >
                 {{ t.project }}
               </li>
-              <li>{{ t.enableApi }} <strong>Google Drive API</strong>.</li>
+              @for (step of t.steps; track $index) {
+                <li>{{ step }}</li>
+              }
               <li>
-                {{ t.clientBefore }} <strong>Web application</strong>{{ t.clientAfter }}
+                {{ t.client }}
                 <div class="tb-drive-uri">
                   <code>{{ redirectUri() }}</code>
                   <p-button

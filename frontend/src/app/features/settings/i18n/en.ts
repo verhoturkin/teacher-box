@@ -98,16 +98,24 @@ export const en: Translation<typeof ru> = {
       `The portal will create the folder “${portal}” in your Google Drive and put the backups there. It does not see other files of the Drive.`,
     connect: 'Connect Google Drive',
     editClient: 'Change the OAuth client',
+    setupIntro:
+      'The portal needs its own Google OAuth client — it is free and done once. The names below are from the English interface of the console.',
     open: 'Open',
     project:
-      'and choose the project of Google Calendar (if there is one) or create a new one: audience type External, your address among the test users, then “Publish app”, otherwise Google withdraws the access after 7 days.',
-    enableApi: '“APIs & Services” → “Library”: enable',
-    clientBefore: '“Clients”: open the OAuth client of the calendar or create a new one of type',
-    clientAfter: '. Add to “Authorized redirect URIs”:',
+      'and click the project picker at the top → “New project”, enter a name (e.g. Teacher Box) → “Create” and select the new project.',
+    steps: [
+      '“APIs & Services” → “Library”: find “Google Drive API” and click “Enable”.',
+      'Menu ☰ → “Google Auth Platform” → “Get started”: “App name” — the portal’s name, “User support email” — your address → “Next”; “Audience” — “External” → “Next”; “Contact information” — your address → “Next”; agree to the policy → “Continue” → “Create”.',
+      '“Data Access” → “Add or remove scopes”: tick .../auth/drive.file (Google Drive API: only the files this app creates) → “Update” → “Save”.',
+      '“Audience” → “Publish app” → “Confirm”. Otherwise Google withdraws the access after 7 days; access to the app’s own files (drive.file) needs no verification by Google.',
+    ],
+    client:
+      '“Clients” → “Create client”: “Application type” — “Web application”, “Name” — any; under “Authorized redirect URIs” click “Add URI” and paste the address below → “Create”.',
     copyAddress: 'Copy the address',
     httpsHint:
       'The portal needs an HTTPS address. Without one, connect the Drive once with the portal opened at http://localhost (e.g. through an SSH tunnel).',
-    copyClient: 'Copy the Client ID and the Client secret here.',
+    copyClient:
+      'Copy the Client ID and the Client secret from the dialog here (or click “Download JSON”): Google shows the secret only once. If the secret is lost, open the client in “Clients” and create a new secret.',
     copied: 'The address is in the clipboard',
     files: 'Backups in Google Drive',
     filesWhat: 'backups in Google Drive',

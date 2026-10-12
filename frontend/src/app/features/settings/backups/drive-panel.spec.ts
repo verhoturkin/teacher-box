@@ -89,6 +89,11 @@ describe('DrivePanel', () => {
     const host = await render(driveStatus());
     const text = readableText(host);
     expect(text).toContain('Google Drive API');
+    expect(text).toContain('Google Auth Platform');
+    expect(text).toContain('.../auth/drive.file');
+    expect(text).toContain('Publish app');
+    expect(text).toContain('Download JSON');
+    expect(text).not.toContain('Календар');
     expect(text).toContain('https://school.example.com/api/public/backups/google/callback');
 
     buttonByText(host, 'Сохранить').click();

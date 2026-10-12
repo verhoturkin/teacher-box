@@ -304,9 +304,9 @@ nginx контейнера `frontend`.
 Перед восстановлением портал сам делает копию текущего состояния и перезапускается. «Полный
 сброс» в «Настройках» удаляет все данные, кроме входа учителя и администратора и резервных копий
 (перед ним тоже делается копия). Копии можно автоматически отправлять в Google Диск учителя
-(«Резервные копии» → «Google Диск», нужен OAuth-клиент Google с Google Drive API — тот же, что для
-календаря, с адресом перенаправления `https://<адрес портала>/api/public/backups/google/callback`;
-или `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID` / `_SECRET`). Подробно — [docs/operations.md](docs/operations.md).
+(«Настройки» → «Данные» → «Google Диск»; нужен свой OAuth-клиент Google с Google Drive API — пошагово
+в панели и в [docs/operations.md](docs/operations.md#копии-в-google-диске)). Подробно —
+[docs/operations.md](docs/operations.md).
 
 ## Мессенджеры
 

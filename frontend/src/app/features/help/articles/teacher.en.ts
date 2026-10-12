@@ -569,7 +569,17 @@ Under the date of a backup you see where it comes from (scheduled, manual, befor
 
 ## Backups in Google Drive
 
-So that the backups are not lost with the server, connect Google Drive: «Settings» → «Data» → «Google Drive». The portal shows step by step how to get an OAuth client in Google Cloud (the client of Google Calendar will do — enable the Google Drive API and add the redirect address). Then click «Connect Google Drive» and allow the access.
+So that the backups are not lost with the server, connect Google Drive: «Settings» → «Data» → «Google Drive». The portal needs its own Google OAuth client — free, done once. The steps are in the panel too (with the redirect address and a copy button):
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) with the Google account whose Drive will keep the backups. Click the project picker at the top → «New project», enter a name → «Create» and select the new project.
+2. «APIs & Services» → «Library»: find «Google Drive API» → «Enable».
+3. Menu ☰ → «Google Auth Platform» → «Get started»: the app name and your address → «Next»; «Audience» — «External» → «Next»; a contact address → «Next»; agree to the policy → «Continue» → «Create».
+4. «Data Access» → «Add or remove scopes»: tick .../auth/drive.file → «Update» → «Save».
+5. «Audience» → «Publish app» → «Confirm» — otherwise Google withdraws the access after 7 days. This access needs no verification by Google.
+6. «Clients» → «Create client»: type «Web application», under «Authorized redirect URIs» → «Add URI» paste the address from the panel → «Create».
+7. Copy the Client ID and the Client secret from the dialog (the secret is shown only once) into the «Google Drive» panel → «Save».
+
+Then click «Connect Google Drive» and allow the access.
 
 The portal creates a folder named after the portal in the Drive and sends every scheduled and manual backup there; the newest backups are kept, as on the server. The portal does not see other files of the Drive. Any backup can be sent by hand: «⋮» in its row → «Send to Google Drive». The «Google Drive» panel shows when the last backup went there, and the error if it did not.
 

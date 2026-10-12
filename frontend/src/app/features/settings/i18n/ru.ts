@@ -96,16 +96,24 @@ export const ru = {
       `Портал создаст в вашем Google Диске папку «${portal}» и будет класть в неё резервные копии. Другие файлы Диска он не видит.`,
     connect: 'Подключить Google Диск',
     editClient: 'Изменить OAuth-клиент',
+    setupIntro:
+      'Порталу нужен свой OAuth-клиент Google — это бесплатно и делается один раз. Названия ниже — из английского интерфейса консоли.',
     open: 'Откройте',
     project:
-      'и выберите проект Google Календаря (если он есть) или создайте новый: тип аудитории External, свой адрес — в тестовых пользователях, затем «Publish app», иначе Google отзывает доступ через 7 дней.',
-    enableApi: '«APIs & Services» → «Library»: включите',
-    clientBefore: '«Clients»: откройте OAuth-клиент календаря или создайте новый типа',
-    clientAfter: '. В «Authorized redirect URIs» добавьте:',
+      'и вверху нажмите на выбор проекта → «New project», введите название (например, Teacher Box) → «Create» и выберите созданный проект.',
+    steps: [
+      '«APIs & Services» → «Library»: найдите «Google Drive API» и нажмите «Enable».',
+      'Меню ☰ → «Google Auth Platform» → «Get started»: «App name» — название портала, «User support email» — ваш адрес → «Next»; «Audience» — «External» → «Next»; «Contact information» — ваш адрес → «Next»; отметьте согласие с политикой → «Continue» → «Create».',
+      '«Data Access» → «Add or remove scopes»: отметьте .../auth/drive.file (Google Drive API: только файлы, созданные этим приложением) → «Update» → «Save».',
+      '«Audience» → «Publish app» → «Confirm». Без этого Google отключает доступ через 7 дней; доступ к своим файлам (drive.file) не требует проверки приложения в Google.',
+    ],
+    client:
+      '«Clients» → «Create client»: «Application type» — «Web application», «Name» — любое; в «Authorized redirect URIs» нажмите «Add URI» и вставьте адрес ниже → «Create».',
     copyAddress: 'Копировать адрес',
     httpsHint:
       'Нужен HTTPS-адрес портала. Без него подключите Диск один раз, открыв портал по http://localhost (например, через SSH-туннель).',
-    copyClient: 'Скопируйте Client ID и Client secret сюда.',
+    copyClient:
+      'В открывшемся окне скопируйте сюда Client ID и Client secret (или нажмите «Download JSON»): секрет Google показывает только один раз. Если секрет потерян, откройте клиент в «Clients» и создайте новый секрет.',
     copied: 'Адрес в буфере обмена',
     files: 'Копии в Google Диске',
     filesWhat: 'копии в Google Диске',

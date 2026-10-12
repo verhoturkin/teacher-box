@@ -21,8 +21,9 @@
   копию и восстанавливает её как обычно. Подключение хранится в `/data/google-drive.json` и переживает
   восстановление и полный сброс.
 - Настройки `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID`, `TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET` (можно ввести и
-  в интерфейсе; подойдёт OAuth-клиент Google Календаря с включённым Google Drive API и адресом
-  перенаправления `/api/public/backups/google/callback`) и `TEACHERBOX_BACKUP_GOOGLE_PROXY`; проверка
+  в интерфейсе; нужен OAuth-клиент Google с Google Drive API и адресом перенаправления
+  `/api/public/backups/google/callback`, пошагово — в панели «Google Диск») и `TEACHERBOX_BACKUP_GOOGLE_PROXY`;
+  проверка
   Google Диска в «Интеграциях» администратора (ADR-0037).
 
 ### Изменено
