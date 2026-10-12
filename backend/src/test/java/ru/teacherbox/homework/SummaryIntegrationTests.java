@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.StudentHomeworkService;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -95,7 +96,7 @@ class SummaryIntegrationTests {
     }
 
     private AssignmentDetails assign(String title, @Nullable Instant dueAt, UUID... students) {
-        return assignments.create(title, null, dueAt, List.of(students));
+        return assignments.create(AssignmentKind.WRITTEN, title, null, null, dueAt, List.of(students));
     }
 
     private String summary() throws UnsupportedEncodingException {

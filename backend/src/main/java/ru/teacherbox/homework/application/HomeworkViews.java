@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.textbooks.api.TextbookFormat;
@@ -41,6 +42,7 @@ public final class HomeworkViews {
     /** A row of the teacher's list of assignments. */
     public record AssignmentSummary(
             UUID id,
+            AssignmentKind kind,
             String title,
             @Nullable Instant dueAt,
             Instant createdAt,
@@ -70,8 +72,10 @@ public final class HomeworkViews {
 
     public record AssignmentDetails(
             UUID id,
+            AssignmentKind kind,
             String title,
             @Nullable String description,
+            @Nullable String interactiveHtml,
             @Nullable Instant dueAt,
             Instant createdAt,
             long version,
@@ -86,6 +90,7 @@ public final class HomeworkViews {
     /** The assignment as the student sees it inside a task. */
     public record AssignmentInfo(
             UUID id,
+            AssignmentKind kind,
             String title,
             @Nullable String description,
             @Nullable Instant dueAt,

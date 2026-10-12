@@ -23,6 +23,7 @@ import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.DueSoonReminder;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.UploadedFile;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
@@ -176,8 +177,10 @@ class SubmissionAndReviewIntegrationTests {
         UUID student = directory.addStudent("Забывчивый");
         UUID done = directory.addStudent("Успевший");
         Instant soon = clock.instant().plus(Duration.ofHours(5));
-        AssignmentDetails due = assignments.create("Скоро срок", null, soon, List.of(student, done));
-        assignments.create("Не скоро", null, clock.instant().plus(Duration.ofDays(5)), List.of(student));
+        AssignmentDetails due = assignments.create(AssignmentKind.WRITTEN, "Скоро срок", null, null, soon,
+                List.of(student, done));
+        assignments.create(AssignmentKind.WRITTEN, "Не скоро", null, null,
+                clock.instant().plus(Duration.ofDays(5)), List.of(student));
         submit(done, due.tasks().get(1).taskId().toString(), "сделано");
 
         int sent = reminder.sendReminders();
@@ -195,7 +198,8 @@ class SubmissionAndReviewIntegrationTests {
     }
 
     private AssignmentDetails assignment(String title, UUID student) {
-        AssignmentDetails details = assignments.create(title, "Описание", null, List.of(student));
+        AssignmentDetails details = assignments.create(AssignmentKind.WRITTEN, title, "Описание", null, null,
+                List.of(student));
         assignments.addAttachments(details.id(), List.of(new UploadedFile("задание.txt", 12,
                 new ByteArrayResource("условие".getBytes(StandardCharsets.UTF_8)))));
         return assignments.get(details.id());

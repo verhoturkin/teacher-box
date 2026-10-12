@@ -15,22 +15,40 @@ class HomeworkDomainTest {
 
     @Test
     void assignmentValidationAndUpdate() {
-        Assignment assignment = Assignment.create(UUID.randomUUID(), "  Дроби  ", "  Решить №1-5  ", null, NOW);
+        Assignment assignment = Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "  Дроби  ",
+                "  Решить №1-5  ", null, null, NOW);
         assertThat(assignment.title()).isEqualTo("Дроби");
         assertThat(assignment.description()).isEqualTo("Решить №1-5");
 
-        assignment.update("Дроби 2", " ", NOW.plusSeconds(3600), NOW.plusSeconds(1));
+        assignment.update("Дроби 2", " ", "<p>ignored</p>", NOW.plusSeconds(3600), NOW.plusSeconds(1));
         assignment.markSaved(2);
 
         assertThat(assignment.description()).isNull();
+        assertThat(assignment.interactiveHtml()).as("only interactive homework keeps HTML").isNull();
         assertThat(assignment.dueAt()).isEqualTo(NOW.plusSeconds(3600));
         assertThat(assignment.updatedAt()).isEqualTo(NOW.plusSeconds(1));
         assertThat(assignment.version()).isEqualTo(2);
-        assertThatThrownBy(() -> assignment.update(" ", null, null, NOW)).hasMessageContaining("Title");
-        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), "x".repeat(201), null, null, NOW))
-                .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), "t", "x".repeat(20_001), null, NOW))
-                .hasMessageContaining("too long");
+        assertThat(assignment.allowsMaterials()).isTrue();
+        assertThatThrownBy(() -> assignment.update(" ", null, null, null, NOW)).hasMessageContaining("Title");
+        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "x".repeat(201), null,
+                null, null, NOW)).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "t",
+                "x".repeat(20_001), null, null, NOW)).hasMessageContaining("too long");
+    }
+
+    @Test
+    void interactiveAssignmentKeepsItsHtml() {
+        Assignment assignment = Assignment.create(UUID.randomUUID(), AssignmentKind.INTERACTIVE, "Тест", null,
+                "<p>?</p>\n", null, NOW);
+
+        assertThat(assignment.interactiveHtml()).isEqualTo("<p>?</p>\n");
+        assertThat(assignment.allowsMaterials()).isFalse();
+        assertThatThrownBy(() -> assignment.update("Тест", null, "  ", null, NOW))
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("HTML");
+        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.INTERACTIVE, "Тест", null,
+                "x".repeat(Assignment.MAX_HTML + 1), null, NOW)).hasMessageContaining("too long");
+        assertThat(Assignment.create(UUID.randomUUID(), AssignmentKind.BOARD, "Доска", null, null, null, NOW)
+                .allowsMaterials()).isFalse();
     }
 
     @Test

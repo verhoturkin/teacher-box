@@ -6,46 +6,66 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
-/** Homework created by the teacher: a text (Markdown) with optional files and deadline. */
+/**
+ * Homework created by the teacher: a text (Markdown) with optional files and deadline; an interactive one also keeps
+ * its HTML page (ADR-0040).
+ */
 public final class Assignment {
 
     public static final int MAX_TITLE = 200;
     public static final int MAX_DESCRIPTION = 20_000;
+    public static final int MAX_HTML = 200_000;
 
     private final UUID id;
+    private final AssignmentKind kind;
     private String title;
     private @Nullable String description;
+    private @Nullable String interactiveHtml;
     private @Nullable Instant dueAt;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
-    private Assignment(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            Instant createdAt, Instant updatedAt, long version) {
+    private Assignment(UUID id, AssignmentKind kind, String title, @Nullable String description,
+            @Nullable String interactiveHtml, @Nullable Instant dueAt, Instant createdAt, Instant updatedAt,
+            long version) {
         this.id = Objects.requireNonNull(id);
+        this.kind = Objects.requireNonNull(kind);
         this.title = title;
         this.description = description;
+        this.interactiveHtml = interactiveHtml;
         this.dueAt = dueAt;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt);
         this.version = version;
     }
 
-    public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            Instant now) {
-        return new Assignment(id, validTitle(title), validDescription(description), dueAt, now, now, 0);
+    /** @param interactiveHtml the page of an interactive assignment; ignored for other kinds */
+    public static Assignment create(UUID id, AssignmentKind kind, String title, @Nullable String description,
+            @Nullable String interactiveHtml, @Nullable Instant dueAt, Instant now) {
+        return new Assignment(id, kind, validTitle(title), validDescription(description),
+                validHtml(kind, interactiveHtml), dueAt, now, now, 0);
     }
 
-    public static Assignment restore(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            Instant createdAt, Instant updatedAt, long version) {
-        return new Assignment(id, title, description, dueAt, createdAt, updatedAt, version);
+    public static Assignment restore(UUID id, AssignmentKind kind, String title, @Nullable String description,
+            @Nullable String interactiveHtml, @Nullable Instant dueAt, Instant createdAt, Instant updatedAt,
+            long version) {
+        return new Assignment(id, kind, title, description, interactiveHtml, dueAt, createdAt, updatedAt, version);
     }
 
-    public void update(String newTitle, @Nullable String newDescription, @Nullable Instant newDueAt, Instant now) {
+    /** @param newHtml the page of an interactive assignment; ignored for other kinds */
+    public void update(String newTitle, @Nullable String newDescription, @Nullable String newHtml,
+            @Nullable Instant newDueAt, Instant now) {
         title = validTitle(newTitle);
         description = validDescription(newDescription);
+        interactiveHtml = validHtml(kind, newHtml);
         dueAt = newDueAt;
         updatedAt = now;
+    }
+
+    /** Textbooks and files belong to written homework only. */
+    public boolean allowsMaterials() {
+        return kind == AssignmentKind.WRITTEN;
     }
 
     /** Called by the repository after the assignment has been saved with a new version. */
@@ -72,8 +92,25 @@ public final class Assignment {
         return description.strip();
     }
 
+    private static @Nullable String validHtml(AssignmentKind kind, @Nullable String html) {
+        if (kind != AssignmentKind.INTERACTIVE) {
+            return null;
+        }
+        if (html == null || html.isBlank()) {
+            throw new BusinessRuleException("assignment.html-required", "Interactive homework needs its HTML page");
+        }
+        if (html.length() > MAX_HTML) {
+            throw new BusinessRuleException("assignment.html-invalid", "The HTML page is too long");
+        }
+        return html;
+    }
+
     public UUID id() {
         return id;
+    }
+
+    public AssignmentKind kind() {
+        return kind;
     }
 
     public String title() {
@@ -82,6 +119,10 @@ public final class Assignment {
 
     public @Nullable String description() {
         return description;
+    }
+
+    public @Nullable String interactiveHtml() {
+        return interactiveHtml;
     }
 
     public @Nullable Instant dueAt() {

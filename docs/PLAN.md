@@ -36,10 +36,11 @@ New ADRs:
 
 ### 165. Homework kinds (B, F)
 
-- [ ] 165.1 **B** `homework`: `AssignmentKind` `WRITTEN` / `BOARD` / `INTERACTIVE` (migration: column `kind`, existing
-  rows `WRITTEN`; `interactive_html` ≤ 200 KB). `AssignmentInput.kind`, `AssignmentDetails.kind`; kind is fixed after
-  creation. Rules in `AssignmentService`: `BOARD` and `INTERACTIVE` take no textbooks and no attachments
-  (`homework.kind-no-materials`), `INTERACTIVE` needs HTML (`homework.html-required`). Controller tests with roles.
+- [x] 165.1 **B** `homework`: `AssignmentKind` `WRITTEN` / `BOARD` / `INTERACTIVE` (migration V3: column `kind`,
+  existing rows `WRITTEN`; `interactive_html` ≤ 200 000 characters). `kind` in the create request (blank — written),
+  `AssignmentDetails` / `AssignmentSummary` / `AssignmentInfo`; kind is fixed after creation. `BOARD` and
+  `INTERACTIVE` take no textbooks and no attachments (`assignment.materials-not-allowed`), `INTERACTIVE` needs HTML
+  (`assignment.html-required`). *Frontend models get `kind` in 165.4.*
 - [ ] 165.2 **B** Submissions by kind: `WRITTEN` — text / files as now; `BOARD` — «Готово» without text and files;
   `INTERACTIVE` — «Готово» with an optional `result` JSON (score, max score, answers; ≤ 20 KB, validated shape) stored
   on the submission. `SubmissionService.submit`, `/api/me/homework/tasks/{id}/submissions`; 403/404 tests for another

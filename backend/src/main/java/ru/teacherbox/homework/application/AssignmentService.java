@@ -22,6 +22,7 @@ import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.TaskSummary;
 import ru.teacherbox.homework.domain.Assignment;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.HomeworkTask;
@@ -58,10 +59,10 @@ public class AssignmentService {
     }
 
     @Transactional
-    public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
-            Collection<UUID> studentIds) {
+    public AssignmentDetails create(AssignmentKind kind, String title, @Nullable String description,
+            @Nullable String interactiveHtml, @Nullable Instant dueAt, Collection<UUID> studentIds) {
         Instant now = clock.instant();
-        Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
+        Assignment assignment = Assignment.create(Ids.newId(), kind, title, description, interactiveHtml, dueAt, now);
         assignments.insert(assignment);
         assignTo(assignment, studentIds, now);
         return details(assignment);
@@ -72,12 +73,12 @@ public class AssignmentService {
      */
     @Transactional
     public AssignmentDetails update(UUID assignmentId, String title, @Nullable String description,
-            @Nullable Instant dueAt, long expectedVersion) {
+            @Nullable String interactiveHtml, @Nullable Instant dueAt, long expectedVersion) {
         Assignment assignment = load(assignmentId);
         if (assignment.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Assignment " + assignmentId + " was modified");
         }
-        assignment.update(title, description, dueAt, clock.instant());
+        assignment.update(title, description, interactiveHtml, dueAt, clock.instant());
         assignments.update(assignment);
         return details(assignment);
     }
@@ -102,7 +103,7 @@ public class AssignmentService {
             int submitted = byStatus.getOrDefault(TaskStatus.SUBMITTED, 0);
             int returned = byStatus.getOrDefault(TaskStatus.RETURNED, 0);
             int accepted = byStatus.getOrDefault(TaskStatus.ACCEPTED, 0);
-            return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
+            return new AssignmentSummary(assignment.id(), assignment.kind(), assignment.title(), assignment.dueAt(),
                     assignment.createdAt(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted);
         }).toList();
@@ -115,7 +116,7 @@ public class AssignmentService {
 
     @Transactional
     public List<AttachmentView> addAttachments(UUID assignmentId, List<UploadedFile> files) {
-        Assignment assignment = load(assignmentId);
+        Assignment assignment = withMaterials(assignmentId);
         return attachments.store(AttachmentOwner.ASSIGNMENT, assignment.id(), files, clock.instant()).stream()
                 .map(AttachmentView::of)
                 .toList();
@@ -137,7 +138,7 @@ public class AssignmentService {
      */
     @Transactional
     public AssignmentDetails bindTextbook(UUID assignmentId, UUID textbookId, @Nullable String pages) {
-        Assignment assignment = load(assignmentId);
+        Assignment assignment = withMaterials(assignmentId);
         textbooks.bind(assignmentId, textbookId, pages);
         return details(assignment);
     }
@@ -183,14 +184,24 @@ public class AssignmentService {
                     student == null ? null : student.avatar(), task.status(), task.grade(), task.submittedAt(),
                     task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
         };
-        return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
-                assignment.dueAt(), assignment.createdAt(), assignment.version(),
+        return new AssignmentDetails(assignment.id(), assignment.kind(), assignment.title(),
+                assignment.description(), assignment.interactiveHtml(), assignment.dueAt(), assignment.createdAt(),
+                assignment.version(),
                 attachments.of(AttachmentOwner.ASSIGNMENT, assignment.id()).stream().map(AttachmentView::of).toList(),
                 assignmentTasks.stream()
                         .map(summary)
                         .sorted(Comparator.comparing(TaskSummary::studentName, String.CASE_INSENSITIVE_ORDER))
                         .toList(),
                 textbooks.of(assignment.id()));
+    }
+
+    private Assignment withMaterials(UUID assignmentId) {
+        Assignment assignment = load(assignmentId);
+        if (!assignment.allowsMaterials()) {
+            throw new BusinessRuleException("assignment.materials-not-allowed",
+                    "Only written homework takes textbooks and files");
+        }
+        return assignment;
     }
 
     private Assignment load(UUID assignmentId) {

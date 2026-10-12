@@ -149,6 +149,10 @@ export const ru = {
       'assignment.not-found': 'Задание не найдено',
       'assignment.title-invalid': 'Название задания — от 1 до 200 символов',
       'assignment.description-invalid': 'Текст задания слишком длинный',
+      'assignment.html-required': 'Для интерактивного задания нужен HTML-код',
+      'assignment.html-invalid': 'HTML-код задания слишком длинный',
+      'assignment.materials-not-allowed':
+        'Учебники и файлы можно добавить только к письменному заданию',
       'task.grade-invalid': 'Оценка слишком длинная — не больше 20 символов',
       'task.comment-invalid': 'Комментарий к работе слишком длинный',
       'submission.text-invalid': 'Текст ответа слишком длинный',

@@ -8,6 +8,11 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - An **assignment** is given to one or more students; each student gets a **task** with status
   `ASSIGNED → SUBMITTED → RETURNED («На доработке») / ACCEPTED («Принято»)`; a returned task can be
   re-submitted. A **submission** is one attempt (UI: «ответ»), the whole handed-in work is «работа».
+- Kinds (`AssignmentKind`, fixed at creation; blank in the request — written): `WRITTEN` «Письменное» — a
+  Markdown text, textbooks and files; `BOARD` «На доске» — a description only; `INTERACTIVE` «Интерактивное» — a
+  description and an HTML page (`interactiveHtml`, required — `assignment.html-required`, ≤ 200 000 characters —
+  `assignment.html-invalid`; other kinds don't keep it). Textbooks and files only for written homework
+  (`assignment.materials-not-allowed`).
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
   `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits

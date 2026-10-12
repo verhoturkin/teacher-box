@@ -32,6 +32,8 @@ import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.ReviewService;
+import ru.teacherbox.homework.domain.Assignment;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
@@ -39,9 +41,12 @@ import ru.teacherbox.textbooks.api.PageRanges;
 @RequestMapping("/api/teacher/homework")
 class TeacherHomeworkController {
 
+    /** @param kind blank — written homework */
     record CreateAssignmentRequest(
+            @Nullable AssignmentKind kind,
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
+            @Size(max = Assignment.MAX_HTML) @Nullable String interactiveHtml,
             @Nullable Instant dueAt,
             @Nullable List<UUID> studentIds) {
     }
@@ -49,6 +54,7 @@ class TeacherHomeworkController {
     record UpdateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
+            @Size(max = Assignment.MAX_HTML) @Nullable String interactiveHtml,
             @Nullable Instant dueAt,
             @NotNull Long version) {
     }
@@ -90,7 +96,8 @@ class TeacherHomeworkController {
     @PostMapping("/assignments")
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
-        return assignments.create(request.title(), request.description(), request.dueAt(),
+        return assignments.create(request.kind() == null ? AssignmentKind.WRITTEN : request.kind(), request.title(),
+                request.description(), request.interactiveHtml(), request.dueAt(),
                 request.studentIds() == null ? List.of() : request.studentIds());
     }
 
@@ -101,8 +108,8 @@ class TeacherHomeworkController {
 
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
-        return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
-                request.version());
+        return assignments.update(assignmentId, request.title(), request.description(), request.interactiveHtml(),
+                request.dueAt(), request.version());
     }
 
     @PostMapping("/assignments/{assignmentId}/students")
