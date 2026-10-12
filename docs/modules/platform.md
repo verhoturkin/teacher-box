@@ -14,7 +14,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `/api/me/password` — enforced here, not in controllers.
 - `web/` — `ProblemDetailsAdvice` (domain errors → RFC 9457 with `requestId`), `X-Request-Id` in MDC and
   response, `/api/client-errors` (browser errors, rate-limited). The SPA is served by nginx (ADR-0031).
-- `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties.
+- `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties, `shared.persistence.MigrationConnection`
+  (module migrations run on one connection outside the pool, open until shutdown: H2 compiles `check (x in (…))`
+  against the session that altered the table, and a pooled session is closed by the pool sooner or later).
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
 - `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), colour, logo
   (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:

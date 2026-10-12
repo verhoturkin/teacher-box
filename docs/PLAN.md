@@ -17,6 +17,24 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.13.1
+
+Fix: half an hour after an update that altered a table, saving a user (sign-in included) failed with «Check
+constraint invalid … The database has been closed». H2 compiles a `check (x in (…))` constraint against the
+session that ran the `alter table`; when the pool retired that connection, the constraint was left with a closed
+session.
+
+### Stage 163. Migrations on a connection that stays open (B)
+
+- [x] 163.1 `shared.persistence.MigrationConnection` — one connection outside the pool, open until the
+  application stops (`PlatformCoreAutoConfiguration`, from `DataSourceProperties`);
+  `ModuleMigrations.initializer(MigrationConnection, module)` in every module configuration;
+  `ModuleMigrationsTest` — a constraint altered by a migration still works after the pool's connections close.
+
+### Stage 164. Release 0.13.1
+
+- [ ] 164.1 Skill `release`: CHANGELOG, version, archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
