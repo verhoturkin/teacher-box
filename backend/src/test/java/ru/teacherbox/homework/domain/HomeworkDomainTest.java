@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -49,6 +51,29 @@ class HomeworkDomainTest {
                 "x".repeat(Assignment.MAX_HTML + 1), null, NOW)).hasMessageContaining("too long");
         assertThat(Assignment.create(UUID.randomUUID(), AssignmentKind.BOARD, "Доска", null, null, null, NOW)
                 .allowsMaterials()).isFalse();
+    }
+
+    @Test
+    void interactiveResultLimits() {
+        var answer = new InteractiveResult.Answer("2 + 2", "4", true);
+        assertThat(new InteractiveResult(null, null, List.of(answer)).answers()).containsExactly(answer);
+        assertThat(new InteractiveResult(0, 1, List.of()).score()).isZero();
+
+        assertThatThrownBy(() -> new InteractiveResult(1, null, List.of())).as("a score needs its maximum")
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("not valid");
+        assertThatThrownBy(() -> new InteractiveResult(-1, 3, List.of())).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult(null, 0, List.of())).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult(null, InteractiveResult.MAX_SCORE + 1, List.of()))
+                .isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult(null, null,
+                Collections.nCopies(InteractiveResult.MAX_ANSWERS + 1, answer)))
+                .isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult.Answer(" ", null, null))
+                .isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult.Answer("q".repeat(InteractiveResult.MAX_QUESTION + 1), null,
+                null)).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> new InteractiveResult.Answer("q", "a".repeat(InteractiveResult.MAX_ANSWER + 1),
+                null)).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test

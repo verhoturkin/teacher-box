@@ -15,14 +15,17 @@ import ru.teacherbox.homework.api.HomeworkSubmitted;
 import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.domain.Assignment;
+import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.HomeworkTask;
+import ru.teacherbox.homework.domain.InteractiveResult;
 import ru.teacherbox.homework.domain.Submission;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.shared.Ids;
+import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.textbooks.api.TextbookContent;
 
@@ -85,17 +88,35 @@ public class StudentHomeworkService {
         return textbooks.content(ownTask(studentId, taskId).assignmentId(), textbookId);
     }
 
+    /** Hands in written homework: a text, files or both. */
     @Transactional
     public TaskDetails submit(UUID studentId, UUID taskId, @Nullable String text, List<UploadedFile> files) {
         HomeworkTask task = ownTask(studentId, taskId);
+        Assignment assignment = assignmentOf(task);
+        if (assignment.kind() != AssignmentKind.WRITTEN) {
+            throw kindMismatch();
+        }
         Instant now = clock.instant();
-        task.submit(now);
         Submission submission = Submission.create(Ids.newId(), task.id(), text, !files.isEmpty(), now);
-        tasks.update(task);
-        submissions.insert(submission);
+        handIn(task, assignment, submission);
         attachments.store(AttachmentOwner.SUBMISSION, submission.id(), files, now);
-        String title = assignments.findById(task.assignmentId()).map(Assignment::title).orElse("");
-        events.publishEvent(new HomeworkSubmitted(task.id(), task.assignmentId(), studentId, title, now));
+        return assembler.details(task);
+    }
+
+    /**
+     * Marks homework on a board or interactive homework done.
+     *
+     * @param result what the interactive page reported; kept for interactive homework only
+     */
+    @Transactional
+    public TaskDetails markDone(UUID studentId, UUID taskId, @Nullable InteractiveResult result) {
+        HomeworkTask task = ownTask(studentId, taskId);
+        Assignment assignment = assignmentOf(task);
+        if (assignment.kind() == AssignmentKind.WRITTEN) {
+            throw kindMismatch();
+        }
+        handIn(task, assignment, Submission.done(Ids.newId(), task.id(),
+                assignment.kind() == AssignmentKind.INTERACTIVE ? result : null, clock.instant()));
         return assembler.details(task);
     }
 
@@ -114,6 +135,24 @@ public class StudentHomeworkService {
             throw new NotFoundException("file.not-found", "File not found");
         }
         return attachments.download(attachment);
+    }
+
+    private void handIn(HomeworkTask task, Assignment assignment, Submission submission) {
+        task.submit(submission.submittedAt());
+        tasks.update(task);
+        submissions.insert(submission);
+        events.publishEvent(new HomeworkSubmitted(task.id(), task.assignmentId(), task.studentId(),
+                assignment.title(), submission.submittedAt()));
+    }
+
+    private Assignment assignmentOf(HomeworkTask task) {
+        return assignments.findById(task.assignmentId())
+                .orElseThrow(() -> new NotFoundException("task.not-found", "Task not found"));
+    }
+
+    private static BusinessRuleException kindMismatch() {
+        return new BusinessRuleException("submission.kind-mismatch",
+                "Written homework is answered with a text or files, other kinds are marked done");
     }
 
     private HomeworkTask ownTask(UUID studentId, UUID taskId) {

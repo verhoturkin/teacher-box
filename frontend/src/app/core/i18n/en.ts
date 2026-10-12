@@ -158,6 +158,8 @@ export const en: Translation<typeof ru> = {
       'task.grade-invalid': 'The grade is too long — at most 20 characters',
       'task.comment-invalid': 'The comment on the work is too long',
       'submission.text-invalid': 'The answer is too long',
+      'submission.kind-mismatch': 'Written homework is answered, other kinds are marked done',
+      'submission.result-invalid': 'The homework page sent an invalid result',
       'student.deactivated': 'An assignment cannot be given to a student whose access is off',
       'task.not-found': 'Assignment not found',
       'task.already-accepted': 'The teacher has already accepted the work',

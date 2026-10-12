@@ -13,6 +13,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   description and an HTML page (`interactiveHtml`, required — `assignment.html-required`, ≤ 200 000 characters —
   `assignment.html-invalid`; other kinds don't keep it). Textbooks and files only for written homework
   (`assignment.materials-not-allowed`).
+- Answers by kind: written — `POST /api/me/homework/tasks/{id}/submissions` (text and / or files); board and
+  interactive — `POST …/tasks/{id}/done` «Готово» (`submission.kind-mismatch` the other way round). An interactive one
+  may carry the page's `result` (`InteractiveResult`: score ≤ max score ≤ 10 000, ≤ 100 answers — question, answer,
+  correct; `submission.result-invalid`), kept as JSON on the submission and shown to the teacher, never a grade.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
   `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits

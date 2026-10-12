@@ -197,6 +197,70 @@ class SubmissionAndReviewIntegrationTests {
                 .bodyJson().extractingPath("$[?(@.title == 'Скоро срок')].overdue").asArray().containsExactly(true);
     }
 
+    @Test
+    void boardHomeworkIsMarkedDone(AssertablePublishedEvents events) {
+        UUID student = directory.addStudent("На доске");
+        String taskId = assignments.create(AssignmentKind.BOARD, "Доска", "Решить на доске", null, null,
+                List.of(student)).tasks().getFirst().taskId().toString();
+
+        assertThat(submit(student, taskId, "текст")).as("no answer fields")
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("submission.kind-mismatch");
+        assertThat(done(student, taskId, "{}")).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.status").isEqualTo("SUBMITTED");
+            assertThat(json).extractingPath("$.assignment.kind").isEqualTo("BOARD");
+            assertThat(json).extractingPath("$.submissions[0].text").isNull();
+            assertThat(json).extractingPath("$.submissions[0].result").isNull();
+        });
+        assertThat(events).contains(HomeworkSubmitted.class).matching(HomeworkSubmitted::studentId, student);
+        UUID stranger = directory.addStudent("Чужой");
+        assertThat(done(stranger, taskId, "{}")).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void interactiveHomeworkKeepsTheResultOfThePage() {
+        UUID student = directory.addStudent("Интерактив");
+        String taskId = assignments.create(AssignmentKind.INTERACTIVE, "Тест", null, "<p>?</p>", null,
+                List.of(student)).tasks().getFirst().taskId().toString();
+
+        assertThat(done(student, taskId, "{\"result\":{\"score\":5,\"maxScore\":3}}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("submission.result-invalid");
+        assertThat(done(student, taskId, "{\"result\":{\"answers\":[{\"question\":\"\"}]}}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(done(student, taskId, """
+                {"result":{"score":2,"maxScore":3,"answers":[
+                  {"question":"2 + 2","answer":"4","correct":true},
+                  {"question":"3 · 3","answer":"6","correct":false}]}}
+                """)).hasStatusOk();
+
+        assertThat(mvc.get().uri("/api/teacher/homework/tasks/" + taskId).with(teacher())).hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.submissions[0].result.score").isEqualTo(2);
+                    assertThat(json).extractingPath("$.submissions[0].result.maxScore").isEqualTo(3);
+                    assertThat(json).extractingPath("$.submissions[0].result.answers[1].answer").isEqualTo("6");
+                    assertThat(json).extractingPath("$.submissions[0].result.answers[1].correct").isEqualTo(false);
+                });
+        assertThat(done(student, taskId, "{}")).as("done again without a result").hasStatusOk()
+                .bodyJson().extractingPath("$.submissions.length()").isEqualTo(2);
+    }
+
+    @Test
+    void writtenHomeworkIsNotMarkedDone() {
+        UUID student = directory.addStudent("Письменно");
+        String taskId = assignment("Письменное", student).tasks().getFirst().taskId().toString();
+
+        assertThat(done(student, taskId, "{}")).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("submission.kind-mismatch");
+        assertThat(mvc.post().uri("/api/me/homework/tasks/" + taskId + "/done").with(teacher())
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    private MvcTestResult done(UUID student, String taskId, String json) {
+        return mvc.post().uri("/api/me/homework/tasks/" + taskId + "/done").with(TestUsers.student(student))
+                .contentType(MediaType.APPLICATION_JSON).content(json).exchange();
+    }
+
     private AssignmentDetails assignment(String title, UUID student) {
         AssignmentDetails details = assignments.create(AssignmentKind.WRITTEN, title, "Описание", null, null,
                 List.of(student));

@@ -66,7 +66,7 @@ class TaskDetailsAssembler {
                         assignment.dueAt(), assignmentFiles, textbooks.of(assignment.id())),
                 taskSubmissions.stream()
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),
-                                submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
+                                submission.result(), submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
                         .toList());
     }
 

@@ -41,10 +41,9 @@ New ADRs:
   `AssignmentDetails` / `AssignmentSummary` / `AssignmentInfo`; kind is fixed after creation. `BOARD` and
   `INTERACTIVE` take no textbooks and no attachments (`assignment.materials-not-allowed`), `INTERACTIVE` needs HTML
   (`assignment.html-required`). *Frontend models get `kind` in 165.4.*
-- [ ] 165.2 **B** Submissions by kind: `WRITTEN` — text / files as now; `BOARD` — «Готово» without text and files;
-  `INTERACTIVE` — «Готово» with an optional `result` JSON (score, max score, answers; ≤ 20 KB, validated shape) stored
-  on the submission. `SubmissionService.submit`, `/api/me/homework/tasks/{id}/submissions`; 403/404 tests for another
-  student.
+- [x] 165.2 **B** Submissions by kind: `WRITTEN` — text / files as now; `BOARD` — «Готово» without text and files;
+  `INTERACTIVE` — «Готово» with an optional `result` (`InteractiveResult`: score, max score, answers) stored as JSON
+  on the submission. `StudentHomeworkService.markDone`, `POST /api/me/homework/tasks/{id}/done`; 403/404 tests.
 - [ ] 165.3 **B, D** ADR-0040: `GET /api/me/homework/tasks/{id}/interactive-link` and
   `/api/teacher/homework/assignments/{id}/interactive-link` → signed link (5 min) to
   `GET /api/public/homework/interactive/{token}` served with its own CSP; nginx keeps that CSP for this path

@@ -156,6 +156,9 @@ export const ru = {
       'task.grade-invalid': 'Оценка слишком длинная — не больше 20 символов',
       'task.comment-invalid': 'Комментарий к работе слишком длинный',
       'submission.text-invalid': 'Текст ответа слишком длинный',
+      'submission.kind-mismatch':
+        'К письменному заданию прикладывают ответ, остальные отмечают «Готово»',
+      'submission.result-invalid': 'Страница задания прислала неверный результат',
       'student.deactivated': 'Нельзя выдать задание ученику с отключённым доступом',
       'task.not-found': 'Задание не найдено',
       'task.already-accepted': 'Работа уже принята учителем',

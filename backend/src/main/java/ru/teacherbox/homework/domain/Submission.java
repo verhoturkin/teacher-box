@@ -8,9 +8,11 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 /**
  * One attempt of a student to hand in a task. All attempts are kept.
  *
- * @param text the answer text (optional when files are attached)
+ * @param text the answer text of written homework (optional when files are attached)
+ * @param result what the page of interactive homework reported
  */
-public record Submission(UUID id, UUID taskId, @Nullable String text, Instant submittedAt) {
+public record Submission(UUID id, UUID taskId, @Nullable String text, @Nullable InteractiveResult result,
+        Instant submittedAt) {
 
     public static final int MAX_TEXT = 20_000;
 
@@ -22,6 +24,11 @@ public record Submission(UUID id, UUID taskId, @Nullable String text, Instant su
         if (normalized != null && normalized.length() > MAX_TEXT) {
             throw new BusinessRuleException("submission.text-invalid", "The answer is too long");
         }
-        return new Submission(id, taskId, normalized, now);
+        return new Submission(id, taskId, normalized, null, now);
+    }
+
+    /** Homework on a board or interactive homework marked done, with the result of an interactive page. */
+    public static Submission done(UUID id, UUID taskId, @Nullable InteractiveResult result, Instant now) {
+        return new Submission(id, taskId, null, result, now);
     }
 }

@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.homework.domain.Attachment;
+import ru.teacherbox.homework.domain.InteractiveResult;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
@@ -84,7 +85,12 @@ public final class HomeworkViews {
             List<BoundTextbookView> textbooks) {
     }
 
-    public record SubmissionView(UUID id, @Nullable String text, Instant submittedAt, List<AttachmentView> attachments) {
+    public record SubmissionView(
+            UUID id,
+            @Nullable String text,
+            @Nullable InteractiveResult result,
+            Instant submittedAt,
+            List<AttachmentView> attachments) {
     }
 
     /** The assignment as the student sees it inside a task. */
