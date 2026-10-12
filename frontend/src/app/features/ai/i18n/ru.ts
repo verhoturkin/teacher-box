@@ -35,6 +35,8 @@ export const ru = {
     seconds: (seconds: string) => `${seconds} с`,
   },
   panel: {
+    sources: 'Опереться на',
+    sourcesHint: 'ИИ прочитает отмеченные страницы и файлы — до 20 страниц за раз.',
     title: 'ИИ-помощник',
     library: 'Мои промты',
     libraryPlaceholder: 'Выбрать из библиотеки',

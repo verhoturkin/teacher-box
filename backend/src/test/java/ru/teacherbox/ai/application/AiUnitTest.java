@@ -28,10 +28,11 @@ class AiUnitTest {
     void assistantIsOffWithoutProvider() {
         AiUsage usage = mock(AiUsage.class);
         AiAssistant assistant = new AiAssistant(new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                prompts, usage, JsonMapper.builder().build());
+                prompts, usage, mock(DraftSources.class), JsonMapper.builder().build());
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
-                new HomeworkBrief(HomeworkKind.WRITTEN, "Дроби", null, AiViews.PageLook.DEFAULT)))
+                new HomeworkBrief(HomeworkKind.WRITTEN, "Дроби", null, AiViews.PageLook.DEFAULT,
+                        java.util.List.of())))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);
@@ -78,7 +79,7 @@ class AiUnitTest {
     @Test
     void rendersVersionedPrompts() {
         String prompt = prompts.render("homework-draft.user.v2",
-                Map.of("kind", "письменное", "title", "—", "prompt", "Дроби $1"));
+                Map.of("kind", "письменное", "title", "—", "sources", "—", "prompt", "Дроби $1"));
 
         assertThat(prompt).startsWith("Тип задания: письменное").contains("Дроби $1");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");

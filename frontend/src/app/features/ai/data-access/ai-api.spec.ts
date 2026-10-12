@@ -44,7 +44,13 @@ describe('AiApi', () => {
 
   it('calls the assistant endpoints', () => {
     api.status().subscribe();
-    const brief = { kind: 'WRITTEN' as const, prompt: 'Дроби', title: null, look: null };
+    const brief = {
+      kind: 'WRITTEN' as const,
+      prompt: 'Дроби',
+      title: null,
+      look: null,
+      sources: [],
+    };
     api.homeworkDraft(brief).subscribe();
     const input = { title: 'Тест', text: 'Сделай тест', kind: null };
     api.prompts().subscribe();

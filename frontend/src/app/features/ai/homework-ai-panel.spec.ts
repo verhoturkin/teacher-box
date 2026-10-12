@@ -55,6 +55,7 @@ describe('HomeworkAiPanel', () => {
       prompt: '5 задач на дроби',
       title: 'Дроби',
       look: null,
+      sources: [],
     });
     request.flush({ title: 'Сложение дробей', description: '1. Сложите **1/2**', html: null });
     await fixture.whenStable();
@@ -141,6 +142,31 @@ describe('HomeworkAiPanel', () => {
     await fixture.whenStable();
     expect(readableText(host)).toContain('Не удалось сохранить промт');
     buttonByText(host, 'Отмена').click();
+  });
+
+  it('sends the ticked sources', async () => {
+    const { panel, host } = await render('WRITTEN', []);
+    fixture.componentRef.setInput('sources', [
+      {
+        key: 'tb',
+        label: 'Spotlight 5, с. 2-3',
+        source: { type: 'TEXTBOOK', id: 'tb-1', pages: '2-3' },
+      },
+      { key: 'f', label: 'Задачи.pdf', source: { type: 'FILE', id: 'f-1', assignmentId: 'a-1' } },
+    ]);
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Опереться на');
+
+    host.querySelector<HTMLInputElement>('#ai-source-f')?.click();
+    host.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
+    host.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
+    await fixture.whenStable();
+    panel.prompt.setValue('По файлу');
+    panel.generate();
+
+    expect(backend.expectOne('/api/teacher/ai/homework-draft').request.body).toMatchObject({
+      sources: [{ type: 'FILE', id: 'f-1', assignmentId: 'a-1' }],
+    });
   });
 
   it('works without the library', async () => {

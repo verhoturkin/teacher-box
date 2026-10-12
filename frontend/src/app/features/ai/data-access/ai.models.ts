@@ -23,6 +23,18 @@ export interface PageLook {
   readonly text: string;
 }
 
+/** A material of a draft (ADR-0039): pages of a textbook (`pages` `null` — the whole one) or a file of an assignment. */
+export type DraftSource =
+  | { readonly type: 'TEXTBOOK'; readonly id: string; readonly pages: string | null }
+  | { readonly type: 'FILE'; readonly id: string; readonly assignmentId: string };
+
+/** A material the editor offers the assistant: its label and what the backend reads. */
+export interface SourceOption {
+  readonly key: string;
+  readonly label: string;
+  readonly source: DraftSource;
+}
+
 export interface HomeworkBrief {
   readonly kind: HomeworkKind;
   /** The teacher's request in their own words. */
@@ -31,6 +43,7 @@ export interface HomeworkBrief {
   readonly title: string | null;
   /** `null` — the backend's default look. */
   readonly look: PageLook | null;
+  readonly sources: readonly DraftSource[];
 }
 
 export interface HomeworkDraft {

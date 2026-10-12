@@ -86,6 +86,7 @@ export const en: Translation<typeof ru> = {
     doneFailed: 'Could not mark the assignment done',
   },
   editor: {
+    pages: (pages: string) => `p. ${pages}`,
     newAssignment: 'New assignment',
     editAssignment: 'Edit assignment',
     back: 'Assignments',

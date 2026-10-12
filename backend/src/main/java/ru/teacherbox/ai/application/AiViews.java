@@ -20,9 +20,15 @@ public final class AiViews {
      * What the teacher wants: the kind of homework and the request in their own words.
      *
      * @param title what the teacher already called the assignment, if anything
-     * @param look  the portal's colours and font, for the page of interactive homework
+     * @param look    the portal's colours and font, for the page of interactive homework
+     * @param sources textbook pages and files of the assignment to base the draft on (ADR-0039)
      */
-    public record HomeworkBrief(HomeworkKind kind, String prompt, @Nullable String title, PageLook look) {
+    public record HomeworkBrief(HomeworkKind kind, String prompt, @Nullable String title, PageLook look,
+            List<DraftSources.Source> sources) {
+
+        public HomeworkBrief {
+            sources = List.copyOf(sources);
+        }
     }
 
     /** The look of the portal an interactive page should follow: CSS colours and a font family. */

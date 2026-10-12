@@ -24,6 +24,8 @@ import ru.teacherbox.ai.application.AiProperties;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.application.PdfPicturesTest;
 import ru.teacherbox.shared.i18n.Language;
 
 class OpenAiCompatibleLlmClientTest {
@@ -60,6 +62,29 @@ class OpenAiCompatibleLlmClientTest {
         assertThat(response).isEqualTo(new LlmResponse("{\"comment\": \"Хорошо\"}", "qwen3:14b-q4", 50, 20));
         assertThat(client.provider()).isEqualTo("openai-compatible");
         assertThat(client.model()).isEqualTo("qwen3:14b");
+        server.verify();
+    }
+
+    @Test
+    void sendsMaterialsAsPicturesWithAPdfDrawnPageByPage() {
+        server.expect(requestTo(URL))
+                .andExpect(jsonPath("$.messages[1].content[0].text").value("Spotlight 5"))
+                .andExpect(jsonPath("$.messages[1].content[1].type").value("image_url"))
+                .andExpect(jsonPath("$.messages[1].content[1].image_url.url",
+                        org.hamcrest.Matchers.startsWith("data:image/png;base64,iVBOR")))
+                .andExpect(jsonPath("$.messages[1].content[2].image_url.url",
+                        org.hamcrest.Matchers.startsWith("data:image/png;base64,")))
+                .andExpect(jsonPath("$.messages[1].content[3].text").value("Фото"))
+                .andExpect(jsonPath("$.messages[1].content[4].image_url.url").value("data:image/jpeg;base64,AQI="))
+                .andExpect(jsonPath("$.messages[1].content[5].text").value("user text"))
+                .andRespond(withSuccess("""
+                        {"model": "m", "choices": [{"finish_reason": "stop", "message": {"content": "{}"}}]}
+                        """, MediaType.APPLICATION_JSON));
+
+        client.complete(new LlmRequest("system text", "user text", "review_draft", REQUEST.schema(), List.of(
+                new LlmSource("Spotlight 5", LlmSource.PDF, PdfPicturesTest.pdf(2)),
+                new LlmSource("Фото", "image/jpeg", new byte[] {1, 2}))));
+
         server.verify();
     }
 

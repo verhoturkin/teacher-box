@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -68,12 +69,15 @@ public class AiAssistant {
     private final ObjectProvider<LlmClient> llm;
     private final PromptTemplates prompts;
     private final AiUsage usage;
+    private final DraftSources sources;
     private final JsonMapper json;
 
-    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, AiUsage usage, JsonMapper json) {
+    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, AiUsage usage, DraftSources sources,
+            JsonMapper json) {
         this.llm = llm;
         this.prompts = prompts;
         this.usage = usage;
+        this.sources = sources;
         this.json = json;
     }
 
@@ -87,15 +91,19 @@ public class AiAssistant {
         String kindRules = prompts.render(HOMEWORK_KIND_PROMPT.formatted(brief.kind().name().toLowerCase(Locale.ROOT)),
                 Map.of("font", look.font(), "primary", look.primary(), "surface", look.surface(),
                         "text", look.text()));
+        List<LlmSource> materials = sources.read(brief.sources());
         Map<String, String> values = Map.of(
                 "kind", KIND_NAMES.get(brief.kind()),
                 "title", orDash(brief.title()),
+                "sources", materials.isEmpty() ? "—"
+                        : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
                 "prompt", brief.prompt().strip());
         LlmRequest request = new LlmRequest(
                 prompts.render(HOMEWORK_PROMPT.formatted("system"), Map.of("kindRules", kindRules)),
                 prompts.render(HOMEWORK_PROMPT.formatted("user"), values),
                 interactive ? "interactive_homework_draft" : "homework_draft",
-                interactive ? INTERACTIVE_SCHEMA : HOMEWORK_SCHEMA);
+                interactive ? INTERACTIVE_SCHEMA : HOMEWORK_SCHEMA,
+                materials);
         return call(AiFeature.HOMEWORK_DRAFT, request, HomeworkAnswer.class, answer -> {
             String title = answer.title() == null ? "" : answer.title().strip();
             String description = answer.description() == null ? "" : answer.description().strip();

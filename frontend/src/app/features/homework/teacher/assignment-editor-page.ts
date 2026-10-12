@@ -30,7 +30,7 @@ import { describeError } from '@core/http/error-messages';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi, AppliedDraft, HomeworkAiPanel } from '@features/ai/parts';
+import { AiApi, AppliedDraft, HomeworkAiPanel, SourceOption } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
@@ -67,6 +67,8 @@ export interface StudentOption {
 }
 
 const KINDS: readonly AssignmentKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
+/** Files the AI reads (ADR-0039). */
+const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
 /**
  * Teacher: the page that creates an assignment or edits one (redesign variant B). The content by kind on the left —
@@ -312,6 +314,7 @@ const KINDS: readonly AssignmentKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
               [kind]="kindValue()"
               [title]="titleValue()"
               [hasText]="textValue().trim() !== ''"
+              [sources]="sourceOptions()"
               (applied)="applyDraft($event)"
             />
           </aside>
@@ -508,6 +511,37 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     () => this.assignment()?.textbooks ?? this.pickedTextbooks(),
   );
   protected readonly attachments = computed(() => this.assignment()?.attachments ?? []);
+  /**
+   * What the AI may read for a draft of written homework (ADR-0039): the bound textbooks (not Word files) and the
+   * saved PDF and picture files; files picked but not saved yet are not on the server.
+   */
+  readonly sourceOptions = computed<SourceOption[]>(() => {
+    if (this.kindValue() !== 'WRITTEN') {
+      return [];
+    }
+    const assignment = this.assignment();
+    const textbooks = this.textbooks()
+      .filter((textbook) => textbook.format !== 'DOCUMENT')
+      .map((textbook) => ({
+        key: `textbook-${textbook.textbookId}`,
+        label:
+          textbook.pages === null
+            ? textbook.title
+            : `${textbook.title}, ${T.editor.pages(textbook.pages)}`,
+        source: { type: 'TEXTBOOK' as const, id: textbook.textbookId, pages: textbook.pages },
+      }));
+    const files =
+      assignment === null
+        ? []
+        : assignment.attachments
+            .filter((file) => AI_READABLE.test(file.contentType))
+            .map((file) => ({
+              key: `file-${file.id}`,
+              label: file.filename,
+              source: { type: 'FILE' as const, id: file.id, assignmentId: assignment.id },
+            }));
+    return [...textbooks, ...files];
+  });
   readonly newFiles = signal<File[]>([]);
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);

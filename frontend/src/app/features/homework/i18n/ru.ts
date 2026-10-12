@@ -85,6 +85,7 @@ export const ru = {
     doneFailed: 'Не удалось отметить задание',
   },
   editor: {
+    pages: (pages: string) => `с. ${pages}`,
     newAssignment: 'Новое задание',
     editAssignment: 'Изменить задание',
     back: 'Задания',

@@ -213,6 +213,11 @@ export const en: Translation<typeof ru> = {
       'ai.invalid-answer': 'The model returned an answer in a wrong format. Try again',
       'ai.unavailable': 'The AI service is unavailable now. Try again later',
       'ai.prompt-not-found': 'The prompt is not found — it may have been deleted',
+      'ai.source-not-found':
+        'The textbook or the file for the AI is not found — it may have been deleted',
+      'ai.source-unsupported':
+        'The AI reads PDF files and pictures only, not Word files and others',
+      'ai.source-too-large': 'Too much for the AI: at most 5 sources, 20 pages and 20 MB at once',
       'ai.prompt-title-invalid': 'The prompt title is 1 to 100 characters long',
       'ai.prompt-text-invalid': 'The prompt text is 1 to 4000 characters long',
       // schedule

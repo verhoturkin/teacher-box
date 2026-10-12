@@ -36,6 +36,8 @@ export const en: Translation<typeof ru> = {
     seconds: (seconds: string) => `${seconds} s`,
   },
   panel: {
+    sources: 'Base it on',
+    sourcesHint: 'The AI reads the ticked pages and files — up to 20 pages at once.',
     title: 'AI assistant',
     library: 'My prompts',
     libraryPlaceholder: 'Choose from the library',

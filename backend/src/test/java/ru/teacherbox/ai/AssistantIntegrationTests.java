@@ -1,15 +1,21 @@
 package ru.teacherbox.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
@@ -22,6 +28,11 @@ import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.persistence.AiRequestRepository;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
+import ru.teacherbox.textbooks.api.TextbookContent;
+import ru.teacherbox.textbooks.api.TextbookFormat;
+import ru.teacherbox.textbooks.api.TextbookKind;
+import ru.teacherbox.textbooks.api.TextbookSummary;
+import ru.teacherbox.textbooks.api.Textbooks;
 
 /** Drafts of homework and reviews through the teacher's API; usage accounting and the monthly limit. */
 @AiIntegrationTest
@@ -46,6 +57,9 @@ class AssistantIntegrationTests {
 
     @Autowired
     MutableClock clock;
+
+    @Autowired
+    Textbooks textbooks;
 
     @BeforeEach
     void setUp() {
@@ -124,6 +138,30 @@ class AssistantIntegrationTests {
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("ai.invalid-answer");
         assertThat(llm.lastRequest().system()).contains("#1b6b5a");
+    }
+
+    @Test
+    void draftsHomeworkFromTextbookPages() {
+        UUID textbook = UUID.randomUUID();
+        when(textbooks.find(textbook)).thenReturn(Optional.of(new TextbookSummary(textbook, TextbookKind.TEXTBOOK,
+                "Spotlight 5", null, TextbookFormat.PDF, 120)));
+        when(textbooks.content(eq(textbook), any())).thenReturn(new TextbookContent("Spotlight 5.pdf",
+                "application/pdf", 4, new ByteArrayResource("%PDF".getBytes(StandardCharsets.UTF_8))));
+        llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"kind": "WRITTEN", "prompt": "Задачи по этим страницам",
+                 "sources": [{"type": "TEXTBOOK", "id": "%s", "pages": "2-3"}]}
+                """.formatted(textbook))).hasStatusOk();
+
+        assertThat(llm.lastRequest().sources()).singleElement().satisfies(source -> {
+            assertThat(source.name()).isEqualTo("Spotlight 5, с. 2-3");
+            assertThat(source.isPdf()).isTrue();
+        });
+        assertThat(llm.lastRequest().prompt()).contains("опирайся на них): Spotlight 5, с. 2-3");
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"kind": "WRITTEN", "prompt": "x", "sources": [{"type": "FILE", "id": "%s"}]}
+                """.formatted(UUID.randomUUID()))).as("a file needs its assignment").hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test

@@ -353,6 +353,7 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 
 - **Assignment draft** — the «AI assistant» panel to the right of the assignment editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text (and the page of interactive homework), «Add to the end» adds its text after yours, «Discard» drops it.
 - **Interactive homework** — for this kind the AI makes an HTML page with questions and checks in the portal's colours right away; the page loads nothing from outside and hands its result to you with the student's «Done». Check it with «Show the page».
+- **From a textbook and files** — written homework has «Base it on» in the panel: tick the bound textbooks (their pages) and the saved files of the assignment — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the assignment is saved; it does not read Word files.
 - **Prompt library** — save a request that worked with «Save the prompt»: it appears under «My prompts» and as quick buttons above the field for assignments of the same kind. Rename, edit and delete prompts on the «AI» page.
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 

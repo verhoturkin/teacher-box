@@ -10,10 +10,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.teacherbox.homework.api.AssignmentFiles;
 import ru.teacherbox.testing.MutableClock;
+import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * AI module bootstrapped alone with a scripted {@link FakeLlmClient} instead of a real provider.
+ * AI module bootstrapped alone with a scripted {@link FakeLlmClient} instead of a real provider; the facades it reads
+ * sources through are mocks.
  * All test classes using this annotation share one context and database.
  */
 @Target(ElementType.TYPE)
@@ -21,6 +25,7 @@ import ru.teacherbox.testing.MutableClock;
 @ApplicationModuleTest
 @AutoConfigureMockMvc
 @Import(AiIntegrationTest.Beans.class)
+@MockitoBean(types = {Textbooks.class, AssignmentFiles.class})
 @TestPropertySource(properties = {
         "teacherbox.ai.monthly-token-limit=100000",
         "teacherbox.timezone=Europe/Moscow"

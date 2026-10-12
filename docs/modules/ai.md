@@ -28,6 +28,13 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `PageLook.DEFAULT`) that reports with `teacherbox.result(...)`. A page that loads anything (`<script src>`, `<link>`,
   `<iframe>`, `<object>`, `<embed>`, `<base>`, external `src` / `href` / `url()`, `@import`) or is over 200 000
   characters is an invalid answer.
+- Sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md), `DraftSources`): `sources` — up to 5 of
+  `{type: TEXTBOOK, id, pages?}` (`Textbooks.content`, pages blank — the whole PDF; a picture — `Textbooks.file`) and
+  `{type: FILE, assignmentId, id}` (`AssignmentFiles.file`); PDF or png / jpeg / webp / gif only
+  (`ai.source-unsupported`), at most 20 pages and 20 MB (`ai.source-too-large`), a missing one — 404
+  `ai.source-not-found`. `LlmRequest.sources` go before the prompt: Anthropic — `document` (titled) and `image`
+  blocks; OpenAI-compatible — `image_url` data URIs, a PDF drawn page by page by `PdfPictures` (PDFBox, 100 dpi). The
+  prompt names them; `ai.requests` keeps no names.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
 
 ## Data, REST

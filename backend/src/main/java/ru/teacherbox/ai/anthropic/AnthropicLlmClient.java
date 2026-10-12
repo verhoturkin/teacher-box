@@ -4,12 +4,21 @@ import com.anthropic.client.AnthropicClient;
 import com.anthropic.core.JsonValue;
 import com.anthropic.errors.AnthropicException;
 import com.anthropic.errors.AnthropicServiceException;
+import com.anthropic.models.messages.Base64ImageSource;
+import com.anthropic.models.messages.Base64PdfSource;
+import com.anthropic.models.messages.ContentBlockParam;
+import com.anthropic.models.messages.DocumentBlockParam;
+import com.anthropic.models.messages.ImageBlockParam;
 import com.anthropic.models.messages.JsonOutputFormat;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.OutputConfig;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.TextBlock;
+import com.anthropic.models.messages.TextBlockParam;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,6 +28,7 @@ import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.ai.application.LlmSource;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
@@ -113,13 +123,37 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
                 .model(model)
                 .maxTokens(maxTokens)
                 .system(request.system())
-                .outputConfig(output.build())
-                .addUserMessage(request.prompt());
+                .outputConfig(output.build());
+        if (request.sources().isEmpty()) {
+            params.addUserMessage(request.prompt());
+        } else {
+            // Long materials go before the question (ADR-0039).
+            List<ContentBlockParam> blocks = new ArrayList<>();
+            request.sources().forEach(source -> blocks.add(block(source)));
+            blocks.add(ContentBlockParam.ofText(TextBlockParam.builder().text(request.prompt()).build()));
+            params.addUserMessageOfBlockParams(blocks);
+        }
         if (fallbacks) {
             params.putAdditionalHeader("anthropic-beta", FALLBACK_BETA)
                     .putAdditionalBodyProperty("fallbacks", JsonValue.from("default"));
         }
         return params.build();
+    }
+
+    private static ContentBlockParam block(LlmSource source) {
+        String data = Base64.getEncoder().encodeToString(source.content());
+        if (source.isPdf()) {
+            return ContentBlockParam.ofDocument(DocumentBlockParam.builder()
+                    .source(Base64PdfSource.builder().data(data).build())
+                    .title(source.name())
+                    .build());
+        }
+        return ContentBlockParam.ofImage(ImageBlockParam.builder()
+                .source(Base64ImageSource.builder()
+                        .data(data)
+                        .mediaType(Base64ImageSource.MediaType.of(source.mediaType()))
+                        .build())
+                .build());
     }
 
     private static JsonOutputFormat.Schema schema(Map<String, Object> schema) {

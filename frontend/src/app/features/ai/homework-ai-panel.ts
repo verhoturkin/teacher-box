@@ -8,9 +8,10 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
@@ -19,7 +20,7 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
-import { HomeworkDraft, HomeworkKind, SavedPrompt } from './data-access/ai.models';
+import { HomeworkDraft, HomeworkKind, SavedPrompt, SourceOption } from './data-access/ai.models';
 import { T } from './i18n/texts';
 import { currentPageLook } from './page-look';
 
@@ -38,7 +39,18 @@ const QUICK_PROMPTS = 4;
  */
 @Component({
   selector: 'tb-homework-ai-panel',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Select, Textarea, MarkdownView],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    Button,
+    Card,
+    Checkbox,
+    InputText,
+    Message,
+    Select,
+    Textarea,
+    MarkdownView,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -71,6 +83,23 @@ const QUICK_PROMPTS = 4;
               (onChange)="use($event.value)"
             />
           </div>
+        }
+        @if (sources().length > 0) {
+          <fieldset class="tb-ai-panel__sources">
+            <legend>{{ t.sources }}</legend>
+            @for (option of sources(); track option.key) {
+              <div class="tb-ai-panel__source">
+                <p-checkbox
+                  [inputId]="'ai-source-' + option.key"
+                  [binary]="true"
+                  [ngModel]="chosen().has(option.key)"
+                  (ngModelChange)="toggle(option.key, $event)"
+                />
+                <label [for]="'ai-source-' + option.key">{{ option.label }}</label>
+              </div>
+            }
+            <small class="tb-hint">{{ t.sourcesHint }}</small>
+          </fieldset>
         }
         <div class="tb-field">
           <label for="ai-prompt">{{ t.prompt }}</label>
@@ -159,6 +188,20 @@ const QUICK_PROMPTS = 4;
       gap: var(--tb-space-2);
     }
 
+    .tb-ai-panel__sources {
+      display: grid;
+      gap: var(--tb-space-2);
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .tb-ai-panel__source {
+      display: flex;
+      gap: var(--tb-space-2);
+      align-items: center;
+    }
+
     .tb-ai-panel__draft {
       max-height: 24rem;
       overflow: auto;
@@ -178,6 +221,8 @@ export class HomeworkAiPanel implements OnInit {
   readonly title = input('');
   /** The assignment has text a draft could go after. */
   readonly hasText = input(false);
+  /** Textbook pages and files the draft may be based on. */
+  readonly sources = input<readonly SourceOption[]>([]);
   readonly applied = output<AppliedDraft>();
 
   readonly prompt = new FormControl('', {
@@ -195,6 +240,8 @@ export class HomeworkAiPanel implements OnInit {
   );
   protected readonly quick = computed(() => this.choices().slice(0, QUICK_PROMPTS));
   protected readonly draft = signal<HomeworkDraft | null>(null);
+  /** Keys of the chosen sources. */
+  protected readonly chosen = signal<ReadonlySet<string>>(new Set());
   protected readonly pending = signal(false);
   protected readonly naming = signal(false);
   protected readonly saving = signal(false);
@@ -208,6 +255,18 @@ export class HomeworkAiPanel implements OnInit {
       error: () => {
         // without the library the field still works
       },
+    });
+  }
+
+  toggle(key: string, on: boolean): void {
+    this.chosen.update((chosen) => {
+      const next = new Set(chosen);
+      if (on) {
+        next.add(key);
+      } else {
+        next.delete(key);
+      }
+      return next;
     });
   }
 
@@ -232,6 +291,9 @@ export class HomeworkAiPanel implements OnInit {
         prompt,
         title: title === '' ? null : title,
         look: this.kind() === 'INTERACTIVE' ? currentPageLook() : null,
+        sources: this.sources()
+          .filter((option) => this.chosen().has(option.key))
+          .map((option) => option.source),
       })
       .subscribe({
         next: (draft) => {

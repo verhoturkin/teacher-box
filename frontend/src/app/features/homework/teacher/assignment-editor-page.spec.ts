@@ -376,6 +376,40 @@ describe('AssignmentEditorPage', () => {
     expect(page.form.controls.description.value).toBe('1. Найдите 10%\n\n2. Найдите 20%');
   });
 
+  it('offers the assistant the textbooks and the saved files it can read', async () => {
+    const { page } = await edit(
+      assignmentDetails({
+        textbooks: [
+          boundTextbook(),
+          boundTextbook({ textbookId: 'w', title: 'Word', format: 'DOCUMENT' }),
+        ],
+        attachments: [
+          attachment(),
+          attachment({ id: 'z', filename: 'a.zip', contentType: 'application/zip' }),
+        ],
+      }),
+    );
+
+    expect(page.sourceOptions().map((option) => option.label)).toEqual([
+      'Spotlight 5, с. 12-14',
+      'условие.pdf',
+    ]);
+    expect(page.sourceOptions()[1]?.source).toEqual({
+      type: 'FILE',
+      id: 'f-1',
+      assignmentId: 'a-1',
+    });
+  });
+
+  it('offers no sources but for written homework', async () => {
+    const { page } = await create();
+    page.pickTextbook(boundTextbook({ pages: null }));
+    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Spotlight 5']);
+
+    page.kind.setValue('BOARD');
+    expect(page.sourceOptions()).toEqual([]);
+  });
+
   it('puts an AI page into interactive homework and shows it', async () => {
     const { page } = await create([], true);
     backend.match('/api/teacher/ai/prompts').forEach((request) => {
