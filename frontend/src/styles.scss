@@ -1164,6 +1164,14 @@ a.p-menu-item-link:hover {
   color: var(--p-md-on-surface-variant);
 }
 
+/* What an interactive page reported: one line per question. */
+.tb-page-answers {
+  display: grid;
+  gap: var(--tb-space-1);
+  margin: var(--tb-space-2) 0 0;
+  padding-inline-start: var(--tb-space-6);
+}
+
 .tb-preview {
   min-height: 12rem;
   padding: var(--tb-space-3) var(--tb-space-4);

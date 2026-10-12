@@ -48,10 +48,12 @@ New ADRs:
   `/api/teacher/homework/assignments/{id}/interactive-link` → signed link (5 min) to
   `GET /api/public/homework/interactive/{token}` served with its own CSP; nginx keeps that CSP for this path
   (`docker/nginx/default.conf.template`, `security-headers.conf`). Tests for the token (expired, other task) and headers.
-- [ ] 165.4 **F** Student task page (`student/my-task-page.ts`) by kind: written — as now; board — description,
+- [x] 165.4 **F** Student task page (`student/my-task-page.ts`) by kind: written — as now; board — description,
   «Открыть доску» (own boards from `@features/boards/parts`), «Готово»; interactive — `ui/interactive-frame.ts`
   (sandboxed iframe, `postMessage` listener, height from the page), «Готово» sends the last result. Teacher's
   `task-review-page.ts` shows the interactive result (score, answers) and the kind. Labels in `homework-labels.ts`.
+  *The result is shown by `ui/submission-list.ts` for the student and the teacher; a preview of unsaved HTML for the
+  editor needs its own link — 166.2.*
 - [ ] 165.5 **F** «На доску» for written homework (`@features/boards/to-board`): a frame named «<title> · <date>»,
   inside it the task text first, then attachments (pictures, PDF pages) and textbook pages left to right
   (`editor/material-insert.ts`, `to-board/board-insert.ts`). Specs for the order and the frame name.

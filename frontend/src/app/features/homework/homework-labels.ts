@@ -1,7 +1,9 @@
-import { TaskStatus } from './data-access/homework.models';
+import { AssignmentKind, TaskStatus } from './data-access/homework.models';
 import { T } from './i18n/texts';
 
 export const TASK_STATUS_LABELS: Readonly<Record<TaskStatus, string>> = T.statuses;
+
+export const ASSIGNMENT_KIND_LABELS: Readonly<Record<AssignmentKind, string>> = T.kinds;
 
 export const TASK_STATUS_SEVERITIES: Readonly<
   Record<TaskStatus, 'warn' | 'danger' | 'success' | null>

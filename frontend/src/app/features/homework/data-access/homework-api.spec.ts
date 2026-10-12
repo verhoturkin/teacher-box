@@ -88,10 +88,18 @@ describe('HomeworkApi', () => {
     api.myTasks().subscribe();
     api.myTask('t-1').subscribe();
     api.myFile('f-1').subscribe();
+    api.markDone('t-1', null).subscribe();
+    api.myInteractiveLink('t-1').subscribe();
+    api.interactiveLink('a-1').subscribe();
 
     backend.expectOne('/api/me/homework');
     backend.expectOne('/api/me/homework/tasks/t-1');
     expect(backend.expectOne('/api/me/homework/attachments/f-1').request.responseType).toBe('blob');
+    expect(backend.expectOne('/api/me/homework/tasks/t-1/done').request.body).toEqual({
+      result: null,
+    });
+    backend.expectOne('/api/me/homework/tasks/t-1/interactive-link');
+    backend.expectOne('/api/teacher/homework/assignments/a-1/interactive-link');
   });
 
   it('loads the summaries of the home pages', () => {

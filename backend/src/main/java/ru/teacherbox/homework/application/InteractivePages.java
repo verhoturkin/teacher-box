@@ -9,7 +9,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Service;
@@ -34,7 +37,8 @@ public class InteractivePages {
     static final Duration LIFETIME = Duration.ofMinutes(5);
 
     /**
-     * Appended to every page: reports its height and gives the page {@code teacherbox.result({...})} to report what
+     * Put first into every page (after its doctype, so the page keeps the standards mode), before any of its own
+     * scripts: reports the height of its content and gives the page {@code teacherbox.result({...})} to report what
      * the student did; the portal checks where a message comes from and its shape.
      */
     static final String BRIDGE = """
@@ -45,7 +49,8 @@ public class InteractivePages {
                 result: function (result) { post({ type: 'teacherbox:result', result: result }); }
               };
               var height = function () {
-                post({ type: 'teacherbox:height', height: document.documentElement.scrollHeight });
+                var content = document.documentElement.getBoundingClientRect().height;
+                post({ type: 'teacherbox:height', height: Math.ceil(content) });
               };
               addEventListener('load', height);
               if (window.ResizeObserver) { new ResizeObserver(height).observe(document.documentElement); }
@@ -53,6 +58,7 @@ public class InteractivePages {
             </script>
             """;
 
+    private static final Pattern DOCTYPE = Pattern.compile("\\s*<!doctype[^>]*>", Pattern.CASE_INSENSITIVE);
     private static final String ALGORITHM = "HmacSHA256";
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder DECODER = Base64.getUrlDecoder();
@@ -102,8 +108,15 @@ public class InteractivePages {
         UUID assignmentId = verified(token);
         return assignments.findById(assignmentId)
                 .filter(assignment -> assignment.kind() == AssignmentKind.INTERACTIVE)
-                .map(assignment -> assignment.interactiveHtml() + "\n" + BRIDGE)
+                .map(assignment -> withBridge(Objects.requireNonNull(assignment.interactiveHtml())))
                 .orElseThrow(InteractivePages::notFound);
+    }
+
+    static String withBridge(String html) {
+        Matcher doctype = DOCTYPE.matcher(html);
+        return doctype.lookingAt()
+                ? html.substring(0, doctype.end()) + "\n" + BRIDGE + html.substring(doctype.end())
+                : BRIDGE + html;
     }
 
     private PageLink link(Assignment assignment) {

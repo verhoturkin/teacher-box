@@ -57,8 +57,9 @@ class InteractivePageIntegrationTests {
                 .hasHeader("Cache-Control", "no-store")
                 .hasHeader("X-Content-Type-Options", "nosniff");
         assertThat(page.getResponse().getContentType()).startsWith("text/html");
-        assertThat(AssignmentIntegrationTests.body(page)).startsWith("<p>2 + 2 = <input></p>")
-                .contains("teacherbox:result", "teacherbox:height");
+        assertThat(AssignmentIntegrationTests.body(page)).as("the bridge comes before the page's own scripts")
+                .startsWith("<script>").contains("teacherbox:result", "teacherbox:height")
+                .endsWith("<p>2 + 2 = <input></p>");
 
         UUID stranger = directory.addStudent("Чужой");
         assertThat(mvc.get().uri("/api/me/homework/tasks/" + taskId + "/interactive-link")

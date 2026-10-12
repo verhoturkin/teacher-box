@@ -7,8 +7,10 @@ import {
   AssignmentSummary,
   Attachment,
   HomeworkSummary,
+  InteractiveResult,
   MyHomeworkSummary,
   MyTask,
+  PageLink,
   ReviewDecision,
   ReviewQueueItem,
   TaskDetails,
@@ -111,6 +113,13 @@ export class HomeworkApi {
     return this.http.get(`${TEACHER}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
+  /** A short-lived link to the page of an interactive assignment (ADR-0040). */
+  interactiveLink(id: string): Observable<PageLink> {
+    return this.http.get<PageLink>(`${TEACHER}/assignments/${id}/interactive-link`, {
+      context: quietContext(),
+    });
+  }
+
   // --- student ---
 
   myTasks(): Observable<MyTask[]> {
@@ -127,6 +136,18 @@ export class HomeworkApi {
       form.append('text', text);
     }
     return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/submissions`, form);
+  }
+
+  /** «Готово» of homework on a board or interactive homework, with what the page reported. */
+  markDone(taskId: string, result: InteractiveResult | null): Observable<TaskDetails> {
+    return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/done`, { result });
+  }
+
+  /** A short-lived link to the page of the student's interactive task (ADR-0040). */
+  myInteractiveLink(taskId: string): Observable<PageLink> {
+    return this.http.get<PageLink>(`${ME}/tasks/${taskId}/interactive-link`, {
+      context: quietContext(),
+    });
   }
 
   /** The bound pages of a textbook (a PDF cut to them). */

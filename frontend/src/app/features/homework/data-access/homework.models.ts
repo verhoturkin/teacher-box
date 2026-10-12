@@ -4,6 +4,8 @@ import type { TextbookFormat, TextbookKind } from '@features/textbooks/parts';
 
 export type TaskStatus = 'ASSIGNED' | 'SUBMITTED' | 'RETURNED' | 'ACCEPTED';
 export type ReviewDecision = 'ACCEPT' | 'RETURN';
+/** Written — text, textbooks, files; on a board; interactive — an HTML page with its own checks (ADR-0040). */
+export type AssignmentKind = 'WRITTEN' | 'BOARD' | 'INTERACTIVE';
 
 export interface Attachment {
   readonly id: string;
@@ -15,6 +17,7 @@ export interface Attachment {
 
 export interface AssignmentSummary {
   readonly id: string;
+  readonly kind: AssignmentKind;
   readonly title: string;
   readonly dueAt: string | null;
   readonly createdAt: string;
@@ -51,8 +54,11 @@ export interface BoundTextbook {
 
 export interface AssignmentDetails {
   readonly id: string;
+  readonly kind: AssignmentKind;
   readonly title: string;
   readonly description: string | null;
+  /** The page of interactive homework; `null` for other kinds. */
+  readonly interactiveHtml: string | null;
   readonly dueAt: string | null;
   readonly createdAt: string;
   readonly version: number;
@@ -61,15 +67,38 @@ export interface AssignmentDetails {
   readonly textbooks: BoundTextbook[];
 }
 
+/** One answer as the interactive page judged it; `correct` — `null` when the page does not check it. */
+export interface InteractiveAnswer {
+  readonly question: string;
+  readonly answer: string | null;
+  readonly correct: boolean | null;
+}
+
+/** What the interactive page reported with «Готово» — a hint for the teacher, not a grade. */
+export interface InteractiveResult {
+  readonly score: number | null;
+  readonly maxScore: number | null;
+  readonly answers: readonly InteractiveAnswer[];
+}
+
+/** A short-lived link to the page of interactive homework. */
+export interface PageLink {
+  readonly url: string;
+  readonly expiresAt: string;
+}
+
 export interface Submission {
   readonly id: string;
+  /** `null` for «Готово» of homework on a board or interactive homework. */
   readonly text: string | null;
+  readonly result: InteractiveResult | null;
   readonly submittedAt: string;
   readonly attachments: Attachment[];
 }
 
 export interface AssignmentInfo {
   readonly id: string;
+  readonly kind: AssignmentKind;
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;

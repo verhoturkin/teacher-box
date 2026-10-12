@@ -95,6 +95,11 @@ If a textbook is bound to an assignment, it is in the assignment, in «Textbooks
 3. Click «Send for review».
 
 The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.
+
+## On a board or interactive
+
+- **On a board** — the assignment is done on a board («My boards»). When you finish, press «Done» in the assignment.
+- **Interactive** — a page with questions right in the assignment: answer on it, it checks the answers itself. Then press «Done» — the teacher sees the result of the page.
 `,
   },
   textbooks: {

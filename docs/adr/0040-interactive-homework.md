@@ -34,8 +34,8 @@
    учителю (`/api/teacher/homework/assignments/{id}/interactive-link`) и ученику задачи
    (`/api/me/homework/tasks/{id}/interactive-link`). Ключ создаётся в памяти при старте: перезапуск лишь
    закрывает открытые ссылки, хранить нечего. Испорченная или просроченная ссылка — 404.
-4. **Показ.** Портал показывает страницу в `<iframe sandbox="allow-scripts">`. К странице дописывается
-   скрипт-мост: он сообщает высоту (`teacherbox:height`) и даёт странице `teacherbox.result({score, maxScore,
+4. **Показ.** Портал показывает страницу в `<iframe sandbox="allow-scripts">`. В начало страницы (после
+   `<!doctype>`, до её собственных скриптов) вставляется скрипт-мост: он сообщает высоту (`teacherbox:height`) и даёт странице `teacherbox.result({score, maxScore,
    answers})` (`teacherbox:result`). Портал принимает сообщения только от своего фрейма (`event.source`) и
    проверяет их форму.
 5. **Ответ.** «Готово» (`POST /api/me/homework/tasks/{id}/done`) отправляет последний результат страницы;

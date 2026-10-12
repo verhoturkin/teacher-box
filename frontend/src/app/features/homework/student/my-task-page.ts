@@ -1,7 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
+import { RouterLink } from '@angular/router';
+import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
@@ -10,7 +11,13 @@ import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
-import { Attachment, BoundTextbook, TaskDetails } from '../data-access/homework.models';
+import {
+  Attachment,
+  BoundTextbook,
+  InteractiveResult,
+  TaskDetails,
+} from '../data-access/homework.models';
+import { InteractiveFrame } from '../ui/interactive-frame';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { FilePicker } from '../ui/file-picker';
@@ -24,13 +31,20 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 
-/** Student: an assignment, the teacher's feedback and handing in an answer. */
+/**
+ * Student: an assignment, the teacher's feedback and handing it in — an answer to written homework, «Готово» to
+ * homework on a board or interactive homework (whose page runs here, in a sandbox).
+ */
 @Component({
   selector: 'tb-my-task-page',
   imports: [
     DatePipe,
     ReactiveFormsModule,
+    RouterLink,
     Button,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
     Card,
     Message,
     Textarea,
@@ -38,6 +52,7 @@ import { T } from '../i18n/texts';
     AttachmentList,
     TextbookList,
     FilePicker,
+    InteractiveFrame,
     SubmissionList,
     TaskStatusTag,
     LoadStateView,
@@ -89,9 +104,51 @@ import { T } from '../i18n/texts';
               (download)="downloadTextbook(task.taskId, $event)"
             />
           }
+          @if (task.assignment.kind === 'INTERACTIVE') {
+            @if (pageUrl(); as url) {
+              <tb-interactive-frame
+                [url]="url"
+                [title]="t.page"
+                (result)="pageResult.set($event)"
+              />
+            } @else if (pageFailed()) {
+              <p-message severity="error" styleClass="tb-form-message">{{
+                t.pageFailed
+              }}</p-message>
+            }
+          }
         </p-card>
 
-        @if (task.status !== 'ACCEPTED') {
+        @if (task.status !== 'ACCEPTED' && task.assignment.kind !== 'WRITTEN') {
+          <p-card [header]="t.doneTitle">
+            <div class="tb-form">
+              <p>{{ task.assignment.kind === 'BOARD' ? t.boardHint : t.interactiveHint }}</p>
+              @if (pageResult(); as result) {
+                @if (result.score !== null && result.maxScore !== null) {
+                  <p class="tb-strong">{{ ui.pageResult(result.score, result.maxScore) }}</p>
+                }
+              }
+              @if (error(); as message) {
+                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+              }
+              <div class="tb-form-actions">
+                @if (task.assignment.kind === 'BOARD') {
+                  <a pButton routerLink="/cabinet/boards" severity="secondary" [outlined]="true">
+                    <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
+                    <span pButtonLabel>{{ t.openBoards }}</span>
+                  </a>
+                }
+                <p-button
+                  severity="success"
+                  [label]="t.done"
+                  icon="pi pi-check"
+                  [loading]="pending()"
+                  (onClick)="done()"
+                />
+              </div>
+            </div>
+          </p-card>
+        } @else if (task.status !== 'ACCEPTED') {
           <p-card [header]="task.submissions.length === 0 ? t.yourAnswer : t.newAnswer">
             <div class="tb-form">
               <div class="tb-field">
@@ -127,6 +184,7 @@ import { T } from '../i18n/texts';
 })
 export class MyTaskPage implements OnInit {
   protected readonly t = T.myTask;
+  protected readonly ui = T.ui;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
@@ -148,6 +206,11 @@ export class MyTaskPage implements OnInit {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly state = new LoadState();
+  /** The link to the page of interactive homework; asked for once the task is loaded. */
+  protected readonly pageUrl = signal<string | null>(null);
+  protected readonly pageFailed = signal(false);
+  /** The last result the page reported; goes with «Готово». */
+  protected readonly pageResult = signal<InteractiveResult | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -159,7 +222,42 @@ export class MyTaskPage implements OnInit {
       .pipe(this.state.track())
       .subscribe((task) => {
         this.task.set(task);
+        if (task.assignment.kind === 'INTERACTIVE') {
+          this.loadPage();
+        }
       });
+  }
+
+  private loadPage(): void {
+    this.pageFailed.set(false);
+    this.api.myInteractiveLink(this.taskId()).subscribe({
+      next: (link) => {
+        this.pageUrl.set(link.url);
+      },
+      error: () => {
+        this.pageFailed.set(true);
+      },
+    });
+  }
+
+  /** «Готово» of homework on a board or interactive homework, with the last result of the page. */
+  done(): void {
+    if (this.pending()) {
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    this.api.markDone(this.taskId(), this.pageResult()).subscribe({
+      next: (task) => {
+        this.pending.set(false);
+        this.task.set(task);
+        this.snackbar.success(T.myTask.doneSent);
+      },
+      error: (error: unknown) => {
+        this.pending.set(false);
+        this.error.set(describeError(error, T.myTask.doneFailed));
+      },
+    });
   }
 
   submit(): void {

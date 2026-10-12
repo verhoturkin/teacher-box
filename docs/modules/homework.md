@@ -20,7 +20,7 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - The page of interactive homework ([ADR-0040](../adr/0040-interactive-homework.md), `InteractivePages`): a link
   signed with an in-memory HMAC key, valid 5 minutes, for the teacher (any interactive assignment; another kind —
   `assignment.not-interactive`) and the student of the task; `GET /api/public/homework/interactive/{token}` serves
-  the HTML plus the bridge script with its own CSP (`sandbox allow-scripts`, `default-src 'none'`, `frame-ancestors
+  the HTML with the bridge script first (after the doctype) with its own CSP (`sandbox allow-scripts`, `default-src 'none'`, `frame-ancestors
   'self'`), `X-Frame-Options: SAMEORIGIN`, `no-store`; nginx sets the same headers for the path. A broken or expired
   link — 404 `homework.page-not-found`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
@@ -59,4 +59,8 @@ Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDu
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
 the download button saves them under `boundTextbookFilename`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
-`@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+`@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Kinds: the student's `my-task-page.ts` — written: the answer form; board: «Мои доски» and «Готово»;
+interactive: `ui/interactive-frame.ts` (`<iframe sandbox="allow-scripts">` of a link under
+`/api/public/homework/interactive/` only; listens to messages of its own frame — height, `teacherbox:result`, brought to
+the backend limits by `interactiveResult`) and «Готово» with the last result; `ui/submission-list.ts` shows «Отмечено
+«Готово»» and the page's result. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
