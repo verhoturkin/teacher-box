@@ -12,17 +12,44 @@ export interface AiStatus {
   readonly limitReached: boolean;
 }
 
+/** A material of a draft (ADR-0039): pages of a textbook (`pages` `null` — the whole one) or a file of an assignment. */
+export type DraftSource =
+  | { readonly type: 'TEXTBOOK'; readonly id: string; readonly pages: string | null }
+  | { readonly type: 'FILE'; readonly id: string; readonly assignmentId: string };
+
+/** A material the editor offers the assistant: its label and what the backend reads. */
+export interface SourceOption {
+  readonly key: string;
+  readonly label: string;
+  readonly source: DraftSource;
+}
+
 export interface HomeworkBrief {
-  readonly topic: string;
-  readonly level: string | null;
-  readonly taskCount: number;
-  readonly wishes: string | null;
+  /** The teacher's request in their own words. */
+  readonly prompt: string;
+  /** What the teacher already called the assignment. */
+  readonly title: string | null;
+  readonly sources: readonly DraftSource[];
 }
 
 export interface HomeworkDraft {
   readonly title: string;
   /** Markdown. */
   readonly description: string;
+}
+
+/** Mirrors `PromptView`: a prompt of the teacher's library. */
+export interface SavedPrompt {
+  readonly id: string;
+  readonly title: string;
+  readonly text: string;
+  readonly updatedAt: string;
+  readonly version: number;
+}
+
+export interface PromptInput {
+  readonly title: string;
+  readonly text: string;
 }
 
 export interface ReviewBrief {

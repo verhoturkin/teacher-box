@@ -23,6 +23,10 @@ describe('AiUsagePage', () => {
       backend.expectOne('/api/teacher/ai/usage').flush(report);
     }
     await fixture.whenStable();
+    for (const request of backend.match('/api/teacher/ai/prompts')) {
+      request.flush([]);
+    }
+    await fixture.whenStable();
     return readableText(hostElement(fixture));
   }
 

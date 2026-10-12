@@ -9,6 +9,7 @@ import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
 import { MyTaskPage } from './my-task-page';
 import { testProviders } from '@testing/setup';
+import { aMyBoard } from '@testing/boards-fixtures';
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
@@ -104,6 +105,20 @@ describe('MyTaskPage', () => {
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('leads to the board the teacher put the task on', async () => {
+    const task = taskDetails();
+    const { host, backend, fixture } = await render({
+      ...task,
+      assignment: { ...task.assignment, boardId: 'board-1' },
+    });
+    backend.expectOne('/api/me/boards').flush([aMyBoard()]);
+    await fixture.whenStable();
+
+    expect(host.querySelector('a[href="/cabinet/boards/board-1"]')?.textContent).toContain(
+      'Перейти на доску',
+    );
+  });
 
   it('downloads the bound pages of a textbook', async () => {
     const details = taskDetails();

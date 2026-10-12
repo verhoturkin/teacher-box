@@ -76,11 +76,15 @@ export interface Recipient {
             appendTo="body"
             [fluid]="true"
           />
-          @if (visible()) {
-            <tb-group-picker inputId="broadcast-group" (picked)="addStudents($event)" />
-          }
           <small class="tb-hint">{{ t.hint }}</small>
         </div>
+        @if (visible()) {
+          <tb-group-picker
+            inputId="broadcast-group"
+            (picked)="addStudents($event)"
+            (dropped)="removeStudents($event)"
+          />
+        }
         <div class="tb-field">
           <label for="broadcast-title">{{ t.subject }}</label>
           <input pInputText id="broadcast-title" formControlName="title" autocomplete="off" />
@@ -148,6 +152,13 @@ export class BroadcastDialog {
     const control = this.form.controls.studentIds;
     const known = new Set(this.students().map((student) => student.id));
     control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
+  }
+
+  /** Takes off the students of a group taken off. */
+  removeStudents(ids: readonly string[]): void {
+    const control = this.form.controls.studentIds;
+    const gone = new Set(ids);
+    control.setValue(control.value.filter((id) => !gone.has(id)));
   }
 
   send(): void {

@@ -26,6 +26,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
 import { monthLabel } from '@shared/dates/iso-date';
 import { T } from './i18n/texts';
+import { PromptLibraryCard } from './prompt-library-card';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 
@@ -60,6 +61,7 @@ const STATUS_LABELS: Record<
     PageHeader,
     EmptyState,
     ProgressLabel,
+    PromptLibraryCard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -152,6 +154,7 @@ const STATUS_LABELS: Record<
               }
             </p-card>
           }
+          <tb-prompt-library-card />
         </div>
       }
     }

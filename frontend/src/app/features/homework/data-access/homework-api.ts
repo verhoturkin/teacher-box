@@ -37,8 +37,9 @@ export class HomeworkApi {
     });
   }
 
-  createAssignment(input: AssignmentInput, studentIds: string[]): Observable<AssignmentDetails> {
-    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, { ...input, studentIds });
+  /** Without students: the editor adds the materials first, then gives the assignment out. */
+  createAssignment(input: AssignmentInput): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, input);
   }
 
   updateAssignment(
@@ -53,6 +54,11 @@ export class HomeworkApi {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
       studentIds,
     });
+  }
+
+  /** Remembers the board the assignment was put on; `null` forgets it. */
+  placeOnBoard(id: string, boardId: string | null): Observable<AssignmentDetails> {
+    return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}/board`, { boardId });
   }
 
   uploadMaterials(id: string, files: readonly File[]): Observable<Attachment[]> {

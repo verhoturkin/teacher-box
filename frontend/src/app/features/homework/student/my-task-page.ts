@@ -19,12 +19,16 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { MyBoardButton } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 
-/** Student: an assignment, the teacher's feedback and handing in an answer. */
+/**
+ * Student: an assignment, the teacher's feedback and handing in an answer; «Перейти на доску» when the teacher put
+ * the assignment on one of the student's boards.
+ */
 @Component({
   selector: 'tb-my-task-page',
   imports: [
@@ -43,6 +47,7 @@ import { T } from '../i18n/texts';
     LoadStateView,
     PageHeader,
     HelpButton,
+    MyBoardButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -57,6 +62,9 @@ import { T } from '../i18n/texts';
           }}
         </span>
         <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+        @if (task.assignment.boardId; as boardId) {
+          <tb-my-board-button [boardId]="boardId" />
+        }
       </tb-page-header>
 
       <div class="tb-stack">

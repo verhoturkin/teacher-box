@@ -46,6 +46,9 @@ export const en: Translation<typeof ru> = {
     changed: (date: string) => `changed ${date}`,
     external: 'external board',
   },
+  myBoardButton: {
+    open: 'Go to the board',
+  },
   myCard: {
     title: 'My boards',
     what: 'the boards',
@@ -143,6 +146,10 @@ export const en: Translation<typeof ru> = {
     clipboardHint:
       'The material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac).',
     centreHint: 'The board opens in a new tab with the material at the centre.',
+    assignmentHint:
+      'The board opens in a new tab with the assignment in a frame: the text first, then pictures from the files and textbook pages.',
+    textOnlyHint:
+      'Only the text of the assignment is copied, without files and textbook pages, and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac).',
     copyFailed:
       'The browser did not let the material be copied. Try again or copy the text by hand.',
   },

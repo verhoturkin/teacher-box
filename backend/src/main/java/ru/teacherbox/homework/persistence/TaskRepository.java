@@ -3,6 +3,7 @@ package ru.teacherbox.homework.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -137,6 +138,17 @@ public class TaskRepository {
                             .put(TaskStatus.valueOf(rs.getString("status")), rs.getInt("tasks"));
                 });
         return counts;
+    }
+
+    /** The students of every assignment. */
+    public Map<UUID, List<UUID>> studentsByAssignment() {
+        Map<UUID, List<UUID>> students = new HashMap<>();
+        jdbc.sql("select assignment_id, student_id from homework.tasks")
+                .query((ResultSet rs) -> {
+                    students.computeIfAbsent(rs.getObject("assignment_id", UUID.class), id -> new ArrayList<>())
+                            .add(rs.getObject("student_id", UUID.class));
+                });
+        return students;
     }
 
     private static HomeworkTask map(ResultSet rs, int rowNum) throws SQLException {

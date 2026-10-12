@@ -63,6 +63,7 @@ class TaskDetailsAssembler {
                 task.teacherComment(), task.assignedAt(), task.submittedAt(), task.reviewedAt(),
                 task.isOverdue(assignment.dueAt(), clock.instant()),
                 new AssignmentInfo(assignment.id(), assignment.title(), assignment.description(), assignment.dueAt(),
+                        assignment.boardId(),
                         assignmentFiles, textbooks.of(assignment.id())),
                 taskSubmissions.stream()
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),

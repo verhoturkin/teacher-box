@@ -6,7 +6,10 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
-/** Homework created by the teacher: a text (Markdown) with optional files and deadline. */
+/**
+ * Homework created by the teacher: a text (Markdown) with optional files and deadline; the board it was put on, if
+ * any (ADR-0041).
+ */
 public final class Assignment {
 
     public static final int MAX_TITLE = 200;
@@ -16,16 +19,18 @@ public final class Assignment {
     private String title;
     private @Nullable String description;
     private @Nullable Instant dueAt;
+    private @Nullable UUID boardId;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
     private Assignment(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            Instant createdAt, Instant updatedAt, long version) {
+            @Nullable UUID boardId, Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.title = title;
         this.description = description;
         this.dueAt = dueAt;
+        this.boardId = boardId;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt);
         this.version = version;
@@ -33,12 +38,12 @@ public final class Assignment {
 
     public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             Instant now) {
-        return new Assignment(id, validTitle(title), validDescription(description), dueAt, now, now, 0);
+        return new Assignment(id, validTitle(title), validDescription(description), dueAt, null, now, now, 0);
     }
 
     public static Assignment restore(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            Instant createdAt, Instant updatedAt, long version) {
-        return new Assignment(id, title, description, dueAt, createdAt, updatedAt, version);
+            @Nullable UUID boardId, Instant createdAt, Instant updatedAt, long version) {
+        return new Assignment(id, title, description, dueAt, boardId, createdAt, updatedAt, version);
     }
 
     public void update(String newTitle, @Nullable String newDescription, @Nullable Instant newDueAt, Instant now) {
@@ -46,6 +51,11 @@ public final class Assignment {
         description = validDescription(newDescription);
         dueAt = newDueAt;
         updatedAt = now;
+    }
+
+    /** The assignment was put on this board (the student gets «Перейти на доску»); {@code null} forgets it. */
+    public void placeOnBoard(@Nullable UUID board) {
+        boardId = board;
     }
 
     /** Called by the repository after the assignment has been saved with a new version. */
@@ -86,6 +96,10 @@ public final class Assignment {
 
     public @Nullable Instant dueAt() {
         return dueAt;
+    }
+
+    public @Nullable UUID boardId() {
+        return boardId;
     }
 
     public Instant createdAt() {

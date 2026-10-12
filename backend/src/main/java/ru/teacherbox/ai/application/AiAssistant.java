@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,8 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AiAssistant {
 
-    static final String HOMEWORK_PROMPT = "homework-draft";
-    static final String REVIEW_PROMPT = "review-draft";
-    static final String PROMPT_VERSION = "v1";
+    static final String HOMEWORK_PROMPT = "homework-draft.%s.v3";
+    static final String REVIEW_PROMPT = "review-draft.%s.v1";
     static final int MAX_TITLE = 200;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
@@ -46,23 +46,32 @@ public class AiAssistant {
     private final ObjectProvider<LlmClient> llm;
     private final PromptTemplates prompts;
     private final AiUsage usage;
+    private final DraftSources sources;
     private final JsonMapper json;
 
-    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, AiUsage usage, JsonMapper json) {
+    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, AiUsage usage, DraftSources sources,
+            JsonMapper json) {
         this.llm = llm;
         this.prompts = prompts;
         this.usage = usage;
+        this.sources = sources;
         this.json = json;
     }
 
+    /** A draft of homework from the teacher's request and the materials it names. */
     public HomeworkDraft homeworkDraft(HomeworkBrief brief) {
+        List<LlmSource> materials = sources.read(brief.sources());
         Map<String, String> values = Map.of(
-                "topic", brief.topic().strip(),
-                "level", orDash(brief.level()),
-                "taskCount", Integer.toString(brief.taskCount()),
-                "wishes", orDash(brief.wishes()));
-        LlmRequest request = new LlmRequest(prompt(HOMEWORK_PROMPT, "system", Map.of()),
-                prompt(HOMEWORK_PROMPT, "user", values), "homework_draft", HOMEWORK_SCHEMA);
+                "title", orDash(brief.title()),
+                "sources", materials.isEmpty() ? "—"
+                        : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
+                "prompt", brief.prompt().strip());
+        LlmRequest request = new LlmRequest(
+                prompts.render(HOMEWORK_PROMPT.formatted("system"), Map.of()),
+                prompts.render(HOMEWORK_PROMPT.formatted("user"), values),
+                "homework_draft",
+                HOMEWORK_SCHEMA,
+                materials);
         return call(AiFeature.HOMEWORK_DRAFT, request, HomeworkAnswer.class, answer -> {
             String title = answer.title() == null ? "" : answer.title().strip();
             String description = answer.description() == null ? "" : answer.description().strip();
@@ -79,8 +88,8 @@ public class AiAssistant {
                 "title", brief.title().strip(),
                 "description", orDash(brief.description()),
                 "answer", brief.answer().strip());
-        LlmRequest request = new LlmRequest(prompt(REVIEW_PROMPT, "system", Map.of()),
-                prompt(REVIEW_PROMPT, "user", values), "review_draft", REVIEW_SCHEMA);
+        LlmRequest request = new LlmRequest(prompts.render(REVIEW_PROMPT.formatted("system"), Map.of()),
+                prompts.render(REVIEW_PROMPT.formatted("user"), values), "review_draft", REVIEW_SCHEMA);
         return call(AiFeature.REVIEW_DRAFT, request, ReviewAnswer.class, answer -> {
             String comment = answer.comment() == null ? "" : answer.comment().strip();
             if (comment.isEmpty() || answer.accept() == null) {
@@ -150,10 +159,6 @@ public class AiAssistant {
             case INVALID_ANSWER -> new BusinessRuleException("ai.invalid-answer", "The model returned an unusable answer");
             case UNAVAILABLE -> new BusinessRuleException("ai.unavailable", "The AI provider is unavailable");
         };
-    }
-
-    private String prompt(String name, String part, Map<String, String> values) {
-        return prompts.render(name + "." + part + "." + PROMPT_VERSION, values);
     }
 
     private static String orDash(@Nullable String value) {

@@ -78,7 +78,8 @@ export const ru = {
     failed: 'Не удалось сохранить. Попробуйте позже',
   },
   groupPicker: {
-    add: 'Добавить группу',
+    groups: 'Группы',
+    placeholder: 'Все ученики групп',
   },
   groups: {
     title: 'Группы',

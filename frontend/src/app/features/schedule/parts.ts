@@ -3,7 +3,11 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { ScheduleApi } from './data-access/schedule-api';
-export type { MyScheduleSummary, ScheduleSummary } from './data-access/schedule.models';
+export type {
+  MyScheduleSummary,
+  ScheduleSummary,
+  ScheduledLesson,
+} from './data-access/schedule.models';
 export { NextLessonWidget } from './home/next-lesson-widget';
 export { TodayLessonsWidget } from './home/today-lessons-widget';
 export { UpcomingLessonWidget } from './home/upcoming-lesson-widget';

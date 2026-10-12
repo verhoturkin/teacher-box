@@ -1,4 +1,4 @@
-import { AiStatus, UsageReport } from '@features/ai/data-access/ai.models';
+import { AiStatus, SavedPrompt, UsageReport } from '@features/ai/data-access/ai.models';
 
 export function aiStatus(overrides: Partial<AiStatus> = {}): AiStatus {
   return {
@@ -43,6 +43,17 @@ export function usageReport(overrides: Partial<UsageReport> = {}): UsageReport {
         createdAt: '2026-09-24T09:00:00Z',
       },
     ],
+    ...overrides,
+  };
+}
+
+export function savedPrompt(overrides: Partial<SavedPrompt> = {}): SavedPrompt {
+  return {
+    id: 'p-1',
+    title: 'Тест на 10 вопросов',
+    text: 'Сделай тест на 10 вопросов с выбором ответа',
+    updatedAt: '2026-10-12T10:00:00Z',
+    version: 0,
     ...overrides,
   };
 }

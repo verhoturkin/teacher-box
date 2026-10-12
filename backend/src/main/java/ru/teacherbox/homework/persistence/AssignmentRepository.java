@@ -16,7 +16,7 @@ import ru.teacherbox.homework.domain.Assignment;
 public class AssignmentRepository {
 
     private static final String SELECT =
-            "select id, title, description, due_at, created_at, updated_at, version from homework.assignments";
+            "select id, title, description, due_at, board_id, created_at, updated_at, version from homework.assignments";
 
     private final JdbcClient jdbc;
 
@@ -59,6 +59,14 @@ public class AssignmentRepository {
         assignment.markSaved(assignment.version() + 1);
     }
 
+    /** The board is not part of the teacher's edits: it changes without a new version. */
+    public void updateBoard(Assignment assignment) {
+        jdbc.sql("update homework.assignments set board_id = :boardId where id = :id")
+                .param("id", assignment.id())
+                .param("boardId", assignment.boardId())
+                .update();
+    }
+
     public Optional<Assignment> findById(UUID id) {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(AssignmentRepository::map).optional();
     }
@@ -81,6 +89,7 @@ public class AssignmentRepository {
                 rs.getString("title"),
                 rs.getString("description"),
                 rs.getObject("due_at", Instant.class),
+                rs.getObject("board_id", UUID.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

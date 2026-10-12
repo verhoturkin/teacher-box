@@ -1,15 +1,21 @@
 package ru.teacherbox.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
@@ -22,6 +28,11 @@ import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.persistence.AiRequestRepository;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
+import ru.teacherbox.textbooks.api.TextbookContent;
+import ru.teacherbox.textbooks.api.TextbookFormat;
+import ru.teacherbox.textbooks.api.TextbookKind;
+import ru.teacherbox.textbooks.api.TextbookSummary;
+import ru.teacherbox.textbooks.api.Textbooks;
 
 /** Drafts of homework and reviews through the teacher's API; usage accounting and the monthly limit. */
 @AiIntegrationTest
@@ -29,7 +40,7 @@ class AssistantIntegrationTests {
 
     private static final UUID TEACHER = UUID.randomUUID();
     private static final String HOMEWORK_BODY = """
-            {"topic": "Дроби", "level": "5 класс", "taskCount": 4, "wishes": "С картинками не надо"}
+            {"prompt": "Дроби, 5 класс, 4 задачи", "title": "Дроби"}
             """;
     private static final String REVIEW_BODY = """
             {"title": "Дроби", "description": "Сложите 1/2 и 1/3", "answer": "Ответ: 2/5"}
@@ -46,6 +57,9 @@ class AssistantIntegrationTests {
 
     @Autowired
     MutableClock clock;
+
+    @Autowired
+    Textbooks textbooks;
 
     @BeforeEach
     void setUp() {
@@ -69,10 +83,11 @@ class AssistantIntegrationTests {
 
         LlmRequest request = llm.lastRequest();
         assertThat(request).isNotNull();
-        assertThat(request.system()).contains("репетитору").contains("Markdown");
-        assertThat(request.prompt()).contains("Тема: Дроби", "Уровень ученика: 5 класс", "Количество задач: 4",
-                "Пожелания учителя: С картинками не надо");
+        assertThat(request.system()).contains("репетитору", "пронумерованный список", "Markdown").doesNotContain("{{");
+        assertThat(request.prompt()).contains("написал учитель: Дроби",
+                "<request>\nДроби, 5 класс, 4 задачи\n</request>");
         assertThat(request.schemaName()).isEqualTo("homework_draft");
+        assertThat(request.schema()).extractingByKey("required").isEqualTo(java.util.List.of("title", "description"));
         assertThat(request.schema()).containsEntry("additionalProperties", false);
         assertThat(thisMonth()).singleElement().satisfies(logged -> {
             assertThat(logged.feature()).isEqualTo(AiFeature.HOMEWORK_DRAFT);
@@ -85,13 +100,42 @@ class AssistantIntegrationTests {
     }
 
     @Test
-    void optionalHomeworkFieldsAreDashes() {
+    void homeworkWithoutATitle() {
+        llm.answer("{\"title\": \"Т\", \"description\": \"О\", \"html\": \"<p>лишнее</p>\"}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \"Степени\"}"))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.title").isEqualTo("Т");
+                    assertThat(json).extractingPath("$.description").isEqualTo("О");
+                });
+
+        assertThat(llm.lastRequest().prompt()).contains("написал учитель: —").doesNotContain("Тип задания");
+        assertThat(llm.lastRequest().system()).contains("пронумерованный список");
+        assertThat(llm.lastRequest().schemaName()).isEqualTo("homework_draft");
+    }
+
+    @Test
+    void draftsHomeworkFromTextbookPages() {
+        UUID textbook = UUID.randomUUID();
+        when(textbooks.find(textbook)).thenReturn(Optional.of(new TextbookSummary(textbook, TextbookKind.TEXTBOOK,
+                "Spotlight 5", null, TextbookFormat.PDF, 120)));
+        when(textbooks.content(eq(textbook), any())).thenReturn(new TextbookContent("Spotlight 5.pdf",
+                "application/pdf", 4, new ByteArrayResource("%PDF".getBytes(StandardCharsets.UTF_8))));
         llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
 
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"topic\": \"Степени\", \"taskCount\": 3}"))
-                .hasStatusOk();
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "Задачи по этим страницам",
+                 "sources": [{"type": "TEXTBOOK", "id": "%s", "pages": "2-3"}]}
+                """.formatted(textbook))).hasStatusOk();
 
-        assertThat(llm.lastRequest().prompt()).contains("Уровень ученика: —", "Пожелания учителя: —");
+        assertThat(llm.lastRequest().sources()).singleElement().satisfies(source -> {
+            assertThat(source.name()).isEqualTo("Spotlight 5, с. 2-3");
+            assertThat(source.isPdf()).isTrue();
+        });
+        assertThat(llm.lastRequest().prompt()).contains("опирайся на них): Spotlight 5, с. 2-3");
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "x", "sources": [{"type": "FILE", "id": "%s"}]}
+                """.formatted(UUID.randomUUID()))).as("a file needs its assignment").hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -231,9 +275,9 @@ class AssistantIntegrationTests {
 
     @Test
     void validatesRequests() {
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"topic\": \" \", \"taskCount\": 3}"))
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \" \"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"topic\": \"Дроби\", \"taskCount\": 50}"))
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"title\": \"Дроби\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(post("/api/teacher/ai/review-draft", "{\"title\": \"Дроби\", \"answer\": \"\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);

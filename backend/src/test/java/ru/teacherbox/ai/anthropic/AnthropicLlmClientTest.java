@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.ai.application.LlmSource;
 import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -92,6 +93,27 @@ class AnthropicLlmClientTest {
                 .isEqualTo("title");
         assertThat(body.path("fallbacks").asString()).isEqualTo("default");
         assertThat(body.has("thinking")).as("the default model thinks adaptively on its own").isFalse();
+    }
+
+    @Test
+    void sendsMaterialsBeforeTheQuestion() {
+        respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
+        LlmRequest request = new LlmRequest("system text", "user text", "homework_draft", REQUEST.schema(),
+                List.of(new LlmSource("Spotlight 5, с. 2", LlmSource.PDF, new byte[] {'%', 'P'}),
+                        new LlmSource("Схема.png", "image/png", new byte[] {1, 2})));
+
+        try (AnthropicLlmClient client = client(null, false)) {
+            client.complete(request);
+        }
+
+        JsonNode content = json.readTree(requestBody.get()).path("messages").path(0).path("content");
+        assertThat(content.path(0).path("type").asString()).isEqualTo("document");
+        assertThat(content.path(0).path("title").asString()).isEqualTo("Spotlight 5, с. 2");
+        assertThat(content.path(0).path("source").path("media_type").asString()).isEqualTo("application/pdf");
+        assertThat(content.path(0).path("source").path("data").asString()).isEqualTo("JVA=");
+        assertThat(content.path(1).path("type").asString()).isEqualTo("image");
+        assertThat(content.path(1).path("source").path("media_type").asString()).isEqualTo("image/png");
+        assertThat(content.path(2).path("text").asString()).isEqualTo("user text");
     }
 
     @Test

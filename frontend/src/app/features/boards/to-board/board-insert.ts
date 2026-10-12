@@ -20,7 +20,20 @@ export interface PagesMaterial {
   readonly pictures: readonly string[];
 }
 
-export type BoardMaterial = MarkdownMaterial | PagesMaterial;
+/**
+ * A written assignment: a frame named `frame` («Дроби · 12.10.2026») with the task first — a text element or a
+ * picture of the formatted text (`text`) — then its pictures (files, textbook pages) left to right.
+ */
+export interface AssignmentMaterial {
+  readonly title: string;
+  readonly markdown: string;
+  readonly mode: 'assignment';
+  readonly frame: string;
+  readonly text: InsertMode;
+  readonly pictures: readonly string[];
+}
+
+export type BoardMaterial = MarkdownMaterial | PagesMaterial | AssignmentMaterial;
 
 type StoredMaterial = BoardMaterial & { readonly at: number };
 
@@ -50,9 +63,21 @@ export class BoardInsert {
       if (text === null) return null;
       const stored: unknown = JSON.parse(text);
       if (!isMaterial(stored) || now - stored.at > INSERT_TTL_MS) return null;
-      return stored.mode === 'pages'
-        ? { title: stored.title, mode: 'pages', pictures: stored.pictures }
-        : { title: stored.title, markdown: stored.markdown, mode: stored.mode };
+      switch (stored.mode) {
+        case 'pages':
+          return { title: stored.title, mode: 'pages', pictures: stored.pictures };
+        case 'assignment':
+          return {
+            title: stored.title,
+            markdown: stored.markdown,
+            mode: 'assignment',
+            frame: stored.frame,
+            text: stored.text,
+            pictures: stored.pictures,
+          };
+        default:
+          return { title: stored.title, markdown: stored.markdown, mode: stored.mode };
+      }
     } catch {
       return null;
     }
@@ -62,18 +87,31 @@ export class BoardInsert {
 function isMaterial(value: unknown): value is StoredMaterial {
   if (typeof value !== 'object' || value === null) return false;
   const material = value as Partial<
-    Record<'title' | 'markdown' | 'mode' | 'pictures' | 'at', unknown>
+    Record<'title' | 'markdown' | 'mode' | 'pictures' | 'frame' | 'text' | 'at', unknown>
   >;
   if (typeof material.title !== 'string' || typeof material.at !== 'number') return false;
   if (material.mode === 'pages') {
+    return apiPictures(material.pictures);
+  }
+  if (typeof material.markdown !== 'string') return false;
+  if (material.mode === 'assignment') {
     return (
-      Array.isArray(material.pictures) &&
-      material.pictures.every(
-        (picture) => typeof picture === 'string' && picture.startsWith('/api/'),
-      )
+      typeof material.frame === 'string' &&
+      isInsertMode(material.text) &&
+      apiPictures(material.pictures)
     );
   }
+  return isInsertMode(material.mode);
+}
+
+function isInsertMode(value: unknown): value is InsertMode {
+  return value === 'text' || value === 'image';
+}
+
+/** Pictures are fetched with the user's token: only addresses of the portal's API. */
+function apiPictures(value: unknown): boolean {
   return (
-    typeof material.markdown === 'string' && (material.mode === 'text' || material.mode === 'image')
+    Array.isArray(value) &&
+    value.every((picture) => typeof picture === 'string' && picture.startsWith('/api/'))
   );
 }

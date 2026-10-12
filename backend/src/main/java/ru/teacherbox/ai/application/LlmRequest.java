@@ -1,5 +1,6 @@
 package ru.teacherbox.ai.application;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,6 +10,17 @@ import java.util.Map;
  * @param prompt     the user message
  * @param schemaName short name of the answer format (used by OpenAI-compatible APIs)
  * @param schema     JSON Schema of the answer object
+ * @param sources    materials the model reads before the prompt (ADR-0039)
  */
-public record LlmRequest(String system, String prompt, String schemaName, Map<String, Object> schema) {
+public record LlmRequest(String system, String prompt, String schemaName, Map<String, Object> schema,
+        List<LlmSource> sources) {
+
+    public LlmRequest {
+        sources = List.copyOf(sources);
+    }
+
+    /** A request without materials. */
+    public LlmRequest(String system, String prompt, String schemaName, Map<String, Object> schema) {
+        this(system, prompt, schemaName, schema, List.of());
+    }
 }

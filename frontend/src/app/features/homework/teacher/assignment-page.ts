@@ -12,25 +12,26 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
-import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
+import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
-import { ToBoardDialog } from '@features/boards/parts';
+import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
+import { assignmentBoard } from './assignment-board';
 import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
-import { AssignmentDialog, StudentOption } from './assignment-dialog';
+import { StudentOption } from './assignment-editor-page';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
@@ -55,6 +56,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     RouterLink,
     Button,
     ButtonDirective,
+    ButtonIcon,
     ButtonLabel,
     Card,
     ConfirmDialog,
@@ -67,7 +69,6 @@ import { SHARED_T } from '@shared/i18n/texts';
     TextbookList,
     FilePicker,
     TaskStatusTag,
-    AssignmentDialog,
     GroupPicker,
     ToBoardDialog,
     TextbookToBoardDialog,
@@ -88,19 +89,23 @@ import { SHARED_T } from '@shared/i18n/texts';
               : t.noDueDate
           }}
         </span>
+        @if (assignment.boardId; as boardId) {
+          <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
+            <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
+            <span pButtonLabel>{{ t.openBoard }}</span>
+          </a>
+        }
         <p-button
           [label]="t.toBoard"
           icon="pi pi-th-large"
           severity="secondary"
-          [disabled]="!assignment.description"
+          [disabled]="!hasBoardMaterial()"
           (onClick)="boardVisible.set(true)"
         />
-        <p-button
-          [label]="t.edit"
-          icon="pi pi-pencil"
-          severity="secondary"
-          (onClick)="editVisible.set(true)"
-        />
+        <a pButton severity="secondary" routerLink="edit">
+          <i pButtonIcon aria-hidden="true" class="pi pi-pencil"></i>
+          <span pButtonLabel>{{ t.edit }}</span>
+        </a>
       </tb-page-header>
 
       <div class="tb-stack">
@@ -202,9 +207,10 @@ import { SHARED_T } from '@shared/i18n/texts';
               </tr>
             </ng-template>
           </p-table>
-          <div class="tb-inline tb-assign">
-            <div class="tb-field tb-grow">
-              <label for="assign-students">{{ t.assignMore }}</label>
+          <h3 class="tb-subtitle">{{ t.assignMore }}</h3>
+          <div class="tb-assign">
+            <div class="tb-field">
+              <label for="assign-students">{{ t.students }}</label>
               <p-multiselect
                 inputId="assign-students"
                 [options]="unassigned()"
@@ -219,7 +225,14 @@ import { SHARED_T } from '@shared/i18n/texts';
                 [fluid]="true"
               />
             </div>
-            <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
+            <tb-group-picker
+              inputId="assign-group"
+              [(selected)]="groupsToAssign"
+              (picked)="addStudents($event)"
+              (dropped)="removeStudents($event)"
+            />
+          </div>
+          <div class="tb-form-actions">
             <p-button
               class="tb-tonal"
               [label]="t.assign"
@@ -232,11 +245,6 @@ import { SHARED_T } from '@shared/i18n/texts';
         </p-card>
       </div>
 
-      <tb-assignment-dialog
-        [(visible)]="editVisible"
-        [assignment]="assignment"
-        (saved)="details.set($event)"
-      />
       <tb-textbook-to-board-dialog
         [(visible)]="textbookBoardVisible"
         [textbook]="boardTextbook()"
@@ -255,12 +263,23 @@ import { SHARED_T } from '@shared/i18n/texts';
         [title]="assignment.title"
         [markdown]="assignment.description ?? ''"
         [students]="taskStudents()"
+        [frame]="board()?.frame ?? null"
+        [pictures]="board()?.pictures ?? []"
+        (placed)="rememberBoard(assignment.id, $event)"
       />
     } @else {
       <tb-page-header [title]="t.assignment" back="/teacher/homework" [backLabel]="t.back" />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
     <p-confirmdialog />
+  `,
+  styles: `
+    .tb-assign {
+      display: grid;
+      gap: var(--tb-space-4);
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      align-items: start;
+    }
   `,
 })
 export class AssignmentPage implements OnInit {
@@ -285,8 +304,22 @@ export class AssignmentPage implements OnInit {
   constructor() {
     pageDetail(() => this.details()?.title);
   }
-  protected readonly editVisible = signal(false);
   protected readonly boardVisible = signal(false);
+  /** A text, a picture or a textbook page to put on a board. */
+  protected readonly hasBoardMaterial = computed(() => {
+    const assignment = this.details();
+    return (
+      assignment !== null &&
+      (!!assignment.description || assignmentBoard(assignment, new Date()).pictures.length > 0)
+    );
+  });
+  /** «На доску» puts the text, the pictures and the textbook pages of the assignment in a dated frame. */
+  protected readonly board = computed(() => {
+    const assignment = this.details();
+    return assignment === null || !this.boardVisible()
+      ? null
+      : assignmentBoard(assignment, new Date());
+  });
   protected readonly bindVisible = signal(false);
   protected readonly textbookBoardVisible = signal(false);
   protected readonly boardTextbook = signal<BoardTextbook | null>(null);
@@ -297,6 +330,8 @@ export class AssignmentPage implements OnInit {
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
   readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
+  /** The groups chosen for «Выдать ещё ученикам». */
+  protected readonly groupsToAssign = signal<readonly string[]>([]);
   protected readonly selectedToAssign = toSignal(this.toAssign.valueChanges, {
     initialValue: this.toAssign.value,
   });
@@ -409,6 +444,19 @@ export class AssignmentPage implements OnInit {
     ]);
   }
 
+  /** Takes off the students of a group taken off. */
+  protected removeStudents(ids: readonly string[]): void {
+    const gone = new Set(ids);
+    this.toAssign.setValue(this.toAssign.value.filter((id) => !gone.has(id)));
+  }
+
+  /** The board the assignment went on: its students get «Перейти на доску». */
+  protected rememberBoard(assignmentId: string, placed: Placed): void {
+    this.api.placeOnBoard(assignmentId, placed.board.id).subscribe((updated) => {
+      this.details.set(updated);
+    });
+  }
+
   protected assign(): void {
     const assignment = this.details();
     const studentIds = this.toAssign.value;
@@ -420,6 +468,7 @@ export class AssignmentPage implements OnInit {
       .subscribe((updated) => {
         this.details.set(updated);
         this.toAssign.setValue([]);
+        this.groupsToAssign.set([]);
         this.snackbar.success(T.page.assigned);
       });
   }

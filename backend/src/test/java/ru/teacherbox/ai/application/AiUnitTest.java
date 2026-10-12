@@ -27,9 +27,10 @@ class AiUnitTest {
     void assistantIsOffWithoutProvider() {
         AiUsage usage = mock(AiUsage.class);
         AiAssistant assistant = new AiAssistant(new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                prompts, usage, JsonMapper.builder().build());
+                prompts, usage, mock(DraftSources.class), JsonMapper.builder().build());
 
-        assertThatThrownBy(() -> assistant.homeworkDraft(new HomeworkBrief("Дроби", null, 3, null)))
+        assertThatThrownBy(() -> assistant.homeworkDraft(
+                new HomeworkBrief("Дроби", null, java.util.List.of())))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);
@@ -59,13 +60,13 @@ class AiUnitTest {
 
     @Test
     void rendersVersionedPrompts() {
-        String prompt = prompts.render("homework-draft.user.v1",
-                Map.of("topic", "Дроби $1", "level", "5", "taskCount", "3", "wishes", "—"));
+        String prompt = prompts.render("homework-draft.user.v3",
+                Map.of("title", "—", "sources", "—", "prompt", "Дроби $1"));
 
-        assertThat(prompt).startsWith("Составь домашнее задание.").contains("Тема: Дроби $1");
+        assertThat(prompt).startsWith("Название, которое уже написал учитель: —").contains("Дроби $1");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");
-        assertThatThrownBy(() -> prompts.render("homework-draft.user.v1", Map.of("topic", "x")))
-                .hasMessageContaining("{{level}}");
+        assertThatThrownBy(() -> prompts.render("homework-draft.user.v3", Map.of("sources", "x")))
+                .hasMessageContaining("{{title}}");
         assertThatThrownBy(() -> prompts.render("missing.v1", Map.of()))
                 .hasMessageContaining("Prompt not found");
     }

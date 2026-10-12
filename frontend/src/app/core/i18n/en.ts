@@ -31,6 +31,8 @@ export const en: Translation<typeof ru> = {
     reviewQueue: 'To review',
     taskReview: 'Reviewing work',
     assignment: 'Assignment',
+    newAssignment: 'New assignment',
+    editAssignment: 'Edit assignment',
     monthlyReport: 'Monthly report',
     ledger: 'Payment history',
     help: 'Help',
@@ -201,6 +203,14 @@ export const en: Translation<typeof ru> = {
       'ai.truncated': 'The model’s answer was too long. Try a simpler request',
       'ai.invalid-answer': 'The model returned an answer in a wrong format. Try again',
       'ai.unavailable': 'The AI service is unavailable now. Try again later',
+      'ai.prompt-not-found': 'The prompt is not found — it may have been deleted',
+      'ai.source-not-found':
+        'The textbook or the file for the AI is not found — it may have been deleted',
+      'ai.source-unsupported':
+        'The AI reads PDF files and pictures only, not Word files and others',
+      'ai.source-too-large': 'Too much for the AI: at most 5 sources, 20 pages and 20 MB at once',
+      'ai.prompt-title-invalid': 'The prompt title is 1 to 100 characters long',
+      'ai.prompt-text-invalid': 'The prompt text is 1 to 4000 characters long',
       // schedule
       'schedule.student-not-found': 'The student is not found or turned off',
       'schedule.lesson-not-found': 'Lesson not found',

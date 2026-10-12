@@ -80,7 +80,8 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not save. Try again later',
   },
   groupPicker: {
-    add: 'Add a group',
+    groups: 'Groups',
+    placeholder: 'All students of the groups',
   },
   groups: {
     title: 'Groups',

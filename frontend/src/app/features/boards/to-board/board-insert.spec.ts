@@ -49,6 +49,29 @@ describe('BoardInsert', () => {
     expect(insert.take('b1', 1)).toBeNull();
   });
 
+  it('hands a written assignment with its frame and pictures', () => {
+    const assignment = {
+      title: 'Дроби',
+      markdown: 'Решите',
+      mode: 'assignment' as const,
+      frame: 'Дроби · 12.10.2026',
+      text: 'image' as const,
+      pictures: ['/api/teacher/homework/attachments/f-1'],
+    };
+    insert.put('b1', assignment, 1000);
+    expect(insert.take('b1', 1000)).toEqual(assignment);
+
+    insert.put('b1', { ...assignment, pictures: ['https://evil.example/x.png'] }, 1000);
+    expect(insert.take('b1', 1000)).toBeNull();
+    localStorage.setItem(
+      'tb.board-insert.b1',
+      '{"title":"x","markdown":"","mode":"assignment","frame":"x","text":"html","pictures":[],"at":1}',
+    );
+    expect(insert.take('b1', 1)).toBeNull();
+    localStorage.setItem('tb.board-insert.b1', '{"title":"x","mode":"text","at":1}');
+    expect(insert.take('b1', 1)).toBeNull();
+  });
+
   it('works without the storage', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('quota');

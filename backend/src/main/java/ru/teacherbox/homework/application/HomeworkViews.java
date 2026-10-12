@@ -38,12 +38,19 @@ public final class HomeworkViews {
         }
     }
 
-    /** A row of the teacher's list of assignments. */
+    /**
+     * A row of the teacher's list of assignments.
+     *
+     * @param students the names of its students, alphabetically
+     * @param boardId  the board it was put on; {@code null} — none
+     */
     public record AssignmentSummary(
             UUID id,
             String title,
             @Nullable Instant dueAt,
             Instant createdAt,
+            List<String> students,
+            @Nullable UUID boardId,
             int totalTasks,
             int assigned,
             int submitted,
@@ -68,11 +75,13 @@ public final class HomeworkViews {
             boolean overdue) {
     }
 
+    /** @param boardId the board the assignment was put on; {@code null} — none */
     public record AssignmentDetails(
             UUID id,
             String title,
             @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID boardId,
             Instant createdAt,
             long version,
             List<AttachmentView> attachments,
@@ -83,12 +92,17 @@ public final class HomeworkViews {
     public record SubmissionView(UUID id, @Nullable String text, Instant submittedAt, List<AttachmentView> attachments) {
     }
 
-    /** The assignment as the student sees it inside a task. */
+    /**
+     * The assignment as the student sees it inside a task.
+     *
+     * @param boardId the board the assignment was put on; {@code null} — none
+     */
     public record AssignmentInfo(
             UUID id,
             String title,
             @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID boardId,
             List<AttachmentView> attachments,
             List<BoundTextbookView> textbooks) {
     }

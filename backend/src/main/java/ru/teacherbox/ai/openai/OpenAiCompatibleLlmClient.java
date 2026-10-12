@@ -1,6 +1,8 @@
 package ru.teacherbox.ai.openai;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +14,13 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import ru.teacherbox.ai.application.AiProperties;
+import ru.teacherbox.ai.application.DraftSources;
 import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.application.PdfPictures;
 import ru.teacherbox.shared.http.OutboundHttp;
 import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
@@ -148,9 +153,33 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         body.put("model", model);
         body.put("messages", List.of(
                 Map.of("role", "system", "content", request.system()),
-                Map.of("role", "user", "content", request.prompt())));
+                Map.of("role", "user", "content", userContent(request))));
         body.put("response_format", Map.of("type", "json_schema", "json_schema", jsonSchema));
         return body;
+    }
+
+    /**
+     * The prompt alone, or the materials first as pictures — a PDF drawn page by page, since these APIs do not all
+     * read PDF files (ADR-0039) — and the prompt after them.
+     */
+    private static Object userContent(LlmRequest request) {
+        if (request.sources().isEmpty()) {
+            return request.prompt();
+        }
+        List<Map<String, Object>> parts = new ArrayList<>();
+        for (LlmSource source : request.sources()) {
+            parts.add(Map.of("type", "text", "text", source.name()));
+            List<byte[]> pictures = source.isPdf()
+                    ? PdfPictures.render(source.content(), DraftSources.MAX_PAGES)
+                    : List.of(source.content());
+            String type = source.isPdf() ? "image/png" : source.mediaType();
+            for (byte[] picture : pictures) {
+                parts.add(Map.of("type", "image_url", "image_url",
+                        Map.of("url", "data:" + type + ";base64," + Base64.getEncoder().encodeToString(picture))));
+            }
+        }
+        parts.add(Map.of("type", "text", "text", request.prompt()));
+        return parts;
     }
 
     private static String describe(RestClientResponseException e) {

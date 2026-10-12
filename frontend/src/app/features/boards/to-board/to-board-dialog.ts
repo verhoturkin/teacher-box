@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -168,6 +169,15 @@ export class ToBoardDialog {
   readonly students = input<readonly string[] | null>(null);
   /** Pages of a textbook instead of the Markdown: only Excalidraw boards take them. */
   readonly pages = input<PagesMaterial | null>(null);
+  /**
+   * A written assignment: on an Excalidraw board the text goes into a frame of this name, followed by `pictures`;
+   * an external board gets the text only.
+   */
+  readonly frame = input<string | null>(null);
+  /** API addresses of the assignment's pictures (files, textbook pages), in their order. */
+  readonly pictures = input<readonly string[]>([]);
+  /** The material went to a board (its tab opened or the clipboard got it). */
+  readonly placed = output<Placed>();
 
   protected readonly kindLabels = BOARD_KIND_LABELS;
   /** The item template's board is untyped. */
@@ -199,13 +209,13 @@ export class ToBoardDialog {
   );
   /** An external board gets the material through the clipboard. */
   protected readonly needsClipboard = computed(() => this.chosenBoard()?.kind === 'LINK');
-  protected readonly hint = computed(() =>
-    this.pages() !== null
-      ? T.toBoard.pagesHint
-      : this.needsClipboard()
-        ? T.toBoard.clipboardHint
-        : T.toBoard.centreHint,
-  );
+  protected readonly hint = computed(() => {
+    if (this.pages() !== null) return T.toBoard.pagesHint;
+    if (this.needsClipboard()) {
+      return this.frame() === null ? T.toBoard.clipboardHint : T.toBoard.textOnlyHint;
+    }
+    return this.frame() === null ? T.toBoard.centreHint : T.toBoard.assignmentHint;
+  });
 
   constructor() {
     effect(() => {
@@ -240,7 +250,20 @@ export class ToBoardDialog {
     this.error.set(null);
     this.done.set(null);
     if (board.kind === 'EXCALIDRAW') {
-      this.insert.put(board.id, { title: this.title(), markdown: this.markdown(), mode });
+      const frame = this.frame();
+      this.insert.put(
+        board.id,
+        frame === null
+          ? { title: this.title(), markdown: this.markdown(), mode }
+          : {
+              title: this.title(),
+              markdown: this.markdown(),
+              mode: 'assignment',
+              frame,
+              text: mode,
+              pictures: this.pictures(),
+            },
+      );
       this.open({ mode, board, href: boardRoute('teacher', board.id) });
       return;
     }
@@ -274,6 +297,7 @@ export class ToBoardDialog {
   /** Still within the click's activation; if the browser blocks the tab, the message has a link. */
   private open(placed: Placed): void {
     this.done.set(placed);
+    this.placed.emit(placed);
     window.open(placed.href, '_blank', 'noopener');
   }
 }

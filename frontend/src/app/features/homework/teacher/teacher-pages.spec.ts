@@ -16,9 +16,9 @@ import {
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
-import { AssignmentDialog } from './assignment-dialog';
+import { aBoard } from '@testing/boards-fixtures';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -56,40 +56,71 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('AssignmentsPage', () => {
-  it('lists assignments and creates a new one', async () => {
+  it('lists assignments as cards and opens the editor of a new one', async () => {
     const { backend } = configure();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
-    backend
-      .expectOne('/api/teacher/homework/assignments')
-      .flush([
-        assignmentSummary(),
-        assignmentSummary({ id: 'a-2', title: 'Без срока', dueAt: null, submitted: 2 }),
-      ]);
+    backend.expectOne('/api/teacher/homework/assignments').flush([
+      assignmentSummary(),
+      assignmentSummary({
+        id: 'a-2',
+        title: 'Без срока',
+        dueAt: null,
+        students: ['А', 'Б', 'В', 'Г', 'Д'],
+        totalTasks: 5,
+        submitted: 0,
+        accepted: 2,
+        boardId: 'board-1',
+      }),
+      assignmentSummary({
+        id: 'a-3',
+        title: 'Черновик',
+        students: [],
+        totalTasks: 0,
+        submitted: 0,
+      }),
+      assignmentSummary({ id: 'a-4', title: 'Готово', totalTasks: 2, submitted: 0, accepted: 2 }),
+      assignmentSummary({ id: 'a-5', title: 'Свежее', totalTasks: 1, submitted: 0 }),
+    ]);
     await fixture.whenStable();
     const host = hostElement(fixture);
+    const cards = [...host.querySelectorAll('.tb-list > li')].map((card) => readableText(card));
 
-    expect(readableText(host)).toContain('На проверку 3');
-    expect(readableText(host)).toContain('10.09.2026');
-    expect(readableText(host)).toContain('без срока');
-    expect(readableText(host)).toContain('0 из 2');
+    expect(readableText(host)).toContain('На проверку 1');
+    expect(host.querySelector('table')).toBeNull();
+    expect(cards[0]).toContain('Дроби Анна, Борис · до 10.09.2026');
+    expect(cards[0]).toContain('На проверке: 1');
+    expect(cards[1]).toContain('А, Б, В и ещё 2 · без срока');
+    expect(cards[1]).toContain('Принято 2 из 5');
+    expect(cards[2]).toContain('Ещё никому не выдано');
+    expect(cards[2]).toContain('Не выдано');
+    expect(cards[3]).toContain('Принято');
+    expect(cards[4]).toContain('Выдано');
+
+    async function act(title: string, item: string): Promise<void> {
+      buttonByText(host, `Действия: ${title}`).click();
+      await fixture.whenStable();
+      menuItemByText(item).click();
+      await fixture.whenStable();
+    }
+    buttonByText(host, 'Действия: Без срока').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Открыть доску');
+    expect(bodyText()).not.toContain('Проверить работы');
+    buttonByText(host, 'Действия: Без срока').click();
+    await fixture.whenStable();
+    await act('Без срока', 'Открыть');
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2']);
+    await act('Без срока', 'Изменить');
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
+    await act('Без срока', 'Открыть доску');
+    expect(navigate).toHaveBeenCalledWith(['/teacher/boards', 'board-1']);
+    await act('Дроби', 'Проверить работы');
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/review']);
 
     buttonByText(host, 'Новое задание').click();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    await fixture.whenStable();
-    const dialog = fixture.debugElement
-      .query(By.directive(AssignmentDialog))
-      .injector.get(AssignmentDialog);
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.students().map((student) => student.displayName)).toEqual([
-      'Анна',
-      'Борис',
-      'Вера',
-    ]);
-
-    dialog.saved.emit(assignmentDetails({ id: 'a-9' }));
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
     fixture.destroy();
   });
 
@@ -111,38 +142,40 @@ describe('AssignmentsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
 
-  it('opens the form of a new assignment from the home page', async () => {
+  it('opens the editor of a new assignment from the home page', async () => {
     const { backend } = configure();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     fixture.componentRef.setInput('create', 'assignment');
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend.expectOne('/api/teacher/homework/assignments').flush([]);
-    await fixture.whenStable();
 
-    expect(
-      fixture.debugElement
-        .query(By.directive(AssignmentDialog))
-        .injector.get(AssignmentDialog)
-        .visible(),
-    ).toBe(true);
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], { replaceUrl: true });
+    backend.expectNone('/api/teacher/homework/assignments');
     fixture.destroy();
   });
 });
 
 describe('AssignmentPage', () => {
-  async function render() {
+  async function render(details = assignmentDetails()) {
     const context = configure();
     const fixture = TestBed.createComponent(AssignmentPage);
     fixture.componentRef.setInput('assignmentId', 'a-1');
     await fixture.whenStable();
-    context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
+    context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(details);
     context.backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/groups').flush([aGroup()]);
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('links the board the assignment is on', async () => {
+    const { host } = await render(assignmentDetails({ boardId: 'board-1' }));
+
+    expect(host.querySelector('a[href="/teacher/boards/board-1"]')?.textContent).toContain(
+      'Открыть доску',
+    );
+  });
 
   it('shows a failed load with «Повторить» and the way back', async () => {
     const { backend } = configure();
@@ -237,15 +270,15 @@ describe('AssignmentPage', () => {
     });
     fixture.destroy();
   });
-  it('adds the students of a group who do not have the assignment yet', async () => {
+  it('adds the students of a group who do not have the assignment yet and takes them off', async () => {
     const { fixture } = await render();
+    const picker = fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker);
 
-    fixture.debugElement
-      .query(By.directive(GroupPicker))
-      .injector.get(GroupPicker)
-      .picked.emit(['s-1', 's-3', 's-9']);
-
+    picker.picked.emit(['s-1', 's-3', 's-9']);
     expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
+
+    picker.dropped.emit(['s-3']);
+    expect(fixture.componentInstance.toAssign.value).toEqual([]);
     fixture.destroy();
   });
 
@@ -305,24 +338,50 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
-  it('puts the assignment on a board', async () => {
-    const { fixture, host, backend } = await render();
+  it('puts the assignment with its textbook pages on a board and remembers the board', async () => {
+    const assignment = assignmentDetails({
+      description: null,
+      attachments: [],
+      textbooks: [boundTextbook({ pages: '12-13' })],
+    });
+    const { fixture, host, backend } = await render(assignment);
 
     buttonByText(host, 'На доску').click();
     await fixture.whenStable();
     backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     await fixture.whenStable();
 
-    // The page's own dialog: the editor of the assignment has another one.
+    // The page's own dialog: the textbook's dialog has another one.
     const board = fixture.debugElement
       .queryAll(By.directive(ToBoardDialog))
       .at(-1)!
       .injector.get(ToBoardDialog);
-    const assignment = assignmentDetails();
     expect(board.visible()).toBe(true);
     expect(board.title()).toBe(assignment.title);
-    expect(board.markdown()).toBe(assignment.description);
     expect(board.students()).toEqual(assignment.tasks.map((task) => task.studentId));
+    expect(board.pictures()).toEqual([
+      '/api/teacher/textbooks/tb-1/pages/12',
+      '/api/teacher/textbooks/tb-1/pages/13',
+    ]);
+
+    board.placed.emit({ mode: 'text', board: aBoard(), href: '/teacher/boards/board-1' });
+    const placed = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/homework/assignments/a-1/board',
+    });
+    expect(placed.request.body).toEqual({ boardId: 'board-1' });
+    placed.flush({ ...assignment, boardId: 'board-1' });
+    await fixture.whenStable();
+    expect(host.querySelector('a[href="/teacher/boards/board-1"]')).not.toBeNull();
+    fixture.destroy();
+  });
+
+  it('has nothing to put on a board without a text, pictures or pages', async () => {
+    const { fixture, host } = await render(
+      assignmentDetails({ description: null, attachments: [], textbooks: [] }),
+    );
+
+    expect(buttonByText(host, 'На доску').disabled).toBe(true);
     fixture.destroy();
   });
 });

@@ -18,6 +18,10 @@ export interface AssignmentSummary {
   readonly title: string;
   readonly dueAt: string | null;
   readonly createdAt: string;
+  /** The names of its students, alphabetically. */
+  readonly students: readonly string[];
+  /** The board it was put on; `null` — none. */
+  readonly boardId: string | null;
   readonly totalTasks: number;
   readonly assigned: number;
   readonly submitted: number;
@@ -54,6 +58,8 @@ export interface AssignmentDetails {
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;
+  /** The board the assignment was put on; `null` — none. */
+  readonly boardId: string | null;
   readonly createdAt: string;
   readonly version: number;
   readonly attachments: Attachment[];
@@ -73,6 +79,8 @@ export interface AssignmentInfo {
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;
+  /** The board the assignment was put on; `null` — none. */
+  readonly boardId: string | null;
   readonly attachments: Attachment[];
   readonly textbooks: BoundTextbook[];
 }

@@ -29,6 +29,8 @@ export const ru = {
     reviewQueue: 'На проверку',
     taskReview: 'Проверка работы',
     assignment: 'Задание',
+    newAssignment: 'Новое задание',
+    editAssignment: 'Изменить задание',
     monthlyReport: 'Отчёт за месяц',
     ledger: 'История оплат',
     help: 'Справка',
@@ -197,6 +199,13 @@ export const ru = {
       'ai.truncated': 'Ответ модели оказался слишком длинным. Попробуйте упростить запрос',
       'ai.invalid-answer': 'Модель вернула ответ в неверном формате. Попробуйте ещё раз',
       'ai.unavailable': 'Сервис ИИ сейчас недоступен. Попробуйте позже',
+      'ai.prompt-not-found': 'Промт не найден — возможно, его уже удалили',
+      'ai.source-not-found': 'Учебник или файл для ИИ не найден — возможно, его удалили',
+      'ai.source-unsupported': 'ИИ читает только PDF и картинки, а не файлы Word и другие',
+      'ai.source-too-large':
+        'Слишком много для ИИ: не больше 5 источников, 20 страниц и 20 МБ за раз',
+      'ai.prompt-title-invalid': 'Название промта — от 1 до 100 символов',
+      'ai.prompt-text-invalid': 'Текст промта — от 1 до 4000 символов',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',

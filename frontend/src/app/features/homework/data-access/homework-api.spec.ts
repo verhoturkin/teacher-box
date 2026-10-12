@@ -23,7 +23,8 @@ describe('HomeworkApi', () => {
     const input = { title: 'Дроби', description: null, dueAt: null };
     api.assignments().subscribe();
     api.assignment('a-1').subscribe();
-    api.createAssignment(input, ['s-1']).subscribe();
+    api.createAssignment(input).subscribe();
+    api.placeOnBoard('a-1', 'board-1').subscribe();
     api.updateAssignment('a-1', input, 2).subscribe();
     api.assignStudents('a-1', ['s-2']).subscribe();
     api.removeMaterial('a-1', 'f-1').subscribe();
@@ -36,10 +37,11 @@ describe('HomeworkApi', () => {
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments/a-1' });
     expect(
       backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body,
-    ).toEqual({
-      ...input,
-      studentIds: ['s-1'],
-    });
+    ).toEqual(input);
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1/board' })
+        .request.body,
+    ).toEqual({ boardId: 'board-1' });
     expect(
       backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' }).request
         .body,

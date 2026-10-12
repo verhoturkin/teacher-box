@@ -1,6 +1,7 @@
 package ru.teacherbox.homework;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.JsonPath;
 import java.io.UnsupportedEncodingException;
@@ -17,8 +18,10 @@ import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.homework.api.AssignmentFiles;
 import ru.teacherbox.homework.api.HomeworkAssigned;
 import ru.teacherbox.identity.api.StudentStatus;
+import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.TestUsers;
 
@@ -31,6 +34,9 @@ class AssignmentIntegrationTests {
 
     @Autowired
     FakeUserDirectory directory;
+
+    @Autowired
+    AssignmentFiles files;
 
     @Test
     void createsAssignmentForStudents(AssertablePublishedEvents events) {
@@ -61,7 +67,38 @@ class AssignmentIntegrationTests {
                     .containsExactly(2);
             assertThat(json).extractingPath("$[?(@.id == '%s')].assigned".formatted(id)).asArray()
                     .containsExactly(2);
+            assertThat(json).extractingPath("$[?(@.id == '%s')].students[*]".formatted(id)).asArray()
+                    .containsExactly("Анна", "Борис");
+            assertThat(json).extractingPath("$[?(@.id == '%s')].boardId".formatted(id)).asArray()
+                    .containsExactly((Object) null);
         });
+    }
+
+    @Test
+    void remembersTheBoardTheAssignmentWasPutOn() {
+        UUID student = directory.addStudent("Вера");
+        String id = createdId("На доску", List.of(student));
+        UUID board = UUID.randomUUID();
+
+        assertThat(put("/api/teacher/homework/assignments/" + id + "/board", "{\"boardId\":\"%s\"}".formatted(board)))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.boardId").isEqualTo(board.toString());
+                    assertThat(json).extractingPath("$.version").isEqualTo(0);
+                });
+        assertThat(get("/api/teacher/homework/assignments")).bodyJson()
+                .extractingPath("$[?(@.id == '%s')].boardId".formatted(id)).asArray()
+                .containsExactly(board.toString());
+        String taskId = JsonPath.read(body(get("/api/teacher/homework/assignments/" + id)), "$.tasks[0].taskId");
+        assertThat(mvc.get().uri("/api/me/homework/tasks/" + taskId).with(TestUsers.student(student)))
+                .hasStatusOk().bodyJson().extractingPath("$.assignment.boardId").isEqualTo(board.toString());
+        assertThat(mvc.put().uri("/api/teacher/homework/assignments/" + id + "/board")
+                .with(TestUsers.student(student)).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .hasStatus(HttpStatus.FORBIDDEN);
+
+        assertThat(put("/api/teacher/homework/assignments/" + id + "/board", "{\"boardId\":null}"))
+                .hasStatusOk().bodyJson().extractingPath("$.boardId").isNull();
+        assertThat(put("/api/teacher/homework/assignments/" + UUID.randomUUID() + "/board", "{}"))
+                .hasStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -143,6 +180,23 @@ class AssignmentIntegrationTests {
                 .hasStatus(HttpStatus.NOT_FOUND);
         assertThat(mvc.delete().uri("/api/teacher/homework/assignments/" + UUID.randomUUID() + "/attachments/"
                 + attachmentId).with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void otherModulesReadTheFilesOfAnAssignment() throws Exception {
+        String id = createdId("Для ИИ", List.of());
+        String other = createdId("Другое", List.of());
+        MvcTestResult uploaded = upload(id, new MockMultipartFile("files", "Задачи.pdf", null,
+                "%PDF-1.4 test".getBytes(StandardCharsets.UTF_8)));
+        UUID attachment = UUID.fromString(JsonPath.read(body(uploaded), "$[0].id"));
+
+        AssignmentFiles.AssignmentFile file = files.file(UUID.fromString(id), attachment);
+        assertThat(file.filename()).isEqualTo("Задачи.pdf");
+        assertThat(file.contentType()).isEqualTo("application/pdf");
+        assertThat(file.size()).isEqualTo(13);
+        assertThat(file.content().getContentAsByteArray()).startsWith("%PDF".getBytes(StandardCharsets.UTF_8));
+        assertThatThrownBy(() -> files.file(UUID.fromString(other), attachment))
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test

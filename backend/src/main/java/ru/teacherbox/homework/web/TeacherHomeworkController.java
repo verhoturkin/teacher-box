@@ -53,6 +53,10 @@ class TeacherHomeworkController {
             @NotNull Long version) {
     }
 
+    /** @param boardId the board the assignment was put on; {@code null} — none */
+    record PlaceOnBoardRequest(@Nullable UUID boardId) {
+    }
+
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
     }
 
@@ -103,6 +107,11 @@ class TeacherHomeworkController {
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
                 request.version());
+    }
+
+    @PutMapping("/assignments/{assignmentId}/board")
+    AssignmentDetails placeOnBoard(@PathVariable UUID assignmentId, @RequestBody PlaceOnBoardRequest request) {
+        return assignments.placeOnBoard(assignmentId, request.boardId());
     }
 
     @PostMapping("/assignments/{assignmentId}/students")

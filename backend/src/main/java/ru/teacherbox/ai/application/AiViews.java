@@ -2,10 +2,12 @@ package ru.teacherbox.ai.application;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
 import ru.teacherbox.ai.domain.RequestStatus;
+import ru.teacherbox.ai.domain.SavedPrompt;
 
 /** Inputs and read models of the AI API. */
 public final class AiViews {
@@ -13,8 +15,17 @@ public final class AiViews {
     private AiViews() {
     }
 
-    /** What the teacher wants the homework to be about. */
-    public record HomeworkBrief(String topic, @Nullable String level, int taskCount, @Nullable String wishes) {
+    /**
+     * What the teacher wants: the request in their own words.
+     *
+     * @param title   what the teacher already called the assignment, if anything
+     * @param sources textbook pages and files of the assignment to base the draft on (ADR-0039)
+     */
+    public record HomeworkBrief(String prompt, @Nullable String title, List<DraftSources.Source> sources) {
+
+        public HomeworkBrief {
+            sources = List.copyOf(sources);
+        }
     }
 
     /** A draft of an assignment for the homework editor. */
@@ -78,5 +89,13 @@ public final class AiViews {
             long monthlyTokenLimit,
             List<FeatureUsage> features,
             List<RequestView> recent) {
+    }
+
+    /** A prompt of the library. */
+    public record PromptView(UUID id, String title, String text, Instant updatedAt, long version) {
+
+        static PromptView of(SavedPrompt prompt) {
+            return new PromptView(prompt.id(), prompt.title(), prompt.text(), prompt.updatedAt(), prompt.version());
+        }
     }
 }

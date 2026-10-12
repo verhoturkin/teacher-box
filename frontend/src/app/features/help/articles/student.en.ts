@@ -95,6 +95,10 @@ If a textbook is bound to an assignment, it is in the assignment, in «Textbooks
 3. Click «Send for review».
 
 The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.
+
+## An assignment on a board
+
+If the teacher put the assignment on your board, it has «Go to the board» at the top — the text of the assignment and the textbook pages are already there. Still hand in your answer in the assignment: as a text or a file.
 `,
   },
   textbooks: {

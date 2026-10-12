@@ -96,16 +96,33 @@ public class AssignmentService {
     @Transactional(readOnly = true)
     public List<AssignmentSummary> list() {
         Map<UUID, Map<TaskStatus, Integer>> counts = tasks.statusCounts();
+        Map<UUID, List<UUID>> studentsOf = tasks.studentsByAssignment();
+        Map<UUID, String> names = directory
+                .findStudents(studentsOf.values().stream().flatMap(List::stream).distinct().toList()).stream()
+                .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
         return assignments.findAll().stream().map(assignment -> {
             Map<TaskStatus, Integer> byStatus = counts.getOrDefault(assignment.id(), Map.of());
             int assigned = byStatus.getOrDefault(TaskStatus.ASSIGNED, 0);
             int submitted = byStatus.getOrDefault(TaskStatus.SUBMITTED, 0);
             int returned = byStatus.getOrDefault(TaskStatus.RETURNED, 0);
             int accepted = byStatus.getOrDefault(TaskStatus.ACCEPTED, 0);
+            List<String> students = studentsOf.getOrDefault(assignment.id(), List.of()).stream()
+                    .map(id -> names.getOrDefault(id, TaskDetailsAssembler.unknownStudent()))
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .toList();
             return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
-                    assignment.createdAt(), assigned + submitted + returned + accepted, assigned, submitted, returned,
+                    assignment.createdAt(), students, assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted);
         }).toList();
+    }
+
+    /** Remembers the board the assignment was put on ({@code null} forgets it): its students get a link to it. */
+    @Transactional
+    public AssignmentDetails placeOnBoard(UUID assignmentId, @Nullable UUID boardId) {
+        Assignment assignment = load(assignmentId);
+        assignment.placeOnBoard(boardId);
+        assignments.updateBoard(assignment);
+        return details(assignment);
     }
 
     @Transactional(readOnly = true)
@@ -184,7 +201,7 @@ public class AssignmentService {
                     task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
         };
         return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
-                assignment.dueAt(), assignment.createdAt(), assignment.version(),
+                assignment.dueAt(), assignment.boardId(), assignment.createdAt(), assignment.version(),
                 attachments.of(AttachmentOwner.ASSIGNMENT, assignment.id()).stream().map(AttachmentView::of).toList(),
                 assignmentTasks.stream()
                         .map(summary)

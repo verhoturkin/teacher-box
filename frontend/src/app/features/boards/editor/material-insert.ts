@@ -1,12 +1,12 @@
 import type { ExcalidrawElementSkeleton } from '@excalidraw/excalidraw/data/transform';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import type { BinaryFileData, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import {
   BoardClipboard,
   PICTURE_SCALE,
   materialHtml,
   materialText,
 } from '../to-board/board-clipboard';
-import { BoardMaterial, MarkdownMaterial, PagesMaterial } from '../to-board/board-insert';
+import { AssignmentMaterial, BoardMaterial, MarkdownMaterial } from '../to-board/board-insert';
 import type { ExcalidrawModules } from './excalidraw-loader';
 import type { SceneAccess } from './board-sync';
 import { binaryFile } from './excalidraw-data';
@@ -67,8 +67,8 @@ export function sceneLoaded(access: InsertAccess): Promise<void> {
 
 /**
  * Puts a material at the centre of the view: a task or a draft as a text element or as a picture of the
- * formatted text; pages of a textbook as pictures in a row inside a frame (ADR-0033). It is saved like any
- * change.
+ * formatted text; pages of a textbook as pictures in a row inside a frame (ADR-0033); a written assignment as its
+ * text and then its pictures in a row inside a frame. It is saved like any change.
  */
 export async function insertMaterial(
   access: InsertAccess,
@@ -81,14 +81,24 @@ export async function insertMaterial(
   const centre = viewportCentre(access.getAppState());
   const skeletons =
     material.mode === 'pages'
-      ? await pagesInFrame(access, material, centre, pictures)
-      : [await markdownSkeleton(access, material, centre, clipboard)];
+      ? rowInFrame(access, material.title, await pictureBlocks(access, material, pictures), centre)
+      : material.mode === 'assignment'
+        ? rowInFrame(
+            access,
+            material.frame,
+            [
+              await taskBlock(access, modules, material, clipboard),
+              ...(await pictureBlocks(access, material, pictures)),
+            ],
+            centre,
+          )
+        : [await markdownSkeleton(access, material, centre, clipboard)];
   const added = modules.convertToExcalidrawElements(skeletons);
   access.updateScene({
     elements: [...access.getSceneElementsIncludingDeleted(), ...added],
     captureUpdate: 'IMMEDIATELY',
   });
-  if (material.mode === 'pages') {
+  if (material.mode !== 'text' && material.mode !== 'image') {
     // the pages may lie outside the view: show them
     access.scrollToContent?.(added, { fitToContent: true, animate: true });
   }
@@ -108,64 +118,110 @@ async function markdownSkeleton(
       text: materialText(material.title, material.markdown),
     };
   }
+  const block = await textPicture(access, material, clipboard);
+  return block.place(centre.x - block.width / 2, centre.y - block.height / 2, 'material');
+}
+
+/** What goes in a row inside a frame: its size and the element it becomes at a place. */
+interface Block {
+  readonly width: number;
+  readonly height: number;
+  place(x: number, y: number, id: string): ExcalidrawElementSkeleton;
+}
+
+/** The picture of the formatted text of a material. */
+async function textPicture(
+  access: SceneAccess,
+  material: { readonly title: string; readonly markdown: string },
+  clipboard: Pick<BoardClipboard, 'picture'>,
+): Promise<Block> {
   const picture = await clipboard.picture(materialHtml(material.title, material.markdown));
   const file = await binaryFile(crypto.randomUUID(), picture);
   const size = await imageSize(file.dataURL);
   access.addFiles([file]);
-  const width = size.width / PICTURE_SCALE;
-  const height = size.height / PICTURE_SCALE;
+  return imageBlock(file.id, size.width / PICTURE_SCALE, size.height / PICTURE_SCALE);
+}
+
+/**
+ * The task of an assignment: a picture of its formatted text, or a text element — measured by converting it
+ * once, so the frame holds it whole.
+ */
+async function taskBlock(
+  access: SceneAccess,
+  modules: Pick<ExcalidrawModules, 'convertToExcalidrawElements'>,
+  material: AssignmentMaterial,
+  clipboard: Pick<BoardClipboard, 'picture'>,
+): Promise<Block> {
+  if (material.text === 'image') {
+    return textPicture(access, material, clipboard);
+  }
+  const text = materialText(material.title, material.markdown);
+  const [measured] = modules.convertToExcalidrawElements([{ type: 'text', x: 0, y: 0, text }]);
   return {
-    type: 'image',
-    x: centre.x - width / 2,
-    y: centre.y - height / 2,
-    width,
-    height,
-    fileId: file.id,
+    width: measured?.width ?? TEXT_WIDTH,
+    height: measured?.height ?? 0,
+    place: (x, y, id) => ({ type: 'text', id, x, y, text }),
   };
 }
 
-/** The pages left to right, tops aligned, centred on the view, inside a frame named after them. */
-async function pagesInFrame(
+/** Pictures fetched by their API addresses, at half their size (150 dpi pages). */
+async function pictureBlocks(
   access: SceneAccess,
-  material: PagesMaterial,
-  centre: { x: number; y: number },
+  material: { readonly pictures: readonly string[] },
   pictures: PictureSource,
-): Promise<ExcalidrawElementSkeleton[]> {
+): Promise<Block[]> {
   const files = await Promise.all(
     material.pictures.map(async (url) => binaryFile(crypto.randomUUID(), await pictures(url))),
   );
   const sizes = await Promise.all(files.map((file) => imageSize(file.dataURL)));
   access.addFiles(files);
-  const widths = sizes.map((size) => size.width / PAGE_SCALE);
-  const heights = sizes.map((size) => size.height / PAGE_SCALE);
-  const rowWidth = widths.reduce((sum, width) => sum + width, 0) + PAGE_GAP * (files.length - 1);
-  const rowHeight = Math.max(...heights);
+  return files.map((file, index) =>
+    imageBlock(
+      file.id,
+      (sizes[index]?.width ?? 0) / PAGE_SCALE,
+      (sizes[index]?.height ?? 0) / PAGE_SCALE,
+    ),
+  );
+}
+
+function imageBlock(fileId: BinaryFileData['id'], width: number, height: number): Block {
+  return {
+    width,
+    height,
+    place: (x, y, id) => ({ type: 'image', id, x, y, width, height, fileId }),
+  };
+}
+
+/**
+ * The blocks left to right, tops aligned, inside a frame named `name`: to the right of the drawing, or centred on
+ * the view of an empty board.
+ */
+function rowInFrame(
+  access: SceneAccess,
+  name: string,
+  blocks: readonly Block[],
+  centre: { x: number; y: number },
+): ExcalidrawElementSkeleton[] {
+  const rowWidth =
+    blocks.reduce((sum, block) => sum + block.width, 0) + PAGE_GAP * Math.max(0, blocks.length - 1);
+  const rowHeight = Math.max(0, ...blocks.map((block) => block.height));
   const drawing = drawingBounds(access);
   // to the right of everything, tops at the drawing's top; an empty board — at the centre of the view
   const left =
     drawing === null ? centre.x - rowWidth / 2 : drawing.right + BESIDE_GAP + FRAME_PADDING;
   const top = drawing === null ? centre.y - rowHeight / 2 : drawing.top + FRAME_PADDING;
   let x = left;
-  const pages: ExcalidrawElementSkeleton[] = files.map((file, index) => {
-    const width = widths[index] ?? 0;
-    const page: ExcalidrawElementSkeleton = {
-      type: 'image',
-      id: `page-${String(index)}`,
-      x,
-      y: top,
-      width,
-      height: heights[index] ?? 0,
-      fileId: file.id,
-    };
-    x += width + PAGE_GAP;
-    return page;
+  const placed = blocks.map((block, index) => {
+    const element = block.place(x, top, `page-${String(index)}`);
+    x += block.width + PAGE_GAP;
+    return element;
   });
   return [
-    ...pages,
+    ...placed,
     {
       type: 'frame',
-      children: pages.map((_page, index) => `page-${String(index)}`),
-      name: material.title,
+      children: placed.map((_element, index) => `page-${String(index)}`),
+      name,
       x: left - FRAME_PADDING,
       y: top - FRAME_PADDING,
       width: rowWidth + 2 * FRAME_PADDING,
