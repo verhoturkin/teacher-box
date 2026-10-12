@@ -49,7 +49,7 @@ describe('SettingsPage', () => {
 
   async function render(
     status = STATUS,
-    inputs: { open?: string; google?: string } = {},
+    inputs: { open?: string; google?: string; drive?: string } = {},
     backups: BackupInfo[] = [BACKUP],
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
@@ -83,8 +83,21 @@ describe('SettingsPage', () => {
       });
       backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
     }
-    if (open.has('data')) {
+    if (open.has('data') || inputs.drive !== undefined) {
       backend.expectOne('/api/teacher/backups').flush(backups);
+      backend.expectOne('/api/teacher/backups/google').flush({
+        clientConfigured: false,
+        clientFromEnvironment: false,
+        clientId: null,
+        connected: false,
+        account: null,
+        connectedAt: null,
+        lastUploadAt: null,
+        lastUploadName: null,
+        lastError: null,
+        running: null,
+        callbackPath: '/api/public/backups/google/callback',
+      });
     }
     await fixture.whenStable();
     return hostElement(fixture);
@@ -119,7 +132,15 @@ describe('SettingsPage', () => {
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
     expect(host.querySelector('#backups')).not.toBeNull();
+    expect(host.querySelector('#drive')).not.toBeNull();
     expect(host.querySelector('#reset')).not.toBeNull();
+  });
+
+  it('opens the data after Google sends the teacher back from the Drive', async () => {
+    const host = await render(STATUS, { drive: 'connected' });
+
+    expect(host.querySelector('#drive')).not.toBeNull();
+    expect(host.querySelector('#google')).toBeNull();
   });
 
   it('opens the calendar after Google sends the teacher back', async () => {

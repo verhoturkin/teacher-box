@@ -182,6 +182,12 @@ export const en: Translation<typeof ru> = {
       'backup.damaged': 'The backup is damaged: it cannot be restored',
       'backup.newer-version':
         'The backup was made by a newer version of the portal. Update the portal first',
+      'backup.exists': 'This backup is already on the server',
+      'backup.google-not-connected': 'Google Drive is not connected',
+      'backup.google-client-missing': 'Enter the Client ID and the Client secret first',
+      'backup.google-client-from-environment':
+        'The Google OAuth client is set by the portal administrator',
+      'backup.google-origin-invalid': 'The portal address could not be determined',
       'portal.logo-invalid': 'The logo must be a PNG, JPEG, WebP or SVG picture',
       'portal.logo-too-large': 'The logo is larger than 1 MB',
       'portal.accent-invalid': 'There is no such colour',

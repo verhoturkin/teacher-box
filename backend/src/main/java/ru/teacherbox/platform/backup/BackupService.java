@@ -186,7 +186,7 @@ public class BackupService {
     }
 
     private static BusinessRuleException notABackup() {
-        return new BusinessRuleException("backup.invalid-archive", "The file is not a backup of the portal");
+        return new BusinessRuleException("backup.damaged", "The file is not a backup of the portal");
     }
 
     /** Version of the running portal; {@code null} in development. */

@@ -4,9 +4,11 @@ import {
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -22,6 +24,7 @@ import type { HelpTopic } from '@features/help/parts';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
+import { DriveStore } from './drive-store';
 import { RestoreDialog } from './restore-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
@@ -133,6 +136,7 @@ export class BackupsCard implements OnInit {
   private readonly fileSaver = inject(FileSaver);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
+  private readonly drive = inject(DriveStore);
   private readonly menu = viewChild.required<Menu>('menu');
 
   readonly area = input<BackupsArea>('teacher');
@@ -154,14 +158,34 @@ export class BackupsCard implements OnInit {
     return backup === null ? [] : this.actionsOf(backup);
   });
 
+  constructor() {
+    // a copy brought from the Google Drive is on the server now
+    let arrived = this.drive.arrived();
+    effect(() => {
+      const now = this.drive.arrived();
+      if (now !== arrived) {
+        arrived = now;
+        untracked(() => {
+          this.reload();
+        });
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.reload();
   }
 
-  /** The supporting line of a row: why the backup was made and its size. */
+  /** The supporting line of a row: why the backup was made, its size and whether it is in the Drive. */
   protected details(backup: BackupInfo): string {
-    const size = formatFileSize(backup.size);
-    return backup.kind === null ? size : `${KINDS[backup.kind]} · ${size}`;
+    const parts = [formatFileSize(backup.size)];
+    if (backup.kind !== null) {
+      parts.unshift(KINDS[backup.kind]);
+    }
+    if (!this.isAdmin() && this.drive.names().has(backup.name)) {
+      parts.push(T.backups.inDrive);
+    }
+    return parts.join(' · ');
   }
 
   protected openMenu(backup: BackupInfo, event: Event): void {
@@ -176,6 +200,9 @@ export class BackupsCard implements OnInit {
         this.creating.set(false);
         this.snackbar.success(T.backups.created(backup.name));
         this.reload();
+        if (!this.isAdmin() && this.drive.connected()) {
+          this.drive.load();
+        }
       },
       error: () => {
         this.creating.set(false);
@@ -191,6 +218,13 @@ export class BackupsCard implements OnInit {
   download(backup: BackupInfo): void {
     this.busy.guard('download-' + backup.name, this.api.download(backup.name)).subscribe((blob) => {
       this.fileSaver.save(blob, backup.name);
+    });
+  }
+
+  sendToDrive(backup: BackupInfo): void {
+    this.api.uploadToDrive(backup.name).subscribe(() => {
+      this.snackbar.success(T.backups.sending(backup.name));
+      this.drive.load();
     });
   }
 
@@ -220,23 +254,30 @@ export class BackupsCard implements OnInit {
       },
     ];
     if (!this.isAdmin()) {
-      items.push(
-        {
-          label: T.backups.download,
-          icon: 'pi pi-download',
-          command: () => {
-            this.download(backup);
-          },
+      items.push({
+        label: T.backups.download,
+        icon: 'pi pi-download',
+        command: () => {
+          this.download(backup);
         },
-        {
-          label: T.backups.deleteItem,
-          icon: 'pi pi-trash',
-          styleClass: 'tb-menu-item--danger',
+      });
+      if (this.drive.connected()) {
+        items.push({
+          label: T.backups.sendToDrive,
+          icon: 'pi pi-cloud-upload',
           command: () => {
-            this.confirmDelete(backup);
+            this.sendToDrive(backup);
           },
+        });
+      }
+      items.push({
+        label: T.backups.deleteItem,
+        icon: 'pi pi-trash',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.confirmDelete(backup);
         },
-      );
+      });
     }
     return items;
   }
@@ -247,6 +288,9 @@ export class BackupsCard implements OnInit {
       .pipe(this.state.track())
       .subscribe((backups) => {
         this.backups.set(backups);
+        if (!this.isAdmin()) {
+          this.drive.local.set(new Set(backups.map((backup) => backup.name)));
+        }
       });
   }
 }

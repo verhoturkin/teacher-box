@@ -250,7 +250,7 @@ class CloudBackupServiceTest {
     void aFailedDownloadIsShown() {
         connect();
         when(api.list("access", "folder-1")).thenReturn(List.of(cloud("2", B2)));
-        doThrow(new BusinessRuleException("backup.invalid-archive", "The file is not a backup of the portal"))
+        doThrow(new BusinessRuleException("backup.damaged", "The file is not a backup of the portal"))
                 .when(backups).adopt(eq(B2), any());
 
         drive.requestDownload("2");

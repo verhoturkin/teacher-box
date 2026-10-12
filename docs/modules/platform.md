@@ -58,4 +58,4 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 ## Frontend
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),
-`features/settings/` (teacher settings: portal card, setup wizard, backups, reset), `core/portal`.
+`features/settings/` (teacher settings: portal card, setup wizard, backups with the Google Drive panel `backups/drive-panel.ts` and `DriveStore`, reset), `core/portal`.

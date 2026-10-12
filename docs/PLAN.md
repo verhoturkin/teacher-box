@@ -45,7 +45,7 @@ ADR: 0037 — backups in Google Drive and what the portal backup leaves out.
   list, upload of a chosen backup, download of a cloud copy to the server for a restore),
   `TEACHERBOX_BACKUP_GOOGLE_PROXY`; REST `/api/teacher/backups/google/**`,
   `/api/public/backups/google/callback`; `DriveIntegrationCheck`. ADR-0037, `platform.md`.
-- [ ] 158.2 F: `settings/backups/drive-panel.ts` in the teacher's backups card — client, connect / disconnect,
+- [x] 158.2 F: `settings/backups/drive-panel.ts` in the teacher's backups card — client, connect / disconnect,
   last upload and error, cloud copies with «Перенести на сервер»; «Отправить в Google Диск» in a backup's menu and
   a cloud mark on backups that are already there; return from Google (`?drive=`).
 
