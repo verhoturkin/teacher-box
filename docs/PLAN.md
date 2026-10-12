@@ -17,41 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.13.0
-
-Goals: a default lesson topic per student and per group, prefilled when the teacher plans a lesson or a
-series; payment receipts — the teacher attaches a receipt (image or PDF) to a payment in the portal or sends it
-to the bot, which records the payment with it; students download the receipts of their payments.
-
-ADRs: new [ADR-0038](adr/0038-files-sent-to-the-bot.md) — files sent to the bot (SPI `ChatAction.received`,
-download by the messenger adapters, receipts kept by `billing`).
-
-### Stage 160. Default lesson topic (B, F)
-
-- [x] 160.1 B: `identity` — `default_topic` of a student and a group (migration `V*__default_topic.sql`),
-  in `StudentProfile` / group commands and views, `PUT /api/teacher/students/{id}`, `/groups/{id}`; tests.
-- [x] 160.2 F: field «Тема по умолчанию» in `identity/students/student-form-dialog.ts` and
-  `identity/groups/group-form-dialog.ts`; `schedule/teacher/lesson-dialog.ts` and `series-dialog.ts` fill an
-  empty, untouched topic with the default of the chosen student or group; help articles.
-
-### Stage 161. Payment receipts (B, F)
-
-- [x] 161.1 B: `billing` — table `receipts` (one per payment, files in namespace `billing`, images and PDF up
-  to 10 MB), `PUT|DELETE|GET /api/teacher/billing/payments/{id}/receipt`, `GET /api/me/billing/payments/{id}/receipt`
-  (own payments only), `hasReceipt` in payment views, receipts left without a payment removed after a day,
-  data reset; tests incl. «another student gets 404».
-- [x] 161.2 B: files sent to the bot — `shared.chat.ChatFile`, `ChatAction.received(user, file)`;
-  `IncomingMessage.file` with download in `TelegramChannel` (`photo`, `document`, `getFile`), `VkChannel`
-  (`photo`, `doc`), `MaxChannel` (`image`, `file`); `ChatEngine` hands a file to the first action that takes it;
-  `billing/chat/RecordPaymentChatAction` takes a teacher's file as a receipt → student → amount → confirm →
-  payment with the receipt.
-- [x] 161.3 F: receipts in `billing/ledger/` (attach / replace / remove, download), in the payment dialog
-  (optional file), in `billing/student/` (download); help articles (portal and bot).
-
-### Stage 162. Release 0.13.0
-
-- [ ] 162.1 Skill `release`: help, E2E `version-0-13-0.spec.ts`, CHANGELOG, version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
