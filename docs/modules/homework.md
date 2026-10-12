@@ -17,6 +17,12 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   interactive — `POST …/tasks/{id}/done` «Готово» (`submission.kind-mismatch` the other way round). An interactive one
   may carry the page's `result` (`InteractiveResult`: score ≤ max score ≤ 10 000, ≤ 100 answers — question, answer,
   correct; `submission.result-invalid`), kept as JSON on the submission and shown to the teacher, never a grade.
+- The page of interactive homework ([ADR-0040](../adr/0040-interactive-homework.md), `InteractivePages`): a link
+  signed with an in-memory HMAC key, valid 5 minutes, for the teacher (any interactive assignment; another kind —
+  `assignment.not-interactive`) and the student of the task; `GET /api/public/homework/interactive/{token}` serves
+  the HTML plus the bridge script with its own CSP (`sandbox allow-scripts`, `default-src 'none'`, `frame-ancestors
+  'self'`), `X-Frame-Options: SAMEORIGIN`, `no-store`; nginx sets the same headers for the path. A broken or expired
+  link — 404 `homework.page-not-found`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
   `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits
@@ -43,7 +49,9 @@ Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDu
 
 `/api/teacher/homework/**` (assignments, students, attachments, `POST assignments/{id}/textbooks`
 `{textbookId, pages}`, `DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary),
-`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
+`GET assignments/{id}/interactive-link`; `/api/public/homework/interactive/{token}`;
+`/api/me/homework/**` (tasks, submissions, `tasks/{id}/done`, `tasks/{id}/interactive-link`, attachments,
+`tasks/{taskId}/textbooks/{textbookId}`, summary).
 
 ## Frontend
 

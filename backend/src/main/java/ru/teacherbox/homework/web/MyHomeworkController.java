@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.HomeworkSummaryService;
+import ru.teacherbox.homework.application.InteractivePages;
+import ru.teacherbox.homework.application.InteractivePages.PageLink;
 import ru.teacherbox.homework.application.HomeworkViews.MyHomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
@@ -58,10 +60,12 @@ class MyHomeworkController {
 
     private final StudentHomeworkService homework;
     private final HomeworkSummaryService summaries;
+    private final InteractivePages pages;
 
-    MyHomeworkController(StudentHomeworkService homework, HomeworkSummaryService summaries) {
+    MyHomeworkController(StudentHomeworkService homework, HomeworkSummaryService summaries, InteractivePages pages) {
         this.homework = homework;
         this.summaries = summaries;
+        this.pages = pages;
     }
 
     @GetMapping("/summary")
@@ -92,6 +96,12 @@ class MyHomeworkController {
     TaskDetails done(CurrentUser user, @PathVariable UUID taskId, @Valid @RequestBody DoneRequest request) {
         return homework.markDone(studentId(user), taskId,
                 request.result() == null ? null : request.result().toResult());
+    }
+
+    /** A short-lived link to the page of interactive homework (ADR-0040). */
+    @GetMapping("/tasks/{taskId}/interactive-link")
+    PageLink interactiveLink(CurrentUser user, @PathVariable UUID taskId) {
+        return pages.studentLink(studentId(user), taskId);
     }
 
     @GetMapping("/attachments/{attachmentId}")

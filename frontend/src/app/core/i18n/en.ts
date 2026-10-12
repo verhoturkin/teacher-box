@@ -153,6 +153,9 @@ export const en: Translation<typeof ru> = {
       'assignment.description-invalid': 'The assignment text is too long',
       'assignment.html-required': 'Interactive homework needs its HTML code',
       'assignment.html-invalid': 'The HTML code of the assignment is too long',
+      'assignment.not-interactive': 'This assignment has no HTML page',
+      'homework.page-not-found':
+        'The link to the assignment page has expired — open the assignment again',
       'assignment.materials-not-allowed':
         'Textbooks and files can be added to written homework only',
       'task.grade-invalid': 'The grade is too long — at most 20 characters',

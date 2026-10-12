@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.HomeworkSummaryService;
+import ru.teacherbox.homework.application.InteractivePages;
+import ru.teacherbox.homework.application.InteractivePages.PageLink;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
@@ -75,12 +77,14 @@ class TeacherHomeworkController {
     private final AssignmentService assignments;
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
+    private final InteractivePages pages;
 
     TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
-            HomeworkSummaryService summaries) {
+            HomeworkSummaryService summaries, InteractivePages pages) {
         this.assignments = assignments;
         this.reviews = reviews;
         this.summaries = summaries;
+        this.pages = pages;
     }
 
     @GetMapping("/summary")
@@ -110,6 +114,12 @@ class TeacherHomeworkController {
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.interactiveHtml(),
                 request.dueAt(), request.version());
+    }
+
+    /** A short-lived link to the page of interactive homework (ADR-0040). */
+    @GetMapping("/assignments/{assignmentId}/interactive-link")
+    PageLink interactiveLink(@PathVariable UUID assignmentId) {
+        return pages.teacherLink(assignmentId);
     }
 
     @PostMapping("/assignments/{assignmentId}/students")

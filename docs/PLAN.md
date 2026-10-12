@@ -44,7 +44,7 @@ New ADRs:
 - [x] 165.2 **B** Submissions by kind: `WRITTEN` — text / files as now; `BOARD` — «Готово» without text and files;
   `INTERACTIVE` — «Готово» with an optional `result` (`InteractiveResult`: score, max score, answers) stored as JSON
   on the submission. `StudentHomeworkService.markDone`, `POST /api/me/homework/tasks/{id}/done`; 403/404 tests.
-- [ ] 165.3 **B, D** ADR-0040: `GET /api/me/homework/tasks/{id}/interactive-link` and
+- [x] 165.3 **B, D** ADR-0040: `GET /api/me/homework/tasks/{id}/interactive-link` and
   `/api/teacher/homework/assignments/{id}/interactive-link` → signed link (5 min) to
   `GET /api/public/homework/interactive/{token}` served with its own CSP; nginx keeps that CSP for this path
   (`docker/nginx/default.conf.template`, `security-headers.conf`). Tests for the token (expired, other task) and headers.
