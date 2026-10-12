@@ -111,18 +111,24 @@ describe('AssignmentsPage', () => {
 });
 
 describe('AssignmentPage', () => {
-  async function render() {
+  async function render(details = assignmentDetails()) {
     const context = configure();
     const fixture = TestBed.createComponent(AssignmentPage);
     fixture.componentRef.setInput('assignmentId', 'a-1');
     await fixture.whenStable();
-    context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
+    context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(details);
     context.backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/groups').flush([aGroup()]);
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
+
+  it('names the kind of homework that is not written', async () => {
+    const { host } = await render(assignmentDetails({ kind: 'BOARD' }));
+
+    expect(readableText(host.querySelector('tb-page-header') ?? host)).toContain('На доске');
+  });
 
   it('shows a failed load with «Повторить» and the way back', async () => {
     const { backend } = configure();

@@ -24,6 +24,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
+import { ASSIGNMENT_KIND_LABELS } from '../homework-labels';
 import { assignmentBoard } from './assignment-board';
 import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
@@ -82,6 +83,9 @@ import { SHARED_T } from '@shared/i18n/texts';
     @if (details(); as assignment) {
       <tb-page-header [title]="assignment.title" back="/teacher/homework" [backLabel]="t.back">
         <tb-help-button help topic="teacher/homework" />
+        @if (assignment.kind !== 'WRITTEN') {
+          <span meta>{{ kinds[assignment.kind] }}</span>
+        }
         <span meta>
           {{
             assignment.dueAt
@@ -264,6 +268,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 export class AssignmentPage implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.page;
+  protected readonly kinds = ASSIGNMENT_KIND_LABELS;
   protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
