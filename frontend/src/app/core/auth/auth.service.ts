@@ -2,6 +2,7 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  EMPTY,
   Observable,
   catchError,
   finalize,
@@ -13,6 +14,7 @@ import {
   throwError,
 } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { chosenLanguage } from '@core/i18n/language';
 import { AuthResponse, Role, SessionUser } from './auth.models';
 
 interface SessionState {
@@ -73,13 +75,33 @@ export class AuthService {
       .pipe(map((response) => this.acceptSession(response)));
   }
 
-  /** Stores a session returned by the backend (sign-in, invitation, password change). */
+  /**
+   * Stores a session returned by the backend (sign-in, invitation, password change). A language chosen on
+   * this device that the account does not have yet goes to the account: the server writes notifications,
+   * bot messages and calendars in it (ADR-0036).
+   */
   acceptSession(response: AuthResponse): SessionUser {
     this.state.set({
       accessToken: response.accessToken,
       expiresAt: Date.now() + response.expiresIn * 1000,
       user: response.user,
     });
+    const chosen = chosenLanguage();
+    if (chosen !== null && chosen !== response.user.language) {
+      this.http
+        .put<unknown>(
+          '/api/me/language',
+          { language: chosen },
+          { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
+        )
+        .pipe(catchError(() => EMPTY))
+        .subscribe(() => {
+          const state = this.state();
+          if (state?.user.id === response.user.id) {
+            this.state.set({ ...state, user: { ...state.user, language: chosen } });
+          }
+        });
+    }
     return response.user;
   }
 

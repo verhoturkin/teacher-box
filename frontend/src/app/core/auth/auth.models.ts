@@ -11,6 +11,8 @@ export interface SessionUser {
   readonly avatar: string | null;
   /** The password was generated on the first start and must be replaced (first setup). */
   readonly passwordChangeRequired: boolean;
+  /** The language of the interface kept in the account: the server writes notifications in it (ADR-0036). */
+  readonly language: string;
 }
 
 /** Response of sign-in, refresh, invitation acceptance and password change. */

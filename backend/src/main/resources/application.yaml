@@ -27,6 +27,9 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 20s
   web:
+    # Accept-Language of a request picks the language of the texts in the answer (ADR-0036); without it — Russian.
+    locale: ru
+    locale-resolver: accept-header
     resources:
       # No static files: the SPA is served by the nginx of the frontend container (ADR-0031).
       add-mappings: false

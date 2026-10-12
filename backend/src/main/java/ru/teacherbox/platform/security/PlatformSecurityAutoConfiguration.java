@@ -112,7 +112,7 @@ public class PlatformSecurityAutoConfiguration {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         // The administrator has only their own account; the rest is for the teacher and students.
-                        .requestMatchers("/api/me", "/api/me/password").authenticated()
+                        .requestMatchers("/api/me", "/api/me/password", "/api/me/language").authenticated()
                         .requestMatchers("/api/**").hasAnyRole("TEACHER", "STUDENT")
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").denyAll()

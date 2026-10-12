@@ -360,3 +360,6 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   `tb-language-picker` row under the card. Switching reloads the page.
 - Numbers, money and dates use the locale of the language (`locale()`: `ru-RU`, `en-GB`); fixed formats
   `dd.MM.yyyy` / `HH:mm` stay in both languages.
+- **Server texts** ([ADR-0036](adr/0036-server-texts-in-the-users-language.md)): every `/api` request carries
+  `Accept-Language` with the page's language (`core/i18n/language.interceptor.ts`); a language chosen on the
+  device is saved to the account after sign-in, and notifications, bot messages and calendars are written in it.

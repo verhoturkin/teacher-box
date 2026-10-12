@@ -17,6 +17,44 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.11.1
+
+Server texts in the user's language (backlog, ADR-0035 «Последствия»): the server learns the language each user
+chose and writes inbox notifications, bot messages and calendar feeds in it; the administrator's settings
+catalog and integration checks follow the language of the page. New ADR-0036.
+
+### Stage 152. The user's language on the server (B, F)
+
+- [x] 152.1 `shared.i18n.Language` (`RU`, `EN`; `of(code)`, `current()` — the request's `Accept-Language`,
+  `spring.web.locale: ru`); `identity.users.language` (V6), `PUT /api/me/language`, `language` in
+  `GET /api/me`, `UserDirectory.language(id)`. Frontend: `Accept-Language` on every `/api` request
+  (`core/i18n/language.interceptor.ts`), the choice saved to the account (`chooseLanguage`, after sign-in when the
+  device has its own choice). ADR-0036.
+
+### Stage 153. Inbox notifications in the recipient's language (B)
+
+- [ ] 153.1 `notifications/application/NotificationTexts` per language (dates, money, durations, weekdays);
+  texts of `Schedule/Homework/Billing/Meeting/StudentNotifications`, the reminder to connect a messenger and
+  the test message — in the recipient's language.
+
+### Stage 154. Bot messages in the user's language (B)
+
+- [ ] 154.1 `ChatUser.language`, `ChatAction.title(Language)`, `ChatKit` / `ChatText` by language
+  («Да»/«Yes», pages, dates; typed words of both languages understood); `ChatEngine`, `ChannelService` replies
+  (unknown chats — the teacher's language), bot commands.
+- [ ] 154.2 Actions of `billing`, `schedule`, `meetings`, `boards` (`*/chat/*ChatAction`) in the user's language.
+
+### Stage 155. Administrator texts and calendars (B)
+
+- [ ] 155.1 `SettingsCatalog` titles, hints and sections, `SettingKind` problems and integration checks in the
+  language of the request.
+- [ ] 155.2 Calendar feeds (`FeedService`, `IcsWriter`) in the language of the feed's owner; Google Calendar
+  events (`GoogleCalendarService`) in the teacher's language.
+
+### Stage 156. Release 0.11.1
+
+- [ ] 156.1 Skill `release`: help, E2E `version-0-11-1.spec.ts`, CHANGELOG, version, archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
@@ -34,13 +72,3 @@ queue; filter chips instead of toggles.
 Calls after 0.8.0: call history; teacher moderation (mute / remove a participant); chat in the call;
 «ученик ждёт» notification (LiveKit webhooks); opening the student's board from the call; Document
 Picture-in-Picture; noise suppression; recording.
-
-Future:
-- Server texts in the user's language (ADR-0035): inbox notifications, bot messages, settings catalog
-  descriptions, calendar feed titles.
-- Two-way Google Calendar sync.
-- Board templates / duplicating.
-- Lesson packages/subscriptions, online payment.
-- Telegram login, 2FA for teacher and administrator.
-- WhatsApp and e-mail channels.
-- AI hints for students with quotas.

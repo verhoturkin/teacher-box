@@ -24,8 +24,9 @@ public record Session(
      * @param displayName            the name the user sees: a student's own name, if set
      * @param avatar                 address of the student's photo; {@code null}: none
      * @param passwordChangeRequired the password was generated on the first start and must be replaced
+     * @param language               the language of the interface kept in the account (ADR-0036)
      */
     public record SessionUser(UUID id, Role role, String displayName, @Nullable String avatar,
-            boolean passwordChangeRequired) {
+            boolean passwordChangeRequired, String language) {
     }
 }

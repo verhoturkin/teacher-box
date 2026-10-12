@@ -25,6 +25,7 @@ export function authResponse(
       displayName: USERS[role].displayName,
       avatar: null,
       passwordChangeRequired: false,
+      language: 'ru',
     },
   };
 }
