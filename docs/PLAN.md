@@ -58,7 +58,7 @@ New ADRs:
   inside it the task text first, then attachments (pictures, PDF pages) and textbook pages left to right
   (`editor/material-insert.ts`, `to-board/board-insert.ts`). Specs for the order and the frame name.
   *Only picture files go on the board; PDF attachments stay in the assignment (no page pictures for homework files).*
-- [ ] 165.6 **B, F** Docs: `docs/modules/homework.md`, ADR-0040 + row in `docs/adr/README.md`, glossary
+- [x] 165.6 **B, F** Docs: `docs/modules/homework.md`, ADR-0040 + row in `docs/adr/README.md`, glossary
   («Письменное», «На доске», «Интерактивное», «Готово»).
 
 ### 166. Assignment editor page — redesign variant B (F)
