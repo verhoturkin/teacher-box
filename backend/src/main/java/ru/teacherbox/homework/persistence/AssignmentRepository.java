@@ -60,6 +60,10 @@ public class AssignmentRepository {
     }
 
     /** The board is not part of the teacher's edits: it changes without a new version. */
+    public void delete(UUID id) {
+        jdbc.sql("delete from homework.assignments where id = :id").param("id", id).update();
+    }
+
     public void updateBoard(Assignment assignment) {
         jdbc.sql("update homework.assignments set board_id = :boardId where id = :id")
                 .param("id", assignment.id())

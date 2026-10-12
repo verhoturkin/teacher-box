@@ -8,7 +8,7 @@ export const en: Translation<typeof ru> = {
     unmarked: 'Mark the past lessons',
     requests: 'Requests to move or cancel',
     toReview: 'Work to review',
-    overdue: 'Overdue assignments',
+    overdue: 'Overdue homework',
     failedDeliveries: 'Undelivered notifications',
   },
   checklist: {
@@ -29,18 +29,18 @@ export const en: Translation<typeof ru> = {
     lesson: 'Lesson',
     payment: 'Payment',
     student: 'Student',
-    assignment: 'Assignment',
+    assignment: 'Homework',
   },
   studentHome: {
     title: 'Home',
-    what: 'the lessons, assignments and balance',
+    what: 'the lessons, homework and balance',
   },
   welcome: {
     title: (portal: string) => `Welcome to «${portal}»!`,
     intro: 'Here is everything you need for the lessons:',
     schedule: 'Schedule',
     scheduleText: '— your lessons, the lesson link, cancelling and moving.',
-    homework: 'Assignments',
+    homework: 'Homework',
     homeworkText: '— homework and the teacher’s answers.',
     billing: 'Payments',
     billingText: '— the balance and the payment history.',
@@ -51,6 +51,6 @@ export const en: Translation<typeof ru> = {
   },
   teacherHome: {
     title: 'Home',
-    what: 'the lessons, assignments, notifications and finance',
+    what: 'the lessons, homework, notifications and finance',
   },
 };

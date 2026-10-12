@@ -6,7 +6,7 @@ export const en: Translation<typeof ru> = {
     SCHEDULE: 'Schedule',
     SCHEDULE_HINT: 'new, moved and cancelled lessons, requests to move',
     REMINDERS: 'Reminders',
-    REMINDERS_HINT: 'of an upcoming lesson and an assignment deadline',
+    REMINDERS_HINT: 'of an upcoming lesson and a homework deadline',
     HOMEWORK: 'Homework',
     HOMEWORK_HINT: 'giving, handing in and reviewing work',
     BILLING: 'Payments',
@@ -36,7 +36,7 @@ export const en: Translation<typeof ru> = {
   connect: {
     title: 'Get notifications in a messenger',
     text: (names: string) =>
-      `Connect ${names} — lesson reminders, new assignments and the teacher’s messages come at once, without opening the cabinet.`,
+      `Connect ${names} — lesson reminders, new homework and the teacher’s messages come at once, without opening the cabinet.`,
     or: (first: string, last: string) => `${first} or ${last}`,
     connect: 'Connect',
     later: 'Not now',

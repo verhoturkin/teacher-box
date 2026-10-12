@@ -50,6 +50,11 @@ export class HomeworkApi {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
   }
 
+  /** Deletes the assignment with the students' answers and every file. */
+  deleteAssignment(id: string): Observable<unknown> {
+    return this.http.delete(`${TEACHER}/assignments/${id}`);
+  }
+
   assignStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
       studentIds,

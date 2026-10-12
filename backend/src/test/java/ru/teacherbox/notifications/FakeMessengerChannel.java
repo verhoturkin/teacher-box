@@ -39,6 +39,17 @@ public final class FakeMessengerChannel implements MessengerChannel {
                     .orElseThrow(() -> new AssertionError("No button «" + label + "» in " + rows));
         }
 
+        /** Address of the link button with the label. */
+        public String url(String label) {
+            return rows.stream()
+                    .flatMap(List::stream)
+                    .filter(button -> button.label().equals(label))
+                    .map(OutgoingButton::url)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("No link «" + label + "» in " + rows));
+        }
+
         public List<String> labels() {
             return rows.stream().flatMap(List::stream).map(OutgoingButton::label).map(ChatSteps::plain).toList();
         }
@@ -51,6 +62,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
     private final List<BotCommand> commands = new CopyOnWriteArrayList<>();
     private volatile @Nullable RuntimeException failure;
     private volatile @Nullable RuntimeException botNameFailure;
+    private volatile @Nullable RuntimeException linkFailure;
 
     public FakeMessengerChannel(ChannelType type) {
         this.type = type;
@@ -59,6 +71,11 @@ public final class FakeMessengerChannel implements MessengerChannel {
     /** Subsequent sends fail with the given error (usually a {@link DeliveryException}) until {@link #reset()}. */
     public void failWith(RuntimeException error) {
         failure = error;
+    }
+
+    /** Messages with link buttons fail with the given error until {@link #reset()}, like Telegram on a local portal. */
+    public void failLinks(RuntimeException error) {
+        linkFailure = error;
     }
 
     /** Asking for the bot's name fails with the given error ({@code null}: it succeeds again). */
@@ -91,6 +108,7 @@ public final class FakeMessengerChannel implements MessengerChannel {
         acknowledged.clear();
         incoming.clear();
         failure = null;
+        linkFailure = null;
     }
 
     @Override
@@ -108,6 +126,10 @@ public final class FakeMessengerChannel implements MessengerChannel {
         RuntimeException error = failure;
         if (error != null) {
             throw error;
+        }
+        RuntimeException linkError = linkFailure;
+        if (linkError != null && message.hasLinks()) {
+            throw linkError;
         }
         sent.add(new Sent(externalId, message.text(), message.rows()));
     }

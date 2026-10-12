@@ -27,6 +27,7 @@ import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
+import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
@@ -40,16 +41,19 @@ public class AssignmentService {
 
     private final AssignmentRepository assignments;
     private final TaskRepository tasks;
+    private final SubmissionRepository submissions;
     private final AttachmentService attachments;
     private final TextbookBindings textbooks;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    public AssignmentService(AssignmentRepository assignments, TaskRepository tasks, AttachmentService attachments,
-            TextbookBindings textbooks, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+    public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
+            SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
+            UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
         this.assignments = assignments;
         this.tasks = tasks;
+        this.submissions = submissions;
         this.attachments = attachments;
         this.textbooks = textbooks;
         this.directory = directory;
@@ -114,6 +118,20 @@ public class AssignmentService {
                     assignment.createdAt(), students, assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted);
         }).toList();
+    }
+
+    /**
+     * Deletes the assignment: the files of the assignment and of the answers, the answers, the tasks and the
+     * assignment (bound textbooks go with it).
+     */
+    @Transactional
+    public void delete(UUID assignmentId) {
+        Assignment assignment = load(assignmentId);
+        attachments.deleteAll(AttachmentOwner.SUBMISSION, submissions.idsByAssignment(assignment.id()));
+        attachments.deleteAll(AttachmentOwner.ASSIGNMENT, List.of(assignment.id()));
+        submissions.deleteByAssignment(assignment.id());
+        tasks.deleteByAssignment(assignment.id());
+        assignments.delete(assignment.id());
     }
 
     /** Remembers the board the assignment was put on ({@code null} forgets it): its students get a link to it. */

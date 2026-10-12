@@ -308,9 +308,11 @@ public class ChatEngine {
             available.forEach(action -> text.append("\n• ").append(action.title(user.language())));
         }
         text.append("\n\n").append(t.commandsHelp());
-        portal.link(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot")
-                .ifPresent(help -> text.append("\n\n").append(t.helpLink(help)));
-        return send(conversation, ChatReply.of(text.toString()), List.of(menuButton(t)), null, ChatState.EMPTY, now);
+        ChatReply plain = ChatReply.of(text.toString());
+        ChatReply reply = portal.link(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot")
+                .map(help -> plain.row(ChatButton.link(t.help(), help)))
+                .orElse(plain);
+        return send(conversation, reply, List.of(menuButton(t)), null, ChatState.EMPTY, now);
     }
 
     private OutgoingMessage failed(Conversation conversation, Instant now) {

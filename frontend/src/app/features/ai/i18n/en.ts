@@ -4,7 +4,7 @@ import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
   features: {
-    HOMEWORK_DRAFT: 'Assignment drafts',
+    HOMEWORK_DRAFT: 'Homework drafts',
     REVIEW_DRAFT: 'Review drafts',
   },
   openAiCompatible: 'OpenAI-compatible API',
@@ -17,7 +17,7 @@ export const en: Translation<typeof ru> = {
     title: 'AI assistant',
     notConfigured: 'The AI assistant is not set up',
     notConfiguredHint:
-      'The portal administrator sets it up. Ask them to connect the AI assistant to get drafts of assignments and reviews.',
+      'The portal administrator sets it up. Ask them to connect the AI assistant to get drafts of homework and reviews.',
     model: 'Model',
     usageIn: (month: string) => `Usage in ${month}`,
     tokens: (used: string) => `Tokens: ${used}`,
@@ -43,7 +43,7 @@ export const en: Translation<typeof ru> = {
     libraryPlaceholder: 'Choose from the library',
     prompt: 'What to do',
     placeholder: 'For example: 8 tasks on adding fractions for year 5, from easy to hard',
-    hint: 'The draft is not saved by itself: you check it and put it into the assignment.',
+    hint: 'The draft is not saved by itself: you check it and put it into the homework.',
     generate: 'Generate',
     savePrompt: 'Save the prompt',
     promptTitle: 'Prompt title',
@@ -59,7 +59,7 @@ export const en: Translation<typeof ru> = {
   library: {
     title: 'Prompt library',
     empty: 'No prompts yet',
-    emptyHint: 'Save a prompt in the assignment editor and it appears here.',
+    emptyHint: 'Save a prompt in the homework editor and it appears here.',
     edit: (title: string) => `Edit the prompt «${title}»`,
     delete: (title: string) => `Delete the prompt «${title}»`,
     editTitle: 'Prompt',

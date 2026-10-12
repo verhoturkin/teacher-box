@@ -52,12 +52,13 @@ describe('MyHomeworkPage', () => {
     ]);
     await fixture.whenStable();
 
-    const rows = Array.from(hostElement(fixture).querySelectorAll('tbody tr')).map((row) =>
-      readableText(row),
-    );
+    const host = hostElement(fixture);
+    const rows = Array.from(host.querySelectorAll('.tb-list > li')).map((row) => readableText(row));
+    expect(host.querySelector('table')).toBeNull();
     expect(rows[0]).toContain('Новое открытое без срока На доработке');
-    expect(rows[1]).toContain('Старое открытое');
+    expect(rows[1]).toMatch(/^Старое открытое до 10\.09\.2026 \d\d:\d\d/);
     expect(rows[1]).toContain('Просрочено');
+    expect(host.querySelectorAll('.tb-list__supporting.tb-negative')).toHaveLength(1);
     expect(rows[2]).toContain('Принятое');
     expect(rows[2]).toContain('Оценка: 5');
   });

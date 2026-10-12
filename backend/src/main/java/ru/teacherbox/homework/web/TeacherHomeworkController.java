@@ -109,6 +109,13 @@ class TeacherHomeworkController {
                 request.version());
     }
 
+    /** Deletes the assignment with the tasks, the answers and every file of them. */
+    @DeleteMapping("/assignments/{assignmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable UUID assignmentId) {
+        assignments.delete(assignmentId);
+    }
+
     @PutMapping("/assignments/{assignmentId}/board")
     AssignmentDetails placeOnBoard(@PathVariable UUID assignmentId, @RequestBody PlaceOnBoardRequest request) {
         return assignments.placeOnBoard(assignmentId, request.boardId());

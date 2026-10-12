@@ -41,6 +41,27 @@ public class SubmissionRepository {
                 .list();
     }
 
+    /** The answers to every task of the assignment. */
+    public List<UUID> idsByAssignment(UUID assignmentId) {
+        return jdbc.sql("""
+                select s.id from homework.submissions s
+                join homework.tasks t on t.id = s.task_id
+                where t.assignment_id = :assignmentId
+                """)
+                .param("assignmentId", assignmentId)
+                .query(UUID.class)
+                .list();
+    }
+
+    public void deleteByAssignment(UUID assignmentId) {
+        jdbc.sql("""
+                delete from homework.submissions
+                where task_id in (select id from homework.tasks where assignment_id = :assignmentId)
+                """)
+                .param("assignmentId", assignmentId)
+                .update();
+    }
+
     private static Submission map(ResultSet rs, int rowNum) throws SQLException {
         return new Submission(
                 rs.getObject("id", UUID.class),

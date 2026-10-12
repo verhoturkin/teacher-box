@@ -31,6 +31,10 @@ enum NotificationMessages {
         @Override String groupLessons(String group, String url) {
             return "По этой ссылке проходят уроки группы «" + group + "»: " + url;
         }
+        @Override String ourRoom() { return "Здесь проходят наши уроки."; }
+        @Override String groupRoom(String group) { return "Здесь проходят уроки группы «" + group + "»."; }
+        @Override String open() { return "Открыть"; }
+        @Override String join() { return "Подключиться"; }
         @Override String studentJoined() { return "Ученик присоединился к порталу"; }
         @Override String studentJoinedBody(String name) {
             return name + " принял(а) приглашение и теперь может войти в личный кабинет.";
@@ -66,6 +70,10 @@ enum NotificationMessages {
         @Override String groupLessons(String group, String url) {
             return "Lessons of the group “" + group + "” take place at this link: " + url;
         }
+        @Override String ourRoom() { return "Our lessons take place here."; }
+        @Override String groupRoom(String group) { return "Lessons of the group “" + group + "” take place here."; }
+        @Override String open() { return "Open"; }
+        @Override String join() { return "Join"; }
         @Override String studentJoined() { return "A student joined the portal"; }
         @Override String studentJoinedBody(String name) {
             return name + " accepted the invitation and can now sign in to their account.";
@@ -123,6 +131,17 @@ enum NotificationMessages {
     abstract String ourLessons(String url);
 
     abstract String groupLessons(String group, String url);
+
+    /** The room in messengers, its address goes as a button. */
+    abstract String ourRoom();
+
+    abstract String groupRoom(String group);
+
+    /** The button to the portal page of a notification. */
+    abstract String open();
+
+    /** The button to the video room of a notification. */
+    abstract String join();
 
     abstract String studentJoined();
 

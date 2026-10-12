@@ -155,7 +155,7 @@ export const en: Translation<typeof ru> = {
     saved: (name: string) => `Saved: ${name}`,
     deactivateHeader: 'Turn off access?',
     deactivateMessage: (name: string) =>
-      `${name} will not be able to sign in to the cabinet. The history of lessons and assignments stays.`,
+      `${name} will not be able to sign in to the cabinet. The history of lessons and homework stays.`,
     deactivate: 'Turn off',
     edit: 'Edit',
     reactivate: 'Give access back',

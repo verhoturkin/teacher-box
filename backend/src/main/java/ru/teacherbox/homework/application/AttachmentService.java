@@ -76,6 +76,11 @@ public class AttachmentService {
         storage.delete(NAMESPACE, attachment.fileKey());
     }
 
+    /** Every file of these owners, rows and contents. */
+    void deleteAll(AttachmentOwner ownerType, List<UUID> ownerIds) {
+        of(ownerType, ownerIds).forEach(this::delete);
+    }
+
     List<Attachment> of(AttachmentOwner ownerType, UUID ownerId) {
         return attachments.findByOwner(ownerType, ownerId);
     }

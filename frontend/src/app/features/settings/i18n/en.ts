@@ -130,8 +130,7 @@ export const en: Translation<typeof ru> = {
   restore: {
     title: 'Restore from a backup',
     replaceBefore: 'All data of the portal will be replaced with the backup of',
-    replaceAfter:
-      '. Everything added later (students, lessons, payments, assignments) will be lost.',
+    replaceAfter: '. Everything added later (students, lessons, payments, homework) will be lost.',
     beforeRestore:
       'Before the restore the portal backs up its current state — you can go back to it. The portal restarts and is unavailable for about a minute; then sign in with the password that was valid at the time of the backup.',
     password: 'Your password',
@@ -152,13 +151,13 @@ export const en: Translation<typeof ru> = {
   reset: {
     title: 'Full reset',
     about:
-      'Deletes all data of the portal: students and groups, lessons and schedule, payments, assignments and files, notifications and messenger connections, meeting rooms, boards, AI history, Google and Yandex connections, the name and the address of the portal.',
+      'Deletes all data of the portal: students and groups, lessons and schedule, payments, homework and files, notifications and messenger connections, meeting rooms, boards, AI history, Google and Yandex connections, the name and the address of the portal.',
     stays:
       'The sign-in of the teacher and the administrator (with the same passwords), the backups and their Google Drive connection stay. Before the reset the portal makes a backup — everything can be restored from it.',
     open: 'Reset all data…',
     header: 'Reset all data?',
     warning:
-      'All students, lessons, payments and assignments will be deleted. The backup made before the reset stays in «Backups».',
+      'All students, lessons, payments and homework will be deleted. The backup made before the reset stays in «Backups».',
     password: 'Your password',
     word: 'RESET',
     typeWord: (word: string) => `Type «${word}»`,
@@ -205,7 +204,7 @@ export const en: Translation<typeof ru> = {
     google: 'Google Calendar',
     googleText: '— lessons in your calendar.',
     ai: 'AI assistant',
-    aiText: '— drafts of assignments and reviews (turned on on the server).',
+    aiText: '— drafts of homework and reviews (turned on on the server).',
     startWith: 'Start with the main thing: add a student and plan the first lesson.',
     home: 'Go to the home page',
     skip: 'Skip the setup',

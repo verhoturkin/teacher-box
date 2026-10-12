@@ -184,7 +184,6 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/teacher/homework/a-1');
     backend.expectOne('/api/teacher/homework/assignments/a-1');
-    backend.expectOne('/api/teacher/students');
     expect(title()).toBe('Задание — Teacher Box');
 
     auth.acceptSession(authResponse('STUDENT'));

@@ -188,9 +188,9 @@ class ChatEngineIntegrationTests {
         assertThat(say("8201", "поздно").text()).startsWith("Не понял сообщение.");
 
         OutgoingMessage help = say("8201", "/help");
-        assertThat(help.text()).contains("Бот умеет:", "• Отзыв", "/cancel",
-                "Справка: https://school.example.com/cabinet/help/bot");
-        assertThat(labels(help)).containsExactly("Меню");
+        assertThat(help.text()).contains("Бот умеет:", "• Отзыв", "/cancel").doesNotContain("https://");
+        assertThat(labels(help)).containsExactly("Справка", "Меню");
+        assertThat(help.rows().getFirst().getFirst().url()).isEqualTo("https://school.example.com/cabinet/help/bot");
     }
 
     @Test
@@ -279,8 +279,9 @@ class ChatEngineIntegrationTests {
 
         assertThat(say("8601", "/menu").text()).startsWith("Управление порталом через бота выключено");
         assertThat(press("8601", oldMenu, "Отзыв").text()).startsWith("Управление порталом через бота выключено");
-        assertThat(say("8601", "/help").text()).contains("Пока бот только присылает уведомления",
-                "Справка: https://school.example.com/teacher/help/bot");
+        OutgoingMessage help = say("8601", "/help");
+        assertThat(help.text()).contains("Пока бот только присылает уведомления");
+        assertThat(help.rows().getFirst().getFirst().url()).isEqualTo("https://school.example.com/teacher/help/bot");
         assertThat(say("8601", "что-то").text()).startsWith("Не понял сообщение.\nУправление");
 
         UUID student = directory.addStudent("Любопытный");

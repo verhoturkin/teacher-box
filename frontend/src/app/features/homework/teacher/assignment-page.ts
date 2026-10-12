@@ -2,36 +2,36 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  LOCALE_ID,
   OnInit,
   computed,
   inject,
   input,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { MultiSelect } from 'primeng/multiselect';
-import { TableModule } from 'primeng/table';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
-import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
-import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { assignmentBoard } from './assignment-board';
-import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
+import {
+  AssignmentDetails,
+  Attachment,
+  BoundTextbook,
+  TaskSummary,
+} from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
+import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
-import { StudentOption } from './assignment-editor-page';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
@@ -39,11 +39,9 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { Busy } from '@shared/ui/busy';
 import { pageDetail } from '@core/routing/page-detail';
 import { Avatar } from '@shared/ui/avatar';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
 @Component({
@@ -51,8 +49,6 @@ import { SHARED_T } from '@shared/i18n/texts';
   imports: [
     Avatar,
     EmptyState,
-    DatePipe,
-    ReactiveFormsModule,
     RouterLink,
     Button,
     ButtonDirective,
@@ -60,16 +56,13 @@ import { SHARED_T } from '@shared/i18n/texts';
     ButtonLabel,
     Card,
     ConfirmDialog,
-    MultiSelect,
-    TableModule,
     MarkdownView,
-    RowType,
     AttachmentList,
+    AssignMoreDialog,
     BindTextbookDialog,
     TextbookList,
     FilePicker,
     TaskStatusTag,
-    GroupPicker,
     ToBoardDialog,
     TextbookToBoardDialog,
     PageHeader,
@@ -83,15 +76,11 @@ import { SHARED_T } from '@shared/i18n/texts';
       <tb-page-header [title]="assignment.title" back="/teacher/homework" [backLabel]="t.back">
         <tb-help-button help topic="teacher/homework" />
         <span meta>
-          {{
-            assignment.dueAt
-              ? t.due((assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-              : t.noDueDate
-          }}
+          {{ assignment.dueAt ? t.due(date(assignment.dueAt)) : t.noDueDate }}
         </span>
         @if (assignment.boardId; as boardId) {
           <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
-            <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
+            <i pButtonIcon aria-hidden="true" class="pi pi-arrow-up-right"></i>
             <span pButtonLabel>{{ t.openBoard }}</span>
           </a>
         }
@@ -106,6 +95,13 @@ import { SHARED_T } from '@shared/i18n/texts';
           <i pButtonIcon aria-hidden="true" class="pi pi-pencil"></i>
           <span pButtonLabel>{{ t.edit }}</span>
         </a>
+        <p-button
+          [label]="r.action"
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          (onClick)="confirmDelete(assignment)"
+        />
       </tb-page-header>
 
       <div class="tb-stack">
@@ -153,98 +149,58 @@ import { SHARED_T } from '@shared/i18n/texts';
           </div>
         </p-card>
 
-        <p-card [header]="t.students">
-          <p-table [value]="assignment.tasks" dataKey="taskId" styleClass="tb-cards">
-            <ng-template #header>
-              <tr>
-                <th class="tb-col-main">{{ t.student }}</th>
-                <th>{{ t.status }}</th>
-                <th>{{ t.submitted }}</th>
-                <th class="tb-actions-column">
-                  <span class="tb-sr-only">{{ c.actions }}</span>
-                </th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-task [tbRowType]="assignment.tasks">
-              <tr>
-                <td [attr.data-label]="t.student">
-                  <div class="tb-person">
-                    <tb-avatar [name]="task.studentName" [photo]="task.studentAvatar" />
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ task.studentName }}</span>
-                    </div>
-                  </div>
-                </td>
-                <td [attr.data-label]="t.status">
-                  <tb-task-status
-                    [status]="task.status"
-                    [overdue]="task.overdue"
-                    [grade]="task.grade"
-                  />
-                </td>
-                <td [attr.data-label]="t.submitted">
-                  {{ task.submittedAt ? (task.submittedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}
-                </td>
-                <td class="tb-actions-column">
-                  <a
-                    pButton
-                    [routerLink]="['/teacher/homework/tasks', task.taskId]"
-                    [text]="true"
-                    [attr.aria-label]="
-                      t.action(task.status === 'SUBMITTED' ? t.review : t.open, task.studentName)
-                    "
-                  >
-                    <span pButtonLabel>{{ task.status === 'SUBMITTED' ? t.review : t.open }}</span>
-                  </a>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template #emptymessage>
-              <tr>
-                <td colspan="4">
-                  <tb-empty-state icon="pi-send" [title]="t.notAssigned" />
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-          <h3 class="tb-subtitle">{{ t.assignMore }}</h3>
-          <div class="tb-assign">
-            <div class="tb-field">
-              <label for="assign-students">{{ t.students }}</label>
-              <p-multiselect
-                inputId="assign-students"
-                [options]="unassigned()"
-                [formControl]="toAssign"
-                optionLabel="displayName"
-                optionValue="id"
-                [filter]="true"
-                [filterPlaceHolder]="t.search"
-                [ariaFilterLabel]="t.search"
-                display="chip"
-                appendTo="body"
-                [fluid]="true"
-              />
+        <p-card>
+          <ng-template #title>
+            <div class="tb-card-title">
+              <span class="tb-card-title__text">{{ t.students }}</span>
+              <div class="tb-card-title__actions">
+                <p-button
+                  [label]="t.add"
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  (onClick)="assignMore.open()"
+                />
+              </div>
             </div>
-            <tb-group-picker
-              inputId="assign-group"
-              [(selected)]="groupsToAssign"
-              (picked)="addStudents($event)"
-              (dropped)="removeStudents($event)"
-            />
-          </div>
-          <div class="tb-form-actions">
-            <p-button
-              class="tb-tonal"
-              [label]="t.assign"
-              severity="success"
-              [disabled]="selectedToAssign().length === 0"
-              [loading]="busy.is('assign')"
-              (onClick)="assign()"
-            />
-          </div>
+          </ng-template>
+          @if (assignment.tasks.length > 0) {
+            <ul class="tb-list" [attr.aria-label]="t.students">
+              @for (task of assignment.tasks; track task.taskId) {
+                <li>
+                  <tb-avatar [name]="task.studentName" [photo]="task.studentAvatar" />
+                  <div class="tb-list__text">
+                    <a
+                      class="tb-list__title tb-link"
+                      [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                      [attr.aria-label]="
+                        t.action(task.status === 'SUBMITTED' ? t.review : t.open, task.studentName)
+                      "
+                      >{{ task.studentName }}</a
+                    >
+                    <span class="tb-list__supporting">{{ submitted(task) }}</span>
+                  </div>
+                  <div class="tb-list__trail tb-list__trail--icons">
+                    <tb-task-status
+                      [status]="task.status"
+                      [overdue]="task.overdue"
+                      [grade]="task.grade"
+                    />
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <tb-empty-state icon="pi-send" [title]="t.notAssigned" />
+          }
         </p-card>
       </div>
 
+      <tb-assign-more-dialog
+        #assignMore
+        [assignmentId]="assignment.id"
+        [assigned]="taskStudents()"
+        (saved)="assigned($event)"
+      />
       <tb-textbook-to-board-dialog
         [(visible)]="textbookBoardVisible"
         [textbook]="boardTextbook()"
@@ -273,24 +229,16 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
     <p-confirmdialog />
   `,
-  styles: `
-    .tb-assign {
-      display: grid;
-      gap: var(--tb-space-4);
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-      align-items: start;
-    }
-  `,
 })
 export class AssignmentPage implements OnInit {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.page;
-  protected readonly busy = new Busy();
+  protected readonly r = T.remove;
   private readonly api = inject(HomeworkApi);
-  private readonly identity = inject(IdentityApi);
+  private readonly router = inject(Router);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
+  private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter. */
   readonly assignmentId = input.required<string>();
@@ -328,29 +276,11 @@ export class AssignmentPage implements OnInit {
   protected readonly binding = signal<BoundTextbook | null>(null);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
-  private readonly students = signal<StudentOption[]>([]);
-  readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
-  /** The groups chosen for «Выдать ещё ученикам». */
-  protected readonly groupsToAssign = signal<readonly string[]>([]);
-  protected readonly selectedToAssign = toSignal(this.toAssign.valueChanges, {
-    initialValue: this.toAssign.value,
-  });
-  protected readonly unassigned = computed(() => {
-    const assigned = new Set(this.details()?.tasks.map((task) => task.studentId) ?? []);
-    return this.students().filter((student) => !assigned.has(student.id));
-  });
 
   protected readonly state = new LoadState();
 
   ngOnInit(): void {
     this.load();
-    this.identity.listStudents().subscribe((students) => {
-      this.students.set(
-        students
-          .filter((student) => student.status !== 'DEACTIVATED')
-          .map((student) => ({ id: student.id, displayName: student.displayName })),
-      );
-    });
   }
 
   protected load(): void {
@@ -360,6 +290,17 @@ export class AssignmentPage implements OnInit {
       .subscribe((assignment) => {
         this.details.set(assignment);
       });
+  }
+
+  protected date(value: string): string {
+    return this.dates.transform(value, 'dd.MM.yyyy HH:mm') ?? '';
+  }
+
+  /** «Сдано 12.10.2026 18:00» or «Не сдано». */
+  protected submitted(task: TaskSummary): string {
+    return task.submittedAt === null
+      ? T.page.notSubmitted
+      : T.page.submittedAt(this.date(task.submittedAt));
   }
 
   protected download(file: Attachment): void {
@@ -408,6 +349,23 @@ export class AssignmentPage implements OnInit {
     );
   }
 
+  /** Deletes the assignment with the answers and the files, then back to the list. */
+  protected confirmDelete(assignment: AssignmentDetails): void {
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: T.remove.header,
+        message: T.remove.message(assignment.title),
+        acceptLabel: T.remove.confirm,
+        accept: () => {
+          this.api.deleteAssignment(assignment.id).subscribe(() => {
+            this.snackbar.success(T.remove.deleted(assignment.title));
+            void this.router.navigate(['/teacher/homework']);
+          });
+        },
+      }),
+    );
+  }
+
   protected openBind(textbook: BoundTextbook | null): void {
     this.binding.set(textbook);
     this.bindVisible.set(true);
@@ -436,20 +394,6 @@ export class AssignmentPage implements OnInit {
     });
   }
 
-  /** Adds the students of a chosen group who do not have the assignment yet. */
-  protected addStudents(ids: readonly string[]): void {
-    const available = new Set(this.unassigned().map((student) => student.id));
-    this.toAssign.setValue([
-      ...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))]),
-    ]);
-  }
-
-  /** Takes off the students of a group taken off. */
-  protected removeStudents(ids: readonly string[]): void {
-    const gone = new Set(ids);
-    this.toAssign.setValue(this.toAssign.value.filter((id) => !gone.has(id)));
-  }
-
   /** The board the assignment went on: its students get «Перейти на доску». */
   protected rememberBoard(assignmentId: string, placed: Placed): void {
     this.api.placeOnBoard(assignmentId, placed.board.id).subscribe((updated) => {
@@ -457,19 +401,8 @@ export class AssignmentPage implements OnInit {
     });
   }
 
-  protected assign(): void {
-    const assignment = this.details();
-    const studentIds = this.toAssign.value;
-    if (assignment === null || studentIds.length === 0) {
-      return;
-    }
-    this.busy
-      .guard('assign', this.api.assignStudents(assignment.id, studentIds))
-      .subscribe((updated) => {
-        this.details.set(updated);
-        this.toAssign.setValue([]);
-        this.groupsToAssign.set([]);
-        this.snackbar.success(T.page.assigned);
-      });
+  protected assigned(updated: AssignmentDetails): void {
+    this.details.set(updated);
+    this.snackbar.success(T.page.assigned);
   }
 }

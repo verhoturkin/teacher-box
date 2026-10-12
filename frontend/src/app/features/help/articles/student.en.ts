@@ -64,7 +64,7 @@ The same can be done through the bot in a messenger ([Bot](/cabinet/help/bot)).
 
 Before the lesson click «Join lesson» — the next lesson is shown first on the home page, and the button is in the schedule too. The home page also has the «Video call» card: your room and your groups' rooms, and whether the teacher has already joined.
 
-The call runs right in the portal. A window opens before joining: check the camera and the microphone (the browser asks for permission — allow it) and click «Join». In the call you can turn the microphone or the camera off, drag the window with your camera to another corner, and «Minimize» keeps the call in a small window — open a board or an assignment and the talk goes on. «Leave the call» is the red button.
+The call runs right in the portal. A window opens before joining: check the camera and the microphone (the browser asks for permission — allow it) and click «Join». In the call you can turn the microphone or the camera off, drag the window with your camera to another corner, and «Minimize» keeps the call in a small window — open a board or homework and the talk goes on. «Leave the call» is the red button.
 
 If the teacher has set a link to another video service (e.g. Telemost), the button opens it in a new tab.
 
@@ -79,26 +79,26 @@ The links to the lesson and the boards are in the bot too: «Join lesson» and �
 `,
   },
   homework: {
-    title: 'Assignments',
+    title: 'Homework',
     summary: 'How to see and hand in homework',
     body: `
-## See the assignments
+## See the homework
 
-«Assignments» — all assignments with their deadlines. Overdue ones are marked. A reminder comes before the deadline.
+«Homework» — all homework as cards: the title, the deadline and the status; what is still to do comes first. Overdue ones are marked red. A reminder comes before the deadline.
 
-If a textbook is bound to an assignment, it is in the assignment, in «Textbooks», with its pages. Click the title — only the pages you need open; the arrow button downloads them.
+If a textbook is bound to homework, it is in the homework, in «Textbooks», with its pages. Click the title — only the pages you need open; the arrow button downloads them.
 
 ## Send work for review
 
-1. Open the assignment.
+1. Open the homework.
 2. Write the answer and attach files if needed (photos, documents).
 3. Click «Send for review».
 
 The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.
 
-## An assignment on a board
+## Homework on a board
 
-If the teacher put the assignment on your board, it has «Go to the board» at the top — the text of the assignment and the textbook pages are already there. Still hand in your answer in the assignment: as a text or a file.
+If the teacher put the homework on your board, it has «Go to the board» at the top — the text of the homework and the textbook pages are already there. Still hand in your answer in the homework: as a text or a file.
 `,
   },
   textbooks: {
@@ -137,6 +137,10 @@ New notifications are at the top of «Notifications». Read ones (ticked, opened
 
 «Notifications» (the bell in the header opens it) → «Connect» next to a messenger. A chat with the bot opens — press «Start» or send it the code shown.
 
+## Buttons under notifications
+
+A notification has buttons: «Open» leads to the page of the portal, «Join» — to the lesson. If the messenger does not take such buttons, the link comes as text: «Open: …».
+
 ## What the bot can do
 
 Send the bot /menu:
@@ -164,7 +168,7 @@ Send the bot /stop or disconnect the messenger in «Notifications». There you c
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
 
-- The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Assignments» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left.
+- The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Homework» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left.
 - Green buttons confirm («Send for review», «Save»), red ones cancel a lesson («Ask to cancel», «I won’t come»). «Cancel» in a window just closes it and changes nothing.
 - The next lesson and the «Join lesson» button come first on the home page.
 - Lists are shown as cards, forms open full screen.

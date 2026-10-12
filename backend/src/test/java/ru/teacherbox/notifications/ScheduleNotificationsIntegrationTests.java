@@ -371,7 +371,8 @@ class ScheduleNotificationsIntegrationTests {
                             ChangeKind.CANCEL, START, null, null, false, true, Instant.now()))
                     .andWaitForStateChange(() -> teacherDeliveries("Без кнопок не придёт на занятие группы"),
                             list -> !list.isEmpty())
-                    .andVerify(list -> assertThat(list.getFirst().keyboard()).isNull());
+                    .andVerify(list -> assertThat(list.getFirst().keyboard()).as("only «Открыть»")
+                            .contains("Открыть").doesNotContain("Принять"));
         } finally {
             // Send what the link got, so that no delivery to it stays for the other tests.
             telegram.reset();

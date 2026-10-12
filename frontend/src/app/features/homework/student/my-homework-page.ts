@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  LOCALE_ID,
   OnInit,
   computed,
   inject,
@@ -9,9 +10,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
-import { TableModule } from 'primeng/table';
 import { HelpButton } from '@features/help/parts';
-import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
 import { TaskStatusTag } from '../ui/task-status-tag';
@@ -21,73 +20,54 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { T } from '../i18n/texts';
 
-/** Student: own tasks; the ones that need work come first. */
+/** Student: own tasks as cards like the teacher's list; the ones that need work come first. */
 @Component({
   selector: 'tb-my-homework-page',
-  imports: [
-    EmptyState,
-    HelpButton,
-    DatePipe,
-    RouterLink,
-    Card,
-    TableModule,
-    RowType,
-    TaskStatusTag,
-    LoadStateView,
-    PageHeader,
-  ],
+  imports: [EmptyState, HelpButton, RouterLink, Card, TaskStatusTag, LoadStateView, PageHeader],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="cabinet/homework" />
     </tb-page-header>
     <p-card>
+      <h2 class="tb-sr-only">{{ t.title }}</h2>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-        <p-table [value]="tasks()" dataKey="taskId" [rowHover]="true" styleClass="tb-cards">
-          <ng-template #header>
-            <tr>
-              <th class="tb-col-main">{{ t.assignment }}</th>
-              <th>{{ t.due }}</th>
-              <th>{{ t.status }}</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-task [tbRowType]="tasks()">
-            <tr>
-              <td [attr.data-label]="t.assignment">
-                <a [routerLink]="[task.taskId]" class="tb-link">{{ task.title }}</a>
-              </td>
-              <td [attr.data-label]="t.due" [class.tb-negative]="task.overdue">
-                {{ task.dueAt ? (task.dueAt | date: 'dd.MM.yyyy HH:mm') : noDueDate }}
-              </td>
-              <td [attr.data-label]="t.status">
-                <tb-task-status
-                  [status]="task.status"
-                  [overdue]="task.overdue"
-                  [grade]="task.grade"
-                />
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template #emptymessage>
-            <tr>
-              <td colspan="3">
-                <tb-empty-state
-                  icon="pi-pen-to-square"
-                  [title]="t.emptyTitle"
-                  [hint]="t.emptyHint"
-                />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+        @if (tasks().length > 0) {
+          <ul class="tb-list" [attr.aria-label]="t.title">
+            @for (task of tasks(); track task.taskId) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i class="pi pi-pen-to-square"></i
+                ></span>
+                <div class="tb-list__text">
+                  <a class="tb-list__title tb-link" [routerLink]="[task.taskId]">{{
+                    task.title
+                  }}</a>
+                  <span class="tb-list__supporting" [class.tb-negative]="task.overdue">{{
+                    due(task)
+                  }}</span>
+                </div>
+                <div class="tb-list__trail tb-list__trail--icons">
+                  <tb-task-status
+                    [status]="task.status"
+                    [overdue]="task.overdue"
+                    [grade]="task.grade"
+                  />
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <tb-empty-state icon="pi-pen-to-square" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+        }
       </tb-load-state>
     </p-card>
   `,
 })
 export class MyHomeworkPage implements OnInit {
-  protected readonly noDueDate = T.noDueDate;
   protected readonly t = T.mine;
   private readonly api = inject(HomeworkApi);
+  private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   private readonly all = signal<MyTask[]>([]);
   protected readonly state = new LoadState();
@@ -111,5 +91,12 @@ export class MyHomeworkPage implements OnInit {
       .subscribe((tasks) => {
         this.all.set(tasks);
       });
+  }
+
+  /** «до 12.10.2026 18:00» or «без срока». */
+  protected due(task: MyTask): string {
+    return task.dueAt === null
+      ? T.noDueDate
+      : T.list.until(this.dates.transform(task.dueAt, 'dd.MM.yyyy HH:mm') ?? '');
   }
 }

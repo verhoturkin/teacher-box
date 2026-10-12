@@ -194,6 +194,37 @@ class SubmissionAndReviewIntegrationTests {
                 .bodyJson().extractingPath("$[?(@.title == 'Скоро срок')].overdue").asArray().containsExactly(true);
     }
 
+    @Test
+    void theTeacherDeletesAnAssignmentWithTheAnswers() {
+        UUID student = directory.addStudent("Удаляемый");
+        AssignmentDetails assignment = assignment("Лишнее", student);
+        String id = assignment.id().toString();
+        String taskId = assignment.tasks().getFirst().taskId().toString();
+        String material = assignment.attachments().getFirst().id().toString();
+        MvcTestResult submitted = submit(student, taskId, "Ответ", new MockMultipartFile("files", "a.txt", null,
+                new byte[] {1}));
+        String answerFile = JsonPath.read(AssignmentIntegrationTests.body(submitted),
+                "$.submissions[0].attachments[0].id");
+
+        assertThat(mvc.delete().uri("/api/teacher/homework/assignments/" + id).with(TestUsers.student(student)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.delete().uri("/api/teacher/homework/assignments/" + id).with(teacher()))
+                .hasStatus(HttpStatus.NO_CONTENT);
+
+        assertThat(mvc.get().uri("/api/teacher/homework/assignments/" + id).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/teacher/homework/tasks/" + taskId).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/teacher/homework/attachments/" + material).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/teacher/homework/attachments/" + answerFile).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/me/homework").with(TestUsers.student(student)))
+                .hasStatusOk().bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.delete().uri("/api/teacher/homework/assignments/" + id).with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
     private AssignmentDetails assignment(String title, UUID student) {
         AssignmentDetails details = assignments.create(title, "Описание", null, List.of(student));
         assignments.addAttachments(details.id(), List.of(new UploadedFile("задание.txt", 12,

@@ -60,20 +60,36 @@ class DeliveryIntegrationTests {
     }
 
     @Test
-    void sendsToConnectedMessengerWithLinkToThePortal() {
+    void sendsToConnectedMessengerWithAButtonToThePortal() {
         UUID student = connectedStudent("7001");
 
         notifications.notify(student, NotificationKind.HOMEWORK_ASSIGNED, "Новое задание: «Дроби»",
                 "Срок сдачи: 25.09.2026 18:30", "/cabinet/homework/1");
         assertThat(dispatcher.dispatch()).isPositive();
 
-        assertThat(telegram.sent()).containsExactly(new FakeMessengerChannel.Sent("7001",
-                "Новое задание: «Дроби»\nСрок сдачи: 25.09.2026 18:30\nhttps://school.example.com/cabinet/homework/1"));
+        assertThat(telegram.sent()).singleElement().satisfies(sent -> {
+            assertThat(sent.externalId()).isEqualTo("7001");
+            assertThat(sent.text()).isEqualTo("Новое задание: «Дроби»\nСрок сдачи: 25.09.2026 18:30");
+            assertThat(sent.url("Открыть")).isEqualTo("https://school.example.com/cabinet/homework/1");
+        });
         assertThat(deliveries.findByRecipient(student)).singleElement().satisfies(delivery -> {
             assertThat(delivery.status()).isEqualTo(DeliveryStatus.SENT);
             assertThat(delivery.attempts()).isEqualTo(1);
             assertThat(delivery.sentAt()).isEqualTo(clock.instant());
         });
+    }
+
+    @Test
+    void sendsTheLinksAsTextWhenTheMessengerRefusesLinkButtons() {
+        UUID student = connectedStudent("7011");
+        notifications.notify(student, NotificationKind.PAYMENT_RECORDED, "Получена оплата", null, "/cabinet/billing");
+        telegram.failLinks(new DeliveryException("Telegram 400: Bad Request: wrong HTTP URL", true));
+
+        assertThat(dispatcher.dispatch()).isOne();
+
+        assertThat(telegram.sent()).containsExactly(new FakeMessengerChannel.Sent("7011",
+                "Получена оплата\nОткрыть: https://school.example.com/cabinet/billing"));
+        assertThat(delivery(student).status()).isEqualTo(DeliveryStatus.SENT);
     }
 
     @Test

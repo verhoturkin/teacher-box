@@ -28,16 +28,14 @@ class NotificationsDomainTest {
     }
 
     @Test
-    void messengerTextAddsAbsoluteLinkWhenPublicUrlIsKnown() {
+    void messengerTextIsTheTitleAndTheBodyWithoutTheLink() {
         InboxNotification withLink = InboxNotification.create(UUID.randomUUID(), UUID.randomUUID(),
                 NotificationKind.MESSAGE, "Тема", "Текст", "/cabinet/billing", NOW);
-        InboxNotification withoutLink = create("Тема", null);
 
-        assertThat(withLink.messengerText("https://school.example.com//"))
-                .isEqualTo("Тема\nТекст\nhttps://school.example.com/cabinet/billing");
-        assertThat(withLink.messengerText(null)).isEqualTo("Тема\nТекст");
-        assertThat(withLink.messengerText(" ")).isEqualTo("Тема\nТекст");
-        assertThat(withoutLink.messengerText("https://school.example.com")).isEqualTo("Тема");
+        assertThat(withLink.messengerText(withLink.body())).isEqualTo("Тема\nТекст");
+        assertThat(withLink.messengerText(" Другой ")).isEqualTo("Тема\nДругой");
+        assertThat(withLink.messengerText(null)).isEqualTo("Тема");
+        assertThat(withLink.messengerText(" ")).isEqualTo("Тема");
     }
 
     @Test

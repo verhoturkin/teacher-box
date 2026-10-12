@@ -19,6 +19,7 @@ import { aiStatus } from '@testing/ai-fixtures';
 import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
+import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
@@ -124,6 +125,38 @@ describe('AssignmentsPage', () => {
     fixture.destroy();
   });
 
+  it('deletes an assignment from its «⋮» menu after a confirmation', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/homework/assignments')
+      .flush([assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Лишнее' })]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+    const confirm = vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
+      options.accept?.();
+      return confirmation;
+    });
+
+    buttonByText(host, 'Действия: Лишнее').click();
+    await fixture.whenStable();
+    menuItemByText('Удалить…').click();
+    expect(confirm.mock.calls[0]?.[0].header).toBe('Удалить задание?');
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-2' })
+      .flush(null);
+    await fixture.whenStable();
+
+    expect(readableText(host)).not.toContain('Лишнее');
+    expect(readableText(host)).toContain('Дроби');
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Задание «Лишнее» удалено' }),
+    );
+    fixture.destroy();
+  });
+
   it('shows a failed load with «Повторить», then the empty state', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(AssignmentsPage);
@@ -162,19 +195,60 @@ describe('AssignmentPage', () => {
     fixture.componentRef.setInput('assignmentId', 'a-1');
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(details);
-    context.backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    await fixture.whenStable();
-    context.backend.expectOne('/api/teacher/groups').flush([aGroup()]);
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
-  it('links the board the assignment is on', async () => {
-    const { host } = await render(assignmentDetails({ boardId: 'board-1' }));
+  /** «Добавить» in the «Ученики» card: the dialog loads the students and the groups. */
+  async function openAssignMore(
+    fixture: Awaited<ReturnType<typeof render>>['fixture'],
+    backend: HttpTestingController,
+  ): Promise<AssignMoreDialog> {
+    // «Добавить» at the top right of the «Ученики» card (not «Добавить файлы»)
+    buttonByText(
+      hostElement(fixture).querySelector('.tb-card-title__actions')!,
+      'Добавить',
+    ).click();
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+    await fixture.whenStable();
+    return fixture.debugElement
+      .query(By.directive(AssignMoreDialog))
+      .injector.get(AssignMoreDialog);
+  }
 
-    expect(host.querySelector('a[href="/teacher/boards/board-1"]')?.textContent).toContain(
-      'Открыть доску',
+  it('links the board the assignment is on with its own icon', async () => {
+    const { host } = await render(assignmentDetails({ boardId: 'board-1' }));
+    const link = host.querySelector('a[href="/teacher/boards/board-1"]');
+
+    expect(link?.textContent).toContain('Открыть доску');
+    expect(link?.querySelector('.pi-arrow-up-right')).not.toBeNull();
+    expect(buttonByText(host, 'На доску').querySelector('.pi-th-large')).not.toBeNull();
+  });
+
+  it('deletes the assignment after a confirmation and goes back to the list', async () => {
+    const { fixture, host, backend } = await render();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+    const confirm = vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
+      options.accept?.();
+      return confirmation;
+    });
+
+    buttonByText(host, 'Удалить…').click();
+    expect(confirm.mock.calls[0]?.[0].message).toContain('Задание «Дроби» будет удалено');
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1' })
+      .flush(null);
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Задание «Дроби» удалено' }),
     );
+    fixture.destroy();
   });
 
   it('shows a failed load with «Повторить» and the way back', async () => {
@@ -188,7 +262,6 @@ describe('AssignmentPage', () => {
         { status: 404, code: 'assignment.not-found' },
         { status: 404, statusText: 'Not Found' },
       );
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
     const host = hostElement(fixture);
 
@@ -196,8 +269,6 @@ describe('AssignmentPage', () => {
 
     buttonByText(host, 'Повторить').click();
     backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/groups').flush([aGroup()]);
     await fixture.whenStable();
 
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
@@ -208,13 +279,19 @@ describe('AssignmentPage', () => {
 
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
     expect(readableText(host)).toContain('Срок: 10.09.2026');
-    expect(readableText(host)).toContain('Анна На проверке');
-    expect(readableText(host)).toContain('Борис Выдано Просрочено');
-    const reviewLink = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
-    expect(reviewLink?.textContent.trim()).toBe('Проверить');
-    expect(host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.textContent.trim()).toBe(
-      'Открыть',
+    expect(host.querySelector('table')).toBeNull();
+    const students = [...host.querySelectorAll('ul[aria-label="Ученики"] > li')].map((card) =>
+      readableText(card),
     );
+    expect(students[0]).toMatch(/^А Анна Сдано 05\.09\.2026 \d\d:\d\d На проверке$/);
+    expect(students[1]).toBe('Б Борис Не сдано Выдано Просрочено');
+    const reviewLink = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
+    expect(reviewLink?.textContent.trim()).toBe('Анна');
+    expect(reviewLink?.getAttribute('aria-label')).toBe('Проверить: Анна');
+    expect(
+      host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.getAttribute('aria-label'),
+    ).toBe('Открыть: Борис');
+    expect(host.querySelector('ul[aria-label="Файлы"] .pi-file-pdf')).not.toBeNull();
 
     buttonByText(host, 'условие.pdf').click();
     backend.expectOne('/api/teacher/homework/attachments/f-1').flush(new Blob(['pdf']));
@@ -256,29 +333,46 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
-  it('gives the assignment to more students', async () => {
-    const { fixture, host, backend } = await render();
+  it('gives the assignment to more students in a dialog', async () => {
+    const { fixture, backend } = await render();
+    const dialog = await openAssignMore(fixture, backend);
 
-    fixture.componentInstance.toAssign.setValue(['s-3']);
+    dialog.toAssign.setValue(['s-3']);
     await fixture.whenStable();
-    buttonByText(host, 'Выдать').click();
+    dialog.assign();
+    const request = backend.expectOne('/api/teacher/homework/assignments/a-1/students');
+    expect(request.request.body).toEqual({ studentIds: ['s-3'] });
+    request.flush(assignmentDetails());
+    await fixture.whenStable();
 
-    expect(
-      backend.expectOne('/api/teacher/homework/assignments/a-1/students').request.body,
-    ).toEqual({
-      studentIds: ['s-3'],
-    });
+    expect(dialog.visible()).toBe(false);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Задание выдано' }),
+    );
     fixture.destroy();
   });
+
+  it('closes the dialog when nobody is chosen', async () => {
+    const { fixture, backend } = await render();
+    const dialog = await openAssignMore(fixture, backend);
+
+    dialog.assign();
+
+    expect(dialog.visible()).toBe(false);
+    backend.expectNone('/api/teacher/homework/assignments/a-1/students');
+    fixture.destroy();
+  });
+
   it('adds the students of a group who do not have the assignment yet and takes them off', async () => {
-    const { fixture } = await render();
+    const { fixture, backend } = await render();
+    const dialog = await openAssignMore(fixture, backend);
     const picker = fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker);
 
     picker.picked.emit(['s-1', 's-3', 's-9']);
-    expect(fixture.componentInstance.toAssign.value).toEqual(['s-3']);
+    expect(dialog.toAssign.value).toEqual(['s-3']);
 
     picker.dropped.emit(['s-3']);
-    expect(fixture.componentInstance.toAssign.value).toEqual([]);
+    expect(dialog.toAssign.value).toEqual([]);
     fixture.destroy();
   });
 
@@ -399,7 +493,12 @@ describe('ReviewQueuePage', () => {
       ]);
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Анна Дроби 05.09.2026');
+    const cards = [...hostElement(fixture).querySelectorAll('.tb-list > li')].map((card) =>
+      readableText(card),
+    );
+    expect(hostElement(fixture).querySelector('table')).toBeNull();
+    expect(cards[0]).toMatch(/^Анна Дроби · сдано 05\.09\.2026 \d\d:\d\d$/);
+    expect(cards[1]).toMatch(/^А Анна Дроби · срок 10\.09\.2026 \d\d:\d\d$/);
     expect(hostElement(fixture).querySelectorAll('tb-avatar img')).toHaveLength(1);
     expect(
       hostElement(fixture).querySelectorAll('a[href="/teacher/homework/tasks/t-1"]'),
