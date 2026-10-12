@@ -2,10 +2,13 @@ package ru.teacherbox.ai.application;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
+import ru.teacherbox.ai.domain.PromptKind;
 import ru.teacherbox.ai.domain.RequestStatus;
+import ru.teacherbox.ai.domain.SavedPrompt;
 
 /** Inputs and read models of the AI API. */
 public final class AiViews {
@@ -78,5 +81,15 @@ public final class AiViews {
             long monthlyTokenLimit,
             List<FeatureUsage> features,
             List<RequestView> recent) {
+    }
+
+    /** A prompt of the library; {@code kind} {@code null} — for any kind of homework. */
+    public record PromptView(UUID id, String title, String text, @Nullable PromptKind kind, Instant updatedAt,
+            long version) {
+
+        static PromptView of(SavedPrompt prompt) {
+            return new PromptView(prompt.id(), prompt.title(), prompt.text(), prompt.kind(), prompt.updatedAt(),
+                    prompt.version());
+        }
     }
 }

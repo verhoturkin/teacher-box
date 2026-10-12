@@ -212,6 +212,9 @@ export const en: Translation<typeof ru> = {
       'ai.truncated': 'The model’s answer was too long. Try a simpler request',
       'ai.invalid-answer': 'The model returned an answer in a wrong format. Try again',
       'ai.unavailable': 'The AI service is unavailable now. Try again later',
+      'ai.prompt-not-found': 'The prompt is not found — it may have been deleted',
+      'ai.prompt-title-invalid': 'The prompt title is 1 to 100 characters long',
+      'ai.prompt-text-invalid': 'The prompt text is 1 to 4000 characters long',
       // schedule
       'schedule.student-not-found': 'The student is not found or turned off',
       'schedule.lesson-not-found': 'Lesson not found',

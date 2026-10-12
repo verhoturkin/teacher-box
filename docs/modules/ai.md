@@ -17,12 +17,15 @@ homework data; the frontend sends the texts. Schema `ai`. ADRs: [0006](../adr/00
 - Monthly token limit (`TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT`, input + output, instance time zone): over the limit
   requests are rejected before calling the provider.
 - `ai.requests` stores metadata only (feature, model, status, tokens, duration, error) — never texts.
+- Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000, kind
+  (`WRITTEN` / `BOARD` / `INTERACTIVE`, blank — any); listed by title, optimistic locking, in the full reset; kept
+  whether the AI is configured or not.
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
 
 ## Data, REST
 
-`requests`. `/api/teacher/ai/**` (status, usage, homework-draft, review-draft), `/api/admin/ai/**` (status,
+`requests`, `prompts`. `/api/teacher/ai/**` (status, usage, homework-draft, review-draft, `prompts` CRUD), `/api/admin/ai/**` (status,
 usage metadata).
 
 ## Frontend

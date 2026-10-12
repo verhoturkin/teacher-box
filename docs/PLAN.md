@@ -80,7 +80,7 @@ under the editor on narrow screens instead of a bottom sheet; the panel itself �
 
 ### 167. AI panel and prompt library (B, F)
 
-- [ ] 167.1 **B** `ai`: `prompts` table (title ≤ 100, text ≤ 4000, kind `WRITTEN` / `BOARD` / `INTERACTIVE` or
+- [x] 167.1 **B** `ai`: `prompts` table (title ≤ 100, text ≤ 4000, kind `WRITTEN` / `BOARD` / `INTERACTIVE` or
   any, version); CRUD `/api/teacher/ai/prompts`; in the full reset; ADMIN — 403. Tests.
 - [ ] 167.2 **B** One draft endpoint `POST /api/teacher/ai/homework-draft` `{kind, prompt, title?, sources[]}`
   (replaces topic / level / count — prompt version v2; the old v1 fields dropped with the old dialog). Kind
