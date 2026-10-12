@@ -74,6 +74,8 @@ The «Settings» section shows all the portal's settings of the .env file by sec
 
 Values set here take precedence over the .env file. «Back to .env» removes your value.
 
+The names and hints of the settings and the results of the integration checks are shown in the language of the interface.
+
 Passwords, tokens and keys are not shown — they can only be set again. Docker settings (port, domain, version, limits) and the accounts are only shown here: the former are changed in .env, the latter in «My account».
 
 The titles and descriptions of the settings come from the server in Russian.

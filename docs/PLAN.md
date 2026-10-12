@@ -17,48 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.11.1
-
-Server texts in the user's language (backlog, ADR-0035 «Последствия»): the server learns the language each user
-chose and writes inbox notifications, bot messages and calendar feeds in it; the administrator's settings
-catalog and integration checks follow the language of the page. New ADR-0036.
-
-### Stage 152. The user's language on the server (B, F)
-
-- [x] 152.1 `shared.i18n.Language` (`RU`, `EN`; `of(code)`, `current()` — the request's `Accept-Language`,
-  `spring.web.locale: ru`); `identity.users.language` (V6), `PUT /api/me/language`, `language` in
-  `GET /api/me`, `UserDirectory.language(id)`. Frontend: `Accept-Language` on every `/api` request
-  (`core/i18n/language.interceptor.ts`), the choice saved to the account (`chooseLanguage`, after sign-in when the
-  device has its own choice). ADR-0036.
-
-### Stage 153. Inbox notifications in the recipient's language (B)
-
-- [x] 153.1 `notifications/application/NotificationTexts` per language (dates, money, durations, weekdays);
-  texts of `Schedule/Homework/Billing/Meeting/StudentNotifications`, the reminder to connect a messenger and
-  the test message — in the recipient's language.
-
-### Stage 154. Bot messages in the user's language (B)
-
-- [x] 154.1 `ChatUser.language`, `ChatAction.title(Language)`, `ChatKit` / `ChatText` / `ChatPicker` by language
-  («Да»/«Yes», pages, dates; typed words of both languages understood); `ChatEngine`, `ChannelService` replies
-  (unknown chats — the teacher's language), bot commands per language; actions of `billing`, `schedule`,
-  `meetings`, `boards` (`*/chat/*ChatAction`, dictionaries `*ChatTexts`); `ServerDictionariesTests` calls every
-  text of every dictionary in every language. *The SPI change needed every action at once, so the planned
-  154.2 is part of this substep.*
-
-### Stage 155. Administrator texts and calendars (B)
-
-- [x] 155.1 `SettingsCatalog` titles, hints and sections (`Wording`), `SettingKind` problems and integration checks
-  (`*IntegrationCheck`, `LlmClient.ping(Language)`, `GoogleCalendarService.checkConnection`) in the language of the
-  request; also the student's own call room title (`CallService`), «unknown student» in answers and the note
-  after a full reset.
-- [x] 155.2 Calendar feeds (`FeedService`, `IcsWriter`) in the language of the feed's owner; Google Calendar
-  events (`GoogleCalendarService`) in the teacher's language.
-
-### Stage 156. Release 0.11.1
-
-- [ ] 156.1 Skill `release`: help, E2E `version-0-11-1.spec.ts`, CHANGELOG, version, archive.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

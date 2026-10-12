@@ -507,7 +507,9 @@ User menu → «Light theme», «Dark theme» or «System theme». The choice is
 
 ## Language
 
-User menu → under the theme — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in. Notifications, bot messages and settings descriptions come from the server in Russian.
+User menu → under the theme — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in.
+
+The chosen language is also kept in the account: notifications in the «Inbox» and in messengers, the bot's answers and the calendar by link come in it. Each student gets them in their own language. Notifications already received are not translated. Group names, lesson topics and your messages to students stay as you wrote them.
 
 ## The portal as an app on the phone
 

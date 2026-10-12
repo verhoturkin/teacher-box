@@ -173,7 +173,7 @@ The menu with your name (top right) → «Light theme», «Dark theme» or «Sys
 
 ## Language
 
-The menu with your name → «Русский» or «English» (under the theme). On the sign-in page the languages are under the sign-in card. The choice is remembered on this device.
+The menu with your name → «Русский» or «English» (under the theme). On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
 `,
   },
 };
