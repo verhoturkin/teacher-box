@@ -36,7 +36,7 @@ download by the messenger adapters, receipts kept by `billing`).
 
 ### Stage 161. Payment receipts (B, F)
 
-- [ ] 161.1 B: `billing` — table `receipts` (one per payment, files in namespace `billing`, images and PDF up
+- [x] 161.1 B: `billing` — table `receipts` (one per payment, files in namespace `billing`, images and PDF up
   to 10 MB), `PUT|DELETE|GET /api/teacher/billing/payments/{id}/receipt`, `GET /api/me/billing/payments/{id}/receipt`
   (own payments only), `hasReceipt` in payment views, receipts left without a payment removed after a day,
   data reset; tests incl. «another student gets 404».

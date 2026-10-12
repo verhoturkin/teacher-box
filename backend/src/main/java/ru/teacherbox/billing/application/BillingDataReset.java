@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
- * Full reset (ADR-0014): lessons, payments, prices; the default lesson price goes back to the
- * environment.
+ * Full reset (ADR-0014): lessons, payments with their receipts, prices; the default lesson price goes back to
+ * the environment. The receipt files are deleted by the platform.
  */
 @Component
 class BillingDataReset implements DataReset {
 
     private static final List<String> TABLES = List.of("billing.lessons", "billing.payments",
-            "billing.student_accounts", "billing.group_prices", "billing.settings");
+            "billing.student_accounts", "billing.group_prices", "billing.settings", "billing.pending_receipts");
 
     private final JdbcClient jdbc;
 
@@ -30,6 +30,7 @@ class BillingDataReset implements DataReset {
     public void erase() {
         jdbc.sql("delete from billing.lessons").update();
         jdbc.sql("delete from billing.payments").update();
+        jdbc.sql("delete from billing.pending_receipts").update();
         jdbc.sql("delete from billing.student_accounts").update();
         jdbc.sql("delete from billing.group_prices").update();
         jdbc.sql("""
