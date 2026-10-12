@@ -40,8 +40,10 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   (`SceneElements.restored`), so open editors take it on their next poll.
 - An image stays while the scene or any copy refers to it (tombstones included); unreferenced images older than a
   day are deleted after a copy is made or deleted. Deleting a board deletes its scene, copies and images.
-- Scenes, copies and images are part of the portal backup (`platform`); the full reset clears every table and the
-  platform deletes the files.
+- The portal backup (`platform`) keeps only the current scene of each board (ADR-0037, `BoardsBackupExclusions`):
+  the rows of `board_backups` and the images no scene refers to (`BoardBackupService.filesOutsideScenes`) stay out;
+  their `board_files` rows stay and are removed by the next garbage collection. The full reset clears every table
+  and the platform deletes the files.
 
 ## Contract, data, REST
 

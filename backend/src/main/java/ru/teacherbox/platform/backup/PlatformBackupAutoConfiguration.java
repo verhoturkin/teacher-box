@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
+import ru.teacherbox.shared.backup.BackupExclusions;
 import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 import ru.teacherbox.shared.time.InstanceTimeZone;
@@ -29,10 +30,11 @@ public class PlatformBackupAutoConfiguration {
 
     @Bean
     BackupService backupService(JdbcClient jdbc, PlatformProperties platform, BackupProperties properties,
-            InstanceTimeZone timeZone, ObjectProvider<BuildProperties> build, Clock clock) {
+            InstanceTimeZone timeZone, ObjectProvider<BuildProperties> build, Clock clock,
+            ObjectProvider<BackupExclusions> exclusions) {
         BuildProperties info = build.getIfAvailable();
         return new BackupService(jdbc, platform.dataDir(), properties, timeZone,
-                info == null ? null : info.getVersion(), clock);
+                info == null ? null : info.getVersion(), clock, () -> exclusions.orderedStream().toList());
     }
 
     @Bean

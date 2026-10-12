@@ -25,7 +25,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   archive → backup current → put into `restore/` → exit → apply before DB opens → module migrations;
   `TEACHERBOX_BACKUP_RESTART`), **full reset** (`/api/teacher/reset`) calling every module's `DataReset`;
   restore and reset are confirmed by password (`PasswordConfirmation`). `ResetIntegrationTest` checks that all
-  tables are covered.
+  tables are covered. What a module leaves out of the backup — SPI `shared.backup.BackupExclusions` (ADR-0037):
+  rows of its tables (dropped from the H2 `SCRIPT` with their `SYSTEM_LOB_STREAM` parts, `BackupDump`) and files
+  of its namespace (found before the dump).
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example` (test),
   values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
   Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a
