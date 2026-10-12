@@ -108,7 +108,10 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   await page.locator('p-multiselect:has(#editor-students)').click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.keyboard.press('Escape');
-  await page.locator('tb-page-header').getByRole('button', { name: /Выдать$/ }).click();
+  await page
+    .locator('tb-page-header')
+    .getByRole('button', { name: /Выдать$/ })
+    .click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
   const studentRow = page.getByRole('row', { name: new RegExp(STUDENT_NAME) });
   await expect(studentRow).toContainText('Выдано');
