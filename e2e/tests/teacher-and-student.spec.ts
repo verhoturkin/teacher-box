@@ -113,7 +113,10 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .getByRole('button', { name: /Выдать$/ })
     .click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
-  const studentRow = page.getByRole('row', { name: new RegExp(STUDENT_NAME) });
+  const studentRow = page
+    .getByRole('list', { name: 'Ученики' })
+    .getByRole('listitem')
+    .filter({ hasText: STUDENT_NAME });
   await expect(studentRow).toContainText('Выдано');
 
   const student = await studentPage(browser);

@@ -17,39 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.14.2
-
-Homework polish after 0.14.1: wider review fields, text fields that cannot be dragged out of their card, deleting an
-assignment, card lists (`tb-list`) instead of tables for the student's tasks, the students of an assignment and the
-review queue, materials as a card list like textbooks, «Выдать ещё ученикам» in a dialog, the editor without
-materials of a saved assignment.
-
-### 172. Homework polish (B, F)
-
-- [x] 172.1 **B** `homework`: `DELETE /api/teacher/homework/assignments/{id}` — `AssignmentService.delete` removes the
-  files of the assignment and of its answers, the answers, the tasks and the assignment (bound textbooks cascade).
-- [x] 172.2 **F** `teacher/task-review-page.ts`: the review form is as wide as its card, a taller comment;
-  `styles.scss`: `textarea.p-textarea` resizes only vertically and never grows wider than its field.
-- [x] 172.3 **F** «Удалить…» (danger confirmation): in the «⋮» menu of `teacher/assignments-page.ts` and on
-  `teacher/assignment-page.ts`.
-- [x] 172.4 **F** `tb-list` cards: `student/my-homework-page.ts`, students of `teacher/assignment-page.ts`,
-  `teacher/review-queue-page.ts`; `ui/attachment-list.ts` — a `tb-list` like `ui/textbook-list.ts` with the same
-  «×» to remove.
-- [x] 172.5 **F** `teacher/assignment-page.ts`: «Открыть доску» gets its own icon (`pi-arrow-up-right`, also in the
-  list menu); «Выдать ещё ученикам» — a dialog (`teacher/assign-more-dialog.ts`) opened by «Добавить» at the top
-  right of the «Ученики» card. `teacher/assignment-editor-page.ts`: no textbooks and files when editing (they are
-  on the assignment page).
-- [x] 172.6 **B** `notifications`: links in messengers go as buttons — «Открыть» (the portal page,
-  `NotificationService.notify`), «Подключиться» (the video room, `JoinLink`: room link and lesson reminders), «Справка»
-  in `/help`; a messenger that refuses link buttons gets «Открыть: …» in the text (`DeliveryDispatcher`).
-- [x] 172.7 **F/B** English texts say «homework», not «assignment» (`features/*/i18n/en.ts`, help articles, server
-  dictionaries).
-- [x] 172.8 Docs: `docs/modules/{homework,notifications}.md`, design system, help articles.
-
-### 173. Release 0.14.2
-
-- [ ] 173.1 Skill `release`: E2E spec (`version-0-14-2`, replaces `version-0-14-1`), CHANGELOG, version, plan archiving.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
