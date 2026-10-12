@@ -101,5 +101,9 @@ class ChatSpiTest {
             }
         };
         assertThat(plain.offer(teacher, new ChatSubject("any", teacher.id()))).isEqualTo(Optional.empty());
+        assertThat(plain.takesFiles(teacher)).isFalse();
+        ChatFile file = new ChatFile("a.pdf", new byte[] {1}, "  подпись ");
+        assertThat(file.caption()).isEqualTo("подпись");
+        assertThatThrownBy(() -> plain.received(teacher, file)).isInstanceOf(UnsupportedOperationException.class);
     }
 }

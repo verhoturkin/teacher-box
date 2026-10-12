@@ -1,7 +1,9 @@
 package ru.teacherbox.notifications.vk;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +18,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import ru.teacherbox.notifications.application.ButtonPress;
 import ru.teacherbox.notifications.application.DeliveryException;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.MessengerChannel;
 import ru.teacherbox.notifications.application.MessengerHttp;
@@ -150,14 +153,57 @@ public class VkChannel implements MessengerChannel {
             JsonNode message = update.path("object").path("message");
             long from = message.path("from_id").asLong();
             String text = message.path("text").asString("");
+            IncomingFile file = file(message.path("attachments"));
             if (!"message_new".equals(update.path("type").asString("")) || from <= 0
-                    || message.path("peer_id").asLong() != from || text.isEmpty()) {
+                    || message.path("peer_id").asLong() != from || (text.isEmpty() && file == null)) {
                 continue;
             }
             messages.add(new IncomingMessage(Long.toString(from), "vk.com/id" + from, text,
-                    press(message.path("payload").asString(""))));
+                    press(message.path("payload").asString("")), file));
         }
         return messages;
+    }
+
+    /** The first photo (its largest size) or document of the message; {@code null} if none. */
+    private @Nullable IncomingFile file(JsonNode attachments) {
+        for (JsonNode attachment : attachments) {
+            String type = attachment.path("type").asString("");
+            if (type.equals("photo")) {
+                JsonNode largest = null;
+                for (JsonNode size : attachment.path("photo").path("sizes")) {
+                    if (largest == null || area(size) > area(largest)) {
+                        largest = size;
+                    }
+                }
+                if (largest != null && largest.has("url")) {
+                    return incoming("photo.jpg", -1, largest.path("url").asString());
+                }
+            }
+            if (type.equals("doc") && attachment.path("doc").has("url")) {
+                JsonNode doc = attachment.path("doc");
+                String title = doc.path("title").asString("document");
+                String ext = doc.path("ext").asString("");
+                String name = ext.isEmpty() || title.toLowerCase(Locale.ROOT).endsWith("." + ext)
+                        ? title : title + "." + ext;
+                return incoming(name, doc.path("size").asLong(-1), doc.path("url").asString());
+            }
+        }
+        return null;
+    }
+
+    private static long area(JsonNode size) {
+        return size.path("width").asLong() * size.path("height").asLong();
+    }
+
+    private IncomingFile incoming(String name, long size, String url) {
+        return new IncomingFile(name, size, () -> {
+            try {
+                byte[] content = http.get().uri(URI.create(url)).retrieve().body(byte[].class);
+                return content == null ? new byte[0] : content;
+            } catch (RestClientException e) {
+                throw new IllegalStateException("VK file: " + e.getMessage());
+            }
+        });
     }
 
     /** The data of our button from the payload of the message; other payloads (e.g. «Начать») are ignored. */

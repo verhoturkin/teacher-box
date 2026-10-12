@@ -25,6 +25,8 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.IncomingMessage;
+import java.util.Objects;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.notifications.domain.ChannelType;
 
@@ -73,6 +75,42 @@ class MaxChannelTest {
                 .isInstanceOfSatisfying(DeliveryException.class, e -> assertThat(e.isPermanent()).isFalse());
         assertThatThrownBy(() -> channel.send("77", "4"))
                 .isInstanceOfSatisfying(DeliveryException.class, e -> assertThat(e.isPermanent()).isFalse());
+    }
+
+    @Test
+    void receivesPicturesAndFiles() {
+        server.expect(requestTo(UPDATES))
+                .andRespond(withSuccess("""
+                        {"marker": 6, "updates": [
+                          {"update_type": "message_created", "message": {
+                            "sender": {"user_id": 77}, "recipient": {"chat_type": "dialog"},
+                            "body": {"attachments": [{"type": "image",
+                              "payload": {"photo_id": 1, "token": "t", "url": "https://i.max.ru/p.jpg"}}]}}},
+                          {"update_type": "message_created", "message": {
+                            "sender": {"user_id": 78}, "recipient": {"chat_type": "dialog"},
+                            "body": {"text": "чек", "attachments": [{"type": "sticker", "payload": {}},
+                              {"type": "file", "payload": {"url": "https://f.max.ru/1", "token": "t"},
+                               "filename": "check.pdf", "size": 1234}]}}},
+                          {"update_type": "message_created", "message": {
+                            "sender": {"user_id": 79}, "recipient": {"chat_type": "dialog"},
+                            "body": {"attachments": [{"type": "audio", "payload": {"url": "https://f.max.ru/a"}}]}}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://i.max.ru/p.jpg")).andRespond(withSuccess(new byte[] {9}, MediaType.IMAGE_JPEG));
+        server.expect(requestTo("https://f.max.ru/1")).andRespond(withStatus(HttpStatus.GONE));
+
+        List<IncomingMessage> messages = channel.poll();
+
+        assertThat(messages).hasSize(2);
+        IncomingFile picture = Objects.requireNonNull(messages.getFirst().file());
+        assertThat(picture.name()).isEqualTo("photo.jpg");
+        assertThat(picture.download().content()).containsExactly(9);
+        IncomingFile file = Objects.requireNonNull(messages.get(1).file());
+        assertThat(messages.get(1).text()).isEqualTo("чек");
+        assertThat(file.name()).isEqualTo("check.pdf");
+        assertThat(file.size()).isEqualTo(1234);
+        assertThatThrownBy(() -> file.download().content()).hasMessageStartingWith("MAX file");
+        server.verify();
     }
 
     @Test

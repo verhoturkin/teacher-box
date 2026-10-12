@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.IOException;
@@ -21,11 +22,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import ru.teacherbox.notifications.application.DeliveryException;
 import ru.teacherbox.notifications.application.IncomingMessage;
+import java.util.Objects;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.notifications.domain.ChannelType;
 
@@ -80,6 +84,49 @@ class VkChannelTest {
                     assertThat(e.isPermanent()).isFalse();
                     assertThat(e.getMessage()).contains("Connection refused");
                 });
+    }
+
+    @Test
+    void receivesTheLargestPhotoOrADocument() {
+        server.expect(requestTo(LONG_POLL_SERVER))
+                .andRespond(withSuccess("""
+                        {"response": {"key": "KEY1", "server": "https://lp.vk.com/wh123", "ts": "10"}}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://lp.vk.com/wh123?act=a_check&key=KEY1&ts=10&wait=25"))
+                .andRespond(withSuccess("""
+                        {"ts": "11", "updates": [
+                          {"type": "message_new", "object": {"message": {"from_id": 5, "peer_id": 5, "text": "",
+                            "attachments": [{"type": "photo", "photo": {"sizes": [
+                              {"type": "s", "width": 75, "height": 50, "url": "https://sun.userapi.com/s.jpg"},
+                              {"type": "w", "width": 1280, "height": 960, "url": "https://sun.userapi.com/w.jpg"},
+                              {"type": "m", "width": 130, "height": 97, "url": "https://sun.userapi.com/m.jpg"}]}}]}}},
+                          {"type": "message_new", "object": {"message": {"from_id": 6, "peer_id": 6, "text": "чек",
+                            "attachments": [{"type": "sticker", "sticker": {}},
+                              {"type": "doc", "doc": {"title": "receipt", "ext": "pdf", "size": 300,
+                                "url": "https://vk.com/doc6_1"}}]}}},
+                          {"type": "message_new", "object": {"message": {"from_id": 7, "peer_id": 7, "text": "",
+                            "attachments": [{"type": "doc", "doc": {"title": "scan.PDF", "ext": "pdf",
+                              "url": "https://vk.com/doc7_1"}}]}}},
+                          {"type": "message_new", "object": {"message": {"from_id": 8, "peer_id": 8, "text": "",
+                            "attachments": [{"type": "photo", "photo": {"sizes": []}}]}}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://sun.userapi.com/w.jpg"))
+                .andRespond(withSuccess(new byte[] {7}, MediaType.IMAGE_JPEG));
+        server.expect(requestTo("https://vk.com/doc6_1")).andRespond(withStatus(HttpStatus.FORBIDDEN));
+
+        List<IncomingMessage> messages = channel.poll();
+
+        assertThat(messages).extracting(IncomingMessage::externalId).containsExactly("5", "6", "7");
+        IncomingFile photo = Objects.requireNonNull(messages.getFirst().file());
+        assertThat(photo.name()).isEqualTo("photo.jpg");
+        assertThat(photo.download().content()).containsExactly(7);
+        IncomingFile document = Objects.requireNonNull(messages.get(1).file());
+        assertThat(document.name()).isEqualTo("receipt.pdf");
+        assertThat(document.size()).isEqualTo(300);
+        assertThatThrownBy(() -> document.download().content()).hasMessageStartingWith("VK file");
+        assertThat(Objects.requireNonNull(messages.get(2).file()).name()).isEqualTo("scan.PDF");
+        server.verify();
     }
 
     @Test

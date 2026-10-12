@@ -15,6 +15,9 @@ enum BotMessages {
         @Override String menuStudent() { return "Что вы хотите сделать?"; }
         @Override String nothingYet() { return "Пока бот только присылает уведомления с портала."; }
         @Override String notUnderstood() { return "Не понял сообщение."; }
+        @Override String fileNotTaken() { return "С файлами бот пока ничего не делает."; }
+        @Override String fileTooLarge() { return "Файл слишком большой: бот принимает до 20 МБ."; }
+        @Override String fileFailed() { return "Не получилось получить файл. Пришлите его ещё раз."; }
         @Override String cancelled() { return "Действие отменено."; }
         @Override String stale() { return "Эта кнопка уже не действует."; }
         @Override String noAccess() { return "Доступ к порталу отключён."; }
@@ -65,6 +68,9 @@ enum BotMessages {
         @Override String menuStudent() { return "What would you like to do?"; }
         @Override String nothingYet() { return "For now the bot only sends notifications from the portal."; }
         @Override String notUnderstood() { return "I didn't understand the message."; }
+        @Override String fileNotTaken() { return "The bot does nothing with files yet."; }
+        @Override String fileTooLarge() { return "The file is too large: the bot takes up to 20 MB."; }
+        @Override String fileFailed() { return "Couldn't receive the file. Send it again."; }
         @Override String cancelled() { return "Action cancelled."; }
         @Override String stale() { return "This button no longer works."; }
         @Override String noAccess() { return "Access to the portal is turned off."; }
@@ -123,6 +129,12 @@ enum BotMessages {
     abstract String nothingYet();
 
     abstract String notUnderstood();
+
+    abstract String fileNotTaken();
+
+    abstract String fileTooLarge();
+
+    abstract String fileFailed();
 
     abstract String cancelled();
 

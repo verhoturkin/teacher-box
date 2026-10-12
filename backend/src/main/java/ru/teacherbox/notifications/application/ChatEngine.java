@@ -24,6 +24,7 @@ import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.ChatRepository;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
+import ru.teacherbox.shared.chat.ChatFile;
 import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
@@ -108,6 +109,10 @@ public class ChatEngine {
             return blocked.get();
         }
         Conversation conversation = conversation(channel, message.externalId(), null).orElseThrow();
+        IncomingFile file = message.file();
+        if (file != null) {
+            return file(conversation, file, text, now);
+        }
         return switch (command) {
             case "/start", "/menu", "меню", "начать", "menu", "start" -> menu(conversation, null, now);
             case "/cancel", "отмена", "отменить", "cancel" -> cancel(conversation, now);
@@ -151,6 +156,37 @@ public class ChatEngine {
                     new ChatInput.Text(text)), now);
         }
         return menu(conversation, texts(conversation).notUnderstood(), now);
+    }
+
+    /** A file goes to the first action that takes files; any dialog ends. */
+    private OutgoingMessage file(Conversation conversation, IncomingFile file, String caption, Instant now) {
+        ChatUser user = conversation.user();
+        BotMessages t = texts(conversation);
+        if (user.isTeacher() && !chat.teacherActions()) {
+            chat.saveDialog(conversation.dialog().finished(), now);
+            return OutgoingMessage.text(t.teacherOff());
+        }
+        Optional<ChatAction> taker = actions.availableTo(user).stream()
+                .filter(action -> action.takesFiles(user))
+                .findFirst();
+        if (taker.isEmpty()) {
+            return menu(conversation, t.fileNotTaken(), now);
+        }
+        if (file.size() > ChatFile.MAX_SIZE) {
+            return menu(conversation, t.fileTooLarge(), now);
+        }
+        byte[] content;
+        try {
+            content = file.download().content();
+        } catch (RuntimeException e) {
+            log.warn("Could not download a file from {}: {}", conversation.channel(), e.getMessage());
+            return menu(conversation, t.fileFailed(), now);
+        }
+        if (content.length > ChatFile.MAX_SIZE) {
+            return menu(conversation, t.fileTooLarge(), now);
+        }
+        ChatFile received = new ChatFile(file.name(), content, caption);
+        return run(conversation, taker.get(), () -> taker.get().received(user, received), now);
     }
 
     private OutgoingMessage pressed(ChannelType channel, String externalId, String data, Instant now) {

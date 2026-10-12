@@ -6,6 +6,7 @@ import static ru.teacherbox.testing.ChatSteps.ask;
 import static ru.teacherbox.testing.ChatSteps.done;
 import static ru.teacherbox.testing.ChatSteps.labels;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -18,6 +19,7 @@ import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.GroupPriceService;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.shared.chat.ChatAction;
+import ru.teacherbox.shared.chat.ChatFile;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatKit;
 import ru.teacherbox.shared.chat.ChatState;
@@ -103,6 +105,37 @@ class TeacherBillingChatIntegrationTests {
         directory.setStatus(maria, StudentStatus.ACTIVE);
         assertThat(payment.next(teacher(), ChatState.EMPTY, new ChatInput.Text("?")).reply().text())
                 .startsWith("Кто оплатил?");
+    }
+
+    @Test
+    void recordsAPaymentWithAReceiptSentToTheBot() {
+        UUID olga = directory.addStudent("Ольга Чек");
+        billing.openAccount(olga);
+        billing.changeLessonPrice(olga, 100_000);
+        ChatAction payment = action(actions, "billing.payment");
+        assertThat(payment.takesFiles(teacher())).isTrue();
+        assertThat(payment.takesFiles(new ChatUser(olga, Role.STUDENT))).isFalse();
+
+        assertThat(done(payment.received(teacher(), new ChatFile("note.txt",
+                "hello".getBytes(StandardCharsets.UTF_8), ""))).reply().text())
+                .startsWith("Это не похоже на чек");
+
+        ChatStep.Ask who = ask(payment.received(teacher(), new ChatFile("photo.jpg", ReceiptsIntegrationTests.PNG,
+                "")));
+        assertThat(who.reply().text()).startsWith("Чек получен — запишу оплату с ним.\nКто оплатил?");
+        ChatStep.Ask amount = ask(payment.next(teacher(), who.state(), new ChatInput.Text("Ольга Чек")));
+        ChatStep.Ask confirm = ask(payment.next(teacher(), amount.state(), new ChatInput.Choice("amount:100000")));
+        assertThat(confirm.reply().text())
+                .isEqualTo("Записать оплату: Ольга Чек, 1 000 ₽, " + ChatText.date(today()) + ", с чеком?");
+
+        done(payment.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
+
+        PaymentView saved = queries.ledger(olga).payments().getFirst();
+        assertThat(saved.receipt()).isNotNull();
+        assertThat(saved.receipt().filename()).isEqualTo("photo.png");
+        assertThat(done(payment.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES))).reply().text())
+                .isEqualTo("Не получилось записать оплату. Запишите её на портале.");
+        assertThat(queries.ledger(olga).payments()).hasSize(1);
     }
 
     @Test

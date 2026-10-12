@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import ru.teacherbox.notifications.application.DeliveryException;
+import ru.teacherbox.notifications.application.IncomingFile;
 import ru.teacherbox.notifications.application.IncomingMessage;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.notifications.domain.ChannelType;
@@ -120,6 +121,49 @@ class TelegramChannelTest {
                 new IncomingMessage("43", "Пётр Петров", "привет"),
                 new IncomingMessage("44", null, "аноним"));
         assertThat(channel.poll()).isEmpty();
+        server.verify();
+    }
+
+    @Test
+    void receivesPhotosAndDocumentsAndDownloadsThemWhenAsked() {
+        server.expect(requestTo(API + "getUpdates"))
+                .andRespond(withSuccess("""
+                        {"ok": true, "result": [
+                          {"update_id": 20, "message": {"chat": {"id": 42, "type": "private"}, "from": {"id": 42},
+                            "caption": "за октябрь", "photo": [{"file_id": "small", "file_size": 10},
+                              {"file_id": "big", "file_size": 2000}]}},
+                          {"update_id": 21, "message": {"chat": {"id": 42, "type": "private"}, "from": {"id": 42},
+                            "document": {"file_id": "doc", "file_name": "чек.pdf"}}}
+                        ]}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "getFile"))
+                .andExpect(jsonPath("$.file_id").value("big"))
+                .andRespond(withSuccess("{\"ok\": true, \"result\": {\"file_path\": \"photos/file_1.jpg\"}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.telegram.org/file/bot123:SECRET/photos/file_1.jpg"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(new byte[] {1, 2, 3}, MediaType.IMAGE_JPEG));
+        server.expect(requestTo(API + "getFile"))
+                .andRespond(withSuccess("{\"ok\": true, \"result\": {}}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(API + "getFile"))
+                .andRespond(withSuccess("{\"ok\": true, \"result\": {\"file_path\": \"documents/f.pdf\"}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.telegram.org/file/bot123:SECRET/documents/f.pdf"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        List<IncomingMessage> messages = channel.poll();
+
+        assertThat(messages).hasSize(2);
+        IncomingMessage photo = messages.getFirst();
+        assertThat(photo.text()).isEqualTo("за октябрь");
+        assertThat(Objects.requireNonNull(photo.file()).name()).isEqualTo("photo.jpg");
+        assertThat(photo.file().size()).isEqualTo(2000);
+        assertThat(photo.file().download().content()).containsExactly(1, 2, 3);
+        IncomingFile document = Objects.requireNonNull(messages.get(1).file());
+        assertThat(document.name()).isEqualTo("чек.pdf");
+        assertThat(document.size()).isEqualTo(-1);
+        assertThatThrownBy(() -> document.download().content()).hasMessage("Telegram getFile returned no path");
+        assertThatThrownBy(() -> document.download().content()).hasMessageNotContaining("SECRET");
         server.verify();
     }
 

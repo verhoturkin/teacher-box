@@ -30,6 +30,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   teacher changes audited (`AuditLog.bot`); the teacher can turn bot control off (`chat_settings`). A reply
   the messenger refuses for its link buttons (Telegram takes no portal on a local address) goes again with
   the links in the text (`MessengerPolling`, 0.11.0).
+- **Files sent to the bot (0.13.0, ADR-0038):** adapters turn a photo or a document into `IncomingFile` (the
+  caption is the text; Telegram `getFile`, VK `photo`/`doc`, MAX `image`/`file`), `ChatEngine` downloads it (up to
+  20 MB) only for the first available action with `takesFiles` and hands it over as `ChatFile`, ending any
+  dialog; otherwise the bot says it does nothing with files. Today only `billing` takes files (receipts).
 - **Bot language (0.11.1, ADR-0036):** the bot answers in the language of the account the chat acts for
   (`ChatUser.language`, `BotMessages`; actions take it for their titles — `ChatAction.title(Language)` — and
   texts, `shared.chat.ChatKit`/`ChatText`/`ChatPicker` for buttons and dates); a chat without an account gets

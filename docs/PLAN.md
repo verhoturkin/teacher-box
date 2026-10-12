@@ -40,10 +40,11 @@ download by the messenger adapters, receipts kept by `billing`).
   to 10 MB), `PUT|DELETE|GET /api/teacher/billing/payments/{id}/receipt`, `GET /api/me/billing/payments/{id}/receipt`
   (own payments only), `hasReceipt` in payment views, receipts left without a payment removed after a day,
   data reset; tests incl. «another student gets 404».
-- [ ] 161.2 B: files sent to the bot — `shared.chat.ChatFile`, `ChatAction.received(user, file)`;
+- [x] 161.2 B: files sent to the bot — `shared.chat.ChatFile`, `ChatAction.received(user, file)`;
   `IncomingMessage.file` with download in `TelegramChannel` (`photo`, `document`, `getFile`), `VkChannel`
   (`photo`, `doc`), `MaxChannel` (`image`, `file`); `ChatEngine` hands a file to the first action that takes it;
-  `billing/chat/ReceiptChatAction` — a teacher's receipt → student → amount → confirm → payment with the receipt.
+  `billing/chat/RecordPaymentChatAction` takes a teacher's file as a receipt → student → amount → confirm →
+  payment with the receipt.
 - [ ] 161.3 F: receipts in `billing/ledger/` (attach / replace / remove, download), in the payment dialog
   (optional file), in `billing/student/` (download); help articles (portal and bot).
 

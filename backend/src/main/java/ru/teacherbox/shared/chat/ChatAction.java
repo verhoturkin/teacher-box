@@ -41,6 +41,19 @@ public interface ChatAction {
      */
     ChatStep next(ChatUser user, ChatState state, ChatInput input);
 
+    /**
+     * Whether the action takes a file the user sent (ADR-0038); the bot gives a file to the first available
+     * action that takes files, ending any dialog.
+     */
+    default boolean takesFiles(ChatUser user) {
+        return false;
+    }
+
+    /** The user sent a file the action {@linkplain #takesFiles takes}: the first step of its dialog. */
+    default ChatStep received(ChatUser user, ChatFile file) {
+        throw new UnsupportedOperationException(id() + " takes no files");
+    }
+
     /** Buttons under a notification about the subject, if the action handles such subjects. */
     default Optional<ChatOffer> offer(ChatUser user, ChatSubject subject) {
         return Optional.empty();
