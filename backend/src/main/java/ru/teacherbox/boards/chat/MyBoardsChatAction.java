@@ -15,6 +15,7 @@ import ru.teacherbox.shared.chat.ChatReply;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.portal.Portal;
 
 /**
@@ -38,8 +39,8 @@ class MyBoardsChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Мои доски";
+    public String title(Language language) {
+        return BoardsChatTexts.of(language).myBoards();
     }
 
     @Override
@@ -59,11 +60,12 @@ class MyBoardsChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
+        BoardsChatTexts t = BoardsChatTexts.of(user.language());
         List<MyBoardView> mine = boards.studentBoards(user.id());
         if (mine.isEmpty()) {
-            return ChatStep.done("Досок пока нет.");
+            return ChatStep.done(t.noBoards());
         }
-        ChatReply reply = ChatReply.of("Ваши доски:");
+        ChatReply reply = ChatReply.of(t.yourBoards());
         int shown = 0;
         for (MyBoardView board : mine) {
             Optional<String> link = link(board);
@@ -74,7 +76,7 @@ class MyBoardsChatAction implements ChatAction {
                 shown++;
             }
         }
-        return ChatStep.done(shown == 0 ? ChatReply.of("Доски открываются в личном кабинете портала.") : reply);
+        return ChatStep.done(shown == 0 ? ChatReply.of(t.openInCabinet()) : reply);
     }
 
     private Optional<String> link(MyBoardView board) {

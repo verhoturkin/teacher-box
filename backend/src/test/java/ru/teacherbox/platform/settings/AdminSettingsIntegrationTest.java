@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -81,6 +82,27 @@ class AdminSettingsIntegrationTest {
                     .containsExactly("DEFAULT");
         });
         assertThat(settings.getResponse().getContentAsString()).doesNotContain("sk-secret");
+        assertThat(settings).bodyJson()
+                .extractingPath("$.settings[?(@.name == 'TEACHERBOX_TIMEZONE')].title").asArray()
+                .containsExactly("Часовой пояс учителя");
+    }
+
+    @Test
+    void theCatalogIsInTheLanguageOfThePage() {
+        assertThat(mvc.get().uri("/api/admin/settings").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                .with(TestUsers.admin(ADMIN)))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_TIMEZONE')].title").asArray()
+                            .containsExactly("Teacher's time zone");
+                    assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_TIMEZONE')].group").asArray()
+                            .containsExactly("Portal");
+                });
+        assertThat(mvc.put().uri("/api/admin/settings").header(HttpHeaders.ACCEPT_LANGUAGE, "en-GB,en;q=0.9")
+                .with(TestUsers.admin(ADMIN)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP\":\"many\"}}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.detail").asString()
+                .isEqualTo("Backups to keep (TEACHERBOX_BACKUP_KEEP): a whole number is needed");
     }
 
     @Test

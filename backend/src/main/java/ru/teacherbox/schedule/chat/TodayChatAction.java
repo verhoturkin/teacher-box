@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.shared.chat.ChatIcons;
+import ru.teacherbox.shared.i18n.Language;
 
 /** The teacher: today's lessons; the ones that have started can be marked. */
 @Component
@@ -20,8 +21,8 @@ class TodayChatAction extends MarkLessonsChatAction {
     }
 
     @Override
-    public String title() {
-        return "Сегодня";
+    public String title(Language language) {
+        return ScheduleChatTexts.of(language).today();
     }
 
     @Override
@@ -40,12 +41,12 @@ class TodayChatAction extends MarkLessonsChatAction {
     }
 
     @Override
-    String heading() {
-        return "Занятия сегодня:";
+    String heading(ScheduleChatTexts t) {
+        return t.todayHeading();
     }
 
     @Override
-    String nothing() {
-        return "Сегодня занятий нет.";
+    String nothing(ScheduleChatTexts t) {
+        return t.noLessonsToday();
     }
 }

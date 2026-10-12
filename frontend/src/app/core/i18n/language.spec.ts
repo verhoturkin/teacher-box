@@ -1,6 +1,7 @@
 import {
   LANGUAGE_KEY,
   chooseLanguage,
+  chosenLanguage,
   forgetLanguage,
   language,
   locale,
@@ -35,6 +36,7 @@ describe('language', () => {
 
     stored('xx');
     expect(language()).toBe('ru');
+    expect(chosenLanguage()).toBeNull();
   });
 
   it('keeps the choice and reloads the page only for another language', () => {

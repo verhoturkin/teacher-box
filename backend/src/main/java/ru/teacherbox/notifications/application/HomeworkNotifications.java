@@ -11,7 +11,10 @@ import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.domain.NotificationKind;
 
-/** Homework events → notifications to the student (new task, deadline, review) and the teacher. */
+/**
+ * Homework events → notifications to the student (new task, deadline, review) and the teacher, in the
+ * recipient's language.
+ */
 @Component
 class HomeworkNotifications {
 
@@ -27,42 +30,43 @@ class HomeworkNotifications {
 
     @ApplicationModuleListener
     void on(HomeworkAssigned event) {
-        notifications.notify(event.studentId(), NotificationKind.HOMEWORK_ASSIGNED,
-                "Новое задание: «" + event.title() + "»",
-                event.dueAt() == null ? null : "Срок сдачи: " + texts.dateTime(event.dueAt()),
+        NotificationMessages t = messagesFor(event.studentId());
+        notifications.notify(event.studentId(), NotificationKind.HOMEWORK_ASSIGNED, t.taskAssigned(event.title()),
+                event.dueAt() == null ? null : t.dueAt(texts.dateTime(event.dueAt())),
                 studentTaskLink(event.taskId()));
     }
 
     @ApplicationModuleListener
     void on(HomeworkDueSoon event) {
-        notifications.notify(event.studentId(), NotificationKind.HOMEWORK_DUE_SOON,
-                "Скоро срок сдачи: «" + event.title() + "»",
-                "Срок сдачи: " + texts.dateTime(event.dueAt()),
-                studentTaskLink(event.taskId()));
+        NotificationMessages t = messagesFor(event.studentId());
+        notifications.notify(event.studentId(), NotificationKind.HOMEWORK_DUE_SOON, t.dueSoon(event.title()),
+                t.dueAt(texts.dateTime(event.dueAt())), studentTaskLink(event.taskId()));
     }
 
     @ApplicationModuleListener
     void on(HomeworkReviewed event) {
+        NotificationMessages t = messagesFor(event.studentId());
         if (event.accepted()) {
-            notifications.notify(event.studentId(), NotificationKind.HOMEWORK_REVIEWED,
-                    "Задание «" + event.title() + "» принято",
-                    event.grade() == null ? null : "Оценка: " + event.grade(),
-                    studentTaskLink(event.taskId()));
+            notifications.notify(event.studentId(), NotificationKind.HOMEWORK_REVIEWED, t.taskAccepted(event.title()),
+                    event.grade() == null ? null : t.grade(event.grade()), studentTaskLink(event.taskId()));
         } else {
-            notifications.notify(event.studentId(), NotificationKind.HOMEWORK_REVIEWED,
-                    "Задание «" + event.title() + "» возвращено на доработку",
-                    "Посмотрите комментарий учителя.",
-                    studentTaskLink(event.taskId()));
+            notifications.notify(event.studentId(), NotificationKind.HOMEWORK_REVIEWED, t.taskReturned(event.title()),
+                    t.seeTeacherComment(), studentTaskLink(event.taskId()));
         }
     }
 
     @ApplicationModuleListener
     void on(HomeworkSubmitted event) {
-        String student = users.findStudent(event.studentId()).map(StudentSummary::displayName).orElse("Ученик");
-        notifications.notify(users.teacherId(), NotificationKind.HOMEWORK_SUBMITTED,
-                "Работа на проверку: «" + event.title() + "»",
-                "Ученик: " + student,
-                "/teacher/homework/tasks/" + event.taskId());
+        UUID teacher = users.teacherId();
+        NotificationMessages t = messagesFor(teacher);
+        String student = users.findStudent(event.studentId()).map(StudentSummary::displayName)
+                .orElse(t.unknownStudent());
+        notifications.notify(teacher, NotificationKind.HOMEWORK_SUBMITTED, t.toReview(event.title()),
+                t.student(student), "/teacher/homework/tasks/" + event.taskId());
+    }
+
+    private NotificationMessages messagesFor(UUID recipientId) {
+        return NotificationMessages.of(users.language(recipientId));
     }
 
     private static String studentTaskLink(UUID taskId) {

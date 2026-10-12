@@ -2,11 +2,14 @@ package ru.teacherbox.shared.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.testing.ChatSteps;
 
 class ChatKitTest {
@@ -15,7 +18,7 @@ class ChatKitTest {
 
     @Test
     void confirmsWithYesAndNo() {
-        ChatStep step = ChatKit.confirm("Точно?", ChatState.of("id", "1"));
+        ChatStep step = ChatKit.confirm("Точно?", ChatState.of("id", "1"), Language.RU);
 
         assertThat(step).isInstanceOfSatisfying(ChatStep.Ask.class, ask -> {
             assertThat(ask.reply().text()).isEqualTo("Точно?");
@@ -27,6 +30,27 @@ class ChatKitTest {
         assertThat(ChatKit.confirmed(new ChatInput.Choice(ChatKit.NO))).isFalse();
         assertThat(ChatKit.confirmed(new ChatInput.Text(" Да "))).isTrue();
         assertThat(ChatKit.confirmed(new ChatInput.Text("нет"))).isFalse();
+    }
+
+    @Test
+    void speaksEnglishAndUnderstandsEnglishWordsInAnyLanguage() {
+        ChatStep step = ChatKit.confirm("Sure?", ChatState.EMPTY, Language.EN);
+        assertThat(step).isInstanceOfSatisfying(ChatStep.Ask.class,
+                ask -> assertThat(labels(ask.reply().rows())).containsExactly("Yes", "No"));
+        assertThat(ChatKit.confirmed(new ChatInput.Text("Yes"))).isTrue();
+        List<Integer> items = IntStream.rangeClosed(1, 12).boxed().toList();
+        assertThat(labels(ChatKit.page(items, 1, String::valueOf, String::valueOf, Language.EN)))
+                .containsExactly("6", "7", "8", "9", "10", "‹ Back", "More ›");
+        assertThat(ChatKit.dateLabel(TODAY, Language.EN)).isEqualTo("Mon 28.09");
+        assertThat(ChatKit.dates(TODAY, 1, Language.EN).getFirst().getFirst().label()).isEqualTo("Mon 28.09");
+        assertThat(ChatKit.date(new ChatInput.Text("Today"), TODAY)).contains(TODAY);
+        assertThat(ChatKit.date(new ChatInput.Text("tomorrow"), TODAY)).contains(TODAY.plusDays(1));
+        assertThat(ChatKit.pastDate(new ChatInput.Text("yesterday"), TODAY)).contains(TODAY.minusDays(1));
+        Instant start = Instant.parse("2026-09-28T13:30:00Z");
+        assertThat(ChatText.range(start, start.plusSeconds(3600), ZoneOffset.UTC, Language.EN))
+                .isEqualTo("Mon 28.09, 13:30–14:30");
+        assertThat(ChatText.shortDayTime(start, ZoneOffset.UTC, Language.EN)).isEqualTo("Mon 28.09 13:30");
+        assertThat(ChatText.dayTime(start, ZoneOffset.UTC, Language.RU)).isEqualTo("пн 28.09, 13:30");
     }
 
     @Test
@@ -43,15 +67,15 @@ class ChatKitTest {
     void pagesThroughItems() {
         List<Integer> items = IntStream.rangeClosed(1, 12).boxed().toList();
 
-        List<List<ChatButton>> first = ChatKit.page(items, 0, String::valueOf, item -> "item:" + item);
+        List<List<ChatButton>> first = ChatKit.page(items, 0, String::valueOf, item -> "item:" + item, Language.RU);
         assertThat(first).hasSize(6);
         assertThat(first.getFirst()).containsExactly(ChatButton.choice("1", "item:1"));
         assertThat(first.getLast()).containsExactly(ChatButton.choice("Ещё ›", "page:1"));
-        assertThat(labels(ChatKit.page(items, 1, String::valueOf, String::valueOf)))
+        assertThat(labels(ChatKit.page(items, 1, String::valueOf, String::valueOf, Language.RU)))
                 .containsExactly("6", "7", "8", "9", "10", "‹ Назад", "Ещё ›");
-        assertThat(labels(ChatKit.page(items, 99, String::valueOf, String::valueOf)))
+        assertThat(labels(ChatKit.page(items, 99, String::valueOf, String::valueOf, Language.RU)))
                 .containsExactly("11", "12", "‹ Назад");
-        assertThat(ChatKit.page(List.<Integer>of(), 0, String::valueOf, String::valueOf)).isEmpty();
+        assertThat(ChatKit.page(List.<Integer>of(), 0, String::valueOf, String::valueOf, Language.RU)).isEmpty();
         assertThat(ChatKit.page(new ChatInput.Choice("page:2"))).contains(2);
         assertThat(ChatKit.page(new ChatInput.Choice("page:x"))).isEmpty();
         assertThat(ChatKit.page(new ChatInput.Text("page:2"))).isEmpty();
@@ -59,7 +83,7 @@ class ChatKitTest {
 
     @Test
     void offersDatesAndReadsThem() {
-        List<List<ChatButton>> week = ChatKit.dates(TODAY, 7);
+        List<List<ChatButton>> week = ChatKit.dates(TODAY, 7, Language.RU);
         assertThat(week).extracting(List::size).containsExactly(4, 3);
         assertThat(week.getFirst().getFirst()).isEqualTo(ChatButton.choice("пн 28.09", "date:2026-09-28"));
 
@@ -113,7 +137,7 @@ class ChatKitTest {
         assertThat(ChatKit.label("  Мария   Иванова ")).isEqualTo("Мария Иванова");
         String long_ = ChatKit.label("x".repeat(50));
         assertThat(long_).hasSize(ChatKit.MAX_LABEL).endsWith("…");
-        assertThat(ChatKit.dateLabel(TODAY)).isEqualTo("пн 28.09");
+        assertThat(ChatKit.dateLabel(TODAY, Language.RU)).isEqualTo("пн 28.09");
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 
 class ChatSpiTest {
@@ -75,7 +76,7 @@ class ChatSpiTest {
             }
 
             @Override
-            public String title() {
+            public String title(Language language) {
                 return "Простое";
             }
 

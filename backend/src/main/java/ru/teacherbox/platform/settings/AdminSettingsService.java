@@ -14,6 +14,7 @@ import ru.teacherbox.platform.backup.Restarter;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
 import ru.teacherbox.shared.diagnostics.AuditLog;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 
 /**
@@ -108,9 +109,11 @@ public class AdminSettingsService {
                 continue;
             }
             String clean = value.strip();
-            String problem = setting.kind().problem(clean, setting.choices());
+            Language language = Language.current();
+            String problem = setting.kind().problem(clean, setting.choices(), language);
             if (problem != null) {
-                throw new BusinessRuleException("settings.invalid", setting.title() + " (" + name + "): " + problem);
+                throw new BusinessRuleException("settings.invalid",
+                        setting.title().in(language) + " (" + name + "): " + problem);
             }
             next.put(name, clean);
         }
@@ -137,7 +140,9 @@ public class AdminSettingsService {
         Source source = fromFile != null ? Source.ADMIN : fromEnvironment != null ? Source.ENVIRONMENT : Source.DEFAULT;
         String value = fromFile != null ? fromFile : fromEnvironment;
         boolean set = value != null && !value.isEmpty();
-        return new SettingView(setting.name(), setting.section(), setting.group(), setting.title(), setting.hint(), setting.kind(),
+        Language language = Language.current();
+        return new SettingView(setting.name(), setting.section(), setting.group().in(language),
+                setting.title().in(language), setting.hint().in(language), setting.kind(),
                 setting.choices(), setting.secret(), setting.access(), source, setting.secret() ? null : value, set);
     }
 }

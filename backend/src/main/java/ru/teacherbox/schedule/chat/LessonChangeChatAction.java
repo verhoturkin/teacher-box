@@ -23,6 +23,7 @@ import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * A student asks the teacher to cancel or to move a lesson: the lesson → (the new day and time) → a
@@ -55,11 +56,9 @@ abstract class LessonChangeChatAction implements ChatAction {
     public ChatStep start(ChatUser user) {
         List<LessonView> changeable = lessons.changeable(user.id());
         if (changeable.isEmpty()) {
-            return ChatStep.done(kind == ChangeKind.CANCEL
-                    ? "Нет занятий, которые можно отменить: запланированных занятий нет или по ним уже есть запросы."
-                    : "Нет занятий, которые можно перенести: запланированных занятий нет или по ним уже есть запросы.");
+            return ChatStep.done(ScheduleChatTexts.of(user.language()).nothingToChange(kind == ChangeKind.CANCEL));
         }
-        return askLesson(changeable, 0, null);
+        return askLesson(user.language(), changeable, 0, null);
     }
 
     @Override
@@ -70,87 +69,89 @@ abstract class LessonChangeChatAction implements ChatAction {
         }
         return switch (step) {
             case "lesson" -> lesson(user, input);
-            case "date" -> date(state, input);
-            case "time" -> time(state, input);
+            case "date" -> date(user.language(), state, input);
+            case "time" -> time(user.language(), state, input);
             case "comment" -> comment(user, state, input);
             case "confirm" -> confirm(user, state, input);
             default -> start(user);
         };
     }
 
-    private ChatStep askLesson(List<LessonView> changeable, int page, @Nullable String prefix) {
-        String question = kind == ChangeKind.CANCEL ? "Какое занятие отменить?" : "Какое занятие перенести?";
+    private ChatStep askLesson(Language language, List<LessonView> changeable, int page, @Nullable String prefix) {
+        String question = ScheduleChatTexts.of(language).whichToChange(kind == ChangeKind.CANCEL);
         return ChatStep.ask(ChatReply.of(prefix == null ? question : prefix + "\n" + question)
-                        .rows(ChatKit.page(changeable, page, lessons::label, lesson -> LESSON + lesson.id())),
+                        .rows(ChatKit.page(changeable, page, lesson -> lessons.label(lesson, language),
+                                lesson -> LESSON + lesson.id(), language)),
                 ChatState.EMPTY.withStep("lesson"));
     }
 
     private ChatStep lesson(ChatUser user, ChatInput input) {
+        Language language = user.language();
         List<LessonView> changeable = lessons.changeable(user.id());
         Optional<Integer> page = ChatKit.page(input);
         if (page.isPresent()) {
-            return askLesson(changeable, page.get(), null);
+            return askLesson(language, changeable, page.get(), null);
         }
         Optional<LessonView> chosen = ChatKit.choice(input, LESSON)
                 .flatMap(id -> changeable.stream().filter(lesson -> lesson.id().toString().equals(id)).findFirst());
         if (chosen.isEmpty()) {
-            return changeable.isEmpty() ? start(user) : askLesson(changeable, 0, "Выберите занятие кнопкой.");
+            return changeable.isEmpty() ? start(user)
+                    : askLesson(language, changeable, 0, ScheduleChatTexts.of(language).chooseByButton());
         }
         ChatState state = ChatState.of("lesson", chosen.get().id().toString());
-        return kind == ChangeKind.CANCEL ? askComment(state) : askDate(state, null);
+        return kind == ChangeKind.CANCEL ? askComment(language, state) : askDate(language, state, null);
     }
 
-    private ChatStep askDate(ChatState state, @Nullable String prefix) {
-        String question = "На какой день перенести? Выберите или напишите дату, например 05.10.";
+    private ChatStep askDate(Language language, ChatState state, @Nullable String prefix) {
+        String question = ScheduleChatTexts.of(language).whichDay();
         return ChatStep.ask(ChatReply.of(prefix == null ? question : prefix + "\n" + question)
-                .rows(ChatKit.dates(lessons.today(), DATE_BUTTONS)), state.withStep("date"));
+                .rows(ChatKit.dates(lessons.today(), DATE_BUTTONS, language)), state.withStep("date"));
     }
 
-    private ChatStep date(ChatState state, ChatInput input) {
+    private ChatStep date(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<LocalDate> date = ChatKit.date(input, lessons.today())
                 .filter(day -> !day.isBefore(lessons.today()));
         if (date.isEmpty()) {
-            return askDate(state, "Не понял дату.");
+            return askDate(language, state, t.dateNotUnderstood());
         }
-        return ChatStep.ask(ChatReply.of("Во сколько? Напишите время, например 18:30."),
-                state.with("date", date.get().toString()).withStep("time"));
+        return ChatStep.ask(ChatReply.of(t.whatTime()), state.with("date", date.get().toString()).withStep("time"));
     }
 
-    private ChatStep time(ChatState state, ChatInput input) {
+    private ChatStep time(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<LocalTime> time = ChatKit.text(input).flatMap(ChatKit::time);
         if (time.isEmpty()) {
-            return ChatStep.ask(ChatReply.of("Не понял время. Напишите его так: 18:30."), state);
+            return ChatStep.ask(ChatReply.of(t.timeNotUnderstood()), state);
         }
         Instant proposed = LocalDate.parse(state.get("date").orElseThrow()).atTime(time.get())
                 .atZone(lessons.zone()).toInstant();
         if (!proposed.isAfter(lessons.now())) {
-            return askDate(state.without("date"), "Это время уже прошло.");
+            return askDate(language, state.without("date"), t.timePassed());
         }
         if (state.id("lesson").map(lesson -> !requests.isFreeFor(lesson, proposed)).orElse(false)) {
-            return ChatStep.ask(ChatReply.of("В это время учитель занят. Напишите другое время, например 18:30,"
-                    + " или начните заново: /menu."), state);
+            return ChatStep.ask(ChatReply.of(t.teacherBusy()), state);
         }
-        return askComment(state.with("proposed", proposed.toString()));
+        return askComment(language, state.with("proposed", proposed.toString()));
     }
 
-    private ChatStep askComment(ChatState state) {
-        String question = kind == ChangeKind.CANCEL
-                ? "Напишите причину — учитель её увидит. Или нажмите «Без комментария»."
-                : "Напишите комментарий для учителя или нажмите «Без комментария».";
-        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)),
-                state.withStep("comment"));
+    private ChatStep askComment(Language language, ChatState state) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        String question = kind == ChangeKind.CANCEL ? t.askReason() : t.askComment();
+        return ChatStep.ask(ChatReply.of(question).row(noComment(t)), state.withStep("comment"));
     }
 
     private ChatStep comment(ChatUser user, ChatState state, ChatInput input) {
+        Language language = user.language();
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         ChatState next = state;
         if (!(input instanceof ChatInput.Choice(String value) && SKIP.equals(value))) {
             Optional<String> text = ChatKit.text(input);
             if (text.isEmpty()) {
-                return askComment(state);
+                return askComment(language, state);
             }
             if (text.get().length() > MAX_COMMENT) {
-                return ChatStep.ask(ChatReply.of("Слишком длинно: не больше " + MAX_COMMENT + " символов.")
-                        .row(ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, "Без комментария"), SKIP)), state);
+                return ChatStep.ask(ChatReply.of(t.tooLong(MAX_COMMENT)).row(noComment(t)), state);
             }
             next = state.with("comment", text.get());
         }
@@ -158,36 +159,36 @@ abstract class LessonChangeChatAction implements ChatAction {
         if (lesson.isEmpty()) {
             return start(user);
         }
-        return ChatKit.confirm(question(lesson.get(), next), next.withStep("confirm"));
+        return ChatKit.confirm(question(language, lesson.get(), next), next.withStep("confirm"), language);
     }
 
-    private String question(LessonView lesson, ChatState state) {
-        String when = ChatText.dayTime(lesson.startsAt(), lessons.zone());
+    private String question(Language language, LessonView lesson, ChatState state) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        String when = ChatText.dayTime(lesson.startsAt(), lessons.zone(), language);
         StringBuilder text = new StringBuilder();
         if (kind == ChangeKind.RESCHEDULE) {
-            text.append("Попросить учителя перенести занятие ").append(when).append(" на ")
-                    .append(ChatText.dayTime(Instant.parse(state.get("proposed").orElseThrow()), lessons.zone()))
-                    .append('?');
+            text.append(t.askToMove(when, ChatText.dayTime(Instant.parse(state.get("proposed").orElseThrow()),
+                    lessons.zone(), language)));
         } else if (lesson.groupName() != null) {
-            text.append("Сообщить учителю, что вы не придёте на занятие группы «").append(lesson.groupName())
-                    .append("» ").append(when).append('?');
+            text.append(t.tellAbsence(lesson.groupName(), when));
         } else {
-            text.append("Попросить учителя отменить занятие ").append(when).append('?');
+            text.append(t.askToCancel(when));
         }
         if (kind == ChangeKind.CANCEL && lesson.startsAt().minus(lessons.lateCancellation()).isBefore(lessons.now())) {
-            text.append("\nДо занятия осталось мало времени: учитель может засчитать его как пропуск.");
+            text.append("\n").append(t.lateWarning());
         }
-        state.get("comment").ifPresent(comment -> text.append("\nКомментарий: ").append(comment));
+        state.get("comment").ifPresent(comment -> text.append("\n").append(t.comment(comment)));
         return text.toString();
     }
 
     private ChatStep confirm(ChatUser user, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(user.language());
         if (!ChatKit.confirmed(input)) {
-            return ChatStep.done("Хорошо, ничего не отправляю.");
+            return ChatStep.done(t.notSending());
         }
         Optional<LessonView> lesson = lesson(user, state);
         if (lesson.isEmpty()) {
-            return ChatStep.done("Это занятие уже нельзя изменить: его перенесли, отменили или по нему уже есть запрос.");
+            return ChatStep.done(t.cannotChange());
         }
         Instant proposed = state.get("proposed").map(Instant::parse).orElse(null);
         RequestView request;
@@ -195,16 +196,18 @@ abstract class LessonChangeChatAction implements ChatAction {
             request = requests.request(user.id(), lesson.get().id(), kind, proposed, state.get("comment").orElse(null));
         } catch (DomainException e) {
             if (e.code().equals("schedule.slot-busy")) {
-                return ChatStep.done("Не получилось отправить запрос: в это время учитель уже занят.");
+                return ChatStep.done(t.slotBusy());
             }
-            return ChatStep.done("Не получилось отправить запрос: занятие изменилось или по нему уже есть запрос.");
+            return ChatStep.done(t.requestFailed());
         }
         if (request.status() == RequestStatus.APPROVED) {
-            return ChatStep.changed(ChatReply.of("Готово: учитель увидит, что вас не будет."),
-                    "change-request " + request.id());
+            return ChatStep.changed(ChatReply.of(t.absenceSent()), "change-request " + request.id());
         }
-        return ChatStep.changed(ChatReply.of("Запрос отправлен учителю. Ответ придёт сюда."),
-                "change-request " + request.id());
+        return ChatStep.changed(ChatReply.of(t.requestSent()), "change-request " + request.id());
+    }
+
+    private static ChatButton noComment(ScheduleChatTexts t) {
+        return ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, t.noComment()), SKIP);
     }
 
     private Optional<LessonView> lesson(ChatUser user, ChatState state) {

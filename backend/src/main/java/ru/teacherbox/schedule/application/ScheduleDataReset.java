@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
@@ -45,7 +46,10 @@ class ScheduleDataReset implements DataReset {
     public Optional<String> afterErase() {
         BooleanSupplier remove = removal;
         removal = () -> true;
-        return remove.getAsBoolean() ? Optional.empty()
-                : Optional.of("Календарь портала остался в Google Календаре — удалите его там вручную.");
+        // the administrator reads it on the page of the reset (ADR-0036)
+        return remove.getAsBoolean() ? Optional.empty() : Optional.of(switch (Language.current()) {
+            case RU -> "Календарь портала остался в Google Календаре — удалите его там вручную.";
+            case EN -> "The portal's calendar stayed in Google Calendar — delete it there by hand.";
+        });
     }
 }

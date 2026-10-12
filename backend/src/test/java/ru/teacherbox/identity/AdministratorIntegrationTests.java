@@ -53,6 +53,9 @@ class AdministratorIntegrationTests {
                         new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10}))
                 .header(HttpHeaders.AUTHORIZATION, admin.bearer())))
                 .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.put().uri("/api/me/language").header(HttpHeaders.AUTHORIZATION, admin.bearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"language\":\"en\"}"))
+                .hasStatusOk();
         assertThat(mvc.get().uri("/api/teacher/students").header(HttpHeaders.AUTHORIZATION, admin.bearer()))
                 .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get().uri("/api/me/notifications").header(HttpHeaders.AUTHORIZATION, admin.bearer()))

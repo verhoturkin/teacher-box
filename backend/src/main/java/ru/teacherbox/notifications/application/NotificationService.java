@@ -55,9 +55,6 @@ public class NotificationService {
     static final int FAILED_DELIVERIES = 50;
     static final int BROADCAST_HISTORY = 20;
     static final Duration PROBLEMS_WINDOW = Duration.ofDays(30);
-    static final String CONNECT_TITLE = "Подключите мессенджер";
-    static final String CONNECT_BODY = "Чтобы получать уведомления в Telegram, ВКонтакте или MAX, откройте раздел "
-            + "«Уведомления» и нажмите «Подключить».";
 
     private final InboxRepository inbox;
     private final ChannelLinkRepository links;
@@ -184,7 +181,8 @@ public class NotificationService {
     }
 
     /**
-     * Asks students without a connected messenger to connect one (the given ones, or all of them).
+     * Asks students without a connected messenger to connect one (the given ones, or all of them), each in
+     * their language.
      *
      * @return number of students asked
      */
@@ -194,8 +192,10 @@ public class NotificationService {
         List<UUID> recipients = (studentIds.isEmpty() ? allCurrentStudents() : currentStudents(studentIds)).stream()
                 .filter(id -> !withMessengers.contains(id))
                 .toList();
-        recipients.forEach(id -> notify(id, NotificationKind.MESSAGE, CONNECT_TITLE, CONNECT_BODY,
-                "/cabinet/notifications"));
+        for (UUID id : recipients) {
+            NotificationMessages t = NotificationMessages.of(users.language(id));
+            notify(id, NotificationKind.MESSAGE, t.connectTitle(), t.connectBody(), "/cabinet/notifications");
+        }
         return recipients.size();
     }
 

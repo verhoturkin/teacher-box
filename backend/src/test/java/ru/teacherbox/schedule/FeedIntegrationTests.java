@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.StudentStatus;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
@@ -84,6 +85,25 @@ class FeedIntegrationTests {
                 .replace("\r\n ", "");
 
         assertThat(ics).contains("UID:" + lessonId + "@teacherbox", "SUMMARY:Урок: Вера");
+    }
+
+    @Test
+    void aFeedIsInTheLanguageOfItsOwner() throws UnsupportedEncodingException {
+        UUID student = directory.addStudent("Vera");
+        directory.setLanguage(student, Language.EN);
+        plan(student);
+
+        String ics = mvc.get().uri(createFeed(TestUsers.student(student))).exchange().getResponse()
+                .getContentAsString().replace("\r\n ", "");
+
+        assertThat(ics).contains("X-WR-CALNAME:Lessons — ", "SUMMARY:Lesson");
+        directory.setLanguage(directory.teacherId(), Language.EN);
+        try {
+            assertThat(mvc.get().uri(createFeed(teacher())).exchange().getResponse().getContentAsString()
+                    .replace("\r\n ", "")).contains(" — lessons", "SUMMARY:Lesson: Vera");
+        } finally {
+            directory.setLanguage(directory.teacherId(), Language.RU);
+        }
     }
 
     @Test

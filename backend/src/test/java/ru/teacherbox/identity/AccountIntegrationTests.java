@@ -16,11 +16,13 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.identity.IdentityTestSupport.ActiveStudent;
 import ru.teacherbox.identity.IdentityTestSupport.Tokens;
+import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.identity.application.InviteService;
 import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.UserRepository;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 
 @IdentityIntegrationTest
@@ -40,6 +42,9 @@ class AccountIntegrationTests {
 
     @Autowired
     PasswordConfirmation passwords;
+
+    @Autowired
+    UserDirectory directory;
 
     @Test
     void studentSeesOwnAccountWithoutTeacherNote() {
@@ -107,6 +112,25 @@ class AccountIntegrationTests {
     }
 
     @Test
+    void theLanguageOfTheInterfaceIsKeptInTheAccount() {
+        ActiveStudent student = activeStudent(students, invites, "Говорит по-английски");
+        Tokens tokens = signIn(mvc, student.login(), student.password());
+        UUID id = student.id();
+
+        assertThat(mvc.get().uri("/api/me").header(HttpHeaders.AUTHORIZATION, tokens.bearer()))
+                .bodyJson().extractingPath("$.language").isEqualTo("ru");
+        assertThat(changeLanguage(tokens, "en")).hasStatusOk().bodyJson().extractingPath("$.language").isEqualTo("en");
+        assertThat(directory.language(id)).isEqualTo(Language.EN);
+        assertThat(changeLanguage(tokens, "de")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(directory.language(id)).isEqualTo(Language.EN);
+        assertThat(directory.language(UUID.randomUUID())).isEqualTo(Language.RU);
+        assertThat(login(mvc, student.login(), student.password()))
+                .bodyJson().extractingPath("$.user.language").isEqualTo("en");
+        assertThat(mvc.put().uri("/api/me/language").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"language\":\"en\"}")).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     void anonymousHasNoAccount() {
         assertThat(mvc.get().uri("/api/me")).hasStatus(HttpStatus.UNAUTHORIZED);
     }
@@ -132,6 +156,14 @@ class AccountIntegrationTests {
         assertThat(mvc.post().uri("/api/auth/refresh").cookie(otherDevice.cookie()))
                 .hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(login(mvc, student.login(), "new-password-1")).hasStatusOk();
+    }
+
+    private MvcTestResult changeLanguage(Tokens tokens, String language) {
+        return mvc.put().uri("/api/me/language")
+                .header(HttpHeaders.AUTHORIZATION, tokens.bearer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"language\":\"" + language + "\"}")
+                .exchange();
     }
 
     private MvcTestResult rename(Tokens tokens, String name) {

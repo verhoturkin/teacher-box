@@ -25,6 +25,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { PASS_THROUGH } from '@core/a11y/pass-through';
 import { Language, language, locale } from '@core/i18n/language';
+import { languageInterceptor } from '@core/i18n/language.interceptor';
 import { PRIMENG_EN } from '@core/i18n/primeng-en';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
 import { Portal } from '@core/portal/portal';
@@ -49,7 +50,9 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),
     ),
     // Order matters: the error toast sees the final result after the auth retry.
-    provideHttpClient(withInterceptors([apiErrorInterceptor, authInterceptor])),
+    provideHttpClient(
+      withInterceptors([apiErrorInterceptor, languageInterceptor, authInterceptor]),
+    ),
     provideAppInitializer(() => inject(AuthService).restore()),
     provideAppInitializer(() => inject(Portal).load()),
     provideAppInitializer(() => {

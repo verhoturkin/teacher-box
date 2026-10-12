@@ -30,7 +30,6 @@ import ru.teacherbox.shared.error.NotFoundException;
 @Service
 public class ChannelSettingsService implements SmartInitializingSingleton {
 
-    static final String TEST_MESSAGE = "Проверка связи: уведомления портала учителя будут приходить сюда.";
     private static final Logger log = LoggerFactory.getLogger(ChannelSettingsService.class);
 
     /**
@@ -155,7 +154,7 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
                 .orElseThrow(() -> new NotFoundException("notifications.channel-not-linked",
                         "Messenger " + type + " is not connected"));
         try {
-            channel.send(link.externalId(), TEST_MESSAGE);
+            channel.send(link.externalId(), NotificationMessages.of(users.language(recipientId)).testMessage());
         } catch (DeliveryException e) {
             throw new BusinessRuleException("notifications.test-failed", String.valueOf(e.getMessage()));
         }

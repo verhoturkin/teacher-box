@@ -15,6 +15,7 @@ import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatText;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.money.Money;
 import ru.teacherbox.shared.money.MoneyFormat;
 
@@ -36,8 +37,8 @@ class PaymentsChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Оплаты";
+    public String title(Language language) {
+        return BillingChatTexts.of(language).payments();
     }
 
     @Override
@@ -59,25 +60,27 @@ class PaymentsChatAction implements ChatAction {
     public ChatStep start(ChatUser user) {
         StudentLedger ledger = queries.ledger(user.id());
         Currency currency = Currency.getInstance(ledger.currency());
+        Language language = user.language();
+        BillingChatTexts t = BillingChatTexts.of(language);
         StringBuilder text = new StringBuilder();
         long balance = ledger.balance();
         if (balance < 0) {
-            text.append("Задолженность: ").append(money(-balance, currency));
+            text.append(t.debtLine(money(-balance, currency, language)));
         } else if (balance > 0) {
-            text.append("Аванс: ").append(money(balance, currency));
+            text.append(t.creditLine(money(balance, currency, language)));
         } else {
-            text.append("Баланс: 0 — долгов нет.");
+            text.append(t.zeroLine());
         }
-        text.append("\nЦена занятия: ").append(money(ledger.lessonPrice(), currency));
+        text.append("\n").append(t.lessonPrice(money(ledger.lessonPrice(), currency, language)));
         List<PaymentView> payments = ledger.payments().stream()
                 .filter(payment -> payment.voidedAt() == null)
                 .sorted(Comparator.comparing(PaymentView::paidOn).thenComparing(PaymentView::createdAt).reversed())
                 .limit(SHOWN)
                 .toList();
         if (!payments.isEmpty()) {
-            text.append("\n\nПоследние оплаты:");
+            text.append("\n\n").append(t.latestPayments());
             payments.forEach(payment -> text.append("\n• ").append(ChatText.date(payment.paidOn())).append(" — ")
-                    .append(money(payment.amount(), currency)));
+                    .append(money(payment.amount(), currency, language)));
         }
         List<LessonView> charged = ledger.lessons().stream()
                 .filter(lesson -> lesson.status().isCharged())
@@ -85,9 +88,9 @@ class PaymentsChatAction implements ChatAction {
                 .limit(SHOWN)
                 .toList();
         if (!charged.isEmpty()) {
-            text.append("\n\nПоследние занятия:");
+            text.append("\n\n").append(t.latestLessons());
             charged.forEach(lesson -> text.append("\n• ").append(ChatText.date(lesson.date())).append(" — ")
-                    .append(money(lesson.price(), currency)));
+                    .append(money(lesson.price(), currency, language)));
         }
         return ChatStep.done(text.toString());
     }
@@ -97,7 +100,7 @@ class PaymentsChatAction implements ChatAction {
         return start(user);
     }
 
-    private static String money(long amount, Currency currency) {
-        return MoneyFormat.russian(Money.of(amount, currency));
+    private static String money(long amount, Currency currency, Language language) {
+        return MoneyFormat.format(Money.of(amount, currency), language);
     }
 }

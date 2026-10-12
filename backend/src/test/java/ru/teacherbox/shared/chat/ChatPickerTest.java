@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import ru.teacherbox.shared.i18n.Language;
 
 class ChatPickerTest {
 
@@ -19,41 +20,50 @@ class ChatPickerTest {
 
     @Test
     void showsPagesWithAHintToSearch() {
-        ChatReply first = ChatPicker.show(PROMPT, STUDENTS);
+        ChatReply first = ChatPicker.show(PROMPT, STUDENTS, Language.RU);
         assertThat(first.text()).isEqualTo(PROMPT + "\nМожно написать часть имени.");
         assertThat(ChatKitTest.labels(first.rows())).containsExactly("Анна Смирнова", "Борис Иванов", "Вера Петрова",
                 "Глеб Иванов", "Дина Орлова", "Ещё ›");
-        assertThat(ChatPicker.show(PROMPT, STUDENTS.subList(0, 2)).text()).isEqualTo(PROMPT);
+        assertThat(ChatPicker.show(PROMPT, STUDENTS.subList(0, 2), Language.RU).text()).isEqualTo(PROMPT);
 
-        ChatPicker.Result next = ChatPicker.handle(PROMPT, STUDENTS, ChatState.EMPTY, new ChatInput.Choice("page:1"));
+        ChatPicker.Result next = ChatPicker.handle(PROMPT, STUDENTS, ChatState.EMPTY, new ChatInput.Choice("page:1"), Language.RU);
         assertThat(next).isInstanceOfSatisfying(ChatPicker.Shown.class, shown -> {
             assertThat(ChatKitTest.labels(shown.reply().rows())).containsExactly("Мария Кузнецова", "Олег Сидоров",
                     "‹ Назад");
             assertThat(shown.state().get("picker.page")).contains("1");
         });
         ChatPicker.Result same = ChatPicker.handle(PROMPT, STUDENTS, ChatState.of("picker.page", "1"),
-                new ChatInput.Choice("unknown"));
+                new ChatInput.Choice("unknown"), Language.RU);
         assertThat(same).isInstanceOfSatisfying(ChatPicker.Shown.class,
                 shown -> assertThat(ChatKitTest.labels(shown.reply().rows())).startsWith("Мария Кузнецова"));
+    }
+
+    @Test
+    void speaksEnglish() {
+        assertThat(ChatPicker.show("Who?", STUDENTS, Language.EN).text())
+                .isEqualTo("Who?\nYou can type a part of the name.");
+        assertThat(ChatPicker.handle("Who?", STUDENTS, ChatState.EMPTY, new ChatInput.Text("Zed"), Language.EN))
+                .isInstanceOfSatisfying(ChatPicker.Shown.class, shown -> assertThat(shown.reply().text())
+                        .startsWith("Nothing found for “Zed”. Who?"));
     }
 
     @Test
     void picksByButtonOrBySearch() {
         ChatState state = ChatState.of("picker.page", "1").withStep("student");
 
-        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Choice("pick:s6")))
+        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Choice("pick:s6"), Language.RU))
                 .isEqualTo(new ChatPicker.Picked("s6", ChatState.EMPTY.withStep("student")));
-        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("мари")))
+        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("мари"), Language.RU))
                 .isEqualTo(new ChatPicker.Picked("s6", ChatState.EMPTY.withStep("student")));
-        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("иванов")))
+        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("иванов"), Language.RU))
                 .isInstanceOfSatisfying(ChatPicker.Shown.class, shown -> {
                     assertThat(shown.reply().text()).startsWith("Нашлось несколько.");
                     assertThat(ChatKitTest.labels(shown.reply().rows())).containsExactly("Борис Иванов", "Глеб Иванов");
                 });
-        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("Яков")))
+        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Text("Яков"), Language.RU))
                 .isInstanceOfSatisfying(ChatPicker.Shown.class,
                         shown -> assertThat(shown.reply().text()).startsWith("По запросу «Яков» ничего не нашлось."));
-        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Choice("pick:gone")))
+        assertThat(ChatPicker.handle(PROMPT, STUDENTS, state, new ChatInput.Choice("pick:gone"), Language.RU))
                 .isInstanceOfSatisfying(ChatPicker.Shown.class,
                         shown -> assertThat(shown.reply().text()).startsWith("Этого варианта уже нет."));
     }

@@ -13,6 +13,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.shared.chat.ChatText;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** The teacher's lessons and requests as the bot shows them. */
@@ -64,29 +65,21 @@ class TeacherLessons {
     }
 
     /** «Мария» or «группа «ОГЭ»». */
-    static String who(LessonView lesson) {
-        return lesson.groupName() != null ? "группа «" + lesson.groupName() + "»"
-                : lesson.studentName() != null ? lesson.studentName() : "ученик";
+    static String who(LessonView lesson, Language language) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        return lesson.groupName() != null ? t.groupOf(lesson.groupName())
+                : lesson.studentName() != null ? lesson.studentName() : t.aStudent();
     }
 
     /** «пн 29.09, 18:30–19:30, Мария — Дроби». */
-    String describe(LessonView lesson) {
-        String text = ChatText.range(lesson.startsAt(), lesson.endsAt(), zone) + ", " + who(lesson);
+    String describe(LessonView lesson, Language language) {
+        String text = ChatText.range(lesson.startsAt(), lesson.endsAt(), zone, language) + ", " + who(lesson, language);
         return lesson.topic() == null ? text : text + " — " + lesson.topic();
     }
 
     /** «18:30 Мария», for a button. */
-    String label(LessonView lesson) {
-        return ChatText.shortDayTime(lesson.startsAt(), zone) + " " + (lesson.groupName() != null
+    String label(LessonView lesson, Language language) {
+        return ChatText.shortDayTime(lesson.startsAt(), zone, language) + " " + (lesson.groupName() != null
                 ? lesson.groupName() : lesson.studentName() != null ? lesson.studentName() : "");
-    }
-
-    static String status(LessonStatus status) {
-        return switch (status) {
-            case SCHEDULED -> "запланировано";
-            case CONDUCTED -> "проведено";
-            case MISSED -> "пропуск";
-            case CANCELLED -> "отменено";
-        };
     }
 }

@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.shared.i18n.Language;
 
 class IcsWriterTest {
 
@@ -24,8 +25,8 @@ class IcsWriterTest {
                 Instant.parse("2026-10-03T15:00:00Z"), 60, null, null, NOW);
         cancelled.cancel(CancelledBy.TEACHER, "Болезнь", NOW);
 
-        String ics = IcsWriter.calendar("Занятия", List.of(lesson, cancelled), found -> "Урок: Иван", Lesson::meetingUrl, NOW)
-                .replace(FOLD, "");
+        String ics = IcsWriter.calendar("Занятия", List.of(lesson, cancelled), found -> "Урок: Иван", Lesson::meetingUrl, NOW,
+                CalendarTexts.RU).replace(FOLD, "");
 
         assertThat(ics).startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n").endsWith("END:VCALENDAR\r\n");
         assertThat(ics).contains("UID:" + lesson.id() + "@teacherbox\r\n")
@@ -41,6 +42,12 @@ class IcsWriterTest {
                 .contains("STATUS:CONFIRMED\r\n")
                 .contains("X-WR-CALNAME:Занятия\r\n");
         assertThat(ics.split("BEGIN:VEVENT", -1)).hasSize(3);
+
+        String english = IcsWriter.calendar("Lessons", List.of(lesson, cancelled), found -> "Lesson: Ivan",
+                Lesson::meetingUrl, NOW, CalendarTexts.of(Language.EN)).replace(FOLD, "");
+        assertThat(english).contains("DESCRIPTION:Topic: Дроби\\; задачи\\, часть 2\\nLesson link: https://zoom.us/j/1")
+                .contains("SUMMARY:Cancelled: Lesson: Ivan\r\n")
+                .contains("DESCRIPTION:Cancellation reason: Болезнь\r\n");
     }
 
     @Test
@@ -48,7 +55,8 @@ class IcsWriterTest {
         Lesson lesson = Lesson.plan(UUID.randomUUID(), UUID.randomUUID(), null, null, NOW.plus(Duration.ofDays(1)),
                 60, null, null, NOW);
 
-        assertThat(IcsWriter.calendar("Занятия", List.of(lesson), found -> "Занятие", Lesson::meetingUrl, NOW))
+        assertThat(IcsWriter.calendar("Занятия", List.of(lesson), found -> "Занятие", Lesson::meetingUrl, NOW,
+                CalendarTexts.RU))
                 .doesNotContain("DESCRIPTION").doesNotContain("URL:");
     }
 

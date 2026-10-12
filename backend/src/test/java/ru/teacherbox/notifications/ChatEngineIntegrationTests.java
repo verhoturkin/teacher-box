@@ -29,6 +29,7 @@ import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -112,6 +113,31 @@ class ChatEngineIntegrationTests {
         OutgoingMessage stopped = say("8001", "/stop");
         assertThat(stopped.text()).startsWith("Уведомления отключены");
         assertThat(stopped.rows()).isEmpty();
+    }
+
+    @Test
+    void answersInTheLanguageOfTheAccount() {
+        UUID student = directory.addStudent("Mary");
+        directory.setLanguage(student, Language.EN);
+        String code = channels.createLinkCode(student, ChannelType.TELEGRAM).code();
+        OutgoingMessage linked = say("8051", code);
+        assertThat(linked.text()).startsWith("Done!");
+
+        OutgoingMessage menu = say("8051", "menu");
+        assertThat(menu.text()).isEqualTo("What would you like to do?");
+        OutgoingMessage asked = press("8051", menu, "Отзыв");
+        assertThat(labels(asked)).containsExactly("Cancel");
+        assertThat(press("8051", asked, "Cancel").text()).startsWith("Action cancelled.");
+        assertThat(say("8051", "help").text()).contains("The bot can:", "/menu — main menu");
+        assertThat(say("8051", "/stop").text()).startsWith("Notifications are turned off.");
+
+        directory.setLanguage(directory.teacherId(), Language.EN);
+        try {
+            assertThat(say("8052", "hello").text()).startsWith("Hello! This is the notification bot");
+            assertThat(say("8052", "/stop").text()).isEqualTo("This chat is not connected to notifications.");
+        } finally {
+            directory.setLanguage(directory.teacherId(), Language.RU);
+        }
     }
 
     @Test

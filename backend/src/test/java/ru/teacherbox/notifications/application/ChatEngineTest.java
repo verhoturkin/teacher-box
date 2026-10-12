@@ -14,6 +14,7 @@ import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -90,7 +91,7 @@ class ChatEngineTest {
             }
 
             @Override
-            public String title() {
+            public String title(Language language) {
                 return id;
             }
 

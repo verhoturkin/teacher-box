@@ -6,15 +6,12 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Asks every configured bot for its name, through the messenger's proxy if one is set. */
 @Component
 class MessengerIntegrationCheck implements IntegrationCheck {
 
-    private static final Map<ChannelType, String> NAMES = Map.of(
-            ChannelType.TELEGRAM, "Telegram",
-            ChannelType.VK, "ВКонтакте",
-            ChannelType.MAX, "MAX");
 
     private final MessengerChannels channels;
 
@@ -27,17 +24,33 @@ class MessengerIntegrationCheck implements IntegrationCheck {
         return Arrays.stream(ChannelType.values()).map(this::check).toList();
     }
 
+    /** In the language of the administrator's page (ADR-0036). */
     private IntegrationStatus check(ChannelType type) {
-        String name = NAMES.get(type);
+        Language language = Language.current();
+        String name = name(type, language);
         return channels.find(type).map(channel -> {
             long started = System.nanoTime();
             try {
                 String bot = channel.botName();
-                return new IntegrationStatus(name, State.OK, "Бот " + bot + " отвечает", elapsed(started));
+                return new IntegrationStatus(name, State.OK, switch (language) {
+                    case RU -> "Бот " + bot + " отвечает";
+                    case EN -> "Bot " + bot + " answers";
+                }, elapsed(started));
             } catch (RuntimeException e) {
                 return new IntegrationStatus(name, State.FAILED, String.valueOf(e.getMessage()), elapsed(started));
             }
-        }).orElseGet(() -> IntegrationStatus.notConfigured(name, "Бот не подключён"));
+        }).orElseGet(() -> IntegrationStatus.notConfigured(name, switch (language) {
+            case RU -> "Бот не подключён";
+            case EN -> "No bot connected";
+        }));
+    }
+
+    private static String name(ChannelType type, Language language) {
+        return switch (type) {
+            case TELEGRAM -> "Telegram";
+            case VK -> language == Language.RU ? "ВКонтакте" : "VK";
+            case MAX -> "MAX";
+        };
     }
 
     private static long elapsed(long started) {

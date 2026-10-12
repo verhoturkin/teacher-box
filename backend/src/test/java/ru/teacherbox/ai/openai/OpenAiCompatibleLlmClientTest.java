@@ -24,6 +24,7 @@ import ru.teacherbox.ai.application.AiProperties;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
+import ru.teacherbox.shared.i18n.Language;
 
 class OpenAiCompatibleLlmClientTest {
 
@@ -168,11 +169,12 @@ class OpenAiCompatibleLlmClientTest {
             throw new IOException("Connection refused");
         });
 
-        assertThat(client.ping()).isEqualTo("Модель qwen3:14b доступна");
-        assertThat(client.ping()).isEqualTo("Провайдер отвечает, но модели qwen3:14b нет среди 1 доступных");
-        assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class,
+        assertThat(client.ping(Language.RU)).isEqualTo("Модель qwen3:14b доступна");
+        assertThat(client.ping(Language.EN))
+                .isEqualTo("The provider answers, but the model qwen3:14b is not among 1 available");
+        assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOfSatisfying(LlmException.class,
                 e -> assertThat(e.getMessage()).isEqualTo("Provider 401: Invalid API key"));
-        assertThatThrownBy(client::ping).isInstanceOfSatisfying(LlmException.class,
+        assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOfSatisfying(LlmException.class,
                 e -> assertThat(e.reason()).isEqualTo(LlmException.Reason.UNAVAILABLE));
         server.verify();
     }
@@ -184,7 +186,7 @@ class OpenAiCompatibleLlmClientTest {
                 {"data": [{"id": "models/gemini-3.8-flash"}]}
                 """, MediaType.APPLICATION_JSON));
 
-        assertThat(gemini.ping()).isEqualTo("Модель gemini-3.8-flash доступна");
+        assertThat(gemini.ping(Language.RU)).isEqualTo("Модель gemini-3.8-flash доступна");
     }
 
     private void assertReason(LlmException.Reason reason) {

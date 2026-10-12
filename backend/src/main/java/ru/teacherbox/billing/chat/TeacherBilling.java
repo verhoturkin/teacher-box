@@ -18,6 +18,7 @@ import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.chat.ChatPicker;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.money.Money;
 import ru.teacherbox.shared.money.MoneyFormat;
 import ru.teacherbox.shared.time.InstanceTimeZone;
@@ -58,12 +59,12 @@ class TeacherBilling {
     }
 
     /** Current students and then the current groups. */
-    List<ChatPicker.Option> studentsAndGroups() {
+    List<ChatPicker.Option> studentsAndGroups(Language language) {
         List<UUID> ids = groupPrices.list().prices().stream().map(GroupPriceView::groupId).toList();
         List<ChatPicker.Option> found = groups.findGroups(ids).stream()
                 .filter(group -> !group.archived())
                 .sorted(Comparator.comparing(GroupSummary::name, String.CASE_INSENSITIVE_ORDER))
-                .map(group -> new ChatPicker.Option(GROUP + group.id(), "Группа «" + group.name() + "»"))
+                .map(group -> new ChatPicker.Option(GROUP + group.id(), BillingChatTexts.of(language).group(group.name())))
                 .toList();
         return Stream.concat(students().stream(), found.stream()).toList();
     }
@@ -97,17 +98,18 @@ class TeacherBilling {
     }
 
     /** «аванс 1 500 ₽», «задолженность 1 500 ₽» or «долгов нет». */
-    String balance(UUID studentId) {
+    String balance(UUID studentId, Language language) {
         StudentLedger ledger = queries.ledger(studentId);
         long balance = ledger.balance();
         Currency currency = Currency.getInstance(ledger.currency());
+        BillingChatTexts t = BillingChatTexts.of(language);
         if (balance < 0) {
-            return "задолженность " + money(-balance, currency);
+            return t.debt(money(-balance, currency, language));
         }
-        return balance > 0 ? "аванс " + money(balance, currency) : "долгов нет";
+        return balance > 0 ? t.credit(money(balance, currency, language)) : t.noDebt();
     }
 
-    static String money(long amount, Currency currency) {
-        return MoneyFormat.russian(Money.of(amount, currency));
+    static String money(long amount, Currency currency, Language language) {
+        return MoneyFormat.format(Money.of(amount, currency), language);
     }
 }

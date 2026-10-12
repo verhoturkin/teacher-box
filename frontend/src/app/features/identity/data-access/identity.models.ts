@@ -64,6 +64,8 @@ export interface Account {
   readonly phone: string | null;
   /** The password was generated on the first start and must be replaced. */
   readonly passwordChangeRequired: boolean;
+  /** The language of the interface kept in the account (ADR-0036). */
+  readonly language: string;
 }
 
 /** Mirrors `GroupView` of the backend. */

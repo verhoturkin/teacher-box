@@ -1,5 +1,6 @@
 package ru.teacherbox.notifications.application;
 
+import java.util.UUID;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.api.StudentActivated;
@@ -20,9 +21,9 @@ class StudentNotifications {
 
     @ApplicationModuleListener
     void on(StudentActivated event) {
-        notifications.notify(users.teacherId(), NotificationKind.STUDENT_ACTIVATED,
-                "Ученик присоединился к порталу",
-                event.displayName() + " принял(а) приглашение и теперь может войти в личный кабинет.",
-                "/teacher/students");
+        UUID teacher = users.teacherId();
+        NotificationMessages t = NotificationMessages.of(users.language(teacher));
+        notifications.notify(teacher, NotificationKind.STUDENT_ACTIVATED, t.studentJoined(),
+                t.studentJoinedBody(event.displayName()), "/teacher/students");
     }
 }

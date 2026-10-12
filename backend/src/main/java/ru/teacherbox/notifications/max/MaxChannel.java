@@ -142,7 +142,7 @@ public class MaxChannel implements MessengerChannel {
             return;
         }
         Map<String, Object> answer = press.messageText() == null
-                ? Map.of("notification", "Принято")
+                ? Map.of("notification", "✓")
                 : Map.of("message", Map.of("text", press.messageText(), "attachments", List.of()));
         try {
             http.post()

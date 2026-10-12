@@ -19,6 +19,7 @@ import ru.teacherbox.notifications.application.MessengerHttp;
 import ru.teacherbox.notifications.application.OutgoingButton;
 import ru.teacherbox.notifications.application.OutgoingMessage;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -123,10 +124,15 @@ public class TelegramChannel implements MessengerChannel {
     }
 
     @Override
-    public void publishCommands(List<BotCommand> commands) {
-        call("setMyCommands", Map.of("commands", commands.stream()
+    public void publishCommands(List<BotCommand> commands, Language language) {
+        Map<String, Object> request = new LinkedHashMap<>();
+        request.put("commands", commands.stream()
                 .map(command -> Map.of("command", command.command(), "description", command.description()))
-                .toList()));
+                .toList());
+        if (language != Language.RU) {
+            request.put("language_code", language.code());
+        }
+        call("setMyCommands", request);
     }
 
     private static List<List<Map<String, String>>> keyboard(List<List<OutgoingButton>> rows) {

@@ -19,6 +19,7 @@ const ACCOUNT: Account = {
   email: 'anna@example.com',
   phone: null,
   passwordChangeRequired: false,
+  language: 'ru',
 };
 
 const PICTURE_ERROR = 'Не удалось открыть картинку. Выберите фото в JPEG, PNG или WebP.';

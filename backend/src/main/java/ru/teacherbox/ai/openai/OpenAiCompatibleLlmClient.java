@@ -18,6 +18,7 @@ import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.shared.http.OutboundHttp;
 import ru.teacherbox.shared.http.OutboundProxy;
+import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -116,7 +117,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     /** The list of models ({@code GET /models}): no tokens are spent. */
     @Override
-    public String ping() {
+    public String ping(Language language) {
         JsonNode response;
         try {
             response = http.get().uri("/models").retrieve().body(JsonNode.class);
@@ -130,8 +131,12 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
                 .map(entry -> entry.path("id").asString(""))
                 .toList();
         boolean listed = ids.stream().anyMatch(id -> id.equals(model) || id.endsWith("/" + model));
-        return listed ? "Модель " + model + " доступна"
-                : "Провайдер отвечает, но модели " + model + " нет среди " + ids.size() + " доступных";
+        return switch (language) {
+            case RU -> listed ? "Модель " + model + " доступна"
+                    : "Провайдер отвечает, но модели " + model + " нет среди " + ids.size() + " доступных";
+            case EN -> listed ? "Model " + model + " is available"
+                    : "The provider answers, but the model " + model + " is not among " + ids.size() + " available";
+        };
     }
 
     private Map<String, Object> body(LlmRequest request) {

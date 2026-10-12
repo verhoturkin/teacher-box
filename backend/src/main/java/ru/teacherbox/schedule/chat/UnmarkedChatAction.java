@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.shared.chat.ChatIcons;
+import ru.teacherbox.shared.i18n.Language;
 
 /** The teacher: lessons that have ended without an outcome. */
 @Component
@@ -20,8 +21,8 @@ class UnmarkedChatAction extends MarkLessonsChatAction {
     }
 
     @Override
-    public String title() {
-        return "Неотмеченные";
+    public String title(Language language) {
+        return ScheduleChatTexts.of(language).unmarked();
     }
 
     @Override
@@ -40,12 +41,12 @@ class UnmarkedChatAction extends MarkLessonsChatAction {
     }
 
     @Override
-    String heading() {
-        return "Прошедшие занятия без отметки:";
+    String heading(ScheduleChatTexts t) {
+        return t.unmarkedHeading();
     }
 
     @Override
-    String nothing() {
-        return "Все прошедшие занятия отмечены.";
+    String nothing(ScheduleChatTexts t) {
+        return t.allMarked();
     }
 }

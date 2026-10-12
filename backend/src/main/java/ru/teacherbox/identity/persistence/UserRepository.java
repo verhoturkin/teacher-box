@@ -14,6 +14,7 @@ import ru.teacherbox.identity.domain.AccountStatus;
 import ru.teacherbox.identity.domain.Avatar;
 import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.User;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 
 @Repository
@@ -163,6 +164,24 @@ public class UserRepository {
         return jdbc.sql("select avatar_key from identity.users where role = 'STUDENT' and avatar_key is not null")
                 .query(String.class)
                 .list();
+    }
+
+    /** The language the user chose; Russian for an unknown user. */
+    public Language findLanguage(UUID id) {
+        return jdbc.sql("select language from identity.users where id = :id")
+                .param("id", id)
+                .query(String.class)
+                .optional()
+                .map(Language::of)
+                .orElse(Language.RU);
+    }
+
+    /** A preference outside the account's rules: saved as is, without a new version. */
+    public void updateLanguage(UUID id, Language language) {
+        jdbc.sql("update identity.users set language = :language where id = :id")
+                .param("id", id)
+                .param("language", language.code())
+                .update();
     }
 
     private static User map(ResultSet rs, int rowNum) throws SQLException {

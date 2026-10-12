@@ -19,6 +19,7 @@ import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.files.FileStorage;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 
 /** The signed-in user's own account. */
@@ -37,10 +38,11 @@ public class AccountService {
      * @param profileName            the name from the profile (for a student — the one the teacher gave)
      * @param avatar                 address of the student's photo; {@code null}: none
      * @param passwordChangeRequired the password was generated on the first start and must be replaced
+     * @param language               the language the user chose in the interface (ADR-0036)
      */
     public record AccountView(UUID id, Role role, String displayName, String profileName, @Nullable String avatar,
             @Nullable String login, @Nullable String email, @Nullable String phone,
-            boolean passwordChangeRequired) {
+            boolean passwordChangeRequired, String language) {
     }
 
     /** A photo to send. */
@@ -156,16 +158,24 @@ public class AccountService {
         return sessionIssuer.startSession(user);
     }
 
+    /** The language of the interface: notifications, bot messages and calendars follow it (ADR-0036). */
+    @Transactional
+    public AccountView changeLanguage(UUID userId, Language language) {
+        User user = load(userId);
+        users.updateLanguage(userId, language);
+        return view(user);
+    }
+
     private void forget(@Nullable Avatar avatar) {
         if (avatar != null) {
             files.delete(NAMESPACE, avatar.key());
         }
     }
 
-    private static AccountView view(User user) {
+    private AccountView view(User user) {
         return new AccountView(user.id(), user.role(), user.shownName(), user.profile().displayName(),
                 avatarUrl(user.avatar()), user.login(), user.profile().email(), user.profile().phone(),
-                user.passwordChangeRequired());
+                user.passwordChangeRequired(), users.findLanguage(user.id()).code());
     }
 
     private User load(UUID userId) {

@@ -26,6 +26,7 @@ import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * The teacher marks lessons: a lesson → «Проведено» or «Пропуск» (for a group — who came) →
@@ -51,10 +52,10 @@ abstract class MarkLessonsChatAction implements ChatAction {
     abstract List<LessonView> lessons();
 
     /** The heading of the list. */
-    abstract String heading();
+    abstract String heading(ScheduleChatTexts t);
 
     /** The answer when there is nothing to show. */
-    abstract String nothing();
+    abstract String nothing(ScheduleChatTexts t);
 
     TeacherLessons teacherLessons() {
         return lessons;
@@ -67,7 +68,7 @@ abstract class MarkLessonsChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
-        return list(0, null);
+        return list(user.language(), 0, null);
     }
 
     @Override
@@ -76,83 +77,84 @@ abstract class MarkLessonsChatAction implements ChatAction {
         if (step == null) {
             return start(user);
         }
+        Language language = user.language();
         return switch (step) {
-            case "lesson" -> choose(input);
-            case "outcome" -> outcome(state, input);
-            case "attendance" -> attendance(state, input);
-            case "confirm" -> confirm(state, input);
+            case "lesson" -> choose(language, input);
+            case "outcome" -> outcome(language, state, input);
+            case "attendance" -> attendance(language, state, input);
+            case "confirm" -> confirm(language, state, input);
             default -> start(user);
         };
     }
 
-    private ChatStep list(int page, @Nullable String prefix) {
+    private ChatStep list(Language language, int page, @Nullable String prefix) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         List<LessonView> shown = lessons();
         if (shown.isEmpty()) {
-            return ChatStep.done(prefix == null ? nothing() : prefix + "\n" + nothing());
+            return ChatStep.done(prefix == null ? nothing(t) : prefix + "\n" + nothing(t));
         }
-        StringBuilder text = new StringBuilder(prefix == null ? heading() : prefix + "\n" + heading());
-        shown.forEach(lesson -> text.append("\n• ").append(lessons.describe(lesson)).append(" — ")
-                .append(TeacherLessons.status(lesson.status())));
+        StringBuilder text = new StringBuilder(prefix == null ? heading(t) : prefix + "\n" + heading(t));
+        shown.forEach(lesson -> text.append("\n• ").append(lessons.describe(lesson, language)).append(" — ")
+                .append(t.status(lesson.status())));
         List<LessonView> markable = shown.stream().filter(lessons::markable).toList();
         if (markable.isEmpty()) {
             return ChatStep.done(text.toString());
         }
-        text.append("\n\nКакое занятие отметить?");
-        return ChatStep.ask(ChatReply.of(text.toString())
-                        .rows(ChatKit.page(markable, page, lessons::label, lesson -> LESSON + lesson.id())),
+        text.append("\n\n").append(t.whichToMark());
+        return ChatStep.ask(ChatReply.of(text.toString()).rows(ChatKit.page(markable, page,
+                        lesson -> lessons.label(lesson, language), lesson -> LESSON + lesson.id(), language)),
                 ChatState.EMPTY.withStep("lesson"));
     }
 
-    private ChatStep choose(ChatInput input) {
+    private ChatStep choose(Language language, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<Integer> page = ChatKit.page(input);
         if (page.isPresent()) {
-            return list(page.get(), null);
+            return list(language, page.get(), null);
         }
         Optional<LessonView> lesson = ChatKit.choice(input, LESSON).flatMap(this::markable);
         if (lesson.isEmpty()) {
-            return list(0, "Это занятие уже отмечено или ещё не началось.");
+            return list(language, 0, t.markedOrNotStarted());
         }
         ChatState state = ChatState.of("lesson", lesson.get().id().toString());
         if (lesson.get().groupId() == null) {
-            return ChatStep.ask(ChatReply.of(lessons.describe(lesson.get()) + "\nКак прошло занятие?")
-                    .row(ChatButton.choice(ChatIcons.with(ChatIcons.CONDUCTED, "Проведено"), "CONDUCTED"),
-                            ChatButton.choice(ChatIcons.with(ChatIcons.MISSED, "Пропуск"), "MISSED")),
-                    state.withStep("outcome"));
+            return ChatStep.ask(ChatReply.of(lessons.describe(lesson.get(), language) + "\n" + t.howWasIt())
+                    .row(outcomeButtons(t)), state.withStep("outcome"));
         }
         List<ParticipantView> participants = lesson.get().participants();
         if (participants.size() > MAX_PARTICIPANTS) {
-            return ChatStep.done("В группе больше " + MAX_PARTICIPANTS
-                    + " учеников — отметьте посещаемость на портале, в расписании.");
+            return ChatStep.done(t.groupTooBig(MAX_PARTICIPANTS));
         }
         Set<String> present = participants.stream()
                 .filter(participant -> participant.attendance() != Attendance.EXCUSED)
                 .map(participant -> participant.studentId().toString())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        return askAttendance(lesson.get(), state.with("present", String.join(",", present)));
+        return askAttendance(language, lesson.get(), state.with("present", String.join(",", present)));
     }
 
-    private ChatStep askAttendance(LessonView lesson, ChatState state) {
+    private ChatStep askAttendance(Language language, LessonView lesson, ChatState state) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Set<String> present = present(state);
-        StringBuilder text = new StringBuilder(lessons.describe(lesson))
-                .append("\nОтметьте, кто был на занятии, и нажмите «Готово».");
+        StringBuilder text = new StringBuilder(lessons.describe(lesson, language)).append("\n").append(t.markWhoCame());
         List<List<ChatButton>> rows = new ArrayList<>();
         for (ParticipantView participant : lesson.participants()) {
-            String name = participant.studentName() == null ? "Ученик" : participant.studentName();
+            String name = participant.studentName() == null ? t.unknownStudent() : participant.studentName();
             if (participant.attendance() == Attendance.EXCUSED) {
-                text.append("\n").append(name).append(" предупредил(а), что не придёт.");
+                text.append("\n").append(t.excused(name));
                 continue;
             }
             boolean came = present.contains(participant.studentId().toString());
             rows.add(List.of(ChatButton.choice((came ? "✅ " : "⬜ ") + name, TOGGLE + participant.studentId())));
         }
-        rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.DONE, "Готово"), READY)));
+        rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.DONE, t.done()), READY)));
         return ChatStep.ask(new ChatReply(text.toString(), rows), state.withStep("attendance"));
     }
 
-    private ChatStep attendance(ChatState state, ChatInput input) {
+    private ChatStep attendance(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<LessonView> lesson = state.id("lesson").flatMap(id -> markable(id.toString()));
         if (lesson.isEmpty()) {
-            return list(0, "Это занятие уже отмечено.");
+            return list(language, 0, t.alreadyMarked());
         }
         Optional<String> toggled = ChatKit.choice(input, TOGGLE);
         if (toggled.isPresent()) {
@@ -160,52 +162,50 @@ abstract class MarkLessonsChatAction implements ChatAction {
             if (!present.remove(toggled.get())) {
                 present.add(toggled.get());
             }
-            return askAttendance(lesson.get(), state.with("present", String.join(",", present)));
+            return askAttendance(language, lesson.get(), state.with("present", String.join(",", present)));
         }
         if (!(input instanceof ChatInput.Choice(String value) && READY.equals(value))) {
-            return askAttendance(lesson.get(), state);
+            return askAttendance(language, lesson.get(), state);
         }
         Set<String> present = present(state);
         List<String> came = new ArrayList<>();
         List<String> missed = new ArrayList<>();
         for (ParticipantView participant : lesson.get().participants()) {
-            String name = participant.studentName() == null ? "Ученик" : participant.studentName();
+            String name = participant.studentName() == null ? t.unknownStudent() : participant.studentName();
             if (participant.attendance() != Attendance.EXCUSED) {
                 (present.contains(participant.studentId().toString()) ? came : missed).add(name);
             }
         }
         if (came.isEmpty() && missed.isEmpty()) {
-            return ChatStep.done("Все ученики предупредили, что не придут: отмените занятие на портале.");
+            return ChatStep.done(t.allExcused());
         }
-        String question = "Отметить посещаемость: были — " + (came.isEmpty() ? "никто" : String.join(", ", came))
-                + (missed.isEmpty() ? "" : "; не было — " + String.join(", ", missed)) + "?";
-        return ChatKit.confirm(question, state.with("outcome", "ATTENDANCE").withStep("confirm"));
+        return ChatKit.confirm(t.confirmAttendance(came, missed),
+                state.with("outcome", "ATTENDANCE").withStep("confirm"), language);
     }
 
-    private ChatStep outcome(ChatState state, ChatInput input) {
+    private ChatStep outcome(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<LessonView> lesson = state.id("lesson").flatMap(id -> markable(id.toString()));
         if (lesson.isEmpty()) {
-            return list(0, "Это занятие уже отмечено.");
+            return list(language, 0, t.alreadyMarked());
         }
         Optional<String> outcome = input instanceof ChatInput.Choice(String value)
                 && (value.equals("CONDUCTED") || value.equals("MISSED")) ? Optional.of(value) : Optional.empty();
         if (outcome.isEmpty()) {
-            return ChatStep.ask(ChatReply.of("Выберите: «Проведено» или «Пропуск».")
-                    .row(ChatButton.choice(ChatIcons.with(ChatIcons.CONDUCTED, "Проведено"), "CONDUCTED"),
-                            ChatButton.choice(ChatIcons.with(ChatIcons.MISSED, "Пропуск"), "MISSED")), state);
+            return ChatStep.ask(ChatReply.of(t.chooseOutcome()).row(outcomeButtons(t)), state);
         }
-        String what = outcome.get().equals("CONDUCTED") ? "проведённое" : "пропуск";
-        return ChatKit.confirm("Отметить занятие " + lessons.describe(lesson.get()) + " как " + what + "?",
-                state.with("outcome", outcome.get()).withStep("confirm"));
+        return ChatKit.confirm(t.confirmOutcome(lessons.describe(lesson.get(), language),
+                outcome.get().equals("CONDUCTED")), state.with("outcome", outcome.get()).withStep("confirm"), language);
     }
 
-    private ChatStep confirm(ChatState state, ChatInput input) {
+    private ChatStep confirm(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
         if (!ChatKit.confirmed(input)) {
-            return ChatStep.done("Хорошо, не отмечаю.");
+            return ChatStep.done(t.notMarking());
         }
         Optional<LessonView> lesson = state.id("lesson").flatMap(id -> markable(id.toString()));
         if (lesson.isEmpty()) {
-            return ChatStep.done("Это занятие уже отмечено.");
+            return ChatStep.done(t.alreadyMarked());
         }
         String outcome = state.get("outcome").orElse("");
         try {
@@ -219,16 +219,21 @@ abstract class MarkLessonsChatAction implements ChatAction {
                                     : Attendance.MISSED);
                 }
                 schedule.markAttendance(lesson.get().id(), marks);
-                return ChatStep.changed(ChatReply.of("Посещаемость отмечена."),
+                return ChatStep.changed(ChatReply.of(t.attendanceMarked()),
                         "attendance-marked " + lesson.get().id());
             }
             LessonStatus status = LessonStatus.valueOf(outcome);
             schedule.setOutcome(lesson.get().id(), status);
-            return ChatStep.changed(ChatReply.of("Отмечено: " + TeacherLessons.status(status) + "."),
+            return ChatStep.changed(ChatReply.of(t.marked(status)),
                     "lesson-marked " + lesson.get().id() + " " + status);
         } catch (DomainException | IllegalArgumentException e) {
-            return ChatStep.done("Не получилось отметить: занятие изменилось. Откройте список ещё раз.");
+            return ChatStep.done(t.markFailed());
         }
+    }
+
+    private static ChatButton[] outcomeButtons(ScheduleChatTexts t) {
+        return new ChatButton[] {ChatButton.choice(ChatIcons.with(ChatIcons.CONDUCTED, t.conducted()), "CONDUCTED"),
+                ChatButton.choice(ChatIcons.with(ChatIcons.MISSED, t.missed()), "MISSED")};
     }
 
     private Optional<LessonView> markable(String lessonId) {

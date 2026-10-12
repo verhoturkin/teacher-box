@@ -34,13 +34,3 @@ queue; filter chips instead of toggles.
 Calls after 0.8.0: call history; teacher moderation (mute / remove a participant); chat in the call;
 «ученик ждёт» notification (LiveKit webhooks); opening the student's board from the call; Document
 Picture-in-Picture; noise suppression; recording.
-
-Future:
-- Server texts in the user's language (ADR-0035): inbox notifications, bot messages, settings catalog
-  descriptions, calendar feed titles.
-- Two-way Google Calendar sync.
-- Board templates / duplicating.
-- Lesson packages/subscriptions, online payment.
-- Telegram login, 2FA for teacher and administrator.
-- WhatsApp and e-mail channels.
-- AI hints for students with quotas.

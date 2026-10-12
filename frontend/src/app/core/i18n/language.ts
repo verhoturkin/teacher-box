@@ -58,9 +58,14 @@ export function forgetLanguage(): void {
   current = undefined;
 }
 
-function stored(): Language {
+/** The language chosen on this device; `null` until the user chooses one. */
+export function chosenLanguage(): Language | null {
   const value = readDeviceSetting(LANGUAGE_KEY);
-  return isLanguage(value) ? value : SOURCE;
+  return isLanguage(value) ? value : null;
+}
+
+function stored(): Language {
+  return chosenLanguage() ?? SOURCE;
 }
 
 /**

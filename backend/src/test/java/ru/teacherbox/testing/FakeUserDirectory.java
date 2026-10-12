@@ -10,6 +10,7 @@ import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.Ids;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * In-memory {@link UserDirectory} for module tests that do not bootstrap the identity module.
@@ -18,6 +19,7 @@ public final class FakeUserDirectory implements UserDirectory {
 
     private final UUID teacherId = Ids.newId();
     private final Map<UUID, StudentSummary> students = new ConcurrentHashMap<>();
+    private final Map<UUID, Language> languages = new ConcurrentHashMap<>();
 
     /** Registers an active student and returns its id. */
     public UUID addStudent(String displayName) {
@@ -39,6 +41,11 @@ public final class FakeUserDirectory implements UserDirectory {
         students.computeIfPresent(studentId, (id, s) -> new StudentSummary(id, s.displayName(), s.status(), avatar));
     }
 
+    /** The language the user (the teacher or a student) chose; Russian until then. */
+    public void setLanguage(UUID userId, Language language) {
+        languages.put(userId, language);
+    }
+
     @Override
     public UUID teacherId() {
         return teacherId;
@@ -57,5 +64,10 @@ public final class FakeUserDirectory implements UserDirectory {
     @Override
     public List<StudentSummary> currentStudents() {
         return students.values().stream().filter(StudentSummary::isCurrent).toList();
+    }
+
+    @Override
+    public Language language(UUID userId) {
+        return languages.getOrDefault(userId, Language.RU);
     }
 }

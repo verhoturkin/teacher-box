@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.domain.RefreshToken;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.RefreshTokenRepository;
+import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.security.JwtClaims;
 
@@ -27,13 +28,15 @@ class SessionIssuer {
 
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokens;
+    private final UserRepository users;
     private final IdentityProperties properties;
     private final Clock clock;
 
-    SessionIssuer(JwtEncoder jwtEncoder, RefreshTokenRepository refreshTokens, IdentityProperties properties,
-            Clock clock) {
+    SessionIssuer(JwtEncoder jwtEncoder, RefreshTokenRepository refreshTokens, UserRepository users,
+            IdentityProperties properties, Clock clock) {
         this.jwtEncoder = jwtEncoder;
         this.refreshTokens = refreshTokens;
+        this.users = users;
         this.properties = properties;
         this.clock = clock;
     }
@@ -70,7 +73,8 @@ class SessionIssuer {
 
         Session session = new Session(accessToken, accessExpiresAt, rawRefreshToken, refreshToken.expiresAt(),
                 new Session.SessionUser(user.id(), user.role(), user.shownName(),
-                        AccountService.avatarUrl(user.avatar()), user.passwordChangeRequired()));
+                        AccountService.avatarUrl(user.avatar()), user.passwordChangeRequired(),
+                        users.findLanguage(user.id()).code()));
         return new IssuedSession(session, refreshToken.id());
     }
 }

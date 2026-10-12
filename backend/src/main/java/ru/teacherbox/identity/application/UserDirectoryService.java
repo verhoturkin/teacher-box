@@ -11,6 +11,7 @@ import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.UserRepository;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Implementation of the public {@link UserDirectory} facade. */
 @Service
@@ -46,6 +47,11 @@ class UserDirectoryService implements UserDirectory {
                 .map(UserDirectoryService::summary)
                 .filter(StudentSummary::isCurrent)
                 .toList();
+    }
+
+    @Override
+    public Language language(UUID userId) {
+        return users.findLanguage(userId);
     }
 
     private static StudentSummary summary(User user) {

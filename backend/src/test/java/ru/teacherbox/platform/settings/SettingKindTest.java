@@ -4,11 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import ru.teacherbox.shared.i18n.Language;
 
 class SettingKindTest {
 
     private static boolean fits(SettingKind kind, String value) {
-        return kind.problem(value, List.of("anthropic", "gemini")) == null;
+        return kind.problem(value, List.of("anthropic", "gemini"), Language.RU) == null;
     }
 
     @Test
@@ -52,7 +53,17 @@ class SettingKindTest {
         assertThat(fits(SettingKind.CURRENCY, "RUR1")).isFalse();
         assertThat(fits(SettingKind.CHOICE, "gemini")).isTrue();
         assertThat(fits(SettingKind.CHOICE, "openai")).isFalse();
-        assertThat(SettingKind.CHOICE.problem("openai", List.of("anthropic", "gemini")))
+        assertThat(SettingKind.CHOICE.problem("openai", List.of("anthropic", "gemini"), Language.RU))
                 .isEqualTo("нужно одно из значений: anthropic, gemini");
+        assertThat(SettingKind.NUMBER.problem("ten", List.of(), Language.EN)).isEqualTo("a whole number is needed");
+    }
+
+    @Test
+    void everyKindSaysWhatItNeedsInEveryLanguage() {
+        for (SettingKind kind : SettingKind.values()) {
+            for (Language language : Language.values()) {
+                assertThat(kind.expected(List.of("a", "b"), language)).as(kind + " " + language).isNotBlank();
+            }
+        }
     }
 }

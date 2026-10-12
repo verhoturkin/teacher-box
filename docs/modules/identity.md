@@ -27,11 +27,15 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   queue) and notifications (the students' messengers) pass it to their views (all lists since 0.11.0).
 - **Groups** — name, members, archive; a student may be in several groups. Prices of groups live in `billing`,
   lessons in `schedule`.
+- **Language (0.11.1, ADR-0036)** — `users.language` (`ru` by default): the language of the interface the
+  browser saves to the account (`PUT /api/me/language`, also open to the administrator); returned in `/api/me`
+  and the session user. Other modules write notifications, bot messages and calendars in it
+  (`UserDirectory.language`).
 - Implements `shared.security.PasswordConfirmation`.
 
 ## Contract (`identity::api`)
 
-- Facades: `UserDirectory` (`teacherId`, `findStudent(s)`, `currentStudents`, `isCurrent`), `StudentGroups`
+- Facades: `UserDirectory` (`teacherId`, `findStudent(s)`, `currentStudents`, `isCurrent`, `language`), `StudentGroups`
   (`findGroup(s)`, `groupsOf`). DTOs `StudentSummary`, `GroupSummary`, enum `StudentStatus`.
 - Events: `StudentRegistered`, `StudentActivated`, `StudentDeactivated`, `StudentReactivated`, `GroupCreated`,
   `GroupChanged` (name/members, who joined/left), `GroupArchived`.
@@ -39,13 +43,13 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 
 ## Data
 
-`users` (+ `own_name`, `avatar_key`, `avatar_type`), `invites`, `refresh_tokens`, `student_groups`,
+`users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`), `invites`, `refresh_tokens`, `student_groups`,
 `group_members`. Housekeeping job removes expired tokens/invites (`IdentityHousekeeping`). Photo files are removed
 with the rest of the files by the full reset.
 
 ## REST
 
-`/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`, `/profile` — a student's own name,
+`/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`, `/language`, `/profile` — a student's own name,
 `/avatar` PUT multipart / DELETE), `/api/public/avatars/{key}`, `/api/teacher/students/**`,
 `/api/teacher/groups/**`, `/api/teacher/profile`.
 

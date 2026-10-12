@@ -17,6 +17,7 @@ import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatInput;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeUserDirectory;
 
@@ -56,5 +57,10 @@ class PaymentsChatIntegrationTests {
         assertThat(text).startsWith("Аванс: 3 000,50 ₽")
                 .contains("Последние оплаты:\n• 02.09.2026 — 4 500,50 ₽", "Последние занятия:\n• 01.09.2026 — 1 500 ₽")
                 .doesNotContain("03.09.2026");
+
+        ChatUser english = new ChatUser(student, Role.STUDENT, Language.EN);
+        assertThat(payments.title(Language.EN)).isEqualTo("Payments");
+        assertThat(done(payments.start(english)).reply().text()).startsWith("Credit: ₽3,000.50\nLesson price: ₽1,500")
+                .contains("Latest payments:\n• 02.09.2026 — ₽4,500.50");
     }
 }

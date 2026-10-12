@@ -13,6 +13,7 @@ import ru.teacherbox.shared.chat.ChatReply;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.i18n.Language;
 
 /** A student: the upcoming lessons and the link to the nearest online lesson. */
 @Component
@@ -32,8 +33,8 @@ class ScheduleChatAction implements ChatAction {
     }
 
     @Override
-    public String title() {
-        return "Расписание";
+    public String title(Language language) {
+        return ScheduleChatTexts.of(language).schedule();
     }
 
     @Override
@@ -53,21 +54,22 @@ class ScheduleChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(user.language());
         List<LessonView> upcoming = lessons.upcoming(user.id());
         if (upcoming.isEmpty()) {
-            return ChatStep.done("Запланированных занятий пока нет.");
+            return ChatStep.done(t.noPlannedLessons());
         }
-        StringBuilder text = new StringBuilder("Ближайшие занятия:");
+        StringBuilder text = new StringBuilder(t.upcoming());
         upcoming.stream().limit(SHOWN).forEach(lesson -> {
-            text.append("\n• ").append(lessons.describe(lesson));
+            text.append("\n• ").append(lessons.describe(lesson, user.language()));
             if (!StudentLessons.expected(lesson, user.id())) {
-                text.append(" (вы предупредили, что не придёте)");
+                text.append(t.youWontCome());
             } else if (!lesson.pendingRequests().isEmpty()) {
-                text.append(" (ваш запрос ждёт ответа)");
+                text.append(t.requestPending());
             }
         });
         if (upcoming.size() > SHOWN) {
-            text.append("\n…и ещё ").append(upcoming.size() - SHOWN);
+            text.append("\n").append(t.andMore(upcoming.size() - SHOWN));
         }
         ChatReply reply = ChatReply.of(text.toString());
         Optional<String> link = upcoming.stream()
@@ -75,7 +77,8 @@ class ScheduleChatAction implements ChatAction {
                 .map(LessonView::joinUrl)
                 .filter(Objects::nonNull)
                 .findFirst();
-        return ChatStep.done(link.map(url -> reply.row(ChatButton.link(ChatIcons.with(ChatIcons.JOIN_LESSON, "Войти на ближайший урок"), url)))
+        return ChatStep.done(link
+                .map(url -> reply.row(ChatButton.link(ChatIcons.with(ChatIcons.JOIN_LESSON, t.joinNearest()), url)))
                 .orElse(reply));
     }
 

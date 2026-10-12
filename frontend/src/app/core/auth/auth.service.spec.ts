@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { LANGUAGE_KEY } from '@core/i18n/language';
 import { authResponse } from '@testing/auth';
 import { AuthService } from './auth.service';
 import { testProviders } from '@testing/setup';
@@ -62,6 +63,31 @@ describe('AuthService', () => {
     expect(auth.user()?.displayName).toBe('Ника');
     expect(auth.user()?.avatar).toBe('/api/public/avatars/a');
     expect(auth.accessToken()).toBe('token-STUDENT');
+  });
+
+  it('saves the language chosen on this device to the account', () => {
+    localStorage.setItem(LANGUAGE_KEY, 'en');
+    try {
+      auth.acceptSession(authResponse('STUDENT'));
+      const save = backend.expectOne('/api/me/language');
+      expect(save.request.method).toBe('PUT');
+      expect(save.request.body).toEqual({ language: 'en' });
+      save.flush({});
+      expect(auth.user()?.language).toBe('en');
+
+      const english = authResponse('TEACHER');
+      auth.acceptSession({ ...english, user: { ...english.user, language: 'en' } });
+      backend.expectNone('/api/me/language');
+
+      auth.acceptSession(authResponse('STUDENT'));
+      auth.acceptSession(authResponse('TEACHER'));
+      for (const request of backend.match('/api/me/language')) {
+        request.flush(null, { status: 500, statusText: 'Server Error' });
+      }
+      expect(auth.user()?.language).toBe('ru');
+    } finally {
+      localStorage.removeItem(LANGUAGE_KEY);
+    }
   });
 
   it('keeps the user anonymous when sign-in fails', () => {

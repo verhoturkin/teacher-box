@@ -19,12 +19,12 @@ import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Builds the full view of a task (shared by the teacher's and the student's API). */
 @Component
 class TaskDetailsAssembler {
 
-    static final String UNKNOWN_STUDENT = "Неизвестный ученик";
 
     private final AssignmentRepository assignments;
     private final SubmissionRepository submissions;
@@ -57,7 +57,7 @@ class TaskDetailsAssembler {
                 .toList();
         String studentName = directory.findStudent(task.studentId())
                 .map(StudentSummary::displayName)
-                .orElse(UNKNOWN_STUDENT);
+                .orElseGet(TaskDetailsAssembler::unknownStudent);
 
         return new TaskDetails(task.id(), task.studentId(), studentName, task.status(), task.grade(),
                 task.teacherComment(), task.assignedAt(), task.submittedAt(), task.reviewedAt(),
@@ -68,5 +68,13 @@ class TaskDetailsAssembler {
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),
                                 submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
                         .toList());
+    }
+
+    /** In the language of the page (ADR-0036). */
+    static String unknownStudent() {
+        return switch (Language.current()) {
+            case RU -> "Неизвестный ученик";
+            case EN -> "Unknown student";
+        };
     }
 }

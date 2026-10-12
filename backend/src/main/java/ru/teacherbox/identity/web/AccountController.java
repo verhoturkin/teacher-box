@@ -3,6 +3,7 @@ package ru.teacherbox.identity.web;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.time.Clock;
@@ -22,6 +23,7 @@ import ru.teacherbox.identity.application.AccountService;
 import ru.teacherbox.identity.application.Session;
 import ru.teacherbox.identity.domain.Avatar;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.CurrentUser;
 
 /** Account of the signed-in user (teacher or student). */
@@ -36,6 +38,10 @@ class AccountController {
 
     /** @param displayName blank: the name the teacher gave */
     record RenameSelfRequest(@Nullable @Size(max = 100) String displayName) {
+    }
+
+    /** @param language {@code ru} or {@code en} */
+    record ChangeLanguageRequest(@NotBlank @Pattern(regexp = "ru|en") String language) {
     }
 
     private final AccountService accounts;
@@ -63,6 +69,12 @@ class AccountController {
     @PutMapping("/profile")
     AccountService.AccountView renameSelf(CurrentUser user, @Valid @RequestBody RenameSelfRequest request) {
         return accounts.renameSelf(user.id(), request.displayName());
+    }
+
+    /** The language of the interface; the server writes notifications, bot messages and calendars in it. */
+    @PutMapping("/language")
+    AccountService.AccountView changeLanguage(CurrentUser user, @Valid @RequestBody ChangeLanguageRequest request) {
+        return accounts.changeLanguage(user.id(), Language.of(request.language()));
     }
 
     @PutMapping(path = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

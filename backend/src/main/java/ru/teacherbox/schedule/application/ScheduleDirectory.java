@@ -18,6 +18,7 @@ import ru.teacherbox.meetings.api.MeetingRooms;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.Series;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Students and groups of identity as the schedule needs them: names and checks. */
 @Component
@@ -98,6 +99,11 @@ public class ScheduleDirectory {
 
     public UUID teacherId() {
         return users.teacherId();
+    }
+
+    /** The language the user chose: their calendars are written in it (ADR-0036). */
+    public Language language(UUID userId) {
+        return users.language(userId);
     }
 
     public boolean isCurrentStudent(UUID studentId) {

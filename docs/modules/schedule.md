@@ -33,6 +33,8 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   `TEACHERBOX_SCHEDULE_REMINDERS` (`24h,1h`), only the nearest if several are due; reset on reschedule.
 - **ICS feed:** `/api/public/schedule/<token>.ics` (256-bit token, hash stored, shown once): the teacher's feed
   has all lessons with names, a student's — own lessons (incl. group ones, group name instead of names).
+  Written in the language of the feed's owner (0.11.1, ADR-0036: `CalendarTexts`); Google events — in the
+  teacher's language when a lesson is synced (events already in Google change with the lesson).
 - **Google Calendar:** OAuth web flow with the teacher's own client (env vars win over UI), scope
   `calendar.app.created` (+ optional `calendar.freebusy`), own «Teacher Box» calendar, one-way sync every minute
   (`GoogleSyncJob`), network calls outside transactions; `invalid_grant` → `GoogleCalendarDisconnected`.

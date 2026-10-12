@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -13,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import ru.teacherbox.shared.i18n.Language;
 
 /** Building blocks of dialogs: confirmation, pages of buttons, dates, time and amounts typed as text. */
 public final class ChatKit {
@@ -25,7 +25,6 @@ public final class ChatKit {
     static final String PAGE = "page:";
     static final String DATE = "date:";
     private static final Locale RU = Locale.forLanguageTag("ru");
-    private static final DateTimeFormatter DATE_LABEL = DateTimeFormatter.ofPattern("EE dd.MM", RU);
     private static final Pattern TIME = Pattern.compile("(\\d{1,2})\\s*[:.\\s-]\\s*(\\d{2})");
     private static final Pattern DAY_MONTH = Pattern.compile("(\\d{1,2})[./-](\\d{1,2})(?:[./-](\\d{2}|\\d{4}))?");
     private static final Pattern AMOUNT = Pattern.compile("\\d+(?:[.,]\\d{1,2})?");
@@ -33,18 +32,19 @@ public final class ChatKit {
     private ChatKit() {
     }
 
-    /** Asks to confirm a change with «Да» and «Нет»; the answer comes back with the same state. */
-    public static ChatStep confirm(String question, ChatState state) {
-        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.YES, "Да"), YES),
-                ChatButton.choice(ChatIcons.with(ChatIcons.NO, "Нет"), NO)),
+    /** Asks to confirm a change with «Да» and «Нет» («Yes», «No»); the answer comes back with the same state. */
+    public static ChatStep confirm(String question, ChatState state, Language language) {
+        ChatWords words = ChatWords.of(language);
+        return ChatStep.ask(ChatReply.of(question).row(ChatButton.choice(ChatIcons.with(ChatIcons.YES, words.yes()), YES),
+                ChatButton.choice(ChatIcons.with(ChatIcons.NO, words.no()), NO)),
                 state);
     }
 
-    /** «Да» pressed or typed. */
+    /** «Да» pressed or typed («да» or «yes» in any language). */
     public static boolean confirmed(ChatInput input) {
         return switch (input) {
             case ChatInput.Choice choice -> YES.equals(choice.value());
-            case ChatInput.Text text -> text.text().equalsIgnoreCase("да");
+            case ChatInput.Text text -> text.text().equalsIgnoreCase("да") || text.text().equalsIgnoreCase("yes");
         };
     }
 
@@ -61,7 +61,8 @@ public final class ChatKit {
 
     /** One page of items as buttons, one per row, with «‹» and «›» to turn pages. */
     public static <T> List<List<ChatButton>> page(List<T> items, int page, Function<T, String> label,
-            Function<T, String> value) {
+            Function<T, String> value, Language language) {
+        ChatWords words = ChatWords.of(language);
         int pages = Math.max(1, (items.size() + PAGE_SIZE - 1) / PAGE_SIZE);
         int current = Math.clamp(page, 0, pages - 1);
         List<List<ChatButton>> rows = new ArrayList<>();
@@ -71,10 +72,10 @@ public final class ChatKit {
                 .forEach(item -> rows.add(List.of(ChatButton.choice(label.apply(item), value.apply(item)))));
         List<ChatButton> navigation = new ArrayList<>();
         if (current > 0) {
-            navigation.add(ChatButton.choice("‹ Назад", PAGE + (current - 1)));
+            navigation.add(ChatButton.choice(words.back(), PAGE + (current - 1)));
         }
         if (current < pages - 1) {
-            navigation.add(ChatButton.choice("Ещё ›", PAGE + (current + 1)));
+            navigation.add(ChatButton.choice(words.more(), PAGE + (current + 1)));
         }
         rows.add(navigation);
         return rows.stream().filter(row -> !row.isEmpty()).toList();
@@ -90,12 +91,12 @@ public final class ChatKit {
     }
 
     /** Buttons for the given number of days from {@code from}, four in a row: «пн 29.09». */
-    public static List<List<ChatButton>> dates(LocalDate from, int days) {
+    public static List<List<ChatButton>> dates(LocalDate from, int days, Language language) {
         List<List<ChatButton>> rows = new ArrayList<>();
         List<ChatButton> row = new ArrayList<>();
         for (int day = 0; day < days; day++) {
             LocalDate date = from.plusDays(day);
-            row.add(ChatButton.choice(dateLabel(date), DATE + date));
+            row.add(ChatButton.choice(dateLabel(date, language), DATE + date));
             if (row.size() == 4) {
                 rows.add(List.copyOf(row));
                 row.clear();
@@ -106,8 +107,8 @@ public final class ChatKit {
     }
 
     /**
-     * A date from a date button or typed: «29.09», «29.09.2026», «сегодня», «завтра». A day and month
-     * without a year mean the nearest such date from {@code today} on.
+     * A date from a date button or typed: «29.09», «29.09.2026», «сегодня», «завтра» («today», «tomorrow»).
+     * A day and month without a year mean the nearest such date from {@code today} on.
      */
     public static Optional<LocalDate> date(ChatInput input, LocalDate today) {
         Optional<String> chosen = choice(input, DATE);
@@ -123,7 +124,7 @@ public final class ChatKit {
 
     /**
      * A past date (e.g. of a lesson that took place) from a date button or typed: a day and month
-     * without a year mean the latest such date up to {@code today}; «сегодня», «вчера».
+     * without a year mean the latest such date up to {@code today}; «сегодня», «вчера» («today», «yesterday»).
      */
     public static Optional<LocalDate> pastDate(ChatInput input, LocalDate today) {
         Optional<String> chosen = choice(input, DATE);
@@ -131,16 +132,17 @@ public final class ChatKit {
             return date(input, today);
         }
         return text(input).flatMap(text -> text.strip().equalsIgnoreCase("вчера")
+                || text.strip().equalsIgnoreCase("yesterday")
                 ? Optional.of(today.minusDays(1))
                 : parseDate(text, today, false));
     }
 
     static Optional<LocalDate> parseDate(String text, LocalDate today, boolean ahead) {
         String lower = text.strip().toLowerCase(RU);
-        if (lower.equals("сегодня")) {
+        if (lower.equals("сегодня") || lower.equals("today")) {
             return Optional.of(today);
         }
-        if (lower.equals("завтра")) {
+        if (lower.equals("завтра") || lower.equals("tomorrow")) {
             return Optional.of(today.plusDays(1));
         }
         Matcher matcher = DAY_MONTH.matcher(lower);
@@ -193,9 +195,9 @@ public final class ChatKit {
         }
     }
 
-    /** «пн 29.09». */
-    public static String dateLabel(LocalDate date) {
-        return DATE_LABEL.format(date);
+    /** «пн 29.09», «Mon 29.09». */
+    public static String dateLabel(LocalDate date, Language language) {
+        return ChatWords.of(language).dateLabel().format(date);
     }
 
     /** A label that fits on a button. */

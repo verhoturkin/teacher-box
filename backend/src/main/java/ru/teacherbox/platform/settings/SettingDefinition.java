@@ -8,13 +8,13 @@ import java.util.List;
  * @param name    the variable, e.g. {@code TEACHERBOX_AI_MODEL}
  * @param section the key of the section, e.g. {@code ai}: it opens the section by a link ({@code ?open=ai})
  * @param group   the section in the interface, e.g. «ИИ-помощник»
- * @param title   what it is, in Russian
- * @param hint    how to fill it, in Russian; may be empty
+ * @param title   what it is
+ * @param hint    how to fill it; may be empty
  * @param choices the allowed values of a {@link SettingKind#CHOICE}
  * @param secret  a password, token or key: never shown, only set anew
  * @param access  who may change it
  */
-public record SettingDefinition(String name, String section, String group, String title, String hint, SettingKind kind,
+public record SettingDefinition(String name, String section, Wording group, Wording title, Wording hint, SettingKind kind,
         List<String> choices, boolean secret, Access access) {
 
     /** Who may change the setting. */

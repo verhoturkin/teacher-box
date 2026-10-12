@@ -35,14 +35,15 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.diagnostics.AuditLog;
 import ru.teacherbox.shared.error.DomainException;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.security.Role;
 
 /**
  * Dialogs with the bots (ADR-0013): connecting an account, the menu of the user's actions, the
  * dialog of an action step by step, «Отмена» at any step, buttons under notifications. Only
- * connected accounts get the menu; the role comes from {@code identity}. Transactions are the
- * actions' own: a refused action must not roll back the dialog.
+ * connected accounts get the menu; the role and the language come from {@code identity} (ADR-0036).
+ * Transactions are the actions' own: a refused action must not roll back the dialog.
  */
 @Service
 public class ChatEngine {
@@ -51,30 +52,6 @@ public class ChatEngine {
     static final Duration BUTTONS_TTL = Duration.ofDays(2);
     static final Duration OFFER_TTL = Duration.ofDays(7);
     static final int MAX_IN_ROW = 5;
-
-    public static final List<BotCommand> COMMANDS = List.of(
-            new BotCommand("menu", "Главное меню"),
-            new BotCommand("cancel", "Отменить действие"),
-            new BotCommand("help", "Что умеет бот"),
-            new BotCommand("stop", "Отключить уведомления"));
-
-    static final String MENU_TEACHER = "Что сделать?";
-    static final String MENU_STUDENT = "Что вы хотите сделать?";
-    static final String NOTHING_YET = "Пока бот только присылает уведомления с портала.";
-    static final String NOT_UNDERSTOOD = "Не понял сообщение.";
-    static final String CANCELLED = "Действие отменено.";
-    static final String STALE = "Эта кнопка уже не действует.";
-    static final String NO_ACCESS = "Доступ к порталу отключён.";
-    static final String TEACHER_OFF = "Управление порталом через бота выключено: «Уведомления» → «Мессенджеры» "
-            + "на портале. Уведомления продолжат приходить.";
-    static final String FAILED = "Не получилось: данные могли измениться. Откройте меню и попробуйте ещё раз.";
-    static final String CHOOSE_ACCOUNT = "К этому чату подключено несколько аккаунтов. От чьего имени продолжить?";
-    static final String HELP = """
-            Команды:
-            /menu — главное меню
-            /cancel — отменить действие
-            /stop — отключить уведомления""";
-    static final String TEACHER_NAME = "Учитель";
 
     /** Values of the bot's own buttons; they never reach the actions ({@link ru.teacherbox.shared.chat.ChatAction}). */
     static final String OWN = "bot:";
@@ -122,8 +99,8 @@ public class ChatEngine {
         if (command.equals("/stop") || LinkCodes.find(text).isPresent()) {
             String reply = channels.handleIncoming(channel, message);
             return conversation(channel, message.externalId(), null)
-                    .map(conversation -> send(conversation, ChatReply.of(reply), List.of(menuButton()), null,
-                            ChatState.EMPTY, now))
+                    .map(conversation -> send(conversation, ChatReply.of(reply), List.of(menuButton(texts(conversation))),
+                            null, ChatState.EMPTY, now))
                     .orElseGet(() -> OutgoingMessage.text(reply));
         }
         Optional<OutgoingMessage> blocked = blocked(channel, message.externalId(), null, now);
@@ -132,9 +109,9 @@ public class ChatEngine {
         }
         Conversation conversation = conversation(channel, message.externalId(), null).orElseThrow();
         return switch (command) {
-            case "/start", "/menu", "меню", "начать" -> menu(conversation, null, now);
-            case "/cancel", "отмена", "отменить" -> cancel(conversation, now);
-            case "/help", "помощь", "справка" -> help(conversation, now);
+            case "/start", "/menu", "меню", "начать", "menu", "start" -> menu(conversation, null, now);
+            case "/cancel", "отмена", "отменить", "cancel" -> cancel(conversation, now);
+            case "/help", "помощь", "справка", "help" -> help(conversation, now);
             default -> text(conversation, text, now);
         };
     }
@@ -173,7 +150,7 @@ public class ChatEngine {
             return run(conversation, waiting.get(), () -> waiting.get().next(conversation.user(), state,
                     new ChatInput.Text(text)), now);
         }
-        return menu(conversation, NOT_UNDERSTOOD, now);
+        return menu(conversation, texts(conversation).notUnderstood(), now);
     }
 
     private OutgoingMessage pressed(ChannelType channel, String externalId, String data, Instant now) {
@@ -200,7 +177,7 @@ public class ChatEngine {
         if (!choice.startsWith(OWN) && buttons.actionId() != null) {
             Optional<ChatAction> action = actions.find(buttons.actionId());
             if (action.isEmpty()) {
-                return menu(conversation, STALE, now);
+                return menu(conversation, texts(conversation).stale(), now);
             }
             return run(conversation, action.get(), () -> action.get().next(conversation.user(), buttons.state(),
                     new ChatInput.Choice(choice)), now);
@@ -208,7 +185,7 @@ public class ChatEngine {
         if (choice.startsWith(START)) {
             Optional<ChatAction> action = actions.find(choice.substring(START.length()));
             return action.isEmpty()
-                    ? menu(conversation, STALE, now)
+                    ? menu(conversation, texts(conversation).stale(), now)
                     : run(conversation, action.get(), () -> action.get().start(conversation.user()), now);
         }
         return switch (choice) {
@@ -220,12 +197,13 @@ public class ChatEngine {
 
     private OutgoingMessage run(Conversation conversation, ChatAction action, Supplier<ChatStep> step, Instant now) {
         ChatUser user = conversation.user();
+        BotMessages t = texts(conversation);
         if (user.isTeacher() && !chat.teacherActions()) {
             chat.saveDialog(conversation.dialog().finished(), now);
-            return OutgoingMessage.text(TEACHER_OFF);
+            return OutgoingMessage.text(t.teacherOff());
         }
         if (!action.availableTo(user)) {
-            return menu(conversation, STALE, now);
+            return menu(conversation, t.stale(), now);
         }
         ChatStep result;
         try {
@@ -240,7 +218,8 @@ public class ChatEngine {
         return switch (result) {
             case ChatStep.Ask ask -> {
                 chat.saveDialog(conversation.dialog().waitFor(action.id(), ask.state(), now.plus(DIALOG_TTL)), now);
-                yield send(conversation, ask.reply(), List.of(ChatButton.choice(ChatIcons.with(ChatIcons.CANCEL, "Отмена"), CANCEL)), action.id(),
+                yield send(conversation, ask.reply(),
+                        List.of(ChatButton.choice(ChatIcons.with(ChatIcons.CANCEL, t.cancel()), CANCEL)), action.id(),
                         ask.state(), now);
             }
             case ChatStep.Done done -> {
@@ -248,7 +227,7 @@ public class ChatEngine {
                 if (done.audit() != null && user.isTeacher()) {
                     AuditLog.bot(user.id(), conversation.channel().name(), action.id() + " " + done.audit());
                 }
-                yield send(conversation, done.reply(), List.of(menuButton()), null, ChatState.EMPTY, now);
+                yield send(conversation, done.reply(), List.of(menuButton(t)), null, ChatState.EMPTY, now);
             }
         };
     }
@@ -256,48 +235,52 @@ public class ChatEngine {
     private OutgoingMessage menu(Conversation conversation, @Nullable String prefix, Instant now) {
         chat.saveDialog(conversation.dialog().finished(), now);
         ChatUser user = conversation.user();
+        BotMessages t = texts(conversation);
         if (user.isTeacher() && !chat.teacherActions()) {
-            return OutgoingMessage.text(prefix == null ? TEACHER_OFF : prefix + "\n" + TEACHER_OFF);
+            return OutgoingMessage.text(prefix == null ? t.teacherOff() : prefix + "\n" + t.teacherOff());
         }
         List<ChatAction> available = actions.availableTo(user);
-        String question = available.isEmpty() ? NOTHING_YET : user.isTeacher() ? MENU_TEACHER : MENU_STUDENT;
+        String question = available.isEmpty() ? t.nothingYet() : user.isTeacher() ? t.menuTeacher() : t.menuStudent();
         List<List<ChatButton>> rows = new ArrayList<>();
         for (int i = 0; i < available.size(); i += 2) {
             rows.add(available.subList(i, Math.min(i + 2, available.size())).stream()
-                    .map(action -> ChatButton.choice(ChatIcons.with(action.icon(), action.title()), START + action.id()))
+                    .map(action -> ChatButton.choice(ChatIcons.with(action.icon(), action.title(user.language())),
+                            START + action.id()))
                     .toList());
         }
         if (conversation.accounts() > 1) {
-            rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.SWITCH_ACCOUNT, "Сменить аккаунт"), SWITCH)));
+            rows.add(List.of(ChatButton.choice(ChatIcons.with(ChatIcons.SWITCH_ACCOUNT, t.switchAccount()), SWITCH)));
         }
         ChatReply reply = new ChatReply(prefix == null ? question : prefix + "\n" + question, rows);
         return send(conversation, reply, List.of(), null, ChatState.EMPTY, now);
     }
 
     private OutgoingMessage cancel(Conversation conversation, Instant now) {
-        return menu(conversation, CANCELLED, now);
+        return menu(conversation, texts(conversation).cancelled(), now);
     }
 
     private OutgoingMessage help(Conversation conversation, Instant now) {
         chat.saveDialog(conversation.dialog().finished(), now);
         ChatUser user = conversation.user();
+        BotMessages t = texts(conversation);
         StringBuilder text = new StringBuilder();
         List<ChatAction> available = user.isTeacher() && !chat.teacherActions() ? List.of() : actions.availableTo(user);
         if (available.isEmpty()) {
-            text.append(NOTHING_YET);
+            text.append(t.nothingYet());
         } else {
-            text.append("Бот умеет:");
-            available.forEach(action -> text.append("\n• ").append(action.title()));
+            text.append(t.canDo());
+            available.forEach(action -> text.append("\n• ").append(action.title(user.language())));
         }
-        text.append("\n\n").append(HELP);
+        text.append("\n\n").append(t.commandsHelp());
         portal.link(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot")
-                .ifPresent(help -> text.append("\n\nСправка: ").append(help));
-        return send(conversation, ChatReply.of(text.toString()), List.of(menuButton()), null, ChatState.EMPTY, now);
+                .ifPresent(help -> text.append("\n\n").append(t.helpLink(help)));
+        return send(conversation, ChatReply.of(text.toString()), List.of(menuButton(t)), null, ChatState.EMPTY, now);
     }
 
     private OutgoingMessage failed(Conversation conversation, Instant now) {
         chat.saveDialog(conversation.dialog().finished(), now);
-        return send(conversation, ChatReply.of(FAILED), List.of(menuButton()), null, ChatState.EMPTY, now);
+        BotMessages t = texts(conversation);
+        return send(conversation, ChatReply.of(t.failed()), List.of(menuButton(t)), null, ChatState.EMPTY, now);
     }
 
     private OutgoingMessage stale(ChannelType channel, String externalId, Instant now) {
@@ -306,8 +289,8 @@ public class ChatEngine {
             return blocked.get();
         }
         return conversation(channel, externalId, null)
-                .map(conversation -> menu(conversation, STALE, now))
-                .orElseGet(() -> OutgoingMessage.text(STALE));
+                .map(conversation -> menu(conversation, texts(conversation).stale(), now))
+                .orElseGet(() -> OutgoingMessage.text(BotMessages.of(teacherLanguage()).stale()));
     }
 
     /** The answer when the chat cannot act: not connected, several accounts to choose from, no access. */
@@ -315,16 +298,19 @@ public class ChatEngine {
             Instant now) {
         List<ChannelLink> linked = links.findByExternal(channel, externalId);
         if (linked.isEmpty()) {
-            return Optional.of(OutgoingMessage.text(ChannelService.REPLY_HELP));
+            return Optional.of(OutgoingMessage.text(channels.howToConnect()));
         }
         UUID recipient = pressedFor != null ? pressedFor : recipient(channel, externalId, linked);
         if (recipient == null) {
             return Optional.of(accounts(channel, externalId, now));
         }
         if (linked.stream().noneMatch(link -> link.recipientId().equals(recipient))) {
-            return Optional.of(OutgoingMessage.text(STALE));
+            return Optional.of(OutgoingMessage.text(BotMessages.of(users.language(linked.getFirst().recipientId()))
+                    .stale()));
         }
-        return user(recipient).isEmpty() ? Optional.of(OutgoingMessage.text(NO_ACCESS)) : Optional.empty();
+        return user(recipient).isEmpty()
+                ? Optional.of(OutgoingMessage.text(BotMessages.of(users.language(recipient)).noAccess()))
+                : Optional.empty();
     }
 
     private Optional<Conversation> conversation(ChannelType channel, String externalId, @Nullable UUID pressedFor) {
@@ -353,14 +339,16 @@ public class ChatEngine {
     private OutgoingMessage accounts(ChannelType channel, String externalId, Instant now) {
         List<ChannelLink> linked = links.findByExternal(channel, externalId);
         if (linked.isEmpty()) {
-            return OutgoingMessage.text(ChannelService.REPLY_HELP);
+            return OutgoingMessage.text(channels.howToConnect());
         }
         ChatDialog dialog = chat.findDialog(channel, externalId).orElseGet(() -> ChatDialog.idle(channel, externalId));
         chat.saveDialog(dialog.finished().actingFor(null), now);
+        // whose account is not chosen yet: the question is in the language of the first one
+        BotMessages t = BotMessages.of(users.language(linked.getFirst().recipientId()));
         List<List<ChatButton>> rows = linked.stream()
-                .map(link -> List.of(ChatButton.choice(name(link.recipientId()), AS + link.recipientId())))
+                .map(link -> List.of(ChatButton.choice(name(link.recipientId(), t), AS + link.recipientId())))
                 .toList();
-        return new OutgoingMessage(CHOOSE_ACCOUNT, encode(linked.getFirst().recipientId(), channel, externalId, null,
+        return new OutgoingMessage(t.chooseAccount(), encode(linked.getFirst().recipientId(), channel, externalId, null,
                 ChatState.EMPTY, fit(rows, List.of()), BUTTONS_TTL, now));
     }
 
@@ -370,31 +358,45 @@ public class ChatEngine {
                 .filter(link -> link.recipientId().toString().equals(recipient))
                 .findFirst();
         if (chosen.isEmpty()) {
-            return linked.isEmpty() ? OutgoingMessage.text(ChannelService.REPLY_HELP) : accounts(channel, externalId, now);
+            return linked.isEmpty() ? OutgoingMessage.text(channels.howToConnect()) : accounts(channel, externalId, now);
         }
         ChatDialog dialog = chat.findDialog(channel, externalId).orElseGet(() -> ChatDialog.idle(channel, externalId));
         chat.saveDialog(dialog.finished().actingFor(chosen.get().recipientId()), now);
         Optional<Conversation> conversation = conversation(channel, externalId, chosen.get().recipientId());
+        BotMessages t = BotMessages.of(users.language(chosen.get().recipientId()));
         return conversation.isEmpty()
-                ? OutgoingMessage.text(NO_ACCESS)
-                : menu(conversation.get(), "Вы действуете от имени: " + name(chosen.get().recipientId()) + ".", now);
+                ? OutgoingMessage.text(t.noAccess())
+                : menu(conversation.get(), t.actingFor(name(chosen.get().recipientId(), t)), now);
     }
 
-    /** The teacher, or a current student; nobody else may use the bot. */
+    /** The teacher, or a current student, in the language of their account; nobody else may use the bot. */
     private Optional<ChatUser> user(UUID recipientId) {
         if (recipientId.equals(users.teacherId())) {
-            return Optional.of(new ChatUser(recipientId, Role.TEACHER));
+            return Optional.of(new ChatUser(recipientId, Role.TEACHER, users.language(recipientId)));
         }
         return users.findStudent(recipientId)
                 .filter(StudentSummary::isCurrent)
-                .map(student -> new ChatUser(recipientId, Role.STUDENT));
+                .map(student -> new ChatUser(recipientId, Role.STUDENT, users.language(recipientId)));
     }
 
-    private String name(UUID recipientId) {
+    private String name(UUID recipientId, BotMessages t) {
         if (recipientId.equals(users.teacherId())) {
-            return TEACHER_NAME;
+            return t.teacher();
         }
-        return users.findStudent(recipientId).map(StudentSummary::displayName).orElse("Ученик");
+        return users.findStudent(recipientId).map(StudentSummary::displayName).orElse(t.unknownStudent());
+    }
+
+    private static BotMessages texts(Conversation conversation) {
+        return BotMessages.of(conversation.user().language());
+    }
+
+    private Language teacherLanguage() {
+        return users.language(users.teacherId());
+    }
+
+    /** The bot's commands in the messenger's menu, in the given language. */
+    public static List<BotCommand> commands(Language language) {
+        return BotMessages.of(language).commands();
     }
 
     /** The reply with the bot's own buttons below it ({@code own}); the choices go to {@code actionId}. */
@@ -450,8 +452,8 @@ public class ChatEngine {
         return fitted;
     }
 
-    private static ChatButton menuButton() {
-        return ChatButton.choice(ChatIcons.with(ChatIcons.MENU, "Меню"), MENU);
+    private static ChatButton menuButton(BotMessages t) {
+        return ChatButton.choice(ChatIcons.with(ChatIcons.MENU, t.menu()), MENU);
     }
 
     /** {@code /menu@school_bot} → {@code /menu}; plain words in lower case. */

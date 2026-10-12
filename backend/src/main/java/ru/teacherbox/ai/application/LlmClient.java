@@ -1,5 +1,7 @@
 package ru.teacherbox.ai.application;
 
+import ru.teacherbox.shared.i18n.Language;
+
 /**
  * A language model provider (SPI). A bean exists only when {@code TEACHERBOX_AI_PROVIDER} selects
  * the adapter; without it the AI features are switched off.
@@ -26,5 +28,5 @@ public interface LlmClient {
      * @return what the provider said about the model, e.g. its display name
      * @throws LlmException if the provider is unreachable or rejects the request
      */
-    String ping();
+    String ping(Language language);
 }

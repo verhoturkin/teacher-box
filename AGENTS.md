@@ -101,7 +101,7 @@ details in [`backend/AGENTS.md`](backend/AGENTS.md).
 - `TEACHER` — all data of the instance. `STUDENT` — own data only: every endpoint returning student data checks
   `studentId` == current user (or `TEACHER`) and has a test "another student gets 403/404".
 - `ADMIN` ([ADR-0010](docs/adr/0010-administrator-and-diagnostics.md)) — only `/api/admin/**`, `/api/me`,
-  `/api/me/password`; **no student data** — IDs and technical data, never names or texts.
+  `/api/me/password`, `/api/me/language`; **no student data** — IDs and technical data, never names or texts.
 - REST prefixes: `/api/auth/**` (public), `/api/public/**` (no login, secret link — e.g. calendar feed),
   `/api/teacher/**`, `/api/admin/**` (module data at `/api/admin/<module>/**` in the module), `/api/me/**`
   (teacher and student cabinet), `/api/<module>/**` per module rules.

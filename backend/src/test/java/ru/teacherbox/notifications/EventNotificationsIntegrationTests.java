@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.Scenario;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.billing.api.LessonCancelled;
 import ru.teacherbox.billing.api.LessonRecorded;
 import ru.teacherbox.billing.api.PaymentRecorded;
@@ -158,6 +159,25 @@ class EventNotificationsIntegrationTests {
         // the charge was taken off: the lesson is not told as «cancelled» (the schedule does that)
         assertThat(cancelledLesson.title()).isEqualTo("Начисление за занятие 24.09.2026 снято");
         assertThat(cancelledLesson.body()).isEqualTo("Занятие не оплачивается. Баланс: 0 ₽");
+    }
+
+    @Test
+    void eachStudentReadsTheirNotificationsInTheirLanguage(Scenario scenario) {
+        UUID student = directory.addStudent("Mary");
+        directory.setLanguage(student, Language.EN);
+        UUID task = UUID.randomUUID();
+
+        InboxNotification assigned = single(scenario, student,
+                new HomeworkAssigned(task, UUID.randomUUID(), student, "Fractions", DUE, Instant.now()));
+        assertThat(assigned.title()).isEqualTo("New task: “Fractions”");
+        assertThat(assigned.body()).isEqualTo("Due: 25.09.2026 18:30");
+
+        UUID payer = directory.addStudent("Payer");
+        directory.setLanguage(payer, Language.EN);
+        InboxNotification lesson = single(scenario, payer, new LessonRecorded(UUID.randomUUID(), payer,
+                LocalDate.of(2026, 9, 24), 60, rub(150_000), false, rub(-150_000), Instant.now()));
+        assertThat(lesson.title()).isEqualTo("Lesson 24.09.2026");
+        assertThat(lesson.body()).isEqualTo("Price: ₽1,500. Debt: ₽1,500");
     }
 
     @Test

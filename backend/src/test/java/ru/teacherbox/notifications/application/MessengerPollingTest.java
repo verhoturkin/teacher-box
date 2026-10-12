@@ -26,6 +26,7 @@ import ru.teacherbox.notifications.FakeMessengerChannel;
 import ru.teacherbox.notifications.application.NotificationViews.Connection;
 import ru.teacherbox.notifications.application.NotificationViews.MessengerStatus;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.i18n.Language;
 
 class MessengerPollingTest {
 
@@ -69,7 +70,7 @@ class MessengerPollingTest {
         when(stubborn.poll()).thenReturn(List.of(new IncomingMessage("7", null, "", press)));
         doThrow(new IllegalStateException("MAX /answers 500")).when(stubborn)
                 .acknowledge(any(), any());
-        doThrow(new IllegalStateException("no commands")).when(stubborn).publishCommands(any());
+        doThrow(new IllegalStateException("no commands")).when(stubborn).publishCommands(any(), any());
         when(engine.handle(any(), any())).thenReturn(OutgoingMessage.text("ответ"));
 
         MessengerPolling.publishCommands(stubborn);
