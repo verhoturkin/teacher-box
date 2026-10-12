@@ -20,11 +20,11 @@ describe('HomeworkApi', () => {
   });
 
   it('calls the teacher endpoints', () => {
-    const input = { title: 'Дроби', description: null, interactiveHtml: null, dueAt: null };
+    const input = { title: 'Дроби', description: null, dueAt: null };
     api.assignments().subscribe();
     api.assignment('a-1').subscribe();
-    api.createAssignment('BOARD', input).subscribe();
-    api.interactivePreview('<p>?</p>').subscribe();
+    api.createAssignment(input).subscribe();
+    api.placeOnBoard('a-1', 'board-1').subscribe();
     api.updateAssignment('a-1', input, 2).subscribe();
     api.assignStudents('a-1', ['s-2']).subscribe();
     api.removeMaterial('a-1', 'f-1').subscribe();
@@ -37,13 +37,11 @@ describe('HomeworkApi', () => {
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments/a-1' });
     expect(
       backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body,
-    ).toEqual({
-      kind: 'BOARD',
-      ...input,
-    });
-    expect(backend.expectOne('/api/teacher/homework/interactive-preview').request.body).toEqual({
-      html: '<p>?</p>',
-    });
+    ).toEqual(input);
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1/board' })
+        .request.body,
+    ).toEqual({ boardId: 'board-1' });
     expect(
       backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' }).request
         .body,
@@ -92,18 +90,10 @@ describe('HomeworkApi', () => {
     api.myTasks().subscribe();
     api.myTask('t-1').subscribe();
     api.myFile('f-1').subscribe();
-    api.markDone('t-1', null).subscribe();
-    api.myInteractiveLink('t-1').subscribe();
-    api.interactiveLink('a-1').subscribe();
 
     backend.expectOne('/api/me/homework');
     backend.expectOne('/api/me/homework/tasks/t-1');
     expect(backend.expectOne('/api/me/homework/attachments/f-1').request.responseType).toBe('blob');
-    expect(backend.expectOne('/api/me/homework/tasks/t-1/done').request.body).toEqual({
-      result: null,
-    });
-    backend.expectOne('/api/me/homework/tasks/t-1/interactive-link');
-    backend.expectOne('/api/teacher/homework/assignments/a-1/interactive-link');
   });
 
   it('loads the summaries of the home pages', () => {

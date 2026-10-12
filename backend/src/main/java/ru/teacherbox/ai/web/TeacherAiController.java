@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.YearMonth;
 import java.util.List;
@@ -22,12 +21,10 @@ import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
-import ru.teacherbox.ai.application.AiViews.PageLook;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
 import ru.teacherbox.ai.application.DraftSources;
-import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.SavedPrompt;
 import ru.teacherbox.textbooks.api.PageRanges;
 
@@ -38,18 +35,6 @@ import ru.teacherbox.textbooks.api.PageRanges;
 @RestController
 @RequestMapping("/api/teacher/ai")
 class TeacherAiController {
-
-    static final String COLOR = "#[0-9a-fA-F]{6}";
-    /** Font names, commas, quotes and spaces: nothing that could end the CSS declaration. */
-    static final String FONT = "[\\p{L}\\p{N} ,'\"-]+";
-
-    /** The portal's colours ({@code #rrggbb}) and font for an interactive page. */
-    record LookRequest(
-            @NotBlank @Size(max = 100) @Pattern(regexp = FONT) String font,
-            @NotBlank @Pattern(regexp = COLOR) String primary,
-            @NotBlank @Pattern(regexp = COLOR) String surface,
-            @NotBlank @Pattern(regexp = COLOR) String text) {
-    }
 
     enum SourceType { TEXTBOOK, FILE }
 
@@ -76,14 +61,11 @@ class TeacherAiController {
 
     /**
      * @param title   what the teacher already called the assignment
-     * @param look    blank — the default look
      * @param sources textbook pages and files of the assignment to base the draft on
      */
     record HomeworkDraftRequest(
-            @NotNull HomeworkKind kind,
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,
             @Size(max = 200) @Nullable String title,
-            @Valid @Nullable LookRequest look,
             @Size(max = DraftSources.MAX_SOURCES) @Nullable List<@Valid @NotNull SourceRequest> sources) {
     }
 
@@ -108,11 +90,8 @@ class TeacherAiController {
 
     @PostMapping("/homework-draft")
     HomeworkDraft homeworkDraft(@Valid @RequestBody HomeworkDraftRequest request) {
-        LookRequest look = request.look();
         List<SourceRequest> sources = request.sources();
-        return assistant.homeworkDraft(new HomeworkBrief(request.kind(), request.prompt(), request.title(),
-                look == null ? PageLook.DEFAULT
-                        : new PageLook(look.font(), look.primary(), look.surface(), look.text()),
+        return assistant.homeworkDraft(new HomeworkBrief(request.prompt(), request.title(),
                 sources == null ? List.of() : sources.stream().map(SourceRequest::toSource).toList()));
     }
 

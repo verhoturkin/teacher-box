@@ -24,7 +24,6 @@ import { Attachment, ReviewDecision, TaskDetails } from '../data-access/homework
 import { AttachmentList } from '../ui/attachment-list';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
-import { ASSIGNMENT_KIND_LABELS } from '../homework-labels';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
@@ -64,9 +63,6 @@ import { T } from '../i18n/texts';
         [backLabel]="task.assignment.title"
       >
         <tb-help-button help topic="teacher/homework" />
-        @if (task.assignment.kind !== 'WRITTEN') {
-          <span meta>{{ kinds[task.assignment.kind] }}</span>
-        }
         <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
       </tb-page-header>
 
@@ -170,7 +166,6 @@ import { T } from '../i18n/texts';
 })
 export class TaskReviewPage implements OnInit {
   protected readonly t = T.review;
-  protected readonly kinds = ASSIGNMENT_KIND_LABELS;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);

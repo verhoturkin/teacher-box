@@ -25,11 +25,14 @@ describe('BroadcastDialog', () => {
     await fixture.whenStable();
   });
 
-  it('adds the students of a group', () => {
+  it('adds the students of a group and takes them off with it', () => {
     fixture.componentInstance.addStudents(['s-1', 'unknown']);
     fixture.componentInstance.addStudents(['s-1']);
 
     expect(fixture.componentInstance.form.controls.studentIds.value).toEqual(['s-1']);
+
+    fixture.componentInstance.removeStudents(['s-1']);
+    expect(fixture.componentInstance.form.controls.studentIds.value).toEqual([]);
   });
 
   afterEach(() => {

@@ -17,14 +17,13 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
-import { ToBoardDialog } from '@features/boards/parts';
+import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
-import { ASSIGNMENT_KIND_LABELS } from '../homework-labels';
 import { assignmentBoard } from './assignment-board';
 import { AssignmentDetails, Attachment, BoundTextbook } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
@@ -83,9 +82,6 @@ import { SHARED_T } from '@shared/i18n/texts';
     @if (details(); as assignment) {
       <tb-page-header [title]="assignment.title" back="/teacher/homework" [backLabel]="t.back">
         <tb-help-button help topic="teacher/homework" />
-        @if (assignment.kind !== 'WRITTEN') {
-          <span meta>{{ kinds[assignment.kind] }}</span>
-        }
         <span meta>
           {{
             assignment.dueAt
@@ -93,15 +89,19 @@ import { SHARED_T } from '@shared/i18n/texts';
               : t.noDueDate
           }}
         </span>
-        @if (assignment.kind !== 'INTERACTIVE') {
-          <p-button
-            [label]="t.toBoard"
-            icon="pi pi-th-large"
-            severity="secondary"
-            [disabled]="!assignment.description"
-            (onClick)="boardVisible.set(true)"
-          />
+        @if (assignment.boardId; as boardId) {
+          <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
+            <i pButtonIcon aria-hidden="true" class="pi pi-th-large"></i>
+            <span pButtonLabel>{{ t.openBoard }}</span>
+          </a>
         }
+        <p-button
+          [label]="t.toBoard"
+          icon="pi pi-th-large"
+          severity="secondary"
+          [disabled]="!hasBoardMaterial()"
+          (onClick)="boardVisible.set(true)"
+        />
         <a pButton severity="secondary" routerLink="edit">
           <i pButtonIcon aria-hidden="true" class="pi pi-pencil"></i>
           <span pButtonLabel>{{ t.edit }}</span>
@@ -207,9 +207,10 @@ import { SHARED_T } from '@shared/i18n/texts';
               </tr>
             </ng-template>
           </p-table>
-          <div class="tb-inline tb-assign">
-            <div class="tb-field tb-grow">
-              <label for="assign-students">{{ t.assignMore }}</label>
+          <h3 class="tb-subtitle">{{ t.assignMore }}</h3>
+          <div class="tb-assign">
+            <div class="tb-field">
+              <label for="assign-students">{{ t.students }}</label>
               <p-multiselect
                 inputId="assign-students"
                 [options]="unassigned()"
@@ -224,7 +225,14 @@ import { SHARED_T } from '@shared/i18n/texts';
                 [fluid]="true"
               />
             </div>
-            <tb-group-picker inputId="assign-group" (picked)="addStudents($event)" />
+            <tb-group-picker
+              inputId="assign-group"
+              [(selected)]="groupsToAssign"
+              (picked)="addStudents($event)"
+              (dropped)="removeStudents($event)"
+            />
+          </div>
+          <div class="tb-form-actions">
             <p-button
               class="tb-tonal"
               [label]="t.assign"
@@ -257,6 +265,7 @@ import { SHARED_T } from '@shared/i18n/texts';
         [students]="taskStudents()"
         [frame]="board()?.frame ?? null"
         [pictures]="board()?.pictures ?? []"
+        (placed)="rememberBoard(assignment.id, $event)"
       />
     } @else {
       <tb-page-header [title]="t.assignment" back="/teacher/homework" [backLabel]="t.back" />
@@ -264,11 +273,18 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
     <p-confirmdialog />
   `,
+  styles: `
+    .tb-assign {
+      display: grid;
+      gap: var(--tb-space-4);
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      align-items: start;
+    }
+  `,
 })
 export class AssignmentPage implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.page;
-  protected readonly kinds = ASSIGNMENT_KIND_LABELS;
   protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
@@ -289,6 +305,14 @@ export class AssignmentPage implements OnInit {
     pageDetail(() => this.details()?.title);
   }
   protected readonly boardVisible = signal(false);
+  /** A text, a picture or a textbook page to put on a board. */
+  protected readonly hasBoardMaterial = computed(() => {
+    const assignment = this.details();
+    return (
+      assignment !== null &&
+      (!!assignment.description || assignmentBoard(assignment, new Date()).pictures.length > 0)
+    );
+  });
   /** «На доску» puts the text, the pictures and the textbook pages of the assignment in a dated frame. */
   protected readonly board = computed(() => {
     const assignment = this.details();
@@ -306,6 +330,8 @@ export class AssignmentPage implements OnInit {
   protected readonly uploading = signal(false);
   private readonly students = signal<StudentOption[]>([]);
   readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
+  /** The groups chosen for «Выдать ещё ученикам». */
+  protected readonly groupsToAssign = signal<readonly string[]>([]);
   protected readonly selectedToAssign = toSignal(this.toAssign.valueChanges, {
     initialValue: this.toAssign.value,
   });
@@ -418,6 +444,19 @@ export class AssignmentPage implements OnInit {
     ]);
   }
 
+  /** Takes off the students of a group taken off. */
+  protected removeStudents(ids: readonly string[]): void {
+    const gone = new Set(ids);
+    this.toAssign.setValue(this.toAssign.value.filter((id) => !gone.has(id)));
+  }
+
+  /** The board the assignment went on: its students get «Перейти на доску». */
+  protected rememberBoard(assignmentId: string, placed: Placed): void {
+    this.api.placeOnBoard(assignmentId, placed.board.id).subscribe((updated) => {
+      this.details.set(updated);
+    });
+  }
+
   protected assign(): void {
     const assignment = this.details();
     const studentIds = this.toAssign.value;
@@ -429,6 +468,7 @@ export class AssignmentPage implements OnInit {
       .subscribe((updated) => {
         this.details.set(updated);
         this.toAssign.setValue([]);
+        this.groupsToAssign.set([]);
         this.snackbar.success(T.page.assigned);
       });
   }

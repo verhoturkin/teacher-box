@@ -52,7 +52,6 @@ export function savedPrompt(overrides: Partial<SavedPrompt> = {}): SavedPrompt {
     id: 'p-1',
     title: 'Тест на 10 вопросов',
     text: 'Сделай тест на 10 вопросов с выбором ответа',
-    kind: 'INTERACTIVE',
     updatedAt: '2026-10-12T10:00:00Z',
     version: 0,
     ...overrides,

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,8 +80,6 @@ public class PlatformSecurityAutoConfiguration {
      * The SPA uses no inline scripts (critical CSS inlining is off in the Angular build); PrimeNG
      * needs inline styles. Images may come from https URLs in the teacher's Markdown.
      */
-    private static final String FRAME_OPTIONS = "X-Frame-Options";
-
     static final String CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; "
             + "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; "
             + "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
@@ -130,13 +127,6 @@ public class PlatformSecurityAutoConfiguration {
                 .addFilterBefore(new AuthRateLimitFilter(properties.authRateLimit(), clock),
                         BearerTokenAuthenticationFilter.class)
                 .headers(headers -> headers
-                        // A page that may be framed (interactive homework, ADR-0040) sets its own frame options.
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                        .addHeaderWriter((request, response) -> {
-                            if (!response.containsHeader(FRAME_OPTIONS)) {
-                                response.setHeader(FRAME_OPTIONS, "DENY");
-                            }
-                        })
                         .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
                         .referrerPolicy(referrer -> referrer.policy(
                                 ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))

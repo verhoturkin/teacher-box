@@ -9,6 +9,7 @@ describe('GroupPicker', () => {
   let fixture: ComponentFixture<GroupPicker>;
   let backend: HttpTestingController;
   let picked: string[][];
+  let dropped: string[][];
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -18,7 +19,9 @@ describe('GroupPicker', () => {
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupPicker);
     picked = [];
+    dropped = [];
     fixture.componentInstance.picked.subscribe((ids) => picked.push(ids));
+    fixture.componentInstance.dropped.subscribe((ids) => dropped.push(ids));
     await fixture.whenStable();
   });
 
@@ -36,23 +39,34 @@ describe('GroupPicker', () => {
       ]);
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelector('p-select')).toBeNull();
+    expect(hostElement(fixture).querySelector('p-multiselect')).toBeNull();
   });
 
-  it('emits the students of the chosen group who still have access', async () => {
-    const group = aGroup({
-      members: [
-        { id: 'a', displayName: 'Анна', status: 'ACTIVE' },
-        { id: 'o', displayName: 'Олег', status: 'DEACTIVATED' },
-      ],
-    });
-    backend.expectOne('/api/teacher/groups').flush([group]);
+  it('adds the students of chosen groups and removes those of a group taken off', async () => {
+    backend.expectOne('/api/teacher/groups').flush([
+      aGroup({
+        id: 'g1',
+        members: [
+          { id: 'a', displayName: 'Анна', status: 'ACTIVE' },
+          { id: 'o', displayName: 'Олег', status: 'DEACTIVATED' },
+          { id: 'b', displayName: 'Борис', status: 'ACTIVE' },
+        ],
+      }),
+      aGroup({ id: 'g2', members: [{ id: 'b', displayName: 'Борис', status: 'ACTIVE' }] }),
+    ]);
     await fixture.whenStable();
-    expect(hostElement(fixture).querySelector('p-select')).not.toBeNull();
+    expect(hostElement(fixture).querySelector('p-multiselect')).not.toBeNull();
+    const picker = fixture.componentInstance;
 
-    fixture.componentInstance.choice.setValue(group);
+    picker.choose(['g1']);
+    picker.choose(['g1', 'g2']);
+    expect(picked).toEqual([['a', 'b'], ['b']]);
 
-    expect(picked).toEqual([['a']]);
-    expect(fixture.componentInstance.choice.value).toBeNull();
+    picker.choose(['g2']);
+    expect(dropped).toEqual([['a']]);
+    expect(picker.selected()).toEqual(['g2']);
+
+    picker.choose([]);
+    expect(dropped).toEqual([['a'], ['b']]);
   });
 });

@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.HomeworkSummaryService;
-import ru.teacherbox.homework.application.InteractivePages;
-import ru.teacherbox.homework.application.InteractivePages.PageLink;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
@@ -34,8 +32,6 @@ import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.ReviewService;
-import ru.teacherbox.homework.domain.Assignment;
-import ru.teacherbox.homework.domain.AssignmentKind;
 import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
@@ -43,12 +39,9 @@ import ru.teacherbox.textbooks.api.PageRanges;
 @RequestMapping("/api/teacher/homework")
 class TeacherHomeworkController {
 
-    /** @param kind blank — written homework */
     record CreateAssignmentRequest(
-            @Nullable AssignmentKind kind,
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
-            @Size(max = Assignment.MAX_HTML) @Nullable String interactiveHtml,
             @Nullable Instant dueAt,
             @Nullable List<UUID> studentIds) {
     }
@@ -56,12 +49,12 @@ class TeacherHomeworkController {
     record UpdateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
-            @Size(max = Assignment.MAX_HTML) @Nullable String interactiveHtml,
             @Nullable Instant dueAt,
             @NotNull Long version) {
     }
 
-    record PreviewRequest(@NotBlank @Size(max = Assignment.MAX_HTML) String html) {
+    /** @param boardId the board the assignment was put on; {@code null} — none */
+    record PlaceOnBoardRequest(@Nullable UUID boardId) {
     }
 
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
@@ -80,14 +73,12 @@ class TeacherHomeworkController {
     private final AssignmentService assignments;
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
-    private final InteractivePages pages;
 
     TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
-            HomeworkSummaryService summaries, InteractivePages pages) {
+            HomeworkSummaryService summaries) {
         this.assignments = assignments;
         this.reviews = reviews;
         this.summaries = summaries;
-        this.pages = pages;
     }
 
     @GetMapping("/summary")
@@ -103,8 +94,7 @@ class TeacherHomeworkController {
     @PostMapping("/assignments")
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
-        return assignments.create(request.kind() == null ? AssignmentKind.WRITTEN : request.kind(), request.title(),
-                request.description(), request.interactiveHtml(), request.dueAt(),
+        return assignments.create(request.title(), request.description(), request.dueAt(),
                 request.studentIds() == null ? List.of() : request.studentIds());
     }
 
@@ -115,20 +105,13 @@ class TeacherHomeworkController {
 
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
-        return assignments.update(assignmentId, request.title(), request.description(), request.interactiveHtml(),
-                request.dueAt(), request.version());
+        return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
+                request.version());
     }
 
-    /** A short-lived link to the page of interactive homework (ADR-0040). */
-    @GetMapping("/assignments/{assignmentId}/interactive-link")
-    PageLink interactiveLink(@PathVariable UUID assignmentId) {
-        return pages.teacherLink(assignmentId);
-    }
-
-    /** A short-lived link to an interactive page not saved yet: the editor's preview (ADR-0040). */
-    @PostMapping("/interactive-preview")
-    PageLink interactivePreview(@Valid @RequestBody PreviewRequest request) {
-        return pages.previewLink(request.html());
+    @PutMapping("/assignments/{assignmentId}/board")
+    AssignmentDetails placeOnBoard(@PathVariable UUID assignmentId, @RequestBody PlaceOnBoardRequest request) {
+        return assignments.placeOnBoard(assignmentId, request.boardId());
     }
 
     @PostMapping("/assignments/{assignmentId}/students")

@@ -151,18 +151,9 @@ export const ru = {
       'assignment.not-found': 'Задание не найдено',
       'assignment.title-invalid': 'Название задания — от 1 до 200 символов',
       'assignment.description-invalid': 'Текст задания слишком длинный',
-      'assignment.html-required': 'Для интерактивного задания нужен HTML-код',
-      'assignment.html-invalid': 'HTML-код задания слишком длинный',
-      'assignment.not-interactive': 'У этого задания нет HTML-страницы',
-      'homework.page-not-found': 'Ссылка на страницу задания устарела — откройте задание заново',
-      'assignment.materials-not-allowed':
-        'Учебники и файлы можно добавить только к письменному заданию',
       'task.grade-invalid': 'Оценка слишком длинная — не больше 20 символов',
       'task.comment-invalid': 'Комментарий к работе слишком длинный',
       'submission.text-invalid': 'Текст ответа слишком длинный',
-      'submission.kind-mismatch':
-        'К письменному заданию прикладывают ответ, остальные отмечают «Готово»',
-      'submission.result-invalid': 'Страница задания прислала неверный результат',
       'student.deactivated': 'Нельзя выдать задание ученику с отключённым доступом',
       'task.not-found': 'Задание не найдено',
       'task.already-accepted': 'Работа уже принята учителем',

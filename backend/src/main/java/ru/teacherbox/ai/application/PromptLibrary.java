@@ -3,12 +3,10 @@ package ru.teacherbox.ai.application;
 import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.ai.application.AiViews.PromptView;
-import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.SavedPrompt;
 import ru.teacherbox.ai.persistence.PromptRepository;
 import ru.teacherbox.shared.Ids;
@@ -32,8 +30,8 @@ public class PromptLibrary {
     }
 
     @Transactional
-    public PromptView create(String title, String text, @Nullable HomeworkKind kind) {
-        SavedPrompt prompt = SavedPrompt.create(Ids.newId(), title, text, kind, clock.instant());
+    public PromptView create(String title, String text) {
+        SavedPrompt prompt = SavedPrompt.create(Ids.newId(), title, text, clock.instant());
         prompts.insert(prompt);
         return PromptView.of(prompt);
     }
@@ -42,12 +40,12 @@ public class PromptLibrary {
      * @throws OptimisticLockingFailureException if the prompt was changed after {@code expectedVersion}
      */
     @Transactional
-    public PromptView update(UUID id, String title, String text, @Nullable HomeworkKind kind, long expectedVersion) {
+    public PromptView update(UUID id, String title, String text, long expectedVersion) {
         SavedPrompt prompt = prompts.findById(id).orElseThrow(PromptLibrary::notFound);
         if (prompt.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Prompt " + id + " was modified");
         }
-        prompt.update(title, text, kind, clock.instant());
+        prompt.update(title, text, clock.instant());
         prompts.update(prompt);
         return PromptView.of(prompt);
     }

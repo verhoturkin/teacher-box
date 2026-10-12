@@ -150,10 +150,12 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
-  («Выдать» / «Сохранить») is the header's main action; content cards on the left, a sticky assistant column
-  (22 rem) on the right at `width >= 75em` (stacked under the content below); Markdown with its preview side by side
-  at `width >= 75em`, a «Текст / Просмотр» switch below; a segmented control of three or more long options becomes a
-  `p-select` at `width <= 48em`. Leaving with unsaved changes asks (`canLeaveGuard`, danger confirmation).
+  («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
+  second way to save («Выдать и поместить на доску») is tonal before it. Content cards on the left, a sticky
+  assistant column (22 rem) on the right at `width >= 75em` (stacked under the content below). Markdown is one field
+  with a «Текст / Просмотр» switch at every width — never a second, side-by-side field. Students and groups are two
+  multiselects side by side (a settings grid of `minmax(16rem, 1fr)` columns), so a group never gets squeezed. Leaving
+  with unsaved changes asks (`canLeaveGuard`, danger confirmation).
 
 ## 6. States and feedback
 
@@ -251,6 +253,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
     (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
     (`tb-tooltip-lines`, focusable).
+  - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
+    on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
+    (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,
+    «Выдано» / «Принято N из M» primary) and «⋮» («Открыть», «Изменить», «Проверить работы», «Открыть доску»).
 - Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
   «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
   history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —

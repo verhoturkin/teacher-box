@@ -12,17 +12,6 @@ export interface AiStatus {
   readonly limitReached: boolean;
 }
 
-/** Mirrors `HomeworkKind` of the backend (the kinds of `homework`). */
-export type HomeworkKind = 'WRITTEN' | 'BOARD' | 'INTERACTIVE';
-
-/** The portal's colours (`#rrggbb`) and font that an interactive page follows. */
-export interface PageLook {
-  readonly font: string;
-  readonly primary: string;
-  readonly surface: string;
-  readonly text: string;
-}
-
 /** A material of a draft (ADR-0039): pages of a textbook (`pages` `null` — the whole one) or a file of an assignment. */
 export type DraftSource =
   | { readonly type: 'TEXTBOOK'; readonly id: string; readonly pages: string | null }
@@ -36,13 +25,10 @@ export interface SourceOption {
 }
 
 export interface HomeworkBrief {
-  readonly kind: HomeworkKind;
   /** The teacher's request in their own words. */
   readonly prompt: string;
   /** What the teacher already called the assignment. */
   readonly title: string | null;
-  /** `null` — the backend's default look. */
-  readonly look: PageLook | null;
   readonly sources: readonly DraftSource[];
 }
 
@@ -50,16 +36,13 @@ export interface HomeworkDraft {
   readonly title: string;
   /** Markdown. */
   readonly description: string;
-  /** The page of interactive homework; `null` for other kinds. */
-  readonly html: string | null;
 }
 
-/** Mirrors `PromptView`: a prompt of the teacher's library; `kind` `null` — for any kind. */
+/** Mirrors `PromptView`: a prompt of the teacher's library. */
 export interface SavedPrompt {
   readonly id: string;
   readonly title: string;
   readonly text: string;
-  readonly kind: HomeworkKind | null;
   readonly updatedAt: string;
   readonly version: number;
 }
@@ -67,7 +50,6 @@ export interface SavedPrompt {
 export interface PromptInput {
   readonly title: string;
   readonly text: string;
-  readonly kind: HomeworkKind | null;
 }
 
 export interface ReviewBrief {

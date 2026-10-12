@@ -40,7 +40,7 @@ class AssistantIntegrationTests {
 
     private static final UUID TEACHER = UUID.randomUUID();
     private static final String HOMEWORK_BODY = """
-            {"kind": "WRITTEN", "prompt": "Дроби, 5 класс, 4 задачи", "title": "Дроби"}
+            {"prompt": "Дроби, 5 класс, 4 задачи", "title": "Дроби"}
             """;
     private static final String REVIEW_BODY = """
             {"title": "Дроби", "description": "Сложите 1/2 и 1/3", "answer": "Ответ: 2/5"}
@@ -83,8 +83,8 @@ class AssistantIntegrationTests {
 
         LlmRequest request = llm.lastRequest();
         assertThat(request).isNotNull();
-        assertThat(request.system()).contains("репетитору", "письменное", "Markdown").doesNotContain("{{");
-        assertThat(request.prompt()).contains("Тип задания: письменное", "написал учитель: Дроби",
+        assertThat(request.system()).contains("репетитору", "пронумерованный список", "Markdown").doesNotContain("{{");
+        assertThat(request.prompt()).contains("написал учитель: Дроби",
                 "<request>\nДроби, 5 класс, 4 задачи\n</request>");
         assertThat(request.schemaName()).isEqualTo("homework_draft");
         assertThat(request.schema()).extractingByKey("required").isEqualTo(java.util.List.of("title", "description"));
@@ -100,44 +100,18 @@ class AssistantIntegrationTests {
     }
 
     @Test
-    void boardHomeworkWithoutATitle() {
+    void homeworkWithoutATitle() {
         llm.answer("{\"title\": \"Т\", \"description\": \"О\", \"html\": \"<p>лишнее</p>\"}", 1, 1);
 
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"kind\": \"BOARD\", \"prompt\": \"Степени\"}"))
-                .hasStatusOk().bodyJson().extractingPath("$.html").isNull();
-
-        assertThat(llm.lastRequest().prompt()).contains("Тип задания: на доске", "написал учитель: —");
-        assertThat(llm.lastRequest().system()).contains("онлайн-доске");
-    }
-
-    @Test
-    void interactiveHomeworkComesAsASandboxedPageInThePortalsLook() {
-        llm.answer("""
-                {"title": "Тест", "description": "Ответьте на вопросы", "html": "<!doctype html><p>2 + 2 = ?</p>"}
-                """, 1, 1);
-
-        assertThat(post("/api/teacher/ai/homework-draft", """
-                {"kind": "INTERACTIVE", "prompt": "Тест на сложение",
-                 "look": {"font": "Roboto, sans-serif", "primary": "#336699", "surface": "#FFFFFF", "text": "#111111"}}
-                """)).hasStatusOk().bodyJson().satisfies(json -> {
-                    assertThat(json).extractingPath("$.html").isEqualTo("<!doctype html><p>2 + 2 = ?</p>");
-                    assertThat(json).extractingPath("$.description").isEqualTo("Ответьте на вопросы");
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \"Степени\"}"))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.title").isEqualTo("Т");
+                    assertThat(json).extractingPath("$.description").isEqualTo("О");
                 });
 
-        LlmRequest request = llm.lastRequest();
-        assertThat(request.schemaName()).isEqualTo("interactive_homework_draft");
-        assertThat(request.schema()).extractingByKey("required")
-                .isEqualTo(java.util.List.of("title", "description", "html"));
-        assertThat(request.system()).contains("teacherbox.result", "песочнице", "шрифт Roboto, sans-serif",
-                "основной цвет #336699", "фон #FFFFFF", "текст #111111");
-
-        llm.answer("""
-                {"title": "Тест", "description": "О", "html": "<script src='https://cdn.example/x.js'></script>"}
-                """, 1, 1);
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"kind\": \"INTERACTIVE\", \"prompt\": \"Тест\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("ai.invalid-answer");
-        assertThat(llm.lastRequest().system()).contains("#1b6b5a");
+        assertThat(llm.lastRequest().prompt()).contains("написал учитель: —").doesNotContain("Тип задания");
+        assertThat(llm.lastRequest().system()).contains("пронумерованный список");
+        assertThat(llm.lastRequest().schemaName()).isEqualTo("homework_draft");
     }
 
     @Test
@@ -150,7 +124,7 @@ class AssistantIntegrationTests {
         llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
 
         assertThat(post("/api/teacher/ai/homework-draft", """
-                {"kind": "WRITTEN", "prompt": "Задачи по этим страницам",
+                {"prompt": "Задачи по этим страницам",
                  "sources": [{"type": "TEXTBOOK", "id": "%s", "pages": "2-3"}]}
                 """.formatted(textbook))).hasStatusOk();
 
@@ -160,7 +134,7 @@ class AssistantIntegrationTests {
         });
         assertThat(llm.lastRequest().prompt()).contains("опирайся на них): Spotlight 5, с. 2-3");
         assertThat(post("/api/teacher/ai/homework-draft", """
-                {"kind": "WRITTEN", "prompt": "x", "sources": [{"type": "FILE", "id": "%s"}]}
+                {"prompt": "x", "sources": [{"type": "FILE", "id": "%s"}]}
                 """.formatted(UUID.randomUUID()))).as("a file needs its assignment").hasStatus(HttpStatus.BAD_REQUEST);
     }
 
@@ -301,14 +275,10 @@ class AssistantIntegrationTests {
 
     @Test
     void validatesRequests() {
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"kind\": \"WRITTEN\", \"prompt\": \" \"}"))
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \" \"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \"Дроби\"}"))
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"title\": \"Дроби\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(post("/api/teacher/ai/homework-draft", """
-                {"kind": "INTERACTIVE", "prompt": "Тест",
-                 "look": {"font": "x;}</style>", "primary": "#336699", "surface": "#fff", "text": "#111111"}}
-                """)).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(post("/api/teacher/ai/review-draft", "{\"title\": \"Дроби\", \"answer\": \"\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(llm.lastRequest()).isNull();

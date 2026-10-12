@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
-import ru.teacherbox.ai.domain.HomeworkKind;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.domain.SavedPrompt;
 
@@ -17,34 +16,20 @@ public final class AiViews {
     }
 
     /**
-     * What the teacher wants: the kind of homework and the request in their own words.
+     * What the teacher wants: the request in their own words.
      *
-     * @param title what the teacher already called the assignment, if anything
-     * @param look    the portal's colours and font, for the page of interactive homework
+     * @param title   what the teacher already called the assignment, if anything
      * @param sources textbook pages and files of the assignment to base the draft on (ADR-0039)
      */
-    public record HomeworkBrief(HomeworkKind kind, String prompt, @Nullable String title, PageLook look,
-            List<DraftSources.Source> sources) {
+    public record HomeworkBrief(String prompt, @Nullable String title, List<DraftSources.Source> sources) {
 
         public HomeworkBrief {
             sources = List.copyOf(sources);
         }
     }
 
-    /** The look of the portal an interactive page should follow: CSS colours and a font family. */
-    public record PageLook(String font, String primary, String surface, String text) {
-
-        /** For a request that names none. */
-        public static final PageLook DEFAULT = new PageLook("system-ui, sans-serif", "#1b6b5a", "#ffffff",
-                "#1a1c1b");
-    }
-
-    /**
-     * A draft of an assignment for the homework editor.
-     *
-     * @param html the page of interactive homework; {@code null} for other kinds
-     */
-    public record HomeworkDraft(String title, String description, @Nullable String html) {
+    /** A draft of an assignment for the homework editor. */
+    public record HomeworkDraft(String title, String description) {
     }
 
     /** Texts of the task and the student's answer; the frontend sends them explicitly. */
@@ -106,13 +91,11 @@ public final class AiViews {
             List<RequestView> recent) {
     }
 
-    /** A prompt of the library; {@code kind} {@code null} — for any kind of homework. */
-    public record PromptView(UUID id, String title, String text, @Nullable HomeworkKind kind, Instant updatedAt,
-            long version) {
+    /** A prompt of the library. */
+    public record PromptView(UUID id, String title, String text, Instant updatedAt, long version) {
 
         static PromptView of(SavedPrompt prompt) {
-            return new PromptView(prompt.id(), prompt.title(), prompt.text(), prompt.kind(), prompt.updatedAt(),
-                    prompt.version());
+            return new PromptView(prompt.id(), prompt.title(), prompt.text(), prompt.updatedAt(), prompt.version());
         }
     }
 }

@@ -18,16 +18,13 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Monthly token limit (`TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT`, input + output, instance time zone): over the limit
   requests are rejected before calling the provider.
 - `ai.requests` stores metadata only (feature, model, status, tokens, duration, error) — never texts.
-- Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000, kind
-  (`WRITTEN` / `BOARD` / `INTERACTIVE`, blank — any); listed by title, optimistic locking, in the full reset; kept
-  whether the AI is configured or not.
+- Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000 (no kinds
+  since 0.14.1, ADR-0041); listed by title, optimistic locking, in the full reset; kept whether the AI is configured
+  or not.
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
-- Homework draft (`POST homework-draft` `{kind, prompt ≤ 4000, title?, look?}`, prompts `homework-draft.*.v2` +
-  `homework-kind.<kind>.v1`): the kind's rules go into the system prompt; `INTERACTIVE` asks for `{title,
-  description, html}` — one sandboxed page in the portal's `look` (font, `#rrggbb` primary / surface / text; blank —
-  `PageLook.DEFAULT`) that reports with `teacherbox.result(...)`. A page that loads anything (`<script src>`, `<link>`,
-  `<iframe>`, `<object>`, `<embed>`, `<base>`, external `src` / `href` / `url()`, `@import`) or is over 200 000
-  characters is an invalid answer.
+- Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?}`, prompts `homework-draft.*.v3`): always
+  `{title, description}` — a Markdown text with numbered tasks; no kinds and no HTML pages since 0.14.1
+  ([ADR-0041](../adr/0041-homework-without-kinds-board-link.md)).
 - Sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md), `DraftSources`): `sources` — up to 5 of
   `{type: TEXTBOOK, id, pages?}` (`Textbooks.content`, pages blank — the whole PDF; a picture — `Textbooks.file`) and
   `{type: FILE, assignmentId, id}` (`AssignmentFiles.file`); PDF or png / jpeg / webp / gif only
@@ -44,4 +41,4 @@ usage metadata).
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant: library chips and select, request, draft with «Заменить» / «Вставить в конец» / «Отбросить», «Сохранить промт»; `page-look.ts` reads the portal's colours and font for interactive pages), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant: library chips and select, request, draft with «Заменить» / «Вставить в конец» / «Отбросить», «Сохранить промт»), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.

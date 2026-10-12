@@ -67,7 +67,38 @@ class AssignmentIntegrationTests {
                     .containsExactly(2);
             assertThat(json).extractingPath("$[?(@.id == '%s')].assigned".formatted(id)).asArray()
                     .containsExactly(2);
+            assertThat(json).extractingPath("$[?(@.id == '%s')].students[*]".formatted(id)).asArray()
+                    .containsExactly("Анна", "Борис");
+            assertThat(json).extractingPath("$[?(@.id == '%s')].boardId".formatted(id)).asArray()
+                    .containsExactly((Object) null);
         });
+    }
+
+    @Test
+    void remembersTheBoardTheAssignmentWasPutOn() {
+        UUID student = directory.addStudent("Вера");
+        String id = createdId("На доску", List.of(student));
+        UUID board = UUID.randomUUID();
+
+        assertThat(put("/api/teacher/homework/assignments/" + id + "/board", "{\"boardId\":\"%s\"}".formatted(board)))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.boardId").isEqualTo(board.toString());
+                    assertThat(json).extractingPath("$.version").isEqualTo(0);
+                });
+        assertThat(get("/api/teacher/homework/assignments")).bodyJson()
+                .extractingPath("$[?(@.id == '%s')].boardId".formatted(id)).asArray()
+                .containsExactly(board.toString());
+        String taskId = JsonPath.read(body(get("/api/teacher/homework/assignments/" + id)), "$.tasks[0].taskId");
+        assertThat(mvc.get().uri("/api/me/homework/tasks/" + taskId).with(TestUsers.student(student)))
+                .hasStatusOk().bodyJson().extractingPath("$.assignment.boardId").isEqualTo(board.toString());
+        assertThat(mvc.put().uri("/api/teacher/homework/assignments/" + id + "/board")
+                .with(TestUsers.student(student)).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .hasStatus(HttpStatus.FORBIDDEN);
+
+        assertThat(put("/api/teacher/homework/assignments/" + id + "/board", "{\"boardId\":null}"))
+                .hasStatusOk().bodyJson().extractingPath("$.boardId").isNull();
+        assertThat(put("/api/teacher/homework/assignments/" + UUID.randomUUID() + "/board", "{}"))
+                .hasStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -83,60 +114,6 @@ class AssignmentIntegrationTests {
                 });
         assertThat(put("/api/teacher/homework/assignments/" + id, "{\"title\":\"Старое\",\"version\":0}"))
                 .hasStatus(HttpStatus.CONFLICT);
-    }
-
-    @Test
-    void anAssignmentIsWrittenUnlessAnotherKindIsChosen() {
-        String id = createdId("Письменное", List.of());
-
-        assertThat(get("/api/teacher/homework/assignments/" + id)).bodyJson().satisfies(json -> {
-            assertThat(json).extractingPath("$.kind").isEqualTo("WRITTEN");
-            assertThat(json).extractingPath("$.interactiveHtml").isNull();
-        });
-        assertThat(get("/api/teacher/homework/assignments")).bodyJson()
-                .extractingPath("$[?(@.id == '%s')].kind".formatted(id)).asArray().containsExactly("WRITTEN");
-    }
-
-    @Test
-    void aBoardAssignmentTakesNoMaterials() {
-        MvcTestResult created = post("/api/teacher/homework/assignments",
-                "{\"kind\":\"BOARD\",\"title\":\"На доске\",\"description\":\"Решить на доске\"}");
-        assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.kind").isEqualTo("BOARD");
-        String id = JsonPath.read(body(created), "$.id");
-
-        assertThat(upload(id, new MockMultipartFile("files", "a.txt", null, new byte[] {1})))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("assignment.materials-not-allowed");
-    }
-
-    @Test
-    void anInteractiveAssignmentNeedsHtml() {
-        assertThat(post("/api/teacher/homework/assignments", "{\"kind\":\"INTERACTIVE\",\"title\":\"Тест\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("assignment.html-required");
-        assertThat(post("/api/teacher/homework/assignments", "{\"kind\":\"QUIZ\",\"title\":\"Тест\"}"))
-                .hasStatus(HttpStatus.BAD_REQUEST);
-
-        MvcTestResult created = post("/api/teacher/homework/assignments",
-                "{\"kind\":\"INTERACTIVE\",\"title\":\"Тест\",\"interactiveHtml\":\"<p>1 + 1 = ?</p>\"}");
-        assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
-            assertThat(json).extractingPath("$.kind").isEqualTo("INTERACTIVE");
-            assertThat(json).extractingPath("$.interactiveHtml").isEqualTo("<p>1 + 1 = ?</p>");
-        });
-        String id = JsonPath.read(body(created), "$.id");
-
-        assertThat(put("/api/teacher/homework/assignments/" + id,
-                "{\"title\":\"Тест 2\",\"interactiveHtml\":\"<p>2 + 2 = ?</p>\",\"version\":0}"))
-                .hasStatusOk().bodyJson().satisfies(json -> {
-                    assertThat(json).extractingPath("$.kind").isEqualTo("INTERACTIVE");
-                    assertThat(json).extractingPath("$.interactiveHtml").isEqualTo("<p>2 + 2 = ?</p>");
-                });
-        assertThat(put("/api/teacher/homework/assignments/" + id, "{\"title\":\"Тест 3\",\"version\":1}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("assignment.html-required");
-        assertThat(upload(id, new MockMultipartFile("files", "a.txt", null, new byte[] {1})))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("assignment.materials-not-allowed");
     }
 
     @Test

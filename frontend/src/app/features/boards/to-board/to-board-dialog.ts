@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -175,6 +176,8 @@ export class ToBoardDialog {
   readonly frame = input<string | null>(null);
   /** API addresses of the assignment's pictures (files, textbook pages), in their order. */
   readonly pictures = input<readonly string[]>([]);
+  /** The material went to a board (its tab opened or the clipboard got it). */
+  readonly placed = output<Placed>();
 
   protected readonly kindLabels = BOARD_KIND_LABELS;
   /** The item template's board is untyped. */
@@ -294,6 +297,7 @@ export class ToBoardDialog {
   /** Still within the click's activation; if the browser blocks the tab, the message has a link. */
   private open(placed: Placed): void {
     this.done.set(placed);
+    this.placed.emit(placed);
     window.open(placed.href, '_blank', 'noopener');
   }
 }

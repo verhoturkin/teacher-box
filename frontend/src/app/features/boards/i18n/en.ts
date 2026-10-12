@@ -46,6 +46,9 @@ export const en: Translation<typeof ru> = {
     changed: (date: string) => `changed ${date}`,
     external: 'external board',
   },
+  myBoardButton: {
+    open: 'Go to the board',
+  },
   myCard: {
     title: 'My boards',
     what: 'the boards',

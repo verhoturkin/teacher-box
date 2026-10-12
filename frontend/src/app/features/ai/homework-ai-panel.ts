@@ -20,9 +20,8 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
-import { HomeworkDraft, HomeworkKind, SavedPrompt, SourceOption } from './data-access/ai.models';
+import { HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
 import { T } from './i18n/texts';
-import { currentPageLook } from './page-look';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
 export interface AppliedDraft {
@@ -108,7 +107,7 @@ const QUICK_PROMPTS = 4;
             id="ai-prompt"
             [formControl]="prompt"
             rows="5"
-            [placeholder]="t.placeholders[kind()]"
+            [placeholder]="t.placeholder"
           ></textarea>
           <small class="tb-hint">{{ t.hint }}</small>
         </div>
@@ -150,12 +149,7 @@ const QUICK_PROMPTS = 4;
         @if (draft(); as current) {
           <section class="tb-ai-panel__draft" [attr.aria-label]="t.draft">
             <h3 class="tb-subtitle">{{ current.title }}</h3>
-            @if (current.html !== null) {
-              <p class="tb-muted">{{ current.description }}</p>
-              <p>{{ t.pageReady }}</p>
-            } @else {
-              <tb-markdown [text]="current.description" />
-            }
+            <tb-markdown [text]="current.description" />
             <div class="tb-actions">
               <p-button
                 [label]="t.discard"
@@ -163,7 +157,7 @@ const QUICK_PROMPTS = 4;
                 [text]="true"
                 (onClick)="draft.set(null)"
               />
-              @if (current.html === null && hasText()) {
+              @if (hasText()) {
                 <p-button
                   [label]="t.insert"
                   severity="secondary"
@@ -216,7 +210,6 @@ export class HomeworkAiPanel implements OnInit {
   private readonly api = inject(AiApi);
   private readonly snackbar = inject(Snackbar);
 
-  readonly kind = input<HomeworkKind>('WRITTEN');
   /** What the teacher already called the assignment. */
   readonly title = input('');
   /** The assignment has text a draft could go after. */
@@ -233,11 +226,8 @@ export class HomeworkAiPanel implements OnInit {
     nonNullable: true,
     validators: [Validators.required, Validators.maxLength(100)],
   });
-  private readonly library = signal<readonly SavedPrompt[]>([]);
-  /** Prompts for this kind of homework or for any. */
-  protected readonly choices = computed(() =>
-    this.library().filter((prompt) => prompt.kind === null || prompt.kind === this.kind()),
-  );
+  private readonly library = signal<SavedPrompt[]>([]);
+  protected readonly choices = this.library.asReadonly();
   protected readonly quick = computed(() => this.choices().slice(0, QUICK_PROMPTS));
   protected readonly draft = signal<HomeworkDraft | null>(null);
   /** Keys of the chosen sources. */
@@ -287,10 +277,8 @@ export class HomeworkAiPanel implements OnInit {
     this.error.set(null);
     this.api
       .homeworkDraft({
-        kind: this.kind(),
         prompt,
         title: title === '' ? null : title,
-        look: this.kind() === 'INTERACTIVE' ? currentPageLook() : null,
         sources: this.sources()
           .filter((option) => this.chosen().has(option.key))
           .map((option) => option.source),
@@ -324,7 +312,7 @@ export class HomeworkAiPanel implements OnInit {
       return;
     }
     this.saving.set(true);
-    this.api.savePrompt({ title, text: this.prompt.value.trim(), kind: this.kind() }).subscribe({
+    this.api.savePrompt({ title, text: this.prompt.value.trim() }).subscribe({
       next: (saved) => {
         this.saving.set(false);
         this.naming.set(false);

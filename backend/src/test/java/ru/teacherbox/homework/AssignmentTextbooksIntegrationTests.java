@@ -81,19 +81,6 @@ class AssignmentTextbooksIntegrationTests {
     }
 
     @Test
-    void onlyWrittenHomeworkTakesTextbooks() {
-        UUID spotlight = textbooks.add("Spotlight", TextbookFormat.PDF, 120);
-        MvcTestResult created = mvc.post().uri("/api/teacher/homework/assignments").with(teacher())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"kind\":\"BOARD\",\"title\":\"На доске\"}").exchange();
-        String assignment = JsonPath.read(AssignmentIntegrationTests.body(created), "$.id");
-
-        assertThat(bind(assignment, "{\"textbookId\":\"%s\"}".formatted(spotlight)))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson().extractingPath("$.code")
-                .isEqualTo("assignment.materials-not-allowed");
-    }
-
-    @Test
     void theStudentGetsOnlyTheBoundPages() {
         UUID student = directory.addStudent("Борис");
         String assignment = createdId(student);

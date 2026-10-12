@@ -25,10 +25,9 @@ class PromptLibraryIntegrationTests {
     @Test
     void theTeacherKeepsPrompts() throws Exception {
         MvcTestResult created = send(mvc.post().uri("/api/teacher/ai/prompts"),
-                "{\"title\":\"  Тест на 10 вопросов \",\"text\":\"Сделай тест на 10 вопросов\",\"kind\":\"INTERACTIVE\"}");
+                "{\"title\":\"  Тест на 10 вопросов \",\"text\":\"Сделай тест на 10 вопросов\"}");
         assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.title").isEqualTo("Тест на 10 вопросов");
-            assertThat(json).extractingPath("$.kind").isEqualTo("INTERACTIVE");
             assertThat(json).extractingPath("$.version").isEqualTo(0);
         });
         String id = JsonPath.read(created.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.id");
@@ -38,15 +37,12 @@ class PromptLibraryIntegrationTests {
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$[*].title").asArray()
                             .containsSubsequence("Перевод", "Тест на 10 вопросов");
-                    assertThat(json).extractingPath("$[?(@.title == 'Перевод')].kind").asArray()
-                            .containsExactly((Object) null);
                 });
 
         assertThat(send(mvc.put().uri("/api/teacher/ai/prompts/" + id),
-                "{\"title\":\"Тест\",\"text\":\"Сделай тест на 5 вопросов\",\"kind\":null,\"version\":0}"))
+                "{\"title\":\"Тест\",\"text\":\"Сделай тест на 5 вопросов\",\"version\":0}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.text").isEqualTo("Сделай тест на 5 вопросов");
-                    assertThat(json).extractingPath("$.kind").isNull();
                     assertThat(json).extractingPath("$.version").isEqualTo(1);
                 });
         assertThat(send(mvc.put().uri("/api/teacher/ai/prompts/" + id),
@@ -64,8 +60,6 @@ class PromptLibraryIntegrationTests {
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(send(mvc.post().uri("/api/teacher/ai/prompts"),
                 "{\"title\":\"x\",\"text\":\"" + "a".repeat(4_001) + "\"}")).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(send(mvc.post().uri("/api/teacher/ai/prompts"), "{\"title\":\"x\",\"text\":\"y\",\"kind\":\"QUIZ\"}"))
-                .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(send(mvc.put().uri("/api/teacher/ai/prompts/" + UUID.randomUUID()),
                 "{\"title\":\"x\",\"text\":\"y\",\"version\":0}")).hasStatus(HttpStatus.NOT_FOUND);
     }

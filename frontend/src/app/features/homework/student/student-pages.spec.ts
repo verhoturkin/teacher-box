@@ -4,11 +4,12 @@ import { MessageService } from 'primeng/api';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { boundTextbook, myTask, taskDetails } from '@testing/homework-fixtures';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
 import { MyTaskPage } from './my-task-page';
 import { testProviders } from '@testing/setup';
+import { aMyBoard } from '@testing/boards-fixtures';
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
   TestBed.configureTestingModule({
@@ -105,73 +106,18 @@ describe('MyTaskPage', () => {
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
-  it('marks homework on a board done', async () => {
-    const { fixture, host, backend } = await render(
-      taskDetails({
-        status: 'ASSIGNED',
-        submissions: [],
-        assignment: { ...taskDetails().assignment, kind: 'BOARD', attachments: [] },
-      }),
-    );
-
-    expect(readableText(host)).toContain('Задание выполняется на доске');
-    expect(host.querySelector('#answer-text')).toBeNull();
-    expect(host.querySelector('a[href="/cabinet/boards"]')?.textContent).toContain('Мои доски');
-
-    buttonByText(host, 'Готово').click();
-    const request = backend.expectOne('/api/me/homework/tasks/t-1/done');
-    expect(request.request.body).toEqual({ result: null });
-    request.flush(taskDetails({ assignment: { ...taskDetails().assignment, kind: 'BOARD' } }));
-    await fixture.whenStable();
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
-  });
-
-  it('runs the page of interactive homework and sends its result with «Готово»', async () => {
-    const interactive = taskDetails({
-      status: 'RETURNED',
-      submissions: [],
-      assignment: { ...taskDetails().assignment, kind: 'INTERACTIVE', attachments: [] },
+  it('leads to the board the teacher put the task on', async () => {
+    const task = taskDetails();
+    const { host, backend, fixture } = await render({
+      ...task,
+      assignment: { ...task.assignment, boardId: 'board-1' },
     });
-    const { fixture, host, backend } = await render(interactive);
-    backend
-      .expectOne('/api/me/homework/tasks/t-1/interactive-link')
-      .flush({ url: '/api/public/homework/interactive/x.y', expiresAt: '2026-09-05T10:05:00Z' });
+    backend.expectOne('/api/me/boards').flush([aMyBoard()]);
     await fixture.whenStable();
-    const frame = requireElement(host, 'iframe', HTMLIFrameElement);
-    expect(readableText(host)).toContain('Решите задание на странице выше');
 
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        source: frame.contentWindow,
-        data: { type: 'teacherbox:result', result: { score: 2, maxScore: 3 } },
-      }),
+    expect(host.querySelector('a[href="/cabinet/boards/board-1"]')?.textContent).toContain(
+      'Перейти на доску',
     );
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Результат страницы: 2 из 3');
-
-    fixture.componentInstance.done();
-    fixture.componentInstance.done();
-    const request = backend.expectOne('/api/me/homework/tasks/t-1/done');
-    expect(request.request.body).toEqual({ result: { score: 2, maxScore: 3, answers: [] } });
-    request.flush(
-      { status: 422, code: 'task.already-accepted' },
-      { status: 422, statusText: 'Unprocessable' },
-    );
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Работа уже принята учителем');
-  });
-
-  it('says when the page of interactive homework cannot be opened', async () => {
-    const { fixture, host, backend } = await render(
-      taskDetails({ assignment: { ...taskDetails().assignment, kind: 'INTERACTIVE' } }),
-    );
-    backend
-      .expectOne('/api/me/homework/tasks/t-1/interactive-link')
-      .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-
-    expect(readableText(host)).toContain('Не удалось открыть страницу задания');
-    expect(host.querySelector('iframe')).toBeNull();
   });
 
   it('downloads the bound pages of a textbook', async () => {

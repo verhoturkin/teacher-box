@@ -8,21 +8,13 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - An **assignment** is given to one or more students; each student gets a **task** with status
   `ASSIGNED → SUBMITTED → RETURNED («На доработке») / ACCEPTED («Принято»)`; a returned task can be
   re-submitted. A **submission** is one attempt (UI: «ответ»), the whole handed-in work is «работа».
-- Kinds (`AssignmentKind`, fixed at creation; blank in the request — written): `WRITTEN` «Письменное» — a
-  Markdown text, textbooks and files; `BOARD` «На доске» — a description only; `INTERACTIVE` «Интерактивное» — a
-  description and an HTML page (`interactiveHtml`, required — `assignment.html-required`, ≤ 200 000 characters —
-  `assignment.html-invalid`; other kinds don't keep it). Textbooks and files only for written homework
-  (`assignment.materials-not-allowed`).
-- Answers by kind: written — `POST /api/me/homework/tasks/{id}/submissions` (text and / or files); board and
-  interactive — `POST …/tasks/{id}/done` «Готово» (`submission.kind-mismatch` the other way round). An interactive one
-  may carry the page's `result` (`InteractiveResult`: score ≤ max score ≤ 10 000, ≤ 100 answers — question, answer,
-  correct; `submission.result-invalid`), kept as JSON on the submission and shown to the teacher, never a grade.
-- The page of interactive homework ([ADR-0040](../adr/0040-interactive-homework.md), `InteractivePages`): a link
-  signed with an in-memory HMAC key, valid 5 minutes, for the teacher (any interactive assignment; another kind —
-  `assignment.not-interactive`) and the student of the task; `GET /api/public/homework/interactive/{token}` serves
-  the HTML with the bridge script first (after the doctype) with its own CSP (`sandbox allow-scripts`, `default-src 'none'`, `frame-ancestors
-  'self'`), `X-Frame-Options: SAMEORIGIN`, `no-store`; nginx sets the same headers for the path. A broken or expired
-  link — 404 `homework.page-not-found`.
+- No kinds since 0.14.1 ([ADR-0041](../adr/0041-homework-without-kinds-board-link.md), supersedes ADR-0040): every
+  assignment is a Markdown text with textbooks and files, answered with a text and / or files
+  (`POST /api/me/homework/tasks/{id}/submissions`). Migration `V5` dropped `kind`, `interactive_html` and the results
+  of interactive pages.
+- **The board of an assignment** (ADR-0041): `assignments.board_id` — the board it was put on (a UUID only,
+  `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
+  changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
   `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits
@@ -50,11 +42,10 @@ file of the assignment's materials — name, type, size, content; another assign
 
 ## REST
 
-`/api/teacher/homework/**` (assignments, students, attachments, `POST assignments/{id}/textbooks`
-`{textbookId, pages}`, `DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary),
-`GET assignments/{id}/interactive-link`; `/api/public/homework/interactive/{token}`;
-`/api/me/homework/**` (tasks, submissions, `tasks/{id}/done`, `tasks/{id}/interactive-link`, attachments,
-`tasks/{taskId}/textbooks/{textbookId}`, summary).
+`/api/teacher/homework/**` (assignments — the list has the names of the students of each, students, attachments,
+`PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
+`DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary);
+`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
 
 ## Frontend
 
@@ -63,18 +54,20 @@ page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-lis
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
 the download button saves them under `boundTextbookFilename`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
 `@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
-`canLeaveGuard`; «Новое задание» and the home quick action lead there): kind chosen once (a select on phones);
-written / board — Markdown with its preview beside it at ≥ 75em, interactive — a description, the HTML and
-«Показать страницу» (`POST /api/teacher/homework/interactive-preview` — an unsaved page kept in memory under a random
-token for 5 minutes, at most 20); students (+ group), the due date — the start of the earliest scheduled lesson of the
-chosen students within 60 days (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it;
-textbooks and files of written homework (`BindTextbookDialog` without an assignment emits `picked`, checked by
-`parsePages`). A new assignment is created without students, gets its files and textbooks, then is given out — the
-notification goes with the materials in place; a material that fails leaves the assignment saved with an error
-toast. Kinds: the student's `my-task-page.ts` — written: the answer form; board: «Мои доски» and «Готово»;
-interactive: `ui/interactive-frame.ts` (`<iframe sandbox="allow-scripts">` of a link under
-`/api/public/homework/interactive/` only; listens to messages of its own frame — height, `teacherbox:result`, brought to
-the backend limits by `interactiveResult`) and «Готово» with the last result; `ui/submission-list.ts` shows «Отмечено
-«Готово»» and the page's result. «На доску» of a written or board assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the
-pictures — png / jpeg / webp / gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image —
-its picture, a document — none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+`canLeaveGuard`; «Новое задание» and the home quick action lead there): one Markdown field with a «Текст / Просмотр»
+switch; students and groups (`tb-group-picker`, a multiselect: a group adds its students, taking it off removes them),
+the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
+(`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files
+(`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created
+without students, gets its files and textbooks, then is given out — the notification goes with the materials in place;
+a material that fails leaves the assignment saved with an error toast. Header: «Выдать» / «Сохранить» (filled) and
+«Выдать и поместить на доску» / «Сохранить и поместить на доску» (tonal): it saves, then opens «На доску» for the
+saved assignment (`ToBoardDialog [frame] [pictures]` from `teacher/assignment-board.ts`, the boards of its students);
+`placed` → `PUT …/board`, closing the dialog leads to the assignment page. The assignment page: «На доску» (enabled
+with a text, a picture file or a textbook page) also remembers the board, «Открыть доску» when there is one;
+«Выдать ещё ученикам» — students and groups side by side, «Выдать» under them. The list (`teacher/assignments-page.ts`)
+— cards: title, «кому · до …», the progress badge (`assignmentProgress`), «⋮». The student's `my-task-page.ts` shows
+«Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»
+of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the pictures — png / jpeg / webp /
+gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
+none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.

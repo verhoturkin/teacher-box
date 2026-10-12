@@ -14,17 +14,17 @@ class SavedPromptTest {
 
     @Test
     void titleAndTextAreStrippedAndLimited() {
-        SavedPrompt prompt = SavedPrompt.create(UUID.randomUUID(), " Тест ", " Сделай тест ", null, NOW);
+        SavedPrompt prompt = SavedPrompt.create(UUID.randomUUID(), " Тест ", " Сделай тест ", NOW);
         assertThat(prompt.title()).isEqualTo("Тест");
         assertThat(prompt.text()).isEqualTo("Сделай тест");
 
-        prompt.update("Тест 2", "Текст", HomeworkKind.BOARD, NOW.plusSeconds(1));
-        assertThat(prompt.kind()).isEqualTo(HomeworkKind.BOARD);
+        prompt.update("Тест 2", "Текст", NOW.plusSeconds(1));
+        assertThat(prompt.title()).isEqualTo("Тест 2");
         assertThat(prompt.updatedAt()).isEqualTo(NOW.plusSeconds(1));
 
-        assertThatThrownBy(() -> prompt.update("   ", "Текст", null, NOW))
+        assertThatThrownBy(() -> prompt.update("   ", "Текст", NOW))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("1-100");
-        assertThatThrownBy(() -> SavedPrompt.create(UUID.randomUUID(), "x", "y".repeat(4_001), null, NOW))
+        assertThatThrownBy(() -> SavedPrompt.create(UUID.randomUUID(), "x", "y".repeat(4_001), NOW))
                 .isInstanceOf(BusinessRuleException.class).hasMessageContaining("1-4000");
     }
 }

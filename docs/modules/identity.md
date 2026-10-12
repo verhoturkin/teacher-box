@@ -60,6 +60,8 @@ with the rest of the files by the full reset.
 ## Frontend
 
 `features/identity/`: `login/`, `invite/`, `students/` (list, form, invite link), `groups/` (panel on the
-students page), `account/` («Мой аккаунт»: profile hero, password change; the teacher's name; the photo of the teacher or a student, a student's own name). Avatars —
+students page; `group-picker.ts` — `tb-group-picker`, a multiselect of groups next to a students multiselect: a chosen
+group emits its current students (`picked`), a group taken off emits those in no other chosen group (`dropped`), the
+host adds / removes them; `selected` is a model the host clears), `account/` («Мой аккаунт»: profile hero, password change; the teacher's name; the photo of the teacher or a student, a student's own name). Avatars —
 `shared/ui/avatar.ts` (`tb-avatar`: photo or initials), photo preparation — `shared/files/square-photo.ts`. Auth state, guards and token refresh —
 `core/auth/`.

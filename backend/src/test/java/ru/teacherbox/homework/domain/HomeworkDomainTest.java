@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -17,63 +15,22 @@ class HomeworkDomainTest {
 
     @Test
     void assignmentValidationAndUpdate() {
-        Assignment assignment = Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "  Дроби  ",
-                "  Решить №1-5  ", null, null, NOW);
+        Assignment assignment = Assignment.create(UUID.randomUUID(), "  Дроби  ", "  Решить №1-5  ", null, NOW);
         assertThat(assignment.title()).isEqualTo("Дроби");
         assertThat(assignment.description()).isEqualTo("Решить №1-5");
 
-        assignment.update("Дроби 2", " ", "<p>ignored</p>", NOW.plusSeconds(3600), NOW.plusSeconds(1));
+        assignment.update("Дроби 2", " ", NOW.plusSeconds(3600), NOW.plusSeconds(1));
         assignment.markSaved(2);
 
         assertThat(assignment.description()).isNull();
-        assertThat(assignment.interactiveHtml()).as("only interactive homework keeps HTML").isNull();
         assertThat(assignment.dueAt()).isEqualTo(NOW.plusSeconds(3600));
         assertThat(assignment.updatedAt()).isEqualTo(NOW.plusSeconds(1));
         assertThat(assignment.version()).isEqualTo(2);
-        assertThat(assignment.allowsMaterials()).isTrue();
-        assertThatThrownBy(() -> assignment.update(" ", null, null, null, NOW)).hasMessageContaining("Title");
-        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "x".repeat(201), null,
-                null, null, NOW)).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.WRITTEN, "t",
-                "x".repeat(20_001), null, null, NOW)).hasMessageContaining("too long");
-    }
-
-    @Test
-    void interactiveAssignmentKeepsItsHtml() {
-        Assignment assignment = Assignment.create(UUID.randomUUID(), AssignmentKind.INTERACTIVE, "Тест", null,
-                "<p>?</p>\n", null, NOW);
-
-        assertThat(assignment.interactiveHtml()).isEqualTo("<p>?</p>\n");
-        assertThat(assignment.allowsMaterials()).isFalse();
-        assertThatThrownBy(() -> assignment.update("Тест", null, "  ", null, NOW))
-                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("HTML");
-        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), AssignmentKind.INTERACTIVE, "Тест", null,
-                "x".repeat(Assignment.MAX_HTML + 1), null, NOW)).hasMessageContaining("too long");
-        assertThat(Assignment.create(UUID.randomUUID(), AssignmentKind.BOARD, "Доска", null, null, null, NOW)
-                .allowsMaterials()).isFalse();
-    }
-
-    @Test
-    void interactiveResultLimits() {
-        var answer = new InteractiveResult.Answer("2 + 2", "4", true);
-        assertThat(new InteractiveResult(null, null, List.of(answer)).answers()).containsExactly(answer);
-        assertThat(new InteractiveResult(0, 1, List.of()).score()).isZero();
-
-        assertThatThrownBy(() -> new InteractiveResult(1, null, List.of())).as("a score needs its maximum")
-                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("not valid");
-        assertThatThrownBy(() -> new InteractiveResult(-1, 3, List.of())).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult(null, 0, List.of())).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult(null, InteractiveResult.MAX_SCORE + 1, List.of()))
+        assertThatThrownBy(() -> assignment.update(" ", null, null, NOW)).hasMessageContaining("Title");
+        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), "x".repeat(201), null, null, NOW))
                 .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult(null, null,
-                Collections.nCopies(InteractiveResult.MAX_ANSWERS + 1, answer)))
-                .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult.Answer(" ", null, null))
-                .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult.Answer("q".repeat(InteractiveResult.MAX_QUESTION + 1), null,
-                null)).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> new InteractiveResult.Answer("q", "a".repeat(InteractiveResult.MAX_ANSWER + 1),
-                null)).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> Assignment.create(UUID.randomUUID(), "t", "x".repeat(20_001), null, NOW))
+                .hasMessageContaining("too long");
     }
 
     @Test

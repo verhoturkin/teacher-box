@@ -7,7 +7,6 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -17,10 +16,8 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { AiApi } from './data-access/ai-api';
-import { HomeworkKind, SavedPrompt } from './data-access/ai.models';
+import { SavedPrompt } from './data-access/ai.models';
 import { T } from './i18n/texts';
-
-const KINDS: readonly HomeworkKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
 
 /** The teacher's prompt library on the AI page: what is saved, renaming, rewording and deleting. */
 @Component({
@@ -33,7 +30,6 @@ const KINDS: readonly HomeworkKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
     Dialog,
     InputText,
     Message,
-    Select,
     Textarea,
     EmptyState,
     FieldErrors,
@@ -56,9 +52,6 @@ const KINDS: readonly HomeworkKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
             <li>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ prompt.title }}</span>
-                <small class="tb-muted">{{
-                  prompt.kind === null ? t.anyKind : t.kinds[prompt.kind]
-                }}</small>
                 <span class="tb-prompt-text">{{ prompt.text }}</span>
               </div>
               <p-button
@@ -100,18 +93,6 @@ const KINDS: readonly HomeworkKind[] = ['WRITTEN', 'BOARD', 'INTERACTIVE'];
           <label for="prompt-text">{{ t.text }}</label>
           <textarea pTextarea id="prompt-text" formControlName="text" rows="6"></textarea>
         </div>
-        <div class="tb-field">
-          <label for="prompt-kind">{{ t.kind }}</label>
-          <p-select
-            inputId="prompt-kind"
-            formControlName="kind"
-            [options]="kinds"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
@@ -151,10 +132,6 @@ export class PromptLibraryCard implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
 
-  protected readonly kinds = [
-    { value: null, label: T.library.anyKind },
-    ...KINDS.map((value) => ({ value, label: T.library.kinds[value] })),
-  ];
   protected readonly prompts = signal<readonly SavedPrompt[]>([]);
   readonly editing = signal<SavedPrompt | null>(null);
   protected readonly pending = signal(false);
@@ -168,7 +145,6 @@ export class PromptLibraryCard implements OnInit {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(4_000)],
     }),
-    kind: new FormControl<HomeworkKind | null>(null),
   });
 
   ngOnInit(): void {
@@ -179,7 +155,7 @@ export class PromptLibraryCard implements OnInit {
 
   edit(prompt: SavedPrompt): void {
     this.error.set(null);
-    this.form.reset({ title: prompt.title, text: prompt.text, kind: prompt.kind });
+    this.form.reset({ title: prompt.title, text: prompt.text });
     this.editing.set(prompt);
   }
 
@@ -198,7 +174,7 @@ export class PromptLibraryCard implements OnInit {
     this.api
       .updatePrompt(
         prompt.id,
-        { title: value.title.trim(), text: value.text.trim(), kind: value.kind },
+        { title: value.title.trim(), text: value.text.trim() },
         prompt.version,
       )
       .subscribe({

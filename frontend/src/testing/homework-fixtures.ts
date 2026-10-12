@@ -38,10 +38,11 @@ export function attachment(overrides: Partial<Attachment> = {}): Attachment {
 export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): AssignmentSummary {
   return {
     id: 'a-1',
-    kind: 'WRITTEN',
     title: 'Дроби',
     dueAt: '2026-09-10T15:00:00Z',
     createdAt: '2026-09-01T10:00:00Z',
+    students: ['Анна', 'Борис'],
+    boardId: null,
     totalTasks: 2,
     assigned: 1,
     submitted: 1,
@@ -54,11 +55,10 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
 export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): AssignmentDetails {
   return {
     id: 'a-1',
-    kind: 'WRITTEN',
     title: 'Дроби',
     description: 'Решить **№1-5**',
-    interactiveHtml: null,
     dueAt: '2026-09-10T15:00:00Z',
+    boardId: null,
     createdAt: '2026-09-01T10:00:00Z',
     version: 0,
     attachments: [attachment()],
@@ -95,7 +95,6 @@ export function submission(overrides: Partial<Submission> = {}): Submission {
   return {
     id: 'sub-1',
     text: 'Мой ответ',
-    result: null,
     submittedAt: '2026-09-05T10:00:00Z',
     attachments: [attachment({ id: 'f-2', filename: 'решение.jpg', contentType: 'image/jpeg' })],
     ...overrides,
@@ -116,10 +115,10 @@ export function taskDetails(overrides: Partial<TaskDetails> = {}): TaskDetails {
     overdue: false,
     assignment: {
       id: 'a-1',
-      kind: 'WRITTEN',
       title: 'Дроби',
       description: 'Решить **№1-5**',
       dueAt: '2026-09-10T15:00:00Z',
+      boardId: null,
       attachments: [attachment()],
       textbooks: [],
     },

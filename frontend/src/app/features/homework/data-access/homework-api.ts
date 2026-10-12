@@ -4,14 +4,11 @@ import { Observable } from 'rxjs';
 import {
   AssignmentDetails,
   AssignmentInput,
-  AssignmentKind,
   AssignmentSummary,
   Attachment,
   HomeworkSummary,
-  InteractiveResult,
   MyHomeworkSummary,
   MyTask,
-  PageLink,
   ReviewDecision,
   ReviewQueueItem,
   TaskDetails,
@@ -41,8 +38,8 @@ export class HomeworkApi {
   }
 
   /** Without students: the editor adds the materials first, then gives the assignment out. */
-  createAssignment(kind: AssignmentKind, input: AssignmentInput): Observable<AssignmentDetails> {
-    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, { kind, ...input });
+  createAssignment(input: AssignmentInput): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, input);
   }
 
   updateAssignment(
@@ -57,6 +54,11 @@ export class HomeworkApi {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
       studentIds,
     });
+  }
+
+  /** Remembers the board the assignment was put on; `null` forgets it. */
+  placeOnBoard(id: string, boardId: string | null): Observable<AssignmentDetails> {
+    return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}/board`, { boardId });
   }
 
   uploadMaterials(id: string, files: readonly File[]): Observable<Attachment[]> {
@@ -115,22 +117,6 @@ export class HomeworkApi {
     return this.http.get(`${TEACHER}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
-  /** A short-lived link to the page of an interactive assignment (ADR-0040). */
-  interactiveLink(id: string): Observable<PageLink> {
-    return this.http.get<PageLink>(`${TEACHER}/assignments/${id}/interactive-link`, {
-      context: quietContext(),
-    });
-  }
-
-  /** A short-lived link to an interactive page not saved yet: the editor's preview. */
-  interactivePreview(html: string): Observable<PageLink> {
-    return this.http.post<PageLink>(
-      `${TEACHER}/interactive-preview`,
-      { html },
-      { context: quietContext() },
-    );
-  }
-
   // --- student ---
 
   myTasks(): Observable<MyTask[]> {
@@ -147,18 +133,6 @@ export class HomeworkApi {
       form.append('text', text);
     }
     return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/submissions`, form);
-  }
-
-  /** «Готово» of homework on a board or interactive homework, with what the page reported. */
-  markDone(taskId: string, result: InteractiveResult | null): Observable<TaskDetails> {
-    return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/done`, { result });
-  }
-
-  /** A short-lived link to the page of the student's interactive task (ADR-0040). */
-  myInteractiveLink(taskId: string): Observable<PageLink> {
-    return this.http.get<PageLink>(`${ME}/tasks/${taskId}/interactive-link`, {
-      context: quietContext(),
-    });
   }
 
   /** The bound pages of a textbook (a PDF cut to them). */

@@ -7,6 +7,9 @@ import { assignmentDetails, attachment, boundTextbook } from '@testing/homework-
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
+import { By } from '@angular/platform-browser';
+import { aBoard } from '@testing/boards-fixtures';
+import { ToBoardDialog } from '@features/boards/parts';
 import { AssignmentEditorPage } from './assignment-editor-page';
 
 const STUDENTS = [
@@ -26,6 +29,17 @@ const STUDENTS = [
 }));
 
 const DAY = 24 * 60 * 60 * 1000;
+
+/** «Выдать» and not «Выдать и поместить на доску». */
+function exactButton(host: HTMLElement, text: string): HTMLButtonElement {
+  const button = [...host.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent.trim() === text,
+  );
+  if (button === undefined) {
+    throw new Error(`Button "${text}" not found`);
+  }
+  return button;
+}
 
 describe('AssignmentEditorPage', () => {
   let backend: HttpTestingController;
@@ -93,7 +107,7 @@ describe('AssignmentEditorPage', () => {
     const { page, host } = await create([lessonIn(5), next, lessonIn(1, 's-9')]);
 
     expect(readableText(host)).toContain('Новое задание');
-    expect(readableText(host)).toContain('Текст, учебники и файлы');
+    expect(readableText(host)).not.toContain('Тип задания');
     page.form.patchValue({ title: '  Дроби ', description: 'Решите **№1**', studentIds: ['s-1'] });
     await fixture.whenStable();
     expect(page.form.controls.dueAt.value?.toISOString()).toBe(next.startsAt);
@@ -103,17 +117,15 @@ describe('AssignmentEditorPage', () => {
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '1-2' }));
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
     await fixture.whenStable();
-    buttonByText(host, 'Выдать').click();
+    exactButton(host, 'Выдать').click();
 
     const created = backend.expectOne({
       method: 'POST',
       url: '/api/teacher/homework/assignments',
     });
     expect(created.request.body).toEqual({
-      kind: 'WRITTEN',
       title: 'Дроби',
       description: 'Решите **№1**',
-      interactiveHtml: null,
       dueAt: next.startsAt,
     });
     created.flush(assignmentDetails({ id: 'a-9', tasks: [] }));
@@ -133,12 +145,26 @@ describe('AssignmentEditorPage', () => {
     expect(page.canLeave()).toBe(true);
   });
 
-  it('offers only current students and takes those of a group', async () => {
+  it('offers only current students and takes those of a group, then takes them off', async () => {
     const { page } = await create();
 
     page.addStudents(['s-2', 's-4', 's-2']);
-
     expect(page.form.controls.studentIds.value).toEqual(['s-2']);
+
+    page.removeStudents(['s-2']);
+    expect(page.form.controls.studentIds.value).toEqual([]);
+  });
+
+  it('switches the text and its preview', async () => {
+    const { page, host } = await create();
+    page.form.patchValue({ description: '**Жирный**' });
+
+    expect(host.querySelector('#editor-text')).not.toBeNull();
+    page.mode.setValue('preview');
+    await fixture.whenStable();
+    expect(host.querySelector('#editor-text')).toBeNull();
+    expect(host.querySelector('.tb-preview strong')?.textContent).toBe('Жирный');
+    expect(readableText(host)).not.toContain('На доску');
   });
 
   it('keeps the due date the teacher set and says when there is no lesson', async () => {
@@ -179,49 +205,57 @@ describe('AssignmentEditorPage', () => {
     expect(readableText(hostElement(fixture))).not.toContain('Ближайших занятий');
   });
 
-  it('creates interactive homework with a preview of its page', async () => {
-    const { page, host } = await create();
-    page.kind.setValue('INTERACTIVE');
+  it('gives the assignment out and puts it with its pages on a board of its students', async () => {
+    const { page, host } = await create([]);
+    const toBoard = buttonByText(host, 'Выдать и поместить на доску');
+    expect(toBoard.disabled).toBe(true);
+
+    page.form.patchValue({ title: 'Дроби', studentIds: ['s-1'] });
+    page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
     await fixture.whenStable();
-
-    expect(host.querySelector('#editor-text')).toBeNull();
-    expect(readableText(host)).not.toContain('Учебники');
-    buttonByText(host, 'Показать страницу').click();
-    backend.expectNone('/api/teacher/homework/interactive-preview');
-
-    page.form.patchValue({ title: 'Тест', interactiveHtml: '<p>2 + 2 = ?</p>' });
-    buttonByText(host, 'Показать страницу').click();
-    const preview = backend.expectOne('/api/teacher/homework/interactive-preview');
-    expect(preview.request.body).toEqual({ html: '<p>2 + 2 = ?</p>' });
-    preview.flush({
-      url: '/api/public/homework/interactive/p1',
-      expiresAt: '2030-01-01T00:00:00Z',
-    });
-    await fixture.whenStable();
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe(
-      '/api/public/homework/interactive/p1',
-    );
-
-    buttonByText(host, 'Показать страницу').click();
+    expect(toBoard.disabled).toBe(false);
+    toBoard.click();
     backend
-      .expectOne('/api/teacher/homework/interactive-preview')
-      .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Не удалось показать страницу');
-
-    page.newFiles.set([new File(['x'], 'лишний.pdf')]);
-    page.save();
-    const created = backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' });
-    expect(created.request.body).toMatchObject({
-      kind: 'INTERACTIVE',
-      interactiveHtml: '<p>2 + 2 = ?</p>',
+      .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
+      .flush(assignmentDetails({ id: 'a-9', tasks: [], attachments: [] }));
+    backend
+      .expectOne('/api/teacher/homework/assignments/a-9/textbooks')
+      .flush(assignmentDetails({ id: 'a-9' }));
+    const saved = assignmentDetails({
+      id: 'a-9',
+      description: null,
+      attachments: [],
+      textbooks: [boundTextbook({ textbookId: 'tb-1', pages: '3' })],
     });
-    created.flush(assignmentDetails({ id: 'a-7', kind: 'INTERACTIVE' }));
+    backend.expectOne('/api/teacher/homework/assignments/a-9/students').flush(saved);
     await fixture.whenStable();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-7']);
+    expect(navigate).not.toHaveBeenCalled();
+
+    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([aBoard()]);
+    await fixture.whenStable();
+    const dialog = fixture.debugElement
+      .query(By.directive(ToBoardDialog))
+      .injector.get(ToBoardDialog);
+    expect(dialog.pictures()).toEqual(['/api/teacher/textbooks/tb-1/pages/3']);
+    expect(dialog.frame()).toMatch(/^Дроби · \d\d\.\d\d\.\d{4}$/);
+
+    vi.spyOn(window, 'open').mockReturnValue(null);
+    await dialog.place('text');
+    const placed = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/homework/assignments/a-9/board',
+    });
+    expect(placed.request.body).toEqual({ boardId: 'board-1' });
+    placed.flush(null, { status: 500, statusText: 'Error' });
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Задание сохранено' }),
+      expect.objectContaining({ severity: 'error' }),
     );
+
+    dialog.visible.set(false);
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
+    expect(page.canLeave()).toBe(true);
+    localStorage.clear();
   });
 
   it('shows what the backend refused and saves materials that made it', async () => {
@@ -232,11 +266,11 @@ describe('AssignmentEditorPage', () => {
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
       .flush(
-        { status: 422, code: 'assignment.html-required' },
+        { status: 422, code: 'assignment.title-invalid' },
         { status: 422, statusText: 'Unprocessable' },
       );
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Для интерактивного задания нужен HTML-код');
+    expect(readableText(host)).toContain('Название задания — от 1 до 200 символов');
 
     page.newFiles.set([new File(['x'], 'virus.exe')]);
     page.save();
@@ -263,9 +297,8 @@ describe('AssignmentEditorPage', () => {
     expect(page.form.controls.title.touched).toBe(true);
   });
 
-  it('edits an assignment: its kind stays, materials change at once', async () => {
+  it('edits an assignment: materials change at once', async () => {
     const details = assignmentDetails({
-      kind: 'WRITTEN',
       textbooks: [boundTextbook()],
       attachments: [attachment()],
     });
@@ -274,7 +307,7 @@ describe('AssignmentEditorPage', () => {
     expect(confirmation).toBeNull();
 
     expect(readableText(host)).toContain('Изменить задание');
-    expect(readableText(host)).not.toContain('Тип задания');
+    expect(readableText(host)).toContain('Сохранить и поместить на доску');
     expect(page.form.controls.title.value).toBe('Дроби');
     expect(page.form.controls.dueAt.value?.toISOString()).toBe('2026-09-10T15:00:00.000Z');
 
@@ -290,7 +323,7 @@ describe('AssignmentEditorPage', () => {
     page.form.patchValue({ title: 'Дроби 2' });
     page.form.markAsDirty();
     page.newFiles.set([new File(['x'], 'ещё.pdf')]);
-    buttonByText(host, 'Сохранить').click();
+    exactButton(host, 'Сохранить').click();
     const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
     expect(put.request.body).toMatchObject({ title: 'Дроби 2', version: 0 });
     put.flush(assignmentDetails({ title: 'Дроби 2', version: 1 }));
@@ -319,15 +352,6 @@ describe('AssignmentEditorPage', () => {
     await fixture.whenStable();
 
     expect(host.querySelector('button[aria-label="Удалить файл условие.pdf"]')).toBeNull();
-  });
-
-  it('shows the kind of an interactive assignment and keeps its page', async () => {
-    const { page, host } = await edit(
-      assignmentDetails({ kind: 'INTERACTIVE', interactiveHtml: '<p>?</p>' }),
-    );
-
-    expect(readableText(host)).toContain('Интерактивное');
-    expect(page.form.controls.interactiveHtml.value).toBe('<p>?</p>');
   });
 
   it('asks before leaving unsaved work', async () => {
@@ -359,7 +383,7 @@ describe('AssignmentEditorPage', () => {
     }
     expect(readableText(host)).toContain('ИИ-помощник');
     page.applyDraft({
-      draft: { title: 'Проценты', description: '1. Найдите 10%', html: null },
+      draft: { title: 'Проценты', description: '1. Найдите 10%' },
       mode: 'replace',
     });
     await fixture.whenStable();
@@ -369,7 +393,7 @@ describe('AssignmentEditorPage', () => {
 
     page.form.patchValue({ title: '' });
     page.applyDraft({
-      draft: { title: 'Ещё', description: '2. Найдите 20%', html: null },
+      draft: { title: 'Ещё', description: '2. Найдите 20%' },
       mode: 'insert',
     });
     expect(page.form.controls.title.value).toBe('Ещё');
@@ -401,31 +425,10 @@ describe('AssignmentEditorPage', () => {
     });
   });
 
-  it('offers no sources but for written homework', async () => {
+  it('offers the assistant the textbooks picked for a new assignment', async () => {
     const { page } = await create();
     page.pickTextbook(boundTextbook({ pages: null }));
     expect(page.sourceOptions().map((option) => option.label)).toEqual(['Spotlight 5']);
-
-    page.kind.setValue('BOARD');
-    expect(page.sourceOptions()).toEqual([]);
-  });
-
-  it('puts an AI page into interactive homework and shows it', async () => {
-    const { page } = await create([], true);
-    backend.match('/api/teacher/ai/prompts').forEach((request) => {
-      request.flush([]);
-    });
-    page.kind.setValue('INTERACTIVE');
-
-    page.applyDraft({
-      draft: { title: 'Тест', description: 'Ответьте', html: '<p>?</p>' },
-      mode: 'replace',
-    });
-
-    expect(page.form.controls.interactiveHtml.value).toBe('<p>?</p>');
-    expect(backend.expectOne('/api/teacher/homework/interactive-preview').request.body).toEqual({
-      html: '<p>?</p>',
-    });
   });
 
   it('shows a failed load with «Повторить»', async () => {

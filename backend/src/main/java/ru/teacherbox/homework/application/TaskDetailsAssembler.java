@@ -62,11 +62,12 @@ class TaskDetailsAssembler {
         return new TaskDetails(task.id(), task.studentId(), studentName, task.status(), task.grade(),
                 task.teacherComment(), task.assignedAt(), task.submittedAt(), task.reviewedAt(),
                 task.isOverdue(assignment.dueAt(), clock.instant()),
-                new AssignmentInfo(assignment.id(), assignment.kind(), assignment.title(), assignment.description(),
-                        assignment.dueAt(), assignmentFiles, textbooks.of(assignment.id())),
+                new AssignmentInfo(assignment.id(), assignment.title(), assignment.description(), assignment.dueAt(),
+                        assignment.boardId(),
+                        assignmentFiles, textbooks.of(assignment.id())),
                 taskSubmissions.stream()
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),
-                                submission.result(), submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
+                                submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
                         .toList());
     }
 

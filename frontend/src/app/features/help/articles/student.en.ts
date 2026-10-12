@@ -96,10 +96,9 @@ If a textbook is bound to an assignment, it is in the assignment, in «Textbooks
 
 The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.
 
-## On a board or interactive
+## An assignment on a board
 
-- **On a board** — the assignment is done on a board («My boards»). When you finish, press «Done» in the assignment.
-- **Interactive** — a page with questions right in the assignment: answer on it, it checks the answers itself. Then press «Done» — the teacher sees the result of the page.
+If the teacher put the assignment on your board, it has «Go to the board» at the top — the text of the assignment and the textbook pages are already there. Still hand in your answer in the assignment: as a text or a file.
 `,
   },
   textbooks: {

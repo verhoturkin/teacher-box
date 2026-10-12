@@ -128,6 +128,9 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   drawing's top (on an empty board — at the view centre), and scrolls the view to them (`scrollToContent`). A written
   assignment (`AssignmentMaterial`, `ToBoardDialog [frame] [pictures]`): the same row in a frame named «<title> ·
   <date>», the task first — a text element (measured by converting it once) or the picture of its formatted text —
-  then the pictures; an external board gets the text only.
+  then the pictures; an external board gets the text only. `placed` reports where the material went (the assignment
+  remembers that board, ADR-0041).
+- `student/my-board-button.ts` — `tb-my-board-button` («Перейти на доску» of a student's task, ADR-0041): shown only
+  when the board is in `GET /api/me/boards` (an Excalidraw board — `/cabinet/boards/<id>`, an external one — its link).
 
 Tests use `@testing/excalidraw-fake` (`fakeExcalidraw`, `fakeScene`, `anElement`), never React.

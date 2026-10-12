@@ -48,9 +48,12 @@ describe('ToBoardDialog', () => {
     backend.expectOne('/api/teacher/boards').flush([aBoard({ title: 'Физика' })]);
     await fixture.whenStable();
     const put = vi.spyOn(insert, 'put');
+    const placed: string[] = [];
+    dialog.placed.subscribe((done) => placed.push(done.board.id));
 
     expect(bodyText()).toContain('материал появится в центре');
     await dialog.place('image');
+    expect(placed).toEqual(['board-1']);
     await fixture.whenStable();
 
     expect(put).toHaveBeenCalledWith('board-1', {

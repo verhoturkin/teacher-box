@@ -44,6 +44,9 @@ export const ru = {
     changed: (date: string) => `изменена ${date}`,
     external: 'внешняя доска',
   },
+  myBoardButton: {
+    open: 'Перейти на доску',
+  },
   myCard: {
     title: 'Мои доски',
     what: 'доски',

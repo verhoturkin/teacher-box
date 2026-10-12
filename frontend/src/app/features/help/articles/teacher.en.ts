@@ -279,7 +279,7 @@ The «To a board» button is on the assignment's page, in the assignment editor 
 - **As text** — it can be edited on the board;
 - **As a picture** — as it is, handy for formulas and tables.
 
-An Excalidraw board opens in a new tab with the material already at the centre. An assignment sent from its page goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the assignment). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
+An Excalidraw board opens in a new tab with the material already at the centre. An assignment (from its page or with «Assign and put on a board» in the editor) goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the assignment). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
 
 Pages of a textbook can be put on a board too — from «Textbooks» or from an assignment's textbook ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
 `,
@@ -291,16 +291,14 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from an 
 ## Give an assignment
 
 1. «Assignments» → «New assignment» — the assignment editor opens.
-2. Choose the kind:
-   - **Written** — text, textbooks and files; the student answers with a text or a file;
-   - **On a board** — a description only; the assignment and the answer are on a board, the student presses «Done»;
-   - **Interactive** — a page with questions and checks (HTML code); the student solves it there and presses «Done», and you see the page's result. «Show the page» opens it as the student sees it.
-3. Write the title and the text. The text can have **bold**, lists and links — a wide screen shows what the student sees right beside it, a narrow one has the «Preview» switch.
-4. Choose students (or a whole group at once). The due date becomes the start of their next lesson by itself — you can change it.
-5. For written homework bind textbooks and add files right here.
-6. Click «Assign». Students are notified once the assignment has all its materials, and reminded before the deadline.
+2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
+3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
+4. Bind textbooks and add files right here.
+5. Click «Assign». Students are notified once the assignment has all its materials, and reminded before the deadline.
 
-The kind does not change after the assignment is created. «Edit» on the assignment's page opens the same editor; leaving it without saving asks first.
+«Assign and put on a board» gives the assignment out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the assignment. «To a board» on the assignment's page does the same.
+
+«Edit» on the assignment's page opens the same editor; leaving it without saving asks first. The «Assignments» list is made of cards: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮».
 
 ## A textbook for the assignment
 
@@ -351,10 +349,9 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 
 ## What it can do
 
-- **Assignment draft** — the «AI assistant» panel to the right of the assignment editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text (and the page of interactive homework), «Add to the end» adds its text after yours, «Discard» drops it.
-- **Interactive homework** — for this kind the AI makes an HTML page with questions and checks in the portal's colours right away; the page loads nothing from outside and hands its result to you with the student's «Done». Check it with «Show the page».
-- **From a textbook and files** — written homework has «Base it on» in the panel: tick the bound textbooks (their pages) and the saved files of the assignment — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the assignment is saved; it does not read Word files.
-- **Prompt library** — save a request that worked with «Save the prompt»: it appears under «My prompts» and as quick buttons above the field for assignments of the same kind. Rename, edit and delete prompts on the «AI» page.
+- **Assignment draft** — the «AI assistant» panel to the right of the assignment editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it.
+- **From a textbook and files** — the panel has «Base it on»: tick the bound textbooks (their pages) and the saved files of the assignment — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the assignment is saved; it does not read Word files.
+- **Prompt library** — save a request that worked with «Save the prompt»: it appears under «My prompts» and as quick buttons above the field. Rename, edit and delete prompts on the «AI» page.
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
 ## Limit and costs
