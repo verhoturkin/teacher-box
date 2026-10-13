@@ -39,6 +39,7 @@ export const en: Translation<typeof ru> = {
   },
   links: {
     boards: 'Boards:',
+    group: 'Boards',
   },
   myList: {
     groups: 'groups',

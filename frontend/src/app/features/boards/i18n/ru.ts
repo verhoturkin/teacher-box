@@ -37,6 +37,7 @@ export const ru = {
   },
   links: {
     boards: 'Доски:',
+    group: 'Доски',
   },
   myList: {
     groups: 'группы',

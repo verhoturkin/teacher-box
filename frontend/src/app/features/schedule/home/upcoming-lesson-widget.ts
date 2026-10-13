@@ -28,15 +28,14 @@ import { T } from '../i18n/texts';
         }
         <div class="tb-lesson-event__info">
           <div class="tb-lesson-event__who">
-            <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" />
-            <div class="tb-lesson-event__text">
-              <strong>{{ with(next) }}</strong>
-              @if (next.topic !== null) {
-                <span class="tb-muted">{{ next.topic }}</span>
-              }
-            </div>
+            <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" size="2rem" />
+            <strong>{{ with(next) }}</strong>
           </div>
+          @if (next.topic !== null) {
+            <span class="tb-muted">{{ next.topic }}</span>
+          }
           <tb-board-links
+            [chips]="true"
             [studentId]="next.groupId === null ? next.studentId : null"
             [groupId]="next.groupId"
           />
@@ -67,22 +66,25 @@ import { T } from '../i18n/texts';
       gap: var(--tb-space-4);
     }
 
+    /* one column: the avatar with the name, the topic, the boards — all from one left edge */
     .tb-lesson-event__info {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-2);
+      align-items: flex-start;
+      gap: var(--tb-space-1);
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .tb-lesson-event__who {
       display: flex;
       align-items: center;
-      gap: var(--tb-space-3);
-      overflow-wrap: anywhere;
+      gap: var(--tb-space-2);
+      min-width: 0;
     }
 
-    .tb-lesson-event__text {
-      display: flex;
-      flex-direction: column;
+    tb-board-links:not(:empty) {
+      margin-top: var(--tb-space-1);
     }
 
     tb-lesson-time-tile {

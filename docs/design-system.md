@@ -151,7 +151,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
   calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
   «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
-  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards, one filled button
+  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`: no «Доски:» caption, assist chips in
+  the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
   button too). The student's request
   buttons go under the event and are hidden while the lesson runs. No «Расписание» link: the schedule is in the
