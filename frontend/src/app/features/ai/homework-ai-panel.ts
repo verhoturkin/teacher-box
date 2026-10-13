@@ -14,7 +14,6 @@ import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
-import { Listbox } from 'primeng/listbox';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
 import { Textarea } from 'primeng/textarea';
@@ -48,7 +47,6 @@ export interface AppliedDraft {
     ButtonLabel,
     Checkbox,
     InputText,
-    Listbox,
     Message,
     Popover,
     Textarea,
@@ -100,7 +98,7 @@ export interface AppliedDraft {
         />
       </div>
 
-      <p-popover #prompts [ariaLabel]="t.prompts" (onHide)="naming.set(false)">
+      <p-popover #prompts [ariaLabel]="t.prompts" (onHide)="naming.set(false); query.set('')">
         <div class="tb-ai-panel__menu">
           @if (naming()) {
             <div class="tb-field">
@@ -124,26 +122,26 @@ export interface AppliedDraft {
             </div>
           } @else {
             @if (library().length > 0) {
-              <p-listbox
-                [options]="library()"
-                optionLabel="title"
-                [filter]="true"
-                filterBy="title,text"
-                [filterPlaceHolder]="t.search"
-                [ariaFilterLabel]="t.search"
-                [ariaLabel]="t.prompts"
-                [emptyFilterMessage]="t.notFound"
-                scrollHeight="16rem"
-                styleClass="tb-ai-panel__library"
-                (onChange)="use($event.value)"
-              >
-                <ng-template #item let-option>
-                  <div class="tb-ai-panel__option">
-                    <span>{{ option.title }}</span>
-                    <small>{{ option.text }}</small>
-                  </div>
-                </ng-template>
-              </p-listbox>
+              <input
+                pInputText
+                type="search"
+                class="tb-ai-panel__search"
+                [placeholder]="t.search"
+                [attr.aria-label]="t.search"
+                autocomplete="off"
+                [ngModel]="query()"
+                (ngModelChange)="query.set($event)"
+              />
+              <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
+                @for (prompt of found(); track prompt.id) {
+                  <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
+                    <span>{{ prompt.title }}</span>
+                    <small>{{ prompt.text }}</small>
+                  </button>
+                } @empty {
+                  <p class="tb-hint">{{ t.notFound }}</p>
+                }
+              </div>
             } @else {
               <p class="tb-hint">{{ t.noPrompts }}</p>
             }
@@ -285,9 +283,14 @@ export interface AppliedDraft {
       width: min(24rem, calc(100vw - 4rem));
     }
 
+    .tb-ai-panel__search {
+      width: 100%;
+    }
+
     .tb-ai-panel__library {
-      border: 0;
-      background: transparent;
+      display: grid;
+      max-height: 16rem;
+      overflow: auto;
     }
 
     .tb-ai-panel__menu-actions {
@@ -304,6 +307,23 @@ export interface AppliedDraft {
     .tb-ai-panel__option {
       display: grid;
       min-width: 0;
+      padding: var(--tb-space-2) var(--tb-space-3);
+      border: 0;
+      border-radius: var(--tb-shape-md);
+      background: transparent;
+      color: var(--p-md-on-surface);
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .tb-ai-panel__option:hover {
+      background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
+    }
+
+    .tb-ai-panel__option:focus-visible {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: -3px;
     }
 
     .tb-ai-panel__option small {
@@ -393,6 +413,19 @@ export class HomeworkAiPanel implements OnInit {
     validators: [Validators.required, Validators.maxLength(100)],
   });
   protected readonly library = signal<SavedPrompt[]>([]);
+  /**
+   * The search over the library. A list of our own, not `p-listbox`: the unit tests of a worker share one jsdom
+   * document, and after a Listbox jsdom fails to compute the styles of later specs.
+   */
+  protected readonly query = signal('');
+  protected readonly found = computed(() => {
+    const query = this.query().trim().toLocaleLowerCase();
+    return query === ''
+      ? this.library()
+      : this.library().filter((prompt) =>
+          `${prompt.title} ${prompt.text}`.toLocaleLowerCase().includes(query),
+        );
+  });
   protected readonly draft = signal<HomeworkDraft | null>(null);
   /** Keys of the chosen sources. */
   protected readonly chosen = signal<ReadonlySet<string>>(new Set());

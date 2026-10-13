@@ -2,7 +2,14 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { savedPrompt } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { AppliedDraft, HomeworkAiPanel } from './homework-ai-panel';
 
@@ -32,9 +39,9 @@ describe('HomeworkAiPanel', () => {
   }
 
   function option(text: string): HTMLElement {
-    const found = Array.from(document.body.querySelectorAll<HTMLElement>('[role="option"]')).find(
-      (candidate) => candidate.textContent.includes(text),
-    );
+    const found = Array.from(
+      document.body.querySelectorAll<HTMLElement>('.tb-ai-panel__option'),
+    ).find((candidate) => candidate.textContent.includes(text));
     if (found === undefined) {
       throw new Error(`Option "${text}" not found`);
     }
@@ -56,6 +63,15 @@ describe('HomeworkAiPanel', () => {
     expect(readableText(host)).not.toContain('Перевод');
     await open(host, 'Промты');
     expect(bodyText()).toContain('Тест на 10 вопросов');
+    const search = requireElement(document.body, '.tb-ai-panel__search', HTMLInputElement);
+    typeInto(search, ' переведи ');
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Тест на 10 вопросов');
+    typeInto(search, 'нет такого');
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Ничего не найдено');
+    typeInto(search, '');
+    await fixture.whenStable();
     option('Перевод').click();
     await fixture.whenStable();
     expect(panel.prompt.value).toBe('Переведи текст');
