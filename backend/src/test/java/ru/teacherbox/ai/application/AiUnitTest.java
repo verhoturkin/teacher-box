@@ -77,8 +77,9 @@ class AiUnitTest {
         assertThat(properties(" Anthropic ").providerId()).isEqualTo("anthropic");
         assertThat(properties("GEMINI").providerId()).isEqualTo("gemini");
         assertThat(properties("OpenRouter").providerId()).isEqualTo("openrouter");
+        assertThat(properties("DeepSeek").providerId()).isEqualTo("deepseek");
         assertThatThrownBy(() -> properties("gemeni")).hasMessage(
-                "TEACHERBOX_AI_PROVIDER must be anthropic, gemini, openrouter or openai-compatible, got gemeni");
+                "TEACHERBOX_AI_PROVIDER must be anthropic, gemini, openrouter, deepseek or openai-compatible, got gemeni");
         assertThat(AiProperties.hasText(" ")).isFalse();
         assertThat(AiProperties.hasText("x")).isTrue();
     }

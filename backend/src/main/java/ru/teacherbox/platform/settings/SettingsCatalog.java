@@ -130,7 +130,7 @@ public final class SettingsCatalog {
         b.group("ai", w("ИИ-помощник", "AI assistant"))
                 .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),
                         w("Пусто — ИИ выключен.", "Empty — AI is off."),
-                        List.of("anthropic", "gemini", "openrouter", "openai-compatible"))
+                        List.of("anthropic", "gemini", "openrouter", "deepseek", "openai-compatible"))
                 .secret("TEACHERBOX_AI_API_KEY", w("Ключ API", "API key"))
                 .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT,
                         w("Пусто — модель сервиса по умолчанию.", "Empty — the service's default model."))

@@ -54,6 +54,12 @@ describe('AiUsagePage', () => {
     ).toContain('Модель openrouter/auto OpenRouter');
   });
 
+  it('names DeepSeek', async () => {
+    expect(
+      await render(aiStatus({ provider: 'deepseek', model: 'deepseek-flash' }), usageReport()),
+    ).toContain('Модель deepseek-flash DeepSeek');
+  });
+
   it('keeps an unknown provider id as is', async () => {
     expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain(
       'Модель m custom',

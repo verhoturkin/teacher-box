@@ -19,8 +19,8 @@ unless the task needs history.
 
 ## v0.14.3
 
-OpenRouter as its own AI provider: one key for models of many vendors, with the address, the default model and the
-routing to providers that honour the JSON schema set up by the portal instead of the teacher.
+OpenRouter and DeepSeek as AI providers of their own: one key for models of many vendors; DeepSeek, which takes no
+JSON schema answer format. The address, the default model and the answer format are set up by the portal.
 
 ### 174. OpenRouter provider (B, F)
 
@@ -31,9 +31,19 @@ routing to providers that honour the JSON schema set up by the portal instead of
 - [x] 174.2 **F** `ai/ai-usage-page.ts`: provider name «OpenRouter».
 - [x] 174.3 Docs: `docs/modules/ai.md`, ADR-0006, `.env.example`, README.
 
-### 175. Release 0.14.3
+### 175. DeepSeek provider (B, F)
 
-- [ ] 175.1 Skill `release`: help articles, E2E spec (`version-0-14-3`, replaces `version-0-14-2`), CHANGELOG, version,
+- [x] 175.1 **B** `ai`: `OpenAiCompatibleLlmClient.AnswerFormat` — `JSON_OBJECT` asks for `response_format: json_object`
+  with the schema in the system prompt; a 400 naming `response_format` switches a `JSON_SCHEMA` client to it once
+  (fixes DeepSeek configured as `openai-compatible`).
+- [x] 175.2 **B** `TEACHERBOX_AI_PROVIDER=deepseek` — `deepseek/DeepSeekConfiguration` (key required, base URL
+  `https://api.deepseek.com`, default model `deepseek-flash`, `JSON_OBJECT`); `AiProperties`, `SettingsCatalog`.
+- [x] 175.3 **F** `ai/ai-usage-page.ts`: provider name «DeepSeek». Docs: `docs/modules/ai.md`, ADR-0006,
+  `.env.example`, README.
+
+### 176. Release 0.14.3
+
+- [ ] 176.1 Skill `release`: help articles, E2E spec (`version-0-14-3`, replaces `version-0-14-2`), CHANGELOG, version,
   plan archiving.
 
 ## Backlog

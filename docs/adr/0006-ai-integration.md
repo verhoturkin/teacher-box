@@ -70,6 +70,17 @@
 - Ключ обязателен; прокси — тот же `TEACHERBOX_AI_PROXY`, если OpenRouter или выбранная модель
   недоступны с сервера.
 
+### DeepSeek (версия 0.14.3)
+
+- DeepSeek API OpenAI-совместим, но в `response_format` принимает только `json_object`: запрос со
+  схемой (`json_schema`) получает 400 «This response_format type is unavailable now». Провайдер
+  `deepseek` (адрес `https://api.deepseek.com`, модель по умолчанию `deepseek-flash`) просит
+  `json_object`, а схему ответа дописывает в системный промт — DeepSeek требует слова «json» и
+  образца в запросе. Ответ проверяется по схеме, как у остальных.
+- Любой `openai-compatible` сервис, ответивший 400 с упоминанием `response_format`, повторяет
+  запрос в режиме `json_object` и дальше работает в нём (до перезапуска) — прежние настройки
+  DeepSeek и похожих сервисов не ломаются.
+
 ### Общее
 
 - Неизвестное значение `TEACHERBOX_AI_PROVIDER` останавливает запуск (раньше опечатка молча

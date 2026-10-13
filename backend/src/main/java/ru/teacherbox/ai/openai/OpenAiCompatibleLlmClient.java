@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,21 +26,36 @@ import ru.teacherbox.shared.http.OutboundHttp;
 import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Any provider with an OpenAI-compatible {@code /chat/completions} endpoint (OpenAI, OpenRouter,
- * Gemini, Ollama, LM Studio, vLLM, ...). The answer format is requested with a JSON schema
- * {@code response_format}; providers that ignore it are handled by lenient parsing upstream.
+ * Gemini, DeepSeek, Ollama, LM Studio, vLLM, ...). The answer format is requested with a JSON schema
+ * {@code response_format}; providers that ignore it are handled by lenient parsing upstream. A provider
+ * that rejects the schema format (DeepSeek: «This response_format type is unavailable») is asked for a
+ * JSON object with the schema in the system prompt — from the start or after the first rejection.
  */
 public class OpenAiCompatibleLlmClient implements LlmClient {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleLlmClient.class);
+    private static final JsonMapper JSON = JsonMapper.builder().build();
+    static final String JSON_OBJECT_INSTRUCTION =
+            "\n\nAnswer with one JSON object only, valid against this JSON Schema:\n";
+
+    /** How the answer format is requested. */
+    public enum AnswerFormat {
+        /** {@code response_format: json_schema} — the schema is enforced by the provider. */
+        JSON_SCHEMA,
+        /** {@code response_format: json_object} — any JSON; the schema goes into the system prompt. */
+        JSON_OBJECT
+    }
 
     private final RestClient http;
     private final String provider;
     private final String model;
     private final Map<String, Object> extraBody;
+    private volatile AnswerFormat format;
 
     /** @param http client with the API base URL and authorization already configured */
     public OpenAiCompatibleLlmClient(RestClient http, String model) {
@@ -53,10 +69,22 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     /** @param extraBody provider-specific fields added to every {@code /chat/completions} body */
     public OpenAiCompatibleLlmClient(RestClient http, String provider, String model, Map<String, Object> extraBody) {
+        this(http, provider, model, AnswerFormat.JSON_SCHEMA, extraBody);
+    }
+
+    /** @param format how the answer format is requested at first */
+    public OpenAiCompatibleLlmClient(RestClient http, String provider, String model, AnswerFormat format,
+            Map<String, Object> extraBody) {
         this.http = http;
         this.provider = provider;
         this.model = model;
+        this.format = format;
         this.extraBody = Map.copyOf(extraBody);
+    }
+
+    /** The current way of requesting the answer format. */
+    public AnswerFormat answerFormat() {
+        return format;
     }
 
     /**
@@ -98,6 +126,11 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
                     .retrieve()
                     .body(JsonNode.class);
         } catch (RestClientResponseException e) {
+            if (format == AnswerFormat.JSON_SCHEMA && rejectsSchema(e)) {
+                log.warn("The AI provider rejects a JSON schema answer format; asking for a JSON object instead");
+                format = AnswerFormat.JSON_OBJECT;
+                return complete(request);
+            }
             throw new LlmException(LlmException.Reason.UNAVAILABLE,
                     "Provider " + e.getStatusCode().value() + ": " + describe(e));
         } catch (RestClientException e) {
@@ -152,18 +185,31 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     }
 
     private Map<String, Object> body(LlmRequest request) {
-        Map<String, Object> jsonSchema = new LinkedHashMap<>();
-        jsonSchema.put("name", request.schemaName());
-        jsonSchema.put("strict", true);
-        jsonSchema.put("schema", request.schema());
+        String system = request.system();
+        Map<String, Object> responseFormat;
+        if (format == AnswerFormat.JSON_SCHEMA) {
+            Map<String, Object> jsonSchema = new LinkedHashMap<>();
+            jsonSchema.put("name", request.schemaName());
+            jsonSchema.put("strict", true);
+            jsonSchema.put("schema", request.schema());
+            responseFormat = Map.of("type", "json_schema", "json_schema", jsonSchema);
+        } else {
+            system += JSON_OBJECT_INSTRUCTION + JSON.writeValueAsString(request.schema());
+            responseFormat = Map.of("type", "json_object");
+        }
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
-                Map.of("role", "system", "content", request.system()),
+                Map.of("role", "system", "content", system),
                 Map.of("role", "user", "content", userContent(request))));
-        body.put("response_format", Map.of("type", "json_schema", "json_schema", jsonSchema));
+        body.put("response_format", responseFormat);
         body.putAll(extraBody);
         return body;
+    }
+
+    /** A 400 that names {@code response_format}: the provider does not take a JSON schema. */
+    private static boolean rejectsSchema(RestClientResponseException e) {
+        return e.getStatusCode().value() == 400 && describe(e).toLowerCase(Locale.ROOT).contains("response_format");
     }
 
     /**

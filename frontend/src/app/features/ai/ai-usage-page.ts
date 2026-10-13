@@ -35,6 +35,7 @@ export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
   anthropic: 'Anthropic (Claude)',
   gemini: 'Google Gemini',
   openrouter: 'OpenRouter',
+  deepseek: 'DeepSeek',
   'openai-compatible': T.openAiCompatible,
 };
 
