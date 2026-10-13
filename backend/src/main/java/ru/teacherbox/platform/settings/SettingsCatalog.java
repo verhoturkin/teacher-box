@@ -130,12 +130,12 @@ public final class SettingsCatalog {
         b.group("ai", w("ИИ-помощник", "AI assistant"))
                 .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),
                         w("Пусто — ИИ выключен.", "Empty — AI is off."),
-                        List.of("anthropic", "gemini", "openai-compatible"))
+                        List.of("anthropic", "gemini", "openrouter", "openai-compatible"))
                 .secret("TEACHERBOX_AI_API_KEY", w("Ключ API", "API key"))
                 .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT,
                         w("Пусто — модель сервиса по умолчанию.", "Empty — the service's default model."))
                 .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API address"), URL,
-                        w("Для OpenAI-совместимых сервисов обязателен.", "Required for OpenAI-compatible services."))
+                        w("Для openai-compatible обязателен.", "Required for openai-compatible."))
                 .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER,
                         w("0 — без ограничения.", "0 — no limit."))
                 .add("TEACHERBOX_AI_PROXY", w("Прокси", "Proxy"), PROXY,

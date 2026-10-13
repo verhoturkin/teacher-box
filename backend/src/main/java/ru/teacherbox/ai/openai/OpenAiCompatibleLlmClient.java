@@ -39,6 +39,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     private final RestClient http;
     private final String provider;
     private final String model;
+    private final Map<String, Object> extraBody;
 
     /** @param http client with the API base URL and authorization already configured */
     public OpenAiCompatibleLlmClient(RestClient http, String model) {
@@ -47,14 +48,20 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     /** @param provider id of the provider for the usage log, e.g. {@code gemini} */
     public OpenAiCompatibleLlmClient(RestClient http, String provider, String model) {
+        this(http, provider, model, Map.of());
+    }
+
+    /** @param extraBody provider-specific fields added to every {@code /chat/completions} body */
+    public OpenAiCompatibleLlmClient(RestClient http, String provider, String model, Map<String, Object> extraBody) {
         this.http = http;
         this.provider = provider;
         this.model = model;
+        this.extraBody = Map.copyOf(extraBody);
     }
 
     /**
      * Client of a {@code /chat/completions} API: the key as a bearer token, the provider timeout
-     * and the AI proxy. Also used for Gemini, whose API has an OpenAI-compatible endpoint.
+     * and the AI proxy. Also used for Gemini and OpenRouter, whose APIs are OpenAI-compatible.
      */
     public static RestClient http(RestClient.Builder builder, AiProperties properties, String baseUrl) {
         OutboundProxy proxy = properties.outboundProxy();
@@ -155,6 +162,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
                 Map.of("role", "system", "content", request.system()),
                 Map.of("role", "user", "content", userContent(request))));
         body.put("response_format", Map.of("type", "json_schema", "json_schema", jsonSchema));
+        body.putAll(extraBody);
         return body;
     }
 

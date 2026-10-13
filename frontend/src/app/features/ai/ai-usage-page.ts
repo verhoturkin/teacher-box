@@ -34,6 +34,7 @@ export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
   anthropic: 'Anthropic (Claude)',
   gemini: 'Google Gemini',
+  openrouter: 'OpenRouter',
   'openai-compatible': T.openAiCompatible,
 };
 

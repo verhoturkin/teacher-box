@@ -17,6 +17,25 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.14.3
+
+OpenRouter as its own AI provider: one key for models of many vendors, with the address, the default model and the
+routing to providers that honour the JSON schema set up by the portal instead of the teacher.
+
+### 174. OpenRouter provider (B, F)
+
+- [x] 174.1 **B** `ai`: `TEACHERBOX_AI_PROVIDER=openrouter` — `openrouter/OpenRouterConfiguration` (key required,
+  base URL `https://openrouter.ai/api/v1`, default model `openrouter/auto`, header `X-OpenRouter-Title`),
+  `OpenAiCompatibleLlmClient` takes extra body fields (`provider.require_parameters`); `AiProperties`,
+  `SettingsCatalog` choices.
+- [x] 174.2 **F** `ai/ai-usage-page.ts`: provider name «OpenRouter».
+- [x] 174.3 Docs: `docs/modules/ai.md`, ADR-0006, `.env.example`, README.
+
+### 175. Release 0.14.3
+
+- [ ] 175.1 Skill `release`: help articles, E2E spec (`version-0-14-3`, replaces `version-0-14-2`), CHANGELOG, version,
+  plan archiving.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

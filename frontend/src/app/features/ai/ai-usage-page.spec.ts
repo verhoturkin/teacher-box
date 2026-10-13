@@ -48,6 +48,12 @@ describe('AiUsagePage', () => {
     ).toContain('Модель gemini-3.8-flash Google Gemini');
   });
 
+  it('names OpenRouter', async () => {
+    expect(
+      await render(aiStatus({ provider: 'openrouter', model: 'openrouter/auto' }), usageReport()),
+    ).toContain('Модель openrouter/auto OpenRouter');
+  });
+
   it('keeps an unknown provider id as is', async () => {
     expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain(
       'Модель m custom',

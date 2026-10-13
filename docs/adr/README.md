@@ -19,7 +19,7 @@ commit.
 | [0003](0003-authentication.md) | Invites, JWT, refresh-token rotation | active | [identity](../modules/identity.md) |
 | [0004](0004-delivery-variants.md) | Two Docker Compose variants (split, single) | active (single removed — 0031) | README |
 | [0005](0005-notifications.md) | Notifications: inbox + outbox + channel adapters | active | [notifications](../modules/notifications.md) |
-| [0006](0006-ai-integration.md) | AI module with provider-agnostic SPI; Gemini | active | [ai](../modules/ai.md) |
+| [0006](0006-ai-integration.md) | AI module with provider-agnostic SPI; Gemini, OpenRouter | active | [ai](../modules/ai.md) |
 | [0007](0007-frontend-stack-licensing.md) | Angular 21 LTS + PrimeNG 21 (MIT), version caps | active | frontend |
 | [0008](0008-schedule.md) | Schedule, series, requests, reminders, ICS, Google Calendar, off-time | active | [schedule](../modules/schedule.md) |
 | [0009](0009-external-integrations.md) | Outbound proxy, integration settings | active | backend |
