@@ -41,8 +41,12 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   await expect(page.getByRole('heading', { name: 'Home', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: /user menu/ }).click();
-  await expect(page.getByRole('menuitem', { name: 'English (selected)' })).toBeVisible();
-  await page.getByRole('menuitem', { name: 'Русский' }).click();
+  // 0.15.0: the chosen language is a checked radio item, without «(selected)»
+  await expect(page.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await page.getByRole('menuitemradio', { name: 'Русский' }).click();
   await expect(page.getByRole('heading', { name: 'Главная', exact: true })).toBeVisible();
 });
 

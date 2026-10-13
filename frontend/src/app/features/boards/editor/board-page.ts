@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import type { ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { firstValueFrom } from 'rxjs';
@@ -24,6 +25,7 @@ import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-se
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { SHARED_T } from '@shared/i18n/texts';
 import { BoardsApi } from '../data-access/boards-api';
 import { BoardContent } from '../data-access/boards.models';
 import { BoardBackupsDialog } from '../teacher/board-backups-dialog';
@@ -81,10 +83,17 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
   template: `
     <div class="tb-board-page">
       <header class="tb-board-page__bar">
-        <a pButton [text]="true" severity="secondary" [routerLink]="backLink()">
-          <i pButtonIcon class="pi pi-arrow-left"></i>
-          <span pButtonLabel>{{ backLabel() }}</span>
-        </a>
+        @if (returnable) {
+          <button pButton type="button" [text]="true" severity="secondary" (click)="back()">
+            <i pButtonIcon class="pi pi-arrow-left" aria-hidden="true"></i>
+            <span pButtonLabel>{{ backLabel() }}</span>
+          </button>
+        } @else {
+          <a pButton [text]="true" severity="secondary" [routerLink]="backLink()">
+            <i pButtonIcon class="pi pi-arrow-left" aria-hidden="true"></i>
+            <span pButtonLabel>{{ backLabel() }}</span>
+          </a>
+        }
         <h1 class="tb-board-page__title">{{ content()?.title ?? t.board }}</h1>
         @if (sync(); as board) {
           <span
@@ -202,6 +211,14 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly t = T.editor;
   private readonly api = inject(BoardsApi);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  /**
+   * The board was opened from another page of the portal (the home page, a lesson, a task): «Назад»
+   * returns there. Opened by a link from outside, it leads to the list of boards.
+   */
+  protected readonly returnable =
+    (this.router.currentNavigation() ?? this.router.lastSuccessfulNavigation())
+      ?.previousNavigation != null;
   private readonly themeMode = inject(ThemeMode);
   private readonly confirmation = inject(ConfirmationService);
   private readonly clipboard = inject(BoardClipboard);
@@ -226,9 +243,12 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly backLink = computed(() =>
     this.teacher() ? '/teacher/boards' : '/cabinet/boards',
   );
-  protected readonly backLabel = computed(() =>
-    this.teacher() ? T.editor.boards : T.editor.myBoards,
-  );
+  protected readonly backLabel = computed(() => {
+    if (this.returnable) {
+      return SHARED_T.common.back;
+    }
+    return this.teacher() ? T.editor.boards : T.editor.myBoards;
+  });
   protected readonly theme = computed(() => (this.themeMode.dark() ? 'dark' : 'light'));
   protected readonly initialScene = computed<ExcalidrawInitialDataState | null>(() => {
     const content = this.content();
@@ -243,9 +263,9 @@ export class BoardPage implements OnInit, CanLeave {
   protected readonly externalUrl = computed(() => this.content()?.url ?? null);
   protected readonly menu = computed<BoardMenuItem[]>(() => [
     {
-      label: T.editor.back,
+      label: this.returnable ? SHARED_T.common.back : T.editor.back,
       onSelect: () => {
-        void this.router.navigateByUrl(this.backLink());
+        this.back();
       },
     },
     ...(this.teacher()
@@ -311,6 +331,15 @@ export class BoardPage implements OnInit, CanLeave {
     if (this.document.visibilityState === 'hidden') void sync?.flush();
     else void sync?.poll();
   };
+
+  /** Back where the board was opened from, or to the list of boards. */
+  protected back(): void {
+    if (this.returnable) {
+      this.location.back();
+    } else {
+      void this.router.navigateByUrl(this.backLink());
+    }
+  }
 
   constructor() {
     this.document.addEventListener('visibilitychange', this.visibility);

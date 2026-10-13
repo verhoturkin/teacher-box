@@ -4,7 +4,7 @@ import { hostElement, readableText } from '@testing/dom';
 import { billingSummary } from '@testing/billing-fixtures';
 import { homeworkSummary } from '@testing/homework-fixtures';
 import { notificationPage, teacherNotificationsSummary } from '@testing/notification-fixtures';
-import { scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
+import { at, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { TeacherHome } from './teacher-home';
 import { testProviders } from '@testing/setup';
 
@@ -13,6 +13,9 @@ describe('TeacherHome', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
+    // before the lessons of the fixtures: the nearest lesson is not over
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.setSystemTime(new Date(at(2026, 10, 1, 12)));
     TestBed.configureTestingModule({
       imports: [TeacherHome],
       providers: testProviders(),
@@ -25,6 +28,7 @@ describe('TeacherHome', () => {
     fixture.destroy();
     backend.verify();
     localStorage.clear();
+    vi.useRealTimers();
   });
 
   it('collects the widgets of the modules', async () => {

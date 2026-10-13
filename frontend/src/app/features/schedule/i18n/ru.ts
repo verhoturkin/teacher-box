@@ -60,13 +60,20 @@ export const ru = {
     requestSent: (kind: string) => `${kind}: запрос отправлен, ждём ответа учителя.`,
     nothing: 'Ближайших занятий нет',
     week: (count: number) => `Занятий на неделе: ${String(count)}`,
-    schedule: 'Расписание',
     sent: 'Учитель получит ваш запрос',
+  },
+  clock: {
+    today: 'Сегодня',
+    tomorrow: 'Завтра',
+    live: 'Идёт сейчас',
+    in: (minutes: number) => `через ${String(minutes)} мин`,
+    left: (minutes: number) => `ещё ${String(minutes)} мин`,
+    duration: (minutes: number) => `${String(minutes)} мин`,
   },
   upcoming: {
     title: 'Следующее занятие',
     start: 'Начать урок',
-    schedule: 'Расписание',
+    join: 'Войти в урок',
   },
   today: {
     title: 'Сегодня',

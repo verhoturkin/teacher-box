@@ -16,6 +16,7 @@ export const ru = {
     add: 'Добавить',
     create: 'Создать',
     back: 'Назад',
+    clearSearch: 'Очистить поиск',
     next: 'Далее',
     done: 'Готово',
     send: 'Отправить',

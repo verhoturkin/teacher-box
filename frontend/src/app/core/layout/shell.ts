@@ -1,5 +1,13 @@
 import { Avatar } from '@shared/ui/avatar';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  DOCUMENT,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -35,6 +43,10 @@ const NAV_ITEMS = 4;
  * bell and the user menu; the sections of the role in the expanded navigation rail on a wide
  * screen, in the rail on a tablet and in the bottom navigation on a phone; the routed content.
  */
+/** An item of a choice in a menu (the theme, the language) and the chosen one. */
+const CHOICE = 'tb-menu-item--choice';
+const CHOSEN = `${CHOICE} tb-menu-item--selected`;
+
 @Component({
   selector: 'tb-shell',
   imports: [
@@ -89,7 +101,7 @@ const NAV_ITEMS = 4;
           [model]="userItems()"
           [popup]="true"
           appendTo="body"
-          (onShow)="userOpen.set(true)"
+          (onShow)="userOpen.set(true); markChoices()"
           (onHide)="userOpen.set(false)"
         />
       </div>
@@ -184,6 +196,7 @@ export class Shell {
     this.items().length <= NAV_ITEMS + 1 ? this.items().length : NAV_ITEMS,
   );
   protected readonly navItems = computed(() => this.bottomItems().slice(0, this.shown()));
+  private readonly document = inject(DOCUMENT);
   protected readonly userOpen = signal(false);
   protected readonly moreOpen = signal(false);
   private readonly router = inject(Router);
@@ -212,18 +225,29 @@ export class Shell {
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   /** The photo of a student or the teacher on the user button; without one, the person icon. */
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
+  /**
+   * The theme and the language items are radio items of the open menu: the chosen one is checked for
+   * screen readers (PrimeNG names an item by its label only, the label says nothing about the choice).
+   */
+  protected markChoices(): void {
+    for (const item of this.document.querySelectorAll(`.p-menu li.${CHOICE}`)) {
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', String(item.classList.contains('tb-menu-item--selected')));
+    }
+  }
+
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
     { label: T.help, icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
     { label: T.account, icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.
-    // the chosen theme: its icon stays, the item is highlighted and says that it is chosen (ADR-0024)
+    // the chosen theme: its icon stays, the item is highlighted with a check (ADR-0024); screen
+    // readers hear it as a checked radio item (`markChoices`)
     ...THEMES.map(({ choice, label, icon }) => ({
       icon,
-      ...(this.theme.choice() === choice
-        ? { label: T.chosenTheme(label), styleClass: 'tb-menu-item--selected' }
-        : { label }),
+      label,
+      styleClass: this.theme.choice() === choice ? CHOSEN : CHOICE,
       command: () => {
         this.theme.choose(choice);
       },
@@ -232,9 +256,8 @@ export class Shell {
     // the language under the theme (ADR-0035): another one reloads the page
     ...LANGUAGES.map(({ code, name }) => ({
       icon: 'pi pi-language',
-      ...(language() === code
-        ? { label: T.chosenLanguage(name), styleClass: 'tb-menu-item--selected' }
-        : { label: name }),
+      label: name,
+      styleClass: language() === code ? CHOSEN : CHOICE,
       command: () => {
         chooseLanguage(code);
       },

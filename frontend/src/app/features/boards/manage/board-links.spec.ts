@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
-import { hostElement } from '@testing/dom';
+import { hostElement, readableText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { BoardLinks } from './board-links';
 
@@ -41,5 +41,18 @@ describe('BoardLinks', () => {
     fixture.componentRef.setInput('groupId', null);
     await fixture.whenStable();
     expect(hostElement(fixture).querySelector('a')).toBeNull();
+  });
+
+  it('shows the boards as chips without the caption', async () => {
+    fixture.componentRef.setInput('studentId', 's-1');
+    fixture.componentRef.setInput('chips', true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([aBoard(), aLinkBoard()]);
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(readableText(host)).not.toContain('Доски:');
+    expect(host.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe('Доски');
+    expect(host.querySelectorAll('a.tb-board-chip')).toHaveLength(2);
   });
 });

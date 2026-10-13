@@ -16,7 +16,7 @@ describe('HelpArticleView', () => {
     fixture.componentInstance.navigated.subscribe((href) => followed.push(href));
     fixture.componentRef.setInput(
       'body',
-      '**Шаг** [Группы](/teacher/help/groups) и [Холст](https://app.holst.so)',
+      '**Шаг** [Группы](/teacher/help/groups), [Ученики](/teacher/students), [Нет](/teacher/help/nope) и [Холст](https://app.holst.so)',
     );
     await fixture.whenStable();
   });
@@ -46,5 +46,22 @@ describe('HelpArticleView', () => {
     expect(external.defaultPrevented).toBe(false);
     expect(withCtrl.defaultPrevented).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('in the sheet opens a linked article there and other portal links on their page', async () => {
+    const opened: string[] = [];
+    fixture.componentInstance.article.subscribe((topic) => opened.push(topic));
+    fixture.componentRef.setInput('inSheet', true);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    requireElement(host, 'a[href="/teacher/help/groups"]', HTMLAnchorElement).click();
+    expect(opened).toEqual(['teacher/groups']);
+    expect(navigate).not.toHaveBeenCalled();
+
+    requireElement(host, 'a[href="/teacher/students"]', HTMLAnchorElement).click();
+    requireElement(host, 'a[href="/teacher/help/nope"]', HTMLAnchorElement).click();
+    expect(opened).toEqual(['teacher/groups']);
+    expect(followed).toEqual(['/teacher/students', '/teacher/help/nope']);
   });
 });

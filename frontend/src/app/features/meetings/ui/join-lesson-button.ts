@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { MenuItem } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Tooltip } from 'primeng/tooltip';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { Portal } from '@core/portal/portal';
@@ -19,7 +18,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-join-lesson-button',
-  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Menu, Tooltip, ButtonAttributes],
+  imports: [Button, ButtonDirective, ButtonIcon, ButtonLabel, Menu, ButtonAttributes],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (callOwner(); as owner) {
@@ -48,7 +47,6 @@ import { T } from '../i18n/texts';
           styleClass="tb-split__more"
           icon="pi pi-chevron-down"
           [severity]="tonal() ? 'secondary' : 'primary'"
-          [pTooltip]="t.other"
           [ariaLabel]="t.other"
           [tbAttributes]="{
             'aria-haspopup': 'menu',

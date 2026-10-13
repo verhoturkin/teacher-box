@@ -22,8 +22,8 @@ The home page has the «Getting started» list — only the steps not done yet s
 
 ## Home page
 
-- **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page.
-- **Next lesson** — when and with whom, the «Start lesson» button and the boards of the student or the group.
+- **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page. On a phone they are behind the «+» button at the bottom right.
+- **Next lesson** — the first card under the quick actions. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs). When the lesson ends, the card shows the next one by itself.
 - **Today** — today's lessons; past ones can be marked at once.
 - **Needs attention** — unmarked lessons, work to review, students' requests and failed deliveries of notifications.
 - **Finance** — income of the month and students' debts.
@@ -235,7 +235,7 @@ One lesson can have another link — in the lesson window.
     title: 'Boards',
     summary: 'Excalidraw boards and external boards of students and groups',
     body: `
-The «Boards» section keeps all boards in one place. A board is of one of two kinds:
+The «Boards» section keeps all boards in one place; the search above the list finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
 
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.
@@ -252,7 +252,7 @@ Boards are a list, a line per board: the kind's icon, the title, who it is open 
 
 ## Draw together
 
-An Excalidraw board opens full screen. At the top — «← Boards», the title and the state: «Saved», «Saving…» or «Offline — will retry» (the portal retries by itself). Everything works live: students' strokes appear for you at once, yours for them; you see the cursors and names of those on the board now (their icons at the top right). If two people change the same shape at the same time, the last change wins. If the connection to the portal drops, the board keeps saving, and others' changes come every few seconds until the connection is back. The board's pictures load a few at a time and appear as they load — you can draw without waiting for them.
+An Excalidraw board opens full screen. At the top — «← Back» (or «← Boards»), the title and the state: «Saved», «Saving…» or «Offline — will retry» (the portal retries by itself). Everything works live: students' strokes appear for you at once, yours for them; you see the cursors and names of those on the board now (their icons at the top right). If two people change the same shape at the same time, the last change wins. If the connection to the portal drops, the board keeps saving, and others' changes come every few seconds until the connection is back. The board's pictures load a few at a time and appear as they load — you can draw without waiting for them.
 
 The board's menu (☰) has the settings at the bottom:
 
@@ -260,7 +260,7 @@ The board's menu (☰) has the settings at the bottom:
 - **Grid** — turns on the grid of the board; it is shared — everyone on this board sees it;
 - **Mouse wheel** — «Zoom» (the default: the wheel zooms in and out) or «Scroll (touchpad)» (the wheel and two fingers move the board, zoom with a pinch or with Ctrl). Remembered on this device.
 
-To go back — «← Boards» or «Back to boards» in the board's menu (☰): everything unsaved is saved before leaving. Without a connection, the portal asks whether to leave without saving.
+To go back — «← Back» (where you opened the board from: the home page, a lesson, a task) or «← Boards» if the board was opened by a link; the same is in the board's menu (☰): everything unsaved is saved before leaving. Without a connection, the portal asks whether to leave without saving.
 
 ## Library
 
@@ -298,7 +298,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. The «Homework» list is made of cards: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮».
+«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is split into two cards: «Active» — not all the work accepted yet, and «Done» — everything accepted. Each has a search by the title or a student's name; a long list shows 10 at a page. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮». «To review» next to the search in «Active» leaves only the homework with handed-in work; press it again to see all.
 
 ## The homework's page
 
@@ -314,7 +314,7 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-Handed-in work is collected in «To review» (cards: the student, the homework, when handed in and the deadline) and on the home page. Open the work, give a grade and write a comment, then:
+Handed-in work is collected in the review queue (cards: the student, the homework, when handed in and the deadline): open it from the homework's «⋮» → «Review the works» or from the home page («Needs attention»). Open the work, give a grade and write a comment, then:
 
 - **Accept** — the work counts;
 - **Return for rework** — the student fixes it and hands it in again.

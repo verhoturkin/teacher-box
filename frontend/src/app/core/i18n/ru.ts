@@ -47,8 +47,6 @@ export const ru = {
     lightTheme: 'Светлая тема',
     darkTheme: 'Тёмная тема',
     systemTheme: 'Тема как в системе',
-    chosenTheme: (theme: string) => `${theme} (выбрана)`,
-    chosenLanguage: (language: string) => `${language} (выбран)`,
     signOut: 'Выйти',
   },
   close: 'Закрыть',

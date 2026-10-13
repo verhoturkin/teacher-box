@@ -506,13 +506,14 @@ textarea.p-textarea {
 
 /*
  * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
- * magnifier at its start; the focus is the primary ring.
+ * magnifier at its start, «×» at its end while there is text (`tb-search-field`); no ring in focus.
  */
 .p-iconfield:has(> .pi-search, > .p-inputicon.pi-search) > .p-inputtext {
   border-color: transparent;
   border-radius: var(--tb-shape-full);
   background: var(--p-md-surface-container-high);
-  padding-inline-start: 3rem;
+  /* 4 + 48 + 4: the magnifier is centred in the round start, the text after it (M3 docked search) */
+  padding-inline-start: 3.5rem;
 
   &:enabled:hover {
     border-color: transparent;
@@ -523,10 +524,16 @@ textarea.p-textarea {
     );
   }
 
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
   &:enabled:focus {
     border-color: transparent;
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
   }
 }
 
@@ -580,10 +587,16 @@ textarea.p-textarea {
   border-radius: var(--tb-shape-full);
   background: var(--p-md-surface-container-high);
 
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
   &:enabled:focus {
     border-color: transparent;
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
   }
 }
 
@@ -1208,6 +1221,30 @@ a.p-menu-item-link:hover {
   }
 }
 
+/*
+ * «Начать урок» across the width of a narrow container (the home hero on a phone): a link or a button
+ * stretches; of a split button the main part takes the width, the arrow keeps its own.
+ */
+@container (max-width: 30rem) {
+  tb-join-lesson-button.tb-join-wide {
+    display: grid;
+
+    > .p-button,
+    > p-button .p-button,
+    .tb-split > p-button:first-child .p-button {
+      width: 100%;
+    }
+
+    .tb-split {
+      display: flex;
+
+      > p-button:first-child {
+        flex: 1;
+      }
+    }
+  }
+}
+
 /* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
 .p-card.tb-hero {
   background: var(--p-md-primary-container);
@@ -1216,12 +1253,13 @@ a.p-menu-item-link:hover {
   /* the container is the portal color itself (ADR-0034): only its own text role is readable on it */
   .tb-muted,
   .tb-hint,
-  a,
+  a:not(.p-button, .tb-board-chip),
   .p-button-text {
     color: var(--p-md-on-primary-container);
   }
 
-  a {
+  /* links, not the buttons and chips that are links («Начать урок» on the phone, boards) */
+  a:not(.p-button, .tb-board-chip) {
     text-decoration: underline;
   }
 }
@@ -1663,8 +1701,7 @@ a.p-menu-item-link:hover {
  */
 @media (width <= 48em) {
   /* Search fills the width of the toolbar */
-  .tb-toolbar > p-iconfield,
-  .tb-toolbar > p-iconfield input {
+  .tb-toolbar > tb-search-field {
     width: 100%;
   }
 
@@ -1673,9 +1710,13 @@ a.p-menu-item-link:hover {
     padding-inline: var(--tb-space-4);
   }
 
-  /* The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020) */
+  /*
+   * The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020). A card with a
+   * search keeps that room when nothing is found too: its search does not move
+   */
   .p-card:has(.p-datatable.tb-cards),
-  .p-card:has(.tb-list) {
+  .p-card:has(.tb-list),
+  .p-card:has(tb-search-field) {
     > .p-card-body {
       padding-inline: var(--tb-space-3);
     }
@@ -1759,8 +1800,8 @@ a.p-menu-item-link:hover {
     }
   }
 
-  /* The page keeps room at its end for the FAB */
-  main.tb-shell__content--nav:has(.tb-page-fab) {
+  /* The page keeps room at its end for the FAB (or the FAB menu of the home page) */
+  main.tb-shell__content--nav:has(.tb-page-fab, tb-fab-menu) {
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }
@@ -1779,7 +1820,7 @@ a.p-menu-item-link:hover {
 }
 
 @media (width <= 48em) {
-  body:has(p-button.tb-page-fab) .p-toast.p-toast-bottom-center {
+  body:has(p-button.tb-page-fab, tb-fab-menu) .p-toast.p-toast-bottom-center {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
         var(--tb-space-2)
@@ -1979,6 +2020,11 @@ a.p-menu-item-link:hover {
   display: inline-flex;
   gap: 2px;
 
+  /* the popup menu lives in <body>: its empty host takes no place, so no gap after the chevron */
+  > p-menu {
+    position: absolute;
+  }
+
   .p-button.tb-split__main {
     border-start-end-radius: var(--tb-shape-xs);
     border-end-end-radius: var(--tb-shape-xs);
@@ -2101,6 +2147,55 @@ a.p-menu-item-link:hover {
   }
 }
 
+/*
+ * M3 modal side sheet (the help): detached from the edges of the window with large corners, surface
+ * container low; the header is «←» (when there is a way back), the headline and «×». On a phone it
+ * takes the whole screen.
+ */
+.p-drawer.tb-side-sheet {
+  top: var(--tb-space-4);
+  right: var(--tb-space-4);
+  bottom: var(--tb-space-4);
+  width: min(42rem, calc(100vw - 2 * var(--tb-space-4)));
+  height: auto;
+  border: none;
+  border-radius: var(--tb-shape-lg);
+  background: var(--p-md-surface-container-low);
+  color: var(--p-md-on-surface);
+
+  .p-drawer-header {
+    gap: var(--tb-space-2);
+    padding: var(--tb-space-4) var(--tb-space-3) var(--tb-space-4) var(--tb-space-6);
+  }
+
+  .p-drawer-title {
+    font: var(--tb-type-title-l);
+  }
+
+  .p-drawer-content {
+    padding: 0 var(--tb-space-6) var(--tb-space-6);
+  }
+
+  @media (width <= 48em) {
+    inset: 0;
+    width: 100vw;
+    border-radius: 0;
+  }
+}
+
+.tb-side-sheet__head {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+
+  /* «←» stands in the padding: the headline keeps its line */
+  > p-button {
+    margin-inline-start: calc(-1 * var(--tb-space-3));
+  }
+}
+
 /* The chosen item of a menu (the theme in the user menu): the secondary container, as M3 menus have it */
 .p-menu .tb-menu-item--selected > .p-menu-item-content {
   background: var(--p-md-secondary-container);
@@ -2109,6 +2204,15 @@ a.p-menu-item-link:hover {
   .p-menu-item-link,
   .p-menu-item-icon {
     color: inherit;
+  }
+
+  /* not by colour alone (WCAG 1.4.1): a check at the end of the chosen item */
+  .p-menu-item-link::after {
+    /* the empty alternative text: screen readers hear «отмечено» from aria-checked, not the glyph */
+    content: '\e909' / '';
+    margin-inline-start: auto;
+    padding-inline-start: var(--tb-space-4);
+    font-family: primeicons;
   }
 }
 

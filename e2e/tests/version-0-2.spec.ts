@@ -405,14 +405,15 @@ test('the help opens from a section', async ({ page }) => {
   await expect(page).toHaveURL(/\/teacher\/schedule$/);
   await page.locator('.tb-page-heading').getByRole('button', { name: 'Справка' }).click();
 
-  const panel = page.locator('.tb-help-drawer');
+  // 0.15.0: the help is a modal side sheet
+  const panel = page.locator('.tb-side-sheet');
   await expect(panel).toContainText('Расписание и запросы');
   await expect(panel).toContainText('Запросы учеников');
   await panel.getByRole('link', { name: 'Вся справка' }).click();
   await expect(page).toHaveURL(/\/teacher\/help\/schedule$/);
   await expect(page.getByRole('heading', { name: 'Расписание и запросы' })).toBeVisible();
 
-  await page.getByRole('textbox', { name: 'Поиск по справке' }).fill('телемост');
+  await page.getByRole('searchbox', { name: 'Поиск по справке' }).fill('телемост');
   await page.getByRole('link', { name: 'Видеовстречи' }).click();
   await expect(page).toHaveURL(/\/teacher\/help\/meetings$/);
 });

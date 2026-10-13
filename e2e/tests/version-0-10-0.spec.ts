@@ -129,9 +129,9 @@ test('the teacher finds the textbook in «Учебники», its PDF pages are 
   );
   await expect(list.getByRole('listitem').filter({ hasText: TEXTBOOK })).toContainText(STUDENT);
 
-  await page.getByRole('textbox', { name: 'Поиск по названию' }).fill(`нет такого ${RUN}`);
+  await page.getByRole('searchbox', { name: 'Поиск по названию' }).fill(`нет такого ${RUN}`);
   await expect(page.getByText('Ничего не найдено')).toBeVisible();
-  await page.getByRole('textbox', { name: 'Поиск по названию' }).fill(RUN);
+  await page.getByRole('searchbox', { name: 'Поиск по названию' }).fill(RUN);
   await expect(list.getByRole('listitem')).toHaveCount(1);
 });
 

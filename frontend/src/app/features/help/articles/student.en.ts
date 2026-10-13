@@ -62,7 +62,7 @@ The same can be done through the bot in a messenger ([Bot](/cabinet/help/bot)).
     body: `
 ## Join a lesson
 
-Before the lesson click «Join lesson» — the next lesson is shown first on the home page, and the button is in the schedule too. The home page also has the «Video call» card: your room and your groups' rooms, and whether the teacher has already joined.
+Before the lesson click «Join lesson» — the next lesson is shown first on the home page, and the button is in the schedule too. The tile on the left of the card shows the day and the start time, an hour before the lesson — «in 25 min», and during the lesson — «Now» and how much is left (a running lesson can no longer be moved or cancelled). The home page also has the «Video call» card: your room and your groups' rooms, and whether the teacher has already joined.
 
 The call runs right in the portal. A window opens before joining: check the camera and the microphone (the browser asks for permission — allow it) and click «Join». In the call you can turn the microphone or the camera off, drag the window with your camera to another corner, and «Minimize» keeps the call in a small window — open a board or homework and the talk goes on. «Leave the call» is the red button.
 
@@ -72,7 +72,7 @@ If the teacher has set a link to another video service (e.g. Telemost), the butt
 
 The boards the teacher opened to you or your group are in «My boards» (the latest are on the home page too).
 
-- **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← My boards» or «Back to boards» in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
+- **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← My boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
 - **An external board** (e.g. Holst) opens in a new tab.
 
 The links to the lesson and the boards are in the bot too: «Join lesson» and «My boards».

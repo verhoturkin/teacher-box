@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { BoardsApi } from '../data-access/boards-api';
@@ -8,7 +16,8 @@ import { T } from '../i18n/texts';
 
 /**
  * Links to the boards of a lesson's student (with their groups' boards) or group; nothing while there
- * are none. An Excalidraw board opens in the portal, an external one in a new tab.
+ * are none. An Excalidraw board opens in the portal, an external one in a new tab. As `chips` (the
+ * nearest lesson on the home page) the boards are chips without the «Доски:» caption.
  */
 @Component({
   selector: 'tb-board-links',
@@ -16,15 +25,22 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (boards().length > 0) {
-      <div class="tb-board-links">
-        <span class="tb-muted">{{ t.boards }}</span>
+      <div
+        class="tb-board-links"
+        [class.tb-board-links--chips]="chips()"
+        role="group"
+        [attr.aria-label]="t.group"
+      >
+        @if (!chips()) {
+          <span class="tb-muted" aria-hidden="true">{{ t.boards }}</span>
+        }
         @for (board of boards(); track board.id) {
           @if (board.kind === 'EXCALIDRAW') {
-            <a class="tb-link" [routerLink]="route(board.id)"
+            <a [class]="linkClass()" [routerLink]="route(board.id)"
               ><i class="pi pi-tb-board" aria-hidden="true"></i> {{ board.title }}</a
             >
           } @else {
-            <a class="tb-link" [href]="board.url" target="_blank" rel="noopener"
+            <a [class]="linkClass()" [href]="board.url" target="_blank" rel="noopener"
               ><i class="pi pi-external-link" aria-hidden="true"></i> {{ board.title }}</a
             >
           }
@@ -39,6 +55,29 @@ import { T } from '../i18n/texts';
       align-items: center;
       gap: var(--tb-space-1) var(--tb-space-3);
     }
+
+    .tb-board-links--chips {
+      gap: var(--tb-space-2);
+    }
+
+    /* an M3 assist chip in the colour of the text around it (on the hero: on-primary-container) */
+    .tb-board-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      min-height: 2rem;
+      padding-inline: var(--tb-space-3);
+      border-radius: var(--tb-shape-sm);
+      background: color-mix(in srgb, currentColor 12%, transparent);
+      color: inherit;
+      font: var(--tb-type-label-l);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+
+      &:hover {
+        background: color-mix(in srgb, currentColor 20%, transparent);
+      }
+    }
   `,
 })
 export class BoardLinks {
@@ -47,6 +86,8 @@ export class BoardLinks {
 
   readonly studentId = input<string | null>(null);
   readonly groupId = input<string | null>(null);
+  /** The boards as chips, without the caption. */
+  readonly chips = input(false);
 
   protected readonly boards = signal<Board[]>([]);
 
@@ -65,6 +106,8 @@ export class BoardLinks {
         });
     });
   }
+
+  protected readonly linkClass = computed(() => (this.chips() ? 'tb-board-chip' : 'tb-link'));
 
   protected route(boardId: string): string {
     return boardRoute('teacher', boardId);

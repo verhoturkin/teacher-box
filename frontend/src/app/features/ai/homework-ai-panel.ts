@@ -13,8 +13,6 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
@@ -25,6 +23,7 @@ import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
 import { DraftSource, HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
 import { T } from './i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
 export interface AppliedDraft {
@@ -40,6 +39,7 @@ export interface AppliedDraft {
 @Component({
   selector: 'tb-homework-ai-panel',
   imports: [
+    SearchField,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -48,8 +48,6 @@ export interface AppliedDraft {
     ButtonIcon,
     ButtonLabel,
     Checkbox,
-    IconField,
-    InputIcon,
     InputText,
     Message,
     Popover,
@@ -126,18 +124,12 @@ export interface AppliedDraft {
             </div>
           } @else {
             @if (library().length > 0) {
-              <p-iconfield class="tb-ai-panel__search">
-                <p-inputicon styleClass="pi pi-search" />
-                <input
-                  pInputText
-                  type="search"
-                  [placeholder]="t.search"
-                  [attr.aria-label]="t.search"
-                  autocomplete="off"
-                  [ngModel]="query()"
-                  (ngModelChange)="query.set($event)"
-                />
-              </p-iconfield>
+              <tb-search-field
+                class="tb-ai-panel__search"
+                [label]="t.search"
+                [ngModel]="query()"
+                (ngModelChange)="query.set($event)"
+              />
               <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
                 @for (prompt of found(); track prompt.id) {
                   <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
@@ -289,8 +281,7 @@ export interface AppliedDraft {
       width: min(24rem, calc(100vw - 4rem));
     }
 
-    .tb-ai-panel__search,
-    .tb-ai-panel__search input {
+    .tb-ai-panel__search {
       width: 100%;
     }
 

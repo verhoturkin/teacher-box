@@ -145,11 +145,31 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's quick actions on a phone instead of
+  the row of buttons. The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
+  primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
+  and turns into the round «Закрыть» (primary). Esc, a tap outside or an item close it; the focus goes to the first
+  item and back to the FAB.
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
+- **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
+  calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
+  «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
+  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`: no «Доски:» caption, assist chips in
+  the text colour at 12 %), one filled button
+  («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
+  button too). The student's request
+  buttons go under the event and are hidden while the lesson runs. No «Расписание» link: the schedule is in the
+  navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
+  visible title (`h2.tb-sr-only` «Следующее занятие»): it is the first card and the tile says what it is.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
+- **Search field** — always `tb-search-field` (`@shared/ui`, a form control; 0.15.0): the M3 docked search bar, 56 px,
+  a filled pill without an outline (in focus too — the focus state layer), the magnifier and «×» «Очистить поиск» (while
+  there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
+  button is hidden. Its own width (20 rem, no wider than its place): «×» never resizes it; on a phone it takes the
+  toolbar's width.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
   («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
   second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
@@ -209,13 +229,18 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Connected button group** `tb-button-group` (also `p-selectbutton`): 2 px gap, inner corners 8 px, outer
   full; unselected tonal, selected primary and fully round; no outline.
 - **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px,
-  arrow part becomes round while its menu is open.
+  arrow part becomes round while its menu is open. The arrow has no tooltip (0.15.0, the teacher's decision): only its
+  `aria-label`; the empty host of the popup menu is out of the flow, so the group ends at the edge of its container.
 - Icon buttons: tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»); help «?»
   includes the article («Справка: Портал»); menu buttons have `aria-haspopup` + `aria-expanded`
   (`tbAttributes`).
 
 ## 8. Dialogs, sheets, menus
 
+- **Modal side sheet** `tb-side-sheet` (the help, 0.15.0): a right drawer 1 rem from the window edges, 42 rem wide,
+  large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
+  (Title Large) and «×». A link of a help article to another one opens it in the sheet («←» returns); other links
+  close the sheet and open their page. On a phone — the whole screen, no corners.
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
 - **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and
@@ -237,7 +262,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
-  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it (selected theme also says «(выбрана)»); destructive item red.
+  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it, with a check at its end (the theme and the language: `menuitemradio` + `aria-checked`, no «(выбрана)» since 0.15.0); destructive item red.
 
 ## 9. Lists and tables
 
@@ -383,7 +408,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`), and
   `expectComplete` tests it. Wording of both languages follows [`glossary.md`](glossary.md).
 - **Language switch** — in the user menu under the themes: each language in its own name with `pi-language`,
-  the chosen one highlighted with «(выбран)» / «(selected)»; on the sign-in and invitation pages — the
+  the chosen one highlighted with a check (`aria-checked`); on the sign-in and invitation pages — the
   `tb-language-picker` row under the card. Switching reloads the page.
 - Numbers, money and dates use the locale of the language (`locale()`: `ru-RU`, `en-GB`); fixed formats
   `dd.MM.yyyy` / `HH:mm` stay in both languages.

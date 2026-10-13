@@ -8,9 +8,6 @@ import {
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { Tooltip } from 'primeng/tooltip';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -25,6 +22,7 @@ import { TextbooksApi } from '../data-access/textbooks-api';
 import { MyTextbook } from '../data-access/textbooks.models';
 import { TEXTBOOK_KIND_ICONS, textbookDetails } from '../textbooks-labels';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /**
  * Student: «Учебники» — their own textbooks and their groups', newest change first; a tap opens one, the
@@ -33,11 +31,9 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-my-textbooks-page',
   imports: [
+    SearchField,
     Button,
     Card,
-    IconField,
-    InputIcon,
-    InputText,
     ReactiveFormsModule,
     Tooltip,
     HelpButton,
@@ -54,15 +50,7 @@ import { T } from '../i18n/texts';
       <h2 class="tb-sr-only">{{ t.list }}</h2>
       @if (textbooks().length > 0) {
         <div class="tb-toolbar">
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search" />
-            <input
-              pInputText
-              [formControl]="search"
-              [placeholder]="t.search"
-              [attr.aria-label]="t.search"
-            />
-          </p-iconfield>
+          <tb-search-field [formControl]="search" [label]="t.search" />
         </div>
       }
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">

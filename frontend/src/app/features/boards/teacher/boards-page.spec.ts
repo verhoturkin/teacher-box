@@ -61,6 +61,33 @@ describe('BoardsPage', () => {
     expect(text).not.toContain('Все доски');
   });
 
+  it('finds boards by the title or a student’s or group’s name', async () => {
+    await render();
+    backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
+    await fixture.whenStable();
+    const input = host.querySelector<HTMLInputElement>('input[aria-label="Поиск досок"]');
+    const titles = (): string[] =>
+      [...host.querySelectorAll('.tb-list__title')].map((link) => link.textContent.trim());
+    async function find(text: string): Promise<void> {
+      if (input === null) {
+        throw new Error('no search');
+      }
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+    }
+
+    await find('алг');
+    expect(titles()).toEqual(['Алгебра']);
+    await find('огэ');
+    expect(titles()).toEqual(['Холст']);
+    await find('мари');
+    expect(titles()).toEqual(['Алгебра']);
+    await find('геометрия');
+    expect(titles()).toEqual([]);
+    expect(host.textContent).toContain('Ничего не найдено');
+  });
+
   it('filters by a student from the URL and creates a board for them', async () => {
     await render({ student: 's-1' });
     backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);

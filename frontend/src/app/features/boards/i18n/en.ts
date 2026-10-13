@@ -39,6 +39,7 @@ export const en: Translation<typeof ru> = {
   },
   links: {
     boards: 'Boards:',
+    group: 'Boards',
   },
   myList: {
     groups: 'groups',
@@ -105,6 +106,10 @@ export const en: Translation<typeof ru> = {
     actions: (title: string) => `Actions: ${title}`,
     emptyTitle: 'No boards yet',
     emptyFilteredTitle: 'They have no boards yet',
+    search: 'Title or student',
+    searchLabel: 'Search the boards',
+    notFoundTitle: 'Nothing found',
+    notFoundHint: 'Check the title of the board or the student’s name',
     emptyHint:
       'Click «New board»: an Excalidraw board opens right in the portal, and an external board (e.g. Holst) can be added by link.',
     studentBoards: 'Boards of the student',

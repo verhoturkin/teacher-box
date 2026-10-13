@@ -65,6 +65,16 @@ export function helpUrl(topic: HelpTopic): string {
   return `/${area ?? ''}/help/${id ?? ''}`;
 }
 
+/** `/teacher/help/schedule` → `teacher/schedule`; `null` for any other link. */
+export function helpTopicOf(href: string): string | null {
+  const match = /^\/(teacher|cabinet|admin)\/help\/([\w-]+)$/.exec(href);
+  const area = match?.[1];
+  const id = match?.[2];
+  return isHelpArea(area) && id !== undefined && HELP_TOPICS[area].includes(id)
+    ? `${area}/${id}`
+    : null;
+}
+
 /**
  * The titles of the articles: the name of a «?» is «Справка: <title>», so that the buttons of a
  * page are told apart (WCAG 2.4.6). A test keeps them equal to the titles of the articles.

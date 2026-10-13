@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { hostElement } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { phoneScreen, testProviders } from '@testing/setup';
 import { QuickActions } from './quick-actions';
 
 describe('QuickActions', () => {
@@ -19,5 +19,24 @@ describe('QuickActions', () => {
       ['Ученик', '/teacher/students?create=student'],
       ['Задание', '/teacher/homework?create=assignment'],
     ]);
+  });
+
+  it('is the FAB menu on a phone', async () => {
+    TestBed.configureTestingModule({
+      imports: [QuickActions],
+      providers: testProviders(phoneScreen()),
+    });
+    const fixture = TestBed.createComponent(QuickActions);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(host.querySelector('.tb-quick-actions')).toBeNull();
+
+    host.querySelector<HTMLButtonElement>('tb-fab-menu button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      Array.from(host.querySelectorAll('tb-fab-menu a')).map((link) => link.textContent.trim()),
+    ).toEqual(['Занятие', 'Оплата', 'Ученик', 'Задание']);
   });
 });

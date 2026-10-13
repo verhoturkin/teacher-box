@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
@@ -12,8 +21,9 @@ import { T } from './i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /**
- * «?» (or «Подробнее») next to a heading: opens the help article in a side panel without leaving
- * the page. The panel is modal (ADR-0024): the focus is in it until it closes, then back on «?».
+ * «?» (or «Подробнее») next to a heading: opens the help article in an M3 modal side sheet without
+ * leaving the page. The sheet is modal (ADR-0024): the focus is in it until it closes, then back on
+ * «?». A link to another article opens it in the sheet; «←» in the header returns to the previous one.
  */
 @Component({
   selector: 'tb-help-button',
@@ -40,11 +50,30 @@ import { SHARED_T } from '@shared/i18n/texts';
       appendTo="body"
       [blockScroll]="true"
       [ariaCloseLabel]="c.close"
-      [header]="article()?.title ?? t.help"
-      styleClass="tb-help-drawer"
+      styleClass="tb-side-sheet"
     >
+      <ng-template #header>
+        <div class="tb-side-sheet__head">
+          @if (trail().length > 1) {
+            <p-button
+              icon="pi pi-arrow-left"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [ariaLabel]="c.back"
+              (onClick)="back()"
+            />
+          }
+          <span class="p-drawer-title">{{ article()?.title ?? t.help }}</span>
+        </div>
+      </ng-template>
       @if (article(); as current) {
-        <tb-help-article [body]="current.body" (navigated)="visible.set(false)" />
+        <tb-help-article
+          [body]="current.body"
+          [inSheet]="true"
+          (article)="openLinked($event)"
+          (navigated)="visible.set(false)"
+        />
         <p>
           <a [routerLink]="url()" (click)="visible.set(false)">{{ t.all }}</a>
         </p>
@@ -55,10 +84,6 @@ import { SHARED_T } from '@shared/i18n/texts';
     :host {
       display: inline-flex;
       align-items: center;
-    }
-
-    :host ::ng-deep .tb-help-drawer {
-      width: min(36rem, 100vw);
     }
   `,
 })
@@ -72,13 +97,40 @@ export class HelpButton {
   readonly label = input<string>();
 
   readonly visible = signal(false);
-  protected readonly article = signal<HelpArticle | null>(null);
+  /** The articles opened in the sheet, the current one last. */
+  protected readonly trail = signal<readonly HelpArticle[]>([]);
+  protected readonly article = computed(() => this.trail().at(-1) ?? null);
+  private readonly drawer = viewChild(Drawer);
+
+  constructor() {
+    // another article starts from its top
+    effect(() => {
+      this.article();
+      const content = this.drawer()?.container?.querySelector('.p-drawer-content');
+      if (content instanceof HTMLElement) {
+        content.scrollTop = 0;
+      }
+    });
+  }
   protected readonly url = computed(() => helpUrl(this.topic()));
   /** «Справка: Расписание и запросы»: the buttons of a page are told apart (ADR-0026). */
   protected readonly name = computed(() => T.helpOf(HELP_TITLES[this.topic()]));
 
   async open(): Promise<void> {
-    this.article.set(await this.library.article(this.topic()));
+    const article = await this.library.article(this.topic());
+    this.trail.set(article === null ? [] : [article]);
     this.visible.set(true);
+  }
+
+  /** A link of the article to another one: it opens in the sheet. */
+  async openLinked(topic: string): Promise<void> {
+    const article = await this.library.article(topic);
+    if (article !== null) {
+      this.trail.update((trail) => [...trail, article]);
+    }
+  }
+
+  back(): void {
+    this.trail.update((trail) => (trail.length > 1 ? trail.slice(0, -1) : trail));
   }
 }

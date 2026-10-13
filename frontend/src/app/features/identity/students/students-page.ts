@@ -15,9 +15,6 @@ import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
@@ -40,11 +37,13 @@ import { Avatar } from '@shared/ui/avatar';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /** Teacher: the list of students, invitations and access management; groups of students. */
 @Component({
   selector: 'tb-students-page',
   imports: [
+    SearchField,
     Avatar,
     EmptyState,
     HelpButton,
@@ -52,9 +51,6 @@ import { T } from '../i18n/texts';
     Button,
     Card,
     ConfirmDialog,
-    IconField,
-    InputIcon,
-    InputText,
     Menu,
     Tag,
     ToggleSwitch,
@@ -83,15 +79,7 @@ import { T } from '../i18n/texts';
       <p-card>
         <h2 class="tb-sr-only">{{ t.list }}</h2>
         <div class="tb-toolbar">
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search" />
-            <input
-              pInputText
-              [formControl]="search"
-              [placeholder]="t.search"
-              [attr.aria-label]="t.search"
-            />
-          </p-iconfield>
+          <tb-search-field [formControl]="search" [label]="t.search" />
           <label class="tb-switch" for="show-deactivated">
             <p-toggleswitch inputId="show-deactivated" [formControl]="showDeactivated" />
             {{ t.showDeactivated }}

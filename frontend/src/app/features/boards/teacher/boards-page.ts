@@ -11,6 +11,8 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -33,6 +35,7 @@ import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /**
  * Teacher: every board in one place (ADR-0028) — create, change, delete, copies. «Доски (n)» of a student
@@ -41,6 +44,8 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-boards-page',
   imports: [
+    SearchField,
+    ReactiveFormsModule,
     RouterLink,
     Button,
     Card,
@@ -80,8 +85,17 @@ import { T } from '../i18n/texts';
       <h2 class="tb-sr-only">{{ t.list }}</h2>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (boards().length > 0) {
+          <div class="tb-toolbar">
+            <tb-search-field
+              [formControl]="search"
+              [label]="t.searchLabel"
+              [placeholder]="t.search"
+            />
+          </div>
+        }
+        @if (shown().length > 0) {
           <ul class="tb-list" [attr.aria-label]="t.title">
-            @for (board of boards(); track board.id) {
+            @for (board of shown(); track board.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i
@@ -122,6 +136,8 @@ import { T } from '../i18n/texts';
               </li>
             }
           </ul>
+        } @else if (boards().length > 0) {
+          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
           <tb-empty-state
             icon="pi-tb-board"
@@ -173,6 +189,19 @@ export class BoardsPage implements OnInit {
   protected readonly membersText = boardMembersText;
   protected readonly state = new LoadState();
   protected readonly boards = signal<Board[]>([]);
+  protected readonly search = new FormControl('', { nonNullable: true });
+  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
+  /** The boards whose title or a student's (a group's) name has the search text. */
+  protected readonly shown = computed(() => {
+    const query = this.query().trim().toLocaleLowerCase();
+    return query === ''
+      ? this.boards()
+      : this.boards().filter(
+          (board) =>
+            board.title.toLocaleLowerCase().includes(query) ||
+            board.members.some((member) => member.name?.toLocaleLowerCase().includes(query)),
+        );
+  });
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
   protected readonly editing = signal<Board | null>(null);

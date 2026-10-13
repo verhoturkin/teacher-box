@@ -75,7 +75,11 @@ there is one, «Удалить…» (danger confirmation); materials — `ui/att
 (type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
 picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
-and groups side by side). The list (`teacher/assignments-page.ts`) — cards: title, «кому · до …», the progress badge
+and groups side by side). The list (`teacher/assignments-page.ts`) — two `teacher/assignment-list.ts` cards: «Активные» (not every task accepted,
+incl. not given) and «Выполненные» (`isDone`: every task accepted); each with a search by the title or a student's name
+and pages of 10 (`p-paginator`, a new search or filter starts at the first page); «Активные» has the «На проверку»
+toggle next to the search (`aria-pressed`, only `submitted > 0`). No «На проверку» link in the header: the review queue
+opens from «⋮» → «Проверить работы» and from the home page. A row: title, «кому · до …», the progress badge
 (`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows
 «Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»

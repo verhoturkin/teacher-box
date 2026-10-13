@@ -49,8 +49,6 @@ export const en: Translation<typeof ru> = {
     lightTheme: 'Light theme',
     darkTheme: 'Dark theme',
     systemTheme: 'System theme',
-    chosenTheme: (theme: string) => `${theme} (selected)`,
-    chosenLanguage: (language: string) => `${language} (selected)`,
     signOut: 'Sign out',
   },
   close: 'Close',
