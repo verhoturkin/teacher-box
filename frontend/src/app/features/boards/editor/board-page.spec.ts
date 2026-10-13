@@ -1,4 +1,5 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { Location } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -25,6 +26,11 @@ describe('BoardPage', () => {
   let sockets: ReturnType<typeof fakeLiveSockets>;
 
   function render(area: 'teacher' | 'cabinet' = 'teacher'): void {
+    configure();
+    create(area);
+  }
+
+  function configure(): void {
     island = fakeExcalidraw();
     sockets = fakeLiveSockets();
     TestBed.configureTestingModule({
@@ -35,6 +41,9 @@ describe('BoardPage', () => {
       ),
     });
     backend = TestBed.inject(HttpTestingController);
+  }
+
+  function create(area: 'teacher' | 'cabinet'): void {
     fixture = TestBed.createComponent(BoardPage);
     fixture.componentRef.setInput('id', 'board-1');
     fixture.componentRef.setInput('area', area);
@@ -99,6 +108,30 @@ describe('BoardPage', () => {
       status: 204,
       statusText: 'No Content',
     });
+  });
+
+  it('goes back where the board was opened from in the portal', async () => {
+    configure();
+    // the board is reached from another page of the portal
+    const router = TestBed.inject(Router);
+    router.resetConfig([
+      { path: 'home', children: [] },
+      { path: 'board', children: [] },
+    ]);
+    await router.navigateByUrl('/home');
+    await router.navigateByUrl('/board');
+    create('teacher');
+    await open();
+    const back = vi.spyOn(TestBed.inject(Location), 'back').mockReturnValue(undefined);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    expect(host.querySelector('a[href="/teacher/boards"]')).toBeNull();
+    expect(island.menu[0]?.label).toBe('Назад');
+    buttonByText(host, 'Назад').click();
+    island.menu[0]?.onSelect();
+
+    expect(back).toHaveBeenCalledTimes(2);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('gives the student their way back and no copies', async () => {

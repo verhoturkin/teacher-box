@@ -77,7 +77,7 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   confirmation step inside the dialog (no dialog on top).
 - `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — under «Ещё» on a
   phone); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
-- `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog, «Следующее занятие»).
+- `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog; chips in «Следующее занятие» on the home page).
 - `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`
   (its only dynamic `import()`, `excalidraw.css`, fonts at `excalidraw-assets/`, `self-hosted-fonts.ts` drops
@@ -115,6 +115,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
     Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
     in both themes; the canvas background stays the board's.
+  `board-page.ts` «Назад» returns in the history when the board was opened from another page of the portal
+  (`Router.currentNavigation().previousNavigation`); opened by a link from outside, it leads to the list of boards.
 - `to-board/` — «На доску» (assignment dialog and page, task review, textbooks): the board is chosen in a select with
   a search by title; `[students]` — from an assignment only the boards of its students (their own and their groups',
   one `GET …?studentId=` request; none — «У учеников задания досок нет»), `null` (textbooks) — every board; an Excalidraw board opens in a new tab with

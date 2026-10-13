@@ -252,7 +252,7 @@ Boards are a list, a line per board: the kind's icon, the title, who it is open 
 
 ## Draw together
 
-An Excalidraw board opens full screen. At the top — «← Boards», the title and the state: «Saved», «Saving…» or «Offline — will retry» (the portal retries by itself). Everything works live: students' strokes appear for you at once, yours for them; you see the cursors and names of those on the board now (their icons at the top right). If two people change the same shape at the same time, the last change wins. If the connection to the portal drops, the board keeps saving, and others' changes come every few seconds until the connection is back. The board's pictures load a few at a time and appear as they load — you can draw without waiting for them.
+An Excalidraw board opens full screen. At the top — «← Back» (or «← Boards»), the title and the state: «Saved», «Saving…» or «Offline — will retry» (the portal retries by itself). Everything works live: students' strokes appear for you at once, yours for them; you see the cursors and names of those on the board now (their icons at the top right). If two people change the same shape at the same time, the last change wins. If the connection to the portal drops, the board keeps saving, and others' changes come every few seconds until the connection is back. The board's pictures load a few at a time and appear as they load — you can draw without waiting for them.
 
 The board's menu (☰) has the settings at the bottom:
 
@@ -260,7 +260,7 @@ The board's menu (☰) has the settings at the bottom:
 - **Grid** — turns on the grid of the board; it is shared — everyone on this board sees it;
 - **Mouse wheel** — «Zoom» (the default: the wheel zooms in and out) or «Scroll (touchpad)» (the wheel and two fingers move the board, zoom with a pinch or with Ctrl). Remembered on this device.
 
-To go back — «← Boards» or «Back to boards» in the board's menu (☰): everything unsaved is saved before leaving. Without a connection, the portal asks whether to leave without saving.
+To go back — «← Back» (where you opened the board from: the home page, a lesson, a task) or «← Boards» if the board was opened by a link; the same is in the board's menu (☰): everything unsaved is saved before leaving. Without a connection, the portal asks whether to leave without saving.
 
 ## Library
 
