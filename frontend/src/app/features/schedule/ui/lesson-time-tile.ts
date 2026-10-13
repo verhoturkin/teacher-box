@@ -20,8 +20,8 @@ import { LessonTime } from '../home/lesson-clock';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 6rem;
-      padding: var(--tb-space-2) var(--tb-space-3);
+      min-width: 7.5rem;
+      padding: var(--tb-space-3) var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
       background: var(--p-md-primary);
       color: var(--p-md-on-primary);
@@ -30,11 +30,11 @@ import { LessonTime } from '../home/lesson-clock';
 
     .tb-time-tile__day,
     .tb-time-tile__note {
-      font: var(--tb-type-label-m);
+      font: var(--tb-type-label-l);
     }
 
     .tb-time-tile__start {
-      font: var(--tb-type-headline-s-emphasized);
+      font: var(--tb-type-headline-m-emphasized);
     }
   `,
 })

@@ -43,15 +43,24 @@ import { T } from '../i18n/texts';
         </div>
         @if (next.joinUrl; as url) {
           <div class="tb-lesson-event__actions">
-            <tb-join-lesson-button [url]="url" [label]="joinLabel()" [teacher]="true" />
+            <tb-join-lesson-button
+              class="tb-join-wide"
+              [url]="url"
+              [label]="joinLabel()"
+              [teacher]="true"
+            />
           </div>
         }
       </div>
     </p-card>
   `,
   styles: `
-    .tb-lesson-event {
+    :host {
+      display: block;
       container-type: inline-size;
+    }
+
+    .tb-lesson-event {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
@@ -82,13 +91,17 @@ import { T } from '../i18n/texts';
 
     /* a phone: the button goes under the tile and the text, across the width */
     @container (max-width: 30rem) {
-      .tb-lesson-event__actions {
-        grid-column: 1 / -1;
-        display: grid;
+      .tb-lesson-event {
+        gap: var(--tb-space-3);
       }
 
-      tb-join-lesson-button {
-        display: grid;
+      .tb-lesson-event__actions {
+        grid-column: 1 / -1;
+      }
+
+      tb-lesson-time-tile {
+        min-width: 6.5rem;
+        padding-inline: var(--tb-space-2);
       }
     }
   `,
