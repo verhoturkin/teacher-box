@@ -6,11 +6,15 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
+import { NgTemplateOutlet } from '@angular/common';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Drawer } from 'primeng/drawer';
+import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
@@ -64,6 +68,9 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { RowType } from '@shared/ui/row-type.directive';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -74,18 +81,24 @@ const ALL_DAY_START_HOUR = 10;
 
 /**
  * The teacher's schedule, one card under another (ADR-0021): students' requests and lessons waiting
- * for an outcome first, then the calendar with lessons (select empty time to plan, drag to move),
- * regular series, the teacher's off time and the calendar link.
+ * for an outcome first (labelled buttons; on a phone the row opens a bottom sheet with them), then the calendar with lessons (select empty time to plan, drag to move),
+ * regular series, the teacher's off time (their actions in «⋮») and the calendar link.
  * On a phone a new lesson is planned with the floating «+».
  */
 @Component({
   selector: 'tb-schedule-page',
   imports: [
+    NgTemplateOutlet,
     Avatar,
+    ButtonAttributes,
     HelpButton,
     Button,
     Card,
     ConfirmDialog,
+    Drawer,
+    Menu,
+    ModalDrawer,
+    RowType,
     Tag,
     CalendarFeedPanel,
     LessonDetailsDialog,
@@ -164,50 +177,73 @@ const ALL_DAY_START_HOUR = 10;
         <p-card [header]="t.unmarked">
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
-              <li>
+              <li [class.tb-list__item--link]="mobile()">
                 <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ with(lesson) }}</span>
                   <span class="tb-list__supporting">{{ time(lesson) }}</span>
                 </div>
-                <div class="tb-list__trail">
-                  @if (lesson.groupId !== null) {
+                @if (mobile()) {
+                  <!-- a phone: the row stays one line, its buttons are in the bottom sheet -->
+                  <div class="tb-list__trail tb-list__trail--icons">
+                    <!-- stretched over the row: the whole row opens the sheet -->
                     <p-button
-                      [label]="t.mark"
-                      icon="pi pi-users"
-                      severity="success"
+                      class="tb-list__stretched"
+                      icon="pi pi-chevron-right"
+                      severity="secondary"
                       [text]="true"
-                      [ariaLabel]="t.markAttendance(with(lesson))"
-                      (onClick)="markAttendance(lesson)"
-                    />
-                  } @else {
-                    <p-button
-                      icon="pi pi-check"
-                      [text]="true"
-                      [pTooltip]="t.conducted(lesson.studentName ?? t.student)"
                       [rounded]="true"
-                      severity="success"
-                      [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
-                      [loading]="marks.is(lesson.id)"
-                      (onClick)="mark(lesson, 'CONDUCTED')"
+                      [ariaLabel]="t.markLesson(with(lesson))"
+                      (onClick)="openSheet(lesson)"
                     />
-                    <p-button
-                      icon="pi pi-user-minus"
-                      [text]="true"
-                      [pTooltip]="t.missed(lesson.studentName ?? t.student)"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="t.missed(lesson.studentName ?? t.student)"
-                      [loading]="marks.is(lesson.id)"
-                      (onClick)="mark(lesson, 'MISSED')"
-                    />
-                  }
-                </div>
+                  </div>
+                } @else {
+                  <div class="tb-list__trail">
+                    <ng-container *ngTemplateOutlet="markButtons; context: { $implicit: lesson }" />
+                  </div>
+                }
               </li>
             }
           </ul>
         </p-card>
       }
+
+      <!-- the buttons of a past lesson: text in a row; on a phone (in the sheet) full width -->
+      <ng-template #markButtons let-lesson [tbRowType]="unmarked()">
+        @if (lesson.groupId !== null) {
+          <p-button
+            [label]="t.mark"
+            icon="pi pi-users"
+            severity="success"
+            [text]="!mobile()"
+            [fluid]="mobile()"
+            [ariaLabel]="t.markAttendance(with(lesson))"
+            (onClick)="markAttendance(lesson)"
+          />
+        } @else {
+          <p-button
+            [label]="t.conductedLabel"
+            icon="pi pi-check"
+            severity="success"
+            [text]="!mobile()"
+            [fluid]="mobile()"
+            [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
+            [loading]="marks.is(lesson.id)"
+            (onClick)="mark(lesson, 'CONDUCTED')"
+          />
+          <p-button
+            [class.tb-tonal]="mobile()"
+            [label]="t.missedLabel"
+            icon="pi pi-user-minus"
+            severity="danger"
+            [text]="!mobile()"
+            [fluid]="mobile()"
+            [ariaLabel]="t.missed(lesson.studentName ?? t.student)"
+            [loading]="marks.is(lesson.id)"
+            (onClick)="mark(lesson, 'MISSED')"
+          />
+        }
+      </ng-template>
 
       <p-card>
         @if (calendarState.status() === 'error') {
@@ -263,24 +299,19 @@ const ALL_DAY_START_HOUR = 10;
                     <span class="tb-list__title">{{ with(item) }}</span>
                     <span class="tb-list__supporting">{{ weekly(item) }}</span>
                   </div>
-                  <div class="tb-list__trail">
+                  <div class="tb-list__trail tb-list__trail--icons">
                     <p-button
-                      icon="pi pi-pencil"
+                      icon="pi pi-ellipsis-v"
                       [text]="true"
-                      [pTooltip]="t.editSeries(with(item))"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="t.editSeries(with(item))"
-                      (onClick)="editSeries(item)"
-                    />
-                    <p-button
-                      icon="pi pi-stop-circle"
-                      [text]="true"
-                      [pTooltip]="t.stopSeries(with(item))"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="t.stopSeries(with(item))"
-                      (onClick)="stopSeries(item)"
+                      [pTooltip]="t.actions(with(item))"
+                      [ariaLabel]="t.actions(with(item))"
+                      [tbAttributes]="{
+                        'aria-haspopup': 'menu',
+                        'aria-expanded': menuFor() === item.id ? 'true' : 'false',
+                      }"
+                      (onClick)="openMenu(item.id, seriesMenu(item), $event)"
                     />
                   </div>
                 </li>
@@ -322,24 +353,19 @@ const ALL_DAY_START_HOUR = 10;
                     <span class="tb-list__title">{{ item.note ?? t.notWorking }}</span>
                     <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
                   </div>
-                  <div class="tb-list__trail">
+                  <div class="tb-list__trail tb-list__trail--icons">
                     <p-button
-                      icon="pi pi-pencil"
+                      icon="pi pi-ellipsis-v"
                       [text]="true"
-                      [pTooltip]="t.editOffTime(offTimeText(item))"
                       [rounded]="true"
                       severity="secondary"
-                      [ariaLabel]="t.editOffTime(offTimeText(item))"
-                      (onClick)="editOffTime(item)"
-                    />
-                    <p-button
-                      icon="pi pi-trash"
-                      [text]="true"
-                      [pTooltip]="t.deleteOffTime(offTimeText(item))"
-                      [rounded]="true"
-                      severity="danger"
-                      [ariaLabel]="t.deleteOffTime(offTimeText(item))"
-                      (onClick)="deleteOffTime(item)"
+                      [pTooltip]="t.actions(offTimeText(item))"
+                      [ariaLabel]="t.actions(offTimeText(item))"
+                      [tbAttributes]="{
+                        'aria-haspopup': 'menu',
+                        'aria-expanded': menuFor() === item.id ? 'true' : 'false',
+                      }"
+                      (onClick)="openMenu(item.id, offTimeMenu(item), $event)"
                     />
                   </div>
                 </li>
@@ -351,6 +377,33 @@ const ALL_DAY_START_HOUR = 10;
 
       <tb-calendar-feed-panel />
     </div>
+
+    <!-- «⋮» of a row of recurring lessons or days off: one popup menu serves every row -->
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
+
+    <p-drawer
+      tbModalDrawer
+      [blockScroll]="true"
+      [ariaCloseLabel]="c.close"
+      [visible]="sheetLesson() !== null"
+      (visibleChange)="$event || closeSheet()"
+      position="bottom"
+      styleClass="tb-sheet"
+      [header]="sheetTitle()"
+    >
+      @if (sheetLesson(); as lesson) {
+        <p class="tb-muted">{{ time(lesson) }}</p>
+        <div class="tb-sheet-actions">
+          <ng-container *ngTemplateOutlet="markButtons; context: { $implicit: lesson }" />
+        </div>
+      }
+    </p-drawer>
 
     <tb-lesson-dialog
       [(visible)]="lessonDialogVisible"
@@ -394,6 +447,14 @@ const ALL_DAY_START_HOUR = 10;
       (answered)="done(t.answered)"
     />
     <p-confirmdialog />
+  `,
+  styles: `
+    /* the bottom sheet of a lesson to mark: its buttons one under another, across the width */
+    .tb-sheet-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-2);
+    }
   `,
 })
 export class SchedulePage implements OnInit {
@@ -440,6 +501,18 @@ export class SchedulePage implements OnInit {
   protected readonly editingOffTime = signal<OffTime | null>(null);
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
+
+  /** The past lesson whose bottom sheet is open (a phone). */
+  protected readonly sheetLesson = signal<ScheduledLesson | null>(null);
+  protected readonly sheetTitle = computed(() => {
+    const lesson = this.sheetLesson();
+    return lesson === null ? '' : lessonWith(lesson);
+  });
+
+  private readonly menu = viewChild.required<Menu>('menu');
+  /** The recurring lessons or the day off whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<string | null>(null);
+  protected readonly menuItems = signal<MenuItem[]>([]);
 
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();
@@ -532,6 +605,7 @@ export class SchedulePage implements OnInit {
 
   /** The attendance of a group lesson opens at once, not through the details of the lesson (ADR-0026). */
   markAttendance(lesson: ScheduledLesson): void {
+    this.closeSheet();
     this.selected.set(lesson);
     this.attendanceVisible.set(true);
   }
@@ -569,8 +643,65 @@ export class SchedulePage implements OnInit {
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
     this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
+      this.closeSheet();
       this.done(T.page.marked);
     });
+  }
+
+  openSheet(lesson: ScheduledLesson): void {
+    this.sheetLesson.set(lesson);
+  }
+
+  closeSheet(): void {
+    this.sheetLesson.set(null);
+  }
+
+  protected openMenu(id: string, items: MenuItem[], event: Event): void {
+    this.menuFor.set(id);
+    this.menuItems.set(items);
+    this.menu().toggle(event);
+  }
+
+  /** «Изменить» and «Завершить…» of recurring lessons. */
+  protected seriesMenu(series: LessonSeries): MenuItem[] {
+    return [
+      {
+        label: T.page.editItem,
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.editSeries(series);
+        },
+      },
+      {
+        label: T.page.stopItem,
+        icon: 'pi pi-stop-circle',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.stopSeries(series);
+        },
+      },
+    ];
+  }
+
+  /** «Изменить» and «Удалить…» of a day off. */
+  protected offTimeMenu(offTime: OffTime): MenuItem[] {
+    return [
+      {
+        label: T.page.editItem,
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.editOffTime(offTime);
+        },
+      },
+      {
+        label: T.page.deleteItem,
+        icon: 'pi pi-trash',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.deleteOffTime(offTime);
+        },
+      },
+    ];
   }
 
   answer(request: ChangeRequest): void {

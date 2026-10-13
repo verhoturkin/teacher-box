@@ -1,8 +1,10 @@
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
+import { BehaviorSubject } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import {
   at,
@@ -27,11 +29,14 @@ describe('SchedulePage', () => {
   let fixture: ComponentFixture<SchedulePage>;
   let backend: HttpTestingController;
   let page: SchedulePage;
+  /** The screen: a computer unless a test says it is a phone. */
+  let phone: BehaviorSubject<BreakpointState>;
 
   beforeEach(() => {
+    phone = new BehaviorSubject<BreakpointState>({ matches: false, breakpoints: {} });
     TestBed.configureTestingModule({
       imports: [SchedulePage],
-      providers: testProviders(),
+      providers: testProviders({ provide: BreakpointObserver, useValue: { observe: () => phone } }),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -100,6 +105,16 @@ describe('SchedulePage', () => {
   async function flushReload(unmarked: ScheduledLesson[] = []): Promise<void> {
     lessonsRequest().flush([scheduledLesson()]);
     flushSidePanels(unmarked);
+    await fixture.whenStable();
+  }
+
+  /** Opens «⋮» of a row and picks the item. */
+  async function act(name: string, item: string): Promise<void> {
+    const more = buttonByText(hostElement(fixture), `Действия: ${name}`);
+    expect(more.getAttribute('aria-haspopup')).toBe('menu');
+    more.click();
+    await fixture.whenStable();
+    menuItemByText(item).click();
     await fixture.whenStable();
   }
 
@@ -241,8 +256,7 @@ describe('SchedulePage', () => {
     expect(dialog.offTime()).toBeNull();
     dialog.visible.set(false);
 
-    buttonByText(hostElement(fixture), 'Изменить нерабочее время: Пн, Ср 13:00–14:00').click();
-    await fixture.whenStable();
+    await act('Пн, Ср 13:00–14:00', 'Изменить');
     expect(dialog.offTime()).toEqual(weeklyOffTime());
     dialog.visible.set(false);
     dialog.saved.emit(weeklyOffTime({ note: 'Перерыв' }));
@@ -262,7 +276,7 @@ describe('SchedulePage', () => {
       options.accept?.();
       return confirmation;
     });
-    buttonByText(hostElement(fixture), 'Удалить нерабочее время: Пн, Ср 13:00–14:00').click();
+    await act('Пн, Ср 13:00–14:00', 'Удалить…');
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/off-times/off-1' })
       .flush(null);
@@ -404,6 +418,19 @@ describe('SchedulePage', () => {
     });
   });
 
+  it('labels the buttons of a past lesson', async () => {
+    await render(scheduleSettings(), [scheduledLesson({ id: 'l-9' }), groupLesson()]);
+
+    const row = buttonByText(hostElement(fixture), 'Проведено: Иван Петров').closest('li');
+    expect(readableText(row ?? document.createElement('li'))).toContain('Проведено Пропуск');
+    expect(buttonByText(hostElement(fixture), 'Проведено: Иван Петров').textContent).toContain(
+      'Проведено',
+    );
+    expect(
+      buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').textContent,
+    ).toContain('Отметить');
+  });
+
   it('tells that a lesson was saved: the new lesson may be out of the screen', async () => {
     await render();
 
@@ -433,8 +460,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Дни недели');
 
-    buttonByText(hostElement(fixture), 'Изменить регулярные занятия: Иван Петров').click();
-    await fixture.whenStable();
+    await act('Иван Петров', 'Изменить');
     expect(bodyText()).toContain('Изменить регулярные занятия');
 
     page.onSeriesSaved({ series: lessonSeries(), lessons: 12 });
@@ -443,8 +469,7 @@ describe('SchedulePage', () => {
     );
     await flushReload();
 
-    buttonByText(hostElement(fixture), 'Завершить регулярные занятия: Иван Петров').click();
-    await fixture.whenStable();
+    await act('Иван Петров', 'Завершить…');
     buttonByText(document.body, 'Завершить').click();
     const stop = backend.expectOne('/api/teacher/schedule/series/sr-1/stop');
     expect(stop.request.body).toEqual({
@@ -452,5 +477,32 @@ describe('SchedulePage', () => {
     });
     stop.flush(null);
     await flushReload();
+  });
+
+  it('on a phone opens the buttons of a past lesson in a bottom sheet', async () => {
+    phone.next({ matches: true, breakpoints: {} });
+    await render(scheduleSettings(), [scheduledLesson({ id: 'l-9' }), groupLesson()]);
+    const rows = Array.from(
+      hostElement(fixture).querySelectorAll('ul.tb-list li.tb-list__item--link'),
+      (row) => readableText(row),
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).not.toContain('Проведено');
+
+    buttonByText(hostElement(fixture), 'Отметить занятие: Иван Петров').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Проведено');
+    buttonByText(document.body, 'Пропуск: Иван Петров').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-9/outcome')
+      .flush(scheduledLesson({ status: 'MISSED' }));
+    await flushReload([groupLesson()]);
+    expect(document.querySelector('.p-drawer.tb-sheet')).toBeNull();
+
+    buttonByText(hostElement(fixture), 'Отметить занятие: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Отметить посещаемость: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Кто был на занятии');
   });
 });

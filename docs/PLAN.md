@@ -33,9 +33,9 @@ teacher's schedule actions with labels and menus, boards split into the portal's
 
 ### 195. Schedule and boards (F)
 
-- [ ] 195.1 **F** `schedule/teacher/schedule-page.ts` «Отметьте прошедшие занятия»: buttons with labels; on a phone
+- [x] 195.1 **F** `schedule/teacher/schedule-page.ts` «Отметьте прошедшие занятия»: buttons with labels; on a phone
   the row opens a bottom sheet with them, as the student's upcoming lessons.
-- [ ] 195.2 **F** `schedule/teacher/schedule-page.ts`: the actions of recurring lessons and days off in «⋮».
+- [x] 195.2 **F** `schedule/teacher/schedule-page.ts`: the actions of recurring lessons and days off in «⋮».
 - [ ] 195.3 **F** `boards/teacher/boards-page.ts`, `boards/student/my-boards-page.ts`: two cards «Доски на портале»
   and «Внешние доски»; a tap anywhere on a board's row opens it. Docs: design-system §9.
 

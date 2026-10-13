@@ -137,11 +137,11 @@ test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
 
   await signIn(page);
   await page.goto('/teacher/schedule');
-  const end = page.getByRole('button', {
-    name: 'Завершить регулярные занятия: Ученик серии 0.6.6',
-  });
+  // 0.15.3: the actions of recurring lessons are in «⋮»
+  await page.getByRole('button', { name: 'Действия: Ученик серии 0.6.6' }).click();
+  const end = page.getByRole('menuitem', { name: 'Завершить…' });
   await expect(end).toBeVisible();
-  await expect(end).toHaveClass(/p-button-danger/);
+  await expect(end.locator('xpath=ancestor-or-self::li')).toHaveClass(/tb-menu-item--danger/);
   await expect(end.locator('.pi-stop-circle')).toHaveCount(1);
   await expect(end.locator('.pi-trash')).toHaveCount(0);
 });
