@@ -35,6 +35,13 @@ export const ru = {
       'Нет связи с порталом: последние изменения доски не сохранены. Если уйти, они пропадут.',
     leave: 'Уйти',
   },
+  cards: {
+    portal: 'Доски на портале',
+    external: 'Внешние доски',
+    noPortal: 'Досок на портале пока нет',
+    noExternal: 'Внешних досок пока нет',
+    notFound: 'Ничего не найдено',
+  },
   links: {
     boards: 'Доски:',
     group: 'Доски',
@@ -43,7 +50,6 @@ export const ru = {
     groups: 'группы',
     group: 'группа',
     changed: (date: string) => `изменена ${date}`,
-    external: 'внешняя доска',
   },
   myBoardButton: {
     open: 'Перейти на доску',

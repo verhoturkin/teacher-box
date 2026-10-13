@@ -44,18 +44,26 @@ describe('BoardsPage', () => {
     fixture.destroy();
   });
 
-  it('lists every board: the editor link, the kind, who sees it', async () => {
+  it('lists the boards in two cards: of the portal and external, a row opens its board', async () => {
     await render();
     backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
     await fixture.whenStable();
 
     const text = host.textContent;
-    expect(text).toContain('Доска Excalidraw');
-    expect(text).toContain('Внешняя доска');
     expect(text).toContain('группа «ОГЭ»');
-    expect(host.querySelector('a[href$="/board-1"]')).not.toBeNull();
-    expect(host.querySelector('a[href="https://app.holst.so/board/1"]')).not.toBeNull();
-    expect(host.querySelectorAll('ul.tb-list[aria-label="Доски"] > li')).toHaveLength(2);
+    const portal = host.querySelectorAll('ul.tb-list[aria-label="Доски на портале"] > li');
+    const external = host.querySelectorAll('ul.tb-list[aria-label="Внешние доски"] > li');
+    expect(portal).toHaveLength(1);
+    expect(external).toHaveLength(1);
+    // the title link covers the row: a tap anywhere on it opens the board
+    expect(portal[0]?.classList).toContain('tb-list__item--link');
+    expect(portal[0]?.querySelector('a.tb-list__link')?.getAttribute('href')).toMatch(/\/board-1$/);
+    expect(external[0]?.querySelector('a.tb-list__link')?.getAttribute('href')).toBe(
+      'https://app.holst.so/board/1',
+    );
+    // the card tells the kind
+    expect(text).not.toContain('Доска Excalidraw');
+    expect(text).not.toContain('Внешняя доска ·');
     expect(text).toContain('изменена');
     expect(host.querySelector('p-select')).toBeNull();
     expect(text).not.toContain('Все доски');
@@ -83,6 +91,7 @@ describe('BoardsPage', () => {
     expect(titles()).toEqual(['Холст']);
     await find('мари');
     expect(titles()).toEqual(['Алгебра']);
+    expect(host.textContent).toContain('Ничего не найдено');
     await find('геометрия');
     expect(titles()).toEqual([]);
     expect(host.textContent).toContain('Ничего не найдено');

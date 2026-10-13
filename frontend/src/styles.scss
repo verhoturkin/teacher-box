@@ -840,6 +840,37 @@ p-button.tb-list__stretched .p-button {
   }
 }
 
+/*
+ * A row that opens with its title link (`tb-list__link`, a board): the link covers the whole row, so a tap
+ * anywhere on it opens the board; the row's trailing buttons («⋮») stay above it. The focus ring is the row's.
+ */
+.tb-list > li:has(> .tb-list__text .tb-list__link) {
+  position: relative;
+
+  > .tb-list__trail {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.tb-list__link {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--tb-list-inner);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::before {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: -3px;
+    }
+  }
+}
+
 /* A row that opens as a whole: the state layer on hover */
 .tb-list > li.tb-list__item--link {
   cursor: pointer;

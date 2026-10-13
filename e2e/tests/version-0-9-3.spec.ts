@@ -105,8 +105,10 @@ test('a student history is a list with amounts', async ({ page }) => {
 test('boards are a list with a row menu', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/boards');
-  const row = page.locator('ul.tb-list[aria-label="Доски"] > li').filter({ hasText: BOARD });
-  await expect(row).toContainText('Доска Excalidraw');
+  // 0.15.3: the Excalidraw boards are in «Доски на портале», the card tells the kind
+  const row = page
+    .locator('ul.tb-list[aria-label="Доски на портале"] > li')
+    .filter({ hasText: BOARD });
   await expect(row).toContainText(STUDENT);
 
   await row.getByRole('button', { name: `Действия: ${BOARD}` }).click();

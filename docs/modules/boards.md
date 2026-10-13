@@ -71,7 +71,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   a search by the title or a member's (student's or group's) name above the list (0.15.0);
   a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 0.7.3 the
   students page links no boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
-  with the filter's member. Since 0.9.3 a `tb-list` like «Ученики» (kind icon; title link + «вид · кому · изменена»;
+  with the filter's member. Since 0.9.3 a `tb-list` like «Ученики» (0.15.3: two cards «Доски на портале» and «Внешние
+  доски», a tap on a row opens the board; kind icon; title link + «кому · изменена»;
   trail — «⋮» only): «Резервные копии» (Excalidraw only), «Изменить», «Удалить…»
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a

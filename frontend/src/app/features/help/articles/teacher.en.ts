@@ -247,7 +247,7 @@ The «Boards» section keeps all boards in one place; the search above the list 
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
-Boards are a list, a line per board: the kind's icon, the title, who it is open to and when it changed. To change the title, the link or the students — «⋮» in the board's row → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
+Boards are in two cards: «Boards in the portal» (Excalidraw) and «External boards» (by link). A line per board: the title, who it is open to and when it changed; tap the line to open the board. To change the title, the link or the students — «⋮» in the board's row → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
 
 ## Draw together
 

@@ -70,7 +70,7 @@ If the teacher has set a link to another video service (e.g. Telemost), the butt
 
 ## Boards
 
-The boards the teacher opened to you or your group are in «My boards». The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
+The boards the teacher opened to you or your group are in «My boards», in the «Boards in the portal» and «External boards» cards. Tap a board to open it. The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
 
 - **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← My boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
 - **An external board** (e.g. Holst) opens in a new tab.
