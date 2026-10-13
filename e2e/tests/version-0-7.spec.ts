@@ -172,7 +172,8 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await draw(page, 'Прямоугольник', 0.4, 0.3);
   await expect(page.getByRole('status').filter({ hasText: 'Сохранено' })).toBeVisible();
 
-  await page.getByRole('link', { name: 'Доски' }).click();
+  // opened from the list: «Назад» returns to it (0.15.0)
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(page).toHaveURL(/\/teacher\/boards$/);
   await expect.poll(async () => (await scene(page.request)).elements.length).toBe(1);
 });
@@ -188,7 +189,8 @@ test('the student opens the board from «Мои доски» and sees the drawin
 
   await expect(page).toHaveURL(new RegExp(`/cabinet/boards/${boardId}$`));
   await editorReady(page);
-  await expect(page.getByRole('link', { name: 'Мои доски' })).toBeVisible();
+  // opened from «Мои доски»: «Назад» returns there (0.15.0)
+  await expect(page.getByRole('button', { name: 'Назад', exact: true })).toBeVisible();
   expect((await scene(request, vera)).elements).toHaveLength(1);
 });
 

@@ -46,13 +46,13 @@ test.describe('on a computer', () => {
       .toBe(0);
 
     await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitem', { name: 'Тёмная тема' }).click();
+    await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
 
     await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitem', { name: 'Светлая тема' }).click();
+    await page.getByRole('menuitemradio', { name: 'Светлая тема' }).click();
     await expect(page.locator('html')).not.toHaveClass(/tb-dark/);
   });
 
@@ -99,6 +99,8 @@ test.describe('on a phone', () => {
     await expect(page.getByRole('menu')).toBeHidden();
     await expectNoSideScroll(page);
 
+    // 0.15.0: the quick actions of a phone are behind the FAB menu
+    await page.getByRole('button', { name: 'Быстрые действия' }).click();
     await page.getByRole('link', { name: 'Ученик', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
     await expect(dialog).toBeVisible();
