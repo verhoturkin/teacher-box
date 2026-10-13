@@ -24,7 +24,7 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('MyHomeworkPage', () => {
-  it('shows tasks that need work first', async () => {
+  it('shows tasks that need work first, the accepted ones in «Выполненные»', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
@@ -61,6 +61,25 @@ describe('MyHomeworkPage', () => {
     expect(host.querySelectorAll('.tb-list__supporting.tb-negative')).toHaveLength(1);
     expect(rows[2]).toContain('Принятое');
     expect(rows[2]).toContain('Оценка: 5');
+
+    // open ones in «Активные», the accepted one in «Выполненные», each with its own search
+    const [active, done] = [...host.querySelectorAll('tb-my-task-list')];
+    expect(readableText(active ?? host)).toContain('Активные');
+    expect(readableText(active ?? host)).not.toContain('Принятое');
+    expect(readableText(done ?? host)).toContain('Выполненные Принятое');
+    const search = active?.querySelector<HTMLInputElement>('input[aria-label="Поиск: Активные"]');
+    if (search === null || search === undefined) {
+      throw new Error('no search');
+    }
+    search.value = 'старое';
+    search.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(readableText(active ?? host)).not.toContain('Новое открытое');
+    expect(readableText(active ?? host)).toContain('Старое открытое');
+    search.value = 'логарифмы';
+    search.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(readableText(active ?? host)).toContain('Ничего не найдено');
   });
 
   it('shows a failed load with «Повторить», then the empty state', async () => {

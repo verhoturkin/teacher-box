@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
+import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Drawer } from 'primeng/drawer';
@@ -41,6 +42,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { RowType } from '@shared/ui/row-type.directive';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -59,6 +62,9 @@ export function nextMonday(date: Date): Date {
 @Component({
   selector: 'tb-my-schedule-page',
   imports: [
+    NgTemplateOutlet,
+    ButtonAttributes,
+    RowType,
     LessonSummary,
     EmptyState,
     HelpButton,
@@ -139,32 +145,67 @@ export function nextMonday(date: Date): Date {
 
       @if (requests().length > 0) {
         <p-card [header]="t.requests">
-          <ul class="tb-list tb-schedule-list">
-            @for (request of requests(); track request.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
-                <div class="tb-list__text">
-                  <span class="tb-list__title">
-                    {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
-                    @if (request.groupName !== null) {
-                      · {{ t.group(request.groupName) }}
+          @if (pendingRequests().length > 0) {
+            <ul class="tb-list tb-schedule-list">
+              @for (request of pendingRequests(); track request.id) {
+                <ng-container *ngTemplateOutlet="requestRow; context: { $implicit: request }" />
+              }
+            </ul>
+          } @else {
+            <p class="tb-muted">{{ t.noPendingRequests }}</p>
+          }
+          @if (resolvedRequests().length > 0) {
+            <div class="tb-requests-resolved">
+              <p-button
+                [label]="t.resolvedRequests(resolvedRequests().length)"
+                [icon]="resolvedOpen() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                iconPos="right"
+                [text]="true"
+                severity="secondary"
+                [tbAttributes]="{
+                  'aria-expanded': resolvedOpen() ? 'true' : 'false',
+                  'aria-controls': 'tb-requests-resolved',
+                }"
+                (onClick)="resolvedOpen.update((open) => !open)"
+              />
+              <div id="tb-requests-resolved" role="region" [attr.aria-label]="t.resolved">
+                @if (resolvedOpen()) {
+                  <ul class="tb-list tb-schedule-list">
+                    @for (request of resolvedRequests(); track request.id) {
+                      <ng-container
+                        *ngTemplateOutlet="requestRow; context: { $implicit: request }"
+                      />
                     }
-                  </span>
-                  @if (request.answer !== null) {
-                    <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
-                  }
-                </div>
-                <div class="tb-list__trail">
-                  <p-tag
-                    [value]="requestStatuses[request.status].label"
-                    [severity]="requestStatuses[request.status].severity"
-                  />
-                </div>
-              </li>
-            }
-          </ul>
+                  </ul>
+                }
+              </div>
+            </div>
+          }
         </p-card>
       }
+
+      <ng-template #requestRow let-request [tbRowType]="requests()">
+        <li>
+          <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
+          <div class="tb-list__text">
+            <span class="tb-list__title">
+              {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
+              @if (request.groupName !== null) {
+                · {{ t.group(request.groupName) }}
+              }
+            </span>
+            @if (request.answer !== null) {
+              <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
+            }
+          </div>
+          <div class="tb-list__trail">
+            <p-tag
+              [value]="requestStatuses[request.status].label"
+              [severity]="requestStatuses[request.status].severity"
+            />
+          </div>
+        </li>
+      </ng-template>
       <p-card>
         @if (calendarState.status() === 'error') {
           <tb-load-state
@@ -247,6 +288,15 @@ export class MySchedulePage implements OnInit {
   protected readonly calendarLessons = signal<ScheduledLesson[]>([]);
   protected readonly busy = signal<BusyTime[]>([]);
   protected readonly requests = signal<ChangeRequest[]>([]);
+  /** Waiting for the teacher's answer: always shown. */
+  protected readonly pendingRequests = computed(() =>
+    this.requests().filter((request) => request.status === 'PENDING'),
+  );
+  /** Approved, declined, withdrawn or outdated: under «Решённые», folded. */
+  protected readonly resolvedRequests = computed(() =>
+    this.requests().filter((request) => request.status !== 'PENDING'),
+  );
+  protected readonly resolvedOpen = signal(false);
   protected readonly now = signal(new Date());
   protected readonly upcoming = computed(() =>
     this.upcomingLessons().filter((lesson) => new Date(lesson.endsAt) > this.now()),

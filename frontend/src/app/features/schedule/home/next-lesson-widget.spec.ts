@@ -57,7 +57,11 @@ describe('NextLessonWidget', () => {
       }),
     );
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Сегодня 18:00 60 мин Дроби');
+    expect(text).toContain('Сегодня 18:00 60 мин Занятие Дроби Занятий на неделе: 2');
+    // the title is for screen readers only, as on the teacher's card
+    expect(hostElement(fixture).querySelector('h2.tb-sr-only')?.textContent).toBe(
+      'Ближайшее занятие',
+    );
     expect(text).not.toContain('Расписание');
     expect(text).toContain('Войти в урок');
     expect(

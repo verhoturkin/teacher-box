@@ -80,7 +80,8 @@ incl. not given) and «Выполненные» (`isDone`: every task accepted);
 and pages of 10 (`p-paginator`, a new search or filter starts at the first page); «Активные» has the «На проверку»
 toggle next to the search (`aria-pressed`, only `submitted > 0`). No «На проверку» link in the header: the review queue
 opens from «⋮» → «Проверить работы» and from the home page. A row: title, «кому · до …», the progress badge
-(`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» are `tb-list` cards too
+(`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
+with a search by the title and pages of 10, as the teacher's) are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows
 «Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»
 of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the pictures — png / jpeg / webp /

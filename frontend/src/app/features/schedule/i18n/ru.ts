@@ -57,6 +57,7 @@ export const ru = {
   },
   next: {
     title: 'Ближайшее занятие',
+    lesson: 'Занятие',
     requestSent: (kind: string) => `${kind}: запрос отправлен, ждём ответа учителя.`,
     nothing: 'Ближайших занятий нет',
     week: (count: number) => `Занятий на неделе: ${String(count)}`,
@@ -128,6 +129,9 @@ export const ru = {
     withdraw: 'Отозвать',
     withdrawOf: (time: string) => `Отозвать запрос: ${time}`,
     requests: 'Мои запросы',
+    noPendingRequests: 'Запросов, ждущих ответа учителя, нет',
+    resolved: 'Решённые запросы',
+    resolvedRequests: (count: number) => `Решённые: ${String(count)}`,
     group: (name: string) => `группа «${name}»`,
     teacher: (answer: string) => `Учитель: ${answer}`,
     whatCalendar: 'календарь',

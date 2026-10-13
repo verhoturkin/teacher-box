@@ -84,7 +84,7 @@ The links to the lesson and the boards are in the bot too: «Join lesson» and �
     body: `
 ## See the homework
 
-«Homework» — all homework as cards: the title, the deadline and the status; what is still to do comes first. Overdue ones are marked red. A reminder comes before the deadline.
+«Homework» — two cards: «Active» (not accepted by the teacher yet; what is still to do comes first) and «Done» (accepted). Each has a search by the title; a long list shows 10 at a page. A row: the title, the deadline and the status. Overdue ones are marked red. A reminder comes before the deadline.
 
 If a textbook is bound to homework, it is in the homework, in «Textbooks», with its pages. Click the title — only the pages you need open; the arrow button downloads them.
 
@@ -148,7 +148,7 @@ Send the bot /menu:
 - **Schedule** — upcoming lessons and the lesson link;
 - **Join lesson** and **My boards** — links;
 - **Cancel lesson** and **Move lesson** — a request to the teacher (in a group — «I won’t come»);
-- **My requests** — the teacher's answers; a request without an answer can be withdrawn;
+- **My requests** — the requests waiting for an answer (they can be withdrawn); the resolved ones (approved, declined) are under «Resolved»;
 - **Payments** — the balance and the latest payments.
 
 Before sending a request the bot asks again. «Cancel» or /cancel stops an action. Write the time like 18:30 and the date like 05.10.
@@ -170,7 +170,7 @@ The cabinet works in the phone's browser, nothing needs installing. If you want 
 
 - The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Homework» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left.
 - Green buttons confirm («Send for review», «Save»), red ones cancel a lesson («Ask to cancel», «I won’t come»). «Cancel» in a window just closes it and changes nothing.
-- The next lesson and the «Join lesson» button come first on the home page.
+- The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width.
 - Lists are shown as cards, forms open full screen.
 - If a field of a form is filled in wrong, the portal says so under the field; if a block did not load, it offers «Retry».
 - The cabinet can be used from the keyboard: Tab moves between buttons and fields, Esc closes windows and panels.

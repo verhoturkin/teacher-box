@@ -27,7 +27,8 @@ import { T } from '../i18n/texts';
   template: `
     <form
       tbFieldErrors
-      class="tb-form tb-form--narrow"
+      class="tb-form"
+      [class.tb-form--narrow]="narrow()"
       [formGroup]="form"
       (ngSubmit)="submit(formDirective)"
       #formDirective="ngForm"
@@ -103,6 +104,8 @@ export class ChangePasswordForm {
   readonly submitLabel = input(T.changePassword.submit);
   /** A section of a page (the account) rather than the main step (the first setup): tonal. */
   readonly tonal = input(false);
+  /** A readable width in a wide card (the first setup); in a card of its own size (the account) — its width. */
+  readonly narrow = input(true);
   /** A step of the wizard: a transition in the colour of the portal, not a green confirmation (ADR-0026). */
   readonly proceeds = input(false);
   /** The password has been changed. */
