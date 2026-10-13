@@ -39,6 +39,8 @@ ends the home page reloads the summary. No «Расписание» link in the 
 - [x] 188.5 **F** `homework/teacher/assignments-page.ts`, `assignment-list.ts`: «Активные» and «Выполненные» cards with a
   search by the title or a student and pages of 10; the «На проверку» toggle by the search instead of the header link.
   Docs: homework module, help `teacher/homework`.
+- [x] 188.6 **F** `boards/teacher/boards-page.ts`: a search by the title or a student's (group's) name. Docs: boards
+  module, help `teacher/boards`.
 
 ### 189. Release 0.15.0
 

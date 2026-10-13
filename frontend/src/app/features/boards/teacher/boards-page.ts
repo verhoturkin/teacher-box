@@ -11,11 +11,16 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -41,7 +46,11 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-boards-page',
   imports: [
+    ReactiveFormsModule,
     RouterLink,
+    IconField,
+    InputIcon,
+    InputText,
     Button,
     Card,
     ConfirmDialog,
@@ -80,8 +89,22 @@ import { T } from '../i18n/texts';
       <h2 class="tb-sr-only">{{ t.list }}</h2>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (boards().length > 0) {
+          <div class="tb-toolbar">
+            <p-iconfield>
+              <p-inputicon styleClass="pi pi-search" />
+              <input
+                pInputText
+                type="search"
+                [formControl]="search"
+                [placeholder]="t.search"
+                [attr.aria-label]="t.searchLabel"
+              />
+            </p-iconfield>
+          </div>
+        }
+        @if (shown().length > 0) {
           <ul class="tb-list" [attr.aria-label]="t.title">
-            @for (board of boards(); track board.id) {
+            @for (board of shown(); track board.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i
@@ -122,6 +145,8 @@ import { T } from '../i18n/texts';
               </li>
             }
           </ul>
+        } @else if (boards().length > 0) {
+          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
           <tb-empty-state
             icon="pi-tb-board"
@@ -173,6 +198,19 @@ export class BoardsPage implements OnInit {
   protected readonly membersText = boardMembersText;
   protected readonly state = new LoadState();
   protected readonly boards = signal<Board[]>([]);
+  protected readonly search = new FormControl('', { nonNullable: true });
+  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
+  /** The boards whose title or a student's (a group's) name has the search text. */
+  protected readonly shown = computed(() => {
+    const query = this.query().trim().toLocaleLowerCase();
+    return query === ''
+      ? this.boards()
+      : this.boards().filter(
+          (board) =>
+            board.title.toLocaleLowerCase().includes(query) ||
+            board.members.some((member) => member.name?.toLocaleLowerCase().includes(query)),
+        );
+  });
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
   protected readonly editing = signal<Board | null>(null);

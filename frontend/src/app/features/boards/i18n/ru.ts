@@ -104,6 +104,10 @@ export const ru = {
     actions: (title: string) => `Действия: ${title}`,
     emptyTitle: 'Досок пока нет',
     emptyFilteredTitle: 'У них досок пока нет',
+    search: 'Название или ученик',
+    searchLabel: 'Поиск досок',
+    notFoundTitle: 'Ничего не найдено',
+    notFoundHint: 'Проверьте название доски или имя ученика',
     emptyHint:
       'Нажмите «Новая доска»: доска Excalidraw откроется прямо в портале, а внешнюю доску (например, Холст) можно добавить ссылкой.',
     studentBoards: 'Доски ученика',

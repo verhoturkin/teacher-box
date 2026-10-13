@@ -67,7 +67,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
-- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards;
+- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards,
+  a search by the title or a member's (student's or group's) name above the list (0.15.0);
   a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 0.7.3 the
   students page links no boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
   with the filter's member. Since 0.9.3 a `tb-list` like «Ученики» (kind icon; title link + «вид · кому · изменена»;
