@@ -17,24 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.14.4
-
-The AI assistant moves from the narrow right column into the text field of the assignment editor: one bar with the
-request, a single «Промты» menu instead of chips plus a select, sources in a popover, and the draft right above the
-text it goes into.
-
-### 177. AI assistant bar in the assignment editor (F)
-
-- [x] 177.1 **F** `ai/homework-ai-panel.ts`: bar layout (request growing with text, folds to a line while a draft is
-  shown), «Промты» popover — `p-listbox` with search, «Сохранить запрос как промт», «Управлять библиотекой»
-  (`/teacher/ai`); «Опереться на · N» popover; draft between the bar and the text, «Ещё раз».
-- [x] 177.2 **F** `homework/teacher/assignment-editor-page.ts`: no assistant column, the bar inside the text field,
-  hidden in «Просмотр». Docs: design-system §5, `docs/modules/ai.md`, help articles.
-
-### 178. Release 0.14.4
-
-- [ ] 178.1 Skill `release`: help articles, E2E spec, CHANGELOG, version, plan archiving.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
