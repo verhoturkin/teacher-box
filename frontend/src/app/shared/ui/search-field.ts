@@ -55,8 +55,10 @@ import { SHARED_T } from '@shared/i18n/texts';
     </p-iconfield>
   `,
   styles: `
+    /* its own width: the field does not change size when «×» comes in */
     :host {
       display: inline-block;
+      width: min(20rem, 100%);
     }
 
     p-iconfield {
@@ -64,7 +66,8 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
 
     /* M3 docked search, 56 px: 4 + 48 + 4 around the icons, the text between them */
-    input {
+    /* stronger than PrimeNG's .p-iconfield .p-inputtext:not(:last-child) that the «×» would bring in */
+    :host .p-iconfield input.p-inputtext {
       width: 100%;
       padding-inline-end: 3.5rem;
 

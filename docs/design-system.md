@@ -168,7 +168,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Search field** — always `tb-search-field` (`@shared/ui`, a form control; 0.15.0): the M3 docked search bar, 56 px,
   a filled pill without an outline (in focus too — the focus state layer), the magnifier and «×» «Очистить поиск» (while
   there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
-  button is hidden. On a phone it takes the toolbar's width.
+  button is hidden. Its own width (20 rem, no wider than its place): «×» never resizes it; on a phone it takes the
+  toolbar's width.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
   («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
   second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
