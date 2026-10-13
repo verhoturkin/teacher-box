@@ -274,11 +274,9 @@ export function nextMonday(date: Date): Date {
     />
   `,
   styles: `
-    /* «Решённые» as «Прочитанные» of the notifications: apart from the pending ones, under a line */
+    /* «Решённые»: apart from the pending ones, without a line */
     .tb-requests-resolved {
-      margin-top: var(--tb-space-4);
-      padding-top: var(--tb-space-2);
-      border-top: 1px solid var(--p-md-outline-variant);
+      margin-top: var(--tb-space-3);
     }
 
     /* the opened list keeps its distance from the button */

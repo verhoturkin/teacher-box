@@ -17,25 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.15.1
-
-Student's side as the teacher's: the nearest lesson card after the sketch, homework in «Активные» / «Выполненные» with a
-search; answered requests folded; «Мой аккаунт» fields across their cards.
-
-### 190. Student's cards (F)
-
-- [x] 190.1 **F** `schedule/home/next-lesson-widget.ts`: the student's nearest lesson laid out as the teacher's card.
-- [x] 190.2 **F** `homework/student/my-homework-page.ts`, `my-task-list.ts`: «Активные» / «Выполненные» with a search and
-  pages of 10.
-- [x] 190.3 **F** `schedule/student/my-schedule-page.ts`: «Мои запросы» — pending ones shown, the resolved ones under
-  «Решённые: N».
-- [x] 190.4 **F** `identity/account/account-page.ts`, `change-password-form.ts` (`narrow`): the account forms take the
-  width of their cards. Docs: design-system, help `cabinet/*`.
-
-### 191. Release 0.15.1
-
-- [ ] 191.1 Skill `release`: E2E spec (`version-0-15-1`), CHANGELOG, version, plan archiving.
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
