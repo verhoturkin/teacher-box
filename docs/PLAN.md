@@ -32,7 +32,8 @@ ends the home page reloads the summary. No «Расписание» link in the 
   design-system §5, glossary, help articles `teacher/first-steps`, student home.
 - [x] 188.2 **F** `boards/editor/board-page.ts`: «Назад» returns where the board was opened from in the portal (the
   history), «Доски» / «Мои доски» only for a board opened by a link from outside. Docs: boards module, help articles.
-- [ ] 188.3 **F** `home/quick-actions.ts`: on a phone the quick actions are an M3 Expressive FAB menu.
+- [x] 188.3 **F** `home/quick-actions.ts`, `shared/ui/fab-menu.ts`: on a phone the quick actions are an M3 Expressive FAB
+  menu. Docs: design-system §5, help `teacher/first-steps`.
 - [x] 188.4 **F** `help/help-button.ts`, `help/help-article-view.ts`: the help as an M3 modal side sheet
   (`tb-side-sheet`, a little wider), linked articles open in the sheet with «←». Docs: design-system §8.
 

@@ -145,6 +145,11 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's quick actions on a phone instead of
+  the row of buttons. The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
+  primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
+  and turns into the round «Закрыть» (primary). Esc, a tap outside or an item close it; the focus goes to the first
+  item and back to the FAB.
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.

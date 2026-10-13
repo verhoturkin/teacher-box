@@ -1784,8 +1784,8 @@ a.p-menu-item-link:hover {
     }
   }
 
-  /* The page keeps room at its end for the FAB */
-  main.tb-shell__content--nav:has(.tb-page-fab) {
+  /* The page keeps room at its end for the FAB (or the FAB menu of the home page) */
+  main.tb-shell__content--nav:has(.tb-page-fab, tb-fab-menu) {
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }
@@ -1804,7 +1804,7 @@ a.p-menu-item-link:hover {
 }
 
 @media (width <= 48em) {
-  body:has(p-button.tb-page-fab) .p-toast.p-toast-bottom-center {
+  body:has(p-button.tb-page-fab, tb-fab-menu) .p-toast.p-toast-bottom-center {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
         var(--tb-space-2)
