@@ -23,6 +23,11 @@ export interface AssignmentProgress {
  * Not given yet — neutral; works waiting for review — «На проверке: N»; all accepted — «Принято»; otherwise given
  * (with how many are accepted) — the main container.
  */
+/** Every task of the assignment is accepted: the assignment is done («Принято»). */
+export function isDone(assignment: Pick<AssignmentSummary, 'totalTasks' | 'accepted'>): boolean {
+  return assignment.totalTasks > 0 && assignment.accepted === assignment.totalTasks;
+}
+
 export function assignmentProgress(assignment: AssignmentSummary): AssignmentProgress {
   const { totalTasks, submitted, accepted } = assignment;
   if (totalTasks === 0) {

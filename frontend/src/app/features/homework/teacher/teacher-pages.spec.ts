@@ -57,7 +57,7 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('AssignmentsPage', () => {
-  it('lists assignments as cards and opens the editor of a new one', async () => {
+  it('lists active and done assignments in two cards and opens the editor of a new one', async () => {
     const { backend } = configure();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
@@ -96,8 +96,14 @@ describe('AssignmentsPage', () => {
     expect(cards[1]).toContain('Принято 2 из 5');
     expect(cards[2]).toContain('Ещё никому не выдано');
     expect(cards[2]).toContain('Не выдано');
-    expect(cards[3]).toContain('Принято');
-    expect(cards[4]).toContain('Выдано');
+    expect(cards[3]).toContain('Свежее');
+    expect(cards[3]).toContain('Выдано');
+    // every task accepted: in «Выполненные»
+    const [active, done] = [...host.querySelectorAll('tb-assignment-list')];
+    expect(readableText(active ?? host)).toContain('Активные');
+    expect(readableText(active ?? host)).not.toContain('Готово');
+    expect(readableText(done ?? host)).toContain('Выполненные Готово');
+    expect(cards[4]).toContain('Принято');
 
     async function act(title: string, item: string): Promise<void> {
       buttonByText(host, `Действия: ${title}`).click();

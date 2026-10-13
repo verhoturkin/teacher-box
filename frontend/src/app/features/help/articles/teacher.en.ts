@@ -298,7 +298,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. The «Homework» list is made of cards: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮».
+«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is split into two cards: «Active» — not all the work accepted yet, and «Done» — everything accepted. Each has a search by the title or a student's name; a long list shows 10 at a page. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮». «To review» next to the search in «Active» leaves only the homework with handed-in work; press it again to see all.
 
 ## The homework's page
 
@@ -314,7 +314,7 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-Handed-in work is collected in «To review» (cards: the student, the homework, when handed in and the deadline) and on the home page. Open the work, give a grade and write a comment, then:
+Handed-in work is collected in the review queue (cards: the student, the homework, when handed in and the deadline): open it from the homework's «⋮» → «Review the works» or from the home page («Needs attention»). Open the work, give a grade and write a comment, then:
 
 - **Accept** — the work counts;
 - **Return for rework** — the student fixes it and hands it in again.

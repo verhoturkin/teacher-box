@@ -36,6 +36,9 @@ ends the home page reloads the summary. No «Расписание» link in the 
   menu. Docs: design-system §5, help `teacher/first-steps`.
 - [x] 188.4 **F** `help/help-button.ts`, `help/help-article-view.ts`: the help as an M3 modal side sheet
   (`tb-side-sheet`, a little wider), linked articles open in the sheet with «←». Docs: design-system §8.
+- [x] 188.5 **F** `homework/teacher/assignments-page.ts`, `assignment-list.ts`: «Активные» and «Выполненные» cards with a
+  search by the title or a student and pages of 10; the «На проверку» toggle by the search instead of the header link.
+  Docs: homework module, help `teacher/homework`.
 
 ### 189. Release 0.15.0
 
