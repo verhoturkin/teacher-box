@@ -5,11 +5,11 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
-/** Full reset (ADR-0014): the log of requests to the AI and the library of prompts. */
+/** Full reset (ADR-0014): the log of requests to the AI, the library of prompts and the teacher's system prompts. */
 @Component
 class AiDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("ai.requests", "ai.prompts");
+    private static final List<String> TABLES = List.of("ai.requests", "ai.prompts", "ai.system_prompts");
 
     private final JdbcClient jdbc;
 
@@ -26,5 +26,6 @@ class AiDataReset implements DataReset {
     public void erase() {
         jdbc.sql("delete from ai.requests").update();
         jdbc.sql("delete from ai.prompts").update();
+        jdbc.sql("delete from ai.system_prompts").update();
     }
 }

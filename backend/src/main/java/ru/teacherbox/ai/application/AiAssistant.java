@@ -25,8 +25,8 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AiAssistant {
 
-    static final String HOMEWORK_PROMPT = "homework-draft.%s.v3";
-    static final String REVIEW_PROMPT = "review-draft.%s.v1";
+    static final String HOMEWORK_PROMPT = "homework-draft.user.v3";
+    static final String REVIEW_PROMPT = "review-draft.user.v1";
     static final int MAX_TITLE = 200;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
@@ -45,14 +45,16 @@ public class AiAssistant {
 
     private final ObjectProvider<LlmClient> llm;
     private final PromptTemplates prompts;
+    private final SystemPrompts systemPrompts;
     private final AiUsage usage;
     private final DraftSources sources;
     private final JsonMapper json;
 
-    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, AiUsage usage, DraftSources sources,
-            JsonMapper json) {
+    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, SystemPrompts systemPrompts,
+            AiUsage usage, DraftSources sources, JsonMapper json) {
         this.llm = llm;
         this.prompts = prompts;
+        this.systemPrompts = systemPrompts;
         this.usage = usage;
         this.sources = sources;
         this.json = json;
@@ -67,8 +69,8 @@ public class AiAssistant {
                         : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
                 "prompt", brief.prompt().strip());
         LlmRequest request = new LlmRequest(
-                prompts.render(HOMEWORK_PROMPT.formatted("system"), Map.of()),
-                prompts.render(HOMEWORK_PROMPT.formatted("user"), values),
+                systemPrompts.text(AiFeature.HOMEWORK_DRAFT),
+                prompts.render(HOMEWORK_PROMPT, values),
                 "homework_draft",
                 HOMEWORK_SCHEMA,
                 materials);
@@ -88,8 +90,8 @@ public class AiAssistant {
                 "title", brief.title().strip(),
                 "description", orDash(brief.description()),
                 "answer", brief.answer().strip());
-        LlmRequest request = new LlmRequest(prompts.render(REVIEW_PROMPT.formatted("system"), Map.of()),
-                prompts.render(REVIEW_PROMPT.formatted("user"), values), "review_draft", REVIEW_SCHEMA);
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.REVIEW_DRAFT),
+                prompts.render(REVIEW_PROMPT, values), "review_draft", REVIEW_SCHEMA);
         return call(AiFeature.REVIEW_DRAFT, request, ReviewAnswer.class, answer -> {
             String comment = answer.comment() == null ? "" : answer.comment().strip();
             if (comment.isEmpty() || answer.accept() == null) {

@@ -102,6 +102,22 @@ public final class AiViews {
         }
     }
 
+    /**
+     * A system prompt of the assistant (ADR-0043).
+     *
+     * @param custom    whether the teacher rewrote it; otherwise {@code text} is the default one
+     * @param updatedAt when the teacher saved it, {@code null} for the default prompt
+     * @param version   {@code 0} for the default prompt
+     */
+    public record SystemPromptView(
+            AiFeature feature,
+            String text,
+            String defaultText,
+            boolean custom,
+            @Nullable Instant updatedAt,
+            long version) {
+    }
+
     /** A prompt of the library. */
     public record PromptView(UUID id, String title, String text, Instant updatedAt, long version) {
 

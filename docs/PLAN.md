@@ -35,7 +35,7 @@ the defaults (amends ADR-0006).
 
 ### 184. Editable system prompts (B, F)
 
-- [ ] 184.1 **B** `ai/application/SystemPrompts` (migration `V4__system_prompts.sql`, `SystemPromptRepository`):
+- [x] 184.1 **B** `ai/application/SystemPrompts` (migration `V4__system_prompts.sql`, `SystemPromptRepository`):
   the text of a feature — the teacher's one or the default resource; `GET /api/teacher/ai/system-prompts`,
   `PUT …/{feature}` `{text ≤ 10000, version}`, `DELETE …/{feature}` (back to the default); `AiAssistant` takes the
   system prompt from it; in the full reset. ADR-0043, `docs/modules/ai.md`.
