@@ -23,7 +23,7 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
-import { HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
+import { DraftSource, HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
 import { T } from './i18n/texts';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
@@ -84,7 +84,7 @@ export interface AppliedDraft {
         />
         @if (sources().length > 0) {
           <p-button
-            [label]="chosen().size > 0 ? t.sourcesCount(chosen().size) : t.sources"
+            [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
             icon="pi pi-book"
             severity="secondary"
             size="small"
@@ -407,7 +407,7 @@ export class HomeworkAiPanel implements OnInit {
   readonly title = input('');
   /** The assignment has text a draft could go after. */
   readonly hasText = input(false);
-  /** Textbook pages and files the draft may be based on. */
+  /** Textbook pages and files (saved or just picked) the draft may be based on. */
   readonly sources = input<readonly SourceOption[]>([]);
   readonly applied = output<AppliedDraft>();
 
@@ -436,6 +436,10 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly draft = signal<HomeworkDraft | null>(null);
   /** Keys of the chosen sources. */
   protected readonly chosen = signal<ReadonlySet<string>>(new Set());
+  /** The chosen sources still offered: a file taken off the assignment drops out. */
+  protected readonly picked = computed(() =>
+    this.sources().filter((option) => this.chosen().has(option.key)),
+  );
   protected readonly pending = signal(false);
   protected readonly naming = signal(false);
   protected readonly saving = signal(false);
@@ -483,14 +487,16 @@ export class HomeworkAiPanel implements OnInit {
     const title = this.title().trim();
     this.pending.set(true);
     this.error.set(null);
+    const picked = this.picked().map((option) => option.source);
     this.api
-      .homeworkDraft({
-        prompt,
-        title: title === '' ? null : title,
-        sources: this.sources()
-          .filter((option) => this.chosen().has(option.key))
-          .map((option) => option.source),
-      })
+      .homeworkDraft(
+        {
+          prompt,
+          title: title === '' ? null : title,
+          sources: picked.filter((source): source is DraftSource => !(source instanceof File)),
+        },
+        picked.filter((source): source is File => source instanceof File),
+      )
       .subscribe({
         next: (draft) => {
           this.pending.set(false);

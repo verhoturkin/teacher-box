@@ -202,6 +202,26 @@ describe('HomeworkAiPanel', () => {
     });
   });
 
+  it('sends a picked file with the request and forgets one taken off', async () => {
+    const { panel, host } = await render([]);
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    fixture.componentRef.setInput('sources', [{ key: 'new', label: 'Скан.png', source: scan }]);
+    await fixture.whenStable();
+
+    await open(host, 'Опереться на');
+    document.body.querySelector<HTMLInputElement>('#ai-source-new')?.click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Опереться на · 1');
+    panel.prompt.setValue('По скану');
+    panel.generate();
+    const body: unknown = backend.expectOne('/api/teacher/ai/homework-draft').request.body;
+    expect(body instanceof FormData && body.getAll('files')).toEqual([scan]);
+
+    fixture.componentRef.setInput('sources', []);
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Опереться на');
+  });
+
   it('works without the library', async () => {
     TestBed.configureTestingModule({ imports: [HomeworkAiPanel], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);

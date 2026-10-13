@@ -38,9 +38,20 @@ export class AiApi {
     return this.http.get<AiStatus>('/api/teacher/ai/status');
   }
 
-  /** Errors are shown by the caller next to the form. */
-  homeworkDraft(brief: HomeworkBrief): Observable<HomeworkDraft> {
-    return this.http.post<HomeworkDraft>('/api/teacher/ai/homework-draft', brief, {
+  /**
+   * Errors are shown by the caller next to the form. Picked files not saved yet go with the brief as
+   * `multipart/form-data` (ADR-0042).
+   */
+  homeworkDraft(brief: HomeworkBrief, files: readonly File[] = []): Observable<HomeworkDraft> {
+    let body: HomeworkBrief | FormData = brief;
+    if (files.length > 0) {
+      body = new FormData();
+      body.append('brief', new Blob([JSON.stringify(brief)], { type: 'application/json' }));
+      for (const file of files) {
+        body.append('files', file, file.name);
+      }
+    }
+    return this.http.post<HomeworkDraft>('/api/teacher/ai/homework-draft', body, {
       context: new HttpContext().set(SKIP_ERROR_TOAST, true),
     });
   }

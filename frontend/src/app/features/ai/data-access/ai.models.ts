@@ -17,11 +17,14 @@ export type DraftSource =
   | { readonly type: 'TEXTBOOK'; readonly id: string; readonly pages: string | null }
   | { readonly type: 'FILE'; readonly id: string; readonly assignmentId: string };
 
-/** A material the editor offers the assistant: its label and what the backend reads. */
+/**
+ * A material the editor offers the assistant: its label and what the backend reads — a saved source named by its
+ * IDs, or a picked file not saved yet that goes with the request (ADR-0042).
+ */
 export interface SourceOption {
   readonly key: string;
   readonly label: string;
-  readonly source: DraftSource;
+  readonly source: DraftSource | File;
 }
 
 export interface HomeworkBrief {
