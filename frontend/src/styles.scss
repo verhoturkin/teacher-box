@@ -1980,6 +1980,11 @@ a.p-menu-item-link:hover {
   display: inline-flex;
   gap: 2px;
 
+  /* the popup menu lives in <body>: its empty host takes no place, so no gap after the chevron */
+  > p-menu {
+    position: absolute;
+  }
+
   .p-button.tb-split__main {
     border-start-end-radius: var(--tb-shape-xs);
     border-end-end-radius: var(--tb-shape-xs);

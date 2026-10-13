@@ -11,14 +11,16 @@ import { T } from '../i18n/texts';
 
 /**
  * Teacher's home, on top: the nearest lesson as a calendar event — the time tile, who and the topic,
- * the boards of the student or group, «Начать урок» («Войти в урок» while it runs).
+ * the boards of the student or group, «Начать урок» («Войти в урок» while it runs). The tile says what
+ * it is, so the title «Следующее занятие» is for screen readers only.
  */
 @Component({
   selector: 'tb-upcoming-lesson-widget',
   imports: [Card, Avatar, JoinLessonButton, BoardLinks, LessonTimeTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title" styleClass="tb-hero">
+    <p-card styleClass="tb-hero">
+      <h2 class="tb-sr-only">{{ t.title }}</h2>
       @let next = lesson();
       <div class="tb-lesson-event">
         @if (time(); as time) {

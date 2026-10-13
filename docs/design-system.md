@@ -154,7 +154,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards, one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width). The student's request
   buttons go under the event and are hidden while the lesson runs. No «Расписание» link: the schedule is in the
-  navigation. When the lesson ends the widget asks the home page to reload the summary.
+  navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
+  visible title (`h2.tb-sr-only` «Следующее занятие»): it is the first card and the tile says what it is.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
@@ -216,7 +217,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Connected button group** `tb-button-group` (also `p-selectbutton`): 2 px gap, inner corners 8 px, outer
   full; unselected tonal, selected primary and fully round; no outline.
 - **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px,
-  arrow part becomes round while its menu is open.
+  arrow part becomes round while its menu is open. The arrow has no tooltip (0.15.0, the teacher's decision): only its
+  `aria-label`; the empty host of the popup menu is out of the flow, so the group ends at the edge of its container.
 - Icon buttons: tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»); help «?»
   includes the article («Справка: Портал»); menu buttons have `aria-haspopup` + `aria-expanded`
   (`tbAttributes`).

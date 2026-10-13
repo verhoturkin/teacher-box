@@ -28,7 +28,7 @@ ends the home page reloads the summary. No «Расписание» link in the 
 
 - [x] 188.1 **F** `schedule/home/lesson-clock.ts` (phase, day caption, countdown; ticks, reports the end),
   `schedule/ui/lesson-time-tile.ts`; `schedule/home/upcoming-lesson-widget.ts` and `next-lesson-widget.ts` on them,
-  without the «Расписание» link; `home/teacher-home.ts` reloads on `(over)`, the student's widget emits `changed`. Docs:
+  without the «Расписание» link (the teacher's card without a visible title); `meetings/ui/join-lesson-button.ts`: no tooltip on the split arrow, no gap after it; `home/teacher-home.ts` reloads on `(over)`, the student's widget emits `changed`. Docs:
   design-system §5, glossary, help articles `teacher/first-steps`, student home.
 
 ### 189. Release 0.15.0
