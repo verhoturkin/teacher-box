@@ -28,11 +28,6 @@ export const ru = {
     recent: 'Последние запросы',
     noRequests: 'Запросов в этом месяце не было',
     showMore: 'Показать ещё',
-    when: 'Когда',
-    what: 'Что',
-    result: 'Результат',
-    tokensColumn: 'Токены',
-    time: 'Время',
     seconds: (seconds: string) => `${seconds} с`,
   },
   panel: {

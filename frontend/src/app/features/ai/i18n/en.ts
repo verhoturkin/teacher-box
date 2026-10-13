@@ -29,11 +29,6 @@ export const en: Translation<typeof ru> = {
     recent: 'Recent requests',
     noRequests: 'No requests this month',
     showMore: 'Show more',
-    when: 'When',
-    what: 'What',
-    result: 'Result',
-    tokensColumn: 'Tokens',
-    time: 'Time',
     seconds: (seconds: string) => `${seconds} s`,
   },
   panel: {

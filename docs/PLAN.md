@@ -17,6 +17,14 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## Next release
+
+### 186. AI requests as cards (F)
+
+- [x] 186.1 **F** `ai/ai-usage-page.ts`: «Последние запросы» — a `tb-list` of cards instead of the table: icon of
+  the feature; feature + status tag; «dd.MM.yyyy HH:mm · model · N с», the error under it; trail — tokens.
+  Docs: design-system §9.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

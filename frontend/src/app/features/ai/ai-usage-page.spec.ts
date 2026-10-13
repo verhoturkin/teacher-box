@@ -77,8 +77,12 @@ describe('AiUsagePage', () => {
     expect(text).toMatch(/Токенов: 500.000 из 2.000.000/);
     expect(text).toMatch(/Черновики заданий: 3 запроса, 3.000 токенов/);
     expect(text).toContain('Готово');
-    expect(text).toContain('Ошибка Anthropic API 529: Overloaded');
+    expect(text).toMatch(/0[.,]8 с Anthropic API 529: Overloaded/);
     expect(text).toMatch(/12.5 с/);
+    expect(text).toMatch(
+      /Черновики проверки Ошибка \d\d\.09\.2026 \d\d:\d\d · claude-opus-5 · 0[.,]8 с/,
+    );
+    expect(hostElement(fixture).querySelector('.pi-check-square')).not.toBeNull();
     expect(hostElement(fixture).querySelector('p-progressbar')).not.toBeNull();
     expect(text).toContain('Системные промты');
   });
@@ -108,7 +112,9 @@ describe('AiUsagePage', () => {
       .flush({ items: [{ ...older, model: 'claude-old' }], hasMore: false });
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(
+      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
+    ).toHaveLength(3);
     expect(readableText(hostElement(fixture))).not.toContain('Показать ещё');
   });
 
@@ -122,7 +128,9 @@ describe('AiUsagePage', () => {
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(
+      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
+    ).toHaveLength(2);
     expect(readableText(hostElement(fixture))).toContain('Показать ещё');
   });
 

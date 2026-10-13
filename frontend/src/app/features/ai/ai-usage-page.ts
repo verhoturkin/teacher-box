@@ -10,10 +10,8 @@ import {
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { HelpButton } from '@features/help/parts';
-import { RowType } from '@shared/ui/row-type.directive';
 import { AiApi } from './data-access/ai-api';
 import {
   AiFeature,
@@ -31,6 +29,12 @@ import { PromptLibraryCard } from './prompt-library-card';
 import { SystemPromptsCard } from './system-prompts-card';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
+
+/** The icon of a request in the log: a homework draft or a review draft. */
+const FEATURE_ICONS: Record<AiFeature, string> = {
+  HOMEWORK_DRAFT: 'pi pi-file-edit',
+  REVIEW_DRAFT: 'pi pi-check-square',
+};
 
 /** Names of `TEACHERBOX_AI_PROVIDER` values. */
 export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
@@ -60,9 +64,7 @@ const STATUS_LABELS: Record<
     Button,
     Card,
     ProgressBar,
-    TableModule,
     Tag,
-    RowType,
     PageHeader,
     EmptyState,
     ProgressLabel,
@@ -123,40 +125,35 @@ const STATUS_LABELS: Record<
               @if (recent().length === 0) {
                 <tb-empty-state [compact]="true" icon="pi-sparkles" [title]="t.noRequests" />
               } @else {
-                <p-table [value]="recent()" styleClass="tb-cards">
-                  <ng-template #header>
-                    <tr>
-                      <th>{{ t.when }}</th>
-                      <th>{{ t.what }}</th>
-                      <th>{{ t.result }}</th>
-                      <th class="tb-num">{{ t.tokensColumn }}</th>
-                      <th>{{ t.time }}</th>
-                    </tr>
-                  </ng-template>
-                  <ng-template #body [tbRowType]="recent()" let-row>
-                    <tr>
-                      <td [attr.data-label]="t.when">
-                        {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-                      </td>
-                      <td [attr.data-label]="t.what">{{ featureLabels[row.feature] }}</td>
-                      <td [attr.data-label]="t.result">
-                        <p-tag
-                          [value]="statusLabel(row).label"
-                          [severity]="statusLabel(row).severity"
-                        />
+                <ul class="tb-list" [attr.aria-label]="t.recent">
+                  @for (row of recent(); track $index) {
+                    <li>
+                      <span class="tb-list__lead" aria-hidden="true"
+                        ><i [class]="featureIcons[row.feature]"></i
+                      ></span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title tb-usage-title"
+                          >{{ featureLabels[row.feature] }}
+                          <p-tag
+                            [value]="statusLabel(row).label"
+                            [severity]="statusLabel(row).severity"
+                        /></span>
+                        <span class="tb-list__supporting">
+                          {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }} · {{ row.model }} ·
+                          {{ t.seconds((row.durationMs / 1000 | number: '1.0-1') ?? '') }}
+                        </span>
                         @if (row.error) {
-                          <small class="tb-muted tb-usage-error">{{ row.error }}</small>
+                          <small class="tb-negative tb-usage-error">{{ row.error }}</small>
                         }
-                      </td>
-                      <td [attr.data-label]="t.tokensColumn" class="tb-num">
-                        {{ row.inputTokens + row.outputTokens | number }}
-                      </td>
-                      <td [attr.data-label]="t.time">
-                        {{ t.seconds((row.durationMs / 1000 | number: '1.0-1') ?? '') }}
-                      </td>
-                    </tr>
-                  </ng-template>
-                </p-table>
+                      </div>
+                      <div class="tb-list__trail tb-list__trail--amount">
+                        <span class="tb-list__amount">{{
+                          t.tokenCount(row.inputTokens + row.outputTokens)
+                        }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
                 @if (moreRecent()) {
                   <p-button
                     [label]="t.showMore"
@@ -180,6 +177,13 @@ const STATUS_LABELS: Record<
       padding-left: var(--tb-space-5);
     }
 
+    .tb-usage-title {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
     .tb-usage-error {
       display: block;
       margin-top: var(--tb-space-1);
@@ -192,6 +196,7 @@ export class AiUsagePage implements OnInit {
   private readonly api = inject(AiApi);
 
   protected readonly featureLabels = FEATURE_LABELS;
+  protected readonly featureIcons = FEATURE_ICONS;
   protected readonly monthName = monthLabel;
   protected readonly status = signal<AiStatus | null>(null);
   protected readonly report = signal<UsageReport | null>(null);
