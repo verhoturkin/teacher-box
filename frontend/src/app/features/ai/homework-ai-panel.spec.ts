@@ -2,7 +2,14 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { savedPrompt } from '@testing/ai-fixtures';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { AppliedDraft, HomeworkAiPanel } from './homework-ai-panel';
 
@@ -25,21 +32,48 @@ describe('HomeworkAiPanel', () => {
     return { panel: fixture.componentInstance, host: hostElement(fixture) };
   }
 
+  /** Opens a popover of the panel by its button; popovers are appended to the body. */
+  async function open(host: HTMLElement, button: string) {
+    buttonByText(host, button).click();
+    await fixture.whenStable();
+  }
+
+  function option(text: string): HTMLElement {
+    const found = Array.from(
+      document.body.querySelectorAll<HTMLElement>('.tb-ai-panel__option'),
+    ).find((candidate) => candidate.textContent.includes(text));
+    if (found === undefined) {
+      throw new Error(`Option "${text}" not found`);
+    }
+    return found;
+  }
+
   afterEach(() => {
     backend.verify();
     fixture.destroy();
     vi.restoreAllMocks();
   });
 
-  it('drafts written homework and inserts it or replaces the text', async () => {
+  it('takes a prompt from the menu, drafts homework and inserts it or replaces the text', async () => {
     const { panel, host } = await render([
       savedPrompt({ id: 'any', title: 'Перевод', text: 'Переведи текст' }),
       savedPrompt(),
     ]);
 
-    expect(readableText(host)).toContain('Перевод');
-    expect(readableText(host)).toContain('Тест на 10 вопросов');
-    buttonByText(host, 'Перевод').click();
+    expect(readableText(host)).not.toContain('Перевод');
+    await open(host, 'Промты');
+    expect(bodyText()).toContain('Тест на 10 вопросов');
+    const search = requireElement(document.body, '.tb-ai-panel__search', HTMLInputElement);
+    typeInto(search, ' переведи ');
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Тест на 10 вопросов');
+    typeInto(search, 'нет такого');
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Ничего не найдено');
+    typeInto(search, '');
+    await fixture.whenStable();
+    option('Перевод').click();
+    await fixture.whenStable();
     expect(panel.prompt.value).toBe('Переведи текст');
 
     panel.prompt.setValue('');
@@ -58,6 +92,13 @@ describe('HomeworkAiPanel', () => {
     await fixture.whenStable();
     expect(host.querySelector('.tb-ai-panel__draft strong')?.textContent).toBe('1/2');
     expect(readableText(host)).not.toContain('Вставить в конец');
+    expect(readableText(host)).toContain('Ещё раз');
+
+    const request$ = host.querySelector('.tb-ai-panel__request');
+    expect(request$?.classList).toContain('tb-ai-panel__request--folded');
+    host.querySelector('textarea')?.dispatchEvent(new Event('focus'));
+    await fixture.whenStable();
+    expect(request$?.classList).not.toContain('tb-ai-panel__request--folded');
 
     fixture.componentRef.setInput('hasText', true);
     await fixture.whenStable();
@@ -67,6 +108,7 @@ describe('HomeworkAiPanel', () => {
       ['Сложение дробей', 'insert'],
     ]);
     expect(host.querySelector('.tb-ai-panel__draft')).toBeNull();
+    expect(readableText(host)).toContain('Сгенерировать');
   });
 
   it('says when the draft fails and replaces the text with a new one', async () => {
@@ -93,13 +135,14 @@ describe('HomeworkAiPanel', () => {
     expect(applied.map(({ draft, mode }) => [draft.title, mode])).toEqual([['Тест', 'replace']]);
   });
 
-  it('saves a prompt to the library under a title', async () => {
+  it('saves the request to the library under a title from the menu', async () => {
     const { panel, host } = await render([]);
 
-    expect(readableText(host)).not.toContain('Мои промты');
+    await open(host, 'Промты');
+    expect(bodyText()).toContain('Промтов пока нет');
+    expect(bodyText()).toContain('Управлять библиотекой');
     panel.prompt.setValue('Тест на 5 вопросов\nс выбором ответа');
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить промт').click();
+    buttonByText(document.body, 'Сохранить запрос как промт').click();
     await fixture.whenStable();
     expect(panel.promptTitle.value).toBe('Тест на 5 вопросов');
 
@@ -107,7 +150,7 @@ describe('HomeworkAiPanel', () => {
     panel.savePrompt();
     backend.expectNone('/api/teacher/ai/prompts');
     panel.promptTitle.setValue('Тест');
-    buttonByText(host, 'Сохранить').click();
+    buttonByText(document.body, 'Сохранить').click();
     const saved = backend.expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' });
     expect(saved.request.body).toEqual({
       title: 'Тест',
@@ -115,22 +158,26 @@ describe('HomeworkAiPanel', () => {
     });
     saved.flush(savedPrompt({ title: 'Тест' }));
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Мои промты');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
 
-    buttonByText(host, 'Сохранить промт').click();
+    await open(host, 'Промты');
+    expect(option('Тест')).toBeTruthy();
+    buttonByText(document.body, 'Сохранить запрос как промт').click();
     await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
+    buttonByText(document.body, 'Сохранить').click();
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' })
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
     expect(readableText(host)).toContain('Не удалось сохранить промт');
-    buttonByText(host, 'Отмена').click();
+    buttonByText(document.body, 'Отмена').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Управлять библиотекой');
   });
 
-  it('sends the ticked sources', async () => {
+  it('sends the ticked sources and counts them on the button', async () => {
     const { panel, host } = await render([]);
+    expect(readableText(host)).not.toContain('Опереться на');
     fixture.componentRef.setInput('sources', [
       {
         key: 'tb',
@@ -140,12 +187,13 @@ describe('HomeworkAiPanel', () => {
       { key: 'f', label: 'Задачи.pdf', source: { type: 'FILE', id: 'f-1', assignmentId: 'a-1' } },
     ]);
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Опереться на');
 
-    host.querySelector<HTMLInputElement>('#ai-source-f')?.click();
-    host.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
-    host.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
+    await open(host, 'Опереться на');
+    document.body.querySelector<HTMLInputElement>('#ai-source-f')?.click();
+    document.body.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
+    document.body.querySelector<HTMLInputElement>('#ai-source-tb')?.click();
     await fixture.whenStable();
+    expect(readableText(host)).toContain('Опереться на · 1');
     panel.prompt.setValue('По файлу');
     panel.generate();
 

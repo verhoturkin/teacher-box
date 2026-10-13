@@ -113,125 +113,121 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         />
       </tb-page-header>
 
-      <div class="tb-editor" [class.tb-editor--aside]="aiEnabled()">
-        <form tbFieldErrors class="tb-editor__main tb-form" [formGroup]="form" (ngSubmit)="save()">
-          <p-card>
-            <div class="tb-form">
-              <div class="tb-field tb-field--required">
-                <label for="editor-title">{{ t.title }}</label>
-                <input pInputText id="editor-title" formControlName="title" autocomplete="off" />
-              </div>
-
-              <div class="tb-field">
-                <div class="tb-field__header">
-                  <label for="editor-text">{{ t.text }}</label>
-                  <p-selectbutton
-                    [options]="modes"
-                    [formControl]="mode"
-                    optionLabel="label"
-                    optionValue="value"
-                    [allowEmpty]="false"
-                    [ariaLabel]="t.editorMode"
-                  />
-                </div>
-                @if (modeValue() === 'preview') {
-                  <div class="tb-preview">
-                    <tb-markdown [text]="textValue()" />
-                  </div>
-                } @else {
-                  <textarea
-                    pTextarea
-                    id="editor-text"
-                    class="tb-editor__text"
-                    formControlName="description"
-                    rows="14"
-                  ></textarea>
-                }
-                <small class="tb-hint">{{ t.markdownHint }}</small>
-              </div>
+      <form tbFieldErrors class="tb-editor tb-form" [formGroup]="form" (ngSubmit)="save()">
+        <p-card>
+          <div class="tb-form">
+            <div class="tb-field tb-field--required">
+              <label for="editor-title">{{ t.title }}</label>
+              <input pInputText id="editor-title" formControlName="title" autocomplete="off" />
             </div>
-          </p-card>
 
-          <p-card>
-            <div class="tb-editor__settings">
-              @if (isNew()) {
-                <div class="tb-field">
-                  <label for="editor-students">{{ t.students }}</label>
-                  <p-multiselect
-                    inputId="editor-students"
-                    formControlName="studentIds"
-                    [options]="students()"
-                    optionLabel="displayName"
-                    optionValue="id"
-                    [placeholder]="t.studentsPlaceholder"
-                    [filter]="true"
-                    [filterPlaceHolder]="t.search"
-                    [ariaFilterLabel]="t.search"
-                    display="chip"
-                    appendTo="body"
-                    [fluid]="true"
-                  />
-                </div>
-                <tb-group-picker
-                  inputId="editor-group"
-                  (picked)="addStudents($event)"
-                  (dropped)="removeStudents($event)"
+            <div class="tb-field">
+              <div class="tb-field__header">
+                <label for="editor-text">{{ t.text }}</label>
+                <p-selectbutton
+                  [options]="modes"
+                  [formControl]="mode"
+                  optionLabel="label"
+                  optionValue="value"
+                  [allowEmpty]="false"
+                  [ariaLabel]="t.editorMode"
+                />
+              </div>
+              @if (aiEnabled()) {
+                <tb-homework-ai-panel
+                  [hidden]="modeValue() === 'preview'"
+                  [title]="titleValue()"
+                  [hasText]="textValue().trim() !== ''"
+                  [sources]="sourceOptions()"
+                  (applied)="applyDraft($event)"
                 />
               }
+              @if (modeValue() === 'preview') {
+                <div class="tb-preview">
+                  <tb-markdown [text]="textValue()" />
+                </div>
+              } @else {
+                <textarea
+                  pTextarea
+                  id="editor-text"
+                  class="tb-editor__text"
+                  formControlName="description"
+                  rows="14"
+                ></textarea>
+              }
+              <small class="tb-hint">{{ t.markdownHint }}</small>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card>
+          <div class="tb-editor__settings">
+            @if (isNew()) {
               <div class="tb-field">
-                <label for="editor-due">{{ t.due }}</label>
-                <p-datepicker
-                  inputId="editor-due"
-                  formControlName="dueAt"
-                  [showTime]="true"
-                  hourFormat="24"
-                  dateFormat="dd.mm.yy"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  [showClear]="true"
+                <label for="editor-students">{{ t.students }}</label>
+                <p-multiselect
+                  inputId="editor-students"
+                  formControlName="studentIds"
+                  [options]="students()"
+                  optionLabel="displayName"
+                  optionValue="id"
+                  [placeholder]="t.studentsPlaceholder"
+                  [filter]="true"
+                  [filterPlaceHolder]="t.search"
+                  [ariaFilterLabel]="t.search"
+                  display="chip"
                   appendTo="body"
                   [fluid]="true"
                 />
-                @if (dueHint(); as hint) {
-                  <small class="tb-hint">{{ hint }}</small>
-                }
               </div>
+              <tb-group-picker
+                inputId="editor-group"
+                (picked)="addStudents($event)"
+                (dropped)="removeStudents($event)"
+              />
+            }
+            <div class="tb-field">
+              <label for="editor-due">{{ t.due }}</label>
+              <p-datepicker
+                inputId="editor-due"
+                formControlName="dueAt"
+                [showTime]="true"
+                hourFormat="24"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                [showOnFocus]="false"
+                [showClear]="true"
+                appendTo="body"
+                [fluid]="true"
+              />
+              @if (dueHint(); as hint) {
+                <small class="tb-hint">{{ hint }}</small>
+              }
             </div>
+          </div>
 
-            @if (isNew()) {
-              <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-              <tb-textbook-list
-                [textbooks]="textbooks()"
-                [editable]="true"
-                (edit)="editTextbook($event)"
-                (remove)="removeTextbook($event)"
-              />
-              <p-button
-                [label]="t.bindTextbook"
-                icon="pi pi-book"
-                severity="secondary"
-                (onClick)="bindTextbook()"
-              />
-              <h3 class="tb-subtitle">{{ t.files }}</h3>
-              <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
-            }
-            @if (error(); as message) {
-              <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-            }
-          </p-card>
-        </form>
-
-        @if (aiEnabled()) {
-          <aside class="tb-editor__aside">
-            <tb-homework-ai-panel
-              [title]="titleValue()"
-              [hasText]="textValue().trim() !== ''"
-              [sources]="sourceOptions()"
-              (applied)="applyDraft($event)"
+          @if (isNew()) {
+            <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+            <tb-textbook-list
+              [textbooks]="textbooks()"
+              [editable]="true"
+              (edit)="editTextbook($event)"
+              (remove)="removeTextbook($event)"
             />
-          </aside>
-        }
-      </div>
+            <p-button
+              [label]="t.bindTextbook"
+              icon="pi pi-book"
+              severity="secondary"
+              (onClick)="bindTextbook()"
+            />
+            <h3 class="tb-subtitle">{{ t.files }}</h3>
+            <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
+          }
+          @if (error(); as message) {
+            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+          }
+        </p-card>
+      </form>
 
       @if (placing(); as saved) {
         <tb-to-board-dialog
@@ -259,12 +255,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
   `,
   styles: `
     .tb-editor {
-      display: grid;
-      gap: var(--tb-space-4);
-      align-items: start;
-    }
-
-    .tb-editor__main {
       min-width: 0;
     }
 
@@ -276,17 +266,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
     .tb-editor__text {
       width: 100%;
-    }
-
-    @media (width >= 75em) {
-      .tb-editor--aside {
-        grid-template-columns: minmax(0, 1fr) 22rem;
-      }
-
-      .tb-editor__aside {
-        position: sticky;
-        top: var(--tb-space-4);
-      }
     }
   `,
 })
