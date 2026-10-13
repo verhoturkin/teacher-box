@@ -48,7 +48,7 @@ export const LATEST_COUNT = 5;
           @if (items.length === 0) {
             <tb-empty-state icon="pi-bell" [title]="t.nothing" />
           } @else {
-            <ul class="tb-list tb-latest" [attr.aria-label]="t.unreadList">
+            <ul class="tb-list tb-list--no-phone-lead tb-latest" [attr.aria-label]="t.unreadList">
               @for (item of items; track item.id) {
                 <li>
                   <span class="tb-list__lead tb-list__lead--accent" aria-hidden="true"

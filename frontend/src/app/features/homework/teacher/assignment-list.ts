@@ -77,7 +77,7 @@ export interface AssignmentActions {
         </div>
       }
       @if (page().length > 0) {
-        <ul class="tb-list" [attr.aria-label]="heading()">
+        <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="heading()">
           @for (assignment of page(); track assignment.id) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"

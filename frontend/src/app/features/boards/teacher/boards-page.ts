@@ -94,7 +94,7 @@ import { SearchField } from '@shared/ui/search-field';
           </div>
         }
         @if (shown().length > 0) {
-          <ul class="tb-list" [attr.aria-label]="t.title">
+          <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (board of shown(); track board.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"

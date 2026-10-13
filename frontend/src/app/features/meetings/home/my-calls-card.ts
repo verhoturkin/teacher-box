@@ -34,7 +34,7 @@ export const MY_CALLS_REFRESH_MS = 30_000;
       </p-card>
     } @else if (calls().length > 0) {
       <p-card [header]="t.title">
-        <ul class="tb-list">
+        <ul class="tb-list tb-list--no-phone-lead">
           @for (call of calls(); track call.ownerId) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-video"></i></span>

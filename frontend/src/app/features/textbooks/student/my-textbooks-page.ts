@@ -55,7 +55,7 @@ import { SearchField } from '@shared/ui/search-field';
       }
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (shown().length > 0) {
-          <ul class="tb-list" [attr.aria-label]="t.title">
+          <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (textbook of shown(); track textbook.id) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"

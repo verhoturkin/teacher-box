@@ -726,11 +726,12 @@ export const TeacherBoxPreset = definePreset(Aura, {
       },
     },
     // M3 badge on an icon button: no outline, its start at the middle of the 24 px icon, its top near the
-    // icon's top — inside the 40 px button, not on its corner
+    // icon's top — inside the 40 px button, not on its corner; clicks go through it to the button
     overlaybadge: {
       root: { outline: { width: '0', color: 'transparent' } },
       css: `
         .p-overlaybadge .p-badge {
+          pointer-events: none;
           inset-block-start: 0.25rem;
           inset-inline-start: 50%;
           inset-inline-end: auto;

@@ -11,7 +11,7 @@ import { T } from '../i18n/texts';
   imports: [DatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="tb-list">
+    <ul class="tb-list tb-list--no-phone-lead">
       @for (board of boards(); track board.id) {
         <li>
           <span class="tb-list__lead" aria-hidden="true"

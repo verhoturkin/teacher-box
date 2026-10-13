@@ -50,7 +50,7 @@ const PAGE = 10;
         </div>
       }
       @if (page().length > 0) {
-        <ul class="tb-list" [attr.aria-label]="heading()">
+        <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="heading()">
           @for (task of page(); track task.taskId) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"

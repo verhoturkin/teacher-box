@@ -51,7 +51,7 @@ const MAX_TEXT = 10_000;
   template: `
     <p-card [header]="t.title">
       <p class="tb-hint">{{ t.hint }}</p>
-      <ul class="tb-list">
+      <ul class="tb-list tb-list--no-phone-lead">
         @for (prompt of prompts(); track prompt.feature) {
           <li>
             <div class="tb-list__text">
@@ -63,14 +63,16 @@ const MAX_TEXT = 10_000;
               </span>
               <span class="tb-system-prompt-text">{{ prompt.text }}</span>
             </div>
-            <p-button
-              icon="pi pi-pencil"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [ariaLabel]="t.edit(t.features[prompt.feature])"
-              (onClick)="edit(prompt)"
-            />
+            <div class="tb-list__trail tb-list__trail--icons">
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [ariaLabel]="t.edit(t.features[prompt.feature])"
+                (onClick)="edit(prompt)"
+              />
+            </div>
           </li>
         }
       </ul>
