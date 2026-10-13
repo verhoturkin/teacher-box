@@ -273,6 +273,19 @@ export function nextMonday(date: Date): Date {
       (sent)="onSent()"
     />
   `,
+  styles: `
+    /* «Решённые» as «Прочитанные» of the notifications: apart from the pending ones, under a line */
+    .tb-requests-resolved {
+      margin-top: var(--tb-space-4);
+      padding-top: var(--tb-space-2);
+      border-top: 1px solid var(--p-md-outline-variant);
+    }
+
+    /* the opened list keeps its distance from the button */
+    #tb-requests-resolved:not(:empty) {
+      margin-top: var(--tb-space-2);
+    }
+  `,
 })
 export class MySchedulePage implements OnInit {
   protected readonly c = SHARED_T.common;
