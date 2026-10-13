@@ -101,9 +101,15 @@ describe('Shell', () => {
     const user = requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement);
     expect(user.getAttribute('aria-haspopup')).toBe('menu');
     expect(user.getAttribute('aria-expanded')).toBe('true');
-    // the chosen theme is highlighted and says it is chosen (ADR-0024)
-    const chosen = document.body.querySelector('.tb-menu-item--selected');
-    expect(chosen?.textContent).toContain('Тема как в системе (выбрана)');
+    // the chosen theme is highlighted, its label stays; screen readers hear a checked radio item
+    const chosen = document.body.querySelector('li.tb-menu-item--selected');
+    expect(chosen?.textContent.trim()).toBe('Тема как в системе');
+    expect(chosen?.getAttribute('role')).toBe('menuitemradio');
+    expect(chosen?.getAttribute('aria-checked')).toBe('true');
+    const light = Array.from(document.body.querySelectorAll('li.tb-menu-item--choice')).find(
+      (item) => item.textContent.includes('Светлая тема'),
+    );
+    expect(light?.getAttribute('aria-checked')).toBe('false');
     const dark = Array.from(document.body.querySelectorAll('a')).find((element) =>
       element.textContent.includes('Тёмная тема'),
     );
@@ -120,8 +126,12 @@ describe('Shell', () => {
     await fixture.whenStable();
 
     const items = Array.from(document.body.querySelectorAll('a')).map((a) => a.textContent.trim());
-    const russian = items.findIndex((item) => item.includes('Русский (выбран)'));
+    const russian = items.indexOf('Русский');
     expect(russian).toBeGreaterThan(items.findIndex((item) => item.includes('Тёмная тема')));
+    const chosen = Array.from(document.body.querySelectorAll('li.tb-menu-item--choice')).find(
+      (item) => item.textContent.trim() === 'Русский',
+    );
+    expect(chosen?.getAttribute('aria-checked')).toBe('true');
     const english = Array.from(document.body.querySelectorAll('a')).find(
       (element) => element.textContent.trim() === 'English',
     );

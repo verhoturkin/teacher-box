@@ -262,7 +262,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
-  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it (selected theme also says «(выбрана)»); destructive item red.
+  global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it, with a check at its end (the theme and the language: `menuitemradio` + `aria-checked`, no «(выбрана)» since 0.15.0); destructive item red.
 
 ## 9. Lists and tables
 
@@ -408,7 +408,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`), and
   `expectComplete` tests it. Wording of both languages follows [`glossary.md`](glossary.md).
 - **Language switch** — in the user menu under the themes: each language in its own name with `pi-language`,
-  the chosen one highlighted with «(выбран)» / «(selected)»; on the sign-in and invitation pages — the
+  the chosen one highlighted with a check (`aria-checked`); on the sign-in and invitation pages — the
   `tb-language-picker` row under the card. Switching reloads the page.
 - Numbers, money and dates use the locale of the language (`locale()`: `ru-RU`, `en-GB`); fixed formats
   `dd.MM.yyyy` / `HH:mm` stay in both languages.

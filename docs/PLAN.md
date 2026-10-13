@@ -43,6 +43,9 @@ ends the home page reloads the summary. No «Расписание» link in the 
   module, help `teacher/boards`.
 - [x] 188.7 **F** `shared/ui/search-field.ts`: one M3 search bar for every search (assignments, boards, students,
   textbooks, help, AI prompts) — «×» to clear, no outline, sizes of the docked search. Docs: design-system §5.
+- [x] 188.8 **F** `core/layout/shell.ts`: no «(выбрана)» in the user menu — a check and `menuitemradio`/`aria-checked`;
+  `styles.scss`: on a phone a card with a search keeps the list's padding when nothing is found. Docs: ADR-0024,
+  design-system.
 
 ### 189. Release 0.15.0
 
