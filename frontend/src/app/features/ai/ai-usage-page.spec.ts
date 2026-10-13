@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { aiStatus, usageReport } from '@testing/ai-fixtures';
+import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { AiStatus, UsageReport } from './data-access/ai.models';
 import { AiUsagePage } from './ai-usage-page';
@@ -25,6 +25,9 @@ describe('AiUsagePage', () => {
     await fixture.whenStable();
     for (const request of backend.match('/api/teacher/ai/prompts')) {
       request.flush([]);
+    }
+    for (const request of backend.match('/api/teacher/ai/system-prompts')) {
+      request.flush([systemPrompt()]);
     }
     await fixture.whenStable();
     return readableText(hostElement(fixture));
@@ -77,6 +80,7 @@ describe('AiUsagePage', () => {
     expect(text).toContain('Ошибка Anthropic API 529: Overloaded');
     expect(text).toMatch(/12.5 с/);
     expect(hostElement(fixture).querySelector('p-progressbar')).not.toBeNull();
+    expect(text).toContain('Системные промты');
   });
 
   it('shows unlimited usage and an empty month', async () => {

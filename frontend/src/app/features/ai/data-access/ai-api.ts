@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import {
+  AiFeature,
   AiStatus,
   HomeworkBrief,
   HomeworkDraft,
@@ -11,10 +12,12 @@ import {
   ReviewBrief,
   ReviewDraft,
   SavedPrompt,
+  SystemPrompt,
   UsageReport,
 } from './ai.models';
 
 const PROMPTS = '/api/teacher/ai/prompts';
+const SYSTEM_PROMPTS = '/api/teacher/ai/system-prompts';
 
 /** HTTP client of the AI module (teacher only). */
 @Injectable({ providedIn: 'root' })
@@ -72,6 +75,21 @@ export class AiApi {
 
   deletePrompt(id: string): Observable<unknown> {
     return this.http.delete(`${PROMPTS}/${id}`);
+  }
+
+  /** The system prompts of the assistant (ADR-0043), one per feature. */
+  systemPrompts(): Observable<SystemPrompt[]> {
+    return this.http.get<SystemPrompt[]>(SYSTEM_PROMPTS, { context: quietContext() });
+  }
+
+  /** @param version the edited version, 0 for the standard prompt */
+  updateSystemPrompt(feature: AiFeature, text: string, version: number): Observable<SystemPrompt> {
+    return this.http.put<SystemPrompt>(`${SYSTEM_PROMPTS}/${feature}`, { text, version });
+  }
+
+  /** Back to the standard prompt. */
+  resetSystemPrompt(feature: AiFeature): Observable<SystemPrompt> {
+    return this.http.delete<SystemPrompt>(`${SYSTEM_PROMPTS}/${feature}`);
   }
 
   reviewDraft(brief: ReviewBrief): Observable<ReviewDraft> {

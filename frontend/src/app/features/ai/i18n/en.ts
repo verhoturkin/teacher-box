@@ -79,4 +79,25 @@ export const en: Translation<typeof ru> = {
     deleted: 'The prompt is deleted',
     failed: 'Could not save the prompt',
   },
+  systemPrompts: {
+    title: 'System prompts',
+    hint: 'The rules the AI follows in its drafts: tone, language, layout. You can rewrite them your way.',
+    features: {
+      HOMEWORK_DRAFT: 'Homework draft',
+      REVIEW_DRAFT: 'Review draft',
+    },
+    custom: 'Changed',
+    edit: (name: string) => `Edit the system prompt «${name}»`,
+    text: 'Text',
+    textHint:
+      'The portal sets the answer format itself. The AI gets the task and the student answer separately.',
+    save: 'Save',
+    saved: 'The system prompt is saved',
+    failed: 'Could not save the system prompt',
+    reset: 'Restore the standard one',
+    resetHeader: 'Restore the standard prompt?',
+    resetMessage: 'Your text is lost, the AI follows the standard rules again.',
+    resetAccept: 'Restore',
+    resetDone: 'The standard prompt is restored',
+  },
 };

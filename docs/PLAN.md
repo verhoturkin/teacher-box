@@ -39,7 +39,7 @@ the defaults (amends ADR-0006).
   the text of a feature — the teacher's one or the default resource; `GET /api/teacher/ai/system-prompts`,
   `PUT …/{feature}` `{text ≤ 10000, version}`, `DELETE …/{feature}` (back to the default); `AiAssistant` takes the
   system prompt from it; in the full reset. ADR-0043, `docs/modules/ai.md`.
-- [ ] 184.2 **F** `ai/system-prompts-card.ts` on the AI page: both prompts, «Изменён» tag, a dialog to edit,
+- [x] 184.2 **F** `ai/system-prompts-card.ts` on the AI page: both prompts, «Изменён» tag, a dialog to edit,
   «Вернуть стандартный». Help article `teacher/ai`.
 
 ### 185. Release 0.14.6

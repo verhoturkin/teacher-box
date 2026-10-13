@@ -206,6 +206,7 @@ export const ru = {
         'Слишком много для ИИ: не больше 5 источников, 20 страниц и 20 МБ за раз',
       'ai.prompt-title-invalid': 'Название промта — от 1 до 100 символов',
       'ai.prompt-text-invalid': 'Текст промта — от 1 до 4000 символов',
+      'ai.system-prompt-invalid': 'Системный промт — от 1 до 10 000 символов',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',

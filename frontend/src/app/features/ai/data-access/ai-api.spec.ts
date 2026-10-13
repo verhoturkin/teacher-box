@@ -77,6 +77,9 @@ describe('AiApi', () => {
     api.usage().subscribe();
     api.usage('2026-08').subscribe();
     api.requests('2026-08', 10).subscribe();
+    api.systemPrompts().subscribe();
+    api.updateSystemPrompt('REVIEW_DRAFT', 'Строго', 1).subscribe();
+    api.resetSystemPrompt('REVIEW_DRAFT').subscribe();
 
     backend.expectOne('/api/teacher/ai/status');
     const draft = backend.expectOne('/api/teacher/ai/homework-draft');
@@ -101,5 +104,11 @@ describe('AiApi', () => {
     backend.expectOne('/api/teacher/ai/usage');
     backend.expectOne('/api/teacher/ai/usage?month=2026-08');
     backend.expectOne('/api/teacher/ai/requests?month=2026-08&offset=10');
+    backend.expectOne({ method: 'GET', url: '/api/teacher/ai/system-prompts' });
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
+        .request.body,
+    ).toEqual({ text: 'Строго', version: 1 });
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' });
   });
 });

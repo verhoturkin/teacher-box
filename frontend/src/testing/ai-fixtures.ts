@@ -1,4 +1,9 @@
-import { AiStatus, SavedPrompt, UsageReport } from '@features/ai/data-access/ai.models';
+import {
+  AiStatus,
+  SavedPrompt,
+  SystemPrompt,
+  UsageReport,
+} from '@features/ai/data-access/ai.models';
 
 export function aiStatus(overrides: Partial<AiStatus> = {}): AiStatus {
   return {
@@ -54,6 +59,18 @@ export function savedPrompt(overrides: Partial<SavedPrompt> = {}): SavedPrompt {
     title: 'Тест на 10 вопросов',
     text: 'Сделай тест на 10 вопросов с выбором ответа',
     updatedAt: '2026-10-12T10:00:00Z',
+    version: 0,
+    ...overrides,
+  };
+}
+
+export function systemPrompt(overrides: Partial<SystemPrompt> = {}): SystemPrompt {
+  return {
+    feature: 'HOMEWORK_DRAFT',
+    text: 'Ты помогаешь репетитору готовить домашние задания.',
+    defaultText: 'Ты помогаешь репетитору готовить домашние задания.',
+    custom: false,
+    updatedAt: null,
     version: 0,
     ...overrides,
   };

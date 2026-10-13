@@ -362,9 +362,13 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 - **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts on the «AI» page («Manage the library» in the same menu).
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
+## System prompts
+
+The rules the AI follows in its drafts (tone, language, the layout of a task, how strict a review is) are on the «AI assistant» page, the «System prompts» card. Click the pencil next to «Homework draft» or «Review draft», rewrite the text and save: the next drafts follow your rules, and the prompt is marked «Changed». The portal sets the answer format itself, and the AI gets the task and the student answer separately — no need to mention them in the prompt. «Restore the standard one» in the same window brings the original text back.
+
 ## Limit and costs
 
-The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. When the limit is used up, the AI buttons stop working until the next month.
+The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. «Recent requests» shows the 10 newest first, the rest of the month — with «Show more». When the limit is used up, the AI buttons stop working until the next month.
 
 The AI assistant is connected when the portal is installed (by whoever set up the server): Claude, Gemini, DeepSeek, OpenRouter — models of many companies with one key — or another service. If there are no AI buttons, it is not connected.
 `,

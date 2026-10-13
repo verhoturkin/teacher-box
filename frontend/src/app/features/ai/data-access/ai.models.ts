@@ -50,6 +50,18 @@ export interface SavedPrompt {
   readonly version: number;
 }
 
+/** Mirrors `SystemPromptView`: a system prompt of the assistant (ADR-0043). */
+export interface SystemPrompt {
+  readonly feature: AiFeature;
+  readonly text: string;
+  readonly defaultText: string;
+  /** Whether the teacher rewrote it; otherwise `text` is the standard one. */
+  readonly custom: boolean;
+  readonly updatedAt: string | null;
+  /** 0 for the standard prompt. */
+  readonly version: number;
+}
+
 export interface PromptInput {
   readonly title: string;
   readonly text: string;
