@@ -14,9 +14,6 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -25,6 +22,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { AssignmentSummary } from '../data-access/homework.models';
 import { assignmentProgress } from '../homework-labels';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /** Names shown in a row before «и ещё N». */
 const SHOWN_STUDENTS = 3;
@@ -44,13 +42,11 @@ export interface AssignmentActions {
 @Component({
   selector: 'tb-assignment-list',
   imports: [
+    SearchField,
     ReactiveFormsModule,
     RouterLink,
     Button,
     Card,
-    IconField,
-    InputIcon,
-    InputText,
     Paginator,
     Tag,
     Tooltip,
@@ -62,16 +58,11 @@ export interface AssignmentActions {
     <p-card [header]="heading()">
       @if (assignments().length > 0) {
         <div class="tb-toolbar">
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search" />
-            <input
-              pInputText
-              type="search"
-              [formControl]="search"
-              [placeholder]="t.search"
-              [attr.aria-label]="t.searchIn(heading())"
-            />
-          </p-iconfield>
+          <tb-search-field
+            [formControl]="search"
+            [label]="t.searchIn(heading())"
+            [placeholder]="t.search"
+          />
           @if (reviewFilter() && (toReview() > 0 || onlyReview())) {
             <p-button
               [label]="t.toReview"

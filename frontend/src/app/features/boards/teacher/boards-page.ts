@@ -18,9 +18,6 @@ import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -38,6 +35,7 @@ import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /**
  * Teacher: every board in one place (ADR-0028) — create, change, delete, copies. «Доски (n)» of a student
@@ -46,11 +44,9 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-boards-page',
   imports: [
+    SearchField,
     ReactiveFormsModule,
     RouterLink,
-    IconField,
-    InputIcon,
-    InputText,
     Button,
     Card,
     ConfirmDialog,
@@ -90,16 +86,11 @@ import { T } from '../i18n/texts';
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (boards().length > 0) {
           <div class="tb-toolbar">
-            <p-iconfield>
-              <p-inputicon styleClass="pi pi-search" />
-              <input
-                pInputText
-                type="search"
-                [formControl]="search"
-                [placeholder]="t.search"
-                [attr.aria-label]="t.searchLabel"
-              />
-            </p-iconfield>
+            <tb-search-field
+              [formControl]="search"
+              [label]="t.searchLabel"
+              [placeholder]="t.search"
+            />
           </div>
         }
         @if (shown().length > 0) {

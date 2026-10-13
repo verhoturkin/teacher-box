@@ -13,6 +13,7 @@ export const en: Translation<typeof ru> = {
     add: 'Add',
     create: 'Create',
     back: 'Back',
+    clearSearch: 'Clear search',
     next: 'Next',
     done: 'Done',
     send: 'Send',

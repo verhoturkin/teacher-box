@@ -41,6 +41,8 @@ ends the home page reloads the summary. No «Расписание» link in the 
   Docs: homework module, help `teacher/homework`.
 - [x] 188.6 **F** `boards/teacher/boards-page.ts`: a search by the title or a student's (group's) name. Docs: boards
   module, help `teacher/boards`.
+- [x] 188.7 **F** `shared/ui/search-field.ts`: one M3 search bar for every search (assignments, boards, students,
+  textbooks, help, AI prompts) — «×» to clear, no outline, sizes of the docked search. Docs: design-system §5.
 
 ### 189. Release 0.15.0
 

@@ -11,9 +11,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { pageDetail } from '@core/routing/page-detail';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
@@ -22,6 +19,7 @@ import { HelpArea } from './help-topics';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
 import { T } from './i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /**
  * The help of an area (`/<area>/help/<topic>`): the contents with search on top, the chosen article
@@ -30,13 +28,11 @@ import { T } from './i18n/texts';
 @Component({
   selector: 'tb-help-page',
   imports: [
+    SearchField,
     EmptyState,
     ReactiveFormsModule,
     RouterLink,
     Card,
-    IconField,
-    InputIcon,
-    InputText,
     HelpArticleView,
     PageHeader,
   ],
@@ -45,15 +41,7 @@ import { T } from './i18n/texts';
     <tb-page-header [title]="t.help" />
     <div class="tb-stack">
       <p-card styleClass="tb-help__contents">
-        <p-iconfield>
-          <p-inputicon styleClass="pi pi-search" />
-          <input
-            pInputText
-            [formControl]="search"
-            [placeholder]="t.search"
-            [attr.aria-label]="t.search"
-          />
-        </p-iconfield>
+        <tb-search-field [formControl]="search" [label]="t.search" />
         <nav [attr.aria-label]="t.articles">
           <ul class="tb-help__list">
             @for (article of found(); track article.id) {

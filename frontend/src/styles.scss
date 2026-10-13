@@ -506,13 +506,14 @@ textarea.p-textarea {
 
 /*
  * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
- * magnifier at its start; the focus is the primary ring.
+ * magnifier at its start, «×» at its end while there is text (`tb-search-field`); no ring in focus.
  */
 .p-iconfield:has(> .pi-search, > .p-inputicon.pi-search) > .p-inputtext {
   border-color: transparent;
   border-radius: var(--tb-shape-full);
   background: var(--p-md-surface-container-high);
-  padding-inline-start: 3rem;
+  /* 4 + 48 + 4: the magnifier is centred in the round start, the text after it (M3 docked search) */
+  padding-inline-start: 3.5rem;
 
   &:enabled:hover {
     border-color: transparent;
@@ -523,10 +524,16 @@ textarea.p-textarea {
     );
   }
 
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
   &:enabled:focus {
     border-color: transparent;
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
   }
 }
 
@@ -580,10 +587,16 @@ textarea.p-textarea {
   border-radius: var(--tb-shape-full);
   background: var(--p-md-surface-container-high);
 
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
   &:enabled:focus {
     border-color: transparent;
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
   }
 }
 
@@ -1688,8 +1701,7 @@ a.p-menu-item-link:hover {
  */
 @media (width <= 48em) {
   /* Search fills the width of the toolbar */
-  .tb-toolbar > p-iconfield,
-  .tb-toolbar > p-iconfield input {
+  .tb-toolbar > tb-search-field {
     width: 100%;
   }
 

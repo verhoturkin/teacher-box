@@ -11,9 +11,6 @@ import {
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
@@ -44,6 +41,7 @@ import {
 import { MemberOption, TextbookDialog } from './textbook-dialog';
 import { TextbookToBoardDialog } from './textbook-to-board-dialog';
 import { T } from '../i18n/texts';
+import { SearchField } from '@shared/ui/search-field';
 
 /**
  * Teacher: «Учебники» (ADR-0033) — textbooks, workbooks and other materials, one per row: add, change,
@@ -52,11 +50,9 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-textbooks-page',
   imports: [
+    SearchField,
     Button,
     Card,
-    IconField,
-    InputIcon,
-    InputText,
     ReactiveFormsModule,
     ConfirmDialog,
     Menu,
@@ -81,15 +77,7 @@ import { T } from '../i18n/texts';
       <h2 class="tb-sr-only">{{ t.list }}</h2>
       @if (textbooks().length > 0) {
         <div class="tb-toolbar">
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search" />
-            <input
-              pInputText
-              [formControl]="search"
-              [placeholder]="t.search"
-              [attr.aria-label]="t.search"
-            />
-          </p-iconfield>
+          <tb-search-field [formControl]="search" [label]="t.search" />
         </div>
       }
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
