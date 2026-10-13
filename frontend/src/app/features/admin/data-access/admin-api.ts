@@ -5,6 +5,7 @@ import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor
 import { PortalSettings } from '@core/portal/portal';
 import {
   AdminSettings,
+  AiRequestPage,
   AiStatus,
   AiUsage,
   EventPublication,
@@ -106,6 +107,13 @@ export class AdminApi {
 
   aiUsage(): Observable<AiUsage> {
     return this.http.get<AiUsage>(`${ADMIN}/ai/usage`, { context: quietContext() });
+  }
+
+  /** AI requests of a month older than the first `offset`, by 10. */
+  aiRequests(month: string, offset: number): Observable<AiRequestPage> {
+    return this.http.get<AiRequestPage>(`${ADMIN}/ai/requests`, {
+      params: new HttpParams().set('month', month).set('offset', offset),
+    });
   }
 
   diagnostics(): Observable<Blob> {

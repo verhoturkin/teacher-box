@@ -60,6 +60,7 @@ describe('AdminApi', () => {
     api.checkIntegrations().subscribe();
     api.aiStatus().subscribe();
     api.aiUsage().subscribe();
+    api.aiRequests('2026-09', 10).subscribe();
     api.diagnostics().subscribe();
 
     backend.expectOne({ method: 'GET', url: '/api/admin/status' });
@@ -75,6 +76,7 @@ describe('AdminApi', () => {
     expect(check.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     backend.expectOne({ method: 'GET', url: '/api/admin/ai/status' });
     backend.expectOne({ method: 'GET', url: '/api/admin/ai/usage' });
+    backend.expectOne({ method: 'GET', url: '/api/admin/ai/requests?month=2026-09&offset=10' });
     expect(backend.expectOne('/api/admin/diagnostics').request.responseType).toBe('blob');
     expect(resubmitted).toBe(1);
     expect(retried).toBe(4);

@@ -92,5 +92,14 @@ export interface UsageReport {
   readonly usedTokens: number;
   readonly monthlyTokenLimit: number;
   readonly features: FeatureUsage[];
+  /** The newest requests of the month, the first page of 10. */
   readonly recent: AiRequestLog[];
+  /** Whether the month has older requests than `recent`. */
+  readonly moreRecent: boolean;
+}
+
+/** Mirrors `RequestPage`: the next requests of the log, newest first. */
+export interface RequestPage {
+  readonly items: AiRequestLog[];
+  readonly hasMore: boolean;
 }

@@ -25,6 +25,8 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Monthly token limit (`TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT`, input + output, instance time zone): over the limit
   requests are rejected before calling the provider.
 - `ai.requests` stores metadata only (feature, model, status, tokens, duration, error) — never texts.
+- Request log by pages of 10 (since 0.14.6): `usage` returns the first page (`recent`, `moreRecent`), `GET requests`
+  `?month&offset` the next ones (`RequestPage {items, hasMore}`), for the teacher and the administrator.
 - Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000 (no kinds
   since 0.14.1, ADR-0041); listed by title, optimistic locking, in the full reset; kept whether the AI is configured
   or not.
@@ -46,9 +48,9 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 ## Data, REST
 
-`requests`, `prompts`. `/api/teacher/ai/**` (status, usage, homework-draft, review-draft, `prompts` CRUD), `/api/admin/ai/**` (status,
-usage metadata).
+`requests`, `prompts`. `/api/teacher/ai/**` (status, usage, requests, homework-draft, review-draft, `prompts` CRUD), `/api/admin/ai/**`
+(status, usage, requests — metadata).
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`: usage, the request log with «Показать ещё») with `prompt-library-card.ts`; embedded via `parts.ts`.

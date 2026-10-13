@@ -27,6 +27,7 @@ export const ru = {
     tokenCount: (count: number) => countOf(count, 'токен', 'токена', 'токенов'),
     recent: 'Последние запросы',
     noRequests: 'Запросов в этом месяце не было',
+    showMore: 'Показать ещё',
     when: 'Когда',
     what: 'Что',
     result: 'Результат',

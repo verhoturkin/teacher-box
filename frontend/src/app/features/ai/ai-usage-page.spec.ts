@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aiStatus, usageReport } from '@testing/ai-fixtures';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { AiStatus, UsageReport } from './data-access/ai.models';
 import { AiUsagePage } from './ai-usage-page';
 import { testProviders } from '@testing/setup';
@@ -88,6 +88,38 @@ describe('AiUsagePage', () => {
     expect(text).toContain('(без лимита)');
     expect(text).toContain('Запросов в этом месяце не было');
     expect(hostElement(fixture).querySelector('p-progressbar')).toBeNull();
+  });
+
+  it('adds older requests by «Показать ещё»', async () => {
+    const report = usageReport({ moreRecent: true });
+    expect(await render(aiStatus(), report)).toContain('Показать ещё');
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    const older = report.recent[0];
+    if (older === undefined) {
+      throw new Error('a request is expected');
+    }
+    backend
+      .expectOne('/api/teacher/ai/requests?month=2026-09&offset=2')
+      .flush({ items: [{ ...older, model: 'claude-old' }], hasMore: false });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(readableText(hostElement(fixture))).not.toContain('Показать ещё');
+  });
+
+  it('keeps «Показать ещё» when loading more fails', async () => {
+    await render(aiStatus(), usageReport({ moreRecent: true }));
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    backend
+      .expectOne('/api/teacher/ai/requests?month=2026-09&offset=2')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(readableText(hostElement(fixture))).toContain('Показать ещё');
   });
 
   it('caps the progress bar at 100%', async () => {

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.ai.application.AiAssistant;
 import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
+import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
@@ -136,5 +138,17 @@ class TeacherAiController {
     @GetMapping("/usage")
     UsageReport usage(@RequestParam(required = false) @Nullable YearMonth month) {
         return usage.report(month);
+    }
+
+    /**
+     * The request log of a month by pages of 10.
+     *
+     * @param month  {@code yyyy-MM}, the current month by default
+     * @param offset how many newer requests are already shown
+     */
+    @GetMapping("/requests")
+    RequestPage requests(@RequestParam(required = false) @Nullable YearMonth month,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int offset) {
+        return usage.requests(month, offset);
     }
 }

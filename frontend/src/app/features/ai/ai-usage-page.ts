@@ -7,6 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { TableModule } from 'primeng/table';
@@ -55,6 +56,7 @@ const STATUS_LABELS: Record<
     HelpButton,
     DatePipe,
     DecimalPipe,
+    Button,
     Card,
     ProgressBar,
     TableModule,
@@ -116,10 +118,10 @@ const STATUS_LABELS: Record<
               </ul>
             </p-card>
             <p-card [header]="t.recent">
-              @if (report.recent.length === 0) {
+              @if (recent().length === 0) {
                 <tb-empty-state [compact]="true" icon="pi-sparkles" [title]="t.noRequests" />
               } @else {
-                <p-table [value]="report.recent" styleClass="tb-cards">
+                <p-table [value]="recent()" styleClass="tb-cards">
                   <ng-template #header>
                     <tr>
                       <th>{{ t.when }}</th>
@@ -129,7 +131,7 @@ const STATUS_LABELS: Record<
                       <th>{{ t.time }}</th>
                     </tr>
                   </ng-template>
-                  <ng-template #body [tbRowType]="report.recent" let-row>
+                  <ng-template #body [tbRowType]="recent()" let-row>
                     <tr>
                       <td [attr.data-label]="t.when">
                         {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}
@@ -153,6 +155,14 @@ const STATUS_LABELS: Record<
                     </tr>
                   </ng-template>
                 </p-table>
+                @if (moreRecent()) {
+                  <p-button
+                    [label]="t.showMore"
+                    [text]="true"
+                    [loading]="loadingMore()"
+                    (onClick)="showMore(report.month)"
+                  />
+                }
               }
             </p-card>
           }
@@ -182,6 +192,10 @@ export class AiUsagePage implements OnInit {
   protected readonly monthName = monthLabel;
   protected readonly status = signal<AiStatus | null>(null);
   protected readonly report = signal<UsageReport | null>(null);
+  /** Requests shown in the log: the first page of the report and those added by «Показать ещё». */
+  protected readonly recent = signal<AiRequestLog[]>([]);
+  protected readonly moreRecent = signal(false);
+  protected readonly loadingMore = signal(false);
   protected readonly percent = computed(() => {
     const report = this.report();
     if (report === null || report.monthlyTokenLimit === 0) {
@@ -196,8 +210,27 @@ export class AiUsagePage implements OnInit {
       if (status.enabled) {
         this.api.usage().subscribe((report) => {
           this.report.set(report);
+          this.recent.set(report.recent);
+          this.moreRecent.set(report.moreRecent);
         });
       }
+    });
+  }
+
+  protected showMore(month: string): void {
+    if (this.loadingMore()) {
+      return;
+    }
+    this.loadingMore.set(true);
+    this.api.requests(month, this.recent().length).subscribe({
+      next: (page) => {
+        this.loadingMore.set(false);
+        this.recent.update((recent) => [...recent, ...page.items]);
+        this.moreRecent.set(page.hasMore);
+      },
+      error: () => {
+        this.loadingMore.set(false);
+      },
     });
   }
 

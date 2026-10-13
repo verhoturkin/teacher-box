@@ -7,6 +7,7 @@ import {
   HomeworkBrief,
   HomeworkDraft,
   PromptInput,
+  RequestPage,
   ReviewBrief,
   ReviewDraft,
   SavedPrompt,
@@ -81,5 +82,16 @@ export class AiApi {
   usage(month?: string): Observable<UsageReport> {
     const params = month === undefined ? new HttpParams() : new HttpParams().set('month', month);
     return this.http.get<UsageReport>('/api/teacher/ai/usage', { params });
+  }
+
+  /**
+   * The requests of a month older than those already shown, by 10.
+   *
+   * @param month `yyyy-MM`
+   * @param offset how many newer requests are already shown
+   */
+  requests(month: string, offset: number): Observable<RequestPage> {
+    const params = new HttpParams().set('month', month).set('offset', offset);
+    return this.http.get<RequestPage>('/api/teacher/ai/requests', { params });
   }
 }

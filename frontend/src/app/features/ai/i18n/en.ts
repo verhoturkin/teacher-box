@@ -28,6 +28,7 @@ export const en: Translation<typeof ru> = {
     tokenCount: (count: number) => countOf(count, 'token', 'tokens', 'tokens'),
     recent: 'Recent requests',
     noRequests: 'No requests this month',
+    showMore: 'Show more',
     when: 'When',
     what: 'What',
     result: 'Result',

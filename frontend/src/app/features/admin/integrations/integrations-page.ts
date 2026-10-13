@@ -9,7 +9,7 @@ import { Tag } from 'primeng/tag';
 import { describeError } from '@core/http/error-messages';
 import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
-import { AiStatus, AiUsage, IntegrationStatus } from '../data-access/admin.models';
+import { AiRequest, AiStatus, AiUsage, IntegrationStatus } from '../data-access/admin.models';
 import { INTEGRATION_TAGS } from '../admin-labels';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
@@ -92,10 +92,10 @@ import { T } from '../i18n/texts';
             }
           }
           @if (usage(); as usage) {
-            @if (usage.recent.length === 0) {
+            @if (recent().length === 0) {
               <tb-empty-state icon="pi-sparkles" [title]="t.noRequests" />
             } @else {
-              <p-table [value]="usage.recent" styleClass="tb-cards">
+              <p-table [value]="recent()" styleClass="tb-cards">
                 <ng-template #header>
                   <tr>
                     <th>{{ t.when }}</th>
@@ -105,7 +105,7 @@ import { T } from '../i18n/texts';
                     <th>{{ t.time }}</th>
                   </tr>
                 </ng-template>
-                <ng-template #body let-request [tbRowType]="usage.recent">
+                <ng-template #body let-request [tbRowType]="recent()">
                   <tr>
                     <td [attr.data-label]="t.when">
                       {{ request.createdAt | date: 'dd.MM HH:mm' }}
@@ -129,6 +129,14 @@ import { T } from '../i18n/texts';
                   </tr>
                 </ng-template>
               </p-table>
+              @if (moreRecent()) {
+                <p-button
+                  [label]="t.showMore"
+                  [text]="true"
+                  [loading]="loadingMore()"
+                  (onClick)="showMore(usage.month)"
+                />
+              }
             }
           }
         </tb-load-state>
@@ -202,6 +210,10 @@ export class IntegrationsPage implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly ai = signal<AiStatus | null>(null);
   protected readonly usage = signal<AiUsage | null>(null);
+  /** Requests shown in the log: the first page and those added by «Показать ещё». */
+  protected readonly recent = signal<AiRequest[]>([]);
+  protected readonly moreRecent = signal(false);
+  protected readonly loadingMore = signal(false);
 
   protected readonly aiState = new LoadState();
 
@@ -216,7 +228,26 @@ export class IntegrationsPage implements OnInit {
       .subscribe(({ status, usage }) => {
         this.ai.set(status);
         this.usage.set(usage);
+        this.recent.set(usage.recent);
+        this.moreRecent.set(usage.moreRecent);
       });
+  }
+
+  protected showMore(month: string): void {
+    if (this.loadingMore()) {
+      return;
+    }
+    this.loadingMore.set(true);
+    this.api.aiRequests(month, this.recent().length).subscribe({
+      next: (page) => {
+        this.loadingMore.set(false);
+        this.recent.update((recent) => [...recent, ...page.items]);
+        this.moreRecent.set(page.hasMore);
+      },
+      error: () => {
+        this.loadingMore.set(false);
+      },
+    });
   }
 
   check(): void {

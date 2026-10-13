@@ -89,6 +89,7 @@ export const en: Translation<typeof ru> = {
     ofLimit: (limit: string) => `of ${limit}`,
     aiOff: 'The AI assistant is not set up (TEACHERBOX_AI_PROVIDER).',
     noRequests: 'No requests this month',
+    showMore: 'Show more',
     when: 'When',
     what: 'What',
     result: 'Result',

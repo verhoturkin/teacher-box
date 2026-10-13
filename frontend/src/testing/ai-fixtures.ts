@@ -43,6 +43,7 @@ export function usageReport(overrides: Partial<UsageReport> = {}): UsageReport {
         createdAt: '2026-09-24T09:00:00Z',
       },
     ],
+    moreRecent: false,
     ...overrides,
   };
 }

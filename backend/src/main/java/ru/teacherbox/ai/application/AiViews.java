@@ -81,14 +81,25 @@ public final class AiViews {
     /**
      * Usage in a calendar month (instance time zone).
      *
-     * @param month {@code yyyy-MM}
+     * @param month      {@code yyyy-MM}
+     * @param recent     the newest requests of the month, the first page
+     * @param moreRecent whether the month has older requests than {@code recent}
      */
     public record UsageReport(
             String month,
             long usedTokens,
             long monthlyTokenLimit,
             List<FeatureUsage> features,
-            List<RequestView> recent) {
+            List<RequestView> recent,
+            boolean moreRecent) {
+    }
+
+    /** A page of the request log, newest first. */
+    public record RequestPage(List<RequestView> items, boolean hasMore) {
+
+        public RequestPage {
+            items = List.copyOf(items);
+        }
     }
 
     /** A prompt of the library. */

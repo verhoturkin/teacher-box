@@ -76,6 +76,7 @@ describe('AiApi', () => {
     api.reviewDraft({ title: 'Дроби', description: null, answer: '2/5' }).subscribe();
     api.usage().subscribe();
     api.usage('2026-08').subscribe();
+    api.requests('2026-08', 10).subscribe();
 
     backend.expectOne('/api/teacher/ai/status');
     const draft = backend.expectOne('/api/teacher/ai/homework-draft');
@@ -99,5 +100,6 @@ describe('AiApi', () => {
     });
     backend.expectOne('/api/teacher/ai/usage');
     backend.expectOne('/api/teacher/ai/usage?month=2026-08');
+    backend.expectOne('/api/teacher/ai/requests?month=2026-08&offset=10');
   });
 });
