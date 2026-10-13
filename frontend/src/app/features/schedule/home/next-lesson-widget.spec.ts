@@ -2,6 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import {
+  at,
   changeRequest,
   groupLesson,
   myScheduleSummary,
@@ -15,6 +16,11 @@ import { testProviders } from '@testing/setup';
 describe('NextLessonWidget', () => {
   let fixture: ComponentFixture<NextLessonWidget>;
   let backend: HttpTestingController;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.setSystemTime(new Date(at(2026, 10, 1, 12)));
+  });
 
   async function render(summary: MyScheduleSummary): Promise<void> {
     TestBed.configureTestingModule({
@@ -32,6 +38,7 @@ describe('NextLessonWidget', () => {
   afterEach(() => {
     fixture.destroy();
     backend.verify();
+    vi.useRealTimers();
   });
 
   it('says when nothing is planned', async () => {
@@ -50,7 +57,8 @@ describe('NextLessonWidget', () => {
       }),
     );
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('18:00–19:00 Дроби');
+    expect(text).toContain('Сегодня 18:00 60 мин Дроби');
+    expect(text).not.toContain('Расписание');
     expect(text).toContain('Войти в урок');
     expect(
       hostElement(fixture).querySelector('tb-join-lesson-button a')?.getAttribute('href'),
@@ -86,12 +94,10 @@ describe('NextLessonWidget', () => {
   });
 
   it('lets a group member say they will not come', async () => {
-    // days ahead: not a late warning, whatever today is
-    const start = new Date(Date.now() + 3 * 86_400_000);
-    const end = new Date(start.getTime() + 90 * 60_000);
+    // days ahead: not a late warning
     await render(
       myScheduleSummary({
-        next: groupLesson({ startsAt: start.toISOString(), endsAt: end.toISOString() }),
+        next: groupLesson({ startsAt: at(2026, 10, 4, 18), endsAt: at(2026, 10, 4, 19, 30) }),
       }),
     );
 
@@ -103,5 +109,28 @@ describe('NextLessonWidget', () => {
     expect(bodyText()).toContain('Не приду на занятие');
     expect(bodyText()).toContain('пройдёт без вас');
     expect(bodyText()).toContain('Предупредить учителя');
+  });
+
+  it('offers only the lesson link while it runs and reloads when it ends', async () => {
+    await render(
+      myScheduleSummary({
+        next: scheduledLesson({ joinUrl: 'https://meet.example.com/1' }),
+      }),
+    );
+    const changed = vi.fn();
+    fixture.componentInstance.changed.subscribe(changed);
+
+    vi.setSystemTime(new Date(at(2026, 10, 1, 18, 5)));
+    vi.advanceTimersByTime(15_000);
+    fixture.detectChanges();
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Идёт сейчас 18:00 ещё 55 мин');
+    expect(text).toContain('Войти в урок');
+    expect(() => buttonByText(hostElement(fixture), 'Перенести')).toThrow();
+
+    vi.setSystemTime(new Date(at(2026, 10, 1, 19, 1)));
+    vi.advanceTimersByTime(15_000);
+    fixture.detectChanges();
+    expect(changed).toHaveBeenCalledTimes(1);
   });
 });

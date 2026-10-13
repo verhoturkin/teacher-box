@@ -53,7 +53,7 @@ import { T } from './i18n/texts';
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
       }
       @if (schedule()?.next; as next) {
-        <tb-upcoming-lesson-widget [lesson]="next" />
+        <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
       }
       <tb-first-run-checklist [progress]="progress()" />
       @if (schedule(); as schedule) {

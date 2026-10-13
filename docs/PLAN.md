@@ -17,6 +17,25 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.15.0
+
+The nearest lesson on the home page (teacher's «Следующее занятие», student's «Ближайшее занятие») is redesigned as a
+calendar event: a time tile on the left (day, start time, duration or countdown), who and the topic next to it, the
+boards, one filled button. While the lesson runs the tile says «Идёт сейчас» and how much is left; when it
+ends the home page reloads the summary. No «Расписание» link in the card.
+
+### 188. Nearest lesson as a calendar event (F)
+
+- [x] 188.1 **F** `schedule/home/lesson-clock.ts` (phase, day caption, countdown; ticks, reports the end),
+  `schedule/ui/lesson-time-tile.ts`; `schedule/home/upcoming-lesson-widget.ts` and `next-lesson-widget.ts` on them,
+  without the «Расписание» link; `home/teacher-home.ts` reloads on `(over)`, the student's widget emits `changed`. Docs:
+  design-system §5, glossary, help articles `teacher/first-steps`, student home.
+
+### 189. Release 0.15.0
+
+- [ ] 189.1 Skill `release`: help articles, E2E spec (`version-0-15-0`, replaces `version-0-14-7`), CHANGELOG, version,
+  plan archiving.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

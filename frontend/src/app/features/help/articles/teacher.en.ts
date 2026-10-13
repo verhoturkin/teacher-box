@@ -23,7 +23,7 @@ The home page has the «Getting started» list — only the steps not done yet s
 ## Home page
 
 - **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page.
-- **Next lesson** — when and with whom, the «Start lesson» button and the boards of the student or the group.
+- **Next lesson** — a tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs). When the lesson ends, the card shows the next one by itself.
 - **Today** — today's lessons; past ones can be marked at once.
 - **Needs attention** — unmarked lessons, work to review, students' requests and failed deliveries of notifications.
 - **Finance** — income of the month and students' debts.

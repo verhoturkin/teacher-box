@@ -1,84 +1,107 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { Card } from 'primeng/card';
 import { BoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ScheduledLesson } from '../data-access/schedule.models';
-import { formatLessonTime, lessonWith } from '../schedule-labels';
+import { lessonWith } from '../schedule-labels';
+import { LessonTimeTile } from '../ui/lesson-time-tile';
+import { injectLessonClock } from './lesson-clock';
 import { T } from '../i18n/texts';
 
-/** Teacher's home, on top: the nearest lesson with «Начать урок» and the boards of the student or group. */
+/**
+ * Teacher's home, on top: the nearest lesson as a calendar event — the time tile, who and the topic,
+ * the boards of the student or group, «Начать урок» («Войти в урок» while it runs).
+ */
 @Component({
   selector: 'tb-upcoming-lesson-widget',
-  imports: [RouterLink, Card, Avatar, JoinLessonButton, BoardLinks],
+  imports: [Card, Avatar, JoinLessonButton, BoardLinks, LessonTimeTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title" styleClass="tb-upcoming tb-hero">
+    <p-card [header]="t.title" styleClass="tb-hero">
       @let next = lesson();
-      <div class="tb-upcoming__body">
-        <div class="tb-upcoming__info">
-          <span class="tb-upcoming__time">{{ time() }}</span>
-          <div class="tb-upcoming__who">
+      <div class="tb-lesson-event">
+        @if (time(); as time) {
+          <tb-lesson-time-tile [time]="time" />
+        }
+        <div class="tb-lesson-event__info">
+          <div class="tb-lesson-event__who">
             <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" />
-            <strong>{{ with(next) }}</strong>
+            <div class="tb-lesson-event__text">
+              <strong>{{ with(next) }}</strong>
+              @if (next.topic !== null) {
+                <span class="tb-muted">{{ next.topic }}</span>
+              }
+            </div>
           </div>
-          @if (next.topic !== null) {
-            <span class="tb-muted">{{ next.topic }}</span>
-          }
           <tb-board-links
             [studentId]="next.groupId === null ? next.studentId : null"
             [groupId]="next.groupId"
           />
         </div>
-        <div class="tb-actions">
-          @if (next.joinUrl; as url) {
-            <tb-join-lesson-button [url]="url" [label]="t.start" [teacher]="true" />
-          }
-          <a routerLink="/teacher/schedule">{{ t.schedule }}</a>
-        </div>
+        @if (next.joinUrl; as url) {
+          <div class="tb-lesson-event__actions">
+            <tb-join-lesson-button [url]="url" [label]="joinLabel()" [teacher]="true" />
+          </div>
+        }
       </div>
     </p-card>
   `,
   styles: `
-    .tb-upcoming__body {
-      display: flex;
-      flex-wrap: wrap;
+    .tb-lesson-event {
+      container-type: inline-size;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
       gap: var(--tb-space-4);
     }
 
-    .tb-upcoming__info {
+    .tb-lesson-event__info {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-1);
+      gap: var(--tb-space-2);
     }
 
-    .tb-upcoming__who {
+    .tb-lesson-event__who {
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
-      min-width: 0;
       overflow-wrap: anywhere;
     }
 
-    .tb-upcoming__time {
-      font: var(--tb-type-headline-s);
+    .tb-lesson-event__text {
+      display: flex;
+      flex-direction: column;
     }
 
-    .tb-actions {
-      align-items: center;
-      gap: var(--tb-space-4);
+    tb-lesson-time-tile {
+      align-self: stretch;
+    }
+
+    /* a phone: the button goes under the tile and the text, across the width */
+    @container (max-width: 30rem) {
+      .tb-lesson-event__actions {
+        grid-column: 1 / -1;
+        display: grid;
+      }
+
+      tb-join-lesson-button {
+        display: grid;
+      }
     }
   `,
 })
 export class UpcomingLessonWidget {
   protected readonly t = T.upcoming;
   readonly lesson = input.required<ScheduledLesson>();
+  /** The lesson is over: the home page loads the next one. */
+  readonly over = output();
 
   protected readonly with = lessonWith;
-  protected readonly time = computed(() =>
-    formatLessonTime(this.lesson().startsAt, this.lesson().endsAt),
+  protected readonly time = injectLessonClock(this.lesson, () => {
+    this.over.emit();
+  });
+  protected readonly joinLabel = computed(() =>
+    this.time()?.phase === 'live' ? T.upcoming.join : T.upcoming.start,
   );
 }

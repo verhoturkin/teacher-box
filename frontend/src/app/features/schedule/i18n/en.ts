@@ -63,13 +63,20 @@ export const en: Translation<typeof ru> = {
       `${kind}: the request is sent, waiting for the teacher’s answer.`,
     nothing: 'No upcoming lessons',
     week: (count: number) => `Lessons this week: ${String(count)}`,
-    schedule: 'Schedule',
     sent: 'The teacher will get your request',
+  },
+  clock: {
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+    live: 'Now',
+    in: (minutes: number) => `in ${String(minutes)} min`,
+    left: (minutes: number) => `${String(minutes)} min left`,
+    duration: (minutes: number) => `${String(minutes)} min`,
   },
   upcoming: {
     title: 'Next lesson',
     start: 'Start lesson',
-    schedule: 'Schedule',
+    join: 'Join lesson',
   },
   today: {
     title: 'Today',

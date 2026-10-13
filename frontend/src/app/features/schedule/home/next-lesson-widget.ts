@@ -2,12 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  computed,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { injectMobile } from '@core/layout/mobile';
 import { Card } from 'primeng/card';
 import { LessonActions } from '../ui/lesson-actions';
@@ -18,48 +18,56 @@ import {
   ScheduleSettings,
   ScheduledLesson,
 } from '../data-access/schedule.models';
-import { formatLessonTime, lessonWith, requestKindLabel } from '../schedule-labels';
+import { lessonWith, requestKindLabel } from '../schedule-labels';
+import { LessonTimeTile } from '../ui/lesson-time-tile';
+import { injectLessonClock } from './lesson-clock';
 import { ChangeRequestDialog } from '../student/change-request-dialog';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EmptyState } from '@shared/ui/empty-state';
 import { T } from '../i18n/texts';
 
-/** Student's home: the nearest lesson with the lesson link and a request to move or cancel it. */
+/**
+ * Student's home: the nearest lesson as a calendar event — the time tile, the group and the topic — with
+ * the lesson link and a request to move or cancel it (not while it runs).
+ */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [EmptyState, RouterLink, Card, ChangeRequestDialog, LessonActions],
+  imports: [EmptyState, Card, ChangeRequestDialog, LessonActions, LessonTimeTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title" styleClass="tb-hero">
       @if (summary().next; as lesson) {
-        <div class="tb-next">
-          <span class="tb-next__time">{{ time(lesson) }}</span>
-          @if (lesson.groupId !== null) {
-            <span>{{ with(lesson) }}</span>
+        <div class="tb-lesson-event">
+          @if (time(); as time) {
+            <tb-lesson-time-tile [time]="time" />
           }
-          @if (lesson.topic !== null) {
-            <span>{{ lesson.topic }}</span>
-          }
-          @if (lesson.pendingRequests[0]; as request) {
-            <small class="tb-muted">{{ t.requestSent(kind(request)) }}</small>
-          }
-          <div class="tb-actions">
-            <tb-lesson-actions
-              [joinUrl]="lesson.joinUrl"
-              [requests]="lesson.pendingRequests.length === 0"
-              [group]="lesson.groupId !== null"
-              [stacked]="mobile()"
-              rescheduleIcon="pi pi-calendar"
-              (ask)="ask(lesson, $event)"
-            />
+          <div class="tb-lesson-event__info">
+            @if (lesson.groupId !== null) {
+              <strong>{{ with(lesson) }}</strong>
+            }
+            @if (lesson.topic !== null) {
+              <span>{{ lesson.topic }}</span>
+            }
+            @if (lesson.pendingRequests[0]; as request) {
+              <small class="tb-muted">{{ t.requestSent(kind(request)) }}</small>
+            }
           </div>
+        </div>
+        <div class="tb-actions">
+          <tb-lesson-actions
+            [joinUrl]="lesson.joinUrl"
+            [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
+            [group]="lesson.groupId !== null"
+            [stacked]="mobile()"
+            rescheduleIcon="pi pi-calendar"
+            (ask)="ask(lesson, $event)"
+          />
         </div>
       } @else {
         <tb-empty-state [compact]="true" icon="pi-calendar" [title]="t.nothing" />
       }
       <div class="tb-widget-footer">
         <span class="tb-muted">{{ t.week(summary().weekLessons) }}</span>
-        <a routerLink="/cabinet/schedule">{{ t.schedule }}</a>
       </div>
     </p-card>
 
@@ -72,14 +80,26 @@ import { T } from '../i18n/texts';
     />
   `,
   styles: `
-    .tb-next {
+    .tb-lesson-event {
       display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
+      align-items: center;
+      gap: var(--tb-space-4);
     }
 
-    .tb-next__time {
-      font: var(--tb-type-headline-s);
+    .tb-lesson-event__info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-1);
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    tb-lesson-time-tile {
+      align-self: stretch;
+    }
+
+    .tb-actions {
+      margin-top: var(--tb-space-4);
     }
   `,
 })
@@ -90,7 +110,7 @@ export class NextLessonWidget implements OnInit {
   private readonly api = inject(ScheduleApi);
 
   readonly summary = input.required<MyScheduleSummary>();
-  /** A request was sent. */
+  /** A request was sent, or the lesson is over: the home page reloads the summary. */
   readonly changed = output();
 
   protected readonly kind = requestKindLabel;
@@ -98,6 +118,12 @@ export class NextLessonWidget implements OnInit {
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly requestVisible = signal(false);
   protected readonly requestKind = signal<ChangeKind>('RESCHEDULE');
+  protected readonly time = injectLessonClock(
+    computed(() => this.summary().next),
+    () => {
+      this.changed.emit();
+    },
+  );
 
   protected onSent(): void {
     this.snackbar.success(T.next.sent);
@@ -108,10 +134,6 @@ export class NextLessonWidget implements OnInit {
     this.api.settings().subscribe((settings) => {
       this.settings.set(settings);
     });
-  }
-
-  protected time(lesson: ScheduledLesson): string {
-    return formatLessonTime(lesson.startsAt, lesson.endsAt);
   }
 
   ask(lesson: ScheduledLesson, kind: ChangeKind): void {

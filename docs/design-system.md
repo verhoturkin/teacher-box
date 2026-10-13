@@ -148,6 +148,13 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
+- **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
+  calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
+  «Завтра» / «чт, 16.10», the start in Headline S, the length; within an hour «через N мин»; while it runs «Идёт
+  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards, one filled button
+  («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width). The student's request
+  buttons go under the event and are hidden while the lesson runs. No «Расписание» link: the schedule is in the
+  navigation. When the lesson ends the widget asks the home page to reload the summary.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action

@@ -5,7 +5,12 @@ import { aMyBoard } from '@testing/boards-fixtures';
 import { myBillingSummary } from '@testing/billing-fixtures';
 import { myHomeworkSummary, myTask } from '@testing/homework-fixtures';
 import { channel, notificationPage } from '@testing/notification-fixtures';
-import { myScheduleSummary, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
+import {
+  at,
+  myScheduleSummary,
+  scheduleSettings,
+  scheduledLesson,
+} from '@testing/schedule-fixtures';
 import { StudentHome } from './student-home';
 import { testProviders } from '@testing/setup';
 
@@ -14,6 +19,9 @@ describe('StudentHome', () => {
   let backend: HttpTestingController;
 
   beforeEach(() => {
+    // before the lessons of the fixtures: the nearest lesson is not over
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.setSystemTime(new Date(at(2026, 10, 1, 12)));
     TestBed.configureTestingModule({
       imports: [StudentHome],
       providers: testProviders(),
@@ -26,6 +34,7 @@ describe('StudentHome', () => {
     fixture.destroy();
     backend.verify();
     localStorage.clear();
+    vi.useRealTimers();
   });
 
   it('collects the widgets of the modules', async () => {

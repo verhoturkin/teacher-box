@@ -1216,12 +1216,13 @@ a.p-menu-item-link:hover {
   /* the container is the portal color itself (ADR-0034): only its own text role is readable on it */
   .tb-muted,
   .tb-hint,
-  a,
+  a:not(.p-button),
   .p-button-text {
     color: var(--p-md-on-primary-container);
   }
 
-  a {
+  /* links, not the buttons that are links («Начать урок» on the phone) */
+  a:not(.p-button) {
     text-decoration: underline;
   }
 }
