@@ -14,7 +14,7 @@ export const STUDENT_MENU: MenuItem[] = [
   { label: CORE_T.nav.homework, icon: 'pi pi-pen-to-square', routerLink: '/cabinet/homework' },
   { label: CORE_T.nav.textbooks, icon: 'pi pi-book', routerLink: '/cabinet/textbooks' },
   { label: CORE_T.nav.billing, icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
-  { label: CORE_T.nav.myBoards, icon: 'pi pi-th-large', routerLink: '/cabinet/boards' },
+  { label: CORE_T.nav.myBoards, icon: 'pi pi-tb-board', routerLink: '/cabinet/boards' },
 ];
 
 /** The sections that lead the bottom bar on a phone. */

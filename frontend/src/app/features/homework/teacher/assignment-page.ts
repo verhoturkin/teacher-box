@@ -86,7 +86,7 @@ import { T } from '../i18n/texts';
         }
         <p-button
           [label]="t.toBoard"
-          icon="pi pi-th-large"
+          icon="pi pi-tb-board"
           severity="secondary"
           [disabled]="!hasBoardMaterial()"
           (onClick)="boardVisible.set(true)"

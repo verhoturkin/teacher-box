@@ -63,7 +63,7 @@ describe('HomeworkAiPanel', () => {
     expect(readableText(host)).not.toContain('Перевод');
     await open(host, 'Промты');
     expect(bodyText()).toContain('Тест на 10 вопросов');
-    const search = requireElement(document.body, '.tb-ai-panel__search', HTMLInputElement);
+    const search = requireElement(document.body, '.tb-ai-panel__search input', HTMLInputElement);
     typeInto(search, ' переведи ');
     await fixture.whenStable();
     expect(bodyText()).not.toContain('Тест на 10 вопросов');

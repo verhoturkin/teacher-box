@@ -15,7 +15,7 @@ import { T } from '../i18n/texts';
       @for (board of boards(); track board.id) {
         <li>
           <span class="tb-list__lead" aria-hidden="true"
-            ><i [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-th-large' : 'pi pi-external-link'"></i
+            ><i [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"></i
           ></span>
           <div class="tb-list__text">
             @if (board.kind === 'EXCALIDRAW') {

@@ -82,7 +82,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
               <div class="tb-list__trail tb-list__trail--icons">
                 @if (textbook.format !== 'DOCUMENT') {
                   <p-button
-                    icon="pi pi-th-large"
+                    icon="pi pi-tb-board"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"

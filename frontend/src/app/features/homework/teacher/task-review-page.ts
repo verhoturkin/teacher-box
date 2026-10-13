@@ -129,7 +129,7 @@ import { T } from '../i18n/texts';
                 />
                 <p-button
                   [label]="t.toBoard"
-                  icon="pi pi-th-large"
+                  icon="pi pi-tb-board"
                   [text]="true"
                   [disabled]="commentValue().trim() === ''"
                   (onClick)="boardVisible.set(true)"

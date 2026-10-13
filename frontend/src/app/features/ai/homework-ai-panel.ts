@@ -13,6 +13,8 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
@@ -46,6 +48,8 @@ export interface AppliedDraft {
     ButtonIcon,
     ButtonLabel,
     Checkbox,
+    IconField,
+    InputIcon,
     InputText,
     Message,
     Popover,
@@ -122,16 +126,18 @@ export interface AppliedDraft {
             </div>
           } @else {
             @if (library().length > 0) {
-              <input
-                pInputText
-                type="search"
-                class="tb-ai-panel__search"
-                [placeholder]="t.search"
-                [attr.aria-label]="t.search"
-                autocomplete="off"
-                [ngModel]="query()"
-                (ngModelChange)="query.set($event)"
-              />
+              <p-iconfield class="tb-ai-panel__search">
+                <p-inputicon styleClass="pi pi-search" />
+                <input
+                  pInputText
+                  type="search"
+                  [placeholder]="t.search"
+                  [attr.aria-label]="t.search"
+                  autocomplete="off"
+                  [ngModel]="query()"
+                  (ngModelChange)="query.set($event)"
+                />
+              </p-iconfield>
               <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
                 @for (prompt of found(); track prompt.id) {
                   <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
@@ -283,7 +289,8 @@ export interface AppliedDraft {
       width: min(24rem, calc(100vw - 4rem));
     }
 
-    .tb-ai-panel__search {
+    .tb-ai-panel__search,
+    .tb-ai-panel__search input {
       width: 100%;
     }
 

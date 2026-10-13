@@ -55,7 +55,7 @@ export interface Placed {
       @if (loaded() && sorted().length === 0) {
         <tb-empty-state
           [compact]="true"
-          icon="pi-th-large"
+          icon="pi-tb-board"
           [title]="emptyTitle()"
           [hint]="emptyHint()"
         />
@@ -119,7 +119,7 @@ export interface Placed {
         @if (pages(); as material) {
           <p-button
             [label]="t.title"
-            icon="pi pi-th-large"
+            icon="pi pi-tb-board"
             [disabled]="chosenBoard() === null || material.pictures.length === 0"
             (onClick)="placePages(material)"
           />

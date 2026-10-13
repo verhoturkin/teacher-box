@@ -7,7 +7,8 @@ a rule updates this page in the same commit, and a new decision also gets an ADR
 
 Where it lives: preset `core/theme/teacher-box-preset.ts`, colour scheme `core/theme/color-scheme.ts`,
 tokens and shared classes `src/styles.scss`, components `shared/ui/*`, breakpoints `core/layout/mobile.ts`.
-No other UI kits (Angular Material, Material Web), no Material Symbols: icons are `primeicons` 7.
+No other UI kits (Angular Material, Material Web), no Material Symbols: icons are `primeicons` 7; the one icon it lacks —
+boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MIT) — is used like a PrimeIcons class.
 
 ## 1. Tokens
 
@@ -264,7 +265,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     students of an assignment (avatar; name link to the task + «Сдано … / Не сдано»; status; «Добавить» at the top
     right of the card — `tb-card-title__actions` — opens «Выдать ещё ученикам»), the review queue (avatar; name link +
     «задание · сдано · срок»), files of assignments and answers (type icon; name button that downloads + size; the
-    red «×» of the textbooks). «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-th-large`.
+    red «×» of the textbooks). «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-tb-board`.
 - Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
   «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
   history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —

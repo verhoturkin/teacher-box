@@ -100,7 +100,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         <p-button
           severity="secondary"
           [label]="isNew() ? t.assignToBoard : t.saveToBoard"
-          icon="pi pi-th-large"
+          icon="pi pi-tb-board"
           [disabled]="isNew() && chosenStudents().length === 0"
           [loading]="pending() && toBoard()"
           (onClick)="save(true)"
