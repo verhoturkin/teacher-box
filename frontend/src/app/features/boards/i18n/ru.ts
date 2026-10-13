@@ -48,11 +48,6 @@ export const ru = {
   myBoardButton: {
     open: 'Перейти на доску',
   },
-  myCard: {
-    title: 'Мои доски',
-    what: 'доски',
-    all: (count: number) => `Все доски (${String(count)})`,
-  },
   myPage: {
     title: 'Мои доски',
     list: 'Список досок',

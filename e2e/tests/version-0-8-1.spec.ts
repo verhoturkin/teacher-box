@@ -14,6 +14,7 @@ test.describe.configure({ mode: 'serial' });
 
 let login = '';
 let password = '';
+let studentId = '';
 
 async function bearer(request: APIRequestContext): Promise<Record<string, string>> {
   const response = await request.post('/api/auth/login', {
@@ -46,7 +47,11 @@ test.beforeAll(async ({ request }) => {
     data: { displayName: STUDENT, email: null, phone: null, note: null },
   });
   expect(created.ok()).toBe(true);
-  const { invite } = (await created.json()) as { invite: { token: string } };
+  const { student, invite } = (await created.json()) as {
+    student: { id: string };
+    invite: { token: string };
+  };
+  studentId = student.id;
   login = `link${RUN}`;
   password = `pass-${RUN}-link`;
   const accepted = await request.post(`/api/auth/invites/${invite.token}/accept`, {
@@ -70,10 +75,8 @@ test('the call window: movable own camera, settings menu and details', async ({ 
 
   const student = await (await browser.newContext()).newPage();
   await signIn(student, login, password);
-  await student
-    .locator('tb-my-calls-card')
-    .getByRole('button', { name: 'Войти в звонок: Урок' })
-    .click();
+  // 0.15.3: no call card on the student's home — the room's link opens the call
+  await student.goto(`/call/${studentId}`);
   await joinFromSheet(student, 'Урок');
 
   // one to one: the own camera floats in the bottom right corner and moves with the arrow keys

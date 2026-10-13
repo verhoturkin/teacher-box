@@ -50,11 +50,6 @@ export const en: Translation<typeof ru> = {
   myBoardButton: {
     open: 'Go to the board',
   },
-  myCard: {
-    title: 'My boards',
-    what: 'the boards',
-    all: (count: number) => `All boards (${String(count)})`,
-  },
   myPage: {
     title: 'My boards',
     list: 'List of boards',

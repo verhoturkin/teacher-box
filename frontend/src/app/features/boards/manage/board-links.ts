@@ -27,7 +27,7 @@ import { T } from '../i18n/texts';
     @if (boards().length > 0) {
       <div
         class="tb-board-links"
-        [class.tb-board-links--chips]="chips()"
+        [class.tb-board-chips]="chips()"
         role="group"
         [attr.aria-label]="t.group"
       >
@@ -49,34 +49,12 @@ import { T } from '../i18n/texts';
     }
   `,
   styles: `
-    .tb-board-links {
+    /* the chips take their gap from styles.scss */
+    .tb-board-links:not(.tb-board-chips) {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-1) var(--tb-space-3);
-    }
-
-    .tb-board-links--chips {
-      gap: var(--tb-space-2);
-    }
-
-    /* an M3 assist chip in the colour of the text around it (on the hero: on-primary-container) */
-    .tb-board-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--tb-space-2);
-      min-height: 2rem;
-      padding-inline: var(--tb-space-3);
-      border-radius: var(--tb-shape-sm);
-      background: color-mix(in srgb, currentColor 12%, transparent);
-      color: inherit;
-      font: var(--tb-type-label-l);
-      text-decoration: none;
-      overflow-wrap: anywhere;
-
-      &:hover {
-        background: color-mix(in srgb, currentColor 20%, transparent);
-      }
     }
   `,
 })

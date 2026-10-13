@@ -1,7 +1,6 @@
 import {
   ChannelType,
   MessengerConnection,
-  NotificationKind,
   NotificationTopic,
 } from './data-access/notifications.models';
 import { T } from './i18n/texts';
@@ -20,27 +19,6 @@ export const CHANNEL_HAS_START_LINK: Record<ChannelType, boolean> = {
   TELEGRAM: true,
   VK: false,
   MAX: true,
-};
-
-export const KIND_ICONS: Record<NotificationKind, string> = {
-  HOMEWORK_ASSIGNED: 'pi pi-pen-to-square',
-  HOMEWORK_SUBMITTED: 'pi pi-inbox',
-  HOMEWORK_REVIEWED: 'pi pi-check-circle',
-  HOMEWORK_DUE_SOON: 'pi pi-calendar-clock',
-  LESSON_RECORDED: 'pi pi-calendar',
-  LESSON_CANCELLED: 'pi pi-calendar-times',
-  PAYMENT_RECORDED: 'pi pi-wallet',
-  PAYMENT_VOIDED: 'pi pi-wallet',
-  SCHEDULE_LESSON_PLANNED: 'pi pi-calendar-plus',
-  SCHEDULE_LESSON_MOVED: 'pi pi-calendar',
-  SCHEDULE_LESSON_CANCELLED: 'pi pi-calendar-times',
-  SCHEDULE_REMINDER: 'pi pi-clock',
-  SCHEDULE_REQUEST: 'pi pi-question-circle',
-  SCHEDULE_REQUEST_ANSWERED: 'pi pi-comments',
-  SCHEDULE_CALENDAR: 'pi pi-google',
-  MEETING_LINK: 'pi pi-video',
-  STUDENT_ACTIVATED: 'pi pi-user-plus',
-  MESSAGE: 'pi pi-envelope',
 };
 
 /** Topics a user can mute in messengers, in display order (`MESSAGES` from the teacher is always sent). */

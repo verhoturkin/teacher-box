@@ -24,8 +24,7 @@ The home page has the «Getting started» list — only the steps not done yet s
 
 - **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page. On a phone they are behind the «+» button at the bottom right.
 - **Next lesson** — the first card under the quick actions. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs). When the lesson ends, the card shows the next one by itself.
-- **Today** — today's lessons; past ones can be marked at once.
-- **Needs attention** — unmarked lessons, work to review, students' requests and failed deliveries of notifications.
+- **Needs attention** — unmarked lessons (mark them in «Schedule»), work to review, students' requests and failed deliveries of notifications.
 - **Finance** — income of the month and students' debts.
 
 What else to read: [Students and invitations](/teacher/help/students), [Schedule and requests](/teacher/help/schedule), [Payments](/teacher/help/billing).
@@ -417,7 +416,7 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     body: `
 Notifications are always in the bell at the top of the page. To get them in a messenger, connect a bot.
 
-New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there.
+New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone you can also mark a notification read with a swipe — slide it left or right.
 
 The «Notifications» section is made of cards. «Inbox» and «Messages to students» are always open, and the settings — «Messengers», «Students» and «What to send» — are folded: click a card's title to open or fold it.
 
@@ -552,7 +551,7 @@ The portal's name, the bell and the user menu are always at the top. A «?» nex
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
-The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Today», «Needs attention», «Notifications» and «Finance». Sections take the full width of the window, «Settings» and «My account» included. In the help the contents are on top and the article under them.
+The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window, «Settings» and «My account» included. In the help the contents are on top and the article under them.
 
 Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 

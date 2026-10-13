@@ -2,11 +2,11 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, swipeAside } from '@testing/dom';
 import { notification, notificationPage } from '@testing/notification-fixtures';
 import { NotificationItem } from '../data-access/notifications.models';
 import { LATEST_COUNT, LatestNotificationsWidget } from './latest-notifications-widget';
-import { testProviders } from '@testing/setup';
+import { phoneScreen, testProviders } from '@testing/setup';
 
 const URL = `/api/me/notifications?page=0&size=${String(LATEST_COUNT)}&read=false`;
 
@@ -14,10 +14,10 @@ describe('LatestNotificationsWidget', () => {
   let fixture: ComponentFixture<LatestNotificationsWidget>;
   let backend: HttpTestingController;
 
-  function create(): void {
+  function create(phone = false): void {
     TestBed.configureTestingModule({
       imports: [LatestNotificationsWidget],
-      providers: testProviders(),
+      providers: phone ? testProviders(phoneScreen()) : testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LatestNotificationsWidget);
@@ -25,8 +25,12 @@ describe('LatestNotificationsWidget', () => {
     fixture.detectChanges();
   }
 
-  async function render(items: NotificationItem[], total = items.length): Promise<void> {
-    create();
+  async function render(
+    items: NotificationItem[],
+    total = items.length,
+    phone = false,
+  ): Promise<void> {
+    create(phone);
     backend.expectOne(URL).flush({ ...notificationPage(items, total), unread: total });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -70,6 +74,27 @@ describe('LatestNotificationsWidget', () => {
     expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe(
       '/cabinet/notifications',
     );
+  });
+
+  it('shows no icons and marks a notification read by a swipe on a phone', async () => {
+    await render([notification(), notification({ id: 'n-2', title: 'Второе' })], 2, true);
+    expect(hostElement(fixture).querySelector('.tb-list__lead')).toBeNull();
+    const row = hostElement(fixture).querySelector('li.tb-swipe');
+    expect(row).not.toBeNull();
+
+    swipeAside(row);
+    backend.expectOne('/api/me/notifications/n-1/read').flush(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).not.toContain('Новое задание');
+    expect(readableText(hostElement(fixture))).toContain('Второе');
+  });
+
+  it('cannot be swiped on a computer', async () => {
+    await render([notification()]);
+
+    expect(hostElement(fixture).querySelector('li.tb-swipe')).toBeNull();
   });
 
   it('opens a notification and marks it read', async () => {

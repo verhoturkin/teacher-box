@@ -38,7 +38,7 @@ function upcomingStart(hours: number): string {
   return `${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`;
 }
 
-/** A lesson going on now: in «Сегодня» of the teacher (a few minutes after midnight: soon). */
+/** A lesson going on now (a few minutes after midnight: soon). */
 function ongoingStart(): string {
   const moscow = new Date().toLocaleTimeString('en-GB', { timeZone: 'Europe/Moscow' });
   const minutes = Number(moscow.slice(0, 2)) * 60 + Number(moscow.slice(3, 5));
@@ -149,7 +149,10 @@ test('«Начать урок» is a split button with the browser in its menu',
   const page = await context.newPage();
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
 
-  const row = page.locator('tb-today-lessons-widget li').filter({ hasText: name });
+  // 0.15.3: no «Сегодня» on the home page — the details of the lesson in the schedule have the button
+  await page.goto('/teacher/schedule');
+  await page.locator('.fc-event').filter({ hasText: name }).first().click();
+  const row = page.getByRole('dialog').filter({ hasText: name });
   const split = row.getByRole('group', { name: 'Начать урок' });
   await expect(split.getByRole('button', { name: 'Начать урок' })).toBeVisible();
   await expect(row.getByRole('link', { name: 'в браузере' })).toHaveCount(0);

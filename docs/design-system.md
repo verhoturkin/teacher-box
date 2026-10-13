@@ -157,8 +157,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
   calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
   «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
-  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`: no «Доски:» caption, assist chips in
-  the text colour at 12 %), one filled button
+  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`, the student's `tb-my-board-links` since
+  0.15.3: no «Доски:» caption, assist chips `tb-board-chip` in the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
   button too). The student's request
   buttons are at the end of the event (under it, across the width, on a narrow card) and are hidden while the lesson
@@ -278,6 +278,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     0.15.2: a list whose icon only decorates (tasks, boards, textbooks, calls, notifications, requests, lessons
     of the student, recurring lessons and days off, payments, AI requests and prompts) takes `tb-list--no-phone-lead`:
     on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
+    0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
+    unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
+    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll), the tick stays as the
+    single-pointer alternative (WCAG 2.5.1);
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;

@@ -2,11 +2,9 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { forkJoin } from 'rxjs';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
-import { MyBoardsCard } from '@features/boards/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
 import { HomeworkApi, MyDeadlinesWidget } from '@features/homework/parts';
 import type { MyHomeworkSummary } from '@features/homework/parts';
-import { MyCallsCard } from '@features/meetings/parts';
 import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
@@ -17,8 +15,8 @@ import { PageHeader } from '@shared/ui/page-header';
 import { T } from './i18n/texts';
 
 /**
- * Student personal area dashboard: the nearest lesson with its link on top, the built-in call rooms, then
- * the widgets of the modules one under another (ADR-0021): homework, balance, notifications, boards.
+ * Student personal area dashboard: the nearest lesson with its link and boards on top, then the widgets of
+ * the modules one under another (ADR-0021): homework, balance, notifications.
  */
 @Component({
   selector: 'tb-student-home',
@@ -27,8 +25,6 @@ import { T } from './i18n/texts';
     ConnectMessengerCard,
     LatestNotificationsWidget,
     MyBalanceWidget,
-    MyBoardsCard,
-    MyCallsCard,
     MyDeadlinesWidget,
     NextLessonWidget,
     StudentWelcomeCard,
@@ -48,7 +44,6 @@ import { T } from './i18n/texts';
       } @else {
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
       }
-      <tb-my-calls-card />
       <tb-student-welcome-card />
       <tb-connect-messenger-card />
       @if (homework(); as homework) {
@@ -58,7 +53,6 @@ import { T } from './i18n/texts';
         <tb-my-balance-widget [summary]="billing" />
       }
       <tb-latest-notifications-widget link="/cabinet/notifications" />
-      <tb-my-boards-card />
     </div>
   `,
 })

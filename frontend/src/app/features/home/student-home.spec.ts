@@ -51,9 +51,6 @@ describe('StudentHome', () => {
     backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/boards').flush([aMyBoard({ title: 'Доска по алгебре' })]);
-    backend
-      .expectOne('/api/me/meetings/calls')
-      .flush([{ ownerId: 's-1', ownerType: 'STUDENT', title: 'Урок', teacherPresent: true }]);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -63,7 +60,7 @@ describe('StudentHome', () => {
     expect(text).toContain('аванс 1 500 ₽');
     expect(text).toContain('Новых уведомлений нет');
     expect(text).toContain('Доска по алгебре');
-    expect(text).toContain('Учитель уже в звонке');
+    expect(text).not.toContain('Учитель уже в звонке');
     // one column (ADR-0021): the widgets one under another
     expect(
       Array.from(hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'), (widget) =>
@@ -71,13 +68,11 @@ describe('StudentHome', () => {
       ),
     ).toEqual([
       'tb-next-lesson-widget',
-      'tb-my-calls-card',
       'tb-student-welcome-card',
       'tb-connect-messenger-card',
       'tb-my-deadlines-widget',
       'tb-my-balance-widget',
       'tb-latest-notifications-widget',
-      'tb-my-boards-card',
     ]);
 
     fixture.componentInstance.loadSchedule();
@@ -97,8 +92,6 @@ describe('StudentHome', () => {
       .flush(null, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
     backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
-    backend.expectOne('/api/me/boards').flush([]);
-    backend.expectOne('/api/me/meetings/calls').flush([]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain(

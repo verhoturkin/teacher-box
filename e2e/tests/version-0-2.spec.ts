@@ -269,9 +269,12 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   const student = await (await browser.newContext()).newPage();
   await signIn(student, ANNA_LOGIN, ANNA_PASSWORD);
   await expect(student).toHaveURL(/\/cabinet$/);
-  await expect(
-    student.locator('tb-my-boards-card').getByRole('link', { name: /Алгебра/ }),
-  ).toHaveAttribute('href', 'https://app.holst.so/board/e2e');
+  // 0.15.3: the boards are in «Мои доски», not on the home page
+  await student.goto('/cabinet/boards');
+  await expect(student.getByRole('link', { name: /Алгебра/ })).toHaveAttribute(
+    'href',
+    'https://app.holst.so/board/e2e',
+  );
   await student
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Расписание' })

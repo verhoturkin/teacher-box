@@ -5,5 +5,5 @@
 export type { Board } from './data-access/boards.models';
 export { BoardLinks } from './manage/board-links';
 export { MyBoardButton } from './student/my-board-button';
-export { MyBoardsCard } from './student/my-boards-card';
+export { MyBoardLinks } from './student/my-board-links';
 export { ToBoardDialog, type Placed } from './to-board/to-board-dialog';

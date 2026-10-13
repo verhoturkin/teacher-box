@@ -77,7 +77,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
   confirmation step inside the dialog (no dialog on top).
 - `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — under «Ещё» on a
-  phone); `my-boards-card.ts` — the latest three on the student's home; `my-board-list.ts`.
+  phone); `my-board-list.ts`; `my-board-links.ts` — the boards of the student's nearest lesson as chips on the home
+  page (0.15.3, instead of the «Мои доски» card): of a group lesson those of the group, of an own lesson all of them.
 - `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog; chips in «Следующее занятие» on the home page).
 - `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and
   Excalidraw: `Excalidraw`, `MainMenu`, `reconcileElements`, `convertToExcalidrawElements`), `excalidraw-loader.ts`

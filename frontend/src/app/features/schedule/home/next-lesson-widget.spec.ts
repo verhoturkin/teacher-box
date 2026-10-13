@@ -9,6 +9,7 @@ import {
   scheduleSettings,
   scheduledLesson,
 } from '@testing/schedule-fixtures';
+import { aMyBoard } from '@testing/boards-fixtures';
 import { MyScheduleSummary } from '../data-access/schedule.models';
 import { NextLessonWidget } from './next-lesson-widget';
 import { testProviders } from '@testing/setup';
@@ -22,7 +23,10 @@ describe('NextLessonWidget', () => {
     vi.setSystemTime(new Date(at(2026, 10, 1, 12)));
   });
 
-  async function render(summary: MyScheduleSummary): Promise<void> {
+  async function render(
+    summary: MyScheduleSummary,
+    boards: readonly ReturnType<typeof aMyBoard>[] = [],
+  ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [NextLessonWidget],
       providers: testProviders(),
@@ -32,6 +36,10 @@ describe('NextLessonWidget', () => {
     fixture.componentRef.setInput('summary', summary);
     fixture.detectChanges();
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    if (summary.next !== null) {
+      backend.expectOne('/api/me/boards').flush(boards);
+      fixture.detectChanges();
+    }
     await fixture.whenStable();
   }
 
@@ -72,6 +80,40 @@ describe('NextLessonWidget', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(bodyText()).toContain('Перенести занятие');
+  });
+
+  it('shows the boards of an own lesson as chips, as on the card of the teacher', async () => {
+    await render(myScheduleSummary({ next: scheduledLesson() }), [
+      aMyBoard({ title: 'Алгебра' }),
+      aMyBoard({
+        id: 'board-2',
+        kind: 'LINK',
+        title: 'Холст',
+        url: 'https://app.holst.so/board/1',
+        groupNames: ['ОГЭ'],
+      }),
+    ]);
+
+    const chips = Array.from(
+      hostElement(fixture).querySelectorAll<HTMLAnchorElement>('a.tb-board-chip'),
+    );
+    expect(chips.map((chip) => chip.textContent.trim())).toEqual(['Алгебра', 'Холст']);
+    expect(chips[0]?.getAttribute('href')).toBe('/cabinet/boards/board-1');
+    expect(chips[1]?.getAttribute('href')).toBe('https://app.holst.so/board/1');
+    expect(chips[1]?.getAttribute('target')).toBe('_blank');
+  });
+
+  it('shows only the boards of the group of a group lesson', async () => {
+    await render(myScheduleSummary({ next: groupLesson() }), [
+      aMyBoard({ title: 'Алгебра' }),
+      aMyBoard({ id: 'board-2', title: 'Группа', groupNames: [groupLesson().groupName ?? ''] }),
+    ]);
+
+    expect(
+      Array.from(hostElement(fixture).querySelectorAll('a.tb-board-chip'), (chip) =>
+        chip.textContent.trim(),
+      ),
+    ).toEqual(['Группа']);
   });
 
   it('asks to cancel the lesson', async () => {
