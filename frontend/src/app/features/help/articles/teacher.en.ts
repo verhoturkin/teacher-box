@@ -357,9 +357,9 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 
 ## What it can do
 
-- **Homework draft** — the «AI assistant» panel to the right of the homework editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it.
-- **From a textbook and files** — the panel has «Base it on»: tick the bound textbooks (their pages) and the saved files of the homework — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the homework is saved; it does not read Word files.
-- **Prompt library** — save a request that worked with «Save the prompt»: it appears under «My prompts» and as quick buttons above the field. Rename, edit and delete prompts on the «AI» page.
+- **Homework draft** — the AI assistant bar above the «Homework text» field of the editor (in «Text» mode). Write in your own words what you need and click «Generate». The draft appears between the request and the text: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it, «Once more» asks for a new one.
+- **From a textbook and files** — the «Base it on» button in the assistant bar: tick the bound textbooks (their pages) and the saved files of the homework — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the homework is saved; it does not read Word files.
+- **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts on the «AI» page («Manage the library» in the same menu).
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
 ## Limit and costs

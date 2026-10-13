@@ -151,8 +151,10 @@ No other UI kits (Angular Material, Material Web), no Material Symbols: icons ar
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
   («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
-  second way to save («Выдать и поместить на доску») is tonal before it. Content cards on the left, a sticky
-  assistant column (22 rem) on the right at `width >= 75em` (stacked under the content below). Markdown is one field
+  second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
+  AI assistant is a bar inside the text field, between its header and the text (0.14.4): request, «Промты» menu
+  (search, save, library), «Опереться на» popover, generate; the draft comes between the bar and the text. Hidden in
+  «Просмотр». Markdown is one field
   with a «Текст / Просмотр» switch at every width — never a second, side-by-side field. Students and groups are two
   multiselects side by side (a settings grid of `minmax(16rem, 1fr)` columns), so a group never gets squeezed. Leaving
   with unsaved changes asks (`canLeaveGuard`, danger confirmation).

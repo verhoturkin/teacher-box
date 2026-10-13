@@ -48,4 +48,4 @@ usage metadata).
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant: library chips and select, request, draft with «Заменить» / «Вставить в конец» / «Отбросить», «Сохранить промт»), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.

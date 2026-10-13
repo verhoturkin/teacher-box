@@ -354,7 +354,8 @@ describe('AssignmentEditorPage', () => {
     for (const request of backend.match('/api/teacher/ai/prompts')) {
       request.flush([]);
     }
-    expect(readableText(host)).toContain('ИИ-помощник');
+    const assistant = host.querySelector<HTMLElement>('.tb-field tb-homework-ai-panel');
+    expect(assistant?.hidden).toBe(false);
     page.applyDraft({
       draft: { title: 'Проценты', description: '1. Найдите 10%' },
       mode: 'replace',
@@ -362,6 +363,7 @@ describe('AssignmentEditorPage', () => {
     await fixture.whenStable();
     expect(page.form.controls.title.value).toBe('Проценты');
     expect(page.mode.value).toBe('preview');
+    expect(assistant?.hidden).toBe(true);
     expect(page.canLeave()).not.toBe(true);
 
     page.form.patchValue({ title: '' });
