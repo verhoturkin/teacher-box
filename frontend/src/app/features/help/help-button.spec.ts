@@ -21,7 +21,7 @@ describe('HelpButton', () => {
     fixture.destroy();
   });
 
-  it('opens the article in a side panel', async () => {
+  it('opens the article in a modal side sheet', async () => {
     buttonByText(hostElement(fixture), 'Справка: Группы').click();
     await fixture.componentInstance.open();
     await fixture.whenStable();
@@ -34,7 +34,7 @@ describe('HelpButton', () => {
     expect(all?.getAttribute('href')).toBe('/teacher/help/groups');
   });
 
-  it('closes when a link inside the portal is followed', async () => {
+  it('opens a linked article in the sheet and goes back to the first one', async () => {
     fixture.componentRef.setInput('topic', 'teacher/billing');
     fixture.componentRef.setInput('label', 'Подробнее');
     await fixture.whenStable();
@@ -42,17 +42,33 @@ describe('HelpButton', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     await fixture.componentInstance.open();
     await fixture.whenStable();
-    // the panel is modal (ADR-0024)
+    // the sheet is modal (ADR-0024), without «←» on the first article
     expect(document.body.querySelector('.p-drawer-mask')).not.toBeNull();
+    expect(document.body.querySelector('.tb-side-sheet__head button')).toBeNull();
 
     document.body
       .querySelector<HTMLAnchorElement>('.tb-help-article a[href="/teacher/help/bot"]')
       ?.click();
+    await vi.waitFor(() => {
+      expect(title()).toBe('Что умеет бот');
+    });
+    fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.visible()).toBe(false);
-    expect(navigate).toHaveBeenCalledWith('/teacher/help/bot');
+    expect(fixture.componentInstance.visible()).toBe(true);
+    expect(navigate).not.toHaveBeenCalled();
+    const back = document.body.querySelector<HTMLButtonElement>('.tb-side-sheet__head button');
+    expect(back?.getAttribute('aria-label')).toBe('Назад');
+    back?.click();
+    await fixture.whenStable();
+    expect(title()).toBe('Оплаты');
+    expect(document.body.querySelector('.tb-side-sheet__head button')).toBeNull();
   });
+
+  function title(): string | undefined {
+    fixture.detectChanges();
+    return document.body.querySelector('.tb-side-sheet .p-drawer-title')?.textContent.trim();
+  }
 
   it('closes when the whole help is opened', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

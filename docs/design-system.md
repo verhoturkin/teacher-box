@@ -227,6 +227,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 
 ## 8. Dialogs, sheets, menus
 
+- **Modal side sheet** `tb-side-sheet` (the help, 0.15.0): a right drawer 1 rem from the window edges, 42 rem wide,
+  large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
+  (Title Large) and «×». A link of a help article to another one opens it in the sheet («←» returns); other links
+  close the sheet and open their page. On a phone — the whole screen, no corners.
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
 - **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Router } from '@angular/router';
 import { renderMarkdown } from '@shared/ui/markdown-view';
+import { helpTopicOf } from './help-topics';
 
 /** The text of an article; links inside the portal open without reloading the page. */
 @Component({
@@ -19,8 +20,12 @@ export class HelpArticleView {
   private readonly router = inject(Router);
 
   readonly body = input('');
+  /** In the help sheet: a link to another article opens it in the sheet, not on its page. */
+  readonly inSheet = input(false);
   /** A link inside the portal was followed. */
   readonly navigated = output<string>();
+  /** In the sheet: a link to another article (its topic, e.g. `teacher/schedule`). */
+  readonly article = output<string>();
 
   // the article has its title (h2): its sections are one level lower (ADR-0024)
   protected readonly html = computed(() => renderMarkdown(this.body(), 1));
@@ -39,6 +44,11 @@ export class HelpArticleView {
       return;
     }
     event.preventDefault();
+    const topic = this.inSheet() ? helpTopicOf(href) : null;
+    if (topic !== null) {
+      this.article.emit(topic);
+      return;
+    }
     void this.router.navigateByUrl(href);
     this.navigated.emit(href);
   }
