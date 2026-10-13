@@ -210,10 +210,13 @@ class ScheduleNotifications {
             if (event.topic() != null) {
                 body.add(t.topic(event.topic()) + ".");
             }
-            if (event.meetingUrl() != null) {
-                body.add(t.meetingLink(event.meetingUrl()));
+            String title = t.soonForStudent(texts.lessonTime(event.startsAt(), language));
+            if (event.meetingUrl() == null) {
+                return new Message(title, join(body));
             }
-            return new Message(t.soonForStudent(texts.lessonTime(event.startsAt(), language)), join(body));
+            JoinLink room = new JoinLink(event.meetingUrl(), join(body));
+            body.add(t.meetingLink(event.meetingUrl()));
+            return new Message(title, join(body), room);
         });
         if (event.lastBefore()) {
             UUID teacher = users.teacherId();
@@ -224,7 +227,8 @@ class ScheduleNotifications {
             String in = t.in(texts.duration(event.before(), language));
             notifications.notify(teacher, NotificationKind.SCHEDULE_REMINDER,
                     t.soonForTeacher(with, texts.lessonTime(event.startsAt(), language)),
-                    event.meetingUrl() == null ? in : in + " " + t.meetingLink(event.meetingUrl()), TEACHER_LINK);
+                    event.meetingUrl() == null ? in : in + " " + t.meetingLink(event.meetingUrl()), TEACHER_LINK, null,
+                    event.meetingUrl() == null ? null : new JoinLink(event.meetingUrl(), in));
         }
     }
 
@@ -242,7 +246,8 @@ class ScheduleNotifications {
         for (UUID studentId : studentIds) {
             Language language = users.language(studentId);
             Message written = message.apply(ScheduleMessages.of(language), language);
-            notifications.notify(studentId, kind, written.title(), written.body(), STUDENT_LINK);
+            notifications.notify(studentId, kind, written.title(), written.body(), STUDENT_LINK, null,
+                    written.join());
         }
     }
 

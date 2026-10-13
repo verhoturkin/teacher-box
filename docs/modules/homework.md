@@ -27,6 +27,9 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   title, course, format, page count, pages) skip deleted textbooks. The student of the task downloads the bound
   pages: a PDF cut to them (`Textbooks.content`), any other file or a whole binding — the whole file
   (`Textbooks.file`); a textbook not bound to the task — 404 `homework.textbook-not-found`.
+- **Deleting** (0.14.2): `DELETE /api/teacher/homework/assignments/{id}` (`AssignmentService.delete`) removes the files of
+  the assignment and of its answers (`FileStorage`), the answers, the tasks and the assignment; bound textbooks go by
+  cascade. No event: notifications already sent stay in the inbox, their link leads to «not found».
 - A student sees only own tasks and attachments (403/404 tests).
 
 ## Contract (`homework::api`)
@@ -42,7 +45,7 @@ file of the assignment's materials — name, type, size, content; another assign
 
 ## REST
 
-`/api/teacher/homework/**` (assignments — the list has the names of the students of each, students, attachments,
+`/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
 `DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary);
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
@@ -57,16 +60,21 @@ the download button saves them under `boundTextbookFilename`), `teacher/bind-tex
 `canLeaveGuard`; «Новое задание» and the home quick action lead there): one Markdown field with a «Текст / Просмотр»
 switch; students and groups (`tb-group-picker`, a multiselect: a group adds its students, taking it off removes them),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
-(`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files
+(`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new
+assignment (0.14.2: a saved one changes them on its page)
 (`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created
 without students, gets its files and textbooks, then is given out — the notification goes with the materials in place;
 a material that fails leaves the assignment saved with an error toast. Header: «Выдать» / «Сохранить» (filled) and
 «Выдать и поместить на доску» / «Сохранить и поместить на доску» (tonal): it saves, then opens «На доску» for the
 saved assignment (`ToBoardDialog [frame] [pictures]` from `teacher/assignment-board.ts`, the boards of its students);
 `placed` → `PUT …/board`, closing the dialog leads to the assignment page. The assignment page: «На доску» (enabled
-with a text, a picture file or a textbook page) also remembers the board, «Открыть доску» when there is one;
-«Выдать ещё ученикам» — students and groups side by side, «Выдать» under them. The list (`teacher/assignments-page.ts`)
-— cards: title, «кому · до …», the progress badge (`assignmentProgress`), «⋮». The student's `my-task-page.ts` shows
+with a text, a picture file or a textbook page) also remembers the board, «Открыть доску» (`pi-arrow-up-right`) when
+there is one, «Удалить…» (danger confirmation); materials — `ui/attachment-list.ts`, a `tb-list` like the textbooks
+(type icon, name, size, the same red «×»); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
+status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
+and groups side by side). The list (`teacher/assignments-page.ts`) — cards: title, «кому · до …», the progress badge
+(`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» are `tb-list` cards too
+(avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows
 «Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»
 of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the pictures — png / jpeg / webp /
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —

@@ -256,7 +256,13 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,
-    «Выдано» / «Принято N из M» primary) and «⋮» («Открыть», «Изменить», «Проверить работы», «Открыть доску»).
+    «Выдано» / «Принято N из M» primary) and «⋮» («Открыть», «Изменить», «Проверить работы», «Открыть доску»,
+    «Удалить…» red).
+  - Homework cards (0.14.2) — the student's «Задания» (icon; title link + «до …», red when overdue; status), the
+    students of an assignment (avatar; name link to the task + «Сдано … / Не сдано»; status; «Добавить» at the top
+    right of the card — `tb-card-title__actions` — opens «Выдать ещё ученикам»), the review queue (avatar; name link +
+    «задание · сдано · срок»), files of assignments and answers (type icon; name button that downloads + size; the
+    red «×» of the textbooks). «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-th-large`.
 - Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
   «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
   history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —
@@ -272,7 +278,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
   the phone each row becomes a card «column: value» (`data-label`). Main column
   `tb-col-main`, amounts `tb-amount`. Statuses — `p-tag`, one shape, no wrapping. Row typing — `tbRowType`.
-- Not data lists: wizard steps, help items, checklists, bot capability lists, task files — plain text lists.
+- Not data lists: wizard steps, help items, checklists, bot capability lists, files picked before upload — plain text
+  lists.
 - No custom row markup for data in cards or dialogs.
 
 ## 10. Fields
@@ -290,6 +297,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - Password: `tb-password-toggle` — 40×40 icon button inside the field, «Показать пароль» / «Скрыть пароль»,
   `aria-pressed`.
 - A 40 px button next to a 56 px field is centred on it (`tb-copy-row`).
+- Multi-line text (`textarea.p-textarea`, 0.14.2) resizes only vertically and never grows wider than its field, so it
+  cannot be dragged out of the card. A review form is as wide as its card (no `tb-form--narrow`).
 
 ## 11. Accessibility (WCAG 2.2 AA)
 

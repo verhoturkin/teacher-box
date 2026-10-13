@@ -12,6 +12,12 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
   `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
   it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
+- **Links in messengers are buttons** (0.14.2): the text is the title and the body; the portal page of a notification
+  goes as «Открыть» (`Portal.link`), a video room as «Подключиться» (`JoinLink`: the room link, lesson reminders —
+  their messenger text has no address, the inbox keeps it), then the buttons of the bot's actions; `/help` has a
+  «Справка» button. A messenger that refuses link buttons (Telegram and a portal on a local address) gets the message
+  again with «Открыть: https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
+  `MessengerPolling`).
 - `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h, `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`);
   permanent errors (4xx except 429, VK "no access") fail at once. Deactivated students get inbox only.
 - Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling, `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`),

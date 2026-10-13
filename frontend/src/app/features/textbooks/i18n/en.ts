@@ -27,13 +27,13 @@ export const en: Translation<typeof ru> = {
     notFoundHint: 'Change the search: it looks in the titles of the textbooks',
     emptyTitle: 'No textbooks yet',
     emptyHint:
-      'Click «New textbook» and choose a file: a PDF, a Word file or a picture. A textbook can be opened to students and groups, bound to an assignment and shown on a board.',
+      'Click «New textbook» and choose a file: a PDF, a Word file or a picture. A textbook can be opened to students and groups, bound to homework and shown on a board.',
     tooLarge: 'The file is larger than 100 MB — the portal will not take it.',
     replaced: (title: string) => `The file of the textbook «${title}» is replaced`,
     replaceFailed: 'Could not replace the file',
     deleteHeader: 'Delete the textbook?',
     deleteMessage: (title: string) =>
-      `The textbook «${title}» is deleted with its file and disappears from assignments. It can be brought back only from a backup of the portal.`,
+      `The textbook «${title}» is deleted with its file and disappears from homework. It can be brought back only from a backup of the portal.`,
     delete: 'Delete',
     download: 'Download',
     toBoard: 'To a board',

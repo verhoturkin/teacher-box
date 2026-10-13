@@ -31,7 +31,8 @@ class MeetingNotifications {
             NotificationMessages t = NotificationMessages.of(users.language(studentId));
             notifications.notify(studentId, NotificationKind.MEETING_LINK, t.meetingLink(),
                     group == null ? t.ourLessons(event.joinUrl()) : t.groupLessons(group, event.joinUrl()),
-                    ScheduleNotifications.STUDENT_LINK);
+                    ScheduleNotifications.STUDENT_LINK, null,
+                    new JoinLink(event.joinUrl(), group == null ? t.ourRoom() : t.groupRoom(group)));
         }
     }
 }

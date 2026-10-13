@@ -37,7 +37,7 @@ enum BotMessages {
                     /stop — отключить уведомления""";
         }
         @Override String canDo() { return "Бот умеет:"; }
-        @Override String helpLink(String url) { return "Справка: " + url; }
+        @Override String help() { return "Справка"; }
         @Override String teacher() { return "Учитель"; }
         @Override String unknownStudent() { return "Ученик"; }
         @Override String cancel() { return "Отмена"; }
@@ -90,7 +90,7 @@ enum BotMessages {
                     /stop — turn off notifications""";
         }
         @Override String canDo() { return "The bot can:"; }
-        @Override String helpLink(String url) { return "Help: " + url; }
+        @Override String help() { return "Help"; }
         @Override String teacher() { return "Teacher"; }
         @Override String unknownStudent() { return "Student"; }
         @Override String cancel() { return "Cancel"; }
@@ -152,7 +152,8 @@ enum BotMessages {
 
     abstract String canDo();
 
-    abstract String helpLink(String url);
+    /** The button to the help article about the bot. */
+    abstract String help();
 
     abstract String teacher();
 

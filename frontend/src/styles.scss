@@ -187,8 +187,11 @@ small,
 
 /* Fields: Body Large with its line height, 56 px high (ADR-0022; PrimeNG's styles come later) */
 input.p-inputtext,
+/* A text field grows only downwards: dragging its corner never takes it out of the card */
 textarea.p-textarea {
+  max-width: 100%;
   line-height: 1.5rem;
+  resize: vertical;
 }
 
 /* Buttons: Label Large (M3), 40 px high */

@@ -7,7 +7,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
     title: 'First steps',
     summary: 'Where to start with the portal',
     body: `
-The portal is your workplace: students, schedule, assignments, payments and notifications in one place.
+The portal is your workplace: students, schedule, homework, payments and notifications in one place.
 
 After the first sign-in the portal opens the [initial setup](/teacher/help/setup): the password, your name, the portal's name and address, the lesson price.
 
@@ -22,7 +22,7 @@ The home page has the «Getting started» list — only the steps not done yet s
 
 ## Home page
 
-- **Quick actions** — «Lesson», «Payment», «Student», «Assignment»: each opens the form on its page.
+- **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page.
 - **Next lesson** — when and with whom, the «Start lesson» button and the boards of the student or the group.
 - **Today** — today's lessons; past ones can be marked at once.
 - **Needs attention** — unmarked lessons, work to review, students' requests and failed deliveries of notifications.
@@ -88,7 +88,7 @@ The «⋮» button right of the status opens the menu:
 
 - **Edit** — name, contacts, note, default topic and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
-- **Turn off access** — the student can no longer sign in. The history of lessons, payments and assignments stays.
+- **Turn off access** — the student can no longer sign in. The history of lessons, payments and homework stays.
 - **Give access back** — for students whose access is off (turn on «Show turned off»).
 `,
   },
@@ -198,7 +198,7 @@ The section refreshes itself while open.
 - **Your picture** — in a call of two, your camera is in a small window in a corner. Drag it to any other corner — the portal remembers the choice.
 - **Share screen** — on a computer: share a window, a tab or the whole screen.
 - **Settings** (the gear) — another microphone or camera; sound processing: echo cancellation, noise suppression and automatic gain (on by default; turn them off if the voice is chopped or muffled — the portal remembers the choice); «Connection details» — the connection quality of each participant, the protocol (UDP or TCP), ports, delay and sound loss. If the sound stutters, open the details and pass them to the administrator.
-- **Minimize** — the call goes on in a small window in a corner while you work in the portal: open a board, assignments, the schedule. The window can be dragged to another corner. «Expand» brings the big window back.
+- **Minimize** — the call goes on in a small window in a corner while you work in the portal: open a board, homework, the schedule. The window can be dragged to another corner. «Expand» brings the big window back.
 - **Leave the call** — the red button.
 
 On a phone a minimized call is a bar above the bottom menu.
@@ -274,39 +274,47 @@ Once a day the portal backs up every changed board (the last 7 daily backups are
 
 ## Put material on a board
 
-The «To a board» button is on the assignment's page, in the assignment editor and when reviewing work. Choose a board in the list (it has a search by title) — from an assignment only the boards of its students and their groups are offered — and the way:
+The «To a board» button is on the homework's page, in the homework editor and when reviewing work. Choose a board in the list (it has a search by title) — from the homework only the boards of its students and their groups are offered — and the way:
 
 - **As text** — it can be edited on the board;
 - **As a picture** — as it is, handy for formulas and tables.
 
-An Excalidraw board opens in a new tab with the material already at the centre. An assignment (from its page or with «Assign and put on a board» in the editor) goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the assignment). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
+An Excalidraw board opens in a new tab with the material already at the centre. Homework (from its page or with «Assign and put on a board» in the editor) goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the homework). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
 
-Pages of a textbook can be put on a board too — from «Textbooks» or from an assignment's textbook ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
+Pages of a textbook can be put on a board too — from «Textbooks» or from a textbook of the homework ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
 `,
   },
   homework: {
     title: 'Homework',
-    summary: 'How to give an assignment, review work and return it',
+    summary: 'How to give homework, review work and return it',
     body: `
-## Give an assignment
+## Give homework
 
-1. «Assignments» → «New assignment» — the assignment editor opens.
+1. «Homework» → «New homework» — the homework editor opens.
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
 3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
 4. Bind textbooks and add files right here.
-5. Click «Assign». Students are notified once the assignment has all its materials, and reminded before the deadline.
+5. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
 
-«Assign and put on a board» gives the assignment out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the assignment. «To a board» on the assignment's page does the same.
+«Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the assignment's page opens the same editor; leaving it without saving asks first. The «Assignments» list is made of cards: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮».
+«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. The «Homework» list is made of cards: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮».
 
-## A textbook for the assignment
+## The homework's page
 
-On the assignment's page, in «Textbooks», click «Bind a textbook», choose a textbook from «Textbooks» ([Textbooks](/teacher/help/textbooks)) and enter the pages — e.g. «12-14, 20». An empty field is the whole textbook. The student sees the textbook in the assignment and downloads only these pages (a Word file in full, with the pages as a hint), even if the textbook itself is not open to them. The pencil in the row changes the pages, the cross removes the textbook from the assignment, and the board button puts the bound pages on a board ([Textbooks](/teacher/help/textbooks)).
+The text, «Materials» (files) and «Textbooks» are cards; the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
+
+## Delete homework
+
+«Delete…» on the homework's page or in the «⋮» menu of the list. The homework is deleted with the students' answers and the files — it can be brought back only from a backup.
+
+## A textbook for the homework
+
+On the homework's page, in «Textbooks», click «Bind a textbook», choose a textbook from «Textbooks» ([Textbooks](/teacher/help/textbooks)) and enter the pages — e.g. «12-14, 20». An empty field is the whole textbook. The student sees the textbook in the homework and downloads only these pages (a Word file in full, with the pages as a hint), even if the textbook itself is not open to them. The pencil in the row changes the pages, the cross removes the textbook from the homework, and the board button puts the bound pages on a board ([Textbooks](/teacher/help/textbooks)).
 
 ## Review work
 
-Handed-in work is collected in «To review» and on the home page. Open the work, give a grade and write a comment, then:
+Handed-in work is collected in «To review» (cards: the student, the homework, when handed in and the deadline) and on the home page. Open the work, give a grade and write a comment, then:
 
 - **Accept** — the work counts;
 - **Return for rework** — the student fixes it and hands it in again.
@@ -334,23 +342,23 @@ A line per textbook: the kind's icon, the title, the kind, the course, the file 
 
 - **Download** — the textbook's file;
 - **Edit** — kind, title, course, Word pages, students and groups;
-- **To a board** — pages of the textbook as pictures on an Excalidraw board: for a PDF enter the pages (e.g. «12-14», at most 30 at a time), a picture goes whole. Choose a board in the list with a search (from «Textbooks» — any board, from an assignment — a board of its students). The board opens in a new tab, the pages go in a row to the right of everything already on the board, inside a frame named with the textbook's title and the page numbers — the frame moves together with the pages, and you can draw right over them. A Word file cannot go on a board;
+- **To a board** — pages of the textbook as pictures on an Excalidraw board: for a PDF enter the pages (e.g. «12-14», at most 30 at a time), a picture goes whole. Choose a board in the list with a search (from «Textbooks» — any board, from homework — a board of its students). The board opens in a new tab, the pages go in a row to the right of everything already on the board, inside a frame named with the textbook's title and the page numbers — the frame moves together with the pages, and you can draw right over them. A Word file cannot go on a board;
 - **Replace file** — choose a new file (e.g. a corrected scan); the PDF pages are recounted;
-- **Delete…** — the textbook is deleted with its file and disappears from assignments.
+- **Delete…** — the textbook is deleted with its file and disappears from homework.
 
 A student sees the textbooks open to them in their «Textbooks» section and can download them.
 `,
   },
   ai: {
     title: 'AI assistant',
-    summary: 'Drafts of assignments and reviews',
+    summary: 'Drafts of homework and reviews',
     body: `
 The AI assistant saves time, but you always decide: it only suggests a draft.
 
 ## What it can do
 
-- **Assignment draft** — the «AI assistant» panel to the right of the assignment editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it.
-- **From a textbook and files** — the panel has «Base it on»: tick the bound textbooks (their pages) and the saved files of the assignment — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the assignment is saved; it does not read Word files.
+- **Homework draft** — the «AI assistant» panel to the right of the homework editor (below it on a phone). Write in your own words what you need and click «Generate». The draft appears in the panel first: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it.
+- **From a textbook and files** — the panel has «Base it on»: tick the bound textbooks (their pages) and the saved files of the homework — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the homework is saved; it does not read Word files.
 - **Prompt library** — save a request that worked with «Save the prompt»: it appears under «My prompts» and as quick buttons above the field. Rename, edit and delete prompts on the «AI» page.
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
@@ -454,6 +462,7 @@ The schedule and the lesson link, cancelling and moving a lesson (in a group —
 ## How to use it
 
 - Before any change the bot asks again — press «Yes».
+- Links in notifications are buttons: «Open» leads to the page of the portal, «Join» — to the lesson. If the messenger does not take such buttons (Telegram and a portal on a local address), the link comes as text: «Open: …».
 - «Cancel» or /cancel stops an action at any step.
 - A student can be found by part of the name.
 - Write the time like 18:30 and the date like 05.10.
@@ -561,9 +570,9 @@ Before deleting, the portal asks again: the red button in the window does the ac
 
 ## From a phone
 
-- The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New assignment», «Payment».
-- Lists (students, payments, assignments) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the status and the «⋮» menu on the right.
-- On nested pages (an assignment, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
+- The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New homework», «Payment».
+- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the status and the «⋮» menu on the right.
+- On nested pages (homework, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
 - Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Boards», «Payments» and «More».
 - The portal's messages («Saved», errors) appear at the bottom of the screen.
@@ -573,7 +582,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
     title: 'Backups and full reset',
     summary: 'How to make a backup, restore it and start all over',
     body: `
-Every night the portal backs up all the data: students, schedule, payments, assignments with their files, the current drawing of every board. The copies of the boards themselves (daily and yours) are not in this backup — after it is restored, boards keep only their current drawing.
+Every night the portal backs up all the data: students, schedule, payments, homework with its files, the current drawing of every board. The copies of the boards themselves (daily and yours) are not in this backup — after it is restored, boards keep only their current drawing.
 
 ## Make and download a backup
 
@@ -611,7 +620,7 @@ If the restore fails, the data stays as it was, and the window shows the reason.
 
 ## Full reset
 
-«Settings» → «Full reset» deletes everything: students and groups, lessons, payments, assignments, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in, all backups and their Google Drive connection stay.
+«Settings» → «Full reset» deletes everything: students and groups, lessons, payments, homework, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in, all backups and their Google Drive connection stay.
 
 1. Click «Reset all data…».
 2. Enter your password and the word «RESET».

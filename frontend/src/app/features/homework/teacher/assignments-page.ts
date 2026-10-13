@@ -11,15 +11,18 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Badge } from 'primeng/badge';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { dangerConfirmation } from '@shared/ui/confirmation';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary } from '../data-access/homework.models';
 import { assignmentProgress } from '../homework-labels';
@@ -34,7 +37,7 @@ const SHOWN_STUDENTS = 3;
 
 /**
  * Teacher: all assignments as cards — the title, who has it and the due date, a badge of the progress and the
- * actions under «⋮».
+ * actions under «⋮» (open, edit, review, open the board, delete).
  */
 @Component({
   selector: 'tb-assignments-page',
@@ -48,12 +51,14 @@ const SHOWN_STUDENTS = 3;
     ButtonLabel,
     ButtonAttributes,
     Card,
+    ConfirmDialog,
     Menu,
     Tag,
     Tooltip,
     PageHeader,
     LoadStateView,
   ],
+  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header [title]="t.title">
@@ -119,12 +124,15 @@ const SHOWN_STUDENTS = 3;
       appendTo="body"
       (onHide)="menuFor.set(null)"
     />
+    <p-confirmdialog />
   `,
 })
 export class AssignmentsPage implements OnInit {
   protected readonly t = T.list;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly snackbar = inject(Snackbar);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
   private readonly menu = viewChild.required<Menu>('menu');
 
@@ -211,10 +219,37 @@ export class AssignmentsPage implements OnInit {
         : [
             {
               label: T.list.openBoard,
-              icon: 'pi pi-th-large',
+              icon: 'pi pi-arrow-up-right',
               command: () => void this.router.navigate(['/teacher/boards', assignment.boardId]),
             },
           ]),
+      {
+        label: T.remove.action,
+        icon: 'pi pi-trash',
+        styleClass: 'tb-menu-item--danger',
+        command: () => {
+          this.confirmRemove(assignment);
+        },
+      },
     ];
+  }
+
+  /** Deletes the assignment with the answers and the files, after a confirmation. */
+  private confirmRemove(assignment: AssignmentSummary): void {
+    this.confirmation.confirm(
+      dangerConfirmation({
+        header: T.remove.header,
+        message: T.remove.message(assignment.title),
+        acceptLabel: T.remove.confirm,
+        accept: () => {
+          this.api.deleteAssignment(assignment.id).subscribe(() => {
+            this.assignments.update((all) =>
+              all.filter((candidate) => candidate.id !== assignment.id),
+            );
+            this.snackbar.success(T.remove.deleted(assignment.title));
+          });
+        },
+      }),
+    );
   }
 }

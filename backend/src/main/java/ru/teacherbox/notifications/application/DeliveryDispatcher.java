@@ -57,7 +57,7 @@ public class DeliveryDispatcher {
             return;
         }
         try {
-            channel.get().send(delivery.externalId(),
+            send(channel.get(), delivery.externalId(),
                     new OutgoingMessage(delivery.text(), keyboards.read(delivery.keyboard())));
             delivery.markSent(clock.instant());
         } catch (DeliveryException e) {
@@ -70,6 +70,22 @@ public class DeliveryDispatcher {
         } catch (RuntimeException e) {
             log.warn("Delivery {} to {} failed", delivery.id(), delivery.channel(), e);
             delivery.markFailed(e.getClass().getSimpleName(), properties.maxAttempts(), clock.instant());
+        }
+    }
+
+    /**
+     * A message refused for its link buttons (Telegram takes no portal on a local address) goes again with the
+     * links in the text: «Открыть: https://…».
+     */
+    private static void send(MessengerChannel channel, String externalId, OutgoingMessage message) {
+        try {
+            channel.send(externalId, message);
+        } catch (DeliveryException e) {
+            if (!e.isPermanent() || !message.hasLinks()) {
+                throw e;
+            }
+            log.info("{} refused link buttons, sending the links as text: {}", channel.type(), e.getMessage());
+            channel.send(externalId, message.linksInText());
         }
     }
 }

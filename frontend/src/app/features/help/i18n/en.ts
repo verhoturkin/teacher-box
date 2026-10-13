@@ -33,7 +33,7 @@ export const en: Translation<typeof ru> = {
     'cabinet/login': 'Sign-in, password and profile',
     'cabinet/schedule': 'Schedule and moving',
     'cabinet/lesson': 'Lesson and board',
-    'cabinet/homework': 'Assignments',
+    'cabinet/homework': 'Homework',
     'cabinet/textbooks': 'Textbooks',
     'cabinet/billing': 'Payments',
     'cabinet/bot': 'Bot in a messenger',

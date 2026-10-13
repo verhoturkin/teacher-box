@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -109,25 +110,57 @@ public class NotificationService {
     @Transactional
     public InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
             @Nullable String link, @Nullable ChatSubject subject) {
+        return notify(recipientId, kind, title, body, link, subject, null);
+    }
+
+    /**
+     * Notifies a user. In messengers the links go as buttons, not in the text: «Подключиться» to the video room
+     * ({@code join}), «Открыть» to the portal page ({@code link}), then the buttons of the bot's actions.
+     *
+     * @param join the video room of the notification
+     */
+    @Transactional
+    InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
+            @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
         Instant now = clock.instant();
         InboxNotification notification = InboxNotification.create(Ids.newId(), recipientId, kind, title, body, link,
                 now);
         inbox.insert(notification);
         Preferences settings = preferences.find(recipientId).orElse(Preferences.DEFAULT);
         if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {
-            String text = truncate(notification.messengerText(portal.address().orElse(null)));
+            String text = truncate(notification.messengerText(join == null ? notification.body() : join.body()));
+            List<OutgoingButton> linkButtons = linkButtons(recipientId, link, join);
             Instant notBefore = settings.deliverAt(now, zone);
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
                 if (channelLink.enabled() && channels.isAvailable(channelLink.channel())) {
-                    String keyboard = subject == null ? null : keyboards.write(chat.offer(recipientId,
-                            channelLink.channel(), channelLink.externalId(), subject));
+                    List<List<OutgoingButton>> rows = new ArrayList<>();
+                    if (!linkButtons.isEmpty()) {
+                        rows.add(linkButtons);
+                    }
+                    if (subject != null) {
+                        rows.addAll(chat.offer(recipientId, channelLink.channel(), channelLink.externalId(),
+                                subject));
+                    }
                     deliveries.insert(Delivery.schedule(Ids.newId(), notification.id(), recipientId,
                             channelLink.channel(), channelLink.externalId(), text, now, notBefore)
-                            .withKeyboard(keyboard));
+                            .withKeyboard(keyboards.write(rows)));
                 }
             }
         }
         return notification;
+    }
+
+    /** «Подключиться» to the room and «Открыть» the portal page (when the portal address is known). */
+    private List<OutgoingButton> linkButtons(UUID recipientId, @Nullable String link, @Nullable JoinLink join) {
+        NotificationMessages t = NotificationMessages.of(users.language(recipientId));
+        List<OutgoingButton> buttons = new ArrayList<>();
+        if (join != null) {
+            buttons.add(new OutgoingButton(t.join(), null, join.url()));
+        }
+        if (link != null) {
+            portal.link(link).ifPresent(url -> buttons.add(new OutgoingButton(t.open(), null, url)));
+        }
+        return buttons;
     }
 
     /**

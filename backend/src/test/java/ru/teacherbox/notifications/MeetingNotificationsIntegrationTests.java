@@ -9,8 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.Scenario;
 import ru.teacherbox.meetings.api.MeetingLinkShared;
+import ru.teacherbox.notifications.domain.ChannelLink;
+import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.NotificationKind;
+import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
+import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.InboxRepository;
+import ru.teacherbox.shared.Ids;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 
@@ -26,6 +31,12 @@ class MeetingNotificationsIntegrationTests {
 
     @Autowired
     FakeStudentGroups groups;
+
+    @Autowired
+    ChannelLinkRepository links;
+
+    @Autowired
+    DeliveryRepository deliveries;
 
     @Test
     void theLinkOfAGroupRoomReachesTheMembers(Scenario scenario) {
@@ -48,10 +59,15 @@ class MeetingNotificationsIntegrationTests {
     @Test
     void theLinkOfAStudentRoom(Scenario scenario) {
         UUID vera = directory.addStudent("Вера");
+        links.save(new ChannelLink(Ids.newId(), vera, ChannelType.TELEGRAM, "9101", null, true, Instant.now()));
 
         scenario.publish(new MeetingLinkShared(vera, null, List.of(vera), "https://zoom.us/j/1", Instant.now()))
                 .andWaitForStateChange(() -> inbox.findPage(vera, 0, 10), list -> !list.isEmpty())
                 .andVerify(list -> assertThat(list.getFirst().body())
                         .isEqualTo("По этой ссылке проходят наши уроки: https://zoom.us/j/1"));
+        assertThat(deliveries.findByRecipient(vera)).singleElement().satisfies(delivery -> {
+            assertThat(delivery.text()).isEqualTo("Ссылка на урок\nЗдесь проходят наши уроки.");
+            assertThat(delivery.keyboard()).contains("Подключиться", "https://zoom.us/j/1", "Открыть");
+        });
     }
 }

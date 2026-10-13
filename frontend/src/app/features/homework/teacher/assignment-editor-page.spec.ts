@@ -297,7 +297,7 @@ describe('AssignmentEditorPage', () => {
     expect(page.form.controls.title.touched).toBe(true);
   });
 
-  it('edits an assignment: materials change at once', async () => {
+  it('edits an assignment without its materials: they are on its page', async () => {
     const details = assignmentDetails({
       textbooks: [boundTextbook()],
       attachments: [attachment()],
@@ -310,48 +310,21 @@ describe('AssignmentEditorPage', () => {
     expect(readableText(host)).toContain('Сохранить и поместить на доску');
     expect(page.form.controls.title.value).toBe('Дроби');
     expect(page.form.controls.dueAt.value?.toISOString()).toBe('2026-09-10T15:00:00.000Z');
-
-    host
-      .querySelector<HTMLButtonElement>('button[aria-label="Убрать из задания: Spotlight 5"]')
-      ?.click();
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/textbooks/tb-1' })
-      .flush({ ...details, textbooks: [] });
-    await fixture.whenStable();
     expect(readableText(host)).not.toContain('Spotlight 5');
+    expect(readableText(host)).not.toContain('условие.pdf');
+    expect(readableText(host)).not.toContain('Привязать учебник');
+    expect(host.querySelector('input[type="file"]')).toBeNull();
 
     page.form.patchValue({ title: 'Дроби 2' });
     page.form.markAsDirty();
-    page.newFiles.set([new File(['x'], 'ещё.pdf')]);
     exactButton(host, 'Сохранить').click();
     const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
     expect(put.request.body).toMatchObject({ title: 'Дроби 2', version: 0 });
     put.flush(assignmentDetails({ title: 'Дроби 2', version: 1 }));
-    backend.expectOne('/api/teacher/homework/assignments/a-1/attachments').flush([]);
     await fixture.whenStable();
 
+    backend.expectNone('/api/teacher/homework/assignments/a-1/attachments');
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
-  });
-
-  it('removes a file of an assignment after a confirmation and downloads files', async () => {
-    const { host } = await edit();
-    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
-    vi.spyOn(confirmation, 'confirm').mockImplementation((request) => {
-      request.accept?.();
-      return confirmation;
-    });
-
-    buttonByText(host, 'условие.pdf').click();
-    expect(backend.expectOne('/api/teacher/homework/attachments/f-1').request.responseType).toBe(
-      'blob',
-    );
-    host.querySelector<HTMLButtonElement>('button[aria-label="Удалить файл условие.pdf"]')?.click();
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' })
-      .flush(null);
-    await fixture.whenStable();
-
-    expect(host.querySelector('button[aria-label="Удалить файл условие.pdf"]')).toBeNull();
   });
 
   it('asks before leaving unsaved work', async () => {

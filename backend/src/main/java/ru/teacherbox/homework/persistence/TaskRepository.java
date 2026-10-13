@@ -52,6 +52,12 @@ public class TaskRepository {
                 .update();
     }
 
+    public void deleteByAssignment(UUID assignmentId) {
+        jdbc.sql("delete from homework.tasks where assignment_id = :assignmentId")
+                .param("assignmentId", assignmentId)
+                .update();
+    }
+
     public void update(HomeworkTask task) {
         int updated = jdbc.sql("""
                 update homework.tasks

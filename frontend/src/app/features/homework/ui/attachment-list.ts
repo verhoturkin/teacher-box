@@ -5,35 +5,49 @@ import { Attachment } from '../data-access/homework.models';
 import { formatFileSize } from '../homework-labels';
 import { T } from '../i18n/texts';
 
-/** Files of an assignment or a submission. */
+/** Files of an assignment or a submission: a card list like the textbooks, the same «×» to remove. */
 @Component({
   selector: 'tb-attachment-list',
   imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (attachments().length > 0) {
-      <ul class="tb-files">
+      <ul class="tb-list tb-attachment-list" [attr.aria-label]="t.files">
         @for (file of attachments(); track file.id) {
-          <li class="tb-files__item">
-            <i class="pi pi-file" aria-hidden="true"></i>
-            <button type="button" class="tb-link-button" (click)="download.emit(file)">
-              {{ file.filename }}
-            </button>
-            <small class="tb-muted">{{ size(file.size) }}</small>
+          <li>
+            <span class="tb-list__lead" aria-hidden="true"><i [class]="icon(file)"></i></span>
+            <div class="tb-list__text">
+              <button
+                type="button"
+                class="tb-list__title tb-link-button"
+                (click)="download.emit(file)"
+              >
+                {{ file.filename }}
+              </button>
+              <span class="tb-list__supporting">{{ size(file.size) }}</span>
+            </div>
             @if (removable()) {
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                [pTooltip]="t.removeFile(file.filename)"
-                [rounded]="true"
-                severity="danger"
-                [ariaLabel]="t.removeFile(file.filename)"
-                (onClick)="remove.emit(file)"
-              />
+              <div class="tb-list__trail tb-list__trail--icons">
+                <p-button
+                  icon="pi pi-times"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="danger"
+                  [pTooltip]="t.removeFile(file.filename)"
+                  [ariaLabel]="t.removeFile(file.filename)"
+                  (onClick)="remove.emit(file)"
+                />
+              </div>
             }
           </li>
         }
       </ul>
+    }
+  `,
+  styles: `
+    /* like the textbooks: apart from the buttons around it */
+    .tb-attachment-list {
+      margin: var(--tb-space-2) 0;
     }
   `,
 })
@@ -43,6 +57,14 @@ export class AttachmentList {
   readonly removable = input(false);
   readonly download = output<Attachment>();
   readonly remove = output<Attachment>();
+
+  protected icon(file: Attachment): string {
+    return file.contentType.startsWith('image/')
+      ? 'pi pi-image'
+      : file.contentType === 'application/pdf'
+        ? 'pi pi-file-pdf'
+        : 'pi pi-file';
+  }
 
   protected size(bytes: number): string {
     return formatFileSize(bytes);

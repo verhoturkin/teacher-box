@@ -40,15 +40,11 @@ public record InboxNotification(
         return readAt != null;
     }
 
-    /** Plain text for messengers: title, body and an absolute link when the portal address is known. */
-    public String messengerText(@Nullable String portalAddress) {
-        StringBuilder text = new StringBuilder(title);
-        if (body != null) {
-            text.append("\n").append(body);
-        }
-        if (portalAddress != null && !portalAddress.isBlank() && link != null) {
-            text.append("\n").append(portalAddress.replaceAll("/+$", "")).append(link);
-        }
-        return text.toString();
+    /**
+     * Plain text for messengers: the title and the body ({@code body} replaces the stored one, e.g. without a link
+     * that goes as a button). The portal link goes as an «Открыть» button, not in the text.
+     */
+    public String messengerText(@Nullable String body) {
+        return body == null || body.isBlank() ? title : title + "\n" + body.strip();
     }
 }

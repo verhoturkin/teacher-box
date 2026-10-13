@@ -73,7 +73,7 @@ import { T } from '../i18n/texts';
 
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
           <p-card [header]="t.review">
-            <form tbFieldErrors class="tb-form tb-form--narrow" [formGroup]="form">
+            <form tbFieldErrors class="tb-form" [formGroup]="form">
               @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
                 <div>
                   <p-button
@@ -106,7 +106,7 @@ import { T } from '../i18n/texts';
                   pTextarea
                   id="review-comment"
                   formControlName="comment"
-                  rows="4"
+                  rows="8"
                 ></textarea>
               </div>
               <div class="tb-form-actions">

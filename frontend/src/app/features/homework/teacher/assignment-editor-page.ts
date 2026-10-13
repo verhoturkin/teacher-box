@@ -35,7 +35,6 @@ import { HelpButton } from '@features/help/parts';
 import { GroupPicker, IdentityApi } from '@features/identity/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
-import { FileSaver } from '@shared/files/file-saver';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
@@ -43,14 +42,8 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HomeworkApi } from '../data-access/homework-api';
-import {
-  AssignmentDetails,
-  AssignmentInput,
-  Attachment,
-  BoundTextbook,
-} from '../data-access/homework.models';
+import { AssignmentDetails, AssignmentInput, BoundTextbook } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
-import { AttachmentList } from '../ui/attachment-list';
 import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
 import { assignmentBoard } from './assignment-board';
@@ -69,7 +62,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 /**
  * Teacher: the page that creates an assignment or edits one. The Markdown text on the left with a «Текст / Просмотр»
  * switch; who gets it (students and groups), the due date (by default the next lesson of the chosen students),
- * textbooks and files below; the AI assistant on the right. A new assignment is created first, gets its materials,
+ * textbooks and files of a new assignment below (a saved one has them on its page); the AI assistant on the right. A new assignment is created first, gets its materials,
  * and only then goes to the students — they are notified with everything in place. «…и поместить на доску» then puts
  * it on a board of its students and remembers that board (ADR-0041).
  */
@@ -94,7 +87,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     PageHeader,
     LoadStateView,
     FieldErrors,
-    AttachmentList,
     FilePicker,
     TextbookList,
     BindTextbookDialog,
@@ -206,27 +198,23 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               </div>
             </div>
 
-            <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-            <tb-textbook-list
-              [textbooks]="textbooks()"
-              [editable]="true"
-              (edit)="editTextbook($event)"
-              (remove)="removeTextbook($event)"
-            />
-            <p-button
-              [label]="t.bindTextbook"
-              icon="pi pi-book"
-              severity="secondary"
-              (onClick)="bindTextbook()"
-            />
-            <h3 class="tb-subtitle">{{ t.files }}</h3>
-            <tb-attachment-list
-              [attachments]="attachments()"
-              [removable]="true"
-              (download)="download($event)"
-              (remove)="confirmRemove($event)"
-            />
-            <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
+            @if (isNew()) {
+              <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+              <tb-textbook-list
+                [textbooks]="textbooks()"
+                [editable]="true"
+                (edit)="editTextbook($event)"
+                (remove)="removeTextbook($event)"
+              />
+              <p-button
+                [label]="t.bindTextbook"
+                icon="pi pi-book"
+                severity="secondary"
+                (onClick)="bindTextbook()"
+              />
+              <h3 class="tb-subtitle">{{ t.files }}</h3>
+              <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
+            }
             @if (error(); as message) {
               <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
             }
@@ -259,10 +247,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       }
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
-        [assignmentId]="assignment()?.id ?? null"
         [taken]="textbooks()"
         [bound]="binding()"
-        (saved)="assignment.set($event)"
         (picked)="pickTextbook($event)"
       />
       <p-confirmdialog />
@@ -313,7 +299,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirmation = inject(ConfirmationService);
-  private readonly fileSaver = inject(FileSaver);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
@@ -388,7 +373,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly textbooks = computed(
     () => this.assignment()?.textbooks ?? this.pickedTextbooks(),
   );
-  protected readonly attachments = computed(() => this.assignment()?.attachments ?? []);
   /**
    * What the AI may read for a draft (ADR-0039): the bound textbooks (not Word files) and the saved PDF and picture
    * files; files picked but not saved yet are not on the server.
@@ -578,44 +562,9 @@ ${draft.description}`,
   }
 
   protected removeTextbook(textbook: BoundTextbook): void {
-    const assignment = this.assignment();
-    if (assignment === null) {
-      this.pickedTextbooks.update((picked) =>
-        picked.filter((candidate) => candidate.textbookId !== textbook.textbookId),
-      );
-      return;
-    }
-    this.api.unbindTextbook(assignment.id, textbook.textbookId).subscribe((changed) => {
-      this.assignment.set(changed);
-    });
-  }
-
-  protected confirmRemove(file: Attachment): void {
-    const assignment = this.assignment();
-    if (assignment === null) {
-      return;
-    }
-    this.confirmation.confirm(
-      dangerConfirmation({
-        header: T.page.deleteHeader,
-        message: T.page.deleteMessage(file.filename),
-        acceptLabel: T.page.delete,
-        accept: () => {
-          this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
-            this.assignment.set({
-              ...assignment,
-              attachments: assignment.attachments.filter((candidate) => candidate.id !== file.id),
-            });
-          });
-        },
-      }),
+    this.pickedTextbooks.update((picked) =>
+      picked.filter((candidate) => candidate.textbookId !== textbook.textbookId),
     );
-  }
-
-  protected download(file: Attachment): void {
-    this.api.teacherFile(file.id).subscribe((blob) => {
-      this.fileSaver.save(blob, file.filename);
-    });
   }
 
   /** Saves (a new assignment is given out); `toBoard` then puts it on a board of its students. */
