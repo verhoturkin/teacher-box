@@ -50,6 +50,18 @@ export interface SavedPrompt {
   readonly version: number;
 }
 
+/** Mirrors `SystemPromptView`: a system prompt of the assistant (ADR-0043). */
+export interface SystemPrompt {
+  readonly feature: AiFeature;
+  readonly text: string;
+  readonly defaultText: string;
+  /** Whether the teacher rewrote it; otherwise `text` is the standard one. */
+  readonly custom: boolean;
+  readonly updatedAt: string | null;
+  /** 0 for the standard prompt. */
+  readonly version: number;
+}
+
 export interface PromptInput {
   readonly title: string;
   readonly text: string;
@@ -92,5 +104,14 @@ export interface UsageReport {
   readonly usedTokens: number;
   readonly monthlyTokenLimit: number;
   readonly features: FeatureUsage[];
+  /** The newest requests of the month, the first page of 10. */
   readonly recent: AiRequestLog[];
+  /** Whether the month has older requests than `recent`. */
+  readonly moreRecent: boolean;
+}
+
+/** Mirrors `RequestPage`: the next requests of the log, newest first. */
+export interface RequestPage {
+  readonly items: AiRequestLog[];
+  readonly hasMore: boolean;
 }

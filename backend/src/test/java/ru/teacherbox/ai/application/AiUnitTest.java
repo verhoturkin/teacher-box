@@ -27,7 +27,7 @@ class AiUnitTest {
     void assistantIsOffWithoutProvider() {
         AiUsage usage = mock(AiUsage.class);
         AiAssistant assistant = new AiAssistant(new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                prompts, usage, mock(DraftSources.class), JsonMapper.builder().build());
+                prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), JsonMapper.builder().build());
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
                 new HomeworkBrief("Дроби", null, java.util.List.of())))

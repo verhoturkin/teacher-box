@@ -291,6 +291,7 @@ class AssistantIntegrationTests {
                     assertThat(json).extractingPath("$.features[1].requests").isEqualTo(2);
                     assertThat(json).extractingPath("$.features[1].inputTokens").isEqualTo(30);
                     assertThat(json).extractingPath("$.recent.length()").isEqualTo(3);
+                    assertThat(json).extractingPath("$.moreRecent").isEqualTo(false);
                 });
         assertThat(mvc.get().uri("/api/teacher/ai/usage?month=2020-01").with(TestUsers.teacher(TEACHER)))
                 .hasStatusOk()
@@ -299,6 +300,39 @@ class AssistantIntegrationTests {
                     assertThat(json).extractingPath("$.features[0].requests").isEqualTo(0);
                     assertThat(json).extractingPath("$.recent").asArray().isEmpty();
                 });
+    }
+
+    @Test
+    void theRequestLogComesByPagesOfTen() {
+        Instant now = clock.instant();
+        for (int i = 0; i < 12; i++) {
+            requests.insert(new AiRequest(UUID.randomUUID(), AiFeature.HOMEWORK_DRAFT, "fake", "model-" + i,
+                    RequestStatus.SUCCEEDED, 1, 1, 10, null, now.minusSeconds(12 - i)));
+        }
+        String month = YearMonth.from(now.atZone(ZoneId.of("Europe/Moscow"))).toString();
+
+        assertThat(mvc.get().uri("/api/teacher/ai/usage").with(TestUsers.teacher(TEACHER)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.recent.length()").isEqualTo(10);
+                    assertThat(json).extractingPath("$.recent[0].model").isEqualTo("model-11");
+                    assertThat(json).extractingPath("$.moreRecent").isEqualTo(true);
+                });
+        assertThat(mvc.get().uri("/api/teacher/ai/requests?offset=10&month=" + month)
+                .with(TestUsers.teacher(TEACHER)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.items[*].model").asArray()
+                            .containsExactly("model-1", "model-0");
+                    assertThat(json).extractingPath("$.hasMore").isEqualTo(false);
+                });
+        assertThat(mvc.get().uri("/api/teacher/ai/requests").with(TestUsers.teacher(TEACHER)))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.hasMore").isEqualTo(true);
+        assertThat(mvc.get().uri("/api/teacher/ai/requests?offset=-1").with(TestUsers.teacher(TEACHER)))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(mvc.get().uri("/api/teacher/ai/requests").with(TestUsers.student(UUID.randomUUID())))
+                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test

@@ -86,6 +86,26 @@ describe('IntegrationsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('Не удалось выполнить проверку');
   });
 
+  it('adds older AI requests by «Показать ещё»', async () => {
+    const usage = aiUsage({ moreRecent: true });
+    await render(aiStatus(), usage);
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    backend
+      .expectOne('/api/admin/ai/requests?month=2026-09&offset=2')
+      .flush({ items: usage.recent, hasMore: true });
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelectorAll('tbody tr')).toHaveLength(4);
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    backend
+      .expectOne('/api/admin/ai/requests?month=2026-09&offset=4')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    expect(readableText(hostElement(fixture))).toContain('Показать ещё');
+  });
+
   it('shows the monthly limit when there is one', async () => {
     await render(aiStatus({ monthlyTokenLimit: 5_000 }), aiUsage({ recent: [] }));
 

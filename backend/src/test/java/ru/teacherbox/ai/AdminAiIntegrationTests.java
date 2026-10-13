@@ -35,7 +35,13 @@ class AdminAiIntegrationTests {
         assertThat(mvc.get().uri("/api/admin/ai/usage?month=2026-09").with(TestUsers.admin(UUID.randomUUID())))
                 .hasStatusOk()
                 .bodyJson().extractingPath("$.month").isEqualTo("2026-09");
+        assertThat(mvc.get().uri("/api/admin/ai/requests?month=2026-09&offset=10")
+                .with(TestUsers.admin(UUID.randomUUID())))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.hasMore").isEqualTo(false);
         assertThat(mvc.get().uri("/api/admin/ai/usage").with(TestUsers.teacher(UUID.randomUUID())))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri("/api/admin/ai/requests").with(TestUsers.teacher(UUID.randomUUID())))
                 .hasStatus(HttpStatus.FORBIDDEN);
     }
 

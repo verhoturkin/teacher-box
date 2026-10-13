@@ -267,6 +267,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     «задание · сдано · срок»), files of assignments and answers (type icon; name button that downloads + size; the
     red «×» of the textbooks; the teacher's name button opens a PDF or a picture in a tab, the download is an icon
     button; picked files not sent yet are the same cards). The teacher opens a bound textbook by its title. «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-tb-board`.
+- AI requests (0.14.7) — the teacher's «Последние запросы» is a `tb-list` of cards, not a table: feature icon
+  (`pi-file-edit` / `pi-check-square`); feature + status `p-tag`; «dd.MM.yyyy HH:mm · model · N с», the error under it
+  (`tb-negative`); trail `--amount` — tokens; 10 rows, then «Показать ещё».
 - Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
   «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
   history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —

@@ -81,14 +81,41 @@ public final class AiViews {
     /**
      * Usage in a calendar month (instance time zone).
      *
-     * @param month {@code yyyy-MM}
+     * @param month      {@code yyyy-MM}
+     * @param recent     the newest requests of the month, the first page
+     * @param moreRecent whether the month has older requests than {@code recent}
      */
     public record UsageReport(
             String month,
             long usedTokens,
             long monthlyTokenLimit,
             List<FeatureUsage> features,
-            List<RequestView> recent) {
+            List<RequestView> recent,
+            boolean moreRecent) {
+    }
+
+    /** A page of the request log, newest first. */
+    public record RequestPage(List<RequestView> items, boolean hasMore) {
+
+        public RequestPage {
+            items = List.copyOf(items);
+        }
+    }
+
+    /**
+     * A system prompt of the assistant (ADR-0043).
+     *
+     * @param custom    whether the teacher rewrote it; otherwise {@code text} is the default one
+     * @param updatedAt when the teacher saved it, {@code null} for the default prompt
+     * @param version   {@code 0} for the default prompt
+     */
+    public record SystemPromptView(
+            AiFeature feature,
+            String text,
+            String defaultText,
+            boolean custom,
+            @Nullable Instant updatedAt,
+            long version) {
     }
 
     /** A prompt of the library. */

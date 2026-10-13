@@ -3,17 +3,21 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import {
+  AiFeature,
   AiStatus,
   HomeworkBrief,
   HomeworkDraft,
   PromptInput,
+  RequestPage,
   ReviewBrief,
   ReviewDraft,
   SavedPrompt,
+  SystemPrompt,
   UsageReport,
 } from './ai.models';
 
 const PROMPTS = '/api/teacher/ai/prompts';
+const SYSTEM_PROMPTS = '/api/teacher/ai/system-prompts';
 
 /** HTTP client of the AI module (teacher only). */
 @Injectable({ providedIn: 'root' })
@@ -73,6 +77,21 @@ export class AiApi {
     return this.http.delete(`${PROMPTS}/${id}`);
   }
 
+  /** The system prompts of the assistant (ADR-0043), one per feature. */
+  systemPrompts(): Observable<SystemPrompt[]> {
+    return this.http.get<SystemPrompt[]>(SYSTEM_PROMPTS, { context: quietContext() });
+  }
+
+  /** @param version the edited version, 0 for the standard prompt */
+  updateSystemPrompt(feature: AiFeature, text: string, version: number): Observable<SystemPrompt> {
+    return this.http.put<SystemPrompt>(`${SYSTEM_PROMPTS}/${feature}`, { text, version });
+  }
+
+  /** Back to the standard prompt. */
+  resetSystemPrompt(feature: AiFeature): Observable<SystemPrompt> {
+    return this.http.delete<SystemPrompt>(`${SYSTEM_PROMPTS}/${feature}`);
+  }
+
   reviewDraft(brief: ReviewBrief): Observable<ReviewDraft> {
     return this.http.post<ReviewDraft>('/api/teacher/ai/review-draft', brief);
   }
@@ -81,5 +100,16 @@ export class AiApi {
   usage(month?: string): Observable<UsageReport> {
     const params = month === undefined ? new HttpParams() : new HttpParams().set('month', month);
     return this.http.get<UsageReport>('/api/teacher/ai/usage', { params });
+  }
+
+  /**
+   * The requests of a month older than those already shown, by 10.
+   *
+   * @param month `yyyy-MM`
+   * @param offset how many newer requests are already shown
+   */
+  requests(month: string, offset: number): Observable<RequestPage> {
+    const params = new HttpParams().set('month', month).set('offset', offset);
+    return this.http.get<RequestPage>('/api/teacher/ai/requests', { params });
   }
 }

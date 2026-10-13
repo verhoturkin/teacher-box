@@ -119,7 +119,16 @@ export interface AiUsage {
   readonly month: string;
   readonly usedTokens: number;
   readonly monthlyTokenLimit: number;
+  /** The newest requests of the month, the first page of 10. */
   readonly recent: AiRequest[];
+  /** Whether the month has older requests than `recent`. */
+  readonly moreRecent: boolean;
+}
+
+/** The next AI requests of the log, newest first. */
+export interface AiRequestPage {
+  readonly items: AiRequest[];
+  readonly hasMore: boolean;
 }
 
 /** Mirrors `SettingKind`: what a setting holds. */

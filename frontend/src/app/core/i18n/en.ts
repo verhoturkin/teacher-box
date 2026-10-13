@@ -211,6 +211,7 @@ export const en: Translation<typeof ru> = {
       'ai.source-too-large': 'Too much for the AI: at most 5 sources, 20 pages and 20 MB at once',
       'ai.prompt-title-invalid': 'The prompt title is 1 to 100 characters long',
       'ai.prompt-text-invalid': 'The prompt text is 1 to 4000 characters long',
+      'ai.system-prompt-invalid': 'The system prompt is 1 to 10,000 characters long',
       // schedule
       'schedule.student-not-found': 'The student is not found or turned off',
       'schedule.lesson-not-found': 'Lesson not found',

@@ -25,10 +25,18 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Monthly token limit (`TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT`, input + output, instance time zone): over the limit
   requests are rejected before calling the provider.
 - `ai.requests` stores metadata only (feature, model, status, tokens, duration, error) — never texts.
+- Request log by pages of 10 (since 0.14.6): `usage` returns the first page (`recent`, `moreRecent`), `GET requests`
+  `?month&offset` the next ones (`RequestPage {items, hasMore}`), for the teacher and the administrator.
 - Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000 (no kinds
   since 0.14.1, ADR-0041); listed by title, optimistic locking, in the full reset; kept whether the AI is configured
   or not.
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
+- System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
+  0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `REVIEW_DRAFT`; 1–10000 characters,
+  `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v3`,
+  `review-draft.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
+  default prompt has version 0; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
+  with `<request>` / `<answer>`) stay resources.
 - Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?}`, prompts `homework-draft.*.v3`): always
   `{title, description}` — a Markdown text with numbered tasks; no kinds and no HTML pages since 0.14.1
   ([ADR-0041](../adr/0041-homework-without-kinds-board-link.md)).
@@ -46,9 +54,11 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 ## Data, REST
 
-`requests`, `prompts`. `/api/teacher/ai/**` (status, usage, homework-draft, review-draft, `prompts` CRUD), `/api/admin/ai/**` (status,
-usage metadata).
+`requests`, `prompts`, `system_prompts`. `/api/teacher/ai/**` (status, usage, requests, homework-draft, review-draft,
+`prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature), `/api/admin/ai/**`
+(status, usage, requests — metadata).
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`) with `prompt-library-card.ts`; embedded via `parts.ts`.
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`: usage, the request log with «Показать ещё») with `prompt-library-card.ts` and
+`system-prompts-card.ts` (both system prompts, «Изменён», a dialog with «Вернуть стандартный»); embedded via `parts.ts`.

@@ -1,5 +1,6 @@
 package ru.teacherbox.ai.web;
 
+import jakarta.validation.constraints.PositiveOrZero;
 import java.time.YearMonth;
 import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
+import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
 
 /** Administrator: the AI provider and the log of requests (metadata only, no texts; ADR-0010). */
@@ -30,5 +32,17 @@ class AdminAiController {
     @GetMapping("/usage")
     UsageReport usage(@RequestParam(required = false) @Nullable YearMonth month) {
         return usage.report(month);
+    }
+
+    /**
+     * The request log of a month by pages of 10.
+     *
+     * @param month  {@code yyyy-MM}, the current month by default
+     * @param offset how many newer requests are already shown
+     */
+    @GetMapping("/requests")
+    RequestPage requests(@RequestParam(required = false) @Nullable YearMonth month,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int offset) {
+        return usage.requests(month, offset);
     }
 }

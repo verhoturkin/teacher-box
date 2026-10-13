@@ -122,6 +122,7 @@ export function aiUsage(overrides: Partial<AiUsage> = {}): AiUsage {
         createdAt: '2026-09-26T08:00:00Z',
       },
     ],
+    moreRecent: false,
     ...overrides,
   };
 }

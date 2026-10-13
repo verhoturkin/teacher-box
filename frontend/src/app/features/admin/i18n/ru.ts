@@ -88,6 +88,7 @@ export const ru = {
     ofLimit: (limit: string) => `из ${limit}`,
     aiOff: 'ИИ-помощник не настроен (TEACHERBOX_AI_PROVIDER).',
     noRequests: 'В этом месяце запросов не было',
+    showMore: 'Показать ещё',
     when: 'Когда',
     what: 'Что',
     result: 'Итог',

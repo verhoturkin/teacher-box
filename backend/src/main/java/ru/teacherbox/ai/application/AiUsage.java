@@ -12,6 +12,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.FeatureUsage;
+import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.RequestView;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
 import ru.teacherbox.ai.domain.AiFeature;
@@ -27,7 +28,8 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 @Service
 public class AiUsage {
 
-    static final int RECENT_REQUESTS = 50;
+    /** Requests on a page of the log. */
+    public static final int PAGE_SIZE = 10;
 
     private final AiRequestRepository requests;
     private final ObjectProvider<LlmClient> llm;
@@ -75,11 +77,27 @@ public class AiUsage {
                     return new FeatureUsage(feature, total.requests(), total.inputTokens(), total.outputTokens());
                 })
                 .toList();
-        List<RequestView> recent = requests.findRecent(from, to, RECENT_REQUESTS).stream()
+        RequestPage recent = page(from, to, 0);
+        return new UsageReport(period.toString(), requests.totalTokens(from, to), properties.monthlyTokenLimit(),
+                features, recent.items(), recent.hasMore());
+    }
+
+    /**
+     * The request log of a month by pages of {@link #PAGE_SIZE}, newest first.
+     *
+     * @param month  {@code null} for the current month
+     * @param offset how many newer requests are already shown
+     */
+    public RequestPage requests(@Nullable YearMonth month, int offset) {
+        YearMonth period = month == null ? currentMonth() : month;
+        return page(start(period), start(period.plusMonths(1)), Math.max(0, offset));
+    }
+
+    private RequestPage page(Instant from, Instant to, int offset) {
+        List<RequestView> found = requests.findRecent(from, to, offset, PAGE_SIZE + 1).stream()
                 .map(RequestView::of)
                 .toList();
-        return new UsageReport(period.toString(), requests.totalTokens(from, to), properties.monthlyTokenLimit(),
-                features, recent);
+        return new RequestPage(found.subList(0, Math.min(PAGE_SIZE, found.size())), found.size() > PAGE_SIZE);
     }
 
     private YearMonth currentMonth() {

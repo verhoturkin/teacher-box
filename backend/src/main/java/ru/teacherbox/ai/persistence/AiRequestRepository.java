@@ -78,15 +78,21 @@ public class AiRequestRepository {
 
     /** Requests in {@code [from, to)}, newest first. */
     public List<AiRequest> findRecent(Instant from, Instant to, int limit) {
+        return findRecent(from, to, 0, limit);
+    }
+
+    /** Requests in {@code [from, to)}, newest first, skipping the first {@code offset}. */
+    public List<AiRequest> findRecent(Instant from, Instant to, int offset, int limit) {
         return jdbc.sql("""
                 select id, feature, provider, model, status, input_tokens, output_tokens, duration_ms, error, created_at
                 from ai.requests
                 where created_at >= :from and created_at < :to
                 order by created_at desc, id desc
-                fetch first :limit rows only
+                offset :offset rows fetch next :limit rows only
                 """)
                 .param("from", from)
                 .param("to", to)
+                .param("offset", offset)
                 .param("limit", limit)
                 .query(AiRequestRepository::map)
                 .list();
