@@ -55,13 +55,15 @@ file of the assignment's materials — name, type, size, content; another assign
 `features/homework/`: `teacher/` (assignments, assignment page, editor, review queue), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
-the download button saves them under `boundTextbookFilename`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
+the download button saves them under `boundTextbookFilename`; 0.14.5: the teacher's tap on the title opens the whole
+textbook, a PDF at its first bound page — `teacher/material-opener.ts`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
 `@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
 `canLeaveGuard`; «Новое задание» and the home quick action lead there): one Markdown field with a «Текст / Просмотр»
 switch; students and groups (`tb-group-picker`, a multiselect: a group adds its students, taking it off removes them),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
 (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new
-assignment (0.14.2: a saved one changes them on its page)
+assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
+as the saved ones, the name of a PDF or a picture opens it in a tab (0.14.5)
 (`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created
 without students, gets its files and textbooks, then is given out — the notification goes with the materials in place;
 a material that fails leaves the assignment saved with an error toast. Header: «Выдать» / «Сохранить» (filled) and
@@ -70,7 +72,8 @@ saved assignment (`ToBoardDialog [frame] [pictures]` from `teacher/assignment-bo
 `placed` → `PUT …/board`, closing the dialog leads to the assignment page. The assignment page: «На доску» (enabled
 with a text, a picture file or a textbook page) also remembers the board, «Открыть доску» (`pi-arrow-up-right`) when
 there is one, «Удалить…» (danger confirmation); materials — `ui/attachment-list.ts`, a `tb-list` like the textbooks
-(type icon, name, size, the same red «×»); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
+(type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
+picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
 and groups side by side). The list (`teacher/assignments-page.ts`) — cards: title, «кому · до …», the progress badge
 (`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» are `tb-list` cards too

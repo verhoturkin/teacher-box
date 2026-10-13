@@ -41,3 +41,12 @@ export function assignmentProgress(assignment: AssignmentSummary): AssignmentPro
 }
 
 export { formatFileSize } from '@shared/files/file-size';
+
+/** The icon of a file in a list: a picture, a PDF or any other file. */
+export function fileIcon(contentType: string): string {
+  return contentType.startsWith('image/')
+    ? 'pi pi-image'
+    : contentType === 'application/pdf'
+      ? 'pi pi-file-pdf'
+      : 'pi pi-file';
+}

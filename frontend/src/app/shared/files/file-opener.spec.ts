@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject, of, throwError } from 'rxjs';
-import { FileOpener, OPENED_URL_TTL_MS } from './file-opener';
+import { FileOpener, OPENED_URL_TTL_MS, isShowable } from './file-opener';
 import { FileSaver } from './file-saver';
 
 describe('FileOpener', () => {
@@ -39,6 +39,20 @@ describe('FileOpener', () => {
     expect(saved).toEqual([]);
     vi.advanceTimersByTime(OPENED_URL_TTL_MS);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:pdf');
+  });
+
+  it('opens a PDF at the given page, a picture as it is', () => {
+    opener.open(of(new Blob(['%PDF'], { type: 'application/pdf' })), true, () => 'a.pdf', 12);
+    expect(tab.location.href).toBe('blob:pdf#page=12');
+
+    opener.open(of(new Blob(['png'], { type: 'image/png' })), true, () => 'a.png', 3);
+    expect(tab.location.href).toBe('blob:pdf');
+  });
+
+  it('knows what the browser shows', () => {
+    expect(isShowable('application/pdf')).toBe(true);
+    expect(isShowable('IMAGE/JPEG; q=1')).toBe(true);
+    expect(isShowable('application/zip')).toBe(false);
   });
 
   it('saves what the browser cannot show and closes the tab', () => {

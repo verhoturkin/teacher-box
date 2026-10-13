@@ -48,6 +48,7 @@ import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
+import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 
 /** A student that can receive homework. */
@@ -211,6 +212,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             <tb-textbook-list
               [textbooks]="textbooks()"
               [editable]="true"
+              (opened)="materials.textbook($event)"
               (edit)="editTextbook($event)"
               (remove)="removeTextbook($event)"
             />
@@ -278,6 +280,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirmation = inject(ConfirmationService);
+  protected readonly materials = inject(MaterialOpener);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */

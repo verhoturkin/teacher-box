@@ -1137,22 +1137,6 @@ a.p-menu-item-link:hover {
   overflow-wrap: anywhere;
 }
 
-/* Files */
-.tb-files {
-  list-style: none;
-  margin: var(--tb-space-2) 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-}
-
-.tb-files__item {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-2);
-}
-
 .tb-link-button {
   padding: 0;
   border: 0;

@@ -36,7 +36,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
 
 /**
  * Textbooks of an assignment (ADR-0033). The student downloads the bound pages; the teacher changes the
- * pages, unbinds and puts the pages on a board.
+ * pages, unbinds and puts the pages on a board. The title opens the textbook for both.
  */
 @Component({
   selector: 'tb-textbook-list',
@@ -51,7 +51,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
               ><i [class]="icons[textbook.kind]"></i
             ></span>
             <div class="tb-list__text">
-              @if (downloadable()) {
+              @if (downloadable() || editable()) {
                 <button
                   type="button"
                   class="tb-list__title tb-link-button"
@@ -126,7 +126,10 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
 export class TextbookList {
   protected readonly t = T.textbooks;
   readonly textbooks = input.required<readonly BoundTextbook[]>();
-  /** The student: a tap on the title opens the bound pages, the button saves them. */
+  /**
+   * The student: a tap on the title opens the bound pages, the button saves them. The teacher (`editable`) opens
+   * the textbook by its title too.
+   */
   readonly downloadable = input(false);
   /** The teacher: put the pages on a board, change them, unbind. */
   readonly editable = input(false);

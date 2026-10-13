@@ -2,10 +2,13 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { Attachment } from '../data-access/homework.models';
-import { formatFileSize } from '../homework-labels';
+import { fileIcon, formatFileSize } from '../homework-labels';
 import { T } from '../i18n/texts';
 
-/** Files of an assignment or a submission: a card list like the textbooks, the same «×» to remove. */
+/**
+ * Files of an assignment or a submission: a card list like the textbooks, the same «×» to remove. The name downloads
+ * the file, or — `openable` — opens it (a PDF or a picture in a tab) with the download button beside it.
+ */
 @Component({
   selector: 'tb-attachment-list',
   imports: [Button, Tooltip],
@@ -17,26 +20,50 @@ import { T } from '../i18n/texts';
           <li>
             <span class="tb-list__lead" aria-hidden="true"><i [class]="icon(file)"></i></span>
             <div class="tb-list__text">
-              <button
-                type="button"
-                class="tb-list__title tb-link-button"
-                (click)="download.emit(file)"
-              >
-                {{ file.filename }}
-              </button>
+              @if (openable()) {
+                <button
+                  type="button"
+                  class="tb-list__title tb-link-button"
+                  [attr.aria-label]="t.openFile(file.filename)"
+                  (click)="opened.emit(file)"
+                >
+                  {{ file.filename }}
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="tb-list__title tb-link-button"
+                  (click)="download.emit(file)"
+                >
+                  {{ file.filename }}
+                </button>
+              }
               <span class="tb-list__supporting">{{ size(file.size) }}</span>
             </div>
-            @if (removable()) {
+            @if (openable() || removable()) {
               <div class="tb-list__trail tb-list__trail--icons">
-                <p-button
-                  icon="pi pi-times"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="danger"
-                  [pTooltip]="t.removeFile(file.filename)"
-                  [ariaLabel]="t.removeFile(file.filename)"
-                  (onClick)="remove.emit(file)"
-                />
+                @if (openable()) {
+                  <p-button
+                    icon="pi pi-download"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [pTooltip]="t.downloadFile(file.filename)"
+                    [ariaLabel]="t.downloadFile(file.filename)"
+                    (onClick)="download.emit(file)"
+                  />
+                }
+                @if (removable()) {
+                  <p-button
+                    icon="pi pi-times"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="danger"
+                    [pTooltip]="t.removeFile(file.filename)"
+                    [ariaLabel]="t.removeFile(file.filename)"
+                    (onClick)="remove.emit(file)"
+                  />
+                }
               </div>
             }
           </li>
@@ -55,15 +82,14 @@ export class AttachmentList {
   protected readonly t = T.ui;
   readonly attachments = input.required<readonly Attachment[]>();
   readonly removable = input(false);
+  /** The name opens the file; downloading it is a button of its own. */
+  readonly openable = input(false);
+  readonly opened = output<Attachment>();
   readonly download = output<Attachment>();
   readonly remove = output<Attachment>();
 
   protected icon(file: Attachment): string {
-    return file.contentType.startsWith('image/')
-      ? 'pi pi-image'
-      : file.contentType === 'application/pdf'
-        ? 'pi pi-file-pdf'
-        : 'pi pi-file';
+    return fileIcon(file.contentType);
   }
 
   protected size(bytes: number): string {

@@ -40,7 +40,7 @@ ADR: [0042](adr/0042-ai-reads-picked-files.md) — picked files go with the draf
 
 ### 181. Materials in the editor (F)
 
-- [ ] 181.1 **F** `homework/ui/file-picker.ts`: picked files as a card list (`tb-list`, like `tb-attachment-list`),
+- [x] 181.1 **F** `homework/ui/file-picker.ts`: picked files as a card list (`tb-list`, like `tb-attachment-list`),
   the name opens the file. `ui/textbook-list.ts`: the teacher opens a textbook by its title (the whole file, a
   PDF at the first bound page); `teacher/assignment-page.ts` — a file name opens it (PDF and pictures in a tab),
   the editor — picked textbooks and files. Docs: `docs/modules/homework.md`, help articles.
