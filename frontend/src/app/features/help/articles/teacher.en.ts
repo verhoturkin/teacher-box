@@ -368,7 +368,7 @@ The rules the AI follows in its drafts (tone, language, the layout of a task, ho
 
 ## Limit and costs
 
-The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. «Recent requests» shows the 10 newest first, the rest of the month — with «Show more». When the limit is used up, the AI buttons stop working until the next month.
+The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. «Recent requests» are cards: what was asked, the result, the time, the model and how many tokens it took; a failed one shows its error. The 10 newest come first, the rest of the month — with «Show more». When the limit is used up, the AI buttons stop working until the next month.
 
 The AI assistant is connected when the portal is installed (by whoever set up the server): Claude, Gemini, DeepSeek, OpenRouter — models of many companies with one key — or another service. If there are no AI buttons, it is not connected.
 `,

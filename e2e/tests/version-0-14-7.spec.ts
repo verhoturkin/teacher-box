@@ -1,9 +1,9 @@
 import { type APIRequestContext, expect, test } from '@playwright/test';
 
 /**
- * Version 0.14.6: the AI request log comes by pages of 10, the teacher rewrites the system prompts of the assistant
- * and restores the standard ones (ADR-0043). The E2E instance has no AI service, so the AI page hides its cards;
- * the API works without one and is checked here, the cards — by the unit tests.
+ * Versions 0.14.6–0.14.7: the AI request log comes by pages of 10 and is a list of cards, the teacher rewrites the
+ * system prompts of the assistant and restores the standard ones (ADR-0043). The E2E instance has no AI service, so
+ * the AI page hides its cards; the API works without one and is checked here, the cards — by the unit tests.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
