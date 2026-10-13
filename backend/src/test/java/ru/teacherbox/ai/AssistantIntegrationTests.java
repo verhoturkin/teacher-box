@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.ai.application.LlmException;
@@ -136,6 +137,33 @@ class AssistantIntegrationTests {
         assertThat(post("/api/teacher/ai/homework-draft", """
                 {"prompt": "x", "sources": [{"type": "FILE", "id": "%s"}]}
                 """.formatted(UUID.randomUUID()))).as("a file needs its assignment").hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void draftsHomeworkFromFilesSentWithTheRequest() {
+        llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
+        MockMultipartFile brief = new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE, """
+                {"prompt": "Задачи по этому файлу", "title": "Дроби"}
+                """.getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile scan = new MockMultipartFile("files", "Скан.png", "image/png", new byte[] {1, 2, 3});
+
+        assertThat(mvc.post().uri("/api/teacher/ai/homework-draft").with(TestUsers.teacher(TEACHER))
+                .multipart().file(brief).file(scan)).hasStatusOk();
+
+        assertThat(llm.lastRequest().sources()).singleElement().satisfies(source -> {
+            assertThat(source.name()).isEqualTo("Скан.png");
+            assertThat(source.mediaType()).isEqualTo("image/png");
+        });
+        assertThat(llm.lastRequest().prompt()).contains("Скан.png");
+
+        MockMultipartFile word = new MockMultipartFile("files", "a.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", new byte[] {1});
+        assertThat(mvc.post().uri("/api/teacher/ai/homework-draft").with(TestUsers.teacher(TEACHER))
+                .multipart().file(brief).file(word)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(mvc.post().uri("/api/teacher/ai/homework-draft").with(TestUsers.teacher(TEACHER))
+                .multipart().file(new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE,
+                        "{\"prompt\": \" \"}".getBytes(StandardCharsets.UTF_8))))
+                .as("the brief is checked like the JSON request").hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test

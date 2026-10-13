@@ -32,7 +32,7 @@ ADR: [0042](adr/0042-ai-reads-picked-files.md) — picked files go with the draf
 
 ### 180. AI reads files picked for a new assignment (B, F)
 
-- [ ] 180.1 **B** `ai/web/TeacherAiController`: `POST homework-draft` also as `multipart/form-data` (part `brief` —
+- [x] 180.1 **B** `ai/web/TeacherAiController`: `POST homework-draft` also as `multipart/form-data` (part `brief` —
   the JSON request, parts `files`); `DraftSources.Upload` — the same types and limits (5 sources, 20 MB).
   ADR-0042, `docs/modules/ai.md`.
 - [ ] 180.2 **F** `ai/data-access/ai-api.ts` (`homeworkDraft(brief, files)`), `SourceOption.file`;

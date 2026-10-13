@@ -20,8 +20,9 @@ import ru.teacherbox.textbooks.api.TextbookSummary;
 import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * The sources of a homework draft (ADR-0039): pages of a textbook or a file of an assignment, read through their
- * modules' facades and kept within what a request may carry.
+ * The sources of a homework draft (ADR-0039, ADR-0042): pages of a textbook or a file of an assignment, read through
+ * their modules' facades, or a file the teacher picked for an assignment not saved yet, sent with the request; all
+ * kept within what a request may carry.
  */
 @Component
 public class DraftSources {
@@ -40,6 +41,10 @@ public class DraftSources {
     }
 
     public record AssignmentFileRef(UUID assignmentId, UUID attachmentId) implements Source {
+    }
+
+    /** A file sent with the request (ADR-0042). */
+    public record Upload(String filename, String contentType, long size, Resource content) implements Source {
     }
 
     private final Textbooks textbooks;
@@ -65,6 +70,8 @@ public class DraftSources {
             LlmSource material = switch (source) {
                 case TextbookPages pages -> textbook(pages);
                 case AssignmentFileRef file -> file(file);
+                case Upload upload -> material(upload.filename(), upload.contentType(), upload.size(),
+                        upload.content());
             };
             total += material.content().length;
             if (total > MAX_BYTES) {

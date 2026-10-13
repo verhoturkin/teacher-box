@@ -36,7 +36,10 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `{type: TEXTBOOK, id, pages?}` (`Textbooks.content`, pages blank — the whole PDF; a picture — `Textbooks.file`) and
   `{type: FILE, assignmentId, id}` (`AssignmentFiles.file`); PDF or png / jpeg / webp / gif only
   (`ai.source-unsupported`), at most 20 pages and 20 MB (`ai.source-too-large`), a missing one — 404
-  `ai.source-not-found`. `LlmRequest.sources` go before the prompt: Anthropic — `document` (titled) and `image`
+  `ai.source-not-found`. Files of an assignment not saved yet ([ADR-0042](../adr/0042-ai-reads-picked-files.md)):
+  the same endpoint as `multipart/form-data` — part `brief` (the JSON request) and parts `files`
+  (`DraftSources.Upload`, the same types and limits, counted among the 5 sources; nothing is stored).
+  `LlmRequest.sources` go before the prompt: Anthropic — `document` (titled) and `image`
   blocks; OpenAI-compatible — `image_url` data URIs, a PDF drawn page by page by `PdfPictures` (PDFBox, 100 dpi). The
   prompt names them; `ai.requests` keeps no names.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.

@@ -6,16 +6,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.ai.application.AiAssistant;
 import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
@@ -30,7 +34,7 @@ import ru.teacherbox.textbooks.api.PageRanges;
 
 /**
  * The teacher's AI assistant. Texts are sent by the frontend; the sources of a draft are named by their IDs and read
- * through their modules (ADR-0039).
+ * through their modules (ADR-0039), files picked for an assignment not saved yet come with the request (ADR-0042).
  */
 @RestController
 @RequestMapping("/api/teacher/ai")
@@ -88,11 +92,39 @@ class TeacherAiController {
         return usage.status();
     }
 
-    @PostMapping("/homework-draft")
+    @PostMapping(path = "/homework-draft", consumes = MediaType.APPLICATION_JSON_VALUE)
     HomeworkDraft homeworkDraft(@Valid @RequestBody HomeworkDraftRequest request) {
+        return homeworkDraft(request, List.of());
+    }
+
+    /**
+     * The same request with files of an assignment not saved yet (ADR-0042): part {@code brief} — the JSON request,
+     * parts {@code files} — the files; they count among the 5 sources.
+     */
+    @PostMapping(path = "/homework-draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    HomeworkDraft homeworkDraftWithFiles(@Valid @RequestPart("brief") HomeworkDraftRequest request,
+            @RequestPart(name = "files", required = false) @Nullable List<MultipartFile> files) {
+        return homeworkDraft(request, files == null ? List.of() : files.stream()
+                .map(TeacherAiController::upload)
+                .toList());
+    }
+
+    private HomeworkDraft homeworkDraft(HomeworkDraftRequest request, List<DraftSources.Source> uploads) {
         List<SourceRequest> sources = request.sources();
-        return assistant.homeworkDraft(new HomeworkBrief(request.prompt(), request.title(),
-                sources == null ? List.of() : sources.stream().map(SourceRequest::toSource).toList()));
+        List<DraftSources.Source> all = new ArrayList<>();
+        if (sources != null) {
+            sources.stream().map(SourceRequest::toSource).forEach(all::add);
+        }
+        all.addAll(uploads);
+        return assistant.homeworkDraft(new HomeworkBrief(request.prompt(), request.title(), all));
+    }
+
+    private static DraftSources.Source upload(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        String contentType = file.getContentType();
+        return new DraftSources.Upload(filename == null || filename.isBlank() ? "file" : filename,
+                contentType == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : contentType,
+                file.getSize(), file.getResource());
     }
 
     @PostMapping("/review-draft")

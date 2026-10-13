@@ -20,6 +20,7 @@ import org.springframework.core.io.ByteArrayResource;
 import ru.teacherbox.ai.application.DraftSources.AssignmentFileRef;
 import ru.teacherbox.ai.application.DraftSources.Source;
 import ru.teacherbox.ai.application.DraftSources.TextbookPages;
+import ru.teacherbox.ai.application.DraftSources.Upload;
 import ru.teacherbox.homework.api.AssignmentFiles;
 import ru.teacherbox.homework.api.AssignmentFiles.AssignmentFile;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -91,6 +92,21 @@ class DraftSourcesTest {
                     assertThat(source.name()).isEqualTo("Задачи.jpg");
                     assertThat(source.mediaType()).isEqualTo("image/jpeg");
                 });
+    }
+
+    @Test
+    void readsAFileSentWithTheRequest() {
+        Upload scan = new Upload("Скан.png", "image/png", 3, new ByteArrayResource(new byte[] {1, 2, 3}));
+        Upload text = new Upload("a.txt", "text/plain", 1, new ByteArrayResource(new byte[] {1}));
+
+        assertThat(sources.read(List.of(scan))).singleElement().satisfies(source -> {
+            assertThat(source.name()).isEqualTo("Скан.png");
+            assertThat(source.mediaType()).isEqualTo("image/png");
+            assertThat(source.content()).containsExactly(1, 2, 3);
+        });
+        assertThatThrownBy(() -> sources.read(List.of(text)))
+                .isInstanceOfSatisfying(BusinessRuleException.class,
+                        e -> assertThat(e.code()).isEqualTo("ai.source-unsupported"));
     }
 
     @Test
