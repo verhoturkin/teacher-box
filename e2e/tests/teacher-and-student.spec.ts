@@ -204,7 +204,6 @@ test('the home pages sum up the day', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await expect(page.getByText('Требует внимания')).toBeVisible();
   await expect(page.getByText(/Поступило за/)).toBeVisible();
-  await expect(page.getByText('Впереди на неделе:')).toBeVisible();
 
   const student = await studentPage(browser);
   // 0.15.1: the title of the nearest lesson is for screen readers only

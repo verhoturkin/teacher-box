@@ -151,7 +151,9 @@ test('«Начать урок» is a split button with the browser in its menu',
 
   // 0.15.3: no «Сегодня» on the home page — the details of the lesson in the schedule have the button
   await page.goto('/teacher/schedule');
-  await page.locator('.fc-event').filter({ hasText: name }).first().click();
+  // the list view: the week grid starts at 07:00, a lesson at night is not in it
+  await page.getByRole('tab', { name: /Список/ }).click();
+  await page.locator('tb-schedule-calendar').getByText(name).first().click();
   const row = page.getByRole('dialog').filter({ hasText: name });
   const split = row.getByRole('group', { name: 'Начать урок' });
   await expect(split.getByRole('button', { name: 'Начать урок' })).toBeVisible();
