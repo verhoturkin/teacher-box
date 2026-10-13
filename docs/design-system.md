@@ -127,7 +127,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   all cards line up.
 - **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
   first). No card grids. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
-  readable width inside its card (`tb-form--narrow`). Columns only inside one row of data
+  readable width inside its card (`tb-form--narrow`); «Мой аккаунт» puts its forms in cards side by side — they
+  take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
 - **Long settings pages** use foldable sections `tb-fold-card` (not tabs): header is a button with chevron and
   a line of explanation; content loads on first open; open sections in the URL (`?open=`). Pages: the
@@ -160,7 +161,9 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
   button too). The student's request
-  buttons go under the event and are hidden while the lesson runs. No «Расписание» link: the schedule is in the
+  buttons are at the end of the event (under it, across the width, on a narrow card) and are hidden while the lesson
+  runs (0.15.1: the student's card is laid out as the teacher's — no visible title, «Занятие» or the group, the
+  topic and «Занятий на неделе» next to the tile). No «Расписание» link: the schedule is in the
   navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
   visible title (`h2.tb-sr-only` «Следующее занятие»): it is the first card and the tile says what it is.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.

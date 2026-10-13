@@ -59,6 +59,7 @@ export const en: Translation<typeof ru> = {
   },
   next: {
     title: 'Next lesson',
+    lesson: 'Lesson',
     requestSent: (kind: string) =>
       `${kind}: the request is sent, waiting for the teacher’s answer.`,
     nothing: 'No upcoming lessons',
@@ -131,6 +132,9 @@ export const en: Translation<typeof ru> = {
     withdraw: 'Withdraw',
     withdrawOf: (time: string) => `Withdraw the request: ${time}`,
     requests: 'My requests',
+    noPendingRequests: 'No requests are waiting for the teacher’s answer',
+    resolved: 'Resolved requests',
+    resolvedRequests: (count: number) => `Resolved: ${String(count)}`,
     group: (name: string) => `group «${name}»`,
     teacher: (answer: string) => `Teacher: ${answer}`,
     whatCalendar: 'the calendar',

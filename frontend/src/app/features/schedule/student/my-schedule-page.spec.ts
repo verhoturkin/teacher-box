@@ -218,8 +218,15 @@ describe('MySchedulePage', () => {
 
     expect(text).toContain('Запрос «Отмена» ждёт ответа учителя');
     expect(text).toContain('Мои запросы');
-    expect(text).toContain('Отклонено');
-    expect(text).toContain('Учитель: Проведём');
+    // the answered request is under «Решённые», folded
+    expect(text).not.toContain('Отклонено');
+    const resolved = buttonByText(hostElement(fixture), 'Решённые: 1');
+    expect(resolved.getAttribute('aria-expanded')).toBe('false');
+    resolved.click();
+    await fixture.whenStable();
+    expect(resolved.getAttribute('aria-expanded')).toBe('true');
+    expect(readableText(hostElement(fixture))).toContain('Отклонено');
+    expect(readableText(hostElement(fixture))).toContain('Учитель: Проведём');
     expect(() => buttonByText(hostElement(fixture), 'Перенести')).toThrow();
 
     buttonByText(hostElement(fixture), 'Отозвать').click();
@@ -301,8 +308,11 @@ describe('MySchedulePage', () => {
 
     expect(text).toContain('Группа «ОГЭ»');
     expect(text).toContain('Вы предупредили, что не придёте');
-    expect(text).toContain('Не придёт');
-    expect(text).toContain('группа «ОГЭ»');
+    expect(text).toContain('Запросов, ждущих ответа учителя, нет');
+    buttonByText(hostElement(fixture), 'Решённые: 1').click();
+    await fixture.whenStable();
+    expect(readableText(hostElement(fixture))).toContain('Не придёт');
+    expect(readableText(hostElement(fixture))).toContain('группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Не приду').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Не приду на занятие');

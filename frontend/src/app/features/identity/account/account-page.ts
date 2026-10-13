@@ -108,7 +108,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
         @if (account(); as account) {
           @if (isTeacher()) {
             <p-card [header]="t.name">
-              <form class="tb-form tb-form--narrow" [formGroup]="nameForm" (ngSubmit)="rename()">
+              <form class="tb-form" [formGroup]="nameForm" (ngSubmit)="rename()">
                 <div class="tb-field">
                   <label for="account-name">{{ t.name }}</label>
                   <input pInputText id="account-name" formControlName="name" maxlength="100" />
@@ -132,11 +132,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
           }
           @if (isStudent()) {
             <p-card [header]="t.name">
-              <form
-                class="tb-form tb-form--narrow"
-                [formGroup]="ownNameForm"
-                (ngSubmit)="renameSelf()"
-              >
+              <form class="tb-form" [formGroup]="ownNameForm" (ngSubmit)="renameSelf()">
                 <div class="tb-field">
                   <label for="account-own-name">{{ t.name }}</label>
                   <input pInputText id="account-own-name" formControlName="name" maxlength="100" />
@@ -157,7 +153,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
           }
         }
         <p-card [header]="t.changePassword">
-          <tb-change-password-form [tonal]="true" (changed)="passwordChanged()" />
+          <tb-change-password-form [tonal]="true" [narrow]="false" (changed)="passwordChanged()" />
         </p-card>
       </div>
     </div>

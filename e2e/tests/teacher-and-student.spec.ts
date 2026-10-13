@@ -195,6 +195,8 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
   await expect(page.getByRole('button', { name: 'Ответить' })).toBeHidden();
 
   await student.reload();
+  // 0.15.1: an answered request is under «Решённые»
+  await student.getByRole('button', { name: 'Решённые' }).click();
   await expect(student.getByText('Согласовано')).toBeVisible();
 });
 
@@ -205,7 +207,8 @@ test('the home pages sum up the day', async ({ page, browser }) => {
   await expect(page.getByText('Впереди на неделе:')).toBeVisible();
 
   const student = await studentPage(browser);
-  await expect(student.getByText('Ближайшее занятие')).toBeVisible();
+  // 0.15.1: the title of the nearest lesson is for screen readers only
+  await expect(student.getByRole('heading', { name: 'Ближайшее занятие' })).toHaveCount(1);
   await expect(student.getByText('Проценты')).toBeVisible();
   await expect(student.getByText('аванс 1 500 ₽')).toBeVisible();
   await expect(student.getByText('Открытых заданий нет')).toBeVisible();
