@@ -757,6 +757,36 @@ textarea.p-textarea {
 }
 
 /*
+ * A list whose lead icon only decorates (a board, a task, a textbook…), `tb-list--no-phone-lead`: on a
+ * phone the icon goes away and the text takes its place, so the title gets the width. Avatars of
+ * people stay — such lists do not take the modifier.
+ */
+@media (width <= 48em) {
+  .tb-list--no-phone-lead {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    > li {
+      grid-template-areas: 'text trail';
+    }
+
+    .tb-list__lead {
+      display: none;
+    }
+  }
+
+  @container (max-width: 26rem) {
+    .tb-list.tb-list--no-phone-lead
+      > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+      grid-template-areas: 'text text' 'trail trail';
+    }
+
+    .tb-list.tb-list--no-phone-lead > li:has(> .tb-list__trail--amount) {
+      grid-template-areas: 'text trail' 'amount trail';
+    }
+  }
+}
+
+/*
  * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
  * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
  */

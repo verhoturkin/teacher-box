@@ -255,7 +255,7 @@ const ALL_DAY_START_HOUR = 10;
           @if (series().length === 0) {
             <tb-empty-state icon="pi-replay" [title]="t.noSeriesTitle" [hint]="t.noSeriesHint" />
           } @else {
-            <ul class="tb-list">
+            <ul class="tb-list tb-list--no-phone-lead">
               @for (item of series(); track item.id) {
                 <li>
                   <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
@@ -314,7 +314,7 @@ const ALL_DAY_START_HOUR = 10;
           @if (offTimes().length === 0) {
             <tb-empty-state icon="pi-moon" [title]="t.noOffTimeTitle" [hint]="t.noOffTimeHint" />
           } @else {
-            <ul class="tb-list">
+            <ul class="tb-list tb-list--no-phone-lead">
               @for (item of offTimes(); track item.id) {
                 <li>
                   <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>

@@ -125,7 +125,7 @@ const STATUS_LABELS: Record<
               @if (recent().length === 0) {
                 <tb-empty-state [compact]="true" icon="pi-sparkles" [title]="t.noRequests" />
               } @else {
-                <ul class="tb-list" [attr.aria-label]="t.recent">
+                <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.recent">
                   @for (row of recent(); track $index) {
                     <li>
                       <span class="tb-list__lead" aria-hidden="true"

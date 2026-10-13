@@ -43,7 +43,7 @@ export const LEDGER_PAGE = 20;
     @if (entries().length === 0) {
       <tb-empty-state icon="pi-wallet" [title]="t.empty" />
     } @else {
-      <ul class="tb-list" [attr.aria-label]="t.history">
+      <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
         @for (entry of visible(); track entry.id) {
           <li [class.tb-inactive]="entry.inactive">
             <span class="tb-list__lead" aria-hidden="true"

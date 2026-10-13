@@ -275,6 +275,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   - `tb-list__lead` — 40 px secondary-container circle: for people the component `tb-avatar`
     (`@shared/ui/avatar`: the student's photo cut to a circle, otherwise the initials; `size` for a bigger
     one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
+    0.15.2: a list whose icon only decorates (tasks, boards, textbooks, calls, notifications, requests, lessons
+    of the student, recurring lessons and days off, payments, AI requests and prompts) takes `tb-list--no-phone-lead`:
+    on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;

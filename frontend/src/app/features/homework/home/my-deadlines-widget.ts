@@ -18,7 +18,7 @@ import { T } from '../i18n/texts';
       @if (homework.upcoming.length === 0) {
         <tb-empty-state [compact]="true" icon="pi-pen-to-square" [title]="t.nothing" />
       } @else {
-        <ul class="tb-list tb-deadlines">
+        <ul class="tb-list tb-list--no-phone-lead tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
             <li>
               <span

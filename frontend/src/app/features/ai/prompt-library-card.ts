@@ -47,29 +47,31 @@ import { T } from './i18n/texts';
           [hint]="t.emptyHint"
         />
       } @else {
-        <ul class="tb-list">
+        <ul class="tb-list tb-list--no-phone-lead">
           @for (prompt of prompts(); track prompt.id) {
             <li>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ prompt.title }}</span>
                 <span class="tb-prompt-text">{{ prompt.text }}</span>
               </div>
-              <p-button
-                icon="pi pi-pencil"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.edit(prompt.title)"
-                (onClick)="edit(prompt)"
-              />
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                [rounded]="true"
-                severity="danger"
-                [ariaLabel]="t.delete(prompt.title)"
-                (onClick)="confirmDelete(prompt)"
-              />
+              <div class="tb-list__trail tb-list__trail--icons">
+                <p-button
+                  icon="pi pi-pencil"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [ariaLabel]="t.edit(prompt.title)"
+                  (onClick)="edit(prompt)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="danger"
+                  [ariaLabel]="t.delete(prompt.title)"
+                  (onClick)="confirmDelete(prompt)"
+                />
+              </div>
             </li>
           }
         </ul>

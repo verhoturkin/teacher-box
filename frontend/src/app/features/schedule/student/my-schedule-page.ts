@@ -91,7 +91,7 @@ export function nextMonday(date: Date): Date {
           @if (upcoming().length === 0) {
             <tb-empty-state icon="pi-calendar" [title]="t.noMoreTitle" [hint]="t.noMoreHint" />
           } @else {
-            <ul class="tb-list tb-schedule-list">
+            <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {
                 <li [class.tb-list__item--link]="mobile()">
                   <span class="tb-list__lead" aria-hidden="true">
@@ -146,7 +146,7 @@ export function nextMonday(date: Date): Date {
       @if (requests().length > 0) {
         <p-card [header]="t.requests">
           @if (pendingRequests().length > 0) {
-            <ul class="tb-list tb-schedule-list">
+            <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
               @for (request of pendingRequests(); track request.id) {
                 <ng-container *ngTemplateOutlet="requestRow; context: { $implicit: request }" />
               }
@@ -170,7 +170,7 @@ export function nextMonday(date: Date): Date {
               />
               <div id="tb-requests-resolved" role="region" [attr.aria-label]="t.resolved">
                 @if (resolvedOpen()) {
-                  <ul class="tb-list tb-schedule-list">
+                  <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
                     @for (request of resolvedRequests(); track request.id) {
                       <ng-container
                         *ngTemplateOutlet="requestRow; context: { $implicit: request }"
