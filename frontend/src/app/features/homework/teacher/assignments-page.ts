@@ -81,7 +81,7 @@ const SHOWN_STUDENTS = 3;
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i
-                    [class]="assignment.boardId === null ? 'pi pi-pen-to-square' : 'pi pi-th-large'"
+                    [class]="assignment.boardId === null ? 'pi pi-pen-to-square' : 'pi pi-tb-board'"
                   ></i
                 ></span>
                 <div class="tb-list__text">

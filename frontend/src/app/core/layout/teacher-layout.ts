@@ -16,7 +16,7 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: CORE_T.nav.homework, icon: 'pi pi-pen-to-square', routerLink: '/teacher/homework' },
   { label: CORE_T.nav.textbooks, icon: 'pi pi-book', routerLink: '/teacher/textbooks' },
   { label: CORE_T.nav.billing, icon: 'pi pi-wallet', routerLink: '/teacher/billing' },
-  { label: CORE_T.nav.boards, icon: 'pi pi-th-large', routerLink: '/teacher/boards' },
+  { label: CORE_T.nav.boards, icon: 'pi pi-tb-board', routerLink: '/teacher/boards' },
   { label: CORE_T.nav.notifications, icon: 'pi pi-bell', routerLink: '/teacher/notifications' },
   { label: CORE_T.nav.ai, icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
 ];

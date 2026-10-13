@@ -32,6 +32,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
+import { MaterialOpener } from './material-opener';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -129,7 +130,7 @@ import { T } from '../i18n/texts';
                 />
                 <p-button
                   [label]="t.toBoard"
-                  icon="pi pi-th-large"
+                  icon="pi pi-tb-board"
                   [text]="true"
                   [disabled]="commentValue().trim() === ''"
                   (onClick)="boardVisible.set(true)"
@@ -148,6 +149,8 @@ import { T } from '../i18n/texts';
           <tb-markdown [text]="task.assignment.description" />
           <tb-attachment-list
             [attachments]="task.assignment.attachments"
+            [openable]="true"
+            (opened)="materials.file($event)"
             (download)="download($event)"
           />
         </p-card>
@@ -170,6 +173,7 @@ export class TaskReviewPage implements OnInit {
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly ai = inject(AiApi);
+  protected readonly materials = inject(MaterialOpener);
 
   /** Route parameter. */
   readonly taskId = input.required<string>();

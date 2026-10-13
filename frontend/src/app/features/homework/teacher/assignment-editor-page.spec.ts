@@ -400,10 +400,13 @@ describe('AssignmentEditorPage', () => {
     });
   });
 
-  it('offers the assistant the textbooks picked for a new assignment', async () => {
+  it('offers the assistant the textbooks and readable files picked for a new assignment', async () => {
     const { page } = await create();
     page.pickTextbook(boundTextbook({ pages: null }));
-    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Spotlight 5']);
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    page.newFiles.set([scan, new File(['zip'], 'a.zip', { type: 'application/zip' })]);
+    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Spotlight 5', 'Скан.png']);
+    expect(page.sourceOptions()[1]?.source).toBe(scan);
   });
 
   it('shows a failed load with «Повторить»', async () => {

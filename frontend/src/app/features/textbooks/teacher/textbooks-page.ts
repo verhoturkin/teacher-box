@@ -341,7 +341,7 @@ export class TextbooksPage implements OnInit {
         : [
             {
               label: T.list.toBoard,
-              icon: 'pi pi-th-large',
+              icon: 'pi pi-tb-board',
               command: () => {
                 this.openBoard(textbook);
               },

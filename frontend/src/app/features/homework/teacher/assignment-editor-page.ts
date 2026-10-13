@@ -48,6 +48,7 @@ import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
+import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 
 /** A student that can receive homework. */
@@ -100,7 +101,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         <p-button
           severity="secondary"
           [label]="isNew() ? t.assignToBoard : t.saveToBoard"
-          icon="pi pi-th-large"
+          icon="pi pi-tb-board"
           [disabled]="isNew() && chosenStudents().length === 0"
           [loading]="pending() && toBoard()"
           (onClick)="save(true)"
@@ -211,6 +212,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             <tb-textbook-list
               [textbooks]="textbooks()"
               [editable]="true"
+              (opened)="materials.textbook($event)"
               (edit)="editTextbook($event)"
               (remove)="removeTextbook($event)"
             />
@@ -278,6 +280,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirmation = inject(ConfirmationService);
+  protected readonly materials = inject(MaterialOpener);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
@@ -347,14 +350,15 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
       : null;
   });
 
+  readonly newFiles = signal<File[]>([]);
   /** Textbooks of a new assignment, bound after it is created. */
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
   protected readonly textbooks = computed(
     () => this.assignment()?.textbooks ?? this.pickedTextbooks(),
   );
   /**
-   * What the AI may read for a draft (ADR-0039): the bound textbooks (not Word files) and the saved PDF and picture
-   * files; files picked but not saved yet are not on the server.
+   * What the AI may read for a draft: the bound textbooks (not Word files) and the PDF and picture files — saved ones by
+   * reference (ADR-0039), picked ones of a new assignment with the request (ADR-0042).
    */
   readonly sourceOptions = computed<SourceOption[]>(() => {
     const assignment = this.assignment();
@@ -378,9 +382,15 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
               label: file.filename,
               source: { type: 'FILE' as const, id: file.id, assignmentId: assignment.id },
             }));
-    return [...textbooks, ...files];
+    const picked = this.newFiles()
+      .filter((file) => AI_READABLE.test(file.type))
+      .map((file) => ({
+        key: `picked-${file.name}-${String(file.size)}-${String(file.lastModified)}`,
+        label: file.name,
+        source: file,
+      }));
+    return [...textbooks, ...files, ...picked];
   });
-  readonly newFiles = signal<File[]>([]);
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);
   /** The saved assignment going on a board: «…и поместить на доску». */

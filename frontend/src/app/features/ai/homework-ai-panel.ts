@@ -13,6 +13,8 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
@@ -21,7 +23,7 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
-import { HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
+import { DraftSource, HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
 import { T } from './i18n/texts';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
@@ -46,6 +48,8 @@ export interface AppliedDraft {
     ButtonIcon,
     ButtonLabel,
     Checkbox,
+    IconField,
+    InputIcon,
     InputText,
     Message,
     Popover,
@@ -80,7 +84,7 @@ export interface AppliedDraft {
         />
         @if (sources().length > 0) {
           <p-button
-            [label]="chosen().size > 0 ? t.sourcesCount(chosen().size) : t.sources"
+            [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
             icon="pi pi-book"
             severity="secondary"
             size="small"
@@ -122,16 +126,18 @@ export interface AppliedDraft {
             </div>
           } @else {
             @if (library().length > 0) {
-              <input
-                pInputText
-                type="search"
-                class="tb-ai-panel__search"
-                [placeholder]="t.search"
-                [attr.aria-label]="t.search"
-                autocomplete="off"
-                [ngModel]="query()"
-                (ngModelChange)="query.set($event)"
-              />
+              <p-iconfield class="tb-ai-panel__search">
+                <p-inputicon styleClass="pi pi-search" />
+                <input
+                  pInputText
+                  type="search"
+                  [placeholder]="t.search"
+                  [attr.aria-label]="t.search"
+                  autocomplete="off"
+                  [ngModel]="query()"
+                  (ngModelChange)="query.set($event)"
+                />
+              </p-iconfield>
               <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
                 @for (prompt of found(); track prompt.id) {
                   <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
@@ -283,7 +289,8 @@ export interface AppliedDraft {
       width: min(24rem, calc(100vw - 4rem));
     }
 
-    .tb-ai-panel__search {
+    .tb-ai-panel__search,
+    .tb-ai-panel__search input {
       width: 100%;
     }
 
@@ -400,7 +407,7 @@ export class HomeworkAiPanel implements OnInit {
   readonly title = input('');
   /** The assignment has text a draft could go after. */
   readonly hasText = input(false);
-  /** Textbook pages and files the draft may be based on. */
+  /** Textbook pages and files (saved or just picked) the draft may be based on. */
   readonly sources = input<readonly SourceOption[]>([]);
   readonly applied = output<AppliedDraft>();
 
@@ -429,6 +436,10 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly draft = signal<HomeworkDraft | null>(null);
   /** Keys of the chosen sources. */
   protected readonly chosen = signal<ReadonlySet<string>>(new Set());
+  /** The chosen sources still offered: a file taken off the assignment drops out. */
+  protected readonly picked = computed(() =>
+    this.sources().filter((option) => this.chosen().has(option.key)),
+  );
   protected readonly pending = signal(false);
   protected readonly naming = signal(false);
   protected readonly saving = signal(false);
@@ -476,14 +487,16 @@ export class HomeworkAiPanel implements OnInit {
     const title = this.title().trim();
     this.pending.set(true);
     this.error.set(null);
+    const picked = this.picked().map((option) => option.source);
     this.api
-      .homeworkDraft({
-        prompt,
-        title: title === '' ? null : title,
-        sources: this.sources()
-          .filter((option) => this.chosen().has(option.key))
-          .map((option) => option.source),
-      })
+      .homeworkDraft(
+        {
+          prompt,
+          title: title === '' ? null : title,
+          sources: picked.filter((source): source is DraftSource => !(source instanceof File)),
+        },
+        picked.filter((source): source is File => source instanceof File),
+      )
       .subscribe({
         next: (draft) => {
           this.pending.set(false);

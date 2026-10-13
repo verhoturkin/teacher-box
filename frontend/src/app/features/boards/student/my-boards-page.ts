@@ -25,7 +25,7 @@ import { T } from '../i18n/texts';
         @if (boards().length > 0) {
           <tb-my-board-list [boards]="boards()" />
         } @else {
-          <tb-empty-state icon="pi-th-large" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="pi-tb-board" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>

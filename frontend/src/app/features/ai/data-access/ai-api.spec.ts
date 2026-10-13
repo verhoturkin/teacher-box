@@ -42,6 +42,24 @@ describe('AiApi', () => {
     expect(await enabled).toBe(false);
   });
 
+  it('sends picked files with the brief as a form', async () => {
+    const brief = { prompt: 'По скану', title: null, sources: [] };
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    api.homeworkDraft(brief, [scan]).subscribe();
+
+    const body: unknown = backend.expectOne('/api/teacher/ai/homework-draft').request.body;
+    if (!(body instanceof FormData)) {
+      throw new Error('a form is expected');
+    }
+    const json = body.get('brief');
+    if (!(json instanceof Blob)) {
+      throw new Error('a JSON part is expected');
+    }
+    expect(json.type).toBe('application/json');
+    expect(JSON.parse(await json.text())).toEqual(brief);
+    expect(body.getAll('files')).toEqual([scan]);
+  });
+
   it('calls the assistant endpoints', () => {
     api.status().subscribe();
     const brief = {

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { attachment, submission } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { FileOpener } from '@shared/files/file-opener';
 import { Attachment } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
 import { FilePicker } from './file-picker';
@@ -32,6 +33,24 @@ describe('AttachmentList', () => {
     expect(removed.map((file) => file.id)).toEqual(['f-1']);
   });
 
+  it('opens a file by its name and downloads it by the button when openable', async () => {
+    TestBed.configureTestingModule({ imports: [AttachmentList], providers: [providePrimeNG()] });
+    const fixture = TestBed.createComponent(AttachmentList);
+    const opened: Attachment[] = [];
+    const downloaded: Attachment[] = [];
+    fixture.componentInstance.opened.subscribe((file) => opened.push(file));
+    fixture.componentInstance.download.subscribe((file) => downloaded.push(file));
+    fixture.componentRef.setInput('attachments', [attachment()]);
+    fixture.componentRef.setInput('openable', true);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    buttonByText(host, 'Открыть условие.pdf').click();
+    buttonByText(host, 'Скачать условие.pdf').click();
+    expect(opened.map((file) => file.id)).toEqual(['f-1']);
+    expect(downloaded.map((file) => file.id)).toEqual(['f-1']);
+  });
+
   it('renders nothing without files', async () => {
     TestBed.configureTestingModule({ imports: [AttachmentList] });
     const fixture = TestBed.createComponent(AttachmentList);
@@ -53,6 +72,27 @@ class PickerHost {
 }
 
 describe('FilePicker', () => {
+  it('shows picked files as cards; a PDF or a picture opens by its name', async () => {
+    TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
+    const opened: string[] = [];
+    vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation((content, _showable, name) => {
+      content.subscribe((blob) => opened.push(name(blob)));
+    });
+    const fixture = TestBed.createComponent(PickerHost);
+    fixture.componentInstance.files.set([
+      new File(['%PDF'], 'условие.pdf', { type: 'application/pdf' }),
+      new File(['a'], 'a.txt', { type: 'text/plain' }),
+    ]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(host.querySelectorAll('.tb-list > li')).toHaveLength(2);
+    expect(host.querySelector('.pi-file-pdf')).not.toBeNull();
+    buttonByText(host, 'Открыть условие.pdf').click();
+    expect(opened).toEqual(['условие.pdf']);
+    expect(host.querySelector('[aria-label="Открыть a.txt"]')).toBeNull();
+  });
+
   it('collects selected files and lets remove them', async () => {
     TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
     const fixture = TestBed.createComponent(PickerHost);

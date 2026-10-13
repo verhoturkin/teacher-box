@@ -63,7 +63,7 @@ describe('HomeworkAiPanel', () => {
     expect(readableText(host)).not.toContain('Перевод');
     await open(host, 'Промты');
     expect(bodyText()).toContain('Тест на 10 вопросов');
-    const search = requireElement(document.body, '.tb-ai-panel__search', HTMLInputElement);
+    const search = requireElement(document.body, '.tb-ai-panel__search input', HTMLInputElement);
     typeInto(search, ' переведи ');
     await fixture.whenStable();
     expect(bodyText()).not.toContain('Тест на 10 вопросов');
@@ -200,6 +200,26 @@ describe('HomeworkAiPanel', () => {
     expect(backend.expectOne('/api/teacher/ai/homework-draft').request.body).toMatchObject({
       sources: [{ type: 'FILE', id: 'f-1', assignmentId: 'a-1' }],
     });
+  });
+
+  it('sends a picked file with the request and forgets one taken off', async () => {
+    const { panel, host } = await render([]);
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    fixture.componentRef.setInput('sources', [{ key: 'new', label: 'Скан.png', source: scan }]);
+    await fixture.whenStable();
+
+    await open(host, 'Опереться на');
+    document.body.querySelector<HTMLInputElement>('#ai-source-new')?.click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Опереться на · 1');
+    panel.prompt.setValue('По скану');
+    panel.generate();
+    const body: unknown = backend.expectOne('/api/teacher/ai/homework-draft').request.body;
+    expect(body instanceof FormData && body.getAll('files')).toEqual([scan]);
+
+    fixture.componentRef.setInput('sources', []);
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Опереться на');
   });
 
   it('works without the library', async () => {

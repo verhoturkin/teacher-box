@@ -20,6 +20,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
 import { assignmentBoard } from './assignment-board';
+import { MaterialOpener } from './material-opener';
 import {
   AssignmentDetails,
   Attachment,
@@ -86,7 +87,7 @@ import { T } from '../i18n/texts';
         }
         <p-button
           [label]="t.toBoard"
-          icon="pi pi-th-large"
+          icon="pi pi-tb-board"
           severity="secondary"
           [disabled]="!hasBoardMaterial()"
           (onClick)="boardVisible.set(true)"
@@ -115,6 +116,8 @@ import { T } from '../i18n/texts';
           <tb-attachment-list
             [attachments]="assignment.attachments"
             [removable]="true"
+            [openable]="true"
+            (opened)="materials.file($event)"
             (download)="download($event)"
             (remove)="confirmRemove($event)"
           />
@@ -135,6 +138,7 @@ import { T } from '../i18n/texts';
           <tb-textbook-list
             [textbooks]="assignment.textbooks"
             [editable]="true"
+            (opened)="materials.textbook($event)"
             (edit)="openBind($event)"
             (remove)="unbind($event)"
             (toBoard)="openTextbookBoard($event)"
@@ -238,6 +242,7 @@ export class AssignmentPage implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
+  protected readonly materials = inject(MaterialOpener);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter. */

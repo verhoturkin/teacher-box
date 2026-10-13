@@ -85,7 +85,7 @@ import { T } from '../i18n/texts';
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i
-                    [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-th-large' : 'pi pi-external-link'"
+                    [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"
                   ></i
                 ></span>
                 <div class="tb-list__text">
@@ -124,7 +124,7 @@ import { T } from '../i18n/texts';
           </ul>
         } @else {
           <tb-empty-state
-            icon="pi-th-large"
+            icon="pi-tb-board"
             [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
             [hint]="t.emptyHint"
           />

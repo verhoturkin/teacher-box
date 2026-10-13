@@ -12,6 +12,9 @@ export const ru = {
   ui: {
     removeFile: (name: string) => `Удалить файл ${name}`,
     unpick: (name: string) => `Убрать ${name}`,
+    openFile: (name: string) => `Открыть ${name}`,
+    downloadFile: (name: string) => `Скачать ${name}`,
+    picked: 'Выбранные файлы',
     attachFiles: 'Прикрепить файлы',
     lastAnswer: 'Последний ответ',
     previousAnswer: 'Предыдущий ответ',

@@ -225,7 +225,7 @@ describe('AssignmentPage', () => {
 
     expect(link?.textContent).toContain('Открыть доску');
     expect(link?.querySelector('.pi-arrow-up-right')).not.toBeNull();
-    expect(buttonByText(host, 'На доску').querySelector('.pi-th-large')).not.toBeNull();
+    expect(buttonByText(host, 'На доску').querySelector('.pi-tb-board')).not.toBeNull();
   });
 
   it('deletes the assignment after a confirmation and goes back to the list', async () => {

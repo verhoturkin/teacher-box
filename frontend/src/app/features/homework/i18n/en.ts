@@ -14,6 +14,9 @@ export const en: Translation<typeof ru> = {
   ui: {
     removeFile: (name: string) => `Delete the file ${name}`,
     unpick: (name: string) => `Remove ${name}`,
+    openFile: (name: string) => `Open ${name}`,
+    downloadFile: (name: string) => `Download ${name}`,
+    picked: 'Picked files',
     attachFiles: 'Attach files',
     lastAnswer: 'Latest answer',
     previousAnswer: 'Earlier answer',

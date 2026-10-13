@@ -2,6 +2,21 @@
 @use '@fontsource-variable/google-sans/wght.css';
 
 /*
+ * The board icon, missing in PrimeIcons: a presentation board with a chart (Tabler Icons `presentation`, MIT),
+ * drawn in the current colour like a PrimeIcons glyph — `<i class="pi pi-tb-board">`. Its 2 px margins are cut off
+ * (view box 2 2 20 20) and the line is 1.6, so it is as large and as thin as the PrimeIcons beside it.
+ */
+.pi-tb-board::before {
+  content: '';
+  display: block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='2 2 20 20' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h18M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4M12 16v4M9 20h6M8 12l3-3 2 2 3-3'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+/*
  * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
  * a 4 px grid (--tb-space-N = N x 4 px), the M3 type scale, shape, elevation, state layers and
  * motion (springs), the width of the content, the height of the bars. They are the one source: the
@@ -1121,22 +1136,6 @@ a.p-menu-item-link:hover {
 .tb-pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-
-/* Files */
-.tb-files {
-  list-style: none;
-  margin: var(--tb-space-2) 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-}
-
-.tb-files__item {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-2);
 }
 
 .tb-link-button {

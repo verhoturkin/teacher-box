@@ -21,7 +21,7 @@ import { T } from '../i18n/texts';
         @for (board of boards(); track board.id) {
           @if (board.kind === 'EXCALIDRAW') {
             <a class="tb-link" [routerLink]="route(board.id)"
-              ><i class="pi pi-th-large" aria-hidden="true"></i> {{ board.title }}</a
+              ><i class="pi pi-tb-board" aria-hidden="true"></i> {{ board.title }}</a
             >
           } @else {
             <a class="tb-link" [href]="board.url" target="_blank" rel="noopener"

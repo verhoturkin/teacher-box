@@ -6,6 +6,11 @@ import { FileSaver } from './file-saver';
 /** What the browser shows by itself: PDF and pictures. */
 const SHOWABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
+/** The browser shows a file of this type in a tab. */
+export function isShowable(contentType: string): boolean {
+  return SHOWABLE.test(contentType.split(';')[0]?.trim().toLowerCase() ?? '');
+}
+
 /** How long an opened file stays addressable: the new tab has loaded it by then. */
 export const OPENED_URL_TTL_MS = 60_000;
 
@@ -22,16 +27,23 @@ export class FileOpener {
   /**
    * @param showable the file is expected to be a PDF or a picture (a Word file is saved without a tab)
    * @param filename the name to save it under when it cannot be shown
+   * @param page the page a PDF opens at
    */
-  open(content: Observable<Blob>, showable: boolean, filename: (blob: Blob) => string): void {
+  open(
+    content: Observable<Blob>,
+    showable: boolean,
+    filename: (blob: Blob) => string,
+    page: number | null = null,
+  ): void {
     const view = this.document.defaultView;
     const tab = showable ? (view?.open('', '_blank') ?? null) : null;
     content.subscribe({
       next: (blob) => {
-        if (tab !== null && SHOWABLE.test(blob.type)) {
+        if (tab !== null && isShowable(blob.type)) {
           const url = URL.createObjectURL(blob);
           tab.opener = null;
-          tab.location.href = url;
+          tab.location.href =
+            page !== null && blob.type === 'application/pdf' ? `${url}#page=${String(page)}` : url;
           setTimeout(() => {
             URL.revokeObjectURL(url);
           }, OPENED_URL_TTL_MS);

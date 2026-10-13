@@ -293,7 +293,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 1. «Homework» → «New homework» — the homework editor opens.
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
 3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
-4. Bind textbooks and add files right here.
+4. Bind textbooks and add files right here — they show as cards; click a name to open the textbook or the file (PDF files and pictures open in a new tab).
 5. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
@@ -302,7 +302,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 
 ## The homework's page
 
-The text, «Materials» (files) and «Textbooks» are cards; the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
+The text, «Materials» (files) and «Textbooks» are cards; a name opens the file or the textbook in a new tab (a textbook at its first bound page, a Word file is downloaded), the arrow button downloads a file, the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
 
 ## Delete homework
 
@@ -358,7 +358,7 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 ## What it can do
 
 - **Homework draft** — the AI assistant bar above the «Homework text» field of the editor (in «Text» mode). Write in your own words what you need and click «Generate». The draft appears between the request and the text: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it, «Once more» asks for a new one.
-- **From a textbook and files** — the «Base it on» button in the assistant bar: tick the bound textbooks (their pages) and the saved files of the homework — PDF files and pictures, up to 20 pages at once. The AI sees a new file once the homework is saved; it does not read Word files.
+- **From a textbook and files** — the «Base it on» button in the assistant bar: tick the bound textbooks (their pages) and the materials of the homework — PDF files and pictures, up to 5 of them and 20 pages at once. Files of a new homework can be ticked as soon as they are picked, without saving it; the AI does not read Word files.
 - **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts on the «AI» page («Manage the library» in the same menu).
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
