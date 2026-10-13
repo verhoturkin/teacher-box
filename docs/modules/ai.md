@@ -10,7 +10,14 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - SPI `LlmClient`; adapters: `anthropic/` (official Java SDK, structured outputs, server-side fallbacks —
   `TEACHERBOX_AI_FALLBACKS`), `openai/` (OpenAI-compatible `/chat/completions` on `RestClient`, JSON Schema in
   `response_format`), `gemini/` (Gemini API key via the OpenAI-compatible endpoint; needs `TEACHERBOX_AI_PROXY`
-  from Russia).
+  from Russia), `openrouter/` (since 0.14.3: the OpenAI-compatible client with `https://openrouter.ai/api/v1`,
+  default model `openrouter/auto`, `provider.require_parameters: true` in the body so the JSON schema is never
+  silently ignored, title header `X-OpenRouter-Title: Teacher Box` and no referer — it would publish the portal's
+  address in OpenRouter's rankings), `deepseek/` (since 0.14.3: `https://api.deepseek.com`, default model
+  `deepseek-flash`, answer format `JSON_OBJECT`).
+- Answer format (`OpenAiCompatibleLlmClient.AnswerFormat`): `JSON_SCHEMA` — `response_format: json_schema`;
+  `JSON_OBJECT` — `response_format: json_object` and the schema appended to the system prompt (DeepSeek takes no
+  schema). A `JSON_SCHEMA` client switches to `JSON_OBJECT` for good after a 400 that names `response_format`.
 - Configured by `TEACHERBOX_AI_*` (provider, model, key, base URL, effort, max tokens, timeout, proxy). Not
   configured → module off, UI hides AI features.
 - Responses are always drafts the teacher edits. Refusals handled before reading the answer; output validated

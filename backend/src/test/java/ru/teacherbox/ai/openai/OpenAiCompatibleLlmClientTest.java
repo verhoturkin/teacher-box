@@ -131,6 +131,51 @@ class OpenAiCompatibleLlmClientTest {
     }
 
     @Test
+    void switchesToAJsonObjectWhenTheProviderRejectsTheSchema() {
+        server.expect(requestTo(URL))
+                .andExpect(jsonPath("$.response_format.type").value("json_schema"))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"error\": {\"message\": \"This response_format type is unavailable now\"}}"));
+        for (int i = 0; i < 2; i++) {
+            server.expect(requestTo(URL))
+                    .andExpect(jsonPath("$.response_format.type").value("json_object"))
+                    .andExpect(jsonPath("$.response_format.json_schema").doesNotExist())
+                    .andExpect(jsonPath("$.messages[0].content", org.hamcrest.Matchers.allOf(
+                            org.hamcrest.Matchers.startsWith(
+                                    "system text" + OpenAiCompatibleLlmClient.JSON_OBJECT_INSTRUCTION + "{"),
+                            org.hamcrest.Matchers.containsString("\"required\":[\"comment\"]"))))
+                    .andRespond(withSuccess("""
+                            {"choices": [{"finish_reason": "stop", "message": {"content": "{\\"comment\\": \\"Да\\"}"}}],
+                             "usage": {"prompt_tokens": 60, "completion_tokens": 10}}
+                            """, MediaType.APPLICATION_JSON));
+        }
+
+        assertThat(client.complete(REQUEST).text()).isEqualTo("{\"comment\": \"Да\"}");
+        assertThat(client.answerFormat()).isEqualTo(OpenAiCompatibleLlmClient.AnswerFormat.JSON_OBJECT);
+        assertThat(client.complete(REQUEST).inputTokens()).isEqualTo(60);
+        server.verify();
+    }
+
+    @Test
+    void otherBadRequestsAreNotRetried() {
+        server.expect(requestTo(URL)).andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"error\": {\"message\": \"Model not found\"}}"));
+        OpenAiCompatibleLlmClient jsonObject = new OpenAiCompatibleLlmClient(builder.build(), "deepseek",
+                "deepseek-flash", OpenAiCompatibleLlmClient.AnswerFormat.JSON_OBJECT, Map.of());
+
+        assertThatThrownBy(() -> client.complete(REQUEST)).hasMessage("Provider 400: Model not found");
+        assertThat(client.answerFormat()).isEqualTo(OpenAiCompatibleLlmClient.AnswerFormat.JSON_SCHEMA);
+        server.verify();
+        server.reset();
+        server.expect(requestTo(URL)).andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"error\": {\"message\": \"Bad response_format\"}}"));
+        assertThatThrownBy(() -> jsonObject.complete(REQUEST)).hasMessage("Provider 400: Bad response_format");
+        server.verify();
+    }
+
+    @Test
     void configuration() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(PropertiesConfiguration.class, OpenAiCompatibleConfiguration.class)

@@ -11,9 +11,10 @@ import ru.teacherbox.shared.http.OutboundProxy;
 /**
  * Settings of the AI module ({@code TEACHERBOX_AI_*}). The module is off until a provider is set.
  *
- * @param provider          {@code anthropic}, {@code gemini} or {@code openai-compatible}; empty disables AI
+ * @param provider          {@code anthropic}, {@code gemini}, {@code openrouter}, {@code deepseek} or
+ *                          {@code openai-compatible}; empty disables AI
  * @param apiKey            key of the provider (may be empty for local servers such as Ollama)
- * @param model             model id; Anthropic and Gemini have defaults
+ * @param model             model id; Anthropic, Gemini, OpenRouter and DeepSeek have defaults
  * @param baseUrl           API address; required for OpenAI-compatible providers, optional for the others
  *                          (e.g. {@code https://api.openai.com/v1}, {@code http://ollama:11434/v1})
  * @param effort            Anthropic effort ({@code low} … {@code max}); empty uses the model default
@@ -40,18 +41,26 @@ public record AiProperties(
     public static final String ANTHROPIC = "anthropic";
     public static final String OPENAI_COMPATIBLE = "openai-compatible";
     public static final String GEMINI = "gemini";
+    public static final String OPENROUTER = "openrouter";
+    public static final String DEEPSEEK = "deepseek";
     public static final String DEFAULT_ANTHROPIC_MODEL = "claude-opus-5";
     public static final String DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
     /** OpenAI-compatible endpoint of the Gemini API. */
     public static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai";
+    /** OpenRouter's router: picks a model for each request among those that fit it. */
+    public static final String DEFAULT_OPENROUTER_MODEL = "openrouter/auto";
+    public static final String OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+    public static final String DEFAULT_DEEPSEEK_MODEL = "deepseek-flash";
+    public static final String DEEPSEEK_BASE_URL = "https://api.deepseek.com";
 
-    private static final Set<String> PROVIDERS = Set.of(ANTHROPIC, GEMINI, OPENAI_COMPATIBLE);
+    private static final Set<String> PROVIDERS = Set.of(ANTHROPIC, GEMINI, OPENROUTER, DEEPSEEK, OPENAI_COMPATIBLE);
 
     public AiProperties {
         String id = provider == null ? "" : provider.strip().toLowerCase(Locale.ROOT);
         if (!id.isEmpty() && !PROVIDERS.contains(id)) {
-            throw new IllegalArgumentException("TEACHERBOX_AI_PROVIDER must be anthropic, gemini or openai-compatible, got "
-                    + provider);
+            throw new IllegalArgumentException(
+                    "TEACHERBOX_AI_PROVIDER must be anthropic, gemini, openrouter, deepseek or openai-compatible, got "
+                            + provider);
         }
     }
 

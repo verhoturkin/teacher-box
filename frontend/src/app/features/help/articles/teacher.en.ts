@@ -366,7 +366,7 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 
 The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. When the limit is used up, the AI buttons stop working until the next month.
 
-The AI assistant is connected when the portal is installed (by whoever set up the server). If there are no AI buttons, it is not connected.
+The AI assistant is connected when the portal is installed (by whoever set up the server): Claude, Gemini, DeepSeek, OpenRouter — models of many companies with one key — or another service. If there are no AI buttons, it is not connected.
 `,
   },
   billing: {

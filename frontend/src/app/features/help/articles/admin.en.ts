@@ -76,6 +76,8 @@ Values set here take precedence over the .env file. «Back to .env» removes you
 
 The names and hints of the settings and the results of the integration checks are shown in the language of the interface.
 
+The AI assistant — the «AI assistant» section: choose the service and set the API key. For OpenRouter (openrouter) a key from openrouter.ai is enough: the address is preset, by default OpenRouter picks the model itself, and a specific one goes into «Model» by its name from openrouter.ai/models. For DeepSeek (deepseek) — a key from platform.deepseek.com, the default model is deepseek-flash.
+
 Passwords, tokens and keys are not shown — they can only be set again. Docker settings (port, domain, version, limits) and the accounts are only shown here: the former are changed in .env, the latter in «My account».
 
 The titles and descriptions of the settings come from the server in Russian.
