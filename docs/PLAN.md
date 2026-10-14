@@ -63,10 +63,11 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
   layer via `color-mix`; `.tb-fc-button:disabled` (~1496) `opacity: 0.38` → container 12 % / content 38 %;
   `core/layout/shell.scss` and `side-nav.scss` literal `opacity: 0.08 / 0.1` → `--tb-state-hover` / `-focus`.
   Leave the sheet handle (`opacity: 0.4`, ~2255): M3 drag handle.
-- [ ] 197.6 **F** Guard test `core/theme/design-rules.spec.ts` (reads `src/app/**` as text): fails on
+- [x] 197.6 **F** Guard test `core/theme/design-rules.spec.ts` (reads `src/app/**` as text): fails on
   `--p-primary-color|--p-text-|--p-content-|--p-highlight-`, `size="small"`, `outlined`, hex colours outside
   `core/theme/` and `boards/` (Excalidraw colours). Remove «CI check for unused design tokens» from Backlog if
   it is covered here.
+  *Unused tokens are not covered (the guard reads usages, not definitions): the Backlog item stays.*
 
 ### 198. Springs and buttons (F)
 

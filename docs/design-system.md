@@ -46,6 +46,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 
 - **Only roles `--p-md-*`** in styles. Never `--p-surface-N`, `--p-<colour>-N` palettes, or opacity for
   dimming: muted text is on-surface-variant; 38 % only for disabled controls.
+  `core/theme/design-rules.spec.ts` fails on Aura tokens (`--p-primary-color`, `--p-text-*`, `--p-content-*`,
+  `--p-highlight-*`), hex colours in styles outside `core/theme/` and `boards/`, `size="small"` and outlined buttons.
 - **Scheme from the portal colour** (seed, ADR-0034): a preset palette or custom `#rrggbb` → shades 50–950
   (PrimeNG's primary palette: `updatePrimaryPalette`, `palette()`); shade 500 is the seed of the M3 dynamic scheme
   of `@material/material-color-utilities` — **Fidelity**, spec 2025 (M3 Expressive): primary and the primary
