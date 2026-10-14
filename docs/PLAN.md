@@ -17,46 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release — M3 Expressive alignment (0.16.3)
-
-Goals: bring the theme back to M3 Expressive where it drifted (audit 2026-10-14, cross-checked with a second
-review): fix breaches of our own rules, button and group geometry, springs, the nested-corner rule, the
-emphasized type scale, the flexible navigation bar. **Each stage is its own release** (the teacher's
-decision of 2026-10-14): 199 → 0.16.0, 200 → 0.16.1, 201 → 0.16.2, 202 → 0.16.3; each ends with skill
-`release` (E2E spec of its version, CHANGELOG, version, archiving of its stage). Button colours and sizes and
-the icon set change in 0.17.0 (next section, decided by the teacher on 2026-10-14).
-
-ADR: **ADR-0044** «Выравнивание по M3 Expressive, октябрь 2026» (stage 201: weight 700 for emphasized styles,
-dialog surface, nested corners; stage 202: flexible navigation bar).
-
-**How to work these stages** (read before any substep):
-- M3 values come from the `m3-expressive` skill (`references/component-tokens.md`, `tokens.md`,
-  `components/*.md`), never from memory. A value M3 doesn't publish is written in the commit and in
-  `design-system.md` as our decision.
-- Every substep updates its section of `docs/design-system.md` in the same commit and is checked in the preview
-  (`npm start`, both themes, a phone width of 360 px and 200 % font) with the default portal colour `#0f766e` and
-  one light preset colour.
-- Verified as **not** a problem (don't redo): the loading indicator under `prefers-reduced-motion` (the preset's
-  `.p-progressspinner::after` `!important` rule beats `*::after` by specificity — confirmed in 199.1, 0.16.0);
-  the help side sheet title in Title Large (M3 side sheet headline, design-system §8); button `paddingY`
-  (0.5625 rem + 1 px borders = 40 px, E2E checks it).
-
-### 202. Navigation and motion (F)
-
-- [x] 202.1 **F** Flexible navigation bar: `--tb-bottom-nav-height` 80 → **64 px**, item padding, indicator
-  64×32 → **56×32**, no top border (`shell.scss` ~108–222). Dependants: `shared/ui/fab-menu.ts:74`, `styles.scss`
-  ~1880, 1940, 1949, 2969, 2987 (FAB, snackbar, call mini window), `shell.scss:104`. Rail collapsed 88 → **96 px**
-  (`side-nav.scss:104`). §4, ADR-0044. Since 0.16.2 items are `minmax(64px, auto)` and labels wrap instead of an
-  ellipsis (201.3) — keep «Расписание» whole at 360 px with the new paddings (E2E `version-0-16-2`).
-- [x] 202.2 **F** Springs for overlays: dialogs, bottom sheet, side sheet, menus, snackbar — size/position on
-  spatial, opacity on effects springs (now PrimeNG animations). First read the PrimeNG 21 motion/animation API
-  (context7); `core/snackbar` is ours. Reduced motion: no movement. §1 («dialogs and snackbar keep PrimeNG
-  animations» goes).
-- [x] 202.3 **F** *(decide first; §13 says «stays round»)* Call toggles (`styles.scss` ~2800–2818): an
-  off/active toggle turns from round to a rounded square (M3E icon button selected shape) on the fast spatial
-  spring. Decided by the teacher on 2026-10-14: yes.
-- [ ] 202.4 Release 0.16.3 (skill `release`): E2E spec `version-0-16-3` — nav bar 64 px.
-
 ## Release 0.17.0 — M3 Expressive buttons and icons
 
 Goals (the teacher's decisions of 2026-10-14): one accent — every main action is filled **primary** (the portal

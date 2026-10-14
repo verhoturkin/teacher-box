@@ -193,9 +193,9 @@ The section refreshes itself while open.
 
 ## During the call
 
-- **Microphone, camera** — turn on and off; a turned-off button becomes red.
+- **Microphone, camera** — turn on and off; a turned-off button becomes red and turns from a circle into a rounded square.
 - **Your picture** — in a call of two, your camera is in a small window in a corner. Drag it to any other corner — the portal remembers the choice.
-- **Share screen** — on a computer: share a window, a tab or the whole screen.
+- **Share screen** — on a computer: share a window, a tab or the whole screen; while you share it, the button is square.
 - **Settings** (the gear) — another microphone or camera; sound processing: echo cancellation, noise suppression and automatic gain (on by default; turn them off if the voice is chopped or muffled — the portal remembers the choice); «Connection details» — the connection quality of each participant, the protocol (UDP or TCP), ports, delay and sound loss. If the sound stutters, open the details and pass them to the administrator.
 - **Minimize** — the call goes on in a small window in a corner while you work in the portal: open a board, homework, the schedule. The window can be dragged to another corner. «Expand» brings the big window back.
 - **Leave the call** — the red button.

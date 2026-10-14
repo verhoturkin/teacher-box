@@ -308,7 +308,8 @@ textarea.p-textarea {
  * on a spatial spring and opacity on an effects spring; they leave on the standard spatial spring (no
  * bounce, nothing overshoots on the way out) and the fast effects spring. PrimeNG's motion waits for every
  * animation of the element, so the two run side by side. The rule above takes the movement away when the
- * system asks for less motion.
+ * system asks for less motion. An exit keeps its last frame (forwards): PrimeNG removes the element a few frames
+ * after the animation ends, and without it the overlay would flash back in its place.
  */
 @keyframes tb-motion-scale-in {
   from {
@@ -363,8 +364,8 @@ textarea.p-textarea {
 
 .p-dialog.p-dialog-leave-active {
   animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial),
-    tb-motion-fade-out var(--tb-spring-fast-effects);
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
 }
 
 /* Menus, dropdowns, the date picker: the fast spring (small surfaces) */
@@ -376,8 +377,8 @@ textarea.p-textarea {
 
 .p-motion.p-anchored-overlay-leave-active {
   animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial),
-    tb-motion-fade-out var(--tb-spring-fast-effects);
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
 }
 
 /* The scrim fades on the default effects spring */
@@ -428,7 +429,7 @@ textarea.p-textarea {
   &.p-drawer-leave-right,
   &.p-drawer-leave-top,
   &.p-drawer-leave-bottom {
-    animation: tb-motion-slide-out var(--tb-spring-standard-fast-spatial);
+    animation: tb-motion-slide-out var(--tb-spring-standard-fast-spatial) forwards;
   }
 }
 
@@ -443,8 +444,8 @@ textarea.p-textarea {
 
 .p-toast-message.p-toast-message-leave-active {
   animation:
-    tb-motion-fade-out var(--tb-spring-fast-effects),
-    tb-motion-collapse var(--tb-spring-standard-fast-spatial);
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards,
+    tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
 }
 
 .tb-page-title {
