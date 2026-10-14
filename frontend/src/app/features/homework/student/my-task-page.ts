@@ -112,7 +112,6 @@ import { T } from '../i18n/texts';
               }
               <div class="tb-form-actions">
                 <p-button
-                  severity="success"
                   [label]="t.submit"
                   icon="pi pi-send"
                   [loading]="pending()"

@@ -147,13 +147,7 @@ import { locale } from '@core/i18n/language';
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          severity="success"
-          [label]="c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="payment-form"
-        />
+        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="payment-form" />
       </ng-template>
     </p-dialog>
   `,

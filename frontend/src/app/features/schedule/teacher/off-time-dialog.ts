@@ -205,7 +205,6 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="c.save"
           [loading]="pending()"
           type="submit"

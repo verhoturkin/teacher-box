@@ -60,8 +60,8 @@ test('on a phone the main action of every section is the same extended FAB', asy
   await context.close();
 });
 
-// Since 0.6.6 buttons are green or red by their meaning (ADR-0019); outlined, small, orange and
-// blue ones stay out.
+// Since 0.17.0 one accent (ADR-0045): no green buttons, no filled red ones outside dialogs; outlined,
+// small, orange and blue ones stay out.
 test('secondary buttons are tonal: no outlined, small, orange or blue buttons', async ({
   page,
 }) => {
@@ -70,7 +70,7 @@ test('secondary buttons are tonal: no outlined, small, orange or blue buttons', 
     await open(page, path);
     await expect(
       page.locator(
-        '.p-button-outlined, .p-button-sm, .p-togglebutton-sm, .p-button-warn, .p-button-info',
+        '.p-button-outlined, .p-button-sm, .p-togglebutton-sm, .p-button-warn, .p-button-info, .p-button-success',
       ),
     ).toHaveCount(0);
     // One filled button on a page at most: its main action (a split button is one button).
@@ -80,8 +80,8 @@ test('secondary buttons are tonal: no outlined, small, orange or blue buttons', 
         (buttons) =>
           buttons.filter(
             (button) =>
-              !/p-button-(secondary|text|link|danger)/.test(button.className) &&
-              button.closest('.p-dialog, .p-datepicker, .fc, .tb-tonal') === null,
+              !/p-button-(secondary|text|link)/.test(button.className) &&
+              button.closest('.p-dialog, .p-datepicker, .fc') === null,
           ).length,
       );
     expect(filled, path).toBeLessThanOrEqual(1);

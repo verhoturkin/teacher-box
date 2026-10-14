@@ -157,8 +157,8 @@ function over(content: string, state: State): string {
   return `color-mix(in srgb, ${content} var(--tb-state-${state}), transparent)`;
 }
 
-/** A filled button of a role: confirming (success) or cancelling and deleting (error), ADR-0019. */
-function filled(role: 'success' | 'error'): Record<string, unknown> {
+/** A filled button of a role: only the confirmation of an irreversible action (error), ADR-0045. */
+function filled(role: 'error'): Record<string, unknown> {
   const on = `{md.on.${role}}`;
   const color = `{md.${role}}`;
   return {
@@ -187,7 +187,7 @@ function plain(role: string): Record<string, unknown> {
 
 /**
  * Filled, tonal, outlined and text buttons (M3) for PrimeNG's plain, secondary, outlined, text;
- * success and danger give them the meaning (ADR-0019).
+ * danger marks destruction; there are no success buttons (ADR-0045).
  */
 const BUTTON_SCHEME = {
   root: {
@@ -207,13 +207,11 @@ const BUTTON_SCHEME = {
       activeColor: '{md.on.secondary.container}',
       focusRing: { color: '{md.secondary}', shadow: 'none' },
     },
-    success: filled('success'),
     danger: filled('error'),
   },
   text: {
     primary: plain('primary'),
     secondary: plain('on.surface.variant'),
-    success: plain('success'),
     danger: plain('error'),
   },
 };

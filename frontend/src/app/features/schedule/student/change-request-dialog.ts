@@ -97,7 +97,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           (onClick)="visible.set(false)"
         />
         <p-button
-          [severity]="cancelsOwnLesson() ? 'danger' : 'success'"
+          [severity]="cancelsOwnLesson() ? 'danger' : 'primary'"
           [label]="sendLabel()"
           [loading]="pending()"
           [disabled]="kind() === 'RESCHEDULE' && (proposed() === null || busyAt())"

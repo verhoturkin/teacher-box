@@ -1,8 +1,8 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.6.6: Material 3 Expressive and the meaning of button colors (ADR-0019) — confirming
- * buttons are green, cancelling and deleting ones red, dialogs are white like cards, the side
+ * Version 0.6.6: Material 3 Expressive and the meaning of button colors (ADR-0019; since 0.17.0 one
+ * accent, ADR-0045 — confirming buttons are primary, red only deletes), dialogs are white like cards, the side
  * navigation has room between its items, the top bar no longer names the area, a weekly schedule
  * ends with a red button (a stop sign since 0.6.12, DA-066) and the teacher's notifications are folding cards instead of tabs.
  */
@@ -62,7 +62,7 @@ test('the teacher notifications are cards: the inbox and the messages open, the 
   await expect(page.locator('#notifications-students')).toContainText('Подключили мессенджер');
 });
 
-test('confirming buttons are green, cancelling neutral, and the dialog stands apart from a card', async ({
+test('confirming buttons are primary, cancelling neutral, and the dialog stands apart from a card', async ({
   page,
 }) => {
   await signIn(page);
@@ -71,7 +71,9 @@ test('confirming buttons are green, cancelling neutral, and the dialog stands ap
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   await expect(dialog).toBeVisible();
 
-  await expect(dialog.getByRole('button', { name: 'Сохранить' })).toHaveClass(/p-button-success/);
+  // 0.17.0: one accent (ADR-0045) — the submit is filled primary, never green
+  const save = dialog.getByRole('button', { name: 'Сохранить' });
+  await expect(save).not.toHaveClass(/p-button-(success|secondary|text|danger)/);
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
   await expect(cancel).toHaveClass(/p-button-secondary/);
   await expect(cancel).toHaveClass(/p-button-text/);

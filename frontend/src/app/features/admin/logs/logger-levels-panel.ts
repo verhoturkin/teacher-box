@@ -73,13 +73,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
             appendTo="body"
           />
         </div>
-        <p-button
-          class="tb-tonal"
-          type="submit"
-          [label]="t.apply"
-          severity="success"
-          [loading]="pending()"
-        />
+        <p-button type="submit" [label]="t.apply" severity="secondary" [loading]="pending()" />
       </form>
       <p-table [value]="loggers()" styleClass="tb-cards">
         <ng-template #header>
@@ -103,7 +97,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
               @if (logger.revertAt !== null) {
                 <p-button
                   [label]="t.revert"
-                  severity="danger"
+                  severity="secondary"
                   [text]="true"
                   [ariaLabel]="t.revertOf(logger.name)"
                   [loading]="busy.is(logger.name)"

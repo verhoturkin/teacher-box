@@ -214,7 +214,6 @@ const ALL_DAY_START_HOUR = 10;
           <p-button
             [label]="t.mark"
             icon="pi pi-users"
-            severity="success"
             [text]="!mobile()"
             [fluid]="mobile()"
             [ariaLabel]="t.markAttendance(with(lesson))"
@@ -224,7 +223,6 @@ const ALL_DAY_START_HOUR = 10;
           <p-button
             [label]="t.conductedLabel"
             icon="pi pi-check"
-            severity="success"
             [text]="!mobile()"
             [fluid]="mobile()"
             [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
@@ -232,10 +230,9 @@ const ALL_DAY_START_HOUR = 10;
             (onClick)="mark(lesson, 'CONDUCTED')"
           />
           <p-button
-            [class.tb-tonal]="mobile()"
             [label]="t.missedLabel"
             icon="pi pi-user-minus"
-            severity="danger"
+            severity="secondary"
             [text]="!mobile()"
             [fluid]="mobile()"
             [ariaLabel]="t.missed(lesson.studentName ?? t.student)"

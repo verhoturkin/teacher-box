@@ -148,12 +148,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-form-message">
             {{ t.overlap }}
-            <p-button
-              severity="success"
-              [label]="t.saveAnyway"
-              [text]="true"
-              (onClick)="save(true)"
-            />
+            <p-button [label]="t.saveAnyway" [text]="true" (onClick)="save(true)" />
           </p-message>
         }
         @if (error(); as message) {
@@ -167,13 +162,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          severity="success"
-          [label]="c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="lesson-form"
-        />
+        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="lesson-form" />
       </ng-template>
     </p-dialog>
   `,

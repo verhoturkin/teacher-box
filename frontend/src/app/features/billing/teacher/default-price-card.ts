@@ -46,8 +46,7 @@ import { locale } from '@core/i18n/language';
               (onClick)="editing.set(false)"
             />
             <p-button
-              class="tb-tonal"
-              severity="success"
+              severity="secondary"
               type="submit"
               [label]="c.save"
               icon="pi pi-check"

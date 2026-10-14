@@ -124,13 +124,7 @@ export interface SavedGroup {
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          severity="success"
-          [label]="c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="group-form"
-        />
+        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="group-form" />
       </ng-template>
     </p-dialog>
   `,

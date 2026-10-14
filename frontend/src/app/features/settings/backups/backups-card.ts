@@ -67,8 +67,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
           <div class="tb-card-title__actions">
             <p-button
               [label]="t.create"
-              class="tb-tonal"
-              severity="success"
+              severity="secondary"
               icon="pi pi-database"
               [loading]="creating()"
               (onClick)="create()"

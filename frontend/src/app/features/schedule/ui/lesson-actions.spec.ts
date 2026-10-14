@@ -72,7 +72,8 @@ describe('LessonActions', () => {
     expect(host.style.display).toBe('flex');
     const group = requireElement(host, '.tb-button-group[role="group"]', HTMLElement);
     expect(group.querySelectorAll('p-button')).toHaveLength(2);
-    expect(group.querySelector('p-button.tb-tonal')?.textContent).toContain('Отменить');
+    expect(group.querySelectorAll('p-button')[1]?.textContent).toContain('Отменить');
+    expect(group.querySelector('.p-button-danger')).toBeNull();
     expect(group.querySelector('p-button.tb-button-steady')).toBeNull();
   });
 });

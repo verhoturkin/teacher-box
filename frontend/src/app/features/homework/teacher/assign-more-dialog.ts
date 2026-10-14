@@ -68,7 +68,6 @@ import { StudentOption } from './assignment-editor-page';
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="t.assign"
           [loading]="busy.is('assign')"
           type="submit"

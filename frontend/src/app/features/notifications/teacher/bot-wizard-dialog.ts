@@ -196,7 +196,6 @@ function describeMessengerError(error: unknown, fallback: string): string {
               }
               <div class="tb-actions">
                 <p-button
-                  severity="success"
                   type="submit"
                   [label]="t.checkAndSave"
                   icon="pi pi-check"
@@ -287,8 +286,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   [label]="t.sendTest"
                   icon="pi pi-send"
-                  class="tb-tonal"
-                  severity="success"
+                  severity="secondary"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />

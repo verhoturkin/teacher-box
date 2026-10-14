@@ -105,7 +105,6 @@ export interface Recipient {
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="t.send"
           icon="pi pi-send"
           [loading]="pending()"

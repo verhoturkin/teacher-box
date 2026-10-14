@@ -229,12 +229,12 @@ describe('LessonDetailsDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
-  it('keeps one red button in the footer and the dangerous actions in the menu', async () => {
+  it('keeps the footer free of red and the dangerous actions in the menu', async () => {
     await open(scheduledLesson(), new Date(2026, 9, 1, 18, 30));
 
     const footer = requireElement(document.body, '.p-dialog-footer', HTMLElement);
-    expect(footer.querySelectorAll('.p-button-danger:not(.p-button-text)')).toHaveLength(1);
-    expect(footer.querySelectorAll('.p-button-danger.p-button-text')).toHaveLength(0);
+    expect(footer.querySelectorAll('.p-button-danger')).toHaveLength(0);
+    expect(footer.querySelectorAll('.p-button-success')).toHaveLength(0);
     expect(footer.textContent).not.toContain('Удалить');
     expect(footer.textContent).not.toContain('Отменить');
     buttonByText(document.body, 'Другие действия').click();

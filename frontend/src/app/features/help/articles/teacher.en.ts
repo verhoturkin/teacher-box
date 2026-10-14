@@ -522,7 +522,7 @@ The password, the name and your photo are changed in «My account» (the user me
 
 «Settings» → «Portal»:
 
-- **Colour** — choose one of the ready colours or «Own colour»: a palette or a code like #0f766e. The colour sets the buttons, links, highlights and a light tint of the background — in the light and the dark theme. Under the palette you see how the buttons look in both themes. The portal picks the tones of the text itself so that buttons and links stay readable in any colour; if the colour is too light or dark, the portal warns that it will be changed noticeably. A green portal colour also gets a warning: confirmation buttons («Save», «Accept») are green, and the main action would be hard to tell from them. Click «Save».
+- **Colour** — choose one of the ready colours or «Own colour»: a palette or a code like #0f766e. The colour sets the buttons, links, highlights and a light tint of the background — in the light and the dark theme. Under the palette you see how the buttons look in both themes. The portal picks the tones of the text itself so that buttons and links stay readable in any colour; if the colour is too light or dark, the portal warns that it will be changed noticeably. A red portal colour also gets a warning: red buttons delete, and the main action would look like them. Click «Save».
 - **Logo** — «Upload»: a PNG, JPEG, WebP or SVG picture up to 1 MB. The logo appears in the header (in a circle), on the sign-in page and on the browser tab. The bin next to it brings back the default icon.
 
 The portal's name is there too — it is shown in the header next to the logo.
@@ -557,9 +557,10 @@ Input fields have their label on the outline, as in Material 3; in focus the out
 
 ## Button colours
 
-- **Green** — confirm: «Save», «Create», «Send», «Accept», «Held».
-- **Red** — cancel or delete: «Delete», «Return for rework», «Missed», the bin in a list row. «Cancel» in a window is grey: it just closes the window.
-- The main action of a section («Lesson», «Add student») is in the portal colour, other buttons are calm tonal ones.
+- **The portal colour** — the main action of a section or a window: «Lesson», «Add student», «Save», «Accept», «Held». There is one such button on a screen.
+- **Calm tonal and text buttons** — the other actions, «Missed», «Return for rework» and «Cancel lesson…» included: the status of the lesson or the homework shows what happened. «Cancel» in a window just closes it.
+- **Red** — deleting only: the bin or «×» in a list row, «Delete…» in a menu and the button that confirms deleting in a window.
+- Green and yellow are colours of statuses («Held», «Accepted», «To review»), not of buttons.
 
 Before deleting, the portal asks again: the red button in the window does the action, «Cancel» changes nothing.
 

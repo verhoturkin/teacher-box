@@ -79,7 +79,7 @@ interface PendingAction {
               />
               <p-button
                 [label]="action.kind === 'restore' ? t.restore : t.delete"
-                [severity]="action.kind === 'restore' ? 'success' : 'danger'"
+                [severity]="action.kind === 'restore' ? 'primary' : 'danger'"
                 [loading]="busy() === action.kind"
                 (onClick)="confirm(action)"
               />

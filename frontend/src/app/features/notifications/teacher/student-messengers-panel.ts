@@ -41,8 +41,7 @@ import { T } from '../i18n/texts';
               <p-button
                 [label]="selection().length > 0 ? t.remindSelected : t.remindAll"
                 icon="pi pi-bell"
-                class="tb-tonal"
-                severity="success"
+                severity="secondary"
                 [disabled]="notConnected().length === 0"
                 [loading]="pending()"
                 (onClick)="remind()"

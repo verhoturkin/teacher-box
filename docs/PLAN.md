@@ -17,42 +17,18 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Release 0.17.0 — M3 Expressive buttons and icons
+## Releases 0.17.1–0.17.2 — M3 Expressive buttons and icons
 
 Goals (the teacher's decisions of 2026-10-14): one accent — every main action is filled **primary** (the portal
 colour), green and amber only for statuses; red only where an action destroys something; one large button, the
 hero «Начать урок»; Material Symbols Rounded instead of primeicons, with a filled icon for the active section.
+**Each stage is its own release** (the teacher's decision of 2026-10-14): 204 → 0.17.0, 205 → 0.17.1,
+206 → 0.17.2; each ends with skill `release` (help, E2E spec of its version, CHANGELOG, version, archiving of its
+stage). The former stage 207 «Release 0.17.0» is split into the last substep of each stage.
 
 ADR: **ADR-0045** «Кнопки: цвет — акцент, а не смысл; размер M для героя» (supersedes the colour part of
 ADR-0026 and ADR-0019); **ADR-0046** «Material Symbols Rounded вместо primeicons» (changes the design-system
 intro: «no Material Symbols» goes).
-
-### 204. One accent for buttons (F, ADR-0045)
-
-Rules after this stage (design-system §7 rewritten): filled — the page's main action and a dialog's submit, always
-primary; tonal — secondary actions, neutral `secondary` only (no coloured tonal: `tb-tonal` + severity goes);
-text — «Отмена» and labelled row actions; filled **danger** — only the confirmation of an irreversible action in
-a dialog (`dangerConfirmation`); red also stays on the bin icon button and «Удалить…» menu items
-(`tb-menu-item--danger`). «Пропуск», «Вернуть на доработку», «Отменить занятие…» on a page or in a row become
-neutral tonal/text — the status they produce shows the meaning.
-
-- [ ] 204.1 ADR-0045 + row in `docs/adr/README.md`; design-system §7 tables (role → variant; meaning → colour
-  rows go), §8 confirmations, §11 E2E list. Mark ADR-0019 / ADR-0026 as partly superseded.
-- [ ] 204.2 **F** Shared parts: `shared/ui/confirmation` — `safeConfirmation` filled primary (now success);
-  `danger` unchanged. `styles.scss` `@each $role…` coloured tonal (~221) goes with its uses
-  (`styleClass="tb-tonal"`, 26 uses — grep). Preset `BUTTON_SCHEME` keeps success/warn only if a tag or message
-  needs it (buttons don't).
-- [ ] 204.3 **F** Features: every `severity="success"` on a button (56 uses, `rg 'severity="success"'
-  frontend/src/app`) → no severity (primary); every `severity="danger"` (37 uses) reviewed against the rules
-  above. Go module by module (identity, billing, homework, schedule, settings/admin, the rest), one commit per
-  module if the diff is large. Tags (`p-tag`) and messages keep their severity.
-- [ ] 204.4 **F** Portal colour: `core/theme/portal-accent.ts` (~100) — the «alike success» warning goes (no green
-  buttons now); keep «alike error» (red still marks danger). Texts in `features/settings/i18n/{ru,en}.ts`, tests
-  `portal-settings-card.spec.ts`, `portal-accent.spec.ts`; help article `help/articles/teacher.{ru,en}.ts` ~523
-  (the paragraph on the green portal colour), grep help articles for «зелён» / «green».
-- [ ] 204.5 E2E: `e2e/tests/version-0-6-5.spec.ts` (one filled button per page — still holds),
-  `version-0-6-6.spec.ts` (green/red buttons by meaning — rewrite: no `p-button-success` on buttons; red only on
-  danger confirmations, bin icons), `version-0-6-12.spec.ts`. Help articles that say a button is green.
 
 ### 205. One large button (F, ADR-0045)
 
@@ -63,6 +39,8 @@ neutral tonal/text — the status they produce shows the meaning.
   `join-lesson-button.ts` («Начать урок» / «Войти в урок», `tb-join-wide` on a narrow card). §5 «Nearest lesson
   hero», §7 «Size is one» → «one exception». E2E 40 px checks (`version-0-6-12`, `version-0-6-13`) skip it; a new
   check that the hero button is 56 px.
+- [ ] 205.3 Release 0.17.1 (skill `release`): help (the large «Начать урок»), E2E spec `version-0-17-1` (hero
+  button 56 px, the rest 40 px), CHANGELOG, version, archiving of stage 205.
 
 ### 206. Material Symbols Rounded (F, ADR-0046)
 
@@ -95,12 +73,8 @@ PrimeNG icons replaced too; primeicons removed at the end.
 - [ ] 206.7 **F** Remove `primeicons` (package, CSS import, `pi-tb-board` mask); the guard test of 199.6 fails on
   `pi pi-` / `pi-`; E2E selectors with `.pi-*` (7 in `e2e/tests`) → accessible names or `.tb-i-*`. Design-system
   intro and §1 updated.
-
-### 207. Release 0.17.0
-
-- [ ] 207.1 Skill `release`: help articles (button colours, icons in screenshots/text), E2E spec `version-0-17-0`
-  (primary main actions, red only on danger confirmations, hero button 56 px, filled active nav icon, no
-  primeicons), CHANGELOG, version, plan archiving.
+- [ ] 206.8 Release 0.17.2 (skill `release`): help articles (icons in text), E2E spec `version-0-17-2` (filled
+  active nav icon, no primeicons), CHANGELOG, version, archiving of stage 206.
 
 ## Backlog
 

@@ -58,11 +58,9 @@ describe('portal accent', () => {
     expect(contrast(applyAccent('#fbc02d').light.primary, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('knows a color that looks like the green or the red buttons', () => {
-    expect(accentAdvice('emerald').likeSuccess).toBe(true);
-    expect(accentAdvice('#2e7d32').likeSuccess).toBe(true);
+  it('knows a color that looks like the red buttons', () => {
     expect(accentAdvice('#e53935').likeError).toBe(true);
-    expect(accentAdvice('indigo').likeSuccess).toBe(false);
+    expect(accentAdvice('emerald').likeError).toBe(false);
     expect(accentAdvice('indigo').likeError).toBe(false);
     expect(accentAdvice('#2563eb').likeError).toBe(false);
   });

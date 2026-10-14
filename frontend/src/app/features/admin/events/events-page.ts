@@ -46,8 +46,7 @@ import { SHARED_T } from '@shared/i18n/texts';
                 <p-button
                   [label]="t.retryAll"
                   icon="pi pi-replay"
-                  class="tb-tonal"
-                  severity="success"
+                  severity="secondary"
                   [loading]="busy.is('events')"
                   (onClick)="resubmit([])"
                 />
@@ -105,8 +104,7 @@ import { SHARED_T } from '@shared/i18n/texts';
                 <p-button
                   [label]="t.resendAll"
                   icon="pi pi-replay"
-                  class="tb-tonal"
-                  severity="success"
+                  severity="secondary"
                   [loading]="busy.is('deliveries')"
                   (onClick)="retry([])"
                 />

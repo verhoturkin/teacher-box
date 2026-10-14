@@ -106,13 +106,7 @@ import { T } from './i18n/texts';
           [text]="true"
           (onClick)="editing.set(null)"
         />
-        <p-button
-          severity="success"
-          [label]="t.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="prompt-form"
-        />
+        <p-button [label]="t.save" [loading]="pending()" type="submit" tbSubmitFor="prompt-form" />
       </ng-template>
     </p-dialog>
     <p-confirmdialog />
