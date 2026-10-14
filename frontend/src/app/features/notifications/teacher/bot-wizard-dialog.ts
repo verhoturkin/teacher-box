@@ -129,7 +129,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
               <div class="tb-actions">
                 <p-button
                   [label]="t.created"
-                  icon="pi pi-arrow-right"
+                  icon="tb-i tb-i-arrow_forward"
                   iconPos="right"
                   (onClick)="go(2)"
                 />
@@ -198,7 +198,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   type="submit"
                   [label]="t.checkAndSave"
-                  icon="pi pi-check"
+                  icon="tb-i tb-i-check"
                   [loading]="pending()"
                 />
               </div>
@@ -232,7 +232,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <div class="tb-actions">
                   <p-button
                     [label]="t.next"
-                    icon="pi pi-arrow-right"
+                    icon="tb-i tb-i-arrow_forward"
                     iconPos="right"
                     (onClick)="go(4)"
                   />
@@ -244,7 +244,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <div class="tb-actions">
                   <p-button
                     [label]="t.connectMine"
-                    icon="pi pi-link"
+                    icon="tb-i tb-i-link"
                     [loading]="pending()"
                     (onClick)="connect()"
                   />
@@ -285,13 +285,13 @@ function describeMessengerError(error: unknown, fallback: string): string {
               <div class="tb-actions">
                 <p-button
                   [label]="t.sendTest"
-                  icon="pi pi-send"
+                  icon="tb-i tb-i-send"
                   severity="secondary"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />
                 @if (tested()) {
-                  <p-button [label]="t.done" icon="pi pi-check" (onClick)="close()" />
+                  <p-button [label]="t.done" icon="tb-i tb-i-check" (onClick)="close()" />
                 }
               </div>
             </div>

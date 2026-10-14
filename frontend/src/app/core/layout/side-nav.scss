@@ -85,12 +85,14 @@
 .tb-side-nav__icon {
   display: flex;
 
-  i {
-    font-size: 1.25rem;
+  /* M3: a 24 px icon, filled in the active section (ADR-0046) */
+  .tb-i {
+    transition: font-variation-settings var(--tb-spring-fast-effects);
   }
 }
 
 .tb-side-nav__item--active {
+  --tb-icon-fill: 1;
   color: var(--p-md-on-secondary-container);
 
   &::before {

@@ -230,8 +230,8 @@ describe('AssignmentPage', () => {
     const link = host.querySelector('a[href="/teacher/boards/board-1"]');
 
     expect(link?.textContent).toContain('Открыть доску');
-    expect(link?.querySelector('.pi-arrow-up-right')).not.toBeNull();
-    expect(buttonByText(host, 'На доску').querySelector('.pi-tb-board')).not.toBeNull();
+    expect(link?.querySelector('.tb-i-arrow_outward')).not.toBeNull();
+    expect(buttonByText(host, 'На доску').querySelector('.tb-i-co_present')).not.toBeNull();
   });
 
   it('deletes the assignment after a confirmation and goes back to the list', async () => {
@@ -297,7 +297,7 @@ describe('AssignmentPage', () => {
     expect(
       host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.getAttribute('aria-label'),
     ).toBe('Открыть: Борис');
-    expect(host.querySelector('ul[aria-label="Файлы"] .pi-file-pdf')).not.toBeNull();
+    expect(host.querySelector('ul[aria-label="Файлы"] .tb-i-picture_as_pdf')).not.toBeNull();
 
     buttonByText(host, 'условие.pdf').click();
     backend.expectOne('/api/teacher/homework/attachments/f-1').flush(new Blob(['pdf']));

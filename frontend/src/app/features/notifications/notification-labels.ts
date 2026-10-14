@@ -9,9 +9,9 @@ import { SHARED_T } from '@shared/i18n/texts';
 export const CHANNEL_NAMES: Record<ChannelType, string> = SHARED_T.messengers;
 
 export const CHANNEL_ICONS: Record<ChannelType, string> = {
-  TELEGRAM: 'pi pi-telegram',
-  VK: 'pi pi-comments',
-  MAX: 'pi pi-comment',
+  TELEGRAM: 'tb-i tb-i-send',
+  VK: 'tb-i tb-i-forum',
+  MAX: 'tb-i tb-i-chat',
 };
 
 /** Whether the bot link already carries the code (otherwise the user sends the code manually). */

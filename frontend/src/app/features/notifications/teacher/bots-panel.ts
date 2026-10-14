@@ -55,14 +55,14 @@ import { T } from '../i18n/texts';
                 <p-tag [value]="tag.value" [severity]="tag.severity" />
                 <p-button
                   [label]="bot.teacherLinked ? t.check : t.setUp"
-                  icon="pi pi-cog"
+                  icon="tb-i tb-i-settings"
                   severity="secondary"
                   [text]="true"
                   (onClick)="open(bot)"
                 />
                 @if (!bot.fromEnvironment) {
                   <p-button
-                    icon="pi pi-trash"
+                    icon="tb-i tb-i-delete"
                     [text]="true"
                     [pTooltip]="t.remove(names[bot.channel])"
                     [rounded]="true"
@@ -75,7 +75,7 @@ import { T } from '../i18n/texts';
                 <p-button
                   [label]="t.connect"
                   severity="secondary"
-                  icon="pi pi-plus"
+                  icon="tb-i tb-i-add"
                   (onClick)="open(bot)"
                 />
               }

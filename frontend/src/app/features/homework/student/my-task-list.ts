@@ -54,7 +54,7 @@ const PAGE = 10;
           @for (task of page(); track task.taskId) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"
-                ><i class="pi pi-pen-to-square"></i
+                ><i class="tb-i tb-i-assignment"></i
               ></span>
               <div class="tb-list__text">
                 <a class="tb-list__title tb-link" [routerLink]="[task.taskId]">{{ task.title }}</a>
@@ -84,7 +84,7 @@ const PAGE = 10;
       } @else if (tasks().length > 0) {
         <tb-empty-state
           [compact]="true"
-          icon="pi-search"
+          icon="tb-i-search"
           [title]="t.notFoundTitle"
           [hint]="t.notFoundHint"
         />
@@ -106,7 +106,7 @@ export class MyTaskList {
 
   readonly heading = input.required<string>();
   readonly tasks = input.required<readonly MyTask[]>();
-  readonly emptyIcon = input('pi-pen-to-square');
+  readonly emptyIcon = input('tb-i-assignment');
   readonly emptyTitle = input.required<string>();
   readonly emptyHint = input('');
 

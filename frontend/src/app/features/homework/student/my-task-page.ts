@@ -113,7 +113,7 @@ import { T } from '../i18n/texts';
               <div class="tb-form-actions">
                 <p-button
                   [label]="t.submit"
-                  icon="pi pi-send"
+                  icon="tb-i tb-i-send"
                   [loading]="pending()"
                   (onClick)="submit()"
                 />

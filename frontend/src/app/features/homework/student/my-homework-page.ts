@@ -41,7 +41,7 @@ import { T } from '../i18n/texts';
           <tb-my-task-list
             [heading]="t.done"
             [tasks]="done()"
-            emptyIcon="pi-check-circle"
+            emptyIcon="tb-i-check_circle"
             [emptyTitle]="t.noDoneTitle"
             [emptyHint]="t.noDoneHint"
           />
@@ -49,7 +49,7 @@ import { T } from '../i18n/texts';
       } @else {
         <p-card>
           <h2 class="tb-sr-only">{{ t.title }}</h2>
-          <tb-empty-state icon="pi-pen-to-square" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-assignment" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         </p-card>
       }
     </tb-load-state>

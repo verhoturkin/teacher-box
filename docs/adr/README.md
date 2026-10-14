@@ -5,7 +5,7 @@ rewritten afterwards. Current rules live in the specs; read an ADR only to learn
 
 - Architecture and conventions — [`AGENTS.md`](../../AGENTS.md), [`backend/AGENTS.md`](../../backend/AGENTS.md),
   [`frontend/AGENTS.md`](../../frontend/AGENTS.md).
-- UI — [`docs/design-system.md`](../design-system.md) (consolidates ADR-0015, 0017–0027, 0044, 0045).
+- UI — [`docs/design-system.md`](../design-system.md) (consolidates ADR-0015, 0017–0027, 0044–0046).
 - Modules — [`docs/modules/`](../modules).
 
 A new ADR: next number, `NNNN-short-name.md`, sections «Контекст», «Решение», «Последствия», header with
@@ -32,7 +32,7 @@ commit.
 | [0016](0016-admin-settings.md) | Admin settings UI (`SettingsCatalog`) | active | [platform](../modules/platform.md) |
 | [0017](0017-material-design-3.md) | Material Design 3 on PrimeNG | partly superseded by 0019, 0023, 0027 | design-system |
 | [0018](0018-component-rules.md) | One look per component type | refined by 0019–0026 | design-system |
-| [0019](0019-material-3-expressive.md) | M3 Expressive; button colour = meaning | refined by 0022, 0023, 0025, 0026, 0044; button colours superseded by 0045 | design-system |
+| [0019](0019-material-3-expressive.md) | M3 Expressive; button colour = meaning | refined by 0022, 0023, 0025, 0026, 0044, 0046; button colours superseded by 0045 | design-system |
 | [0020](0020-lists-in-cards.md) | Segmented lists in cards | active (corners refined by 0044) | design-system |
 | [0021](0021-single-column.md) | One column; steady buttons; word wrapping | active | design-system |
 | [0022](0022-expressive-fields-menus-sheets.md) | Fields, menus, split button, bottom sheet | active | design-system |
@@ -59,3 +59,4 @@ commit.
 | [0043](0043-editable-system-prompts.md) | Editable system prompts of the AI assistant: `ai.system_prompts` keeps the teacher's texts (homework and review drafts), the resources are the defaults; `GET/PUT/DELETE /api/teacher/ai/system-prompts` | active | [ai](../modules/ai.md) |
 | [0044](0044-m3-expressive-alignment-2026-10.md) | M3 Expressive alignment, October 2026: emphasized type up to 700, nested corners (`inner = outer − padding`), dialogs on surface-container-high, active navigation label secondary + Bold; flexible navigation bar in 0.16.3 | active | design-system |
 | [0045](0045-button-accent-and-medium-size.md) | Buttons: one accent — filled primary, tonal secondary, red only for destruction, green/amber only for statuses; size M (56 px) only for the hero «Начать урок» (0.17.1) | active | design-system |
+| [0046](0046-material-symbols-rounded.md) | Material Symbols Rounded instead of primeicons: a subset font of the used glyphs (`npm run icons`, 29 KB instead of 5.4 MB), code points not ligatures, 24/20/18 px, filled active section, grade −25 in the dark theme | active | design-system |

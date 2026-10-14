@@ -15,7 +15,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 /** An item of a FAB menu: a link to a page, e.g. the form of a new lesson. */
 export interface FabMenuItem {
   readonly label: string;
-  /** PrimeIcons class without `pi`, e.g. `pi-wallet`. */
+  /** Icon class without `tb-i`, e.g. `tb-i-account_balance_wallet`. */
   readonly icon: string;
   readonly link: string;
   readonly queryParams?: Readonly<Record<string, string>>;
@@ -49,7 +49,7 @@ let nextId = 0;
               [queryParams]="item.queryParams"
               (click)="close(false)"
             >
-              <i class="pi {{ item.icon }}" aria-hidden="true"></i>
+              <i class="tb-i {{ item.icon }}" aria-hidden="true"></i>
               <span>{{ item.label }}</span>
             </a>
           </li>
@@ -64,7 +64,7 @@ let nextId = 0;
       [attr.aria-controls]="listId"
       (click)="toggle()"
     >
-      <i class="pi" [class.pi-plus]="!open()" [class.pi-times]="open()" aria-hidden="true"></i>
+      <i class="tb-i" [class.tb-i-add]="!open()" [class.tb-i-close]="open()" aria-hidden="true"></i>
     </button>
   `,
   styles: `
@@ -106,7 +106,7 @@ let nextId = 0;
       animation: tb-fab-item-in var(--tb-spring-fast-spatial) both;
       animation-delay: calc(var(--tb-fab-index, 0) * 30ms);
 
-      .pi {
+      .tb-i {
         font-size: 1.5rem;
       }
 
@@ -136,7 +136,7 @@ let nextId = 0;
         background var(--tb-spring-fast-effects),
         color var(--tb-spring-fast-effects);
 
-      .pi {
+      .tb-i {
         font-size: 1.5rem;
         transition: transform var(--tb-spring-fast-spatial);
       }
@@ -147,7 +147,7 @@ let nextId = 0;
       background: var(--p-md-primary);
       color: var(--p-md-on-primary);
 
-      .pi {
+      .tb-i {
         font-size: 1.25rem;
         transform: rotate(90deg);
       }
@@ -163,7 +163,7 @@ let nextId = 0;
     @media (prefers-reduced-motion: reduce) {
       .tb-fab-menu__item,
       .tb-fab-menu__button,
-      .tb-fab-menu__button .pi {
+      .tb-fab-menu__button .tb-i {
         animation: none;
         transition: none;
       }

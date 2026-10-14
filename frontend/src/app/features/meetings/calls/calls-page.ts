@@ -53,7 +53,7 @@ interface RoomStatus {
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (overview(); as overview) {
           @if (overview.status === 'OFF') {
-            <tb-empty-state icon="pi-video" [title]="t.offTitle" [hint]="t.offHint" />
+            <tb-empty-state icon="tb-i-videocam" [title]="t.offTitle" [hint]="t.offHint" />
           } @else {
             @if (overview.status === 'UNREACHABLE') {
               <p-message severity="warn" styleClass="tb-form-message">{{
@@ -61,14 +61,14 @@ interface RoomStatus {
               }}</p-message>
             }
             @if (overview.rooms.length === 0) {
-              <tb-empty-state icon="pi-users" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+              <tb-empty-state icon="tb-i-group" [title]="t.emptyTitle" [hint]="t.emptyHint" />
             } @else {
               <ul class="tb-list" [attr.aria-label]="t.list">
                 @for (room of overview.rooms; track room.ownerId) {
                   <li>
                     @if (room.ownerType === 'GROUP') {
                       <span class="tb-list__lead" aria-hidden="true"
-                        ><i class="pi pi-users"></i
+                        ><i class="tb-i tb-i-group"></i
                       ></span>
                     } @else {
                       <tb-avatar [name]="room.name" [photo]="room.avatar" />
@@ -82,7 +82,7 @@ interface RoomStatus {
                       @if (current() === room.ownerId) {
                         <p-button
                           [label]="t.expand"
-                          icon="pi pi-window-maximize"
+                          icon="tb-i tb-i-open_in_full"
                           severity="secondary"
                           [ariaLabel]="t.expandOf(room.name)"
                           (onClick)="session.expand()"
@@ -90,7 +90,7 @@ interface RoomStatus {
                       } @else {
                         <p-button
                           [label]="t.join"
-                          icon="pi pi-video"
+                          icon="tb-i tb-i-videocam"
                           severity="secondary"
                           [ariaLabel]="t.joinOf(room.name)"
                           [loading]="session.opening() === room.ownerId"

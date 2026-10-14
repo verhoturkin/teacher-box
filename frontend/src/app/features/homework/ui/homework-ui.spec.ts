@@ -87,7 +87,7 @@ describe('FilePicker', () => {
     const host = hostElement(fixture);
 
     expect(host.querySelectorAll('.tb-list > li')).toHaveLength(2);
-    expect(host.querySelector('.pi-file-pdf')).not.toBeNull();
+    expect(host.querySelector('.tb-i-picture_as_pdf')).not.toBeNull();
     buttonByText(host, 'Открыть условие.pdf').click();
     expect(opened).toEqual(['условие.pdf']);
     expect(host.querySelector('[aria-label="Открыть a.txt"]')).toBeNull();

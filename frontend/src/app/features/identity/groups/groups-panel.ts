@@ -65,7 +65,7 @@ import { T } from '../i18n/texts';
             <p-button
               [label]="t.create"
               severity="secondary"
-              icon="pi pi-users"
+              icon="tb-i tb-i-group"
               (onClick)="openCreate()"
             />
           </div>
@@ -83,7 +83,9 @@ import { T } from '../i18n/texts';
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (group of visibleGroups(); track group.id) {
               <li>
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-users"></i></span>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i class="tb-i tb-i-group"></i
+                ></span>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ group.name }}</span>
                   <span class="tb-list__supporting">
@@ -99,7 +101,7 @@ import { T } from '../i18n/texts';
                     <p-tag [value]="t.archived" severity="secondary" />
                   }
                   <p-button
-                    icon="pi pi-ellipsis-v"
+                    icon="tb-i tb-i-more_vert"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -117,9 +119,13 @@ import { T } from '../i18n/texts';
             }
           </ul>
         } @else if (groups().length === 0) {
-          <tb-empty-state icon="pi-users" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-group" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         } @else {
-          <tb-empty-state icon="pi-box" [title]="t.allArchivedTitle" [hint]="t.allArchivedHint" />
+          <tb-empty-state
+            icon="tb-i-inventory_2"
+            [title]="t.allArchivedTitle"
+            [hint]="t.allArchivedHint"
+          />
         }
       </tb-load-state>
     </p-card>
@@ -230,7 +236,7 @@ export class GroupsPanel implements OnInit {
         key: 'groups',
         header: T.groups.archiveHeader,
         message: T.groups.archiveMessage(group.name),
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'tb-i tb-i-warning',
         acceptLabel: T.groups.archive,
         accept: () => {
           this.api.archiveGroup(group.id).subscribe((saved) => {
@@ -255,7 +261,7 @@ export class GroupsPanel implements OnInit {
     const items: MenuItem[] = [
       {
         label: T.groups.edit,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.openEdit(group);
         },
@@ -264,7 +270,7 @@ export class GroupsPanel implements OnInit {
     if (group.archivedAt === null) {
       items.push({
         label: T.groups.archiveItem,
-        icon: 'pi pi-inbox',
+        icon: 'tb-i tb-i-inbox',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.confirmArchive(group);
@@ -273,7 +279,7 @@ export class GroupsPanel implements OnInit {
     } else {
       items.push({
         label: T.groups.restore,
-        icon: 'pi pi-replay',
+        icon: 'tb-i tb-i-replay',
         command: () => {
           this.restore(group);
         },

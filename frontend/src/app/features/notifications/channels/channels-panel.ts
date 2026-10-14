@@ -51,7 +51,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
         @if (channels.length === 0) {
           <tb-empty-state
             [compact]="true"
-            icon="pi-comments"
+            icon="tb-i-forum"
             [title]="teacher() ? t.noBotsTitle : t.noMessengersTitle"
             [hint]="teacher() ? t.noBotsHint : t.noMessengersHint"
           />
@@ -89,7 +89,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                       {{ t.send }}
                     </label>
                     <p-button
-                      icon="pi pi-times"
+                      icon="tb-i tb-i-close"
                       [text]="true"
                       [pTooltip]="t.unlink(names[channel.channel])"
                       [rounded]="true"
@@ -101,7 +101,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
                   } @else {
                     <p-button
                       [label]="t.connect"
-                      icon="pi pi-link"
+                      icon="tb-i tb-i-link"
                       severity="secondary"
                       [text]="true"
                       (onClick)="connect(channel.channel)"

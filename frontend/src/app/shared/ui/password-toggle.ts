@@ -23,7 +23,10 @@ import { SHARED_T } from '@shared/i18n/texts';
       [attr.aria-label]="shown() ? t.hide : t.show"
       [attr.aria-pressed]="shown()"
     >
-      <i [class]="shown() ? 'pi pi-eye-slash' : 'pi pi-eye'" aria-hidden="true"></i>
+      <i
+        [class]="shown() ? 'tb-i tb-i-visibility_off' : 'tb-i tb-i-visibility'"
+        aria-hidden="true"
+      ></i>
     </button>
   `,
   styles: `

@@ -117,7 +117,7 @@ import { locale } from '@core/i18n/language';
           <div class="tb-receipt-file">
             <p-button
               [label]="receipt() === null ? t.chooseReceipt : t.otherReceipt"
-              icon="pi pi-paperclip"
+              icon="tb-i tb-i-attach_file"
               severity="secondary"
               (onClick)="picker.click()"
             />

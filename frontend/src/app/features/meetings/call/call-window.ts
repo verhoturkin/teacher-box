@@ -58,7 +58,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 
     @if (session.phase() === 'ended') {
       <div class="tb-call-window__end">
-        <i class="pi pi-phone tb-call-window__end-icon" aria-hidden="true"></i>
+        <i class="tb-i tb-i-call_end tb-call-window__end-icon" aria-hidden="true"></i>
         <p role="alert">{{ session.endText() }}</p>
         <div class="tb-actions">
           <p-button
@@ -67,7 +67,7 @@ import { SHARED_T } from '@shared/i18n/texts';
             [text]="true"
             (onClick)="session.close()"
           />
-          <p-button [label]="t.retry" icon="pi pi-video" (onClick)="session.retry()" />
+          <p-button [label]="t.retry" icon="tb-i tb-i-videocam" (onClick)="session.retry()" />
         </div>
       </div>
     } @else if (session.phase() === 'connecting') {

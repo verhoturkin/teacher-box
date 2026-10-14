@@ -6,14 +6,14 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  * same button is already on the page as the FAB. The compact variant (a widget, a calendar, a dialog)
  * is a row: the icon of 40 px and the text beside it.
  *
- * `<tb-empty-state icon="pi-users" title="Учеников пока нет"><p-button label="Добавить" /></tb-empty-state>`
+ * `<tb-empty-state icon="tb-i-group" title="Учеников пока нет"><p-button label="Добавить" /></tb-empty-state>`
  */
 @Component({
   selector: 'tb-empty-state',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.tb-empty-state--compact]': 'compact()' },
   template: `
-    <i class="pi {{ icon() }} tb-empty-state__icon" aria-hidden="true"></i>
+    <i class="tb-i {{ icon() }} tb-empty-state__icon" aria-hidden="true"></i>
     <div class="tb-empty-state__text">
       <p class="tb-empty-state__title">{{ title() }}</p>
       @if (hint(); as hint) {
@@ -97,8 +97,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   `,
 })
 export class EmptyState {
-  /** PrimeIcons class, e.g. `pi-inbox`. */
-  readonly icon = input('pi-inbox');
+  /** Icon class (ADR-0046), e.g. `tb-i-inbox`. */
+  readonly icon = input('tb-i-inbox');
   readonly title = input.required<string>();
   readonly hint = input<string | null>(null);
   /** A row with a small icon: in a widget, the calendar or a dialog. */

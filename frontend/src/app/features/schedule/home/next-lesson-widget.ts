@@ -62,13 +62,13 @@ import { T } from '../i18n/texts';
               [group]="lesson.groupId !== null"
               [stacked]="mobile()"
               [hero]="true"
-              rescheduleIcon="pi pi-calendar"
+              rescheduleIcon="tb-i tb-i-calendar_month"
               (ask)="ask(lesson, $event)"
             />
           </div>
         </div>
       } @else {
-        <tb-empty-state [compact]="true" icon="pi-calendar" [title]="t.nothing" />
+        <tb-empty-state [compact]="true" icon="tb-i-calendar_month" [title]="t.nothing" />
         <div class="tb-widget-footer">
           <span class="tb-muted">{{ t.week(summary().weekLessons) }}</span>
         </div>

@@ -9,10 +9,10 @@ describe('FabMenu', () => {
   let host: HTMLElement;
 
   const items: FabMenuItem[] = [
-    { label: 'Занятие', icon: 'pi-calendar-plus', link: '/teacher/schedule' },
+    { label: 'Занятие', icon: 'tb-i-calendar_add_on', link: '/teacher/schedule' },
     {
       label: 'Оплата',
-      icon: 'pi-wallet',
+      icon: 'tb-i-account_balance_wallet',
       link: '/teacher/billing',
       queryParams: { create: 'payment' },
     },

@@ -29,7 +29,7 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
             [attr.aria-label]="closeLabel"
             (click)="close($event)"
           >
-            <i class="pi pi-times" aria-hidden="true"></i>
+            <i class="tb-i tb-i-close" aria-hidden="true"></i>
           </button>
         </div>
       </ng-template>

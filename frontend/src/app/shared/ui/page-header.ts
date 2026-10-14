@@ -34,7 +34,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           [attr.aria-label]="backLabel()"
           [pTooltip]="backLabel()"
         >
-          <i pButtonIcon aria-hidden="true" class="pi pi-arrow-left"></i>
+          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_back"></i>
         </a>
       }
       <div class="tb-page-header__text">

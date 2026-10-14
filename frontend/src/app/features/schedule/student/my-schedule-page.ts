@@ -89,7 +89,11 @@ export function nextMonday(date: Date): Date {
       <p-card [header]="t.upcoming">
         <tb-load-state [state]="upcomingState" [what]="t.whatUpcoming" (retry)="reload()">
           @if (upcoming().length === 0) {
-            <tb-empty-state icon="pi-calendar" [title]="t.noMoreTitle" [hint]="t.noMoreHint" />
+            <tb-empty-state
+              icon="tb-i-calendar_month"
+              [title]="t.noMoreTitle"
+              [hint]="t.noMoreHint"
+            />
           } @else {
             <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
               @for (lesson of upcoming(); track lesson.id) {
@@ -107,7 +111,7 @@ export function nextMonday(date: Date): Date {
                       <!-- stretched over the row: the whole row opens the sheet -->
                       <p-button
                         class="tb-list__stretched"
-                        icon="pi pi-chevron-right"
+                        icon="tb-i tb-i-chevron_right"
                         severity="secondary"
                         [text]="true"
                         [rounded]="true"
@@ -158,7 +162,7 @@ export function nextMonday(date: Date): Date {
             <div class="tb-requests-resolved">
               <p-button
                 [label]="t.resolvedRequests(resolvedRequests().length)"
-                [icon]="resolvedOpen() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                [icon]="resolvedOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
                 iconPos="right"
                 [text]="true"
                 severity="secondary"
@@ -186,7 +190,7 @@ export function nextMonday(date: Date): Date {
 
       <ng-template #requestRow let-request [tbRowType]="requests()">
         <li>
-          <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-comments"></i></span>
+          <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-forum"></i></span>
           <div class="tb-list__text">
             <span class="tb-list__title">
               {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
@@ -247,14 +251,14 @@ export function nextMonday(date: Date): Date {
           [joinUrl]="joinUrl(lesson)"
           [requests]="canAsk(lesson)"
           [group]="lesson.groupId !== null"
-          rescheduleIcon="pi pi-calendar"
+          rescheduleIcon="tb-i tb-i-calendar_month"
           (ask)="closeSheet(); ask(lesson, $event)"
         />
         @if (lesson.pendingRequests[0]; as request) {
           <p-button
             severity="secondary"
             [label]="t.withdrawRequest"
-            icon="pi pi-undo"
+            icon="tb-i tb-i-undo"
             [fluid]="true"
             [loading]="actions.is('withdraw-' + request.id)"
             (onClick)="withdraw(request)"
@@ -361,9 +365,9 @@ export class MySchedulePage implements OnInit {
   /** A lesson with a meeting shows the camera, a group lesson the people. */
   protected leadIcon(lesson: ScheduledLesson): string {
     if (this.joinUrl(lesson) !== null) {
-      return 'pi pi-video';
+      return 'tb-i tb-i-videocam';
     }
-    return lesson.groupId === null ? 'pi pi-calendar' : 'pi pi-users';
+    return lesson.groupId === null ? 'tb-i tb-i-calendar_month' : 'tb-i tb-i-group';
   }
 
   /** The meeting of a lesson that is still planned. */

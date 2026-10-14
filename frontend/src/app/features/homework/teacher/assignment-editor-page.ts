@@ -101,14 +101,14 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         <p-button
           severity="secondary"
           [label]="isNew() ? t.assignToBoard : t.saveToBoard"
-          icon="pi pi-tb-board"
+          icon="tb-i tb-i-co_present"
           [disabled]="isNew() && chosenStudents().length === 0"
           [loading]="pending() && toBoard()"
           (onClick)="save(true)"
         />
         <p-button
           [label]="isNew() ? t.assign : t.save"
-          [icon]="isNew() ? 'pi pi-send' : 'pi pi-check'"
+          [icon]="isNew() ? 'tb-i tb-i-send' : 'tb-i tb-i-check'"
           [loading]="pending() && !toBoard()"
           (onClick)="save()"
         />
@@ -218,7 +218,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             />
             <p-button
               [label]="t.bindTextbook"
-              icon="pi pi-book"
+              icon="tb-i tb-i-menu_book"
               severity="secondary"
               (onClick)="bindTextbook()"
             />

@@ -52,7 +52,7 @@ interface PendingAction {
         <div class="tb-form-actions">
           <p-button
             [label]="t.create"
-            icon="pi pi-copy"
+            icon="tb-i tb-i-content_copy"
             severity="secondary"
             [loading]="busy() === 'create'"
             (onClick)="create()"
@@ -95,7 +95,13 @@ interface PendingAction {
               @for (backup of backups(); track backup.id) {
                 <li>
                   <span class="tb-list__lead" aria-hidden="true"
-                    ><i [class]="backup.kind === 'DAILY' ? 'pi pi-calendar' : 'pi pi-copy'"></i
+                    ><i
+                      [class]="
+                        backup.kind === 'DAILY'
+                          ? 'tb-i tb-i-calendar_month'
+                          : 'tb-i tb-i-content_copy'
+                      "
+                    ></i
                   ></span>
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{
@@ -111,7 +117,7 @@ interface PendingAction {
                       (onClick)="ask('restore', backup)"
                     />
                     <p-button
-                      icon="pi pi-trash"
+                      icon="tb-i tb-i-delete"
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
@@ -126,7 +132,7 @@ interface PendingAction {
           } @else {
             <tb-empty-state
               [compact]="true"
-              icon="pi-history"
+              icon="tb-i-history"
               [title]="t.emptyTitle"
               [hint]="t.emptyHint"
             />

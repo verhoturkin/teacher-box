@@ -45,7 +45,7 @@ import { SHARED_T } from '@shared/i18n/texts';
               <div class="tb-card-title__actions">
                 <p-button
                   [label]="t.retryAll"
-                  icon="pi pi-replay"
+                  icon="tb-i tb-i-replay"
                   severity="secondary"
                   [loading]="busy.is('events')"
                   (onClick)="resubmit([])"
@@ -57,7 +57,7 @@ import { SHARED_T } from '@shared/i18n/texts';
         <p class="tb-muted">{{ t.about }}</p>
         <tb-load-state [state]="eventsState" [what]="t.what" (retry)="loadEvents()">
           @if (events().length === 0) {
-            <tb-empty-state icon="pi-check-circle" [title]="t.allDone" />
+            <tb-empty-state icon="tb-i-check_circle" [title]="t.allDone" />
           } @else {
             <p-table [value]="events()" styleClass="tb-cards">
               <ng-template #header>
@@ -103,7 +103,7 @@ import { SHARED_T } from '@shared/i18n/texts';
               <div class="tb-card-title__actions">
                 <p-button
                   [label]="t.resendAll"
-                  icon="pi pi-replay"
+                  icon="tb-i tb-i-replay"
                   severity="secondary"
                   [loading]="busy.is('deliveries')"
                   (onClick)="retry([])"
@@ -118,7 +118,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           (retry)="loadDeliveries()"
         >
           @if (deliveries().length === 0) {
-            <tb-empty-state icon="pi-check-circle" [title]="t.allDelivered" />
+            <tb-empty-state icon="tb-i-check_circle" [title]="t.allDelivered" />
           } @else {
             <p-table [value]="deliveries()" styleClass="tb-cards">
               <ng-template #header>

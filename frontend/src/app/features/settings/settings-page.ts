@@ -104,7 +104,7 @@ function isSection(value: unknown): value is Section {
       >
         <ng-template>
           @if (failed().length === 0) {
-            <tb-empty-state icon="pi-check-circle" [title]="t.allDelivered" />
+            <tb-empty-state icon="tb-i-check_circle" [title]="t.allDelivered" />
           } @else {
             <p-table [value]="failed()" styleClass="tb-cards">
               <ng-template #header>

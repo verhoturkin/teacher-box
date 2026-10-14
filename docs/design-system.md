@@ -1,14 +1,14 @@
 # Design system
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
-ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044 and the button accent of ADR-0045, which are the history (*why*); if they disagree with this page, this page is right. A change to
+ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044, the button accent of ADR-0045 and the icons of ADR-0046, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
 [`glossary.md`](glossary.md) (Russian and English); texts live in dictionaries (§14).
 
 Where it lives: preset `core/theme/teacher-box-preset.ts`, colour scheme `core/theme/color-scheme.ts`,
 tokens and shared classes `src/styles.scss`, components `shared/ui/*`, breakpoints `core/layout/mobile.ts`.
-No other UI kits (Angular Material, Material Web), no Material Symbols: icons are `primeicons` 7; the one icon it lacks —
-boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MIT) — is used like a PrimeIcons class.
+No other UI kits (Angular Material, Material Web). Icons — Material Symbols Rounded, a subset font built from the
+classes in use (§1 «Icons», ADR-0046); no primeicons.
 
 ## 1. Tokens
 
@@ -54,6 +54,124 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
   64 px, bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
+
+### Icons (ADR-0046)
+
+Material Symbols Rounded, weight 400, outlined (`'FILL' 0`); filled (`tb-i--filled`) only for the active
+navigation section (§4) and checked states. Markup: `<i class="tb-i tb-i-<name>" aria-hidden="true"></i>`,
+`icon="tb-i tb-i-<name>"` on `p-button`, `icon="tb-i-<name>"` on `tb-empty-state`; the class names the
+symbol (`tb-i-calendar_month`) and is always written whole — `npm run icons` finds the classes in `src/` and
+builds the subset font `core/theme/symbols.woff2` with the map `core/theme/icons.scss`; the design-rules test
+fails while they disagree. Sizes: `--tb-icon-size` 24 px (lists, navigation, icon buttons — M3), 20 px in
+buttons with a label (M3E small), 18 px in chips; `--tb-icon-opsz` follows the size. Dark theme: grade −25 for
+icons only. A glyph is a private code point with an empty alternative text: nothing shows before the font
+loads and screen readers skip it; the meaning is in the label or the tooltip. In generated content —
+`@include icon-font; @include glyph('tb-i-<name>')` (`styles.scss`).
+
+**PrimeNG's own icons** are SVG components (`<svg data-p-icon="…">`), not primeicons: `npm run icons` also
+writes the outlines of our symbols as masks (`core/theme/prime-icons.scss`, map `PRIME` in the script) and
+`styles.scss` hides the paths and masks the box — one place for every component, no per-use templates: select
+and multiselect `arrow_drop_down` / `arrow_drop_up`, «×» of dialogs, drawers, toasts and chips `close`, the date
+picker `calendar_month`, `chevron_left` / `chevron_right` (its time `keyboard_arrow_up` / `_down`), number
+steps `keyboard_arrow_up` / `_down`, checkbox `check` / `remove`, paginator `first_page` / `chevron_*` /
+`last_page`, table sorting `unfold_more` / `arrow_upward` / `arrow_downward`, toast and message `info` /
+`warning` / `error` / `check`, busy `progress_activity`, filters `search`. 24 px; 20 in number steps, 18 in the
+checkbox and the sort mark. Other PrimeNG icons stay PrimeNG's own SVG: the app shows none of them (a new
+component that shows one adds it to `PRIME`).
+
+**One meaning — one symbol.** The set (from primeicons in 0.17.2):
+
+| Meaning | Symbol | Was |
+|---|---|---|
+| Home | `home` | `pi-home` |
+| Schedule, lesson date | `calendar_month` | `pi-calendar` |
+| New lesson | `calendar_add_on` | `pi-calendar-plus` |
+| Lesson request waiting | `event_upcoming` | `pi-calendar-clock` |
+| Time, deadline soon | `schedule` | `pi-clock` |
+| Series of lessons, retry, return for rework, re-invite | `replay` | `pi-replay` |
+| Off time | `dark_mode` | `pi-moon` (schedule) |
+| Homework, assignment | `assignment` | `pi-pen-to-square` |
+| Review | `rate_review` | `pi-check-square` |
+| Textbook | `menu_book` | `pi-book` |
+| Workbook | `stylus_note` | `pi-pencil` (textbooks) |
+| Board | `co_present` | `pi-tb-board` (Tabler mask) |
+| External board, external link | `open_in_new` | `pi-external-link` |
+| Open (go to the page) | `arrow_outward` | `pi-arrow-up-right` |
+| Students | `group` | `pi-users` |
+| Me (the user button without a photo, 32 px like the photo) | `account_circle` | `pi-user` |
+| Add a student | `person_add` | `pi-user-plus` |
+| Remove from the lesson | `person_remove` | `pi-user-minus` |
+| Account | `badge` | `pi-id-card` |
+| Calls, join the lesson, camera | `videocam` / off `videocam_off` | `pi-video` (+ a CSS slash) |
+| Microphone | `mic` / off `mic_off` | `pi-microphone` (+ a CSS slash) |
+| End the call | `call_end` | `pi-phone` |
+| Share the screen | `present_to_all` | `pi-desktop` (call) |
+| Full window / back to the window | `open_in_full` | `pi-window-maximize`, `pi-arrows-alt` |
+| Minimise the call | `close_fullscreen` | `pi-window-minimize` |
+| Weak connection | `network_wifi_1_bar` | `pi-wifi` |
+| Call statistics, reports | `bar_chart` | `pi-chart-bar` |
+| Billing | `account_balance_wallet` | `pi-wallet` |
+| Receipt | `receipt_long` | `pi-receipt` |
+| Notifications | `notifications` | `pi-bell` |
+| Inbox, nothing new | `inbox` | `pi-inbox` |
+| Send, broadcast, Telegram | `send` | `pi-send`, `pi-telegram` |
+| VK, messengers, answers | `forum` | `pi-comments` |
+| MAX | `chat` | `pi-comment` |
+| AI assistant | `auto_awesome` | `pi-sparkles` |
+| AI homework draft | `edit_document` | `pi-file-edit` |
+| Prompt library | `bookmark` | `pi-bookmark` |
+| Settings | `settings` | `pi-cog` |
+| Help | `help` | `pi-question-circle` |
+| Language | `translate` | `pi-language` |
+| Theme: light / dark / system | `light_mode` / `dark_mode` / `brightness_auto` | `pi-sun` / `pi-moon` / `pi-desktop` |
+| Palette (portal colour) | `palette` | `pi-palette` |
+| Photo | `photo_camera` | `pi-camera` |
+| Picture | `image` | `pi-image` |
+| PDF | `picture_as_pdf` | `pi-file-pdf` |
+| Other file | `draft` | `pi-file` |
+| Attach | `attach_file` | `pi-paperclip` |
+| Upload | `upload` | `pi-upload` |
+| Download | `download` | `pi-download` |
+| Copy | `content_copy` | `pi-copy` |
+| Link | `link` | `pi-link` |
+| Backups, database | `database` | `pi-database` |
+| Google Drive | `cloud` | `pi-cloud` |
+| Upload to Drive | `cloud_upload` | `pi-cloud-upload` |
+| Connect Google | `link` | `pi-google` |
+| Restore, history of versions | `history` | `pi-history` |
+| Admin: status | `dns` | `pi-server` |
+| Admin: log | `list_alt` | `pi-list` |
+| Admin: events | `sync` | `pi-sync` |
+| Set in Docker | `deployed_code` | `pi-box` (setting) |
+| Set in .env, locked | `lock` | `pi-lock` |
+| Archive | `inventory_2` | `pi-box` (groups) |
+| Block | `block` | `pi-ban` |
+| Not found | `explore` | `pi-compass` |
+| Add | `add` | `pi-plus` |
+| Edit | `edit` | `pi-pencil` |
+| Delete | `delete` | `pi-trash` |
+| Close, remove, unbind | `close` | `pi-times` |
+| Cancel a lesson | `cancel` | `pi-times-circle` |
+| End a series | `stop_circle` | `pi-stop-circle` |
+| Undo, withdraw | `undo` | `pi-undo` |
+| Save | `save` | `pi-save` |
+| Done, chosen | `check` | `pi-check` |
+| Accepted, completed | `check_circle` | `pi-check-circle` |
+| Not done yet (checklist) | `radio_button_unchecked` | `pi-circle` |
+| Error | `error` | `pi-exclamation-circle` |
+| Warning | `warning` | `pi-exclamation-triangle` |
+| Search | `search` | `pi-search` |
+| Filter | `filter_list` | `pi-filter` |
+| Refresh | `refresh` | `pi-refresh` |
+| Sign in / out | `login` / `logout` | `pi-sign-in` / `pi-sign-out` |
+| Show / hide the password | `visibility` / `visibility_off` | `pi-eye` / `pi-eye-slash` |
+| Preview (as the student) | `visibility` | `pi-eye` |
+| More (menu) | `more_vert` | `pi-ellipsis-v` |
+| More (navigation) | `more_horiz` | `pi-ellipsis-h` |
+| Back / forward | `arrow_back` / `arrow_forward` | `pi-arrow-left` / `pi-arrow-right` |
+| Expand / collapse | `expand_more` / `expand_less` | `pi-chevron-down` / `pi-chevron-up` |
+| Next, go into | `chevron_right` | `pi-chevron-right` |
+| Busy | `progress_activity` + `tb-i--spin` | `pi-spinner pi-spin` |
 
 ## 2. Colour
 
@@ -146,7 +264,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   active when its section is open. The bar (M3E flexible navigation bar, 0.16.3, ADR-0044) is 64 px of
   surface-container without a top border; item padding 4 px, 4 px from the icon to the label. Indicator — 56×32
   pill, secondary-container, moves on `--tb-spring-fast-spatial`; same in the rail (96 px, M3E collapsed rail). **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
-  label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill;
+  label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill and
+  **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
 - **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
@@ -234,8 +353,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour), tonal is neutral
 secondary, red only destroys; green and amber are statuses, never buttons. Size is one, with one exception (size M
 in the hero, below): 40 px pill (icon button 40×40, 48 px touch target),
-Label Large, 16 px side padding, 20 px icon (M3E small button; icon buttons keep 20 px too — our decision until
-the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
+Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 px (M3, since 0.17.2); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
 `size="small"`, `success`, `warn`, `info`, `help`, `contrast` on buttons.
 
 | Role | Variant | PrimeNG |
@@ -384,7 +502,7 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - Errors: `<form tbFieldErrors>` (`shared/ui/field-errors.ts`) shows text under the field (Body Small, error;
   replaces the hint), sets `aria-invalid` / `aria-describedby`, maps server error codes (e.g. `login.taken`)
   to their field; submit with errors shows all and focuses the first.
-- Date field — one field with a trailing calendar icon. Search — `p-iconfield` with `pi-search`: filled pill
+- Date field — one field with a trailing calendar icon. Search — `p-iconfield` with `tb-i-search`: filled pill
   (surface-container-high), no outline; dropdown filter — the same pill, 48 px, named «Поиск».
 - Password: `tb-password-toggle` — 40×40 icon button inside the field, «Показать пароль» / «Скрыть пароль»,
   `aria-pressed`.
@@ -446,8 +564,8 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   weak-connection icon; initials in a primary-container circle while the camera is off.
 - **Toolbar** — the M3 Expressive floating toolbar: a pill of surface-container-high with elevation 2. Its
   buttons are the exception to the 40 px rule: 56 px (48 px on a phone, 44 px in the mini window) round
-  toggles (radius half the height); a switched-off microphone or camera turns error-container with a crossing
-  line (primeicons have no «slash» icons), and it and an active screen share become a rounded square — the M3E
+  toggles (radius half the height); a switched-off microphone or camera turns error-container with `mic_off` /
+  `videocam_off` (0.17.2), and it and an active screen share become a rounded square — the M3E
   icon button selected shape: 56 px CornerLarge (16 px), 48 and 44 px CornerMedium (12 px, as the small icon
   button; our choice for sizes M3 doesn't have) — on `--tb-spring-fast-spatial` (0.16.3); pressed — 12 / 8 px.
   `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with

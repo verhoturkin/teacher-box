@@ -41,7 +41,7 @@ import { T } from '../i18n/texts';
       </span>
       @if (!mobile()) {
         <p-button
-          icon="pi pi-arrows-alt"
+          icon="tb-i tb-i-open_in_full"
           [text]="true"
           [rounded]="true"
           severity="secondary"

@@ -65,7 +65,7 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
   const card = page.locator('p-card').filter({ hasText: 'Нерабочее время' }).last();
   const rows = card.locator('ul.tb-list > li');
   await expect(rows.filter({ hasText: 'Обед 0.6.7' }).first()).toBeVisible();
-  await expect(rows.first().locator('.tb-list__lead .pi-moon')).toHaveCount(1);
+  await expect(rows.first().locator('.tb-list__lead .tb-i-dark_mode')).toHaveCount(1);
 
   const cardBackground = await card.evaluate(
     (element) => getComputedStyle(element).backgroundColor,

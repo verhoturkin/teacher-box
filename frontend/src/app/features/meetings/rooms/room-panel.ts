@@ -33,7 +33,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           <div class="tb-room-link">
             <a [href]="room.joinUrl" target="_blank" rel="noopener">{{ room.joinUrl }}</a>
             <p-button
-              icon="pi pi-copy"
+              icon="tb-i tb-i-content_copy"
               [text]="true"
               [pTooltip]="t.copy"
               [rounded]="true"
@@ -45,14 +45,14 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           <div class="tb-actions">
             <p-button
               [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
-              icon="pi pi-send"
+              icon="tb-i tb-i-send"
               severity="secondary"
               [loading]="pending()"
               (onClick)="share(room.ownerId)"
             />
             <p-button
               [label]="t.remove"
-              icon="pi pi-trash"
+              icon="tb-i tb-i-delete"
               severity="danger"
               [text]="true"
               [loading]="pending()"
@@ -67,7 +67,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
           <div class="tb-actions">
             <p-button
               [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
-              icon="pi pi-send"
+              icon="tb-i tb-i-send"
               severity="secondary"
               [loading]="pending()"
               (onClick)="share(owner.id)"

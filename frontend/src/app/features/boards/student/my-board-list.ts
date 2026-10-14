@@ -19,7 +19,11 @@ import { T } from '../i18n/texts';
         <!-- a tap anywhere on the row opens the board: the title link covers the row -->
         <li class="tb-list__item--link">
           <span class="tb-list__lead" aria-hidden="true"
-            ><i [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"></i
+            ><i
+              [class]="
+                board.kind === 'EXCALIDRAW' ? 'tb-i tb-i-co_present' : 'tb-i tb-i-open_in_new'
+              "
+            ></i
           ></span>
           <div class="tb-list__text">
             @if (board.kind === 'EXCALIDRAW') {

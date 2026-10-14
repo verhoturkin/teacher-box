@@ -32,8 +32,8 @@ export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 
 /** The icon of a request in the log: a homework draft or a review draft. */
 const FEATURE_ICONS: Record<AiFeature, string> = {
-  HOMEWORK_DRAFT: 'pi pi-file-edit',
-  REVIEW_DRAFT: 'pi pi-check-square',
+  HOMEWORK_DRAFT: 'tb-i tb-i-edit_document',
+  REVIEW_DRAFT: 'tb-i tb-i-rate_review',
 };
 
 /** Names of `TEACHERBOX_AI_PROVIDER` values. */
@@ -80,7 +80,7 @@ const STATUS_LABELS: Record<
       @if (!status.enabled) {
         <p-card>
           <tb-empty-state
-            icon="pi-sparkles"
+            icon="tb-i-auto_awesome"
             [title]="t.notConfigured"
             [hint]="t.notConfiguredHint"
           />
@@ -123,7 +123,7 @@ const STATUS_LABELS: Record<
             </p-card>
             <p-card [header]="t.recent">
               @if (recent().length === 0) {
-                <tb-empty-state [compact]="true" icon="pi-sparkles" [title]="t.noRequests" />
+                <tb-empty-state [compact]="true" icon="tb-i-auto_awesome" [title]="t.noRequests" />
               } @else {
                 <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.recent">
                   @for (row of recent(); track $index) {

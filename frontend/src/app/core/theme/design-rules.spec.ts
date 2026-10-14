@@ -44,6 +44,12 @@ function breaches(pattern: RegExp, files: readonly Source[] = ALL): string[] {
 const HEX_IN_STYLE =
   /(color|background|border|outline|fill|stroke|shadow)[\w-]*\s*:[^;{}\n]*#[0-9a-f]{3,8}\b/i;
 
+/** An icon class: the name of a Material Symbol (ADR-0046). */
+const ICON = /\btb-i-([a-z0-9_]+)/g;
+
+/** A primeicons class (`api-error` is not one). */
+const PRIMEICONS = /(?<![\w-])pi-[a-z]|class="pi[\s"]/;
+
 /** `success` on a button tag (tags and messages keep it). */
 const BUTTON_SUCCESS =
   /<(p-button|p-splitbutton)\b[^>]*success|<(button|a)\b[^>]*\bpButton\b[^>]*success|acceptButtonProps:[^}]*success/;
@@ -72,6 +78,19 @@ describe('design rules', () => {
     expect(breaches(HEX_IN_STYLE, styled)).toEqual([]);
   });
 
+  it('has no primeicons: icons are Material Symbols (ADR-0046)', () => {
+    expect(breaches(PRIMEICONS)).toEqual([]);
+  });
+
+  it('builds the icon font from the icons in use: run `npm run icons` (ADR-0046)', () => {
+    const map = readFileSync(join(APP, 'core', 'theme', 'icons.scss'), 'utf8');
+    const mapped = Array.from(map.matchAll(/^\s*'([a-z0-9_]+)':/gm), (match) => match[1]);
+    const used = sources(join(process.cwd(), 'src'))
+      .filter((source) => source.path !== 'core/theme/icons.scss')
+      .flatMap(({ text }) => Array.from(text.matchAll(ICON), (match) => match[1]));
+    expect(mapped).toEqual([...new Set(used)].sort());
+  });
+
   it('finds a breach', () => {
     const sample = [
       {
@@ -89,5 +108,10 @@ describe('design rules', () => {
     expect(breaches(BUTTON_SUCCESS, sample)).toEqual(['z.ts:2']);
     expect(breaches(/size="small"/, sample)).toEqual(['x.ts:3']);
     expect(breaches(HEX_IN_STYLE, sample)).toEqual(['x.ts:4']);
+    expect(
+      breaches(PRIMEICONS, [
+        { path: 'p.ts', text: `api-error\nicon: 'pi pi-check'\n<i class="pi">` },
+      ]),
+    ).toEqual(['p.ts:2', 'p.ts:3']);
   });
 });

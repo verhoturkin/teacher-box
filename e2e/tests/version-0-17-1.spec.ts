@@ -84,7 +84,7 @@ for (const width of [1280, 360]) {
     const look = await join.evaluate((node) => ({
       height: Math.round(node.getBoundingClientRect().height),
       padding: getComputedStyle(node).paddingInlineStart,
-      icon: getComputedStyle(node.querySelector('.p-button-icon, [class*="pi-"]') ?? node).fontSize,
+      icon: getComputedStyle(node.querySelector('.p-button-icon, .tb-i') ?? node).fontSize,
     }));
     expect(look).toEqual({ height: 56, padding: '24px', icon: '24px' });
 

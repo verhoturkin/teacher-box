@@ -8,7 +8,7 @@ import { ButtonAttributes } from './button-attributes';
   imports: [Button, ButtonAttributes],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<p-button
-    icon="pi pi-chevron-down"
+    icon="tb-i tb-i-expand_more"
     ariaLabel="Ещё"
     [tbAttributes]="{ 'aria-haspopup': 'menu', 'aria-expanded': expanded(), title: null }"
   />`,

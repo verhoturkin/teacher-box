@@ -31,7 +31,7 @@ export const UNREAD_POLL_INTERVAL_MS = 60_000;
         [pTooltip]="label()"
         [attr.aria-label]="label()"
       >
-        <i pButtonIcon class="pi pi-bell" aria-hidden="true"></i>
+        <i pButtonIcon class="tb-i tb-i-notifications" aria-hidden="true"></i>
       </a>
     </p-overlaybadge>
   `,

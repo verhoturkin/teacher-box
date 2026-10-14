@@ -65,7 +65,7 @@ const MAX_TEXT = 10_000;
             </div>
             <div class="tb-list__trail tb-list__trail--icons">
               <p-button
-                icon="pi pi-pencil"
+                icon="tb-i tb-i-edit"
                 [text]="true"
                 [rounded]="true"
                 severity="secondary"

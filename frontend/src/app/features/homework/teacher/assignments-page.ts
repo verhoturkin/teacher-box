@@ -50,7 +50,12 @@ import { T } from '../i18n/texts';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/homework" />
-      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
+      <p-button
+        class="tb-page-fab"
+        [label]="t.create"
+        icon="tb-i tb-i-add"
+        (onClick)="openCreate()"
+      />
     </tb-page-header>
 
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -68,7 +73,7 @@ import { T } from '../i18n/texts';
           <tb-assignment-list
             [heading]="t.done"
             [assignments]="done()"
-            emptyIcon="pi-check-circle"
+            emptyIcon="tb-i-check_circle"
             [emptyTitle]="t.noDoneTitle"
             [emptyHint]="t.noDoneHint"
             [menuFor]="menuFor()?.id ?? null"
@@ -78,7 +83,7 @@ import { T } from '../i18n/texts';
       } @else {
         <p-card>
           <h2 class="tb-sr-only">{{ t.title }}</h2>
-          <tb-empty-state icon="pi-pen-to-square" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-assignment" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         </p-card>
       }
     </tb-load-state>
@@ -148,19 +153,19 @@ export class AssignmentsPage implements OnInit {
     return [
       {
         label: T.list.open,
-        icon: 'pi pi-eye',
+        icon: 'tb-i tb-i-visibility',
         command: () => void this.router.navigate(['/teacher/homework', assignment.id]),
       },
       {
         label: T.list.edit,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => void this.router.navigate(['/teacher/homework', assignment.id, 'edit']),
       },
       ...(assignment.submitted > 0
         ? [
             {
               label: T.list.review,
-              icon: 'pi pi-check-square',
+              icon: 'tb-i tb-i-rate_review',
               command: () => void this.router.navigate(['/teacher/homework/review']),
             },
           ]
@@ -170,13 +175,13 @@ export class AssignmentsPage implements OnInit {
         : [
             {
               label: T.list.openBoard,
-              icon: 'pi pi-arrow-up-right',
+              icon: 'tb-i tb-i-arrow_outward',
               command: () => void this.router.navigate(['/teacher/boards', assignment.boardId]),
             },
           ]),
       {
         label: T.remove.action,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.confirmRemove(assignment);

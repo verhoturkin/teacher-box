@@ -70,7 +70,7 @@ test('TEACHERBOX_DOMAIN is a Docker setting the administrator only sees', async 
     .filter({ hasText: 'Домен портала для HTTPS (Caddy)' });
   await expect(setting).toBeVisible();
   // Docker settings have no input: a box icon and the note above the group.
-  await expect(setting.locator('.pi-box')).toBeVisible();
+  await expect(setting.locator('.tb-i-inventory_2')).toBeVisible();
   await expect(setting.locator('input')).toHaveCount(0);
   await expect(page.getByText('Docker Compose читает её до запуска портала').first()).toBeVisible();
 });

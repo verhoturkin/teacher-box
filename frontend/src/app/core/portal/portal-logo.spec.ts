@@ -32,6 +32,6 @@ describe('PortalLogo', () => {
   });
 
   it('shows the default icon without a logo', () => {
-    expect(render(null, true).querySelector('.pi-graduation-cap')).not.toBeNull();
+    expect(render(null, true).querySelector('.tb-i-school')).not.toBeNull();
   });
 });

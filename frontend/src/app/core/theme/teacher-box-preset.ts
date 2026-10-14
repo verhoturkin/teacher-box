@@ -462,9 +462,15 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-button:not(:disabled):active {
           border-radius: var(--tb-shape-sm);
         }
-        /* M3E small button: a 20 px icon */
+        /* M3E small button: a 20 px icon; an icon button: 24 px (ADR-0046) */
         .p-button .p-button-icon {
-          font-size: 1.25rem;
+          --tb-icon-size: 1.25rem;
+          --tb-icon-opsz: 20;
+          font-size: var(--tb-icon-size);
+        }
+        .p-button.p-button-icon-only .p-button-icon {
+          --tb-icon-size: 1.5rem;
+          --tb-icon-opsz: 24;
         }
         /* disabled (M3): the container is on-surface 12 %, the content 38 %, whatever the severity */
         .p-button:disabled {

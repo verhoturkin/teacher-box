@@ -250,7 +250,7 @@ describe('MySchedulePage', () => {
     );
     const host = hostElement(fixture);
     expect(() => buttonByText(host, 'Перенести')).toThrow();
-    expect(host.querySelectorAll('.tb-schedule-list .pi-video')).toHaveLength(1);
+    expect(host.querySelectorAll('.tb-schedule-list .tb-i-videocam')).toHaveLength(1);
     const rows = host.querySelectorAll<HTMLButtonElement>('button[aria-label^="Занятие:"]');
     expect(rows).toHaveLength(2);
 

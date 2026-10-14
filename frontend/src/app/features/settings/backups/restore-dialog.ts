@@ -90,7 +90,10 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
             </form>
           }
           @case ('restarting') {
-            <p><i class="pi pi-spin pi-spinner" aria-hidden="true"></i> {{ t.restarting }}</p>
+            <p>
+              <i class="tb-i tb-i-progress_activity tb-i--spin" aria-hidden="true"></i>
+              {{ t.restarting }}
+            </p>
             <p class="tb-muted">{{ t.keepOpen }}</p>
           }
           @case ('manual') {
@@ -136,7 +139,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
             />
           }
           @case ('done') {
-            <p-button [label]="t.signInAgain" icon="pi pi-sign-in" (onClick)="signInAgain()" />
+            <p-button [label]="t.signInAgain" icon="tb-i tb-i-login" (onClick)="signInAgain()" />
           }
         }
       </ng-template>

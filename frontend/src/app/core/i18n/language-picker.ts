@@ -10,7 +10,7 @@ import { LANGUAGES, Language, chooseLanguage, language } from './language';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'tb-language-picker', role: 'group', 'aria-label': 'Language / Язык' },
   template: `
-    <i class="pi pi-language" aria-hidden="true"></i>
+    <i class="tb-i tb-i-translate" aria-hidden="true"></i>
     @for (item of languages; track item.code) {
       <button
         type="button"

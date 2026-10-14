@@ -31,7 +31,7 @@ import { T } from '../i18n/texts';
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (students(); as students) {
           @if (students.length === 0) {
-            <tb-empty-state icon="pi-users" [title]="t.empty" />
+            <tb-empty-state icon="tb-i-group" [title]="t.empty" />
           } @else {
             <div class="tb-students-summary">
               <span>
@@ -40,7 +40,7 @@ import { T } from '../i18n/texts';
               </span>
               <p-button
                 [label]="selection().length > 0 ? t.remindSelected : t.remindAll"
-                icon="pi pi-bell"
+                icon="tb-i tb-i-notifications"
                 severity="secondary"
                 [disabled]="notConnected().length === 0"
                 [loading]="pending()"

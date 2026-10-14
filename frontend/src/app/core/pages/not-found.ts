@@ -18,9 +18,9 @@ import { CORE_T } from '@core/i18n/texts';
   template: `
     <tb-page-header [title]="t.title" />
     <p-card>
-      <tb-empty-state icon="pi-compass" [title]="t.empty" [hint]="t.hint">
+      <tb-empty-state icon="tb-i-explore" [title]="t.empty" [hint]="t.hint">
         <a pButton routerLink="/">
-          <i pButtonIcon aria-hidden="true" class="pi pi-home"></i>
+          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-home"></i>
           <span pButtonLabel>{{ t.home }}</span>
         </a>
       </tb-empty-state>

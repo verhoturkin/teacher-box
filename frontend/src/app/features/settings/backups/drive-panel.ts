@@ -94,7 +94,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
           <p>{{ t.about(portalName()) }}</p>
           @if (status.running; as running) {
             <p class="tb-drive-running" role="status">
-              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              <i class="tb-i tb-i-progress_activity tb-i--spin" aria-hidden="true"></i>
               {{
                 running.task === 'UPLOAD' ? t.uploading(running.name) : t.downloading(running.name)
               }}
@@ -113,19 +113,21 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
           }
           <h3 class="tb-drive-files">{{ t.files }}</h3>
           @if (files().length === 0) {
-            <tb-empty-state icon="pi-cloud" [title]="t.noFiles" />
+            <tb-empty-state icon="tb-i-cloud" [title]="t.noFiles" />
           } @else {
             <ul class="tb-list" [attr.aria-label]="t.files">
               @for (file of files(); track file.id) {
                 <li>
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-cloud"></i></span>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i class="tb-i tb-i-cloud"></i
+                  ></span>
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ file.name }}</span>
                     <span class="tb-list__supporting">{{ details(file) }}</span>
                   </div>
                   <div class="tb-list__trail tb-list__trail--icons">
                     <p-button
-                      icon="pi pi-download"
+                      icon="tb-i tb-i-download"
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
@@ -161,7 +163,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
               <p-button
                 [label]="t.connect"
                 severity="secondary"
-                icon="pi pi-google"
+                icon="tb-i tb-i-link"
                 [loading]="pending()"
                 (onClick)="connect()"
               />
@@ -192,7 +194,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
                 <div class="tb-drive-uri">
                   <code>{{ redirectUri() }}</code>
                   <p-button
-                    icon="pi pi-copy"
+                    icon="tb-i tb-i-content_copy"
                     [text]="true"
                     [pTooltip]="t.copyAddress"
                     [rounded]="true"

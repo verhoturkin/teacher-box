@@ -60,7 +60,7 @@ import { SearchField } from '@shared/ui/search-field';
                 <li>
                   <tb-empty-state
                     [compact]="true"
-                    icon="pi-search"
+                    icon="tb-i-search"
                     [title]="t.notFoundTitle"
                     [hint]="t.notFoundHint"
                   />

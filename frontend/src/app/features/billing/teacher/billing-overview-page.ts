@@ -61,13 +61,13 @@ import { T } from '../i18n/texts';
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/billing" />
       <a pButton routerLink="report" severity="secondary">
-        <i pButtonIcon aria-hidden="true" class="pi pi-chart-bar"></i>
+        <i pButtonIcon aria-hidden="true" class="tb-i tb-i-bar_chart"></i>
         <span pButtonLabel>{{ t.report }}</span>
       </a>
       <p-button
         class="tb-page-fab"
         [label]="t.payment"
-        icon="pi pi-wallet"
+        icon="tb-i tb-i-account_balance_wallet"
         (onClick)="openPayment(null)"
         [disabled]="!overview()"
       />
@@ -131,7 +131,7 @@ import { T } from '../i18n/texts';
                       [currency]="overview.currency"
                     />
                     <p-button
-                      icon="pi pi-wallet"
+                      icon="tb-i tb-i-account_balance_wallet"
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
@@ -144,9 +144,13 @@ import { T } from '../i18n/texts';
               }
             </ul>
           } @else if (overview.students.length === 0) {
-            <tb-empty-state icon="pi-users" [title]="t.noStudentsTitle" [hint]="t.noStudentsHint" />
+            <tb-empty-state
+              icon="tb-i-group"
+              [title]="t.noStudentsTitle"
+              [hint]="t.noStudentsHint"
+            />
           } @else {
-            <tb-empty-state icon="pi-check-circle" [title]="t.noDebtors" />
+            <tb-empty-state icon="tb-i-check_circle" [title]="t.noDebtors" />
           }
         </p-card>
 
