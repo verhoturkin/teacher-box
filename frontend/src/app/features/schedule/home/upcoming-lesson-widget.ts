@@ -47,6 +47,7 @@ import { T } from '../i18n/texts';
               [url]="url"
               [label]="joinLabel()"
               [teacher]="true"
+              [medium]="true"
             />
           </div>
         }

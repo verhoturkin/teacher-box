@@ -26,18 +26,20 @@ import { T } from '../i18n/texts';
         [label]="label()"
         icon="pi pi-video"
         [severity]="tonal() ? 'secondary' : 'primary'"
+        [styleClass]="medium() ? 'tb-button-m' : ''"
         [loading]="session.opening() === owner"
         (onClick)="session.open(owner)"
       />
     } @else if (inApp()) {
       <span
         class="tb-split"
+        [class.tb-split--m]="medium()"
         role="group"
         [attr.aria-label]="label()"
         [class.tb-split--open]="menuOpen()"
       >
         <p-button
-          styleClass="tb-split__main"
+          [styleClass]="medium() ? 'tb-split__main tb-button-m' : 'tb-split__main'"
           [label]="label()"
           icon="pi pi-video"
           [severity]="tonal() ? 'secondary' : 'primary'"
@@ -70,6 +72,7 @@ import { T } from '../i18n/texts';
         target="_blank"
         rel="noopener"
         [severity]="tonal() ? 'secondary' : 'primary'"
+        [class.tb-button-m]="medium()"
       >
         <i pButtonIcon aria-hidden="true" class="pi pi-video"></i>
         <span pButtonLabel>{{ label() }}</span>
@@ -90,6 +93,8 @@ export class JoinLessonButton {
   readonly teacher = input(false);
   /** A secondary action next to others (ADR-0018): the tonal button. */
   readonly tonal = input(false);
+  /** The hero of the home page: the one M3E medium button of the portal, 56 px (ADR-0045). */
+  readonly medium = input(false);
 
   /** The owner of a built-in room: the call opens in the portal. */
   protected readonly callOwner = computed(() =>

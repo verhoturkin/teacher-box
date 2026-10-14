@@ -35,10 +35,11 @@ intro: «no Material Symbols» goes).
 - [x] 205.1 **F** Button M (M3E `ButtonMedium`: 56 dp, full corners, pressed CornerMedium 12 dp, icon 24 dp,
   padding 24 dp, label — our decision: Title Medium) as a class `tb-button-m` in `styles.scss`, also for the split
   button (`tb-split--m`: trailing part 56 dp, inner corners per M3E `SplitButtonMedium` from the skill).
-- [ ] 205.2 **F** Use it only in the hero: `schedule/home/next-lesson-widget.ts`, `upcoming-lesson-widget.ts`,
+- [x] 205.2 **F** Use it only in the hero: `schedule/home/next-lesson-widget.ts`, `upcoming-lesson-widget.ts`,
   `join-lesson-button.ts` («Начать урок» / «Войти в урок», `tb-join-wide` on a narrow card). §5 «Nearest lesson
   hero», §7 «Size is one» → «one exception». E2E 40 px checks (`version-0-6-12`, `version-0-6-13`) skip it; a new
-  check that the hero button is 56 px.
+  check that the hero button is 56 px. *The 40 px checks never reach the hero (the students page, a form, the bell):
+  unchanged; the 56 px check is in `version-0-17-1` (205.3).*
 - [ ] 205.3 Release 0.17.1 (skill `release`): help (the large «Начать урок»), E2E spec `version-0-17-1` (hero
   button 56 px, the rest 40 px), CHANGELOG, version, archiving of stage 205.
 

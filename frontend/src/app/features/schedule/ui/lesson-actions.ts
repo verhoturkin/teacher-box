@@ -21,7 +21,12 @@ import { T } from '../i18n/texts';
   },
   template: `
     @if (joinUrl(); as url) {
-      <tb-join-lesson-button [url]="url" [label]="joinLabel()" [tonal]="inRow()" />
+      <tb-join-lesson-button
+        [url]="url"
+        [label]="joinLabel()"
+        [tonal]="inRow()"
+        [medium]="hero()"
+      />
     }
     @if (requests()) {
       <div class="tb-button-group" role="group" [attr.aria-label]="t.requests">
@@ -59,6 +64,8 @@ export class LessonActions {
    * filled button only in the hero of the home page and in the bottom sheet (ADR-0026).
    */
   readonly inRow = input(false);
+  /** The nearest lesson on the home page: «Войти в урок» is the medium button (ADR-0045). */
+  readonly hero = input(false);
   readonly rescheduleIcon = input<string | undefined>(undefined);
   readonly ask = output<ChangeKind>();
 

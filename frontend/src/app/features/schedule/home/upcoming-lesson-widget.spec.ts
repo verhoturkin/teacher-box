@@ -54,6 +54,7 @@ describe('UpcomingLessonWidget', () => {
     );
     expect(text).toContain('Степени');
     expect(text).toContain('Начать урок');
+    expect(host.querySelector('tb-join-lesson-button .tb-button-m')).not.toBeNull();
     expect(text).toContain('Алгебра');
     expect(host.querySelector('a[href="/teacher/boards/board-1"]')).not.toBeNull();
   });
