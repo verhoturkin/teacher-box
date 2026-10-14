@@ -62,7 +62,7 @@ test('the teacher notifications are cards: the inbox and the messages open, the 
   await expect(page.locator('#notifications-students')).toContainText('Подключили мессенджер');
 });
 
-test('confirming buttons are green, cancelling neutral, and the dialog is white like a card', async ({
+test('confirming buttons are green, cancelling neutral, and the dialog stands apart from a card', async ({
   page,
 }) => {
   await signIn(page);
@@ -75,7 +75,8 @@ test('confirming buttons are green, cancelling neutral, and the dialog is white 
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
   await expect(cancel).toHaveClass(/p-button-secondary/);
   await expect(cancel).toHaveClass(/p-button-text/);
-  expect(await style(page, '.p-dialog', 'background-color')).toBe(
+  // 0.16.2: a dialog is surface-container-high (M3), no longer the colour of a card
+  expect(await style(page, '.p-dialog', 'background-color')).not.toBe(
     await style(page, 'main .p-card', 'background-color'),
   );
   await cancel.click();

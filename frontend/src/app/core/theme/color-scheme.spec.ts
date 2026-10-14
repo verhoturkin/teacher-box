@@ -22,6 +22,20 @@ describe('color scheme', () => {
     }
   });
 
+  it.each(CASES)(
+    'sets the list tiles of a dialog apart from it in both themes (%s)',
+    (_name, shades) => {
+      const scheme = colorScheme(shades);
+
+      // a dialog is surface-container-high (M3), its tiles surface-container-lowest (styles.scss)
+      for (const roles of [scheme.light, scheme.dark]) {
+        expect(contrast(roles.surfaceContainerLowest, roles.surfaceContainerHigh)).toBeGreaterThan(
+          1.15,
+        );
+      }
+    },
+  );
+
   it('takes the roles from the M3 Fidelity scheme of the color', () => {
     const seed = Hct.fromInt(argbFromHex(auraPalette('indigo')['500'] ?? ''));
     const light = new SchemeFidelity(seed, false, 0, '2025');

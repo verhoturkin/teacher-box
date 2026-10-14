@@ -80,7 +80,8 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
   });
   expect(tile.background).not.toBe(cardBackground);
   expect(tile.background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(tile.top).toBe('16px');
+  // 0.16.2: the outer corner nests in the card (20 − 20 px of room → 4 px), as the inner ones
+  expect(tile.top).toBe('4px');
   expect(await styleOf(page, 'ul.tb-list', 'row-gap')).toBe('2px');
 
   const count = await rows.count();

@@ -33,8 +33,11 @@ import { LessonTime } from '../home/lesson-clock';
       font: var(--tb-type-label-l);
     }
 
+    /* the one hero moment of the portal (ADR-0044): the start in Display Small emphasized */
     .tb-time-tile__start {
-      font: var(--tb-type-headline-m-emphasized);
+      font: var(--tb-type-display-s-emphasized);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
   `,
 })

@@ -23,8 +23,8 @@ function layer(content: string, background: string, state: State): string {
 /**
  * The PrimeNG meanings of the roles, the same in both schemes except the background of cards:
  * the page is a container and cards lie on it lighter (light: the lowest container on the
- * container, dark: the container on the surface). Dialogs, menus and lists that pop up have the
- * background of cards and stand out by their shadow (ADR-0019).
+ * container, dark: the container on the surface). Menus and lists that pop up have the background of
+ * cards and stand out by their shadow (ADR-0019); dialogs are surface-container-high (M3, ADR-0044).
  */
 function scheme(card: string, neutral: Shades): Record<string, unknown> {
   return {
@@ -79,7 +79,12 @@ function scheme(card: string, neutral: Shades): Record<string, unknown> {
     overlay: {
       select: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
       popover: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
-      modal: { background: card, borderColor: 'transparent', color: '{md.on.surface}' },
+      // M3 dialogs: surface-container-high in both themes, the highest surface of the portal (ADR-0044)
+      modal: {
+        background: '{md.surface.container.high}',
+        borderColor: 'transparent',
+        color: '{md.on.surface}',
+      },
     },
     list: {
       option: {

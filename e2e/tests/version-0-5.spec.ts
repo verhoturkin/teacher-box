@@ -74,7 +74,7 @@ async function studentPage(browser: Browser): Promise<Page> {
 }
 
 // Since 0.6.6 the notifications have folding cards instead of tabs (ADR-0019).
-test('sections lie on the page and the phone navigation has five even sections', async ({
+test('sections lie on the page and the phone navigation has five sections', async ({
   page,
   browser,
 }) => {
@@ -93,7 +93,11 @@ test('sections lie on the page and the phone navigation has five even sections',
     .locator('.tb-bottom-nav__item')
     .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().width)));
   expect(widths).toHaveLength(5);
-  expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
+  // 0.16.2: an item is as wide as its label, at least 64 px, and the bar fills the width
+  expect(Math.min(...widths)).toBeGreaterThanOrEqual(64);
+  expect(Math.abs(widths.reduce((sum, width) => sum + width, 0) - PHONE.width)).toBeLessThanOrEqual(
+    2,
+  );
   await phone.context().close();
 });
 

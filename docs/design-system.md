@@ -1,7 +1,7 @@
 # Design system
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
-ADR-0017–0027 and the call window of ADR-0030, which are the history (*why*); if they disagree with this page, this page is right. A change to
+ADR-0017–0027, the call window of ADR-0030 and the M3E alignment of ADR-0044, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
 [`glossary.md`](glossary.md) (Russian and English); texts live in dictionaries (§14).
 
@@ -20,7 +20,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | `--tb-shape-xs` | 4 | tooltips, inputs, inner corners of split button and list tiles |
   | `--tb-shape-sm` | 8 | pressed button (M3E CornerSmall), chips, tags, inner corners of connected button groups |
   | `--tb-shape-md` | 12 | selected toggle, menu items |
-  | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of list tiles |
+  | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of a list right on the page |
   | `--tb-shape-lg-plus` | 20 | cards |
   | `--tb-shape-xl` | 28 | dialogs, top of the bottom sheet |
   | `--tb-shape-xl-plus` | 32 | login and invite card |
@@ -28,6 +28,10 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | `--tb-shape-full` | — | buttons, search fields, navigation indicator |
 
   Radii come only from this scale. `--tb-shape-button` (20 px) is half a 40 px button.
+  **Nested corners** (M3 optical roundness, ADR-0044): a child inside a padded container takes `inner = outer −
+  padding`, never below `--tb-shape-xs`. Lists, tile tables and key figures set it through `--tb-list-outer`: right
+  on the page 16 px (M3 list CornerLarge); in a card on a computer 20 − 20 → 4 px; in a dialog 28 − 24 = 4 px; in a
+  phone card 20 − 12 = 8 px. The rule is written as `max(xs, calc(outer − padding))` beside the container's padding.
 - **Elevation** — surfaces differ by tone, not shadow. Shadows `--tb-elevation-1..3` only on floating
   elements: FAB, menus, dropdowns, date picker (level 2), dialogs (3), bottom sheet (1).
 - **State layers** — content colour over the element: hover `--tb-state-hover` 8 %, focus and pressed 10 %;
@@ -89,9 +93,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
   lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
   (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
-- **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —
+- **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
-  surface-container-low / surface-container-high. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
+  surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
+  themes: inside `.p-dialog` `--tb-card` is the dialog's colour (the notch of a field's label) and list tiles are
+  surface-container-lowest, so they stand apart in both themes (`color-scheme.spec.ts`); surface-container-highest is
+  not used beside a dialog, as M3 asks. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
   themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
 - Text contrast ≥ 4.5:1, outlines and focus rings ≥ 3:1.
@@ -104,7 +111,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card title — Title Large
   emphasized; dialog title — Headline Small emphasized; section subtitles — Title Medium; field labels,
   buttons, menu items, dropdown options — Label Large; tooltip, `small`, stat details — Body Small.
-- Weights 400 and 500 only (no 600/700): emphasis is weight 500 and colour.
+- **Emphasized roles** (M3E, ADR-0044) — `--tb-type-<role>-emphasized`: the same size and line as the baseline,
+  heavier. Display S, Headline L/M/S, Title L — 500; Title M/S, Label L/M/S — **Bold 700**. Weights are 400 and 500,
+  and 700 only through those emphasized tokens (never a bare `font-weight: 600/700`). Emphasized marks the
+  exception (titles, the hero time, the active navigation label); the baseline stays the rest of the scale.
+  Tracking: `--tb-tracking-<role>` beside `font` (display, headline and title large have none; an emphasized role
+  takes its baseline's tracking). The scale has Display S (36/44) and Headline L (32/40) besides the roles above.
 - Wrap text between words (`overflow-wrap: break-word`); `anywhere` only for codes, URLs, paths, env names
   and table cells with columns. Empty-state titles have no trailing full stop.
 - Dates, plurals and numbers — glossary (`CountPipe`, non-breaking space between number and unit).
@@ -122,9 +134,14 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
 - **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
   (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
-  help, settings, account, sign out); five sections fit without «Ещё». Item ≥ 64 px, Label Medium, never
-  truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
-  `--tb-spring-fast-spatial`; same in the rail.
+  help, settings, account, sign out); five sections fit without «Ещё». Item as wide as its label, ≥ 64 px, the
+  rest of the width shared (`minmax(64px, auto)`: «Расписание» fits a 360 px phone), Label Medium, never truncated —
+  a larger font wraps a label with hyphens (M3: whole up to 2× text); the rail's labels wrap the same way. «Ещё» is
+  active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
+  `--tb-spring-fast-spatial`; same in the rail. **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
+  label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill;
+  inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
+  Label Large for its horizontal items.
 - **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
   (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
   name.
@@ -161,7 +178,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
 - **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
   calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
-  «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
+  «Завтра» / «чт, 16.10» in Label L, the start in Display S emphasized (0.16.2, our decision: the one hero moment of the portal; tabular figures, one line — the tile grows on a narrow card), the length; within an hour «через N мин»; while it runs «Идёт
   сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`, the student's `tb-my-board-links` since
   0.15.3: no «Доски:» caption, assist chips `tb-board-chip` in the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
@@ -285,7 +302,8 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 
 - **Every list of data inside a card or dialog is a segmented list** `ul.tb-list` (CSS subgrid: lead, text,
   trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px gap, inner corners 4 px,
-  outer 16 px (a single tile fully round), height ≥ 56 px, padding 12 / 16 px.
+  outer `--tb-list-outer` — nested in its container (§1: 4 px in a card on a computer and in dialogs, 8 px in a
+  phone card, 16 px right on the page; a single tile has it on all corners), height ≥ 56 px, padding 12 / 16 px.
   - `tb-list__lead` — 40 px secondary-container circle: for people the component `tb-avatar`
     (`@shared/ui/avatar`: the student's photo cut to a circle, otherwise the initials; `size` for a bigger
     one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
@@ -339,7 +357,7 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number
   right, details below).
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
-  the phone each row becomes a card «column: value» (`data-label`). Main column
+  the phone each row becomes a card «column: value» (`data-label`); outer corners nest like the lists' (§1). Main column
   `tb-col-main`, amounts `tb-amount`. Statuses — `p-tag`, one shape, no wrapping. Row typing — `tbRowType`.
 - Not data lists: wizard steps, help items, checklists, bot capability lists, files picked before upload — plain text
   lists.

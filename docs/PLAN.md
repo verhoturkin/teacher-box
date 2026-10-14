@@ -17,7 +17,7 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next releases — M3 Expressive alignment (0.16.2–0.16.3)
+## Next release — M3 Expressive alignment (0.16.3)
 
 Goals: bring the theme back to M3 Expressive where it drifted (audit 2026-10-14, cross-checked with a second
 review): fix breaches of our own rules, button and group geometry, springs, the nested-corner rule, the
@@ -41,40 +41,13 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   the help side sheet title in Title Large (M3 side sheet headline, design-system §8); button `paddingY`
   (0.5625 rem + 1 px borders = 40 px, E2E checks it).
 
-### 201. Shape and type (F, ADR-0044)
-
-- [ ] 201.1 **F** Nested corners (`inner = outer − padding`): on a phone a card (20 px) holds a list with 12 px
-  around it, so tiles should end at 8 px, not 16. Set `--tb-list-outer` per container: phone card
-  `calc(var(--tb-shape-lg-plus) - var(--tb-space-3))`; measure the padding around lists on a computer and in
-  dialogs and apply the same rule (never below `--tb-shape-xs`); a single tile stays fully round. Same for
-  `p-table.tb-cards`. §1, §9.
-- [ ] 201.2 **F** Type scale, `styles.scss` ~43–65: add the emphasized tokens M3E gives **Bold (700)** — Title
-  M/S, Label L/M/S — and Display S (36/44) and Headline L (32/40) with emphasized variants and tracking tokens.
-  Change §3 «Weights 400 and 500 only» → 700 only through the emphasized tokens. Font already has 400–700.
-- [ ] 201.3 **F** Navigation active item (flexible bar and vertical rail item, M3E): label colour
-  `on-surface` → **secondary** (`core/layout/shell.scss` ~211, `side-nav.scss` ~177 — in the rail only the icon
-  changes now); label Label M emphasized (bold), as M3 pairs it with the filled icon (the filled icon
-  comes with Material Symbols in 206.5). Check «never truncated» at 360 px and 200 % font; if bold doesn't fit, keep 500 and
-  note it in §4.
-- [ ] 201.4 **F** *(our decision)* Hero time: `schedule/home/next-lesson-widget.ts` / `upcoming-lesson-widget.ts`,
-  `tb-lesson-time-tile` — start time in Display S emphasized instead of Headline M (the one hero moment of the
-  portal); check the narrow card layout. §5.
-- [ ] 201.5 **F** Dialog surface: preset `overlay.modal` (~82) `card` (surface-container-lowest) → M3
-  **surface-container-high**; dialogs' lists then need a tile colour that differs from it (decide:
-  surface-container-lowest or -highest), tested in `core/theme/color-scheme.spec.ts` for both themes. §2.
-- [ ] 201.6 **F** *(optional)* Dark theme grade: `@use '…/google-sans/wght.css'` → the file with the GRAD axis,
-  `font-variation-settings: 'GRAD' -25` in the dark theme (M3: a negative grade so light text doesn't look
-  heavier). Do it only if the font grows by < 10 % in `npm run build` stats.
-- [ ] 201.7 ADR-0044 + row in `docs/adr/README.md`.
-
-- [ ] 201.8 Release 0.16.2 (skill `release`): E2E spec `version-0-16-2`.
-
 ### 202. Navigation and motion (F)
 
 - [ ] 202.1 **F** Flexible navigation bar: `--tb-bottom-nav-height` 80 → **64 px**, item padding, indicator
   64×32 → **56×32**, no top border (`shell.scss` ~108–222). Dependants: `shared/ui/fab-menu.ts:74`, `styles.scss`
   ~1880, 1940, 1949, 2969, 2987 (FAB, snackbar, call mini window), `shell.scss:104`. Rail collapsed 88 → **96 px**
-  (`side-nav.scss:104`). §4, ADR-0044.
+  (`side-nav.scss:104`). §4, ADR-0044. Since 0.16.2 items are `minmax(64px, auto)` and labels wrap instead of an
+  ellipsis (201.3) — keep «Расписание» whole at 360 px with the new paddings (E2E `version-0-16-2`).
 - [ ] 202.2 **F** Springs for overlays: dialogs, bottom sheet, side sheet, menus, snackbar — size/position on
   spatial, opacity on effects springs (now PrimeNG animations). First read the PrimeNG 21 motion/animation API
   (context7); `core/snackbar` is ours. Reduced motion: no movement. §1 («dialogs and snackbar keep PrimeNG
@@ -145,7 +118,7 @@ PrimeNG icons replaced too; primeicons removed at the end.
 - [ ] 206.2 **F** Icon layer in `styles.scss` (section «Icons»): `.tb-i` (font, 24 px, `'FILL' 0, 'wght' 400,
   'GRAD' 0, 'opsz' 24`, `aria-hidden` by usage), size tokens `--tb-icon-size` (24; 20 in buttons — M3E button
   icon; 18 in chips), `.tb-i--filled` (`'FILL' 1`); a generated list of `.tb-i-<name>::before` classes from one map
-  `core/theme/icons.scss` (the only place names live). Dark theme `'GRAD' -25` together with 201.6.
+  `core/theme/icons.scss` (the only place names live). Dark theme `'GRAD' -25` for icons only (201.6 left the text font at grade 0).
   The board icon: a Material Symbol replaces the Tabler mask `pi-tb-board`.
 - [ ] 206.3 Mapping table «pi-* → symbol» for all 97 icons in use (`rg -o 'pi-[a-z0-9-]+' frontend/src/app | sort
   -u`) in design-system (new §1 «Icons»): one meaning — one symbol; review it with the teacher before 206.4.
