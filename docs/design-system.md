@@ -316,7 +316,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   button stays on the right, so the name keeps its width.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
-  cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link) under one search, the supporting line drops
+  cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the
+  assignments (0.15.4; `tb-search-field` «Поиск: <card>», only while the card has boards), the supporting line drops
   the kind; the student's «Мои доски» the same (a card without boards is hidden). A tap anywhere on a row opens
   the board: the title is a `tb-list__link` whose `::before` covers the row (`tb-list__item--link` for the hover,
   the focus ring on the row), the «⋮» stays above it.

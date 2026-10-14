@@ -234,7 +234,7 @@ One lesson can have another link — in the lesson window.
     title: 'Boards',
     summary: 'Excalidraw boards and external boards of students and groups',
     body: `
-The «Boards» section keeps all boards in one place; the search above the list finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
+The «Boards» section keeps all boards in one place; each card («Boards in the portal», «External boards») has its own search that finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
 
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.

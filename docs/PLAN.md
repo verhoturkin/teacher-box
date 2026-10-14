@@ -26,7 +26,7 @@ each card, as the assignments.
 
 - [x] 197.1 **F** `notifications/home/latest-notifications-widget.ts`, `inbox/notification-list.ts`: no
   «Отметить прочитанным» tick on a phone — the swipe marks a notification read. Docs: design-system §9.
-- [ ] 197.2 **F** `boards/teacher/boards-page.ts`: a search in each card («Доски на портале», «Внешние доски»), as
+- [x] 197.2 **F** `boards/teacher/boards-page.ts`: a search in each card («Доски на портале», «Внешние доски»), as
   `homework/teacher/assignment-list.ts`. Docs: design-system §9.
 
 ### 198. Release 0.15.4
