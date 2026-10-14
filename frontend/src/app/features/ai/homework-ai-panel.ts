@@ -76,7 +76,6 @@ export interface AppliedDraft {
           [label]="t.prompts"
           icon="pi pi-bookmark"
           severity="secondary"
-          size="small"
           ariaHasPopup="dialog"
           (onClick)="prompts.toggle($event)"
         />
@@ -85,7 +84,6 @@ export interface AppliedDraft {
             [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
             icon="pi pi-book"
             severity="secondary"
-            size="small"
             ariaHasPopup="dialog"
             (onClick)="sourcePicker.toggle($event)"
           />
@@ -94,7 +92,6 @@ export interface AppliedDraft {
           class="tb-ai-panel__generate"
           [label]="draft() === null ? t.generate : t.again"
           [icon]="draft() === null ? 'pi pi-sparkles' : 'pi pi-refresh'"
-          size="small"
           [loading]="pending()"
           (onClick)="generate()"
         />
@@ -191,21 +188,18 @@ export interface AppliedDraft {
                 [label]="t.discard"
                 severity="secondary"
                 [text]="true"
-                size="small"
                 (onClick)="draft.set(null)"
               />
               @if (hasText()) {
                 <p-button
                   [label]="t.insert"
                   severity="secondary"
-                  size="small"
                   (onClick)="apply(current, 'insert')"
                 />
               }
               <p-button
                 [label]="t.replace"
                 icon="pi pi-check"
-                size="small"
                 (onClick)="apply(current, 'replace')"
               />
             </div>

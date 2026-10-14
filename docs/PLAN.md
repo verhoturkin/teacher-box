@@ -45,7 +45,7 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
   shape in the `primary-container` container is `primary` — with the Fidelity scheme the container keeps the
   portal colour and the shape nearly vanishes. M3: contained active indicator → **on-primary-container**, shape
   38 dp in a 48 dp container (`::after` 60 % → 79 %). Check the reduced-motion pulse stays a circle.
-- [ ] 197.2 **F** `features/ai/homework-ai-panel.ts` lines 79, 88, 97, 194, 201, 208: drop `size="small"` (40 px
+- [x] 197.2 **F** `features/ai/homework-ai-panel.ts` lines 79, 88, 97, 194, 201, 208: drop `size="small"` (40 px
   rule, §7); check the bar wraps on a phone. Add the assignment editor to the page list of the «no outlined,
   small…» check in `e2e/tests/version-0-6-5.spec.ts`.
 - [ ] 197.3 **F** `features/meetings/call/call-window.ts:74`: the M2-style ring `tb-call-spinner` →
