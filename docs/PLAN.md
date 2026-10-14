@@ -21,8 +21,8 @@ unless the task needs history.
 
 Goals: bring the theme back to M3 Expressive where it drifted (audit 2026-10-14, cross-checked with a second
 review): fix breaches of our own rules, button and group geometry, springs, the nested-corner rule, the
-emphasized type scale, the flexible navigation bar. No change of button colours or sizes here — those need the
-teacher's decision (next section).
+emphasized type scale, the flexible navigation bar. Button colours and sizes and the icon set change in 0.17.0
+(next section, decided by the teacher on 2026-10-14).
 
 ADR: **ADR-0044** «Выравнивание по M3 Expressive, октябрь 2026» (stage 199: weight 700 for emphasized styles,
 dialog surface, nested corners; stage 200: flexible navigation bar).
@@ -105,8 +105,8 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
   Change §3 «Weights 400 and 500 only» → 700 only through the emphasized tokens. Font already has 400–700.
 - [ ] 199.3 **F** Navigation active item (flexible bar and vertical rail item, M3E): label colour
   `on-surface` → **secondary** (`core/layout/shell.scss` ~211, `side-nav.scss` ~177 — in the rail only the icon
-  changes now); label Label M emphasized (bold) instead of a filled icon (primeicons have none — M3 allows a
-  heavier label/icon then). Check «never truncated» at 360 px and 200 % font; if bold doesn't fit, keep 500 and
+  changes now); label Label M emphasized (bold), as M3 pairs it with the filled icon (the filled icon
+  comes with Material Symbols in 204.5). Check «never truncated» at 360 px and 200 % font; if bold doesn't fit, keep 500 and
   note it in §4.
 - [ ] 199.4 **F** *(our decision)* Hero time: `schedule/home/next-lesson-widget.ts` / `upcoming-lesson-widget.ts`,
   `tb-lesson-time-tile` — start time in Display S emphasized instead of Headline M (the one hero moment of the
@@ -138,19 +138,90 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
 - [ ] 201.1 Skill `release`: help articles (if any text changed), E2E spec `version-0-16-0` (button 40 px with
   16 px padding, nav bar 64 px, no `size="small"` in the editor), CHANGELOG, version, plan archiving.
 
-## Later — decisions for the teacher (M3 Expressive, each its own ADR and release)
+## Release 0.17.0 — M3 Expressive buttons and icons
 
-- **Button colours** (ADR superseding part of ADR-0026): main action filled **primary**, red only for an
-  irreversible confirmation, green/amber only for statuses. Scope: `severity="success"` (56 uses) and
-  `"danger"` (37) in `frontend/src/app`, `shared/ui/confirmation` (`safeConfirmation` is green), E2E
-  `version-0-6-5.spec.ts`, `version-0-6-12.spec.ts`, the help article on the portal colour
-  (`help/articles/teacher.ru.ts` ~523: the warning about a green portal colour), the ΔE check in
-  `core/theme/portal-accent.ts`, design-system §7.
-- **Button sizes**: M (56 dp, icon 24, padding 24, pressed CornerMedium) for one hero action («Начать урок»);
-  E2E 40 px checks get that exception; §7.
-- **Icons with filled variants** (filled icon for the active section, M3): primeicons have none; 97 distinct
-  `pi-*` icons in use; compare sets (licence, bundle size, coverage of those 97, filled variants); the
-  design-system intro forbids Material Symbols today.
+Goals (the teacher's decisions of 2026-10-14): one accent — every main action is filled **primary** (the portal
+colour), green and amber only for statuses; red only where an action destroys something; one large button, the
+hero «Начать урок»; Material Symbols Rounded instead of primeicons, with a filled icon for the active section.
+
+ADR: **ADR-0045** «Кнопки: цвет — акцент, а не смысл; размер M для героя» (supersedes the colour part of
+ADR-0026 and ADR-0019); **ADR-0046** «Material Symbols Rounded вместо primeicons» (changes the design-system
+intro: «no Material Symbols» goes).
+
+### 202. One accent for buttons (F, ADR-0045)
+
+Rules after this stage (design-system §7 rewritten): filled — the page's main action and a dialog's submit, always
+primary; tonal — secondary actions, neutral `secondary` only (no coloured tonal: `tb-tonal` + severity goes);
+text — «Отмена» and labelled row actions; filled **danger** — only the confirmation of an irreversible action in
+a dialog (`dangerConfirmation`); red also stays on the bin icon button and «Удалить…» menu items
+(`tb-menu-item--danger`). «Пропуск», «Вернуть на доработку», «Отменить занятие…» on a page or in a row become
+neutral tonal/text — the status they produce shows the meaning.
+
+- [ ] 202.1 ADR-0045 + row in `docs/adr/README.md`; design-system §7 tables (role → variant; meaning → colour
+  rows go), §8 confirmations, §11 E2E list. Mark ADR-0019 / ADR-0026 as partly superseded.
+- [ ] 202.2 **F** Shared parts: `shared/ui/confirmation` — `safeConfirmation` filled primary (now success);
+  `danger` unchanged. `styles.scss` `@each $role…` coloured tonal (~221) goes with its uses
+  (`styleClass="tb-tonal"`, 26 uses — grep). Preset `BUTTON_SCHEME` keeps success/warn only if a tag or message
+  needs it (buttons don't).
+- [ ] 202.3 **F** Features: every `severity="success"` on a button (56 uses, `rg 'severity="success"'
+  frontend/src/app`) → no severity (primary); every `severity="danger"` (37 uses) reviewed against the rules
+  above. Go module by module (identity, billing, homework, schedule, settings/admin, the rest), one commit per
+  module if the diff is large. Tags (`p-tag`) and messages keep their severity.
+- [ ] 202.4 **F** Portal colour: `core/theme/portal-accent.ts` (~100) — the «alike success» warning goes (no green
+  buttons now); keep «alike error» (red still marks danger). Texts in `features/settings/i18n/{ru,en}.ts`, tests
+  `portal-settings-card.spec.ts`, `portal-accent.spec.ts`; help article `help/articles/teacher.{ru,en}.ts` ~523
+  (the paragraph on the green portal colour), grep help articles for «зелён» / «green».
+- [ ] 202.5 E2E: `e2e/tests/version-0-6-5.spec.ts` (one filled button per page — still holds),
+  `version-0-6-6.spec.ts` (green/red buttons by meaning — rewrite: no `p-button-success` on buttons; red only on
+  danger confirmations, bin icons), `version-0-6-12.spec.ts`. Help articles that say a button is green.
+
+### 203. One large button (F, ADR-0045)
+
+- [ ] 203.1 **F** Button M (M3E `ButtonMedium`: 56 dp, full corners, pressed CornerMedium 12 dp, icon 24 dp,
+  padding 24 dp, label — our decision: Title Medium) as a class `tb-button-m` in `styles.scss`, also for the split
+  button (`tb-split--m`: trailing part 56 dp, inner corners per M3E `SplitButtonMedium` from the skill).
+- [ ] 203.2 **F** Use it only in the hero: `schedule/home/next-lesson-widget.ts`, `upcoming-lesson-widget.ts`,
+  `join-lesson-button.ts` («Начать урок» / «Войти в урок», `tb-join-wide` on a narrow card). §5 «Nearest lesson
+  hero», §7 «Size is one» → «one exception». E2E 40 px checks (`version-0-6-12`, `version-0-6-13`) skip it; a new
+  check that the hero button is 56 px.
+
+### 204. Material Symbols Rounded (F, ADR-0046)
+
+Decisions: the full variable font from npm (package `material-symbols`, rounded style; self-hosted, no CDN;
+CSP `font-src 'self'` already allows it), `font-display: block` so icon names never flash as text; visible
+PrimeNG icons replaced too; primeicons removed at the end.
+
+- [ ] 204.1 **F** Spike + ADR-0046: install the package (`npx -y npm@11 install`), import only the rounded CSS in
+  `styles.scss`; measure the woff2 size and the first load on a phone profile; check `docker/nginx` caches the
+  hashed font for long. Check that a ligature works from CSS generated content (`::before { content: 'home' }`) —
+  `p-button [icon]` takes only classes, so icons are classes `tb-i tb-i-<name>`. If it doesn't work, stop and
+  return to the teacher with the numbers (the SVG option was the alternative).
+- [ ] 204.2 **F** Icon layer in `styles.scss` (section «Icons»): `.tb-i` (font, 24 px, `'FILL' 0, 'wght' 400,
+  'GRAD' 0, 'opsz' 24`, `aria-hidden` by usage), size tokens `--tb-icon-size` (24; 20 in buttons — M3E button
+  icon; 18 in chips), `.tb-i--filled` (`'FILL' 1`); a generated list of `.tb-i-<name>::before` classes from one map
+  `core/theme/icons.scss` (the only place names live). Dark theme `'GRAD' -25` together with 199.6.
+  The board icon: a Material Symbol replaces the Tabler mask `pi-tb-board`.
+- [ ] 204.3 Mapping table «pi-* → symbol» for all 97 icons in use (`rg -o 'pi-[a-z0-9-]+' frontend/src/app | sort
+  -u`) in design-system (new §1 «Icons»): one meaning — one symbol; review it with the teacher before 204.4.
+- [ ] 204.4 **F** Replace usages, one commit per group: `core/` + `shared/` + `app.ts`; homework; notifications;
+  boards; meetings; schedule; settings + admin; billing + identity + textbooks + ai + home + help. Specs that
+  query `.pi-*` change with them.
+- [ ] 204.5 **F** Navigation: the active section's icon filled (`'FILL' 1`, the change on
+  `--tb-spring-fast-effects`) + bold label (199.3) — `core/layout/shell.scss`, `side-nav.scss`, `NAV_ITEMS` in
+  `shell.ts`. §4.
+- [ ] 204.6 **F** Visible PrimeNG icons: select / multiselect arrow, dialog and drawer «×», date picker
+  (calendar, arrows), checkbox tick, paginator, tag/message icons, toast. First read PrimeNG 21 icon templates
+  (context7: `#dropdownicon`, `#closeicon`…); prefer one shared place (`core/a11y/pass-through.ts` or wrapper
+  templates) over per-use templates; list what stays PrimeNG's own SVG and why.
+- [ ] 204.7 **F** Remove `primeicons` (package, CSS import, `pi-tb-board` mask); the guard test of 197.6 fails on
+  `pi pi-` / `pi-`; E2E selectors with `.pi-*` (7 in `e2e/tests`) → accessible names or `.tb-i-*`. Design-system
+  intro and §1 updated.
+
+### 205. Release 0.17.0
+
+- [ ] 205.1 Skill `release`: help articles (button colours, icons in screenshots/text), E2E spec `version-0-17-0`
+  (primary main actions, red only on danger confirmations, hero button 56 px, filled active nav icon, no
+  primeicons), CHANGELOG, version, plan archiving.
 
 ## Backlog
 
