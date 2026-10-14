@@ -17,7 +17,7 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Releases 0.17.0–0.17.2 — M3 Expressive buttons and icons
+## Releases 0.17.1–0.17.2 — M3 Expressive buttons and icons
 
 Goals (the teacher's decisions of 2026-10-14): one accent — every main action is filled **primary** (the portal
 colour), green and amber only for statuses; red only where an action destroys something; one large button, the
@@ -29,35 +29,6 @@ stage). The former stage 207 «Release 0.17.0» is split into the last substep o
 ADR: **ADR-0045** «Кнопки: цвет — акцент, а не смысл; размер M для героя» (supersedes the colour part of
 ADR-0026 and ADR-0019); **ADR-0046** «Material Symbols Rounded вместо primeicons» (changes the design-system
 intro: «no Material Symbols» goes).
-
-### 204. One accent for buttons (F, ADR-0045)
-
-Rules after this stage (design-system §7 rewritten): filled — the page's main action and a dialog's submit, always
-primary; tonal — secondary actions, neutral `secondary` only (no coloured tonal: `tb-tonal` + severity goes);
-text — «Отмена» and labelled row actions; filled **danger** — only the confirmation of an irreversible action in
-a dialog (`dangerConfirmation`); red also stays on the bin icon button and «Удалить…» menu items
-(`tb-menu-item--danger`). «Пропуск», «Вернуть на доработку», «Отменить занятие…» on a page or in a row become
-neutral tonal/text — the status they produce shows the meaning.
-
-- [x] 204.1 ADR-0045 + row in `docs/adr/README.md`; design-system §7 tables (role → variant; meaning → colour
-  rows go), §8 confirmations, §11 E2E list. Mark ADR-0019 / ADR-0026 as partly superseded.
-- [x] 204.2 **F** Shared parts: `shared/ui/confirmation` — `safeConfirmation` filled primary (now success);
-  `danger` unchanged. `styles.scss` `@each $role…` coloured tonal (~221) goes with its uses
-  (`styleClass="tb-tonal"`, 26 uses — grep). Preset `BUTTON_SCHEME` keeps success/warn only if a tag or message
-  needs it (buttons don't).
-- [x] 204.3 **F** Features: every `severity="success"` on a button (56 uses, `rg 'severity="success"'
-  frontend/src/app`) → no severity (primary); every `severity="danger"` (37 uses) reviewed against the rules
-  above. Go module by module (identity, billing, homework, schedule, settings/admin, the rest), one commit per
-  module if the diff is large. Tags (`p-tag`) and messages keep their severity.
-- [x] 204.4 **F** Portal colour: `core/theme/portal-accent.ts` (~100) — the «alike success» warning goes (no green
-  buttons now); keep «alike error» (red still marks danger). Texts in `features/settings/i18n/{ru,en}.ts`, tests
-  `portal-settings-card.spec.ts`, `portal-accent.spec.ts`; help article `help/articles/teacher.{ru,en}.ts` ~523
-  (the paragraph on the green portal colour), grep help articles for «зелён» / «green».
-- [x] 204.5 E2E: `e2e/tests/version-0-6-5.spec.ts` (one filled button per page — still holds),
-  `version-0-6-6.spec.ts` (green/red buttons by meaning — rewrite: no `p-button-success` on buttons; red only on
-  danger confirmations, bin icons), `version-0-6-12.spec.ts`. Help articles that say a button is green.
-- [ ] 204.6 Release 0.17.0 (skill `release`): help articles (button colours), E2E spec `version-0-17-0` (primary
-  main actions, red only on danger confirmations), CHANGELOG, version, archiving of stage 204.
 
 ### 205. One large button (F, ADR-0045)
 
