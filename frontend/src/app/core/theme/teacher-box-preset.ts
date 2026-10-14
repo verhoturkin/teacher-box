@@ -311,11 +311,11 @@ const TOGGLE_SCHEME = {
   },
 };
 
-/** A spring of the shape plus PrimeNG's own transitions of a button. */
-function shapeTransition(component: string): string {
-  const duration = `var(--p-${component}-transition-duration)`;
-  return `background ${duration}, color ${duration}, border-color ${duration},
-    outline-color ${duration}, box-shadow ${duration},
+/** A button's transitions: the shape on the fast spatial spring, colours and outline on the fast effects one. */
+function shapeTransition(): string {
+  const effects = 'var(--tb-spring-fast-effects)';
+  return `background ${effects}, color ${effects}, border-color ${effects},
+    outline-color ${effects}, box-shadow ${effects},
     border-radius var(--tb-spring-fast-spatial)`;
 }
 
@@ -454,7 +454,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
       // Pressed, a button squares its corners and springs back (Expressive shape morph)
       css: `
         .p-button {
-          transition: ${shapeTransition('button')};
+          transition: ${shapeTransition()};
         }
         .p-button:not(:disabled):active {
           border-radius: var(--tb-shape-md);
@@ -583,7 +583,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-togglebutton {
           font-size: 0.875rem;
           line-height: 1.25rem;
-          transition: ${shapeTransition('togglebutton')};
+          transition: ${shapeTransition()};
         }
         .p-togglebutton:not(:disabled):active {
           border-radius: var(--tb-shape-md);

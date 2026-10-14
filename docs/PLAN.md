@@ -43,7 +43,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 
 ### 200. Springs and buttons (F)
 
-- [ ] 200.1 **F** Spring tokens, `styles.scss` ~104–132: add `--tb-spring-slow-spatial` (0.8 / 200),
+- [x] 200.1 **F** Spring tokens, `styles.scss` ~104–132: add `--tb-spring-slow-spatial` (0.8 / 200),
   `--tb-spring-default-effects` (1.0 / 1600), `--tb-spring-slow-effects` (1.0 / 800) and, for the split button,
   `--tb-spring-standard-fast-spatial` (Standard scheme 0.9 / 1400). Compute `linear()` + duration with a scratch
   script the same way as the existing ones (sample the damped spring, stop within 0.001 of 1, ~32 points); keep

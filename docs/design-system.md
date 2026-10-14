@@ -34,9 +34,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   disabled — container 12 %, content 38 % (`--tb-state-disabled*`). Hover only on things that act: rows that
   open as a whole (`tb-list__item--link`), not on static rows. Ripple is on.
 - **Motion** — M3E springs, precomputed as `linear()` with a duration: `transition: border-radius
-  var(--tb-spring-fast-spatial)`. Spatial (overshoot; position, size, shape): `--tb-spring-fast-spatial`,
-  `--tb-spring-default-spatial`; effects (no overshoot; colour, opacity): `--tb-spring-fast-effects`. Used for
-  button shape, nav indicator, section folding, FAB appearance; dialogs and snackbar keep PrimeNG animations.
+  var(--tb-spring-fast-spatial)`. Spatial (overshoot; position, size, shape): `--tb-spring-{fast,default,slow}-spatial`;
+  effects (no overshoot; colour, opacity): `--tb-spring-{fast,default,slow}-effects`; the standard-scheme
+  `--tb-spring-standard-fast-spatial` (0.9 / 1400, barely overshoots) only for turns that must not bounce (split
+  button chevron). Curves are computed (sample the spring until within 0.001 of 1), never the cubic-bezier fallback.
+  Used for button shape (colours and outline on `--tb-spring-fast-effects`), nav indicator, section folding,
+  FAB appearance; dialogs and snackbar keep PrimeNG animations.
   `prefers-reduced-motion: reduce` disables transitions (the loading indicator stays a circle).
 - **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
   64 px, bottom bar 80 px, rail 88 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
