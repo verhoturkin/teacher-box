@@ -303,6 +303,150 @@ textarea.p-textarea {
   }
 }
 
+/*
+ * Overlays on M3E springs (ADR-0044) instead of PrimeNG's cubic-bezier: they enter with size and position
+ * on a spatial spring and opacity on an effects spring; they leave on the standard spatial spring (no
+ * bounce, nothing overshoots on the way out) and the fast effects spring. PrimeNG's motion waits for every
+ * animation of the element, so the two run side by side. The rule above takes the movement away when the
+ * system asks for less motion.
+ */
+@keyframes tb-motion-scale-in {
+  from {
+    transform: scale(var(--tb-motion-scale, 0.93));
+  }
+}
+
+@keyframes tb-motion-scale-out {
+  to {
+    transform: scale(var(--tb-motion-scale, 0.93));
+  }
+}
+
+@keyframes tb-motion-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-motion-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-motion-slide-in {
+  from {
+    transform: translate3d(var(--tb-motion-x, 0), var(--tb-motion-y, 0), 0);
+  }
+}
+
+@keyframes tb-motion-slide-out {
+  to {
+    transform: translate3d(var(--tb-motion-x, 0), var(--tb-motion-y, 0), 0);
+  }
+}
+
+/* the snackbar leaves the line it took, the others close up */
+@keyframes tb-motion-collapse {
+  to {
+    grid-template-rows: 0fr;
+    margin-bottom: 0;
+  }
+}
+
+/* Dialogs: the default spring (a medium surface) */
+.p-dialog.p-dialog-enter-active {
+  animation:
+    tb-motion-scale-in var(--tb-spring-default-spatial),
+    tb-motion-fade-in var(--tb-spring-default-effects);
+}
+
+.p-dialog.p-dialog-leave-active {
+  animation:
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial),
+    tb-motion-fade-out var(--tb-spring-fast-effects);
+}
+
+/* Menus, dropdowns, the date picker: the fast spring (small surfaces) */
+.p-motion.p-anchored-overlay-enter-active {
+  animation:
+    tb-motion-scale-in var(--tb-spring-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-fast-effects);
+}
+
+.p-motion.p-anchored-overlay-leave-active {
+  animation:
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial),
+    tb-motion-fade-out var(--tb-spring-fast-effects);
+}
+
+/* The scrim fades on the default effects spring */
+.p-overlay-mask.p-overlay-mask-enter-active {
+  animation: p-animate-overlay-mask-enter var(--tb-spring-default-effects) forwards;
+}
+
+.p-overlay-mask.p-overlay-mask-leave-active {
+  animation: p-animate-overlay-mask-leave var(--tb-spring-fast-effects) forwards;
+}
+
+/*
+ * Sheets slide in from their edge. The side sheet stands off the edges, so it may overshoot (default
+ * spatial); the bottom sheet sits on the bottom edge and would lift off it, so it comes in on the
+ * standard spring.
+ */
+.p-drawer {
+  --tb-motion-x: 0;
+  --tb-motion-y: 0;
+
+  &.p-drawer-right {
+    --tb-motion-x: calc(100% + var(--tb-space-4));
+  }
+
+  &.p-drawer-left {
+    --tb-motion-x: calc(-100% - var(--tb-space-4));
+  }
+
+  &.p-drawer-bottom {
+    --tb-motion-y: 100%;
+  }
+
+  &.p-drawer-top {
+    --tb-motion-y: -100%;
+  }
+
+  &.p-drawer-enter-left,
+  &.p-drawer-enter-right,
+  &.p-drawer-enter-top {
+    animation: tb-motion-slide-in var(--tb-spring-default-spatial);
+  }
+
+  &.p-drawer-enter-bottom {
+    animation: tb-motion-slide-in var(--tb-spring-standard-fast-spatial);
+  }
+
+  &.p-drawer-leave-left,
+  &.p-drawer-leave-right,
+  &.p-drawer-leave-top,
+  &.p-drawer-leave-bottom {
+    animation: tb-motion-slide-out var(--tb-spring-standard-fast-spatial);
+  }
+}
+
+/* The snackbar: grows from its middle on the fast spring, leaves by fading and closing its line */
+.p-toast-message.p-toast-message-enter-active {
+  --tb-motion-scale: 0.8;
+
+  animation:
+    tb-motion-scale-in var(--tb-spring-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-fast-effects);
+}
+
+.p-toast-message.p-toast-message-leave-active {
+  animation:
+    tb-motion-fade-out var(--tb-spring-fast-effects),
+    tb-motion-collapse var(--tb-spring-standard-fast-spatial);
+}
+
 .tb-page-title {
   margin: 0 0 var(--tb-space-4);
   font: var(--tb-type-headline-m-emphasized);

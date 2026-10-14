@@ -48,7 +48,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   ~1880, 1940, 1949, 2969, 2987 (FAB, snackbar, call mini window), `shell.scss:104`. Rail collapsed 88 → **96 px**
   (`side-nav.scss:104`). §4, ADR-0044. Since 0.16.2 items are `minmax(64px, auto)` and labels wrap instead of an
   ellipsis (201.3) — keep «Расписание» whole at 360 px with the new paddings (E2E `version-0-16-2`).
-- [ ] 202.2 **F** Springs for overlays: dialogs, bottom sheet, side sheet, menus, snackbar — size/position on
+- [x] 202.2 **F** Springs for overlays: dialogs, bottom sheet, side sheet, menus, snackbar — size/position on
   spatial, opacity on effects springs (now PrimeNG animations). First read the PrimeNG 21 motion/animation API
   (context7); `core/snackbar` is ours. Reduced motion: no movement. §1 («dialogs and snackbar keep PrimeNG
   animations» goes).

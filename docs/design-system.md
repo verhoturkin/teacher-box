@@ -43,8 +43,14 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   `--tb-spring-standard-fast-spatial` (0.9 / 1400, barely overshoots) only for turns that must not bounce (split
   button chevron). Curves are computed (sample the spring until within 0.001 of 1), never the cubic-bezier fallback.
   Used for button shape (colours and outline on `--tb-spring-fast-effects`), nav indicator, section folding,
-  FAB appearance; dialogs and snackbar keep PrimeNG animations.
-  `prefers-reduced-motion: reduce` disables transitions (the loading indicator stays a circle).
+  FAB appearance. **Overlays** (0.16.3, `styles.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
+  they enter with scale or position on a spatial spring and opacity on the effects spring of the same speed —
+  dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the snackbar fast (0.8), the
+  side sheet slides in on default spatial; they leave without a bounce on the standard fast spring and fast effects
+  (the snackbar fades and closes its line). Our decision (M3 publishes no choreography): the bottom sheet sits on
+  the bottom edge and would lift off it on an overshoot, so it enters on the standard fast spring too; the scrim
+  fades on default effects (in) and fast effects (out).
+  `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator stays a circle).
 - **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
   64 px, bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
