@@ -1546,8 +1546,19 @@ a.p-menu-item-link:hover {
       border-end-end-radius: var(--tb-shape-button);
     }
 
+    /* pressed, the outer corners square to 8 px as any button, the inner ones narrow to 4 px (M3E) */
     &:active:not(:disabled) {
-      border-radius: var(--tb-shape-md);
+      border-radius: var(--tb-shape-sm);
+    }
+
+    &:not(:last-child):active:not(:disabled) {
+      border-start-end-radius: var(--tb-shape-xs);
+      border-end-end-radius: var(--tb-shape-xs);
+    }
+
+    &:not(:first-child):active:not(:disabled) {
+      border-start-start-radius: var(--tb-shape-xs);
+      border-end-start-radius: var(--tb-shape-xs);
     }
 
     &[aria-selected='true'],

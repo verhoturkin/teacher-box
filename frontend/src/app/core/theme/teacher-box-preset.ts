@@ -608,8 +608,17 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-selectbutton .p-togglebutton-checked {
           border-radius: var(--tb-shape-button);
         }
+        /* pressed, the outer corners square to 8 px as any button, the inner ones narrow to 4 px (M3E) */
         .p-selectbutton .p-togglebutton:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
+        }
+        .p-selectbutton .p-togglebutton:not(:last-child):not(:disabled):active {
+          border-start-end-radius: var(--tb-shape-xs);
+          border-end-end-radius: var(--tb-shape-xs);
+        }
+        .p-selectbutton .p-togglebutton:not(:first-child):not(:disabled):active {
+          border-start-start-radius: var(--tb-shape-xs);
+          border-end-start-radius: var(--tb-shape-xs);
         }
       `,
     },

@@ -55,7 +55,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   `--tb-shape-md` → **`--tb-shape-sm`** (CornerSmall, 8 dp), also `styles.scss` `:active` rules (~230, ~240,
   ~1481, ~1904). Check `tb-button-steady`, page-header buttons, the phone's equal-width actions. §1 shape table
   and §7 («shape morphs to 8 px»).
-- [ ] 200.3 **F** Connected groups pressed: `p-selectbutton` (preset ~607) and `.tb-fc-segment` (`styles.scss`
+- [x] 200.3 **F** Connected groups pressed: `p-selectbutton` (preset ~607) and `.tb-fc-segment` (`styles.scss`
   ~1523) now grow every corner to 12 px; like `.tb-button-group` (~2193) the pressed button's inner corners narrow
   to `--tb-shape-xs`. First check in the browser that `p-selectbutton`'s outer corners are full (PrimeNG's own
   `:first-child` rules) — fix only if not.

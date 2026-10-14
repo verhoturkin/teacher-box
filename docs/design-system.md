@@ -235,8 +235,9 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - **Steady widths:** a button whose label changes («Отменить» / «Не приду») uses `tb-button-steady`.
 - Every action that sends a request shows `[loading]` while it runs (`shared/ui/busy.ts`); the submit button is
   never disabled for invalid fields — only while the request runs.
-- **Connected button group** `tb-button-group` (also `p-selectbutton`): 2 px gap, inner corners 8 px, outer
-  full; unselected tonal, selected primary and fully round; no outline.
+- **Connected button group** `tb-button-group` (also `p-selectbutton` and the calendar views `tb-fc-segments`):
+  2 px gap, inner corners 8 px, outer full; unselected tonal, selected primary and fully round; no outline.
+  Pressed, the outer corners square to 8 px as any button and the inner ones narrow to 4 px.
 - **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px,
   arrow part becomes round while its menu is open. The arrow has no tooltip (0.15.0, the teacher's decision): only its
   `aria-label`; the empty host of the popup menu is out of the flow, so the group ends at the edge of its container.
