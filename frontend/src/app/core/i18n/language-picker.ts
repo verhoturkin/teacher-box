@@ -37,19 +37,19 @@ import { LANGUAGES, Language, chooseLanguage, language } from './language';
       min-height: 2.5rem;
       padding: 0 var(--tb-space-3);
       border: none;
-      border-radius: 1.25rem;
+      border-radius: var(--tb-shape-button);
       background: transparent;
-      color: var(--p-primary-color);
+      color: var(--p-md-primary);
       font: var(--tb-type-label-l);
       cursor: pointer;
     }
 
     .tb-language-picker__item:hover {
-      background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+      background: color-mix(in srgb, var(--p-md-primary) var(--tb-state-hover), transparent);
     }
 
     .tb-language-picker__item:focus-visible {
-      outline: 2px solid var(--p-primary-color);
+      outline: 3px solid var(--p-md-secondary);
       outline-offset: 2px;
     }
 

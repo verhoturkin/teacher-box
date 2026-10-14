@@ -140,7 +140,7 @@
   }
 
   &:hover .tb-bottom-nav__icon::after {
-    opacity: 0.08;
+    opacity: var(--tb-state-hover);
   }
 
   /* the focus: the ring around the indicator and the state layer over it (ADR-0024) */
@@ -153,7 +153,7 @@
     outline-offset: 2px;
 
     &::after {
-      opacity: 0.1;
+      opacity: var(--tb-state-focus);
     }
   }
 }

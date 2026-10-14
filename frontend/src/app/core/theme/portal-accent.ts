@@ -67,6 +67,21 @@ export function accentScheme(accent: string): ColorScheme {
   return colorScheme(accentShades(accent));
 }
 
+/** A swatch of a color of the portal: the color itself and its readable mark (the check). */
+export interface AccentSwatch {
+  readonly background: string;
+  readonly color: string;
+}
+
+/**
+ * The swatch: the primary container of the light theme (Fidelity keeps the chosen color there)
+ * and its on-color, ≥ 4.5:1 — white is short of 3:1 on teal and emerald.
+ */
+export function accentSwatch(accent: string): AccentSwatch {
+  const { light } = accentScheme(accent);
+  return { background: light.primaryContainer, color: light.onPrimaryContainer };
+}
+
 /**
  * Paints the portal in its color: the roles of both themes are computed here and handed to the
  * theme as ready colors (ADR-0023).

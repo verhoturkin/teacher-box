@@ -320,14 +320,18 @@ function describeMessengerError(error: unknown, fallback: string): string {
       padding: var(--tb-space-1) 0;
       border: 0;
       background: none;
-      color: var(--p-text-muted-color);
+      color: var(--p-md-on-surface-variant);
       font: inherit;
       text-align: left;
       cursor: pointer;
 
       &:disabled {
         cursor: default;
-        opacity: 0.6;
+        color: color-mix(
+          in srgb,
+          var(--p-md-on-surface) var(--tb-state-disabled-content),
+          transparent
+        );
       }
     }
 
@@ -337,24 +341,24 @@ function describeMessengerError(error: unknown, fallback: string): string {
       justify-content: center;
       width: 2rem;
       height: 2rem;
-      border: 1px solid var(--p-content-border-color);
+      border: 1px solid var(--p-md-outline-variant);
       border-radius: var(--tb-shape-full);
     }
 
     .tb-wizard__step--active .tb-wizard__header {
-      color: var(--p-text-color);
+      color: var(--p-md-on-surface);
       font-weight: 500;
 
       .tb-wizard__number {
-        border-color: var(--p-primary-color);
-        background: var(--p-primary-color);
-        color: var(--p-primary-contrast-color);
+        border-color: var(--p-md-primary);
+        background: var(--p-md-primary);
+        color: var(--p-md-on-primary);
       }
     }
 
     .tb-wizard__step--done .tb-wizard__number {
-      border-color: var(--p-primary-color);
-      color: var(--p-primary-color);
+      border-color: var(--p-md-primary);
+      color: var(--p-md-primary);
     }
 
     .tb-wizard__body {
@@ -363,7 +367,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       gap: var(--tb-space-3);
       margin: var(--tb-space-1) 0 var(--tb-space-3) var(--tb-space-4);
       padding-left: var(--tb-space-7);
-      border-left: 1px solid var(--p-content-border-color);
+      border-left: 1px solid var(--p-md-outline-variant);
 
       p {
         margin: 0;

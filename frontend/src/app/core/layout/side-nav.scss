@@ -69,7 +69,7 @@
   }
 
   &:hover::after {
-    opacity: 0.08;
+    opacity: var(--tb-state-hover);
   }
 
   &:focus-visible {
@@ -78,7 +78,7 @@
   }
 
   &:focus-visible::after {
-    opacity: 0.1;
+    opacity: var(--tb-state-focus);
   }
 }
 
@@ -162,7 +162,7 @@
   }
 
   .tb-side-nav__item:hover .tb-side-nav__icon::after {
-    opacity: 0.08;
+    opacity: var(--tb-state-hover);
   }
 
   .tb-side-nav__item:focus-visible .tb-side-nav__icon {
@@ -170,7 +170,7 @@
     outline-offset: 2px;
 
     &::after {
-      opacity: 0.1;
+      opacity: var(--tb-state-focus);
     }
   }
 

@@ -25,6 +25,7 @@ import {
   MIN_CONTRAST,
   accentAdvice,
   accentScheme,
+  accentSwatch,
   isOwnColor,
 } from '@core/theme/portal-accent';
 import { HelpButton } from '@features/help/parts';
@@ -88,7 +89,8 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   [attr.aria-checked]="form.controls.accent.value === accent.value"
                   [attr.aria-label]="accent.label"
                   [title]="accent.label"
-                  [style.background]="'var(--p-' + accent.value + '-500)'"
+                  [style.background]="accent.swatch.background"
+                  [style.color]="accent.swatch.color"
                   (click)="form.controls.accent.setValue(accent.value)"
                 >
                   @if (form.controls.accent.value === accent.value) {
@@ -103,7 +105,8 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 [attr.aria-checked]="own()"
                 [attr.aria-label]="t.ownColor"
                 [title]="t.ownColor"
-                [style.background]="own() ? accent() : null"
+                [style.background]="own() ? ownSwatch().background : null"
+                [style.color]="own() ? ownSwatch().color : null"
                 (click)="chooseOwn()"
               >
                 <i [class]="own() ? 'pi pi-check' : 'pi pi-palette'" aria-hidden="true"></i>
@@ -216,27 +219,22 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       height: 3rem;
       border: 2px solid transparent;
       border-radius: var(--tb-shape-full);
-      color: #fff;
       cursor: pointer;
 
       &[aria-checked='true'] {
-        border-color: var(--p-text-color);
+        border-color: var(--p-md-on-surface);
       }
 
       &:focus-visible {
-        outline: 2px solid var(--p-primary-color);
+        outline: 3px solid var(--p-md-secondary);
         outline-offset: 2px;
       }
     }
 
     .tb-accent--own {
-      border-color: var(--p-content-border-color);
-      background: var(--p-content-background);
-      color: var(--p-text-muted-color);
-
-      &[aria-checked='true'] {
-        color: #fff;
-      }
+      border-color: var(--p-md-outline-variant);
+      background: var(--tb-card);
+      color: var(--p-md-on-surface-variant);
     }
 
     .tb-own-color {
@@ -278,7 +276,10 @@ export class PortalSettingsCard implements OnInit {
   protected readonly settings = signal<PortalSettings | null>(null);
   protected readonly pending = signal(false);
   protected readonly uploading = signal(false);
-  protected readonly accents = ACCENTS;
+  protected readonly accents = ACCENTS.map((accent) => ({
+    ...accent,
+    swatch: accentSwatch(accent.value),
+  }));
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -296,6 +297,7 @@ export class PortalSettingsCard implements OnInit {
     initialValue: this.form.controls.accent.value,
   });
   protected readonly own = computed(() => isOwnColor(this.accent()));
+  protected readonly ownSwatch = computed(() => accentSwatch(this.accent()));
   protected readonly scheme = computed(() =>
     accentScheme(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
   );

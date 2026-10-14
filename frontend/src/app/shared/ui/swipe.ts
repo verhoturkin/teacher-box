@@ -11,8 +11,8 @@ export const SWIPE_RESTORE_MS = 1500;
 /**
  * A row that a finger moves aside to act on it (a notification on a phone: «прочитано»). The row follows the
  * finger sideways and fades; let go far enough — `tbSwiped` fires and the row slides out, otherwise it comes
- * back. Vertical moves stay the page's scroll (`touch-action: pan-y`), a mouse does nothing. A swipe is a
- * shortcut only: the row keeps its button for the same action (WCAG 2.5.1).
+ * back. Vertical moves stay the page's scroll (`touch-action: pan-y`), a mouse does nothing. Since 0.15.4 a
+ * swiped notification has no tick on a phone (the teacher's choice); opening it or «Прочитать все» read it too.
  */
 @Directive({
   selector: '[tbSwipe]',

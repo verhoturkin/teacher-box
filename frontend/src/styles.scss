@@ -79,6 +79,8 @@
   /* A 40 px button: half its height, so that pressing it can morph the corners (Expressive) */
   --tb-shape-button: 1.25rem;
 
+  /* Cards, dialogs, dropdowns (§2 Surfaces) — the preset's content background as a role */
+  --tb-card: var(--p-md-surface-container-lowest);
   /* Rows of lists in cards (ADR-0020): a tile a tone lighter than the card */
   --tb-list-item: var(--p-md-surface-container-low);
   --tb-list-outer: var(--tb-shape-lg);
@@ -151,7 +153,7 @@ html {
 /* The page is the surface container; cards lie on it (ADR-0017) */
 body {
   background: var(--p-md-surface-container);
-  color: var(--p-text-color);
+  color: var(--p-md-on-surface);
   letter-spacing: var(--tb-tracking-body-l);
 }
 
@@ -193,6 +195,7 @@ small,
 
 :root.tb-dark {
   color-scheme: dark;
+  --tb-card: var(--p-md-surface-container);
   --tb-list-item: var(--p-md-surface-container-high);
 
   body {
@@ -470,7 +473,7 @@ textarea.p-textarea {
     max-width: calc(100% - 2rem);
     overflow: hidden;
     padding: 0 var(--tb-space-1);
-    background: var(--p-content-background);
+    background: var(--tb-card);
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-s);
     text-overflow: ellipsis;
@@ -1436,7 +1439,7 @@ a.p-menu-item-link:hover {
   --fc-classic-now: var(--p-md-error);
   --fc-classic-small-dot-width: 8px;
   --fc-classic-large-dot-width: 10px;
-  --fc-classic-background: var(--p-content-background);
+  --fc-classic-background: var(--tb-card);
   --fc-classic-faint: color-mix(in srgb, var(--p-md-on-surface) 4%, transparent);
   --fc-classic-muted: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
   --fc-classic-strong: color-mix(in srgb, var(--p-md-on-surface) 14%, transparent);
@@ -1493,7 +1496,9 @@ a.p-menu-item-link:hover {
   }
 
   &:disabled {
-    opacity: 0.38;
+    border-color: transparent;
+    background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled), transparent);
+    color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
     cursor: default;
   }
 }
@@ -1588,19 +1593,30 @@ a.p-menu-item-link:hover {
   color: var(--p-md-on-primary);
   cursor: pointer;
 
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-primary) var(--tb-state-hover),
+      var(--p-md-primary)
+    );
+  }
+
   & + & {
     background: var(--p-md-surface-container-highest);
     color: var(--p-md-on-surface);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: 2px;
+  & + &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--p-md-surface-container-highest)
+    );
   }
 
-  /* the state layer of M3 */
-  &:hover {
-    filter: brightness(0.92);
+  &:focus-visible {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
   }
 
   i {
@@ -3008,25 +3024,4 @@ a.p-menu-item-link:hover {
   display: flex;
   justify-content: center;
   gap: var(--tb-space-3);
-}
-
-.tb-call-spinner {
-  width: 3rem;
-  height: 3rem;
-  border: 4px solid var(--p-md-secondary-container);
-  border-top-color: var(--p-md-primary);
-  border-radius: var(--tb-shape-full);
-  animation: tb-call-spin 1s linear infinite;
-}
-
-@keyframes tb-call-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tb-call-spinner {
-    animation-duration: 3s;
-  }
 }

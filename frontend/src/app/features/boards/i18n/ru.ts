@@ -41,6 +41,7 @@ export const ru = {
     noPortal: 'Досок на портале пока нет',
     noExternal: 'Внешних досок пока нет',
     notFound: 'Ничего не найдено',
+    searchIn: (list: string) => `Поиск: ${list}`,
   },
   links: {
     boards: 'Доски:',
@@ -106,9 +107,6 @@ export const ru = {
     emptyTitle: 'Досок пока нет',
     emptyFilteredTitle: 'У них досок пока нет',
     search: 'Название или ученик',
-    searchLabel: 'Поиск досок',
-    notFoundTitle: 'Ничего не найдено',
-    notFoundHint: 'Проверьте название доски или имя ученика',
     emptyHint:
       'Нажмите «Новая доска»: доска Excalidraw откроется прямо в портале, а внешнюю доску (например, Холст) можно добавить ссылкой.',
     studentBoards: 'Доски ученика',

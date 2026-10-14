@@ -10,7 +10,7 @@ import { T } from '../i18n/texts';
 
 /**
  * Notifications as a list without icons: title, text and time; «Открыть» and «Отметить прочитанным» (on a phone
- * a swipe sideways too).
+ * a swipe sideways instead of the tick).
  */
 @Component({
   selector: 'tb-notification-list',
@@ -41,7 +41,8 @@ import { T } from '../i18n/texts';
                 (onClick)="opened.emit(item)"
               />
             }
-            @if (!item.read) {
+            <!-- a phone: a swipe marks it read, no tick -->
+            @if (!item.read && !mobile()) {
               <p-button
                 icon="pi pi-check"
                 [text]="true"

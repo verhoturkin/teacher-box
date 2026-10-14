@@ -46,6 +46,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 
 - **Only roles `--p-md-*`** in styles. Never `--p-surface-N`, `--p-<colour>-N` palettes, or opacity for
   dimming: muted text is on-surface-variant; 38 % only for disabled controls.
+  `core/theme/design-rules.spec.ts` fails on Aura tokens (`--p-primary-color`, `--p-text-*`, `--p-content-*`,
+  `--p-highlight-*`), hex colours in styles outside `core/theme/` and `boards/`, `size="small"` and outlined buttons.
 - **Scheme from the portal colour** (seed, ADR-0034): a preset palette or custom `#rrggbb` → shades 50–950
   (PrimeNG's primary palette: `updatePrimaryPalette`, `palette()`); shade 500 is the seed of the M3 dynamic scheme
   of `@material/material-color-utilities` — **Fidelity**, spec 2025 (M3 Expressive): primary and the primary
@@ -85,7 +87,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
   (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —
-  surface-container-lowest (light) / surface-container (dark); list tile `--tb-list-item` —
+  surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
   themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
@@ -186,8 +188,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 ## 6. States and feedback
 
 - Every section that loads data has three states via `LoadState` (`shared/ui/load-state.ts`, `track()`)
-  and `tb-load-state`: **loading** (M3E indicator centred in the section's place, min height, «Загрузка…»
-  `role="status"`), **error** (icon, «Не удалось загрузить …», error text with code, «Повторить»), **ready**
+  and `tb-load-state`: **loading** (M3E indicator centred in the section's place — a 38 px shape in on-primary-container inside a 48 px
+  primary-container circle, a pulsing circle under reduced motion; min height, «Загрузка…» `role="status"`), **error** (icon, «Не удалось загрузить …», error text with code, «Повторить»), **ready**
   (data or empty state). Empty state only after a successful load; a bad link («Задание не найдено») is an
   error state.
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section, no toast.
@@ -283,8 +285,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
     0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
     unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
-    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll), the tick stays as the
-    single-pointer alternative (WCAG 2.5.1);
+    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll); 0.15.4: on the phone
+    such a row has no tick (the teacher's choice) — opening it and «Прочитать все» read it too;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
@@ -316,7 +318,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   button stays on the right, so the name keeps its width.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
-  cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link) under one search, the supporting line drops
+  cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the
+  assignments (0.15.4; `tb-search-field` «Поиск: <card>», only while the card has boards), the supporting line drops
   the kind; the student's «Мои доски» the same (a card without boards is hidden). A tap anywhere on a row opens
   the board: the title is a `tb-list__link` whose `::before` covers the row (`tb-list__item--link` for the hover,
   the focus ring on the row), the «⋮» stays above it.
@@ -355,6 +358,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 
 - Keyboard focus ring: 3 px secondary, 2 px offset (fields: 2 px primary outline). In navigation the ring
   goes around the item and state layers lie over the active indicator, not instead of it.
+  Custom controls (the search field's «×», calendar buttons) take the same ring; their hover is a state layer
+  (`color-mix` with `--tb-state-*`), never `filter` or a literal opacity.
 - Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; «Ещё» and the user menu —
   `aria-haspopup="menu"` + `aria-expanded`; the user-menu name starts with the visible name.
 - Headings: h1 page title (and «Вход», «Приглашение»); **h2 section** (`p-card` title via the global
@@ -374,6 +379,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 ## 12. Portal branding
 
 - Portal colour — preset palette or custom `#rrggbb`, stored in `platform` settings, applied at start.
+  Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
+  white is short of 3:1 on teal and emerald.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
   served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar
   and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
@@ -411,7 +418,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   (dragged by its top line and snapped to the nearest corner, or «Переместить окно звонка»; remembered on the
   device); shows a shared screen, the speaker or a camera; compact toolbar. On a phone — a full-width pill above
   the bottom navigation; the FAB moves above it.
-- **States** — «Подключение…» (spinner, `role="status"`), «Связь прервалась, переподключаемся…» (warning
+- **States** — «Подключение…» (the M3E loading indicator, `role="status"`), «Связь прервалась, переподключаемся…» (warning
   container), the end of a call with its reason (`role="alert"`), «Закрыть» and «Войти снова»; blocked sound —
   an info message with «Включить звук». Joins and leaves are announced in a polite live region.
 

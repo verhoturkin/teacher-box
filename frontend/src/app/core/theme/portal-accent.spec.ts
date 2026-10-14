@@ -1,7 +1,11 @@
 import { contrast } from './color';
 import {
+  ACCENTS,
+  DEFAULT_OWN_COLOR,
   accentAdvice,
+  accentScheme,
   accentShades,
+  accentSwatch,
   applyAccent,
   isAccent,
   isOwnColor,
@@ -22,6 +26,16 @@ describe('portal accent', () => {
     expect(applyAccent('emerald').primary['500']).toBe('#10b981');
     expect(applyAccent('gold').primary['500']).toBe('#6366f1');
     expect(accentShades('indigo')['600']).toBe('#4f46e5');
+  });
+
+  it('marks a swatch with a readable color', () => {
+    for (const { value } of ACCENTS) {
+      const swatch = accentSwatch(value);
+      expect(contrast(swatch.background, swatch.color), value).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(accentSwatch(DEFAULT_OWN_COLOR).background).toBe(
+      accentScheme(DEFAULT_OWN_COLOR).light.primaryContainer,
+    );
   });
 
   it('builds the shades of an own color', () => {

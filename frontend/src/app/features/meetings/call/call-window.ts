@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { injectMobile } from '@core/layout/mobile';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
@@ -25,7 +26,7 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-call-window',
-  imports: [Button, Message, CallControls, CallSelf, CallTile],
+  imports: [Button, Message, ProgressSpinner, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-call-window',
@@ -71,7 +72,7 @@ import { SHARED_T } from '@shared/i18n/texts';
       </div>
     } @else if (session.phase() === 'connecting') {
       <div class="tb-call-window__end" role="status">
-        <span class="tb-call-spinner" aria-hidden="true"></span>
+        <p-progressspinner [ariaLabel]="t.joining" />
         <p>{{ t.joining }}</p>
       </div>
     } @else {
