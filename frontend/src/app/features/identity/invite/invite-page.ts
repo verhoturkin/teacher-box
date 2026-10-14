@@ -128,7 +128,6 @@ type InviteState =
                   <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
                 }
                 <p-button
-                  severity="success"
                   type="submit"
                   [label]="isActivation() ? t.createAccount : t.savePassword"
                   [loading]="pending()"

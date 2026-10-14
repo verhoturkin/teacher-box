@@ -89,12 +89,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           @if (busy()) {
             <p-message severity="warn" styleClass="tb-form-message">
               {{ t.busy }}
-              <p-button
-                severity="success"
-                [label]="t.moveAnyway"
-                [text]="true"
-                (onClick)="approve(true)"
-              />
+              <p-button [label]="t.moveAnyway" [text]="true" (onClick)="approve(true)" />
             </p-message>
           }
           @if (error(); as message) {
@@ -120,12 +115,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           [loading]="pending()"
           (onClick)="decline()"
         />
-        <p-button
-          severity="success"
-          [label]="t.approve"
-          [loading]="pending()"
-          (onClick)="approve()"
-        />
+        <p-button [label]="t.approve" [loading]="pending()" (onClick)="approve()" />
       </ng-template>
     </p-dialog>
   `,

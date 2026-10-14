@@ -114,7 +114,6 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="bound() === null ? t.bind : c.save"
           [loading]="pending()"
           [disabled]="loaded() && choices().length === 0 && bound() === null"

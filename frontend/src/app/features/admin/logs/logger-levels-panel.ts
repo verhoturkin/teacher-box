@@ -97,7 +97,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
               @if (logger.revertAt !== null) {
                 <p-button
                   [label]="t.revert"
-                  severity="danger"
+                  severity="secondary"
                   [text]="true"
                   [ariaLabel]="t.revertOf(logger.name)"
                   [loading]="busy.is(logger.name)"

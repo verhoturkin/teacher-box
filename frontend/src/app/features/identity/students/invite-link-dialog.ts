@@ -57,7 +57,6 @@ import { SHARED_T } from '@shared/i18n/texts';
           <p-button
             [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
             [label]="copied() ? t.copied : t.copy"
-            severity="success"
             (onClick)="copy()"
           />
         }

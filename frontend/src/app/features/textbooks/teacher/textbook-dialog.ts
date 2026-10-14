@@ -197,7 +197,6 @@ export interface MemberOption {
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="textbook() === null ? t.add : c.save"
           [loading]="pending()"
           type="submit"

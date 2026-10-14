@@ -187,12 +187,7 @@ import { SHARED_T } from '@shared/i18n/texts';
         @if (overlap()) {
           <p-message severity="warn" styleClass="tb-lesson-details__cancel">
             {{ t.overlap }}
-            <p-button
-              severity="success"
-              [label]="t.restoreAnyway"
-              [text]="true"
-              (onClick)="restore(true)"
-            />
+            <p-button [label]="t.restoreAnyway" [text]="true" (onClick)="restore(true)" />
           </p-message>
         }
         @if (error(); as message) {
@@ -261,19 +256,13 @@ import { SHARED_T } from '@shared/i18n/texts';
             />
           } @else if (lesson.status === 'CANCELLED') {
             <p-button
-              severity="success"
               [label]="t.restore"
               icon="pi pi-replay"
               [loading]="pending()"
               (onClick)="restore()"
             />
           } @else if (started() && lesson.groupId !== null) {
-            <p-button
-              [label]="t.markAttendance"
-              icon="pi pi-users"
-              severity="success"
-              (onClick)="markAttendance()"
-            />
+            <p-button [label]="t.markAttendance" icon="pi pi-users" (onClick)="markAttendance()" />
           } @else if (started()) {
             <span class="tb-button-group" role="group" [attr.aria-label]="t.outcome">
               @if (lesson.status !== 'MISSED') {
@@ -286,7 +275,6 @@ import { SHARED_T } from '@shared/i18n/texts';
               }
               @if (lesson.status !== 'CONDUCTED') {
                 <p-button
-                  severity="success"
                   [label]="t.conducted"
                   [loading]="pending()"
                   (onClick)="mark('CONDUCTED')"

@@ -234,6 +234,7 @@ describe('LessonDetailsDialog', () => {
 
     const footer = requireElement(document.body, '.p-dialog-footer', HTMLElement);
     expect(footer.querySelectorAll('.p-button-danger')).toHaveLength(0);
+    expect(footer.querySelectorAll('.p-button-success')).toHaveLength(0);
     expect(footer.textContent).not.toContain('Удалить');
     expect(footer.textContent).not.toContain('Отменить');
     buttonByText(document.body, 'Другие действия').click();

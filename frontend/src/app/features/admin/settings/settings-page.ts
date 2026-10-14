@@ -123,7 +123,6 @@ function toGroup(settings: readonly AdminSetting[]): Group {
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/settings" />
       <p-button
-        severity="success"
         [label]="t.saveAndRestart"
         icon="pi pi-save"
         [disabled]="changes() === 0"
@@ -202,7 +201,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
                           <p-button
                             class="tb-setting__revert"
                             [label]="t.revert"
-                            severity="danger"
+                            severity="secondary"
                             [text]="true"
                             [ariaLabel]="t.revertOf(setting.title)"
                             (onClick)="revert(setting)"
@@ -302,7 +301,6 @@ function toGroup(settings: readonly AdminSetting[]): Group {
             (onClick)="confirmVisible.set(false)"
           />
           <p-button
-            severity="success"
             [label]="c.save"
             [loading]="pending()"
             [disabled]="password().trim() === ''"

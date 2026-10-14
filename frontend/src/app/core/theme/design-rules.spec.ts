@@ -44,6 +44,10 @@ function breaches(pattern: RegExp, files: readonly Source[] = ALL): string[] {
 const HEX_IN_STYLE =
   /(color|background|border|outline|fill|stroke|shadow)[\w-]*\s*:[^;{}\n]*#[0-9a-f]{3,8}\b/i;
 
+/** `success` on a button tag (tags and messages keep it). */
+const BUTTON_SUCCESS =
+  /<(p-button|p-splitbutton)\b[^>]*success|<(button|a)\b[^>]*\bpButton\b[^>]*success|acceptButtonProps:[^}]*success/;
+
 describe('design rules', () => {
   it('reads the sources of the app', () => {
     expect(ALL.length).toBeGreaterThan(100);
@@ -56,6 +60,11 @@ describe('design rules', () => {
   it('has no small or outlined buttons (§7)', () => {
     expect(breaches(/size="small"/)).toEqual([]);
     expect(breaches(/\[outlined\]|variant="outlined"|<p-button\b[^>]*\soutlined\b/)).toEqual([]);
+  });
+
+  it('has no green or coloured tonal buttons: one accent (§7, ADR-0045)', () => {
+    expect(breaches(BUTTON_SUCCESS)).toEqual([]);
+    expect(breaches(/tb-tonal/)).toEqual([]);
   });
 
   it('has no hex colours in styles outside the theme and the boards (§2)', () => {
@@ -71,8 +80,13 @@ describe('design rules', () => {
       },
       // a hex code in a text is not a colour of a style
       { path: 'y.ts', text: 'placeholder="#0f766e" — a code like #0f766e' },
+      {
+        path: 'z.ts',
+        text: '<p-tag severity="success" />\n<p-button\n  label="Да"\n  severity="success"\n/>',
+      },
     ];
     expect(breaches(/--p-text-/, sample)).toEqual(['x.ts:2']);
+    expect(breaches(BUTTON_SUCCESS, sample)).toEqual(['z.ts:2']);
     expect(breaches(/size="small"/, sample)).toEqual(['x.ts:3']);
     expect(breaches(HEX_IN_STYLE, sample)).toEqual(['x.ts:4']);
   });

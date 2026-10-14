@@ -157,7 +157,6 @@ export interface BoardDefaults {
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="board() === null ? c.create : c.save"
           [loading]="pending()"
           type="submit"

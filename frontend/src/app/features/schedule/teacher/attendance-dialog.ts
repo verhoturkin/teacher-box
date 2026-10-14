@@ -80,7 +80,6 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
           (onClick)="visible.set(false)"
         />
         <p-button
-          severity="success"
           [label]="c.save"
           [loading]="pending()"
           [disabled]="!anybody()"

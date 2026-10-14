@@ -45,7 +45,7 @@ neutral tonal/text — the status they produce shows the meaning.
   `danger` unchanged. `styles.scss` `@each $role…` coloured tonal (~221) goes with its uses
   (`styleClass="tb-tonal"`, 26 uses — grep). Preset `BUTTON_SCHEME` keeps success/warn only if a tag or message
   needs it (buttons don't).
-- [ ] 204.3 **F** Features: every `severity="success"` on a button (56 uses, `rg 'severity="success"'
+- [x] 204.3 **F** Features: every `severity="success"` on a button (56 uses, `rg 'severity="success"'
   frontend/src/app`) → no severity (primary); every `severity="danger"` (37 uses) reviewed against the rules
   above. Go module by module (identity, billing, homework, schedule, settings/admin, the rest), one commit per
   module if the diff is large. Tags (`p-tag`) and messages keep their severity.

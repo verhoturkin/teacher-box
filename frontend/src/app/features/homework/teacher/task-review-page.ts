@@ -113,7 +113,6 @@ import { MaterialOpener } from './material-opener';
               <div class="tb-form-actions">
                 @if (task.status === 'SUBMITTED') {
                   <p-button
-                    severity="success"
                     [label]="t.accept"
                     icon="pi pi-check"
                     [loading]="pending()"

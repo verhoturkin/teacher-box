@@ -101,13 +101,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button
-          severity="success"
-          [label]="c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="student-form"
-        />
+        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="student-form" />
       </ng-template>
     </p-dialog>
   `,

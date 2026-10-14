@@ -125,7 +125,6 @@ const MAX_TEXT = 10_000;
           (onClick)="editing.set(null)"
         />
         <p-button
-          severity="success"
           [label]="t.save"
           [loading]="pending()"
           type="submit"
