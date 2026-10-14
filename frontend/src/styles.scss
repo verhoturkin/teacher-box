@@ -1496,7 +1496,9 @@ a.p-menu-item-link:hover {
   }
 
   &:disabled {
-    opacity: 0.38;
+    border-color: transparent;
+    background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled), transparent);
+    color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
     cursor: default;
   }
 }
@@ -1591,19 +1593,30 @@ a.p-menu-item-link:hover {
   color: var(--p-md-on-primary);
   cursor: pointer;
 
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-primary) var(--tb-state-hover),
+      var(--p-md-primary)
+    );
+  }
+
   & + & {
     background: var(--p-md-surface-container-highest);
     color: var(--p-md-on-surface);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--p-md-primary);
-    outline-offset: 2px;
+  & + &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--p-md-surface-container-highest)
+    );
   }
 
-  /* the state layer of M3 */
-  &:hover {
-    filter: brightness(0.92);
+  &:focus-visible {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
   }
 
   i {

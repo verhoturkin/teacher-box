@@ -356,6 +356,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 
 - Keyboard focus ring: 3 px secondary, 2 px offset (fields: 2 px primary outline). In navigation the ring
   goes around the item and state layers lie over the active indicator, not instead of it.
+  Custom controls (the search field's «×», calendar buttons) take the same ring; their hover is a state layer
+  (`color-mix` with `--tb-state-*`), never `filter` or a literal opacity.
 - Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; «Ещё» and the user menu —
   `aria-haspopup="menu"` + `aria-expanded`; the user-menu name starts with the visible name.
 - Headings: h1 page title (and «Вход», «Приглашение»); **h2 section** (`p-card` title via the global

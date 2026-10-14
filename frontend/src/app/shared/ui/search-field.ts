@@ -103,8 +103,8 @@ import { SHARED_T } from '@shared/i18n/texts';
       }
 
       &:focus-visible {
-        outline: 2px solid var(--p-md-primary);
-        outline-offset: 0;
+        outline: 3px solid var(--p-md-secondary);
+        outline-offset: 2px;
       }
     }
   `,

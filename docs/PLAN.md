@@ -58,7 +58,7 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
   (`--p-highlight-background` → secondary-container + on-secondary-container),
   `features/settings/portal-settings-card.ts` (~211–240; `#fff` on the swatches: keep only if the check mark is
   ≥ 3:1 on every preset swatch, otherwise take the swatch's on-colour), `shared/ui/fold-card.ts:82`.
-- [ ] 197.5 **F** Focus rings and state layers (§1, §11): `shared/ui/search-field.ts:106` and `styles.scss` ~1597
+- [x] 197.5 **F** Focus rings and state layers (§1, §11): `shared/ui/search-field.ts:106` and `styles.scss` ~1597
   (`2px primary` → `3px secondary`, offset 2 px); `styles.scss` ~1603 `filter: brightness(0.92)` → hover state
   layer via `color-mix`; `.tb-fc-button:disabled` (~1496) `opacity: 0.38` → container 12 % / content 38 %;
   `core/layout/shell.scss` and `side-nav.scss` literal `opacity: 0.08 / 0.1` → `--tb-state-hover` / `-focus`.
