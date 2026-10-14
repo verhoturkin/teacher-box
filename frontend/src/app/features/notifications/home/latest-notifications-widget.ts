@@ -20,7 +20,7 @@ export const LATEST_COUNT = 5;
 
 /**
  * Home: the latest unread notifications, without icons, with «Отметить прочитанным» each (on a phone a swipe
- * sideways too), «Прочитать все» and a link to all of them. A notification read here leaves the list; the next unread one takes its place.
+ * sideways instead of the tick), «Прочитать все» and a link to all of them. A notification read here leaves the list; the next unread one takes its place.
  */
 @Component({
   selector: 'tb-latest-notifications-widget',
@@ -65,18 +65,21 @@ export const LATEST_COUNT = 5;
                       item.createdAt | date: 'dd.MM.yyyy HH:mm'
                     }}</span>
                   </div>
-                  <div class="tb-list__trail">
-                    <p-button
-                      icon="pi pi-check"
-                      [text]="true"
-                      [rounded]="true"
-                      severity="secondary"
-                      [pTooltip]="t.markRead"
-                      [ariaLabel]="t.markReadOf(item.title)"
-                      [loading]="busy.is('read-' + item.id)"
-                      (onClick)="markRead(item)"
-                    />
-                  </div>
+                  <!-- a phone: a swipe marks it read, no tick -->
+                  @if (!mobile()) {
+                    <div class="tb-list__trail">
+                      <p-button
+                        icon="pi pi-check"
+                        [text]="true"
+                        [rounded]="true"
+                        severity="secondary"
+                        [pTooltip]="t.markRead"
+                        [ariaLabel]="t.markReadOf(item.title)"
+                        [loading]="busy.is('read-' + item.id)"
+                        (onClick)="markRead(item)"
+                      />
+                    </div>
+                  }
                 </li>
               }
             </ul>

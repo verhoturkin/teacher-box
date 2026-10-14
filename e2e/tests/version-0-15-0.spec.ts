@@ -138,7 +138,8 @@ test('boards are found by a student, and «Назад» of a board returns to th
 }) => {
   await signIn(page);
   await page.goto('/teacher/boards');
-  const search = page.getByRole('searchbox', { name: 'Поиск досок' });
+  // 0.15.4: each card has its own search
+  const search = page.getByRole('searchbox', { name: 'Поиск: Доски на портале' });
   await search.fill(STUDENT);
   await expect(page.getByRole('link', { name: BOARD })).toBeVisible();
 

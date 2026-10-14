@@ -136,6 +136,8 @@ describe('InboxPanel', () => {
   it('shows no icons and marks an unread notification read by a swipe on a phone', async () => {
     await render(notificationPage([notification()]), true);
     expect(host().querySelector('.tb-list__lead')).toBeNull();
+    // the swipe instead of the tick
+    expect(host().querySelector('button[aria-label^="Отметить прочитанным"]')).toBeNull();
 
     swipeAside(host().querySelector('ul[aria-label="Непрочитанные"] > li'));
     backend.expectOne('/api/me/notifications/n-1/read').flush(null);

@@ -136,7 +136,14 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   await event.click();
   await expect(card).toContainText('Отменено');
   await card.getByRole('button', { name: 'Восстановить' }).click();
-  await expect(card).toBeHidden();
+  // lessons of other specs may stand at 07:00 on the day of the run: the portal asks first
+  const anyway = card.getByRole('button', { name: 'Всё равно восстановить' });
+  await expect(async () => {
+    if (await anyway.isVisible()) {
+      await anyway.click();
+    }
+    await expect(card).toBeHidden({ timeout: 1_000 });
+  }).toPass();
 
   await event.click();
   await expect(card).toContainText('Запланировано');
