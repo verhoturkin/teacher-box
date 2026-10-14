@@ -131,9 +131,14 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
 - **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
   (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
-  help, settings, account, sign out); five sections fit without «Ещё». Item ≥ 64 px, Label Medium, never
-  truncated; «Ещё» is active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
-  `--tb-spring-fast-spatial`; same in the rail.
+  help, settings, account, sign out); five sections fit without «Ещё». Item as wide as its label, ≥ 64 px, the
+  rest of the width shared (`minmax(64px, auto)`: «Расписание» fits a 360 px phone), Label Medium, never truncated —
+  a larger font wraps a label with hyphens (M3: whole up to 2× text); the rail's labels wrap the same way. «Ещё» is
+  active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
+  `--tb-spring-fast-spatial`; same in the rail. **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
+  label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill;
+  inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
+  Label Large for its horizontal items.
 - **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
   (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
   name.

@@ -51,7 +51,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 - [x] 201.2 **F** Type scale, `styles.scss` ~43–65: add the emphasized tokens M3E gives **Bold (700)** — Title
   M/S, Label L/M/S — and Display S (36/44) and Headline L (32/40) with emphasized variants and tracking tokens.
   Change §3 «Weights 400 and 500 only» → 700 only through the emphasized tokens. Font already has 400–700.
-- [ ] 201.3 **F** Navigation active item (flexible bar and vertical rail item, M3E): label colour
+- [x] 201.3 **F** Navigation active item (flexible bar and vertical rail item, M3E): label colour
   `on-surface` → **secondary** (`core/layout/shell.scss` ~211, `side-nav.scss` ~177 — in the rail only the icon
   changes now); label Label M emphasized (bold), as M3 pairs it with the filled icon (the filled icon
   comes with Material Symbols in 206.5). Check «never truncated» at 360 px and 200 % font; if bold doesn't fit, keep 500 and

@@ -105,13 +105,17 @@
   );
 }
 
-/* M3 navigation bar: the icon in the pill indicator, the label under it (four sections and «Ещё», ADR-0027) */
+/*
+ * M3 navigation bar: the icon in the pill indicator, the label under it (four sections and «Ещё», ADR-0027).
+ * An item is as wide as its label and at least 64 px, the rest of the width is shared: «Расписание» fits a
+ * 360 px phone whole. A larger font wraps a label (with hyphens), never cuts it (M3: up to 2x text).
+ */
 .tb-bottom-nav {
   position: fixed;
   inset: auto 0 0;
   z-index: 1000;
   display: grid;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(64px, auto);
   grid-auto-flow: column;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--p-md-surface-container);
@@ -202,14 +206,15 @@
 
 .tb-bottom-nav__label {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: center;
 }
 
-/* The active item differs by its indicator and color, not by weight: a bolder label would not fit */
+/* The active item (M3E flexible bar): the indicator, the label in secondary and Label M emphasized (Bold) */
 .tb-bottom-nav__item--active {
-  color: var(--p-md-on-surface);
+  color: var(--p-md-secondary);
+  font: var(--tb-type-label-m-emphasized);
 
   .tb-bottom-nav__icon {
     color: var(--p-md-on-secondary-container);
