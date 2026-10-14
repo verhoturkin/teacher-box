@@ -75,6 +75,11 @@ describe('NextLessonWidget', () => {
     expect(
       hostElement(fixture).querySelector('tb-join-lesson-button a')?.getAttribute('href'),
     ).toBe('https://meet.example.com/1');
+    // the one large button of the portal (ADR-0045); the requests stay small
+    expect(hostElement(fixture).querySelectorAll('.tb-button-m')).toHaveLength(1);
+    expect(
+      hostElement(fixture).querySelector('tb-join-lesson-button a.tb-button-m'),
+    ).not.toBeNull();
 
     buttonByText(hostElement(fixture), 'Перенести').click();
     fixture.detectChanges();

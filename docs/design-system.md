@@ -189,7 +189,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`, the student's `tb-my-board-links` since
   0.15.3: no «Доски:» caption, assist chips `tb-board-chip` in the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
-  button too). The student's request
+  button too) — since 0.17.1 the one M3E medium button of the portal (56 px, `tb-button-m` / `tb-split--m` via
+  `tb-join-lesson-button [medium]`, the student's `tb-lesson-actions [hero]`); the request buttons stay 40 px. The student's request
   buttons are at the end of the event (under it, across the width, on a narrow card) and are hidden while the lesson
   runs (0.15.1: the student's card is laid out as the teacher's — no visible title, «Занятие» or the group, the
   topic and «Занятий на неделе» next to the tile). No «Расписание» link: the schedule is in the
@@ -231,7 +232,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 ## 7. Buttons
 
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour), tonal is neutral
-secondary, red only destroys; green and amber are statuses, never buttons. Size is one: 40 px pill (icon button 40×40, 48 px touch target),
+secondary, red only destroys; green and amber are statuses, never buttons. Size is one, with one exception (size M
+in the hero, below): 40 px pill (icon button 40×40, 48 px touch target),
 Label Large, 16 px side padding, 20 px icon (M3E small button; icon buttons keep 20 px too — our decision until
 the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
 `size="small"`, `success`, `warn`, `info`, `help`, `contrast` on buttons.
@@ -255,6 +257,9 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   (`severity="secondary" [text]="true"`), never red. «Назад» is navigation (page, wizard step), not closing.
   Window that only informs closes with «Закрыть».
 - **Row actions:** at most three; labelled — text; icons — neutral round, red for delete.
+- **Size M** `tb-button-m` (ADR-0045; M3E `ButtonMedium`): 56 px, full corners, 12 px while pressed, 24 px icon,
+  24 px sides, 8 px gap, Title Medium label (our decision); split button `tb-split--m` (`SplitButtonMedium`:
+  trailing part 56 px with a 26 px chevron, inner corners 4 px, 12 px while pressed — ours). Only for the hero (§5).
 - **Steady widths:** a button whose label changes («Отменить» / «Не приду») uses `tb-button-steady`.
 - Every action that sends a request shows `[loading]` while it runs (`shared/ui/busy.ts`); the submit button is
   never disabled for invalid fields — only while the request runs.

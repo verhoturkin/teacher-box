@@ -17,7 +17,7 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Releases 0.17.1–0.17.2 — M3 Expressive buttons and icons
+## Release 0.17.2 — M3 Expressive buttons and icons
 
 Goals (the teacher's decisions of 2026-10-14): one accent — every main action is filled **primary** (the portal
 colour), green and amber only for statuses; red only where an action destroys something; one large button, the
@@ -29,18 +29,6 @@ stage). The former stage 207 «Release 0.17.0» is split into the last substep o
 ADR: **ADR-0045** «Кнопки: цвет — акцент, а не смысл; размер M для героя» (supersedes the colour part of
 ADR-0026 and ADR-0019); **ADR-0046** «Material Symbols Rounded вместо primeicons» (changes the design-system
 intro: «no Material Symbols» goes).
-
-### 205. One large button (F, ADR-0045)
-
-- [ ] 205.1 **F** Button M (M3E `ButtonMedium`: 56 dp, full corners, pressed CornerMedium 12 dp, icon 24 dp,
-  padding 24 dp, label — our decision: Title Medium) as a class `tb-button-m` in `styles.scss`, also for the split
-  button (`tb-split--m`: trailing part 56 dp, inner corners per M3E `SplitButtonMedium` from the skill).
-- [ ] 205.2 **F** Use it only in the hero: `schedule/home/next-lesson-widget.ts`, `upcoming-lesson-widget.ts`,
-  `join-lesson-button.ts` («Начать урок» / «Войти в урок», `tb-join-wide` on a narrow card). §5 «Nearest lesson
-  hero», §7 «Size is one» → «one exception». E2E 40 px checks (`version-0-6-12`, `version-0-6-13`) skip it; a new
-  check that the hero button is 56 px.
-- [ ] 205.3 Release 0.17.1 (skill `release`): help (the large «Начать урок»), E2E spec `version-0-17-1` (hero
-  button 56 px, the rest 40 px), CHANGELOG, version, archiving of stage 205.
 
 ### 206. Material Symbols Rounded (F, ADR-0046)
 

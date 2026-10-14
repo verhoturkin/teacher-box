@@ -73,6 +73,28 @@ describe('JoinLessonButton', () => {
     expect(hostElement(fixture).querySelector('a')?.getAttribute('target')).toBe('_blank');
   });
 
+  it('is the medium button in the hero, in each of its forms', async () => {
+    await render('https://telemost.yandex.ru/j/1', true, true);
+    const host = hostElement(fixture);
+    expect(host.querySelector('.tb-button-m')).toBeNull();
+
+    fixture.componentRef.setInput('medium', true);
+    await fixture.whenStable();
+    expect(requireElement(host, '.tb-split', HTMLElement).classList).toContain('tb-split--m');
+    expect(host.querySelector('button.tb-split__main.tb-button-m')).not.toBeNull();
+
+    fixture.componentRef.setInput('url', 'https://zoom.us/j/1');
+    await fixture.whenStable();
+    expect(host.querySelector('a.tb-button-m')).not.toBeNull();
+
+    fixture.componentRef.setInput(
+      'url',
+      `${location.origin}/call/01a0de87-6fdd-7428-8555-bed8116f54f9`,
+    );
+    await fixture.whenStable();
+    expect(host.querySelector('button.tb-button-m')).not.toBeNull();
+  });
+
   it('opens a built-in room of the portal in place', async () => {
     const owner = '01a0de87-6fdd-7428-8555-bed8116f54f9';
     await render(`${location.origin}/call/${owner}`, true, true);

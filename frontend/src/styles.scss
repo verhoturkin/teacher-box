@@ -2401,6 +2401,64 @@ a.p-menu-item-link:hover {
 }
 
 /*
+ * M3E medium button (ADR-0045): the one large button of the portal, «Начать урок» in the home hero.
+ * ButtonMedium: 56 dp high, full corners, pressed CornerMedium (12 dp), a 24 dp icon, 24 dp at the sides,
+ * 8 dp between the icon and the label. The label in Title Medium is our decision: M3 publishes no type
+ * role per button size.
+ */
+.p-button.tb-button-m {
+  box-sizing: border-box;
+  height: 3.5rem;
+  padding-block: 0;
+  padding-inline: var(--tb-space-6);
+  gap: var(--tb-space-2);
+  border-radius: var(--tb-shape-full);
+  font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
+
+  .p-button-label {
+    font: inherit;
+  }
+
+  .p-button-icon {
+    font-size: 1.5rem;
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-shape-md);
+  }
+}
+
+/*
+ * M3E SplitButtonMedium: 56 dp, the inner corners 4 dp as in the small one, the trailing part
+ * 15 + the 26 dp chevron + 15. Pressed, the inner corners morph to 12 dp — our decision, the pressed
+ * corner of ButtonMedium (M3 publishes none for the split button).
+ */
+.tb-split.tb-split--m {
+  .p-button.tb-split__more {
+    box-sizing: border-box;
+    width: 3.5rem;
+    height: 3.5rem;
+
+    .p-button-icon {
+      font-size: 1.625rem;
+    }
+  }
+
+  .p-button.tb-split__main:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-end-radius: var(--tb-shape-md);
+    border-end-end-radius: var(--tb-shape-md);
+  }
+
+  &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-start-radius: var(--tb-shape-md);
+    border-end-start-radius: var(--tb-shape-md);
+  }
+}
+
+/*
  * An M3 Expressive connected button group (ADR-0022): the buttons 2 px apart, the inner corners small,
  * the outer ones round; pressed, a button squares as usual.
  */

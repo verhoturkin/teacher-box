@@ -61,6 +61,7 @@ import { T } from '../i18n/texts';
               [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
               [group]="lesson.groupId !== null"
               [stacked]="mobile()"
+              [hero]="true"
               rescheduleIcon="pi pi-calendar"
               (ask)="ask(lesson, $event)"
             />
