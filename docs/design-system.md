@@ -18,8 +18,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | Token | px | Use |
   |---|---|---|
   | `--tb-shape-xs` | 4 | tooltips, inputs, inner corners of split button and list tiles |
-  | `--tb-shape-sm` | 8 | chips, tags, inner corners of connected button groups |
-  | `--tb-shape-md` | 12 | pressed button, selected toggle, menu items |
+  | `--tb-shape-sm` | 8 | pressed button (M3E CornerSmall), chips, tags, inner corners of connected button groups |
+  | `--tb-shape-md` | 12 | selected toggle, menu items |
   | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of list tiles |
   | `--tb-shape-lg-plus` | 20 | cards |
   | `--tb-shape-xl` | 28 | dialogs, top of the bottom sheet |
@@ -34,9 +34,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   disabled — container 12 %, content 38 % (`--tb-state-disabled*`). Hover only on things that act: rows that
   open as a whole (`tb-list__item--link`), not on static rows. Ripple is on.
 - **Motion** — M3E springs, precomputed as `linear()` with a duration: `transition: border-radius
-  var(--tb-spring-fast-spatial)`. Spatial (overshoot; position, size, shape): `--tb-spring-fast-spatial`,
-  `--tb-spring-default-spatial`; effects (no overshoot; colour, opacity): `--tb-spring-fast-effects`. Used for
-  button shape, nav indicator, section folding, FAB appearance; dialogs and snackbar keep PrimeNG animations.
+  var(--tb-spring-fast-spatial)`. Spatial (overshoot; position, size, shape): `--tb-spring-{fast,default,slow}-spatial`;
+  effects (no overshoot; colour, opacity): `--tb-spring-{fast,default,slow}-effects`; the standard-scheme
+  `--tb-spring-standard-fast-spatial` (0.9 / 1400, barely overshoots) only for turns that must not bounce (split
+  button chevron). Curves are computed (sample the spring until within 0.001 of 1), never the cubic-bezier fallback.
+  Used for button shape (colours and outline on `--tb-spring-fast-effects`), nav indicator, section folding,
+  FAB appearance; dialogs and snackbar keep PrimeNG animations.
   `prefers-reduced-motion: reduce` disables transitions (the loading indicator stays a circle).
 - **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
   64 px, bottom bar 80 px, rail 88 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
@@ -204,7 +207,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 ## 7. Buttons
 
 Variant = **weight**, colour = **meaning**. Size is one: 40 px pill (icon button 40×40, 48 px touch target),
-Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is for inputs only),
+Label Large, 16 px side padding, 20 px icon (M3E small button; icon buttons keep 20 px too — our decision until
+the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
 `size="small"`, `warn`, `info`, `help`, `contrast` on buttons.
 
 | Role | Variant | PrimeNG |
@@ -231,10 +235,13 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 - **Steady widths:** a button whose label changes («Отменить» / «Не приду») uses `tb-button-steady`.
 - Every action that sends a request shows `[loading]` while it runs (`shared/ui/busy.ts`); the submit button is
   never disabled for invalid fields — only while the request runs.
-- **Connected button group** `tb-button-group` (also `p-selectbutton`): 2 px gap, inner corners 8 px, outer
-  full; unselected tonal, selected primary and fully round; no outline.
-- **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px,
-  arrow part becomes round while its menu is open. The arrow has no tooltip (0.15.0, the teacher's decision): only its
+- **Connected button group** `tb-button-group` (also `p-selectbutton` and the calendar views `tb-fc-segments`):
+  2 px gap, inner corners 8 px, outer full; unselected tonal, selected primary and fully round; no outline.
+  Pressed, the outer corners square to 8 px as any button and the inner ones narrow to 4 px.
+- **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px (8 px
+  while pressed — the size is ours, the outer corners stay round), trailing part 48 px with a 22 px chevron (M3E
+  small); while its menu is open the trailing part is round and the chevron turns 180° on
+  `--tb-spring-standard-fast-spatial` (M3: the standard scheme, no bounce). The arrow has no tooltip (0.15.0, the teacher's decision): only its
   `aria-label`; the empty host of the popup menu is out of the flow, so the group ends at the edge of its container.
 - Icon buttons: tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»); help «?»
   includes the article («Справка: Портал»); menu buttons have `aria-haspopup` + `aria-expanded`
@@ -269,7 +276,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   buttons «Проведено» (success) and «Пропуск» (danger), a group «Отметить»; on the phone the row (avatar, name,
   time, chevron) opens a sheet with them full width.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
-  corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
+  corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
+  items next to a separator get the outer 12 px too, so each group between dividers reads as one segment, as our
+  lists do — the divider stays, as M3 separates menu groups on the web (dropdown lists —
   global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it, with a check at its end (the theme and the language: `menuitemradio` + `aria-checked`, no «(выбрана)» since 0.15.0); destructive item red.
 
 ## 9. Lists and tables

@@ -99,14 +99,11 @@
   --tb-state-disabled: 12%;
   --tb-state-disabled-content: 38%;
 
-  /* Motion */
-  --tb-motion-standard: cubic-bezier(0.2, 0, 0, 1);
-  --tb-duration-short: 150ms;
-
   /*
    * Springs of M3 Expressive (damping / stiffness): spatial ones overshoot and are for position,
    * size and shape, effects ones do not and are for color and opacity. Each token is a duration
    * with the precomputed curve: `transition: border-radius var(--tb-spring-fast-spatial)`.
+   * A curve samples the damped spring until it stays within 0.001 of 1 (32 steps).
    */
   /* 0.6 / 800 */
   /* prettier-ignore */
@@ -124,13 +121,37 @@
       0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
       1.006, 1.004, 1.003, 1.002, 1.002, 1
     );
-  /* critically damped (1 / 3800): the curve of the effects springs, here the fast one */
+  /* 0.8 / 200 */
+  /* prettier-ignore */
+  --tb-spring-slow-spatial: 600ms
+    linear(
+      0, 0.03, 0.106, 0.206, 0.317, 0.428, 0.533, 0.629, 0.713, 0.784, 0.843, 0.89, 0.927, 0.956,
+      0.977, 0.992, 1.003, 1.009, 1.013, 1.015, 1.015, 1.014, 1.013, 1.012, 1.01, 1.008, 1.007,
+      1.005, 1.004, 1.003, 1.002, 1.002, 1
+    );
+  /* Standard scheme 0.9 / 1400 (no bounce): turns that must not overshoot, the split button's chevron */
+  /* prettier-ignore */
+  --tb-spring-standard-fast-spatial: 230ms
+    linear(
+      0, 0.031, 0.105, 0.202, 0.307, 0.411, 0.509, 0.597, 0.675, 0.741, 0.796, 0.842, 0.879, 0.909,
+      0.933, 0.951, 0.965, 0.976, 0.984, 0.99, 0.994, 0.997, 0.999, 1, 1.001, 1.001, 1.001, 1.002,
+      1.001, 1.001, 1.001, 1.001, 1
+    );
+  /*
+   * Critically damped (1 / 3800): the curve of the effects springs. Its shape does not depend on the
+   * stiffness, only its duration does (∝ 1/√stiffness), so all three share it.
+   */
   /* prettier-ignore */
   --tb-spring-effects-curve: linear(
     0, 0.099, 0.286, 0.472, 0.625, 0.742, 0.826, 0.885, 0.924, 0.951, 0.968, 0.98, 0.987, 0.992,
     0.995, 0.997, 1
   );
+  /* 1 / 3800 */
   --tb-spring-fast-effects: 140ms var(--tb-spring-effects-curve);
+  /* 1 / 1600 */
+  --tb-spring-default-effects: 220ms var(--tb-spring-effects-curve);
+  /* 1 / 800 */
+  --tb-spring-slow-effects: 310ms var(--tb-spring-effects-curve);
 }
 
 :root {
@@ -1482,7 +1503,7 @@ a.p-menu-item-link:hover {
   }
 
   &:active:not(:disabled) {
-    border-radius: var(--tb-shape-md);
+    border-radius: var(--tb-shape-sm);
     background: color-mix(
       in srgb,
       var(--p-md-on-secondary-container) var(--tb-state-pressed),
@@ -1525,8 +1546,19 @@ a.p-menu-item-link:hover {
       border-end-end-radius: var(--tb-shape-button);
     }
 
+    /* pressed, the outer corners square to 8 px as any button, the inner ones narrow to 4 px (M3E) */
     &:active:not(:disabled) {
-      border-radius: var(--tb-shape-md);
+      border-radius: var(--tb-shape-sm);
+    }
+
+    &:not(:last-child):active:not(:disabled) {
+      border-start-end-radius: var(--tb-shape-xs);
+      border-end-end-radius: var(--tb-shape-xs);
+    }
+
+    &:not(:first-child):active:not(:disabled) {
+      border-start-start-radius: var(--tb-shape-xs);
+      border-end-start-radius: var(--tb-shape-xs);
     }
 
     &[aria-selected='true'],
@@ -2170,18 +2202,41 @@ a.p-menu-item-link:hover {
     border-end-end-radius: var(--tb-shape-xs);
   }
 
+  /* M3E SplitButtonSmall: 13 + the 22 px icon + 13 */
   .p-button.tb-split__more {
     width: 3rem;
     border-start-start-radius: var(--tb-shape-xs);
     border-end-start-radius: var(--tb-shape-xs);
 
     .p-button-icon {
-      font-size: 0.875rem;
+      font-size: 1.375rem;
+      transition: transform var(--tb-spring-standard-fast-spatial);
     }
   }
 
+  /*
+   * Pressed, only the inner corners morph, to 8 px (M3E; the size is ours, M3 publishes none for it);
+   * the outer ones stay round
+   */
+  .p-button.tb-split__main:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
+
+  /* open: the trailing part is round and its chevron turns inwards, on the standard scheme (no bounce) */
   &.tb-split--open .p-button.tb-split__more {
     border-radius: var(--tb-shape-full);
+
+    .p-button-icon {
+      transform: rotate(180deg);
+    }
   }
 }
 
@@ -2336,8 +2391,12 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The chosen item of a menu (the theme in the user menu): the secondary container, as M3 menus have it */
+/*
+ * The chosen item of a menu (the theme in the user menu): the secondary container and 12 px corners, as M3
+ * menus have it
+ */
 .p-menu .tb-menu-item--selected > .p-menu-item-content {
+  border-radius: var(--tb-shape-md);
   background: var(--p-md-secondary-container);
   color: var(--p-md-on-secondary-container);
 

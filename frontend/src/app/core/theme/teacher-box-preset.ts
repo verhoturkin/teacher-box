@@ -311,11 +311,11 @@ const TOGGLE_SCHEME = {
   },
 };
 
-/** A spring of the shape plus PrimeNG's own transitions of a button. */
-function shapeTransition(component: string): string {
-  const duration = `var(--p-${component}-transition-duration)`;
-  return `background ${duration}, color ${duration}, border-color ${duration},
-    outline-color ${duration}, box-shadow ${duration},
+/** A button's transitions: the shape on the fast spatial spring, colours and outline on the fast effects one. */
+function shapeTransition(): string {
+  const effects = 'var(--tb-spring-fast-effects)';
+  return `background ${effects}, color ${effects}, border-color ${effects},
+    outline-color ${effects}, box-shadow ${effects},
     border-radius var(--tb-spring-fast-spatial)`;
 }
 
@@ -444,20 +444,24 @@ export const TeacherBoxPreset = definePreset(Aura, {
         borderRadius: BUTTON_SHAPE,
         roundedBorderRadius: BUTTON_SHAPE,
         gap: '0.5rem',
-        paddingX: '1.5rem',
+        paddingX: '1rem',
         // 9 + the line of 20 + 9 + the border of 1 on both sides: 40 px (M3, ADR-0018)
         paddingY: '0.5625rem',
         iconOnlyWidth: '2.5rem',
         label: { fontWeight: '500' },
       },
       colorScheme: { light: BUTTON_SCHEME, dark: BUTTON_SCHEME },
-      // Pressed, a button squares its corners and springs back (Expressive shape morph)
+      // Pressed, a button squares its corners to 8 px and springs back (Expressive shape morph)
       css: `
         .p-button {
-          transition: ${shapeTransition('button')};
+          transition: ${shapeTransition()};
         }
         .p-button:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
+        }
+        /* M3E small button: a 20 px icon */
+        .p-button .p-button-icon {
+          font-size: 1.25rem;
         }
         /* disabled (M3): the container is on-surface 12 %, the content 38 %, whatever the severity */
         .p-button:disabled {
@@ -502,13 +506,19 @@ export const TeacherBoxPreset = definePreset(Aura, {
       list: { padding: '0.25rem', gap: '2px' },
       item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
       separator: { borderColor: '{md.outline.variant}' },
-      // M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px
+      /*
+       * M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px. Our
+       * decision: the items next to a separator get the outer 12 px too, so each group between the
+       * dividers reads as one segment, as our lists do; the divider stays (M3 on the web).
+       */
       css: `
-        .p-menu .p-menu-item:first-child > .p-menu-item-content {
+        .p-menu .p-menu-item:first-child > .p-menu-item-content,
+        .p-menu .p-menu-separator + .p-menu-item > .p-menu-item-content {
           border-start-start-radius: var(--tb-shape-md);
           border-start-end-radius: var(--tb-shape-md);
         }
-        .p-menu .p-menu-item:last-child > .p-menu-item-content {
+        .p-menu .p-menu-item:last-child > .p-menu-item-content,
+        .p-menu .p-menu-item:has(+ .p-menu-separator) > .p-menu-item-content {
           border-end-start-radius: var(--tb-shape-md);
           border-end-end-radius: var(--tb-shape-md);
         }
@@ -583,10 +593,10 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-togglebutton {
           font-size: 0.875rem;
           line-height: 1.25rem;
-          transition: ${shapeTransition('togglebutton')};
+          transition: ${shapeTransition()};
         }
         .p-togglebutton:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
         }
       `,
     },
@@ -604,8 +614,17 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-selectbutton .p-togglebutton-checked {
           border-radius: var(--tb-shape-button);
         }
+        /* pressed, the outer corners square to 8 px as any button, the inner ones narrow to 4 px (M3E) */
         .p-selectbutton .p-togglebutton:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
+        }
+        .p-selectbutton .p-togglebutton:not(:last-child):not(:disabled):active {
+          border-start-end-radius: var(--tb-shape-xs);
+          border-end-end-radius: var(--tb-shape-xs);
+        }
+        .p-selectbutton .p-togglebutton:not(:first-child):not(:disabled):active {
+          border-start-start-radius: var(--tb-shape-xs);
+          border-end-start-radius: var(--tb-shape-xs);
         }
       `,
     },
