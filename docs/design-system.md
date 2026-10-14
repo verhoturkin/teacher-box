@@ -73,7 +73,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   hue (`readable`). The hero card (primary container — the portal colour itself) carries only on-primary-container:
   its links and text buttons take that colour (links underlined). All preset palettes and sample own colours are
   tested in both themes. The custom-colour check reports darkening and warns when primary is close (OKLab ΔE×100 <
-  12) to success or error.
+  12) to error (since 0.17.0 not to success: no button is green, ADR-0045).
 - **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` and the manifest link carry the top
   bar's colour — light surface-container, dark surface — following the theme and the portal colour; the manifest's
   `background_color` is the page (surface-container). Chrome paints the status bar from the meta tag and, in an

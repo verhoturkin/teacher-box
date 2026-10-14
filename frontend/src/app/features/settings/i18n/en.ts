@@ -31,10 +31,8 @@ export const en: Translation<typeof ru> = {
     darkTheme: 'Dark theme',
     adjusted:
       'To keep the text readable, buttons and links will be darker than the chosen colour (lighter in the dark theme), as in the samples.',
-    likeSuccess:
-      'Confirmation buttons («Save», «Accept») are green — with this portal colour the main action of a section will be hard to tell from them.',
     likeError:
-      'Cancel and delete buttons are red — with this portal colour the main action of a section will look like them.',
+      'Delete buttons are red — with this portal colour the main action of a section will look like them.',
     colorHint: 'Buttons, links and highlights of the portal are in this colour.',
     logo: 'Logo',
     logoFile: 'Logo file',

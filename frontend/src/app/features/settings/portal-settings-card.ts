@@ -146,11 +146,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 <small class="tb-hint">{{ t.adjusted }}</small>
               }
             }
-            @if (advice().likeSuccess) {
-              <p-message severity="warn" styleClass="tb-form-message">{{
-                t.likeSuccess
-              }}</p-message>
-            }
             @if (advice().likeError) {
               <p-message severity="warn" styleClass="tb-form-message">{{ t.likeError }}</p-message>
             }
@@ -295,7 +290,7 @@ export class PortalSettingsCard implements OnInit {
   protected readonly scheme = computed(() =>
     accentScheme(this.own() ? this.accent() : DEFAULT_OWN_COLOR),
   );
-  /** Whether the color was made darker to stay readable, whether it looks like green or red buttons. */
+  /** Whether the color was made darker to stay readable, whether it looks like the red buttons. */
   protected readonly advice = computed(() => accentAdvice(this.accent()));
   /** Advice when a text in the own color would be poorly readable (ADR-0023). */
   protected readonly poorContrast = computed(() => {

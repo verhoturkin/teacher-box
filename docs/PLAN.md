@@ -49,7 +49,7 @@ neutral tonal/text — the status they produce shows the meaning.
   frontend/src/app`) → no severity (primary); every `severity="danger"` (37 uses) reviewed against the rules
   above. Go module by module (identity, billing, homework, schedule, settings/admin, the rest), one commit per
   module if the diff is large. Tags (`p-tag`) and messages keep their severity.
-- [ ] 204.4 **F** Portal colour: `core/theme/portal-accent.ts` (~100) — the «alike success» warning goes (no green
+- [x] 204.4 **F** Portal colour: `core/theme/portal-accent.ts` (~100) — the «alike success» warning goes (no green
   buttons now); keep «alike error» (red still marks danger). Texts in `features/settings/i18n/{ru,en}.ts`, tests
   `portal-settings-card.spec.ts`, `portal-accent.spec.ts`; help article `help/articles/teacher.{ru,en}.ts` ~523
   (the paragraph on the green portal colour), grep help articles for «зелён» / «green».

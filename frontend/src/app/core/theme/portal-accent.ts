@@ -103,16 +103,14 @@ export interface AccentAdvice {
   readonly dark: number;
   /** Buttons and links are darker (or lighter) than the color itself, to stay readable. */
   readonly adjusted: boolean;
-  /** The main buttons would look like the green confirming ones. */
-  readonly likeSuccess: boolean;
-  /** The main buttons would look like the red cancelling and deleting ones. */
+  /** The main buttons would look like the red deleting ones (there are no green buttons, ADR-0045). */
   readonly likeError: boolean;
 }
 
 export function accentAdvice(accent: string): AccentAdvice {
   const shades = accentShades(accent);
   const scheme = colorScheme(shades);
-  const alike = (role: 'success' | 'error'): boolean =>
+  const alike = (role: 'error'): boolean =>
     difference(scheme.light.primary, scheme.light[role]) < ALIKE ||
     difference(scheme.dark.primary, scheme.dark[role]) < ALIKE;
   return {
@@ -121,7 +119,6 @@ export function accentAdvice(accent: string): AccentAdvice {
     adjusted:
       difference(scheme.light.primary, shades['600'] ?? scheme.light.primary) >= ADJUSTED ||
       difference(scheme.dark.primary, shades['200'] ?? scheme.dark.primary) >= ADJUSTED,
-    likeSuccess: alike('success'),
     likeError: alike('error'),
   };
 }
