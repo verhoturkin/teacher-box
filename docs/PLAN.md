@@ -41,7 +41,7 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
 
 ### 197. Breaches of our own rules (F)
 
-- [ ] 197.1 **F** Loading indicator, `core/theme/teacher-box-preset.ts` (`.p-progressspinner`, ~line 615): the
+- [x] 197.1 **F** Loading indicator, `core/theme/teacher-box-preset.ts` (`.p-progressspinner`, ~line 615): the
   shape in the `primary-container` container is `primary` — with the Fidelity scheme the container keeps the
   portal colour and the shape nearly vanishes. M3: contained active indicator → **on-primary-container**, shape
   38 dp in a 48 dp container (`::after` 60 % → 79 %). Check the reduced-motion pulse stays a circle.

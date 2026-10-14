@@ -186,8 +186,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 ## 6. States and feedback
 
 - Every section that loads data has three states via `LoadState` (`shared/ui/load-state.ts`, `track()`)
-  and `tb-load-state`: **loading** (M3E indicator centred in the section's place, min height, «Загрузка…»
-  `role="status"`), **error** (icon, «Не удалось загрузить …», error text with code, «Повторить»), **ready**
+  and `tb-load-state`: **loading** (M3E indicator centred in the section's place — a 38 px shape in on-primary-container inside a 48 px
+  primary-container circle, a pulsing circle under reduced motion; min height, «Загрузка…» `role="status"`), **error** (icon, «Не удалось загрузить …», error text with code, «Повторить»), **ready**
   (data or empty state). Empty state only after a successful load; a bad link («Задание не найдено») is an
   error state.
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section, no toast.

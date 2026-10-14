@@ -624,11 +624,12 @@ export const TeacherBoxPreset = definePreset(Aura, {
         .p-progressspinner-spin {
           display: none;
         }
+        /* M3: a 38 dp shape in the 48 dp container; on the container it is on-primary-container */
         .p-progressspinner::after {
           content: '';
-          width: 60%;
-          height: 60%;
-          background: var(--p-md-primary);
+          width: 79%;
+          height: 79%;
+          background: var(--p-md-on-primary-container);
           animation: tb-loading-morph 1.6s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
