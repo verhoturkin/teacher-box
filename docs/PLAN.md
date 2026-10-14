@@ -62,9 +62,11 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 - [x] 201.5 **F** Dialog surface: preset `overlay.modal` (~82) `card` (surface-container-lowest) → M3
   **surface-container-high**; dialogs' lists then need a tile colour that differs from it (decide:
   surface-container-lowest or -highest), tested in `core/theme/color-scheme.spec.ts` for both themes. §2.
-- [ ] 201.6 **F** *(optional)* Dark theme grade: `@use '…/google-sans/wght.css'` → the file with the GRAD axis,
+- [x] 201.6 **F** *(optional)* Dark theme grade: `@use '…/google-sans/wght.css'` → the file with the GRAD axis,
   `font-variation-settings: 'GRAD' -25` in the dark theme (M3: a negative grade so light text doesn't look
   heavier). Do it only if the font grows by < 10 % in `npm run build` stats.
+  *Not done: the GRAD files are 31 % (latin, 47 vs 36 KB) and 45 % (cyrillic, 23 vs 16 KB) larger than `wght` —
+  over the 10 % limit; the text font keeps grade 0 (206.2 may still grade the icons).*
 - [ ] 201.7 ADR-0044 + row in `docs/adr/README.md`.
 
 - [ ] 201.8 Release 0.16.2 (skill `release`): E2E spec `version-0-16-2`.
@@ -145,7 +147,7 @@ PrimeNG icons replaced too; primeicons removed at the end.
 - [ ] 206.2 **F** Icon layer in `styles.scss` (section «Icons»): `.tb-i` (font, 24 px, `'FILL' 0, 'wght' 400,
   'GRAD' 0, 'opsz' 24`, `aria-hidden` by usage), size tokens `--tb-icon-size` (24; 20 in buttons — M3E button
   icon; 18 in chips), `.tb-i--filled` (`'FILL' 1`); a generated list of `.tb-i-<name>::before` classes from one map
-  `core/theme/icons.scss` (the only place names live). Dark theme `'GRAD' -25` together with 201.6.
+  `core/theme/icons.scss` (the only place names live). Dark theme `'GRAD' -25` for icons only (201.6 left the text font at grade 0).
   The board icon: a Material Symbol replaces the Tabler mask `pi-tb-board`.
 - [ ] 206.3 Mapping table «pi-* → symbol» for all 97 icons in use (`rg -o 'pi-[a-z0-9-]+' frontend/src/app | sort
   -u`) in design-system (new §1 «Icons»): one meaning — one symbol; review it with the teacher before 206.4.
