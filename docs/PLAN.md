@@ -67,7 +67,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   heavier). Do it only if the font grows by < 10 % in `npm run build` stats.
   *Not done: the GRAD files are 31 % (latin, 47 vs 36 KB) and 45 % (cyrillic, 23 vs 16 KB) larger than `wght` —
   over the 10 % limit; the text font keeps grade 0 (206.2 may still grade the icons).*
-- [ ] 201.7 ADR-0044 + row in `docs/adr/README.md`.
+- [x] 201.7 ADR-0044 + row in `docs/adr/README.md`.
 
 - [ ] 201.8 Release 0.16.2 (skill `release`): E2E spec `version-0-16-2`.
 

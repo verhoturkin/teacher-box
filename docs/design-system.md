@@ -1,7 +1,7 @@
 # Design system
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
-ADR-0017–0027 and the call window of ADR-0030, which are the history (*why*); if they disagree with this page, this page is right. A change to
+ADR-0017–0027, the call window of ADR-0030 and the M3E alignment of ADR-0044, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
 [`glossary.md`](glossary.md) (Russian and English); texts live in dictionaries (§14).
 
