@@ -1,7 +1,7 @@
 # Design system
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
-ADR-0017–0027, the call window of ADR-0030 and the M3E alignment of ADR-0044, which are the history (*why*); if they disagree with this page, this page is right. A change to
+ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044 and the button accent of ADR-0045, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
 [`glossary.md`](glossary.md) (Russian and English); texts live in dictionaries (§14).
 
@@ -230,27 +230,26 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 
 ## 7. Buttons
 
-Variant = **weight**, colour = **meaning**. Size is one: 40 px pill (icon button 40×40, 48 px touch target),
+Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour), tonal is neutral
+secondary, red only destroys; green and amber are statuses, never buttons. Size is one: 40 px pill (icon button 40×40, 48 px touch target),
 Label Large, 16 px side padding, 20 px icon (M3E small button; icon buttons keep 20 px too — our decision until
 the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
-`size="small"`, `warn`, `info`, `help`, `contrast` on buttons.
+`size="small"`, `success`, `warn`, `info`, `help`, `contrast` on buttons.
 
 | Role | Variant | PrimeNG |
 |---|---|---|
-| Main page action / dialog submit / login form | filled | no variant (+ `severity="success"` in dialogs) |
-| Secondary page or section action, section save | tonal | `severity="secondary"`; coloured tonal: `styleClass="tb-tonal"` + severity |
-| «Отмена», «Скрыть», «Понятно», labelled row action | text | `[text]="true"` |
-| Icon action (edit, delete, link) | text, round, neutral, tooltip | `[text]="true" [rounded]="true" severity="secondary"` + `pTooltip` |
+| Main page action / dialog submit / login form | filled primary | no severity |
+| Secondary page or section action, section save | tonal neutral | `severity="secondary"` |
+| «Отмена», «Скрыть», «Понятно», labelled row action | text | `[text]="true"` (+ `severity="secondary"` for «Отмена») |
+| Icon action (edit, link) | text, round, neutral, tooltip | `[text]="true" [rounded]="true" severity="secondary"` + `pTooltip` |
+| Delete or unbind in a row: bin / «×» icon, labelled «Удалить» with a bin | text red | `[text]="true" severity="danger"` |
 | Confirm an irreversible action (in a dialog) | filled red | `severity="danger"` |
 
-| Meaning | Colour | Examples |
-|---|---|---|
-| Confirm: save, create, send, accept, assign, mark conducted | green `success` | «Сохранить», «Создать», «Отправить», «Принять», «Проведено», «Напомнить», «Загрузить» |
-| Consequence: delete, cancel a lesson, refuse, finish, roll back | red `danger` | «Удалить…», «Отменить занятие…», «Вернуть на доработку», «Пропуск», «Вернуть как в .env», bin icon |
-| Navigate, edit, refresh, filter, FAB | portal colour or neutral | «Далее», «Войти», «Открыть», pencil, «Обновить» |
-
+- **Red means destruction only.** «Пропуск», «Вернуть на доработку», «Отменить занятие…», «Отозвать запрос»,
+  «Вернуть как в .env» are neutral tonal or text: the status they produce (a tag, a message) shows the meaning.
+  Filled red stays for the confirmation step only.
 - **Page:** at most one filled button outside dialogs — the FAB; without a FAB, the single filled button is the
-  page's main decision (green «Принять», «Сохранить и перезапустить», or portal-coloured «Далее»/«Войти»).
+  page's main decision («Принять», «Сохранить и перезапустить», «Далее», «Войти»), always primary.
   Everything else tonal; «Подключиться» is tonal in rows, filled only in the home hero and the bottom sheet.
 - **«Отмена» means only "close without consequences":** neutral text button
   (`severity="secondary" [text]="true"`), never red. «Назад» is navigation (page, wizard step), not closing.
@@ -288,7 +287,7 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - Initial focus on the dialog title (`[focusOnShow]="false"`, `tabindex="-1"`), not on a button. A dialog
   never opens another dialog on top.
 - **Confirmations** only via `dangerConfirmation` / `safeConfirmation` (`@shared/ui/confirmation`): danger —
-  filled red action; safe — green; both get neutral «Отмена»; the reject label/props cannot be overridden.
+  filled red action; safe — filled primary (since 0.17.0, not green); both get neutral «Отмена»; the reject label/props cannot be overridden.
 - **Lesson dialog:** footer — the main action for the lesson state («Проведено | Пропуск» group,
   «Восстановить», «Отметить посещаемость»); «Изменить» — pencil in the header; «Отменить занятие…»,
   «Удалить…», «Снять отметку» — «⋮» menu; «Начать урок» — tonal.
@@ -297,7 +296,7 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   «Закрыть» (no swipe). Example: upcoming lesson row on the phone = icon, time and details, chevron
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
   0.15.3: the teacher's «Отметьте прошедшие занятия» the same way — on a computer the row has labelled text
-  buttons «Проведено» (success) and «Пропуск» (danger), a group «Отметить»; on the phone the row (avatar, name,
+  buttons «Проведено» and «Пропуск» (neutral since 0.17.0), a group «Отметить»; on the phone the row (avatar, name,
   time, chevron) opens a sheet with them full width.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
@@ -408,7 +407,8 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   items are not.
 - Media queries in `em` ranges; at 200 % font the layout moves to rail/phone without horizontal scroll.
 - E2E runs axe (no critical/serious) on the main screens, and checks button height (40 px), the number of
-  filled buttons per page, no red «Отмена», no `outlined` / `size="small"` / `warn` / `info` buttons.
+  filled buttons per page, no red «Отмена», no `outlined` / `size="small"` / `success` / `warn` / `info` buttons,
+  red buttons only for danger confirmations and deletion (0.17.0).
 
 ## 12. Portal branding
 
