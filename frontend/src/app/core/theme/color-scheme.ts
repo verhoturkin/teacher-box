@@ -238,6 +238,8 @@ export function textPairs(roles: Roles): readonly (readonly [string, string, str
     ['карточка', roles.surfaceContainerLowest],
     ['плитка', roles.surfaceContainerLow],
     ['плитка тёмной темы', roles.surfaceContainerHigh],
+    ['диалог', roles.surfaceContainerHigh],
+    ['плитка в диалоге', roles.surfaceContainerLowest],
   ];
   const pairs: [string, string, string][] = [
     ['текст кнопки', roles.onPrimary, roles.primary],

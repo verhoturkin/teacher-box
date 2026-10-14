@@ -59,7 +59,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 - [x] 201.4 **F** *(our decision)* Hero time: `schedule/home/next-lesson-widget.ts` / `upcoming-lesson-widget.ts`,
   `tb-lesson-time-tile` — start time in Display S emphasized instead of Headline M (the one hero moment of the
   portal); check the narrow card layout. §5.
-- [ ] 201.5 **F** Dialog surface: preset `overlay.modal` (~82) `card` (surface-container-lowest) → M3
+- [x] 201.5 **F** Dialog surface: preset `overlay.modal` (~82) `card` (surface-container-lowest) → M3
   **surface-container-high**; dialogs' lists then need a tile colour that differs from it (decide:
   surface-container-lowest or -highest), tested in `core/theme/color-scheme.spec.ts` for both themes. §2.
 - [ ] 201.6 **F** *(optional)* Dark theme grade: `@use '…/google-sans/wght.css'` → the file with the GRAD axis,

@@ -2086,6 +2086,16 @@ a.p-menu-item-link:hover {
 }
 
 /*
+ * A dialog is surface-container-high (M3, ADR-0044): what is painted in the colour of the card inside it (the
+ * notch of a field's label) takes the dialog's, and its list tiles the lowest container, so they stand apart
+ * from it in both themes (the highest stays unused, as M3 asks of the surface of a dialog).
+ */
+.p-dialog {
+  --tb-card: var(--p-md-surface-container-high);
+  --tb-list-item: var(--p-md-surface-container-lowest);
+}
+
+/*
  * The width of a dialog is a class, not a style of the place (ADR-0026): `tb-dialog` 32 rem,
  * `tb-dialog--wide` 40 rem; a confirmation is up to 35 rem. A dialog is never nearer than 1 rem to
  * the edge of the screen.

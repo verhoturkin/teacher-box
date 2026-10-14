@@ -93,9 +93,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
   lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
   (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
-- **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —
+- **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
-  surface-container-low / surface-container-high. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
+  surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
+  themes: inside `.p-dialog` `--tb-card` is the dialog's colour (the notch of a field's label) and list tiles are
+  surface-container-lowest, so they stand apart in both themes (`color-scheme.spec.ts`); surface-container-highest is
+  not used beside a dialog, as M3 asks. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
   themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
 - Text contrast ≥ 4.5:1, outlines and focus rings ≥ 3:1.
