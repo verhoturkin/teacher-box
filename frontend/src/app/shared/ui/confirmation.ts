@@ -21,14 +21,14 @@ export function dangerConfirmation(confirmation: ConfirmationRequest): Confirmat
 }
 
 /**
- * A confirmation of an ordinary action (ADR-0019, ADR-0026): the action confirms (green), «Отмена»
- * is a neutral text button.
+ * A confirmation of an ordinary action (ADR-0045): the action is a filled primary button, «Отмена» a
+ * neutral text one.
  */
 export function safeConfirmation(confirmation: ConfirmationRequest): Confirmation {
   return {
     ...confirmation,
     rejectLabel: REJECT_LABEL,
-    acceptButtonProps: { severity: 'success' },
+    acceptButtonProps: { severity: 'primary' },
     rejectButtonProps: { severity: 'secondary', text: true },
   };
 }

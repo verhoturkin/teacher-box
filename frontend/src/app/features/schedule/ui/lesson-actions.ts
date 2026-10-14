@@ -34,9 +34,8 @@ import { T } from '../i18n/texts';
         />
         <p-button
           [class.tb-button-steady]="!stacked()"
-          [class.tb-tonal]="stacked()"
           [label]="cancelLabel()"
-          severity="danger"
+          severity="secondary"
           [text]="!stacked()"
           (onClick)="ask.emit('CANCEL')"
         />

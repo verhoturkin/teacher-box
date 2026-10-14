@@ -86,8 +86,7 @@ import { T } from '../i18n/texts';
         <p-button
           type="submit"
           [label]="submitLabel()"
-          [severity]="proceeds() ? 'primary' : 'success'"
-          [class.tb-tonal]="tonal()"
+          [severity]="tonal() ? 'secondary' : 'primary'"
           [loading]="pending()"
         />
       </div>
@@ -106,8 +105,6 @@ export class ChangePasswordForm {
   readonly tonal = input(false);
   /** A readable width in a wide card (the first setup); in a card of its own size (the account) — its width. */
   readonly narrow = input(true);
-  /** A step of the wizard: a transition in the colour of the portal, not a green confirmation (ADR-0026). */
-  readonly proceeds = input(false);
   /** The password has been changed. */
   readonly changed = output();
 

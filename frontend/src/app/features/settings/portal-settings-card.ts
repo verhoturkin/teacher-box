@@ -192,13 +192,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
             <small class="tb-hint">{{ t.logoHint }}</small>
           </div>
           <div class="tb-form-actions">
-            <p-button
-              class="tb-tonal"
-              type="submit"
-              [label]="c.save"
-              severity="success"
-              [loading]="pending()"
-            />
+            <p-button type="submit" [label]="c.save" severity="secondary" [loading]="pending()" />
           </div>
         </form>
       }

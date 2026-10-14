@@ -116,10 +116,9 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
                 </div>
                 <div class="tb-form-actions">
                   <p-button
-                    class="tb-tonal"
                     type="submit"
                     [label]="c.save"
-                    severity="success"
+                    severity="secondary"
                     [disabled]="
                       nameForm.invalid ||
                       nameForm.controls.name.value.trim() === account.displayName
@@ -140,10 +139,9 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
                 </div>
                 <div class="tb-form-actions">
                   <p-button
-                    class="tb-tonal"
                     type="submit"
                     [label]="c.save"
-                    severity="success"
+                    severity="secondary"
                     [disabled]="ownNameUnchanged(account)"
                     [loading]="renaming()"
                   />

@@ -287,8 +287,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
                 <p-button
                   [label]="t.sendTest"
                   icon="pi pi-send"
-                  class="tb-tonal"
-                  severity="success"
+                  severity="secondary"
                   [loading]="pending()"
                   (onClick)="sendTest()"
                 />

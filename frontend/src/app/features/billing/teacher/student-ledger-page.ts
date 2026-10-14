@@ -116,9 +116,8 @@ import { locale } from '@core/i18n/language';
                   (onClick)="cancelPrice()"
                 />
                 <p-button
-                  class="tb-tonal"
                   type="submit"
-                  severity="success"
+                  severity="secondary"
                   [label]="c.save"
                   icon="pi pi-check"
                   [disabled]="price.invalid || !priceChanged()"

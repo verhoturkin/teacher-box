@@ -12,11 +12,11 @@ describe('confirmations', () => {
     });
   });
 
-  it('makes an ordinary action green and «Отмена» neutral', () => {
+  it('makes an ordinary action primary and «Отмена» neutral', () => {
     expect(safeConfirmation({ acceptLabel: 'Перенести' })).toEqual({
       acceptLabel: 'Перенести',
       rejectLabel: 'Отмена',
-      acceptButtonProps: { severity: 'success' },
+      acceptButtonProps: { severity: 'primary' },
       rejectButtonProps: { severity: 'secondary', text: true },
     });
   });

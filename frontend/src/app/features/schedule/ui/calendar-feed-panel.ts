@@ -68,8 +68,7 @@ import { T } from '../i18n/texts';
             <p-button
               [label]="feed.enabled ? t.renew : t.get"
               icon="pi pi-link"
-              class="tb-tonal"
-              severity="success"
+              severity="secondary"
               [loading]="pending()"
               (onClick)="create()"
             />

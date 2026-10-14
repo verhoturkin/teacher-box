@@ -252,8 +252,7 @@ export function nextMonday(date: Date): Date {
         />
         @if (lesson.pendingRequests[0]; as request) {
           <p-button
-            class="tb-tonal"
-            severity="danger"
+            severity="secondary"
             [label]="t.withdrawRequest"
             icon="pi pi-undo"
             [fluid]="true"

@@ -34,13 +34,7 @@ import { T } from '../i18n/texts';
           />
           @if (!settings.addressFromEnvironment) {
             <div class="tb-form-actions">
-              <p-button
-                class="tb-tonal"
-                type="submit"
-                [label]="t.save"
-                severity="success"
-                [loading]="pending()"
-              />
+              <p-button type="submit" [label]="t.save" severity="secondary" [loading]="pending()" />
             </div>
           }
         </form>

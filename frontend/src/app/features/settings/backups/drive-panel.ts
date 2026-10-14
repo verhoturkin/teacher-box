@@ -238,10 +238,9 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
                   />
                 }
                 <p-button
-                  class="tb-tonal"
                   type="submit"
                   [label]="c.save"
-                  severity="success"
+                  severity="secondary"
                   [loading]="pending()"
                 />
               </div>

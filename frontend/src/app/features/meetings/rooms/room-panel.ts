@@ -46,8 +46,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             <p-button
               [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
               icon="pi pi-send"
-              class="tb-tonal"
-              severity="success"
+              severity="secondary"
               [loading]="pending()"
               (onClick)="share(room.ownerId)"
             />
@@ -69,8 +68,7 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
             <p-button
               [label]="owner.type === 'GROUP' ? t.sendGroup : t.sendStudent"
               icon="pi pi-send"
-              class="tb-tonal"
-              severity="success"
+              severity="secondary"
               [loading]="pending()"
               (onClick)="share(owner.id)"
             />

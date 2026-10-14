@@ -41,7 +41,7 @@ neutral tonal/text — the status they produce shows the meaning.
 
 - [x] 204.1 ADR-0045 + row in `docs/adr/README.md`; design-system §7 tables (role → variant; meaning → colour
   rows go), §8 confirmations, §11 E2E list. Mark ADR-0019 / ADR-0026 as partly superseded.
-- [ ] 204.2 **F** Shared parts: `shared/ui/confirmation` — `safeConfirmation` filled primary (now success);
+- [x] 204.2 **F** Shared parts: `shared/ui/confirmation` — `safeConfirmation` filled primary (now success);
   `danger` unchanged. `styles.scss` `@each $role…` coloured tonal (~221) goes with its uses
   (`styleClass="tb-tonal"`, 26 uses — grep). Preset `BUTTON_SCHEME` keeps success/warn only if a tag or message
   needs it (buttons don't).

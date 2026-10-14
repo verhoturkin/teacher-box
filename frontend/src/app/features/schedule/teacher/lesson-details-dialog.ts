@@ -278,9 +278,8 @@ import { SHARED_T } from '@shared/i18n/texts';
             <span class="tb-button-group" role="group" [attr.aria-label]="t.outcome">
               @if (lesson.status !== 'MISSED') {
                 <p-button
-                  class="tb-tonal"
                   [label]="t.missed"
-                  severity="danger"
+                  severity="secondary"
                   [loading]="pending()"
                   (onClick)="mark('MISSED')"
                 />

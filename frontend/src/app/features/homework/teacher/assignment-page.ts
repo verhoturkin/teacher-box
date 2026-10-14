@@ -126,8 +126,7 @@ import { T } from '../i18n/texts';
             @if (newFiles().length > 0) {
               <p-button
                 [label]="t.upload"
-                class="tb-tonal"
-                severity="success"
+                severity="secondary"
                 icon="pi pi-upload"
                 [loading]="uploading()"
                 (onClick)="upload()"

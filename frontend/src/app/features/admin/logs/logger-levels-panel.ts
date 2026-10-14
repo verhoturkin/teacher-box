@@ -73,13 +73,7 @@ export const DURATIONS: readonly { readonly label: string; readonly minutes: num
             appendTo="body"
           />
         </div>
-        <p-button
-          class="tb-tonal"
-          type="submit"
-          [label]="t.apply"
-          severity="success"
-          [loading]="pending()"
-        />
+        <p-button type="submit" [label]="t.apply" severity="secondary" [loading]="pending()" />
       </form>
       <p-table [value]="loggers()" styleClass="tb-cards">
         <ng-template #header>

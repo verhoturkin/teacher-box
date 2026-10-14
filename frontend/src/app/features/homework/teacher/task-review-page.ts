@@ -121,10 +121,9 @@ import { MaterialOpener } from './material-opener';
                   />
                 }
                 <p-button
-                  class="tb-tonal"
                   [label]="t.return"
                   icon="pi pi-replay"
-                  severity="danger"
+                  severity="secondary"
                   [loading]="pending()"
                   (onClick)="review('RETURN')"
                 />
