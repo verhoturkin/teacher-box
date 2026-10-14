@@ -131,7 +131,7 @@ If something does not add up — write to the teacher.
     body: `
 ## Notifications in the cabinet
 
-New notifications are at the top of «Notifications». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone you can also mark a notification read with a swipe — slide it left or right.
+New notifications are at the top of «Notifications». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
 ## Connect
 

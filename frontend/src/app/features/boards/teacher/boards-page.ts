@@ -38,9 +38,21 @@ import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
 
+/** The boards whose title or a student's (a group's) name has the search text. */
+function found(boards: readonly Board[], text: string): readonly Board[] {
+  const query = text.trim().toLocaleLowerCase();
+  return query === ''
+    ? boards
+    : boards.filter(
+        (board) =>
+          board.title.toLocaleLowerCase().includes(query) ||
+          board.members.some((member) => member.name?.toLocaleLowerCase().includes(query)),
+      );
+}
+
 /**
  * Teacher: every board in one place (ADR-0028), in two cards — «Доски на портале» (Excalidraw) and «Внешние доски»
- * (by link); a tap anywhere on a board's row opens it. Create, change, delete, copies. «Доски (n)» of a student
+ * (by link), each with its own search as the assignments; a tap anywhere on a board's row opens it. Create, change, delete, copies. «Доски (n)» of a student
  * or a group opens the list filtered in the URL (`?student=`, `?group=`); «Все доски» drops the filter.
  */
 @Component({
@@ -86,17 +98,17 @@ import { SearchField } from '@shared/ui/search-field';
     }
 
     @if (state.ready()) {
-      @if (boards().length > 0) {
-        <div class="tb-toolbar">
-          <tb-search-field
-            [formControl]="search"
-            [label]="t.searchLabel"
-            [placeholder]="t.search"
-          />
-        </div>
-      }
       <div class="tb-stack">
         <p-card [header]="k.portal">
+          @if (allPortal().length > 0) {
+            <div class="tb-toolbar">
+              <tb-search-field
+                [formControl]="portalSearch"
+                [label]="k.searchIn(k.portal)"
+                [placeholder]="t.search"
+              />
+            </div>
+          }
           @if (portal().length > 0) {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="k.portal">
               @for (board of portal(); track board.id) {
@@ -109,27 +121,32 @@ import { SearchField } from '@shared/ui/search-field';
               [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
               [hint]="t.emptyHint"
             />
+          } @else if (allPortal().length > 0) {
+            <tb-empty-state [compact]="true" icon="pi-search" [title]="k.notFound" />
           } @else {
-            <tb-empty-state
-              [compact]="true"
-              [icon]="query() === '' ? 'pi-tb-board' : 'pi-search'"
-              [title]="query() === '' ? k.noPortal : k.notFound"
-            />
+            <tb-empty-state [compact]="true" icon="pi-tb-board" [title]="k.noPortal" />
           }
         </p-card>
         <p-card [header]="k.external">
+          @if (allExternal().length > 0) {
+            <div class="tb-toolbar">
+              <tb-search-field
+                [formControl]="externalSearch"
+                [label]="k.searchIn(k.external)"
+                [placeholder]="t.search"
+              />
+            </div>
+          }
           @if (external().length > 0) {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="k.external">
               @for (board of external(); track board.id) {
                 <ng-container *ngTemplateOutlet="row; context: { $implicit: board }" />
               }
             </ul>
+          } @else if (allExternal().length > 0) {
+            <tb-empty-state [compact]="true" icon="pi-search" [title]="k.notFound" />
           } @else {
-            <tb-empty-state
-              [compact]="true"
-              [icon]="query() === '' ? 'pi-external-link' : 'pi-search'"
-              [title]="query() === '' ? k.noExternal : k.notFound"
-            />
+            <tb-empty-state [compact]="true" icon="pi-external-link" [title]="k.noExternal" />
           }
         </p-card>
       </div>
@@ -219,28 +236,22 @@ export class BoardsPage implements OnInit {
   protected readonly membersText = boardMembersText;
   protected readonly state = new LoadState();
   protected readonly boards = signal<Board[]>([]);
-  protected readonly search = new FormControl('', { nonNullable: true });
-  private readonly typed = toSignal(this.search.valueChanges, { initialValue: '' });
-  protected readonly query = computed(() => this.typed().trim().toLocaleLowerCase());
-  /** The boards whose title or a student's (a group's) name has the search text. */
-  protected readonly shown = computed(() => {
-    const query = this.query();
-    return query === ''
-      ? this.boards()
-      : this.boards().filter(
-          (board) =>
-            board.title.toLocaleLowerCase().includes(query) ||
-            board.members.some((member) => member.name?.toLocaleLowerCase().includes(query)),
-        );
+  /** «Доски на портале»: the Excalidraw boards, with their own search. */
+  protected readonly allPortal = computed(() =>
+    this.boards().filter((board) => board.kind === 'EXCALIDRAW'),
+  );
+  protected readonly portalSearch = new FormControl('', { nonNullable: true });
+  private readonly portalQuery = toSignal(this.portalSearch.valueChanges, { initialValue: '' });
+  protected readonly portal = computed(() => found(this.allPortal(), this.portalQuery()));
+  /** «Внешние доски»: the boards by link, with their own search. */
+  protected readonly allExternal = computed(() =>
+    this.boards().filter((board) => board.kind === 'LINK'),
+  );
+  protected readonly externalSearch = new FormControl('', { nonNullable: true });
+  private readonly externalQuery = toSignal(this.externalSearch.valueChanges, {
+    initialValue: '',
   });
-  /** «Доски на портале»: the Excalidraw boards. */
-  protected readonly portal = computed(() =>
-    this.shown().filter((board) => board.kind === 'EXCALIDRAW'),
-  );
-  /** «Внешние доски»: the boards by link. */
-  protected readonly external = computed(() =>
-    this.shown().filter((board) => board.kind === 'LINK'),
-  );
+  protected readonly external = computed(() => found(this.allExternal(), this.externalQuery()));
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
   protected readonly editing = signal<Board | null>(null);

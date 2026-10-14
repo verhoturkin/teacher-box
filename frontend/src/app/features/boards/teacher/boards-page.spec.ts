@@ -69,32 +69,49 @@ describe('BoardsPage', () => {
     expect(text).not.toContain('Все доски');
   });
 
-  it('finds boards by the title or a student’s or group’s name', async () => {
+  it('searches each card on its own, by the title or a student’s or group’s name', async () => {
     await render();
-    backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
+    backend
+      .expectOne('/api/teacher/boards')
+      .flush([aBoard(), aBoard({ id: 'board-3', title: 'Геометрия', members: [] }), aLinkBoard()]);
     await fixture.whenStable();
-    const input = host.querySelector<HTMLInputElement>('input[aria-label="Поиск досок"]');
-    const titles = (): string[] =>
-      [...host.querySelectorAll('.tb-list__title')].map((link) => link.textContent.trim());
-    async function find(text: string): Promise<void> {
+    const titles = (card: string): string[] =>
+      [...host.querySelectorAll(`ul[aria-label="${card}"] .tb-list__title`)].map((link) =>
+        link.textContent.trim(),
+      );
+    async function find(card: string, text: string): Promise<void> {
+      const input = host.querySelector<HTMLInputElement>(`input[aria-label="Поиск: ${card}"]`);
       if (input === null) {
-        throw new Error('no search');
+        throw new Error(`no search in ${card}`);
       }
       input.value = text;
       input.dispatchEvent(new Event('input'));
       await fixture.whenStable();
     }
 
-    await find('алг');
-    expect(titles()).toEqual(['Алгебра']);
-    await find('огэ');
-    expect(titles()).toEqual(['Холст']);
-    await find('мари');
-    expect(titles()).toEqual(['Алгебра']);
+    await find('Доски на портале', 'мари');
+    expect(titles('Доски на портале')).toEqual(['Алгебра']);
+    // the other card keeps all its boards
+    expect(titles('Внешние доски')).toEqual(['Холст']);
+    await find('Доски на портале', 'гео');
+    expect(titles('Доски на портале')).toEqual(['Геометрия']);
+
+    await find('Внешние доски', 'огэ');
+    expect(titles('Внешние доски')).toEqual(['Холст']);
+    await find('Внешние доски', 'алгебра');
+    expect(titles('Внешние доски')).toEqual([]);
     expect(host.textContent).toContain('Ничего не найдено');
-    await find('геометрия');
-    expect(titles()).toEqual([]);
-    expect(host.textContent).toContain('Ничего не найдено');
+    expect(titles('Доски на портале')).toEqual(['Геометрия']);
+  });
+
+  it('has no search in a card without boards', async () => {
+    await render();
+    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
+    await fixture.whenStable();
+
+    expect(host.querySelector('input[aria-label="Поиск: Доски на портале"]')).not.toBeNull();
+    expect(host.querySelector('input[aria-label="Поиск: Внешние доски"]')).toBeNull();
+    expect(host.textContent).toContain('Внешних досок пока нет');
   });
 
   it('filters by a student from the URL and creates a board for them', async () => {
