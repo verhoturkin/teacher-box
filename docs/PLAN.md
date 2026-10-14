@@ -17,7 +17,7 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next releases — M3 Expressive alignment (0.16.1–0.16.3)
+## Next releases — M3 Expressive alignment (0.16.2–0.16.3)
 
 Goals: bring the theme back to M3 Expressive where it drifted (audit 2026-10-14, cross-checked with a second
 review): fix breaches of our own rules, button and group geometry, springs, the nested-corner rule, the
@@ -40,34 +40,6 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   `.p-progressspinner::after` `!important` rule beats `*::after` by specificity — confirmed in 199.1, 0.16.0);
   the help side sheet title in Title Large (M3 side sheet headline, design-system §8); button `paddingY`
   (0.5625 rem + 1 px borders = 40 px, E2E checks it).
-
-### 200. Springs and buttons (F)
-
-- [x] 200.1 **F** Spring tokens, `styles.scss` ~104–132: add `--tb-spring-slow-spatial` (0.8 / 200),
-  `--tb-spring-default-effects` (1.0 / 1600), `--tb-spring-slow-effects` (1.0 / 800) and, for the split button,
-  `--tb-spring-standard-fast-spatial` (Standard scheme 0.9 / 1400). Compute `linear()` + duration with a scratch
-  script the same way as the existing ones (sample the damped spring, stop within 0.001 of 1, ~32 points); keep
-  the `/* damping / stiffness */` comments. Don't use the cubic-bezier fallback table. Delete unused
-  `--tb-motion-standard`, `--tb-duration-short`. `shapeTransition()` in the preset (~315): colours, outline and
-  shadow on `--tb-spring-fast-effects` instead of PrimeNG's duration.
-- [x] 200.2 **F** Button geometry, preset `button` (~442–461) and `togglebutton`: M3E small button —
-  `paddingX` 1.5 rem → **1 rem** (16 dp), icon **20 px** (`.p-button-icon` 1.25 rem), pressed corner
-  `--tb-shape-md` → **`--tb-shape-sm`** (CornerSmall, 8 dp), also `styles.scss` `:active` rules (~230, ~240,
-  ~1481, ~1904). Check `tb-button-steady`, page-header buttons, the phone's equal-width actions. §1 shape table
-  and §7 («shape morphs to 8 px»).
-- [x] 200.3 **F** Connected groups pressed: `p-selectbutton` (preset ~607) and `.tb-fc-segment` (`styles.scss`
-  ~1523) now grow every corner to 12 px; like `.tb-button-group` (~2193) the pressed button's inner corners narrow
-  to `--tb-shape-xs`. First check in the browser that `p-selectbutton`'s outer corners are full (PrimeNG's own
-  `:first-child` rules) — fix only if not.
-- [x] 200.4 **F** Split button `.tb-split` (`styles.scss` ~2143, `schedule/.../join-lesson-button.ts`): trailing icon
-  22 dp (now 14 px); the chevron turns 180° while the menu is open, on `--tb-spring-standard-fast-spatial` (M3:
-  the split button rotates with the standard scheme — no bounce); pressed, the inner corners morph.
-- [x] 200.5 **F** *(our decision, not M3)* Menus `p-menu` (preset ~506): items next to a separator get the 12 px
-  outer corners, so each group reads as one segment, as our lists do. On the web M3 separates menu groups with a
-  divider (no gaps) — keep the divider.
-
-- [ ] 200.6 Release 0.16.1 (skill `release`): E2E spec `version-0-16-1` — button 40 px with 16 px padding,
-  pressed groups.
 
 ### 201. Shape and type (F, ADR-0044)
 
