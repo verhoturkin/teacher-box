@@ -87,7 +87,7 @@ interface Step {
 
         > i {
           margin-top: var(--tb-space-1);
-          color: var(--p-text-muted-color);
+          color: var(--p-md-on-surface-variant);
         }
 
         div {

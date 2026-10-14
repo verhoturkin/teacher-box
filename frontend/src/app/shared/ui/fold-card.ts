@@ -79,7 +79,7 @@ let nextId = 0;
     :host {
       display: block;
       border-radius: var(--tb-shape-lg-plus);
-      background: var(--p-content-background);
+      background: var(--tb-card);
       color: var(--p-md-on-surface);
     }
 

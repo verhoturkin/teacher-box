@@ -51,7 +51,7 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
 - [x] 197.3 **F** `features/meetings/call/call-window.ts:74`: the M2-style ring `tb-call-spinner` →
   `<p-progressspinner>` (label from `t`); delete `.tb-call-spinner` and `@keyframes tb-call-spin`
   (`styles.scss` ~3013–3032). Update `call-window.spec.ts`.
-- [ ] 197.4 **F** Aura tokens → `--p-md-*` roles (§2): `core/i18n/language-picker.ts` (also `border-radius:
+- [x] 197.4 **F** Aura tokens → `--p-md-*` roles (§2): `core/i18n/language-picker.ts` (also `border-radius:
   1.25rem` → `var(--tb-shape-button)`), `core/portal/portal-logo.ts:26`, `features/home/first-run-checklist.ts:90`,
   `features/notifications/teacher/bot-wizard-dialog.ts` (~315–372; `:disabled` `opacity: 0.6` → content colour at
   `--tb-state-disabled-content`), `features/schedule/teacher/lesson-details-dialog.ts:362`

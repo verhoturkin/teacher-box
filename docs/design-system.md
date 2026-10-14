@@ -85,7 +85,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
   (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, dialogs, «Ещё» panel, dropdowns —
-  surface-container-lowest (light) / surface-container (dark); list tile `--tb-list-item` —
+  surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
   themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
@@ -375,6 +375,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
 ## 12. Portal branding
 
 - Portal colour — preset palette or custom `#rrggbb`, stored in `platform` settings, applied at start.
+  Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
+  white is short of 3:1 on teal and emerald.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
   served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar
   and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.

@@ -23,7 +23,7 @@ import { Portal } from './portal';
     :host {
       display: inline-flex;
       align-items: center;
-      color: var(--p-primary-color);
+      color: var(--p-md-primary);
     }
 
     .tb-portal-logo {

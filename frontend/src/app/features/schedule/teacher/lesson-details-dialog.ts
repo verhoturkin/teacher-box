@@ -359,7 +359,8 @@ import { SHARED_T } from '@shared/i18n/texts';
     .tb-lesson-details__request {
       padding: var(--tb-space-2) var(--tb-space-3);
       border-radius: var(--tb-shape-md);
-      background: var(--p-highlight-background);
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
     }
 
     .tb-lesson-details__cancel {
