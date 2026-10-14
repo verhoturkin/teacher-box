@@ -52,9 +52,9 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   spatial, opacity on effects springs (now PrimeNG animations). First read the PrimeNG 21 motion/animation API
   (context7); `core/snackbar` is ours. Reduced motion: no movement. §1 («dialogs and snackbar keep PrimeNG
   animations» goes).
-- [ ] 202.3 **F** *(decide first; §13 says «stays round»)* Call toggles (`styles.scss` ~2800–2818): an
+- [x] 202.3 **F** *(decide first; §13 says «stays round»)* Call toggles (`styles.scss` ~2800–2818): an
   off/active toggle turns from round to a rounded square (M3E icon button selected shape) on the fast spatial
-  spring.
+  spring. Decided by the teacher on 2026-10-14: yes.
 - [ ] 202.4 Release 0.16.3 (skill `release`): E2E spec `version-0-16-3` — nav bar 64 px.
 
 ## Release 0.17.0 — M3 Expressive buttons and icons

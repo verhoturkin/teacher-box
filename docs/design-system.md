@@ -42,7 +42,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   effects (no overshoot; colour, opacity): `--tb-spring-{fast,default,slow}-effects`; the standard-scheme
   `--tb-spring-standard-fast-spatial` (0.9 / 1400, barely overshoots) only for turns that must not bounce (split
   button chevron). Curves are computed (sample the spring until within 0.001 of 1), never the cubic-bezier fallback.
-  Used for button shape (colours and outline on `--tb-spring-fast-effects`), nav indicator, section folding,
+  Used for button shape (colours and outline on `--tb-spring-fast-effects`), call toggles, nav indicator, section folding,
   FAB appearance. **Overlays** (0.16.3, `styles.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
   they enter with scale or position on a spatial spring and opacity on the effects spring of the same speed —
   dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the snackbar fast (0.8), the
@@ -441,8 +441,11 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   weak-connection icon; initials in a primary-container circle while the camera is off.
 - **Toolbar** — the M3 Expressive floating toolbar: a pill of surface-container-high with elevation 2. Its
   buttons are the exception to the 40 px rule: 56 px (48 px on a phone, 44 px in the mini window) round
-  toggles; a switched-off microphone or camera stays round and turns error-container with a crossing line
-  (primeicons have no «slash» icons); `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
+  toggles (radius half the height); a switched-off microphone or camera turns error-container with a crossing
+  line (primeicons have no «slash» icons), and it and an active screen share become a rounded square — the M3E
+  icon button selected shape: 56 px CornerLarge (16 px), 48 and 44 px CornerMedium (12 px, as the small icon
+  button; our choice for sizes M3 doesn't have) — on `--tb-spring-fast-spatial` (0.16.3); pressed — 12 / 8 px.
+  `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
   the hang-up phone. No tooltips on call buttons (they cover the video); the labels are for screen readers. The
   settings menu («Настройки звонка», the gear) lies above the window (`baseZIndex`): groups «Микрофон», «Камера»
   (the chosen device checked), «Обработка звука» (three checkable switches) and «Связь» → «Сведения о связи» — a

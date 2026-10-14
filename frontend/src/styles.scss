@@ -3048,7 +3048,11 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off */
+/*
+ * The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off. A switched-off
+ * or active toggle turns into a rounded square (M3E icon button selected shape: 56 px CornerLarge, 48 and 44 px
+ * CornerMedium as the small one) on the fast spatial spring; pressed — CornerMedium / CornerSmall.
+ */
 .tb-call-controls {
   display: flex;
   flex-wrap: wrap;
@@ -3063,9 +3067,28 @@ a.p-menu-item-link:hover {
 
 /* doubled: PrimeNG's icon-only rounded button sets its size with the same specificity, later */
 .p-button.tb-call-button.tb-call-button {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: var(--tb-shape-full);
+  --tb-call-button-selected-shape: var(--tb-shape-lg);
+  --tb-call-button-pressed-shape: var(--tb-shape-md);
+  --tb-call-button-size: 3.5rem;
+
+  width: var(--tb-call-button-size);
+  height: var(--tb-call-button-size);
+  /* half the height, not «full»: the spring morphs the radius from a value that is seen */
+  border-radius: calc(var(--tb-call-button-size) / 2);
+  transition:
+    border-radius var(--tb-spring-fast-spatial),
+    background-color var(--tb-spring-fast-effects),
+    border-color var(--tb-spring-fast-effects),
+    color var(--tb-spring-fast-effects);
+
+  &.tb-call-button--off,
+  &.tb-call-button--active {
+    border-radius: var(--tb-call-button-selected-shape);
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-call-button-pressed-shape);
+  }
 
   &.tb-call-button--off {
     border-color: transparent;
@@ -3092,8 +3115,9 @@ a.p-menu-item-link:hover {
 
 @media (width <= 48em) {
   .p-button.tb-call-button.tb-call-button {
-    width: 3rem;
-    height: 3rem;
+    --tb-call-button-selected-shape: var(--tb-shape-md);
+    --tb-call-button-pressed-shape: var(--tb-shape-sm);
+    --tb-call-button-size: 3rem;
 
     &.tb-call-button--leave {
       width: 4rem;
@@ -3102,8 +3126,9 @@ a.p-menu-item-link:hover {
 }
 
 .tb-call-mini .p-button.tb-call-button.tb-call-button {
-  width: 2.75rem;
-  height: 2.75rem;
+  --tb-call-button-selected-shape: var(--tb-shape-md);
+  --tb-call-button-pressed-shape: var(--tb-shape-sm);
+  --tb-call-button-size: 2.75rem;
 
   &.tb-call-button--leave {
     width: 3.5rem;
