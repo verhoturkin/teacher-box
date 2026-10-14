@@ -1503,7 +1503,7 @@ a.p-menu-item-link:hover {
   }
 
   &:active:not(:disabled) {
-    border-radius: var(--tb-shape-md);
+    border-radius: var(--tb-shape-sm);
     background: color-mix(
       in srgb,
       var(--p-md-on-secondary-container) var(--tb-state-pressed),

@@ -50,7 +50,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   the `/* damping / stiffness */` comments. Don't use the cubic-bezier fallback table. Delete unused
   `--tb-motion-standard`, `--tb-duration-short`. `shapeTransition()` in the preset (~315): colours, outline and
   shadow on `--tb-spring-fast-effects` instead of PrimeNG's duration.
-- [ ] 200.2 **F** Button geometry, preset `button` (~442–461) and `togglebutton`: M3E small button —
+- [x] 200.2 **F** Button geometry, preset `button` (~442–461) and `togglebutton`: M3E small button —
   `paddingX` 1.5 rem → **1 rem** (16 dp), icon **20 px** (`.p-button-icon` 1.25 rem), pressed corner
   `--tb-shape-md` → **`--tb-shape-sm`** (CornerSmall, 8 dp), also `styles.scss` `:active` rules (~230, ~240,
   ~1481, ~1904). Check `tb-button-steady`, page-header buttons, the phone's equal-width actions. §1 shape table

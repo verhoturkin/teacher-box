@@ -18,8 +18,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | Token | px | Use |
   |---|---|---|
   | `--tb-shape-xs` | 4 | tooltips, inputs, inner corners of split button and list tiles |
-  | `--tb-shape-sm` | 8 | chips, tags, inner corners of connected button groups |
-  | `--tb-shape-md` | 12 | pressed button, selected toggle, menu items |
+  | `--tb-shape-sm` | 8 | pressed button (M3E CornerSmall), chips, tags, inner corners of connected button groups |
+  | `--tb-shape-md` | 12 | selected toggle, menu items |
   | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of list tiles |
   | `--tb-shape-lg-plus` | 20 | cards |
   | `--tb-shape-xl` | 28 | dialogs, top of the bottom sheet |
@@ -207,7 +207,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 ## 7. Buttons
 
 Variant = **weight**, colour = **meaning**. Size is one: 40 px pill (icon button 40×40, 48 px touch target),
-Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is for inputs only),
+Label Large, 16 px side padding, 20 px icon (M3E small button; icon buttons keep 20 px too — our decision until
+the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pressed. Never `outlined` (outline is for inputs only),
 `size="small"`, `warn`, `info`, `help`, `contrast` on buttons.
 
 | Role | Variant | PrimeNG |

@@ -444,20 +444,24 @@ export const TeacherBoxPreset = definePreset(Aura, {
         borderRadius: BUTTON_SHAPE,
         roundedBorderRadius: BUTTON_SHAPE,
         gap: '0.5rem',
-        paddingX: '1.5rem',
+        paddingX: '1rem',
         // 9 + the line of 20 + 9 + the border of 1 on both sides: 40 px (M3, ADR-0018)
         paddingY: '0.5625rem',
         iconOnlyWidth: '2.5rem',
         label: { fontWeight: '500' },
       },
       colorScheme: { light: BUTTON_SCHEME, dark: BUTTON_SCHEME },
-      // Pressed, a button squares its corners and springs back (Expressive shape morph)
+      // Pressed, a button squares its corners to 8 px and springs back (Expressive shape morph)
       css: `
         .p-button {
           transition: ${shapeTransition()};
         }
         .p-button:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
+        }
+        /* M3E small button: a 20 px icon */
+        .p-button .p-button-icon {
+          font-size: 1.25rem;
         }
         /* disabled (M3): the container is on-surface 12 %, the content 38 %, whatever the severity */
         .p-button:disabled {
@@ -586,7 +590,7 @@ export const TeacherBoxPreset = definePreset(Aura, {
           transition: ${shapeTransition()};
         }
         .p-togglebutton:not(:disabled):active {
-          border-radius: var(--tb-shape-md);
+          border-radius: var(--tb-shape-sm);
         }
       `,
     },
