@@ -506,13 +506,19 @@ export const TeacherBoxPreset = definePreset(Aura, {
       list: { padding: '0.25rem', gap: '2px' },
       item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
       separator: { borderColor: '{md.outline.variant}' },
-      // M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px
+      /*
+       * M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px. Our
+       * decision: the items next to a separator get the outer 12 px too, so each group between the
+       * dividers reads as one segment, as our lists do; the divider stays (M3 on the web).
+       */
       css: `
-        .p-menu .p-menu-item:first-child > .p-menu-item-content {
+        .p-menu .p-menu-item:first-child > .p-menu-item-content,
+        .p-menu .p-menu-separator + .p-menu-item > .p-menu-item-content {
           border-start-start-radius: var(--tb-shape-md);
           border-start-end-radius: var(--tb-shape-md);
         }
-        .p-menu .p-menu-item:last-child > .p-menu-item-content {
+        .p-menu .p-menu-item:last-child > .p-menu-item-content,
+        .p-menu .p-menu-item:has(+ .p-menu-separator) > .p-menu-item-content {
           border-end-start-radius: var(--tb-shape-md);
           border-end-end-radius: var(--tb-shape-md);
         }

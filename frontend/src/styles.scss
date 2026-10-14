@@ -2391,8 +2391,12 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The chosen item of a menu (the theme in the user menu): the secondary container, as M3 menus have it */
+/*
+ * The chosen item of a menu (the theme in the user menu): the secondary container and 12 px corners, as M3
+ * menus have it
+ */
 .p-menu .tb-menu-item--selected > .p-menu-item-content {
+  border-radius: var(--tb-shape-md);
   background: var(--p-md-secondary-container);
   color: var(--p-md-on-secondary-container);
 

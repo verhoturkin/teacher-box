@@ -62,7 +62,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 - [x] 200.4 **F** Split button `.tb-split` (`styles.scss` ~2143, `schedule/.../join-lesson-button.ts`): trailing icon
   22 dp (now 14 px); the chevron turns 180° while the menu is open, on `--tb-spring-standard-fast-spatial` (M3:
   the split button rotates with the standard scheme — no bounce); pressed, the inner corners morph.
-- [ ] 200.5 **F** *(our decision, not M3)* Menus `p-menu` (preset ~506): items next to a separator get the 12 px
+- [x] 200.5 **F** *(our decision, not M3)* Menus `p-menu` (preset ~506): items next to a separator get the 12 px
   outer corners, so each group reads as one segment, as our lists do. On the web M3 separates menu groups with a
   divider (no gaps) — keep the divider.
 

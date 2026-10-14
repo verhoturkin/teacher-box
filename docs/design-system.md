@@ -276,7 +276,9 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   buttons «Проведено» (success) and «Пропуск» (danger), a group «Отметить»; on the phone the row (avatar, name,
   time, chevron) opens a sheet with them full width.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
-  corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
+  corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
+  items next to a separator get the outer 12 px too, so each group between dividers reads as one segment, as our
+  lists do — the divider stays, as M3 separates menu groups on the web (dropdown lists —
   global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it, with a check at its end (the theme and the language: `menuitemradio` + `aria-checked`, no «(выбрана)» since 0.15.0); destructive item red.
 
 ## 9. Lists and tables
