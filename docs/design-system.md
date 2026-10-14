@@ -255,6 +255,9 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   (`severity="secondary" [text]="true"`), never red. «Назад» is navigation (page, wizard step), not closing.
   Window that only informs closes with «Закрыть».
 - **Row actions:** at most three; labelled — text; icons — neutral round, red for delete.
+- **Size M** `tb-button-m` (ADR-0045; M3E `ButtonMedium`): 56 px, full corners, 12 px while pressed, 24 px icon,
+  24 px sides, 8 px gap, Title Medium label (our decision); split button `tb-split--m` (`SplitButtonMedium`:
+  trailing part 56 px with a 26 px chevron, inner corners 4 px, 12 px while pressed — ours). Only for the hero (§5).
 - **Steady widths:** a button whose label changes («Отменить» / «Не приду») uses `tb-button-steady`.
 - Every action that sends a request shows `[loading]` while it runs (`shared/ui/busy.ts`); the submit button is
   never disabled for invalid fields — only while the request runs.

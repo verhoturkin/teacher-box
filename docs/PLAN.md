@@ -32,7 +32,7 @@ intro: «no Material Symbols» goes).
 
 ### 205. One large button (F, ADR-0045)
 
-- [ ] 205.1 **F** Button M (M3E `ButtonMedium`: 56 dp, full corners, pressed CornerMedium 12 dp, icon 24 dp,
+- [x] 205.1 **F** Button M (M3E `ButtonMedium`: 56 dp, full corners, pressed CornerMedium 12 dp, icon 24 dp,
   padding 24 dp, label — our decision: Title Medium) as a class `tb-button-m` in `styles.scss`, also for the split
   button (`tb-split--m`: trailing part 56 dp, inner corners per M3E `SplitButtonMedium` from the skill).
 - [ ] 205.2 **F** Use it only in the hero: `schedule/home/next-lesson-widget.ts`, `upcoming-lesson-widget.ts`,
