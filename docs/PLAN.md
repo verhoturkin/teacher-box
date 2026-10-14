@@ -56,7 +56,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   changes now); label Label M emphasized (bold), as M3 pairs it with the filled icon (the filled icon
   comes with Material Symbols in 206.5). Check «never truncated» at 360 px and 200 % font; if bold doesn't fit, keep 500 and
   note it in §4.
-- [ ] 201.4 **F** *(our decision)* Hero time: `schedule/home/next-lesson-widget.ts` / `upcoming-lesson-widget.ts`,
+- [x] 201.4 **F** *(our decision)* Hero time: `schedule/home/next-lesson-widget.ts` / `upcoming-lesson-widget.ts`,
   `tb-lesson-time-tile` — start time in Display S emphasized instead of Headline M (the one hero moment of the
   portal); check the narrow card layout. §5.
 - [ ] 201.5 **F** Dialog surface: preset `overlay.modal` (~82) `card` (surface-container-lowest) → M3

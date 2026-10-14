@@ -175,7 +175,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
 - **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
   calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
-  «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
+  «Завтра» / «чт, 16.10» in Label L, the start in Display S emphasized (0.16.2, our decision: the one hero moment of the portal; tabular figures, one line — the tile grows on a narrow card), the length; within an hour «через N мин»; while it runs «Идёт
   сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`, the student's `tb-my-board-links` since
   0.15.3: no «Доски:» caption, assist chips `tb-board-chip` in the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
