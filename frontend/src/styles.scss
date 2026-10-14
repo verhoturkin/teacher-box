@@ -2202,18 +2202,41 @@ a.p-menu-item-link:hover {
     border-end-end-radius: var(--tb-shape-xs);
   }
 
+  /* M3E SplitButtonSmall: 13 + the 22 px icon + 13 */
   .p-button.tb-split__more {
     width: 3rem;
     border-start-start-radius: var(--tb-shape-xs);
     border-end-start-radius: var(--tb-shape-xs);
 
     .p-button-icon {
-      font-size: 0.875rem;
+      font-size: 1.375rem;
+      transition: transform var(--tb-spring-standard-fast-spatial);
     }
   }
 
+  /*
+   * Pressed, only the inner corners morph, to 8 px (M3E; the size is ours, M3 publishes none for it);
+   * the outer ones stay round
+   */
+  .p-button.tb-split__main:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
+
+  /* open: the trailing part is round and its chevron turns inwards, on the standard scheme (no bounce) */
   &.tb-split--open .p-button.tb-split__more {
     border-radius: var(--tb-shape-full);
+
+    .p-button-icon {
+      transform: rotate(180deg);
+    }
   }
 }
 

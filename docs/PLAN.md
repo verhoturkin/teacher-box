@@ -59,7 +59,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   ~1523) now grow every corner to 12 px; like `.tb-button-group` (~2193) the pressed button's inner corners narrow
   to `--tb-shape-xs`. First check in the browser that `p-selectbutton`'s outer corners are full (PrimeNG's own
   `:first-child` rules) — fix only if not.
-- [ ] 200.4 **F** Split button `.tb-split` (`styles.scss` ~2143, `schedule/.../join-lesson-button.ts`): trailing icon
+- [x] 200.4 **F** Split button `.tb-split` (`styles.scss` ~2143, `schedule/.../join-lesson-button.ts`): trailing icon
   22 dp (now 14 px); the chevron turns 180° while the menu is open, on `--tb-spring-standard-fast-spatial` (M3:
   the split button rotates with the standard scheme — no bounce); pressed, the inner corners morph.
 - [ ] 200.5 **F** *(our decision, not M3)* Menus `p-menu` (preset ~506): items next to a separator get the 12 px

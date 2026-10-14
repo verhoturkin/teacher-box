@@ -238,8 +238,10 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - **Connected button group** `tb-button-group` (also `p-selectbutton` and the calendar views `tb-fc-segments`):
   2 px gap, inner corners 8 px, outer full; unselected tonal, selected primary and fully round; no outline.
   Pressed, the outer corners square to 8 px as any button and the inner ones narrow to 4 px.
-- **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px,
-  arrow part becomes round while its menu is open. The arrow has no tooltip (0.15.0, the teacher's decision): only its
+- **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px (8 px
+  while pressed — the size is ours, the outer corners stay round), trailing part 48 px with a 22 px chevron (M3E
+  small); while its menu is open the trailing part is round and the chevron turns 180° on
+  `--tb-spring-standard-fast-spatial` (M3: the standard scheme, no bounce). The arrow has no tooltip (0.15.0, the teacher's decision): only its
   `aria-label`; the empty host of the popup menu is out of the flow, so the group ends at the edge of its container.
 - Icon buttons: tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»); help «?»
   includes the article («Справка: Портал»); menu buttons have `aria-haspopup` + `aria-expanded`
