@@ -17,6 +17,22 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.15.4
+
+Feedback after 0.15.3: a notification read by a swipe has no tick on a phone; the teacher's boards are searched inside
+each card, as the assignments.
+
+### 197. Notifications and boards (F)
+
+- [x] 197.1 **F** `notifications/home/latest-notifications-widget.ts`, `inbox/notification-list.ts`: no
+  «Отметить прочитанным» tick on a phone — the swipe marks a notification read. Docs: design-system §9.
+- [ ] 197.2 **F** `boards/teacher/boards-page.ts`: a search in each card («Доски на портале», «Внешние доски»), as
+  `homework/teacher/assignment-list.ts`. Docs: design-system §9.
+
+### 198. Release 0.15.4
+
+- [ ] 198.1 Skill `release`: E2E spec (`version-0-15-4`), CHANGELOG, version, plan archiving.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

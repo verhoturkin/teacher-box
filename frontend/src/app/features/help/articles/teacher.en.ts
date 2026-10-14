@@ -416,7 +416,7 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     body: `
 Notifications are always in the bell at the top of the page. To get them in a messenger, connect a bot.
 
-New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone you can also mark a notification read with a swipe — slide it left or right.
+New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
 The «Notifications» section is made of cards. «Inbox» and «Messages to students» are always open, and the settings — «Messengers», «Students» and «What to send» — are folded: click a card's title to open or fold it.
 

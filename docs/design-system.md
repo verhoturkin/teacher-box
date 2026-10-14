@@ -283,8 +283,8 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
     0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
     unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
-    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll), the tick stays as the
-    single-pointer alternative (WCAG 2.5.1);
+    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll); 0.15.4: on the phone
+    such a row has no tick (the teacher's choice) — opening it and «Прочитать все» read it too;
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;

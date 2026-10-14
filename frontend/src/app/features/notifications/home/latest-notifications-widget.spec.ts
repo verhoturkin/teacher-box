@@ -81,6 +81,10 @@ describe('LatestNotificationsWidget', () => {
     expect(hostElement(fixture).querySelector('.tb-list__lead')).toBeNull();
     const row = hostElement(fixture).querySelector('li.tb-swipe');
     expect(row).not.toBeNull();
+    // the swipe instead of the tick
+    expect(
+      hostElement(fixture).querySelector('button[aria-label^="Отметить прочитанным"]'),
+    ).toBeNull();
 
     swipeAside(row);
     backend.expectOne('/api/me/notifications/n-1/read').flush(null);
