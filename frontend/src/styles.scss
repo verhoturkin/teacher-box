@@ -37,7 +37,7 @@
   --tb-content-narrow: 56rem;
   /* The frame in px: a larger font grows the text, not the bars (ADR-0024) */
   --tb-header-height: 64px;
-  --tb-bottom-nav-height: 80px;
+  --tb-bottom-nav-height: 64px;
 
   /* Type scale: `font: var(--tb-type-title-l)` */
   --tb-font:
@@ -301,6 +301,151 @@ textarea.p-textarea {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Overlays on M3E springs (ADR-0044) instead of PrimeNG's cubic-bezier: they enter with size and position
+ * on a spatial spring and opacity on an effects spring; they leave on the standard spatial spring (no
+ * bounce, nothing overshoots on the way out) and the fast effects spring. PrimeNG's motion waits for every
+ * animation of the element, so the two run side by side. The rule above takes the movement away when the
+ * system asks for less motion. An exit keeps its last frame (forwards): PrimeNG removes the element a few frames
+ * after the animation ends, and without it the overlay would flash back in its place.
+ */
+@keyframes tb-motion-scale-in {
+  from {
+    transform: scale(var(--tb-motion-scale, 0.93));
+  }
+}
+
+@keyframes tb-motion-scale-out {
+  to {
+    transform: scale(var(--tb-motion-scale, 0.93));
+  }
+}
+
+@keyframes tb-motion-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-motion-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-motion-slide-in {
+  from {
+    transform: translate3d(var(--tb-motion-x, 0), var(--tb-motion-y, 0), 0);
+  }
+}
+
+@keyframes tb-motion-slide-out {
+  to {
+    transform: translate3d(var(--tb-motion-x, 0), var(--tb-motion-y, 0), 0);
+  }
+}
+
+/* the snackbar leaves the line it took, the others close up */
+@keyframes tb-motion-collapse {
+  to {
+    grid-template-rows: 0fr;
+    margin-bottom: 0;
+  }
+}
+
+/* Dialogs: the default spring (a medium surface) */
+.p-dialog.p-dialog-enter-active {
+  animation:
+    tb-motion-scale-in var(--tb-spring-default-spatial),
+    tb-motion-fade-in var(--tb-spring-default-effects);
+}
+
+.p-dialog.p-dialog-leave-active {
+  animation:
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+/* Menus, dropdowns, the date picker: the fast spring (small surfaces) */
+.p-motion.p-anchored-overlay-enter-active {
+  animation:
+    tb-motion-scale-in var(--tb-spring-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-fast-effects);
+}
+
+.p-motion.p-anchored-overlay-leave-active {
+  animation:
+    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+/* The scrim fades on the default effects spring */
+.p-overlay-mask.p-overlay-mask-enter-active {
+  animation: p-animate-overlay-mask-enter var(--tb-spring-default-effects) forwards;
+}
+
+.p-overlay-mask.p-overlay-mask-leave-active {
+  animation: p-animate-overlay-mask-leave var(--tb-spring-fast-effects) forwards;
+}
+
+/*
+ * Sheets slide in from their edge. The side sheet stands off the edges, so it may overshoot (default
+ * spatial); the bottom sheet sits on the bottom edge and would lift off it, so it comes in on the
+ * standard spring.
+ */
+.p-drawer {
+  --tb-motion-x: 0;
+  --tb-motion-y: 0;
+
+  &.p-drawer-right {
+    --tb-motion-x: calc(100% + var(--tb-space-4));
+  }
+
+  &.p-drawer-left {
+    --tb-motion-x: calc(-100% - var(--tb-space-4));
+  }
+
+  &.p-drawer-bottom {
+    --tb-motion-y: 100%;
+  }
+
+  &.p-drawer-top {
+    --tb-motion-y: -100%;
+  }
+
+  &.p-drawer-enter-left,
+  &.p-drawer-enter-right,
+  &.p-drawer-enter-top {
+    animation: tb-motion-slide-in var(--tb-spring-default-spatial);
+  }
+
+  &.p-drawer-enter-bottom {
+    animation: tb-motion-slide-in var(--tb-spring-standard-fast-spatial);
+  }
+
+  &.p-drawer-leave-left,
+  &.p-drawer-leave-right,
+  &.p-drawer-leave-top,
+  &.p-drawer-leave-bottom {
+    animation: tb-motion-slide-out var(--tb-spring-standard-fast-spatial) forwards;
+  }
+}
+
+/* The snackbar: grows from its middle on the fast spring, leaves by fading and closing its line */
+.p-toast-message.p-toast-message-enter-active {
+  --tb-motion-scale: 0.8;
+
+  animation:
+    tb-motion-scale-in var(--tb-spring-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-fast-effects);
+}
+
+.p-toast-message.p-toast-message-leave-active {
+  animation:
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards,
+    tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
 }
 
 .tb-page-title {
@@ -2904,7 +3049,11 @@ a.p-menu-item-link:hover {
   }
 }
 
-/* The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off */
+/*
+ * The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off. A switched-off
+ * or active toggle turns into a rounded square (M3E icon button selected shape: 56 px CornerLarge, 48 and 44 px
+ * CornerMedium as the small one) on the fast spatial spring; pressed — CornerMedium / CornerSmall.
+ */
 .tb-call-controls {
   display: flex;
   flex-wrap: wrap;
@@ -2919,9 +3068,28 @@ a.p-menu-item-link:hover {
 
 /* doubled: PrimeNG's icon-only rounded button sets its size with the same specificity, later */
 .p-button.tb-call-button.tb-call-button {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: var(--tb-shape-full);
+  --tb-call-button-selected-shape: var(--tb-shape-lg);
+  --tb-call-button-pressed-shape: var(--tb-shape-md);
+  --tb-call-button-size: 3.5rem;
+
+  width: var(--tb-call-button-size);
+  height: var(--tb-call-button-size);
+  /* half the height, not «full»: the spring morphs the radius from a value that is seen */
+  border-radius: calc(var(--tb-call-button-size) / 2);
+  transition:
+    border-radius var(--tb-spring-fast-spatial),
+    background-color var(--tb-spring-fast-effects),
+    border-color var(--tb-spring-fast-effects),
+    color var(--tb-spring-fast-effects);
+
+  &.tb-call-button--off,
+  &.tb-call-button--active {
+    border-radius: var(--tb-call-button-selected-shape);
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-call-button-pressed-shape);
+  }
 
   &.tb-call-button--off {
     border-color: transparent;
@@ -2948,8 +3116,9 @@ a.p-menu-item-link:hover {
 
 @media (width <= 48em) {
   .p-button.tb-call-button.tb-call-button {
-    width: 3rem;
-    height: 3rem;
+    --tb-call-button-selected-shape: var(--tb-shape-md);
+    --tb-call-button-pressed-shape: var(--tb-shape-sm);
+    --tb-call-button-size: 3rem;
 
     &.tb-call-button--leave {
       width: 4rem;
@@ -2958,8 +3127,9 @@ a.p-menu-item-link:hover {
 }
 
 .tb-call-mini .p-button.tb-call-button.tb-call-button {
-  width: 2.75rem;
-  height: 2.75rem;
+  --tb-call-button-selected-shape: var(--tb-shape-md);
+  --tb-call-button-pressed-shape: var(--tb-shape-sm);
+  --tb-call-button-size: 2.75rem;
 
   &.tb-call-button--leave {
     width: 3.5rem;

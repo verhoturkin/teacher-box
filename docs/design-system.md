@@ -42,11 +42,17 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   effects (no overshoot; colour, opacity): `--tb-spring-{fast,default,slow}-effects`; the standard-scheme
   `--tb-spring-standard-fast-spatial` (0.9 / 1400, barely overshoots) only for turns that must not bounce (split
   button chevron). Curves are computed (sample the spring until within 0.001 of 1), never the cubic-bezier fallback.
-  Used for button shape (colours and outline on `--tb-spring-fast-effects`), nav indicator, section folding,
-  FAB appearance; dialogs and snackbar keep PrimeNG animations.
-  `prefers-reduced-motion: reduce` disables transitions (the loading indicator stays a circle).
+  Used for button shape (colours and outline on `--tb-spring-fast-effects`), call toggles, nav indicator, section folding,
+  FAB appearance. **Overlays** (0.16.3, `styles.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
+  they enter with scale or position on a spatial spring and opacity on the effects spring of the same speed —
+  dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the snackbar fast (0.8), the
+  side sheet slides in on default spatial; they leave without a bounce on the standard fast spring and fast effects
+  (the snackbar fades and closes its line). Our decision (M3 publishes no choreography): the bottom sheet sits on
+  the bottom edge and would lift off it on an overshoot, so it enters on the standard fast spring too; the scrim
+  fades on default effects (in) and fast effects (out).
+  `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator stays a circle).
 - **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
-  64 px, bottom bar 80 px, rail 88 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
+  64 px, bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
 
 ## 2. Colour
@@ -128,7 +134,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | Window | Query | Navigation | Main action |
   |---|---|---|---|
   | compact (phone) | `width <= 48em` | bottom bar: four sections + «Ещё» | extended FAB above the bar |
-  | medium | `48em < width < 75em` | navigation rail 88 px (icon + label) | button in page header |
+  | medium | `48em < width < 75em` | navigation rail 96 px (icon + label) | button in page header |
   | expanded | `width >= 75em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
 
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
@@ -137,8 +143,9 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   help, settings, account, sign out); five sections fit without «Ещё». Item as wide as its label, ≥ 64 px, the
   rest of the width shared (`minmax(64px, auto)`: «Расписание» fits a 360 px phone), Label Medium, never truncated —
   a larger font wraps a label with hyphens (M3: whole up to 2× text); the rail's labels wrap the same way. «Ещё» is
-  active when its section is open. Indicator — 64×32 pill, secondary-container, moves on
-  `--tb-spring-fast-spatial`; same in the rail. **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
+  active when its section is open. The bar (M3E flexible navigation bar, 0.16.3, ADR-0044) is 64 px of
+  surface-container without a top border; item padding 4 px, 4 px from the icon to the label. Indicator — 56×32
+  pill, secondary-container, moves on `--tb-spring-fast-spatial`; same in the rail (96 px, M3E collapsed rail). **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
   label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
@@ -434,8 +441,11 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
   weak-connection icon; initials in a primary-container circle while the camera is off.
 - **Toolbar** — the M3 Expressive floating toolbar: a pill of surface-container-high with elevation 2. Its
   buttons are the exception to the 40 px rule: 56 px (48 px on a phone, 44 px in the mini window) round
-  toggles; a switched-off microphone or camera stays round and turns error-container with a crossing line
-  (primeicons have no «slash» icons); `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
+  toggles (radius half the height); a switched-off microphone or camera turns error-container with a crossing
+  line (primeicons have no «slash» icons), and it and an active screen share become a rounded square — the M3E
+  icon button selected shape: 56 px CornerLarge (16 px), 48 and 44 px CornerMedium (12 px, as the small icon
+  button; our choice for sizes M3 doesn't have) — on `--tb-spring-fast-spatial` (0.16.3); pressed — 12 / 8 px.
+  `aria-pressed` on every toggle. «Выйти из звонка» — a wider red button with
   the hang-up phone. No tooltips on call buttons (they cover the video); the labels are for screen readers. The
   settings menu («Настройки звонка», the gear) lies above the window (`baseZIndex`): groups «Микрофон», «Камера»
   (the chosen device checked), «Обработка звука» (three checkable switches) and «Связь» → «Сведения о связи» — a

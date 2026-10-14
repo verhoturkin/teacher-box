@@ -106,7 +106,8 @@
 }
 
 /*
- * M3 navigation bar: the icon in the pill indicator, the label under it (four sections and «Ещё», ADR-0027).
+ * M3E flexible navigation bar (ADR-0044): 64 px, no border, the icon in the 56x32 pill indicator, 4 px to the
+ * label under it (four sections and «Ещё», ADR-0027).
  * An item is as wide as its label and at least 64 px, the rest of the width is shared: «Расписание» fits a
  * 360 px phone whole. A larger font wraps a label (with hyphens), never cuts it (M3: up to 2x text).
  */
@@ -119,7 +120,6 @@
   grid-auto-flow: column;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--p-md-surface-container);
-  border-block-start: 1px solid var(--p-md-outline-variant);
 }
 
 .tb-bottom-nav__item {
@@ -130,7 +130,7 @@
   gap: var(--tb-space-1);
   min-width: 0;
   min-height: var(--tb-bottom-nav-height);
-  padding: var(--tb-space-3) 2px var(--tb-space-4);
+  padding: var(--tb-space-1) 2px;
   box-sizing: border-box;
   border: 0;
   background: none;
@@ -168,9 +168,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
+  width: 56px;
   max-width: 100%;
-  height: 2rem;
+  height: 32px;
   border-radius: var(--tb-shape-full);
 
   /* the indicator of the active section springs out from its middle (ADR-0027) and the state layer
