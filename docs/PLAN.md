@@ -53,7 +53,7 @@ neutral tonal/text — the status they produce shows the meaning.
   buttons now); keep «alike error» (red still marks danger). Texts in `features/settings/i18n/{ru,en}.ts`, tests
   `portal-settings-card.spec.ts`, `portal-accent.spec.ts`; help article `help/articles/teacher.{ru,en}.ts` ~523
   (the paragraph on the green portal colour), grep help articles for «зелён» / «green».
-- [ ] 204.5 E2E: `e2e/tests/version-0-6-5.spec.ts` (one filled button per page — still holds),
+- [x] 204.5 E2E: `e2e/tests/version-0-6-5.spec.ts` (one filled button per page — still holds),
   `version-0-6-6.spec.ts` (green/red buttons by meaning — rewrite: no `p-button-success` on buttons; red only on
   danger confirmations, bin icons), `version-0-6-12.spec.ts`. Help articles that say a button is green.
 - [ ] 204.6 Release 0.17.0 (skill `release`): help articles (button colours), E2E spec `version-0-17-0` (primary
