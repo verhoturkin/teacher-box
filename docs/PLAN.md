@@ -43,7 +43,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 
 ### 202. Navigation and motion (F)
 
-- [ ] 202.1 **F** Flexible navigation bar: `--tb-bottom-nav-height` 80 → **64 px**, item padding, indicator
+- [x] 202.1 **F** Flexible navigation bar: `--tb-bottom-nav-height` 80 → **64 px**, item padding, indicator
   64×32 → **56×32**, no top border (`shell.scss` ~108–222). Dependants: `shared/ui/fab-menu.ts:74`, `styles.scss`
   ~1880, 1940, 1949, 2969, 2987 (FAB, snackbar, call mini window), `shell.scss:104`. Rail collapsed 88 → **96 px**
   (`side-nav.scss:104`). §4, ADR-0044. Since 0.16.2 items are `minmax(64px, auto)` and labels wrap instead of an

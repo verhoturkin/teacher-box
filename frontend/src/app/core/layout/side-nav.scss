@@ -99,9 +99,9 @@
   }
 }
 
-/* The rail: 88 px (long Russian labels), the label under the icon, the indicator around the icon */
+/* The collapsed rail (M3E, ADR-0044): 96 px, the label under the icon, the 56x32 indicator around the icon */
 :host(.tb-side-nav--rail) {
-  width: 88px;
+  width: 96px;
   padding: var(--tb-space-2) 0;
 
   .tb-side-nav__list {
