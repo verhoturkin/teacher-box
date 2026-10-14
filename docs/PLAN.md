@@ -48,7 +48,7 @@ dialog surface, nested corners; stage 200: flexible navigation bar).
 - [x] 197.2 **F** `features/ai/homework-ai-panel.ts` lines 79, 88, 97, 194, 201, 208: drop `size="small"` (40 px
   rule, §7); check the bar wraps on a phone. Add the assignment editor to the page list of the «no outlined,
   small…» check in `e2e/tests/version-0-6-5.spec.ts`.
-- [ ] 197.3 **F** `features/meetings/call/call-window.ts:74`: the M2-style ring `tb-call-spinner` →
+- [x] 197.3 **F** `features/meetings/call/call-window.ts:74`: the M2-style ring `tb-call-spinner` →
   `<p-progressspinner>` (label from `t`); delete `.tb-call-spinner` and `@keyframes tb-call-spin`
   (`styles.scss` ~3013–3032). Update `call-window.spec.ts`.
 - [ ] 197.4 **F** Aura tokens → `--p-md-*` roles (§2): `core/i18n/language-picker.ts` (also `border-radius:

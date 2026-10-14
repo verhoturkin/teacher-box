@@ -412,7 +412,7 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   (dragged by its top line and snapped to the nearest corner, or «Переместить окно звонка»; remembered on the
   device); shows a shared screen, the speaker or a camera; compact toolbar. On a phone — a full-width pill above
   the bottom navigation; the FAB moves above it.
-- **States** — «Подключение…» (spinner, `role="status"`), «Связь прервалась, переподключаемся…» (warning
+- **States** — «Подключение…» (the M3E loading indicator, `role="status"`), «Связь прервалась, переподключаемся…» (warning
   container), the end of a call with its reason (`role="alert"`), «Закрыть» and «Войти снова»; blocked sound —
   an info message with «Включить звук». Joins and leaves are announced in a polite live region.
 

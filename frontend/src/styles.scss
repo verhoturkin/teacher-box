@@ -3009,24 +3009,3 @@ a.p-menu-item-link:hover {
   justify-content: center;
   gap: var(--tb-space-3);
 }
-
-.tb-call-spinner {
-  width: 3rem;
-  height: 3rem;
-  border: 4px solid var(--p-md-secondary-container);
-  border-top-color: var(--p-md-primary);
-  border-radius: var(--tb-shape-full);
-  animation: tb-call-spin 1s linear infinite;
-}
-
-@keyframes tb-call-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tb-call-spinner {
-    animation-duration: 3s;
-  }
-}

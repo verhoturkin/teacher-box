@@ -70,6 +70,7 @@ describe('CallWindow', () => {
     session.phase.set('connecting');
     await fixture.whenStable();
     expect(host.querySelector('[role="status"]')?.textContent).toContain('Подключение к звонку…');
+    expect(host.querySelector('p-progressspinner')).not.toBeNull();
 
     const retry = vi.spyOn(session, 'retry').mockImplementation(() => undefined);
     const close = vi.spyOn(session, 'close').mockImplementation(() => undefined);
