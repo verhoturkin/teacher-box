@@ -157,8 +157,8 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - **Nearest lesson hero** (home, 0.15.0; `schedule/home/upcoming-lesson-widget.ts`, `next-lesson-widget.ts`): a
   calendar event in the `tb-hero` card — the time tile `tb-lesson-time-tile` on the left (primary fill: day «Сегодня» /
   «Завтра» / «чт, 16.10» in Label L, the start in Headline M, the length; within an hour «через N мин»; while it runs «Идёт
-  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`: no «Доски:» caption, assist chips in
-  the text colour at 12 %), one filled button
+  сейчас» and «ещё N мин», from `lesson-clock.ts`), who and the topic next to it, the boards as chips (`tb-board-links [chips]`, the student's `tb-my-board-links` since
+  0.15.3: no «Доски:» caption, assist chips `tb-board-chip` in the text colour at 12 %), one filled button
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
   button too). The student's request
   buttons are at the end of the event (under it, across the width, on a narrow card) and are hidden while the lesson
@@ -263,6 +263,9 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   `tbModalDrawer`; handle, 28 px top corners, height by content, full-width buttons. Closes by Esc, scrim and
   «Закрыть» (no swipe). Example: upcoming lesson row on the phone = icon, time and details, chevron
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
+  0.15.3: the teacher's «Отметьте прошедшие занятия» the same way — on a computer the row has labelled text
+  buttons «Проведено» (success) and «Пропуск» (danger), a group «Отметить»; on the phone the row (avatar, name,
+  time, chevron) opens a sheet with them full width.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one (dropdown lists —
   global rules in `styles.scss`, the select's own style would override the preset), hover 8 %; selected item — secondary-container / on-secondary-container, as M3 menus have it, with a check at its end (the theme and the language: `menuitemradio` + `aria-checked`, no «(выбрана)» since 0.15.0); destructive item red.
@@ -278,6 +281,10 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
     0.15.2: a list whose icon only decorates (tasks, boards, textbooks, calls, notifications, requests, lessons
     of the student, recurring lessons and days off, payments, AI requests and prompts) takes `tb-list--no-phone-lead`:
     on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
+    0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
+    unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
+    ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll), the tick stays as the
+    single-pointer alternative (WCAG 2.5.1);
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium, on-surface-variant);
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
@@ -308,7 +315,13 @@ Label Large; shape morphs to 12 px while pressed. Never `outlined` (outline is f
   `tb-list__trail--amount`: on the phone the amount (`tb-list__amount`) goes under the text and the icon
   button stays on the right, so the name keeps its width.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
-  изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone.
+  изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
+  cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link) under one search, the supporting line drops
+  the kind; the student's «Мои доски» the same (a card without boards is hidden). A tap anywhere on a row opens
+  the board: the title is a `tb-list__link` whose `::before` covers the row (`tb-list__item--link` for the hover,
+  the focus ring on the row), the «⋮» stays above it.
+- Recurring lessons and days off of the teacher's schedule (0.15.3) — trail «⋮» only («Изменить», «Завершить…» /
+  «Удалить…» red; one popup `p-menu` for both cards).
 - Backups (0.9.1) — a `tb-list`: database icon; the date + «kind · size»; trail — «⋮» only («Восстановить…»,
   «Скачать», «Удалить…» red), so a row is one line on a phone.
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number

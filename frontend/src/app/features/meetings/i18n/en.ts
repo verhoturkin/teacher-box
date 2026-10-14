@@ -147,14 +147,6 @@ export const en: Translation<typeof ru> = {
     studentRoom: 'Student’s room',
     ownLink: 'lessons use their own link',
   },
-  myCalls: {
-    title: 'Video call',
-    what: 'the calls',
-    teacherIn: 'The teacher is already in the call',
-    teacherOut: 'The teacher is not in the call yet',
-    join: 'Join',
-    joinOf: (name: string) => `Join the call: ${name}`,
-  },
   settings: {
     title: 'Video meetings',
     onBefore: 'Calls in the portal are on: each student and group has a room —',

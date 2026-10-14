@@ -120,7 +120,15 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await expect(request.getByRole('button', { name: 'Отправить учителю' })).toBeDisabled();
   await expect(student.getByText('Врач')).toHaveCount(0);
 
-  await page.getByRole('button', { name: /^Удалить нерабочее время/ }).click();
+  // 0.15.3: the actions of a day off are in «⋮»
+  await page
+    .locator('p-card')
+    .filter({ hasText: 'Нерабочее время' })
+    .last()
+    .getByRole('button', { name: /^Действия: / })
+    .first()
+    .click();
+  await page.getByRole('menuitem', { name: 'Удалить…' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Удалить' }).click();
   await expect(page.getByText('Отметьте обед, выходные или отпуск')).toBeVisible();
 

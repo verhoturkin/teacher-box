@@ -14,7 +14,7 @@ import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
 import { LatestNotificationsWidget, NotificationsApi } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
-import { ScheduleApi, TodayLessonsWidget, UpcomingLessonWidget } from '@features/schedule/parts';
+import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
 import { AttentionCard } from './attention-card';
 import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
@@ -26,7 +26,7 @@ import { T } from './i18n/texts';
 
 /**
  * Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules one under
- * another (ADR-0021): today's lessons, what needs attention, notifications, finance.
+ * another (ADR-0021): what needs attention, notifications, finance.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -37,7 +37,6 @@ import { T } from './i18n/texts';
     FirstRunChecklist,
     LatestNotificationsWidget,
     QuickActions,
-    TodayLessonsWidget,
     UpcomingLessonWidget,
     LoadStateView,
     PageHeader,
@@ -56,9 +55,6 @@ import { T } from './i18n/texts';
         <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
       }
       <tb-first-run-checklist [progress]="progress()" />
-      @if (schedule(); as schedule) {
-        <tb-today-lessons-widget [summary]="schedule" (changed)="loadSchedule()" />
-      }
       @if (schedule() !== null && homework() !== null && notifications() !== null) {
         <tb-attention-card
           [schedule]="schedule()"

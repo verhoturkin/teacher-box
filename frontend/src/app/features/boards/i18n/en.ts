@@ -37,6 +37,13 @@ export const en: Translation<typeof ru> = {
       'No connection to the portal: the latest changes of the board are not saved. If you leave, they are lost.',
     leave: 'Leave',
   },
+  cards: {
+    portal: 'Boards in the portal',
+    external: 'External boards',
+    noPortal: 'No boards in the portal yet',
+    noExternal: 'No external boards yet',
+    notFound: 'Nothing found',
+  },
   links: {
     boards: 'Boards:',
     group: 'Boards',
@@ -45,15 +52,9 @@ export const en: Translation<typeof ru> = {
     groups: 'groups',
     group: 'group',
     changed: (date: string) => `changed ${date}`,
-    external: 'external board',
   },
   myBoardButton: {
     open: 'Go to the board',
-  },
-  myCard: {
-    title: 'My boards',
-    what: 'the boards',
-    all: (count: number) => `All boards (${String(count)})`,
   },
   myPage: {
     title: 'My boards',

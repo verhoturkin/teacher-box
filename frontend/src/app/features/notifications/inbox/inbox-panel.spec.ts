@@ -3,11 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, swipeAside } from '@testing/dom';
 import { notification, notificationPage } from '@testing/notification-fixtures';
 import { NotificationPage } from '../data-access/notifications.models';
 import { InboxPanel, PAGE_SIZE } from './inbox-panel';
-import { testProviders } from '@testing/setup';
+import { phoneScreen, testProviders } from '@testing/setup';
 
 const SIZE = String(PAGE_SIZE);
 
@@ -19,10 +19,10 @@ describe('InboxPanel', () => {
   let fixture: ComponentFixture<InboxPanel>;
   let backend: HttpTestingController;
 
-  async function render(page: NotificationPage): Promise<void> {
+  async function render(page: NotificationPage, phone = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [InboxPanel],
-      providers: testProviders(),
+      providers: phone ? testProviders(phoneScreen()) : testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(InboxPanel);
@@ -131,6 +131,18 @@ describe('InboxPanel', () => {
       expect.stringContaining('Старое'),
     ]);
     expect(TestBed.inject(UnreadNotifications).count()).toBe(0);
+  });
+
+  it('shows no icons and marks an unread notification read by a swipe on a phone', async () => {
+    await render(notificationPage([notification()]), true);
+    expect(host().querySelector('.tb-list__lead')).toBeNull();
+
+    swipeAside(host().querySelector('ul[aria-label="Непрочитанные"] > li'));
+    backend.expectOne('/api/me/notifications/n-1/read').flush(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(list('Непрочитанные')).toEqual([]);
   });
 
   it('opens a notification and marks it read', async () => {

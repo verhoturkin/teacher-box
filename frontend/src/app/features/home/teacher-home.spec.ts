@@ -63,7 +63,8 @@ describe('TeacherHome', () => {
     expect(text).toContain('Работы на проверку 2');
     expect(text).toContain('Поступило за сентябрь 3 000 ₽');
     expect(text).toContain('Новых уведомлений нет');
-    // one column (ADR-0021): the widgets one under another, today first
+    expect(text).not.toContain('Сегодня занятий нет');
+    // one column (ADR-0021): the widgets one under another, no «Сегодня»
     const widgets = Array.from(
       hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'),
       (widget) => widget.tagName.toLowerCase(),
@@ -72,7 +73,6 @@ describe('TeacherHome', () => {
       'tb-quick-actions',
       'tb-upcoming-lesson-widget',
       'tb-first-run-checklist',
-      'tb-today-lessons-widget',
       'tb-attention-card',
       'tb-latest-notifications-widget',
       'tb-finance-widget',
@@ -96,7 +96,7 @@ describe('TeacherHome', () => {
     expect(text).not.toContain('Требует внимания');
   });
 
-  it('reloads the day after a lesson was marked', async () => {
+  it('reloads the schedule counters', async () => {
     fixture.detectChanges();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary({ unmarked: 1 }));
     backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());

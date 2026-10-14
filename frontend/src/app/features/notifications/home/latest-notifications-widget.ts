@@ -5,11 +5,12 @@ import { Router, RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tooltip } from 'primeng/tooltip';
+import { injectMobile } from '@core/layout/mobile';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationItem, NotificationPage } from '../data-access/notifications.models';
-import { KIND_ICONS } from '../notification-labels';
 import { Busy } from '@shared/ui/busy';
+import { Swipe } from '@shared/ui/swipe';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -18,12 +19,12 @@ import { T } from '../i18n/texts';
 export const LATEST_COUNT = 5;
 
 /**
- * Home: the latest unread notifications with «Отметить прочитанным» each, «Прочитать все» and a link to
- * all of them. A notification read here leaves the list; the next unread one takes its place.
+ * Home: the latest unread notifications, without icons, with «Отметить прочитанным» each (on a phone a swipe
+ * sideways too), «Прочитать все» and a link to all of them. A notification read here leaves the list; the next unread one takes its place.
  */
 @Component({
   selector: 'tb-latest-notifications-widget',
-  imports: [EmptyState, DatePipe, RouterLink, Card, Button, Tooltip, LoadStateView],
+  imports: [EmptyState, DatePipe, RouterLink, Card, Button, Swipe, Tooltip, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -48,12 +49,9 @@ export const LATEST_COUNT = 5;
           @if (items.length === 0) {
             <tb-empty-state icon="pi-bell" [title]="t.nothing" />
           } @else {
-            <ul class="tb-list tb-list--no-phone-lead tb-latest" [attr.aria-label]="t.unreadList">
+            <ul class="tb-list tb-list--no-lead tb-latest" [attr.aria-label]="t.unreadList">
               @for (item of items; track item.id) {
-                <li>
-                  <span class="tb-list__lead tb-list__lead--accent" aria-hidden="true"
-                    ><i [class]="icons[item.kind]"></i
-                  ></span>
+                <li [tbSwipe]="mobile()" (tbSwiped)="markRead(item)">
                   <div class="tb-list__text">
                     <button
                       type="button"
@@ -125,7 +123,8 @@ export class LatestNotificationsWidget implements OnInit {
   /** The notifications page of the current area. */
   readonly link = input.required<string>();
 
-  protected readonly icons = KIND_ICONS;
+  /** A phone: a swipe sideways marks a notification read. */
+  protected readonly mobile = injectMobile();
   /** The first unread notifications, newest first. */
   protected readonly items = signal<NotificationItem[] | null>(null);
   protected readonly unread = this.unreadCounter.count;

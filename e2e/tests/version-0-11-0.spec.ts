@@ -94,11 +94,16 @@ test('a day of the month view plans a lesson of the default duration', async ({ 
   await page.goto('/login');
   await signIn(page, 'Войти');
   await page.goto('/teacher/schedule');
+  // the lessons of the month first (buttons in their days): an empty day is picked among the days without them
+  const lessons = page.waitForResponse(
+    (response) => response.url().includes('/api/teacher/schedule/lessons') && response.ok(),
+  );
   await page.getByRole('tab', { name: /Месяц/ }).click();
+  await lessons;
 
   const day = page
     .locator('[data-date]')
-    .filter({ hasNot: page.locator('.fc-event') })
+    .filter({ hasNot: page.getByRole('button') })
     .nth(20);
   await day.click({ position: { x: 20, y: 40 } });
 

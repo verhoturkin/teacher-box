@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -29,21 +29,25 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { RowType } from '@shared/ui/row-type.directive';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
-import { BOARD_KIND_LABELS, boardMembersText } from '../boards-labels';
+import { boardMembersText } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
 
 /**
- * Teacher: every board in one place (ADR-0028) — create, change, delete, copies. «Доски (n)» of a student
+ * Teacher: every board in one place (ADR-0028), in two cards — «Доски на портале» (Excalidraw) and «Внешние доски»
+ * (by link); a tap anywhere on a board's row opens it. Create, change, delete, copies. «Доски (n)» of a student
  * or a group opens the list filtered in the URL (`?student=`, `?group=`); «Все доски» drops the filter.
  */
 @Component({
   selector: 'tb-boards-page',
   imports: [
+    NgTemplateOutlet,
+    RowType,
     SearchField,
     ReactiveFormsModule,
     RouterLink,
@@ -81,72 +85,98 @@ import { SearchField } from '@shared/ui/search-field';
       </div>
     }
 
-    <p-card>
-      <h2 class="tb-sr-only">{{ t.list }}</h2>
-      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-        @if (boards().length > 0) {
-          <div class="tb-toolbar">
-            <tb-search-field
-              [formControl]="search"
-              [label]="t.searchLabel"
-              [placeholder]="t.search"
-            />
-          </div>
-        }
-        @if (shown().length > 0) {
-          <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-            @for (board of shown(); track board.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"
-                  ><i
-                    [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"
-                  ></i
-                ></span>
-                <div class="tb-list__text">
-                  @if (board.kind === 'EXCALIDRAW') {
-                    <a class="tb-list__title tb-link" [routerLink]="[board.id]">{{
-                      board.title
-                    }}</a>
-                  } @else {
-                    <a
-                      class="tb-list__title tb-link"
-                      [href]="board.url"
-                      target="_blank"
-                      rel="noopener"
-                      >{{ board.title }}</a
-                    >
-                  }
-                  <span class="tb-list__supporting">{{ details(board) }}</span>
-                </div>
-                <div class="tb-list__trail tb-list__trail--icons">
-                  <p-button
-                    icon="pi pi-ellipsis-v"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="secondary"
-                    [pTooltip]="t.actions(board.title)"
-                    [ariaLabel]="t.actions(board.title)"
-                    [tbAttributes]="{
-                      'aria-haspopup': 'menu',
-                      'aria-expanded': menuFor()?.id === board.id ? 'true' : 'false',
-                    }"
-                    (onClick)="openMenu(board, $event)"
-                  />
-                </div>
-              </li>
-            }
-          </ul>
-        } @else if (boards().length > 0) {
-          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
-        } @else {
-          <tb-empty-state
-            icon="pi-tb-board"
-            [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
-            [hint]="t.emptyHint"
+    @if (state.ready()) {
+      @if (boards().length > 0) {
+        <div class="tb-toolbar">
+          <tb-search-field
+            [formControl]="search"
+            [label]="t.searchLabel"
+            [placeholder]="t.search"
           />
-        }
-      </tb-load-state>
-    </p-card>
+        </div>
+      }
+      <div class="tb-stack">
+        <p-card [header]="k.portal">
+          @if (portal().length > 0) {
+            <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="k.portal">
+              @for (board of portal(); track board.id) {
+                <ng-container *ngTemplateOutlet="row; context: { $implicit: board }" />
+              }
+            </ul>
+          } @else if (boards().length === 0) {
+            <tb-empty-state
+              icon="pi-tb-board"
+              [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
+              [hint]="t.emptyHint"
+            />
+          } @else {
+            <tb-empty-state
+              [compact]="true"
+              [icon]="query() === '' ? 'pi-tb-board' : 'pi-search'"
+              [title]="query() === '' ? k.noPortal : k.notFound"
+            />
+          }
+        </p-card>
+        <p-card [header]="k.external">
+          @if (external().length > 0) {
+            <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="k.external">
+              @for (board of external(); track board.id) {
+                <ng-container *ngTemplateOutlet="row; context: { $implicit: board }" />
+              }
+            </ul>
+          } @else {
+            <tb-empty-state
+              [compact]="true"
+              [icon]="query() === '' ? 'pi-external-link' : 'pi-search'"
+              [title]="query() === '' ? k.noExternal : k.notFound"
+            />
+          }
+        </p-card>
+      </div>
+    } @else {
+      <p-card>
+        <h2 class="tb-sr-only">{{ t.list }}</h2>
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
+      </p-card>
+    }
+
+    <!-- a board: a tap anywhere on the row opens it (the title link covers the row), «⋮» stays above -->
+    <ng-template #row let-board [tbRowType]="boards()">
+      <li class="tb-list__item--link">
+        <span class="tb-list__lead" aria-hidden="true"
+          ><i [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"></i
+        ></span>
+        <div class="tb-list__text">
+          @if (board.kind === 'EXCALIDRAW') {
+            <a class="tb-list__title tb-list__link" [routerLink]="[board.id]">{{ board.title }}</a>
+          } @else {
+            <a
+              class="tb-list__title tb-list__link"
+              [href]="board.url"
+              target="_blank"
+              rel="noopener"
+              >{{ board.title }}</a
+            >
+          }
+          <span class="tb-list__supporting">{{ details(board) }}</span>
+        </div>
+        <div class="tb-list__trail tb-list__trail--icons">
+          <p-button
+            icon="pi pi-ellipsis-v"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [pTooltip]="t.actions(board.title)"
+            [ariaLabel]="t.actions(board.title)"
+            [tbAttributes]="{
+              'aria-haspopup': 'menu',
+              'aria-expanded': menuFor()?.id === board.id ? 'true' : 'false',
+            }"
+            (onClick)="openMenu(board, $event)"
+          />
+        </div>
+      </li>
+    </ng-template>
 
     <p-menu
       #menu
@@ -174,6 +204,7 @@ import { SearchField } from '@shared/ui/search-field';
 })
 export class BoardsPage implements OnInit {
   protected readonly t = T.list;
+  protected readonly k = T.cards;
   private readonly api = inject(BoardsApi);
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
@@ -185,15 +216,15 @@ export class BoardsPage implements OnInit {
   /** `?group=<id>` — boards of a group. */
   readonly group = input<string>();
 
-  protected readonly kindLabels = BOARD_KIND_LABELS;
   protected readonly membersText = boardMembersText;
   protected readonly state = new LoadState();
   protected readonly boards = signal<Board[]>([]);
   protected readonly search = new FormControl('', { nonNullable: true });
-  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
+  private readonly typed = toSignal(this.search.valueChanges, { initialValue: '' });
+  protected readonly query = computed(() => this.typed().trim().toLocaleLowerCase());
   /** The boards whose title or a student's (a group's) name has the search text. */
   protected readonly shown = computed(() => {
-    const query = this.query().trim().toLocaleLowerCase();
+    const query = this.query();
     return query === ''
       ? this.boards()
       : this.boards().filter(
@@ -202,6 +233,14 @@ export class BoardsPage implements OnInit {
             board.members.some((member) => member.name?.toLocaleLowerCase().includes(query)),
         );
   });
+  /** «Доски на портале»: the Excalidraw boards. */
+  protected readonly portal = computed(() =>
+    this.shown().filter((board) => board.kind === 'EXCALIDRAW'),
+  );
+  /** «Внешние доски»: the boards by link. */
+  protected readonly external = computed(() =>
+    this.shown().filter((board) => board.kind === 'LINK'),
+  );
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
   protected readonly editing = signal<Board | null>(null);
@@ -285,9 +324,9 @@ export class BoardsPage implements OnInit {
     });
   }
 
-  /** «Доска Excalidraw · Мария, группа «ОГЭ» · изменена 01.09.2026 10:00»; an external board — no time. */
+  /** «Мария, группа «ОГЭ» · изменена 01.09.2026 10:00» (the card tells the kind); an external board — no time. */
   protected details(board: Board): string {
-    const parts = [this.kindLabels[board.kind], this.membersText(board)];
+    const parts = [this.membersText(board)];
     if (board.kind === 'EXCALIDRAW') {
       parts.push(T.list.changed(this.date.transform(board.updatedAt, 'dd.MM.yyyy HH:mm') ?? ''));
     }

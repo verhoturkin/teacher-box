@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { injectMobile } from '@core/layout/mobile';
 import { Card } from 'primeng/card';
+import { MyBoardLinks } from '@features/boards/parts';
 import { LessonActions } from '../ui/lesson-actions';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
@@ -28,12 +29,12 @@ import { T } from '../i18n/texts';
 
 /**
  * Student's home: the nearest lesson as a calendar event, as the teacher's card — the time tile, the group
- * (or «Занятие») and the topic, the lessons of the week; the lesson link and a request to move or cancel it
+ * (or «Занятие»), the topic and the boards of the lesson as chips, the lessons of the week; the lesson link and a request to move or cancel it
  * (not while it runs) at the end. The title «Ближайшее занятие» is for screen readers only.
  */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [EmptyState, Card, ChangeRequestDialog, LessonActions, LessonTimeTile],
+  imports: [EmptyState, Card, ChangeRequestDialog, LessonActions, LessonTimeTile, MyBoardLinks],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card styleClass="tb-hero">
@@ -48,6 +49,7 @@ import { T } from '../i18n/texts';
             @if (lesson.topic !== null) {
               <span>{{ lesson.topic }}</span>
             }
+            <tb-my-board-links [groupName]="lesson.groupId === null ? null : lesson.groupName" />
             @if (lesson.pendingRequests[0]; as request) {
               <small class="tb-muted">{{ t.requestSent(kind(request)) }}</small>
             }
@@ -109,6 +111,10 @@ import { T } from '../i18n/texts';
       align-items: center;
       justify-content: flex-end;
       gap: var(--tb-space-2);
+    }
+
+    tb-my-board-links:not(:empty) {
+      margin-block: var(--tb-space-1);
     }
 
     tb-lesson-time-tile {

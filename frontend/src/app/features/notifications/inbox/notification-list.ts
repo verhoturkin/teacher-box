@@ -2,23 +2,29 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
+import { injectMobile } from '@core/layout/mobile';
 import { Busy } from '@shared/ui/busy';
+import { Swipe } from '@shared/ui/swipe';
 import { NotificationItem } from '../data-access/notifications.models';
-import { KIND_ICONS } from '../notification-labels';
 import { T } from '../i18n/texts';
 
-/** Notifications as a list: icon, title, text and time; «Открыть» and «Отметить прочитанным». */
+/**
+ * Notifications as a list without icons: title, text and time; «Открыть» and «Отметить прочитанным» (on a phone
+ * a swipe sideways too).
+ */
 @Component({
   selector: 'tb-notification-list',
-  imports: [DatePipe, Button, Tooltip],
+  imports: [DatePipe, Button, Swipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="tb-list tb-notifications" [attr.aria-label]="label()">
+    <ul class="tb-list tb-list--no-lead tb-notifications" [attr.aria-label]="label()">
       @for (item of items(); track item.id) {
-        <li class="tb-notification" [class.tb-notification--unread]="!item.read">
-          <span class="tb-list__lead" [class.tb-list__lead--accent]="!item.read" aria-hidden="true"
-            ><i [class]="icons[item.kind]"></i
-          ></span>
+        <li
+          class="tb-notification"
+          [class.tb-notification--unread]="!item.read"
+          [tbSwipe]="mobile() && !item.read"
+          (tbSwiped)="markRead.emit(item)"
+        >
           <div class="tb-list__text">
             <span class="tb-list__title tb-notification__title">{{ item.title }}</span>
             @if (item.body !== null) {
@@ -81,5 +87,6 @@ export class NotificationList {
   readonly opened = output<NotificationItem>();
   readonly markRead = output<NotificationItem>();
 
-  protected readonly icons = KIND_ICONS;
+  /** A phone: a swipe sideways marks an unread notification read. */
+  protected readonly mobile = injectMobile();
 }

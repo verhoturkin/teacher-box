@@ -101,9 +101,8 @@ test('the teacher and the student meet in the room of the student', async ({ bro
 
   const student = await (await browser.newContext()).newPage();
   await signIn(student, vera.login, vera.password);
-  const calls = student.locator('tb-my-calls-card');
-  await expect(calls).toContainText('Учитель уже в звонке');
-  await calls.getByRole('button', { name: 'Войти в звонок: Урок' }).click();
+  // 0.15.3: no call card on the student's home — the room's link opens the call
+  await student.goto(`/call/${vera.id}`);
   await joinFromSheet(student, 'Урок');
   // the teacher on the stage, the student in the inset
   await expect(student.locator('tb-call-tile')).toHaveCount(2);

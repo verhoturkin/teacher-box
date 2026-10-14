@@ -158,8 +158,11 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();
 
-  const row = page.getByRole('listitem').filter({ hasText: BOARD });
-  await expect(row).toContainText('Доска Excalidraw');
+  // 0.15.3: an Excalidraw board is in «Доски на портале», the card tells the kind
+  const row = page
+    .getByRole('list', { name: 'Доски на портале' })
+    .getByRole('listitem')
+    .filter({ hasText: BOARD });
   await expect(row).toContainText(VERA);
   await expect(row).toContainText(`группа «${GROUP}»`);
   const link = row.getByRole('link', { name: BOARD });
@@ -281,7 +284,6 @@ test('an external board opens in a new tab', async ({ page, request }) => {
   const link = page.getByRole('link', { name: `Холст ${RUN}` });
   await expect(link).toHaveAttribute('href', 'https://app.holst.so/board/e2e-1-7');
   await expect(link).toHaveAttribute('target', '_blank');
-  await expect(page.getByRole('listitem').filter({ hasText: `Холст ${RUN}` })).toContainText(
-    'Внешняя доска',
-  );
+  // 0.15.3: an external board is in «Внешние доски»
+  await expect(page.getByRole('list', { name: 'Внешние доски' })).toContainText(`Холст ${RUN}`);
 });

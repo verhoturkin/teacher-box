@@ -787,6 +787,40 @@ textarea.p-textarea {
 }
 
 /*
+ * A list without lead icons at all (`tb-list--no-lead`, notifications): the text starts at the tile's edge
+ * on every screen.
+ */
+.tb-list--no-lead {
+  grid-template-columns: minmax(0, 1fr) auto;
+
+  > li {
+    grid-template-areas: 'text trail';
+  }
+}
+
+@container (max-width: 26rem) {
+  .tb-list.tb-list--no-lead
+    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+    grid-template-areas: 'text text' 'trail trail';
+  }
+}
+
+/*
+ * A row that goes aside under the finger (`tbSwipe`, a notification on a phone): no transition while it
+ * follows the finger, a short slide back or out after it
+ */
+.tb-list > li.tb-swipe {
+  transition:
+    transform var(--tb-spring-fast-spatial),
+    opacity var(--tb-spring-fast-effects),
+    background var(--tb-spring-fast-effects);
+}
+
+.tb-list > li.tb-swipe--dragging {
+  transition: none;
+}
+
+/*
  * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
  * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
  */
@@ -803,6 +837,37 @@ p-button.tb-list__stretched .p-button {
     position: absolute;
     inset: 0;
     border-radius: inherit;
+  }
+}
+
+/*
+ * A row that opens with its title link (`tb-list__link`, a board): the link covers the whole row, so a tap
+ * anywhere on it opens the board; the row's trailing buttons («⋮») stay above it. The focus ring is the row's.
+ */
+.tb-list > li:has(> .tb-list__text .tb-list__link) {
+  position: relative;
+
+  > .tb-list__trail {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.tb-list__link {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--tb-list-inner);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::before {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: -3px;
+    }
   }
 }
 
@@ -1291,6 +1356,35 @@ a.p-menu-item-link:hover {
   /* links, not the buttons and chips that are links («Начать урок» on the phone, boards) */
   a:not(.p-button, .tb-board-chip) {
     text-decoration: underline;
+  }
+}
+
+/*
+ * The boards of a lesson as M3 assist chips (`tb-board-links` of the teacher, `tb-my-board-links` of the
+ * student) in the colour of the text around them (on the hero: on-primary-container)
+ */
+.tb-board-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+.tb-board-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 2rem;
+  padding-inline: var(--tb-space-3);
+  border-radius: var(--tb-shape-sm);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: inherit;
+  font: var(--tb-type-label-l);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    background: color-mix(in srgb, currentColor 20%, transparent);
   }
 }
 

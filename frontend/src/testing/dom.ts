@@ -69,3 +69,19 @@ export function readableText(root: Node): string {
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
+
+/** A finger swipe sideways over an element (jsdom has no PointerEvent): far enough to count as swiped. */
+export function swipeAside(element: Element | null, distance = -200): void {
+  if (element === null) {
+    throw new Error('nothing to swipe');
+  }
+  const pointer = (type: string, x: number): Event => {
+    const event = new MouseEvent(type, { bubbles: true, clientX: x, clientY: 0 });
+    Object.defineProperties(event, { pointerType: { value: 'touch' }, pointerId: { value: 1 } });
+    return event;
+  };
+  element.dispatchEvent(pointer('pointerdown', 300));
+  element.dispatchEvent(pointer('pointermove', 300 + distance / 2));
+  element.dispatchEvent(pointer('pointermove', 300 + distance));
+  element.dispatchEvent(pointer('pointerup', 300 + distance));
+}
