@@ -108,7 +108,12 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card title — Title Large
   emphasized; dialog title — Headline Small emphasized; section subtitles — Title Medium; field labels,
   buttons, menu items, dropdown options — Label Large; tooltip, `small`, stat details — Body Small.
-- Weights 400 and 500 only (no 600/700): emphasis is weight 500 and colour.
+- **Emphasized roles** (M3E, ADR-0044) — `--tb-type-<role>-emphasized`: the same size and line as the baseline,
+  heavier. Display S, Headline L/M/S, Title L — 500; Title M/S, Label L/M/S — **Bold 700**. Weights are 400 and 500,
+  and 700 only through those emphasized tokens (never a bare `font-weight: 600/700`). Emphasized marks the
+  exception (titles, the hero time, the active navigation label); the baseline stays the rest of the scale.
+  Tracking: `--tb-tracking-<role>` beside `font` (display, headline and title large have none; an emphasized role
+  takes its baseline's tracking). The scale has Display S (36/44) and Headline L (32/40) besides the roles above.
 - Wrap text between words (`overflow-wrap: break-word`); `anywhere` only for codes, URLs, paths, env names
   and table cells with columns. Empty-state titles have no trailing full stop.
 - Dates, plurals and numbers — glossary (`CountPipe`, non-breaking space between number and unit).

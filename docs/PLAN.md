@@ -48,7 +48,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
   `calc(var(--tb-shape-lg-plus) - var(--tb-space-3))`; measure the padding around lists on a computer and in
   dialogs and apply the same rule (never below `--tb-shape-xs`); a single tile stays fully round. Same for
   `p-table.tb-cards`. §1, §9.
-- [ ] 201.2 **F** Type scale, `styles.scss` ~43–65: add the emphasized tokens M3E gives **Bold (700)** — Title
+- [x] 201.2 **F** Type scale, `styles.scss` ~43–65: add the emphasized tokens M3E gives **Bold (700)** — Title
   M/S, Label L/M/S — and Display S (36/44) and Headline L (32/40) with emphasized variants and tracking tokens.
   Change §3 «Weights 400 and 500 only» → 700 only through the emphasized tokens. Font already has 400–700.
 - [ ] 201.3 **F** Navigation active item (flexible bar and vertical rail item, M3E): label colour
