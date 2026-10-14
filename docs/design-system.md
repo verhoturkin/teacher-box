@@ -20,7 +20,7 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | `--tb-shape-xs` | 4 | tooltips, inputs, inner corners of split button and list tiles |
   | `--tb-shape-sm` | 8 | pressed button (M3E CornerSmall), chips, tags, inner corners of connected button groups |
   | `--tb-shape-md` | 12 | selected toggle, menu items |
-  | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of list tiles |
+  | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of a list right on the page |
   | `--tb-shape-lg-plus` | 20 | cards |
   | `--tb-shape-xl` | 28 | dialogs, top of the bottom sheet |
   | `--tb-shape-xl-plus` | 32 | login and invite card |
@@ -28,6 +28,10 @@ boards, `pi pi-tb-board` (a CSS mask in `styles.scss`, Tabler `presentation`, MI
   | `--tb-shape-full` | — | buttons, search fields, navigation indicator |
 
   Radii come only from this scale. `--tb-shape-button` (20 px) is half a 40 px button.
+  **Nested corners** (M3 optical roundness, ADR-0044): a child inside a padded container takes `inner = outer −
+  padding`, never below `--tb-shape-xs`. Lists, tile tables and key figures set it through `--tb-list-outer`: right
+  on the page 16 px (M3 list CornerLarge); in a card on a computer 20 − 20 → 4 px; in a dialog 28 − 24 = 4 px; in a
+  phone card 20 − 12 = 8 px. The rule is written as `max(xs, calc(outer − padding))` beside the container's padding.
 - **Elevation** — surfaces differ by tone, not shadow. Shadows `--tb-elevation-1..3` only on floating
   elements: FAB, menus, dropdowns, date picker (level 2), dialogs (3), bottom sheet (1).
 - **State layers** — content colour over the element: hover `--tb-state-hover` 8 %, focus and pressed 10 %;
@@ -285,7 +289,8 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 
 - **Every list of data inside a card or dialog is a segmented list** `ul.tb-list` (CSS subgrid: lead, text,
   trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px gap, inner corners 4 px,
-  outer 16 px (a single tile fully round), height ≥ 56 px, padding 12 / 16 px.
+  outer `--tb-list-outer` — nested in its container (§1: 4 px in a card on a computer and in dialogs, 8 px in a
+  phone card, 16 px right on the page; a single tile has it on all corners), height ≥ 56 px, padding 12 / 16 px.
   - `tb-list__lead` — 40 px secondary-container circle: for people the component `tb-avatar`
     (`@shared/ui/avatar`: the student's photo cut to a circle, otherwise the initials; `size` for a bigger
     one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
@@ -339,7 +344,7 @@ the icon set changes in 0.17.0, M3 gives them 24); shape morphs to 8 px while pr
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number
   right, details below).
 - **Tables** — `p-table` with `styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps); on
-  the phone each row becomes a card «column: value» (`data-label`). Main column
+  the phone each row becomes a card «column: value» (`data-label`); outer corners nest like the lists' (§1). Main column
   `tb-col-main`, amounts `tb-amount`. Statuses — `p-tag`, one shape, no wrapping. Row typing — `tbRowType`.
 - Not data lists: wizard steps, help items, checklists, bot capability lists, files picked before upload — plain text
   lists.

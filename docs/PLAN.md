@@ -43,7 +43,7 @@ dialog surface, nested corners; stage 202: flexible navigation bar).
 
 ### 201. Shape and type (F, ADR-0044)
 
-- [ ] 201.1 **F** Nested corners (`inner = outer − padding`): on a phone a card (20 px) holds a list with 12 px
+- [x] 201.1 **F** Nested corners (`inner = outer − padding`): on a phone a card (20 px) holds a list with 12 px
   around it, so tiles should end at 8 px, not 16. Set `--tb-list-outer` per container: phone card
   `calc(var(--tb-shape-lg-plus) - var(--tb-space-3))`; measure the padding around lists on a computer and in
   dialogs and apply the same rule (never below `--tb-shape-xs`); a single tile stays fully round. Same for

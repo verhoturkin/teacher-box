@@ -83,6 +83,7 @@
   --tb-card: var(--p-md-surface-container-lowest);
   /* Rows of lists in cards (ADR-0020): a tile a tone lighter than the card */
   --tb-list-item: var(--p-md-surface-container-low);
+  /* M3 list: the group CornerLarge, the items CornerExtraSmall; a container nests it smaller (201.1) */
   --tb-list-outer: var(--tb-shape-lg);
   --tb-list-inner: var(--tb-shape-xs);
 
@@ -728,6 +729,20 @@ textarea.p-textarea {
       border-end-end-radius: var(--tb-list-outer);
     }
   }
+}
+
+/*
+ * Nested corners (M3 optical roundness, ADR-0044): a list, a table of tiles or key figures inside a card or
+ * a dialog round their outer corners by the container's corner less the room around them, never below
+ * the 4 px of the tiles: a card 20 − 20 and a dialog 28 − 24 leave 4 px, a phone card 20 − 12 leaves 8 px
+ * (set with its padding below). A list right on the page keeps the 16 px of the M3 list.
+ */
+.p-card-body {
+  --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-lg-plus) - var(--tb-space-5)));
+}
+
+.p-dialog-content {
+  --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-xl) - var(--tb-space-6)));
 }
 
 /*
@@ -1890,6 +1905,8 @@ a.p-menu-item-link:hover {
   .p-card:has(.tb-list),
   .p-card:has(tb-search-field) {
     > .p-card-body {
+      --tb-list-outer: calc(var(--tb-shape-lg-plus) - var(--tb-space-3));
+
       padding-inline: var(--tb-space-3);
     }
   }
