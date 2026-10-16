@@ -806,6 +806,19 @@ textarea.p-textarea {
 
 .p-iconfield:has(> .tb-i-search, > .p-inputicon.tb-i-search) > .p-inputicon {
   inset-inline-start: 1.25rem;
+  /*
+   * PrimeNG centres the icon for its 16 px size (`margin-top: -8px`); our magnifier is 24 px
+   * (--tb-icon-size, ADR-0046), so with the stock margin it sits 4 px low — centre by its own
+   * height instead, like the «×» button of `tb-search-field` does.
+   */
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+
+/* The same 4 px in dropdown filters: PrimeNG's `search` SVG is masked to our 24 px (Icons, §1) */
+.p-iconfield > .p-inputicon:has(> svg[data-p-icon='search']) {
+  margin-top: 0;
+  transform: translateY(-50%);
 }
 
 /*
