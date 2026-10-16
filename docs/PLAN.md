@@ -17,6 +17,24 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## Next release
+
+README (~600 lines) duplicates the user guides: messengers, schedule, calls, boards, AI, proxy and
+the feature tour. Move the guides to the GitHub wiki (enabled 2026-10-16) and leave a slim stylish
+README with the basics and links.
+
+### 208. User guides to the wiki, slim README (D)
+
+- [ ] 208.1 **D** Wiki pages (`teacher-box.wiki.git`): `Home`, `Features`, `Install`, `First-steps`,
+  `Update`, `Backups`, `Messengers`, `Schedule`, `Calls`, `Boards`, `AI-assistant`, `Proxy`, `FAQ`
+  (Russian, from README; repo links made absolute). Process follows the move: skill `new-setting`
+  §4 and `AGENTS.md` §6.1 point user settings at the wiki, `docs/operations.md` proxy link → wiki.
+  *Texts ready in 208.2; the push waits for one click in the web UI — GitHub creates the wiki repo
+  only with its first page (clone/push return «Repository not found» until then).*
+- [x] 208.2 **D** Slim stylish README (~150 lines, Russian): centered hero, badges, highlights,
+  feature grid, one-command install, short manual/HTTPS/NAS (`<details>`), first steps, update,
+  settings, FAQ and security in short, links to the wiki pages.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

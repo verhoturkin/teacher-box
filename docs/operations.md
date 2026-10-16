@@ -238,8 +238,8 @@ docker compose cp backend:/data/backups ./teacherbox-backups
 ## Внешние интеграции и прокси
 
 - Telegram и провайдер ИИ могут ходить через прокси (`TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`,
-  `TEACHERBOX_AI_PROXY`; `http://` или `socks5://`, без пароля) — см. README, раздел «Прокси
-  для Telegram и ИИ». Неверный адрес прокси останавливает запуск с сообщением о переменной.
+  `TEACHERBOX_AI_PROXY`; `http://` или `socks5://`, без пароля) — см. вики «Прокси
+  для Telegram и ИИ» (https://github.com/verhoturkin/teacher-box/wiki/Proxy). Неверный адрес прокси останавливает запуск с сообщением о переменной.
 - При старте в журнале видно, через какой прокси идут запросы:
   `Telegram is reached through the proxy socks5://...`.
 - Связь с мессенджерами проверяется непрерывно (long polling): при сбое в журнале
