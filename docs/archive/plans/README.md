@@ -65,3 +65,4 @@ Legend: **B** — backend, **F** — frontend, **D** — docker/infrastructure.
 | [0.17.0](v0.17.0.md) | 204 |
 | [0.17.1](v0.17.1.md) | 205 |
 | [0.17.2](v0.17.2.md) | 206 |
+| [0.17.3](v0.17.3.md) | 207 |
