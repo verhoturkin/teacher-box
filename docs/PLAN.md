@@ -17,6 +17,20 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.17.3
+
+The search magnifier sits low after 0.17.2: the 24 px Material Symbol lives in PrimeNG's icon slot,
+which centres for its 16 px icon (`margin-top: -8px` instead of `-12px`), so the loupe of every
+`tb-search-field` — and the `search` SVG of dropdown filters, masked to the same 24 px — is 4 px down.
+
+### 207. Search magnifier alignment (F)
+
+- [x] 207.1 **F** Centre the magnifier by its own height (`frontend/src/styles.scss` ~807,
+  `shared/ui/search-field.ts`): `margin-top: 0` + `translateY(-50%)` on the search `.p-inputicon`
+  (ours and PrimeNG's `search` SVG in filters) instead of PrimeNG's 16 px `margin-top`.
+- [ ] 207.2 Release 0.17.3 (skill `release`, no help articles — no behaviour change): E2E spec
+  `version-0-17-3` (the loupe is centred in the search bar), CHANGELOG, version, archiving of stage 207.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
