@@ -27,9 +27,9 @@ import { SideNav } from './side-nav';
 const T = CORE_T.shell;
 
 const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
-  { choice: 'light', label: T.lightTheme, icon: 'pi pi-sun' },
-  { choice: 'dark', label: T.darkTheme, icon: 'pi pi-moon' },
-  { choice: 'system', label: T.systemTheme, icon: 'pi pi-desktop' },
+  { choice: 'light', label: T.lightTheme, icon: 'tb-i tb-i-light_mode' },
+  { choice: 'dark', label: T.darkTheme, icon: 'tb-i tb-i-dark_mode' },
+  { choice: 'system', label: T.systemTheme, icon: 'tb-i tb-i-brightness_auto' },
 ];
 
 /**
@@ -90,7 +90,11 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           @if (userAvatar(); as photo) {
             <tb-avatar class="tb-shell__avatar" [name]="userName()" [photo]="photo" size="2rem" />
           } @else {
-            <i pButtonIcon class="pi pi-user" aria-hidden="true"></i>
+            <i
+              pButtonIcon
+              class="tb-i tb-i-account_circle tb-shell__avatar-icon"
+              aria-hidden="true"
+            ></i>
           }
           @if (!compact()) {
             <span pButtonLabel>{{ userName() }}</span>
@@ -141,7 +145,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
             (click)="moreMenu.toggle($event)"
           >
             <span class="tb-bottom-nav__icon"
-              ><i class="pi pi-ellipsis-h" aria-hidden="true"></i
+              ><i class="tb-i tb-i-more_horiz" aria-hidden="true"></i
             ></span>
             <span class="tb-bottom-nav__label">{{ t.more }}</span>
           </button>
@@ -238,8 +242,8 @@ export class Shell {
 
   protected readonly userItems = computed<MenuItem[]>(() => [
     ...this.userLinks(),
-    { label: T.help, icon: 'pi pi-question-circle', routerLink: `${this.homeLink()}/help` },
-    { label: T.account, icon: 'pi pi-id-card', routerLink: `${this.homeLink()}/account` },
+    { label: T.help, icon: 'tb-i tb-i-help', routerLink: `${this.homeLink()}/help` },
+    { label: T.account, icon: 'tb-i tb-i-badge', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.
     // the chosen theme: its icon stays, the item is highlighted with a check (ADR-0024); screen
@@ -255,7 +259,7 @@ export class Shell {
     { separator: true },
     // the language under the theme (ADR-0035): another one reloads the page
     ...LANGUAGES.map(({ code, name }) => ({
-      icon: 'pi pi-language',
+      icon: 'tb-i tb-i-translate',
       label: name,
       styleClass: language() === code ? CHOSEN : CHOICE,
       command: () => {
@@ -265,7 +269,7 @@ export class Shell {
     { separator: true },
     {
       label: T.signOut,
-      icon: 'pi pi-sign-out',
+      icon: 'tb-i tb-i-logout',
       command: () => {
         this.auth.logout().subscribe();
       },

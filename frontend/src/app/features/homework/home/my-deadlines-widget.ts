@@ -16,7 +16,7 @@ import { T } from '../i18n/texts';
     @let homework = summary();
     <p-card [header]="t.title">
       @if (homework.upcoming.length === 0) {
-        <tb-empty-state [compact]="true" icon="pi-pen-to-square" [title]="t.nothing" />
+        <tb-empty-state [compact]="true" icon="tb-i-assignment" [title]="t.nothing" />
       } @else {
         <ul class="tb-list tb-list--no-phone-lead tb-deadlines">
           @for (task of homework.upcoming; track task.taskId) {
@@ -25,7 +25,7 @@ import { T } from '../i18n/texts';
                 class="tb-list__lead"
                 [class.tb-list__lead--accent]="task.overdue"
                 aria-hidden="true"
-                ><i class="pi pi-pen-to-square"></i
+                ><i class="tb-i tb-i-assignment"></i
               ></span>
               <div class="tb-list__text">
                 <a

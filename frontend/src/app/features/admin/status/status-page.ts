@@ -39,7 +39,12 @@ import { T } from '../i18n/texts';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="admin/diagnostics" />
-      <p-button [label]="t.refresh" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
+      <p-button
+        [label]="t.refresh"
+        icon="tb-i tb-i-refresh"
+        severity="secondary"
+        (onClick)="load()"
+      />
     </tb-page-header>
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (status(); as status) {
@@ -96,7 +101,7 @@ import { T } from '../i18n/texts';
               }}</span>
               <small class="tb-muted">{{ t.of(size(status.diskTotal)) }}</small>
               @if (lowDisk()) {
-                <p-tag severity="danger" icon="pi pi-exclamation-triangle" [value]="t.lowDisk" />
+                <p-tag severity="danger" icon="tb-i tb-i-warning" [value]="t.lowDisk" />
               }
             </div>
           </p-card>

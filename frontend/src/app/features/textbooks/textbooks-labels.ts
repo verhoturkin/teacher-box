@@ -5,9 +5,9 @@ import { T } from './i18n/texts';
 export const TEXTBOOK_KIND_LABELS: Readonly<Record<TextbookKind, string>> = T.kinds;
 
 export const TEXTBOOK_KIND_ICONS: Readonly<Record<TextbookKind, string>> = {
-  TEXTBOOK: 'pi pi-book',
-  WORKBOOK: 'pi pi-pencil',
-  OTHER: 'pi pi-file',
+  TEXTBOOK: 'tb-i tb-i-menu_book',
+  WORKBOOK: 'tb-i tb-i-stylus_note',
+  OTHER: 'tb-i tb-i-draft',
 };
 
 export const TEXTBOOK_FORMAT_LABELS: Readonly<Record<TextbookFormat, string>> = T.formats;

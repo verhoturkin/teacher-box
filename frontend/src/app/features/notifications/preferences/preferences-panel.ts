@@ -108,7 +108,7 @@ function shortTime(time: string | null, fallback: string): string {
               type="submit"
               [label]="c.save"
               severity="secondary"
-              icon="pi pi-check"
+              icon="tb-i tb-i-check"
               [loading]="pending()"
               [disabled]="form.pristine"
             />

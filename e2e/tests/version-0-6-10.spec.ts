@@ -176,7 +176,7 @@ test('on a phone an upcoming lesson opens its actions in the bottom sheet', asyn
 
   const row = page.locator('ul.tb-list > li').first();
   // the online lesson keeps its video icon in the markup; on a phone the lead is hidden (0.15.2)
-  await expect(row.locator('.tb-list__lead .pi-video')).toHaveCount(1);
+  await expect(row.locator('.tb-list__lead .tb-i-videocam')).toHaveCount(1);
   await expect(row.locator('.tb-list__lead')).toBeHidden();
   await expect(row.getByRole('button', { name: 'Перенести' })).toHaveCount(0);
   await expect(row.getByRole('link', { name: /Войти в урок/ })).toHaveCount(0);

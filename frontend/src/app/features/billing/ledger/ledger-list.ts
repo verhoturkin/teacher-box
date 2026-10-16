@@ -41,13 +41,19 @@ export const LEDGER_PAGE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (entries().length === 0) {
-      <tb-empty-state icon="pi-wallet" [title]="t.empty" />
+      <tb-empty-state icon="tb-i-account_balance_wallet" [title]="t.empty" />
     } @else {
       <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
         @for (entry of visible(); track entry.id) {
           <li [class.tb-inactive]="entry.inactive">
             <span class="tb-list__lead" aria-hidden="true"
-              ><i [class]="entry.kind === 'lesson' ? 'pi pi-calendar' : 'pi pi-wallet'"></i
+              ><i
+                [class]="
+                  entry.kind === 'lesson'
+                    ? 'tb-i tb-i-calendar_month'
+                    : 'tb-i tb-i-account_balance_wallet'
+                "
+              ></i
             ></span>
             @switch (entry.kind) {
               @case ('lesson') {
@@ -80,7 +86,7 @@ export const LEDGER_PAGE = 20;
                   >
                   @if (editable() && entry.lesson.status !== 'CANCELLED') {
                     <p-button
-                      icon="pi pi-times"
+                      icon="tb-i tb-i-close"
                       [text]="true"
                       [rounded]="true"
                       severity="danger"
@@ -116,7 +122,7 @@ export const LEDGER_PAGE = 20;
                   <span class="tb-ledger__actions">
                     @if (entry.payment.receipt) {
                       <p-button
-                        icon="pi pi-receipt"
+                        icon="tb-i tb-i-receipt_long"
                         [text]="true"
                         [rounded]="true"
                         severity="secondary"
@@ -127,7 +133,7 @@ export const LEDGER_PAGE = 20;
                     }
                     @if (editable()) {
                       <p-button
-                        icon="pi pi-paperclip"
+                        icon="tb-i tb-i-attach_file"
                         [text]="true"
                         [rounded]="true"
                         severity="secondary"
@@ -143,7 +149,7 @@ export const LEDGER_PAGE = 20;
                     }
                     @if (editable() && !entry.payment.voidedAt) {
                       <p-button
-                        icon="pi pi-times"
+                        icon="tb-i tb-i-close"
                         [text]="true"
                         [rounded]="true"
                         severity="danger"
@@ -217,7 +223,7 @@ export class LedgerList {
     }
     const attach: MenuItem = {
       label: payment.receipt === null ? T.ledger.attachReceipt : T.ledger.replaceReceipt,
-      icon: 'pi pi-paperclip',
+      icon: 'tb-i tb-i-attach_file',
       command: () => {
         this.pickReceipt(payment);
       },
@@ -228,7 +234,7 @@ export class LedgerList {
           attach,
           {
             label: T.ledger.removeReceipt,
-            icon: 'pi pi-trash',
+            icon: 'tb-i tb-i-delete',
             command: () => {
               this.removeReceipt.emit(payment);
             },

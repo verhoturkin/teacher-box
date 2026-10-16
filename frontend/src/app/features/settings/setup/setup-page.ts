@@ -80,7 +80,7 @@ const STEPS: readonly Step[] = [
           >
             <span class="tb-setup-steps__number">
               @if (index < currentIndex()) {
-                <i class="pi pi-check" aria-hidden="true"></i>
+                <i class="tb-i tb-i-check" aria-hidden="true"></i>
               } @else {
                 {{ index + 1 }}
               }
@@ -222,7 +222,7 @@ const STEPS: readonly Step[] = [
               <p-button [label]="t.back" severity="secondary" (onClick)="back()" />
               <p-button
                 [label]="t.home"
-                icon="pi pi-home"
+                icon="tb-i tb-i-home"
                 [loading]="pending()"
                 (onClick)="finish()"
               />
@@ -276,7 +276,7 @@ const STEPS: readonly Step[] = [
         color: var(--p-md-on-surface-variant);
         font: var(--tb-type-label-m);
 
-        .pi {
+        .tb-i {
           font-size: 0.75rem;
         }
       }

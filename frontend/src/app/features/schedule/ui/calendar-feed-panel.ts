@@ -40,7 +40,7 @@ import { T } from '../i18n/texts';
               <div class="tb-copy-row">
                 <input pInputText id="calendar-feed-link" class="tb-grow" [value]="link" readonly />
                 <p-button
-                  icon="pi pi-copy"
+                  icon="tb-i tb-i-content_copy"
                   [text]="true"
                   [pTooltip]="t.copy"
                   [rounded]="true"
@@ -67,7 +67,7 @@ import { T } from '../i18n/texts';
           <div class="tb-actions">
             <p-button
               [label]="feed.enabled ? t.renew : t.get"
-              icon="pi pi-link"
+              icon="tb-i tb-i-link"
               severity="secondary"
               [loading]="pending()"
               (onClick)="create()"

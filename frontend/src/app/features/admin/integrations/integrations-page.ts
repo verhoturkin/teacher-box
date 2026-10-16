@@ -49,7 +49,7 @@ import { T } from '../i18n/texts';
               <p-button
                 [label]="t.run"
                 severity="secondary"
-                icon="pi pi-refresh"
+                icon="tb-i tb-i-refresh"
                 [loading]="checking()"
                 (onClick)="check()"
               />
@@ -93,7 +93,7 @@ import { T } from '../i18n/texts';
           }
           @if (usage(); as usage) {
             @if (recent().length === 0) {
-              <tb-empty-state icon="pi-sparkles" [title]="t.noRequests" />
+              <tb-empty-state icon="tb-i-auto_awesome" [title]="t.noRequests" />
             } @else {
               <p-table [value]="recent()" styleClass="tb-cards">
                 <ng-template #header>

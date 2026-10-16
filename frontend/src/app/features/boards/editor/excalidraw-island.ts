@@ -74,7 +74,7 @@ function menuItem(item: BoardMenuItem, role?: 'menuitemradio' | 'menuitemcheckbo
           'aria-checked': item.checked === true,
           selected: item.checked === true,
           icon: createElement('i', {
-            className: item.checked === true ? 'pi pi-check' : 'pi',
+            className: item.checked === true ? 'tb-i tb-i-check' : 'tb-i',
             'aria-hidden': true,
           }),
         }

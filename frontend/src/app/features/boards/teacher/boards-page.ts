@@ -81,7 +81,12 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/boards" />
-      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
+      <p-button
+        class="tb-page-fab"
+        [label]="t.create"
+        icon="tb-i tb-i-add"
+        (onClick)="openCreate()"
+      />
     </tb-page-header>
 
     @if (filterLabel(); as label) {
@@ -89,7 +94,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
         <span class="tb-strong">{{ label }}</span>
         <p-button
           [label]="t.all"
-          icon="pi pi-times"
+          icon="tb-i tb-i-close"
           [text]="true"
           severity="secondary"
           (onClick)="showAll()"
@@ -117,14 +122,14 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
             </ul>
           } @else if (boards().length === 0) {
             <tb-empty-state
-              icon="pi-tb-board"
+              icon="tb-i-co_present"
               [title]="filter() === null ? t.emptyTitle : t.emptyFilteredTitle"
               [hint]="t.emptyHint"
             />
           } @else if (allPortal().length > 0) {
-            <tb-empty-state [compact]="true" icon="pi-search" [title]="k.notFound" />
+            <tb-empty-state [compact]="true" icon="tb-i-search" [title]="k.notFound" />
           } @else {
-            <tb-empty-state [compact]="true" icon="pi-tb-board" [title]="k.noPortal" />
+            <tb-empty-state [compact]="true" icon="tb-i-co_present" [title]="k.noPortal" />
           }
         </p-card>
         <p-card [header]="k.external">
@@ -144,9 +149,9 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
               }
             </ul>
           } @else if (allExternal().length > 0) {
-            <tb-empty-state [compact]="true" icon="pi-search" [title]="k.notFound" />
+            <tb-empty-state [compact]="true" icon="tb-i-search" [title]="k.notFound" />
           } @else {
-            <tb-empty-state [compact]="true" icon="pi-external-link" [title]="k.noExternal" />
+            <tb-empty-state [compact]="true" icon="tb-i-open_in_new" [title]="k.noExternal" />
           }
         </p-card>
       </div>
@@ -161,7 +166,9 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
     <ng-template #row let-board [tbRowType]="boards()">
       <li class="tb-list__item--link">
         <span class="tb-list__lead" aria-hidden="true"
-          ><i [class]="board.kind === 'EXCALIDRAW' ? 'pi pi-tb-board' : 'pi pi-external-link'"></i
+          ><i
+            [class]="board.kind === 'EXCALIDRAW' ? 'tb-i tb-i-co_present' : 'tb-i tb-i-open_in_new'"
+          ></i
         ></span>
         <div class="tb-list__text">
           @if (board.kind === 'EXCALIDRAW') {
@@ -179,7 +186,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
         </div>
         <div class="tb-list__trail tb-list__trail--icons">
           <p-button
-            icon="pi pi-ellipsis-v"
+            icon="tb-i tb-i-more_vert"
             [text]="true"
             [rounded]="true"
             severity="secondary"
@@ -387,7 +394,7 @@ export class BoardsPage implements OnInit {
     if (board.kind === 'EXCALIDRAW') {
       items.push({
         label: T.list.backups,
-        icon: 'pi pi-history',
+        icon: 'tb-i tb-i-history',
         command: () => {
           this.openBackups(board);
         },
@@ -396,14 +403,14 @@ export class BoardsPage implements OnInit {
     items.push(
       {
         label: T.list.edit,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.openEdit(board);
         },
       },
       {
         label: T.list.deleteItem,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.confirmRemove(board);

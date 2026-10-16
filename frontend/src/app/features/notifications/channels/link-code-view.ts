@@ -15,7 +15,7 @@ import { T } from '../i18n/texts';
       @if (link.url !== null && startLink()) {
         <p>{{ t.start }}</p>
         <a class="p-button tb-link-code__open" [href]="link.url" target="_blank" rel="noopener">
-          <i class="pi pi-external-link" aria-hidden="true"></i>
+          <i class="tb-i tb-i-open_in_new" aria-hidden="true"></i>
           <span>{{ t.open(name()) }}</span>
         </a>
         <p class="tb-muted">{{ t.orCode }}</p>

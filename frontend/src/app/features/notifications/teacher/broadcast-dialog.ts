@@ -106,7 +106,7 @@ export interface Recipient {
         />
         <p-button
           [label]="t.send"
-          icon="pi pi-send"
+          icon="tb-i tb-i-send"
           [loading]="pending()"
           type="submit"
           tbSubmitFor="broadcast-form"

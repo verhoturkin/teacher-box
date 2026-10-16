@@ -44,7 +44,7 @@ import { T } from '../i18n/texts';
               <div class="tb-list__trail tb-list__trail--icons">
                 @if (openable()) {
                   <p-button
-                    icon="pi pi-download"
+                    icon="tb-i tb-i-download"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -55,7 +55,7 @@ import { T } from '../i18n/texts';
                 }
                 @if (removable()) {
                   <p-button
-                    icon="pi pi-times"
+                    icon="tb-i tb-i-close"
                     [text]="true"
                     [rounded]="true"
                     severity="danger"

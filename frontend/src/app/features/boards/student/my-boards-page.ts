@@ -46,7 +46,7 @@ import { T } from '../i18n/texts';
       <p-card>
         <h2 class="tb-sr-only">{{ t.list }}</h2>
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-          <tb-empty-state icon="pi-tb-board" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-co_present" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         </tb-load-state>
       </p-card>
     }

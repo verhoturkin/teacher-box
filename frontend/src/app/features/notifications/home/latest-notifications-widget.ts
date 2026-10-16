@@ -35,7 +35,7 @@ export const LATEST_COUNT = 5;
             <div class="tb-card-title__actions">
               <p-button
                 [label]="t.readAll"
-                icon="pi pi-check"
+                icon="tb-i tb-i-check"
                 severity="secondary"
                 [loading]="busy.is('all')"
                 (onClick)="markAllRead()"
@@ -47,7 +47,7 @@ export const LATEST_COUNT = 5;
       <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
         @if (items(); as items) {
           @if (items.length === 0) {
-            <tb-empty-state icon="pi-bell" [title]="t.nothing" />
+            <tb-empty-state icon="tb-i-notifications" [title]="t.nothing" />
           } @else {
             <ul class="tb-list tb-list--no-lead tb-latest" [attr.aria-label]="t.unreadList">
               @for (item of items; track item.id) {
@@ -69,7 +69,7 @@ export const LATEST_COUNT = 5;
                   @if (!mobile()) {
                     <div class="tb-list__trail">
                       <p-button
-                        icon="pi pi-check"
+                        icon="tb-i tb-i-check"
                         [text]="true"
                         [rounded]="true"
                         severity="secondary"

@@ -39,12 +39,14 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   flow `@if`/`@for`. Angular 21 is zoneless; `ng test` = Vitest.
 - UI components — PrimeNG 21; custom ones only when PrimeNG has nothing suitable. Themes:
   `providePrimeNG({ theme: { preset } })` from `@primeuix/themes`.
-- **Never upgrade PrimeNG / @primeuix/themes / primeicons to 22 / 3 / 8** (commercial PrimeUI licence,
+- **Never upgrade PrimeNG / @primeuix/themes to 22 / 3** (commercial PrimeUI licence,
   [ADR-0007](../docs/adr/0007-frontend-stack-licensing.md)); Angular — 21.x only. Install with
   `npx -y npm@11 ci|install` (npm ≥ 11).
 - **React island** ([ADR-0028](../docs/adr/0028-excalidraw-boards.md)): React and Excalidraw are imported only in
   `features/boards/editor/` (ESLint): `excalidraw-island.ts`, loaded lazily by `excalidraw-loader.ts`; tests
   use `@testing/excalidraw-fake`.
+- Icons — Material Symbols Rounded classes `tb-i tb-i-<name>` (design-system §1 «Icons», ADR-0046): after adding or
+  removing an icon run `npm run icons` and commit `core/theme/{icons,prime-icons}.scss` and `symbols.woff2`.
 - Section data — `LoadState` + `tb-load-state`, load requests via `quietContext()`; confirmations —
   `dangerConfirmation` / `safeConfirmation`; request actions — `[loading]` (`shared/ui/busy.ts`).
 

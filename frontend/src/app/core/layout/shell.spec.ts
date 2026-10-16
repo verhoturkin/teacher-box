@@ -53,7 +53,7 @@ describe('Shell', () => {
 
   it('shows a student photo on the user button instead of the person icon', async () => {
     const button = () => hostElement(fixture).querySelector('.tb-shell__user-button');
-    expect(button()?.querySelector('.pi-user')).not.toBeNull();
+    expect(button()?.querySelector('.tb-i-account_circle')).not.toBeNull();
 
     TestBed.inject(AuthService).profileChanged({
       displayName: 'Ника',
@@ -61,7 +61,7 @@ describe('Shell', () => {
     });
     await fixture.whenStable();
 
-    expect(button()?.querySelector('.pi-user')).toBeNull();
+    expect(button()?.querySelector('.tb-i-account_circle')).toBeNull();
     expect(button()?.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
       '/api/public/avatars/a',
     );

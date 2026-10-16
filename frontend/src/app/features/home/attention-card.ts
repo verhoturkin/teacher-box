@@ -23,7 +23,7 @@ interface AttentionItem {
   template: `
     <p-card [header]="t.title">
       @if (items().length === 0) {
-        <tb-empty-state [compact]="true" icon="pi-check-circle" [title]="t.nothing" />
+        <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.nothing" />
       } @else {
         <ul class="tb-list tb-attention">
           @for (item of items(); track item.text) {
@@ -70,31 +70,31 @@ export class AttentionCard {
     const notifications = this.notifications();
     const items: AttentionItem[] = [
       {
-        icon: 'pi pi-calendar-clock',
+        icon: 'tb-i tb-i-event_upcoming',
         text: T.attention.unmarked,
         count: schedule?.unmarked ?? 0,
         link: '/teacher/schedule',
       },
       {
-        icon: 'pi pi-question-circle',
+        icon: 'tb-i tb-i-help',
         text: T.attention.requests,
         count: schedule?.pendingRequests ?? 0,
         link: '/teacher/schedule',
       },
       {
-        icon: 'pi pi-inbox',
+        icon: 'tb-i tb-i-inbox',
         text: T.attention.toReview,
         count: homework?.toReview ?? 0,
         link: '/teacher/homework/review',
       },
       {
-        icon: 'pi pi-clock',
+        icon: 'tb-i tb-i-schedule',
         text: T.attention.overdue,
         count: homework?.overdue ?? 0,
         link: '/teacher/homework',
       },
       {
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'tb-i tb-i-warning',
         text: T.attention.failedDeliveries,
         count: notifications?.failedDeliveries ?? 0,
         link: '/teacher/notifications',

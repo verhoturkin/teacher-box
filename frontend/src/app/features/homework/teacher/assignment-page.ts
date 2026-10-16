@@ -81,24 +81,24 @@ import { T } from '../i18n/texts';
         </span>
         @if (assignment.boardId; as boardId) {
           <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
-            <i pButtonIcon aria-hidden="true" class="pi pi-arrow-up-right"></i>
+            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
             <span pButtonLabel>{{ t.openBoard }}</span>
           </a>
         }
         <p-button
           [label]="t.toBoard"
-          icon="pi pi-tb-board"
+          icon="tb-i tb-i-co_present"
           severity="secondary"
           [disabled]="!hasBoardMaterial()"
           (onClick)="boardVisible.set(true)"
         />
         <a pButton severity="secondary" routerLink="edit">
-          <i pButtonIcon aria-hidden="true" class="pi pi-pencil"></i>
+          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-edit"></i>
           <span pButtonLabel>{{ t.edit }}</span>
         </a>
         <p-button
           [label]="r.action"
-          icon="pi pi-trash"
+          icon="tb-i tb-i-delete"
           severity="danger"
           [text]="true"
           (onClick)="confirmDelete(assignment)"
@@ -127,7 +127,7 @@ import { T } from '../i18n/texts';
               <p-button
                 [label]="t.upload"
                 severity="secondary"
-                icon="pi pi-upload"
+                icon="tb-i tb-i-upload"
                 [loading]="uploading()"
                 (onClick)="upload()"
               />
@@ -145,7 +145,7 @@ import { T } from '../i18n/texts';
           <div class="tb-inline">
             <p-button
               [label]="t.bindTextbook"
-              icon="pi pi-book"
+              icon="tb-i tb-i-menu_book"
               severity="secondary"
               (onClick)="openBind(null)"
             />
@@ -159,7 +159,7 @@ import { T } from '../i18n/texts';
               <div class="tb-card-title__actions">
                 <p-button
                   [label]="t.add"
-                  icon="pi pi-plus"
+                  icon="tb-i tb-i-add"
                   severity="secondary"
                   (onClick)="assignMore.open()"
                 />
@@ -193,7 +193,7 @@ import { T } from '../i18n/texts';
               }
             </ul>
           } @else {
-            <tb-empty-state icon="pi-send" [title]="t.notAssigned" />
+            <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
           }
         </p-card>
       </div>

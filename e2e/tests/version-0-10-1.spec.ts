@@ -132,10 +132,12 @@ test('the sections have their icons and the phone bar leads with the daily ones'
 }) => {
   await signIn(page);
   const nav = page.locator('tb-side-nav');
-  await expect(nav.getByRole('link', { name: 'Задания' }).locator('.pi-pen-to-square')).toHaveCount(
+  await expect(nav.getByRole('link', { name: 'Задания' }).locator('.tb-i-assignment')).toHaveCount(
     1,
   );
-  await expect(nav.getByRole('link', { name: 'Учебники' }).locator('.pi-book')).toHaveCount(1);
+  await expect(nav.getByRole('link', { name: 'Учебники' }).locator('.tb-i-menu_book')).toHaveCount(
+    1,
+  );
 
   await page.setViewportSize(PHONE);
   const bar = page.locator('nav.tb-bottom-nav');

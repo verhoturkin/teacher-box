@@ -31,10 +31,10 @@ import { SHARED_T } from '@shared/i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (label(); as text) {
-      <p-button [label]="text" icon="pi pi-question-circle" [text]="true" (onClick)="open()" />
+      <p-button [label]="text" icon="tb-i tb-i-help" [text]="true" (onClick)="open()" />
     } @else {
       <p-button
-        icon="pi pi-question-circle"
+        icon="tb-i tb-i-help"
         [text]="true"
         [pTooltip]="name()"
         [rounded]="true"
@@ -56,7 +56,7 @@ import { SHARED_T } from '@shared/i18n/texts';
         <div class="tb-side-sheet__head">
           @if (trail().length > 1) {
             <p-button
-              icon="pi pi-arrow-left"
+              icon="tb-i tb-i-arrow_back"
               [text]="true"
               [rounded]="true"
               severity="secondary"

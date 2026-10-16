@@ -27,7 +27,7 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
               <p-button
                 [label]="t.download"
                 severity="secondary"
-                icon="pi pi-download"
+                icon="tb-i tb-i-download"
                 [loading]="pending()"
                 (onClick)="download()"
               />

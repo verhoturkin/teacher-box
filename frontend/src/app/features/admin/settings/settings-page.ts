@@ -124,7 +124,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       <tb-help-button help topic="admin/settings" />
       <p-button
         [label]="t.saveAndRestart"
-        icon="pi pi-save"
+        icon="tb-i tb-i-save"
         [disabled]="changes() === 0"
         (onClick)="openConfirm()"
       />
@@ -220,7 +220,11 @@ function toGroup(settings: readonly AdminSetting[]): Group {
                         <li class="tb-setting">
                           <span class="tb-list__lead" aria-hidden="true"
                             ><i
-                              [class]="setting.access === 'DOCKER' ? 'pi pi-box' : 'pi pi-lock'"
+                              [class]="
+                                setting.access === 'DOCKER'
+                                  ? 'tb-i tb-i-deployed_code'
+                                  : 'tb-i tb-i-lock'
+                              "
                             ></i
                           ></span>
                           <div class="tb-list__text">

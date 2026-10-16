@@ -9,20 +9,25 @@ import { T } from './i18n/texts';
 const ACTIONS = [
   {
     label: T.quickActions.lesson,
-    icon: 'pi-calendar-plus',
+    icon: 'tb-i-calendar_add_on',
     link: '/teacher/schedule',
     create: 'lesson',
   },
-  { label: T.quickActions.payment, icon: 'pi-wallet', link: '/teacher/billing', create: 'payment' },
+  {
+    label: T.quickActions.payment,
+    icon: 'tb-i-account_balance_wallet',
+    link: '/teacher/billing',
+    create: 'payment',
+  },
   {
     label: T.quickActions.student,
-    icon: 'pi-user-plus',
+    icon: 'tb-i-person_add',
     link: '/teacher/students',
     create: 'student',
   },
   {
     label: T.quickActions.assignment,
-    icon: 'pi-book',
+    icon: 'tb-i-menu_book',
     link: '/teacher/homework',
     create: 'assignment',
   },
@@ -52,7 +57,7 @@ const FAB_ITEMS: readonly FabMenuItem[] = ACTIONS.map((action) => ({
             [routerLink]="action.link"
             [queryParams]="{ create: action.create }"
           >
-            <i pButtonIcon aria-hidden="true" class="pi {{ action.icon }}"></i>
+            <i pButtonIcon aria-hidden="true" class="tb-i {{ action.icon }}"></i>
             <span pButtonLabel>{{ action.label }}</span>
           </a>
         }

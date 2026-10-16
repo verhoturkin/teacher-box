@@ -26,7 +26,7 @@ import { T } from '../i18n/texts';
         />
       </article>
     } @empty {
-      <tb-empty-state icon="pi-comments" [title]="t.noAnswers" />
+      <tb-empty-state icon="tb-i-forum" [title]="t.noAnswers" />
     }
   `,
 })

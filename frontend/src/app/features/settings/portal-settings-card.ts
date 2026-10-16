@@ -94,7 +94,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   (click)="form.controls.accent.setValue(accent.value)"
                 >
                   @if (form.controls.accent.value === accent.value) {
-                    <i class="pi pi-check" aria-hidden="true"></i>
+                    <i class="tb-i tb-i-check" aria-hidden="true"></i>
                   }
                 </button>
               }
@@ -109,7 +109,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 [style.color]="own() ? ownSwatch().color : null"
                 (click)="chooseOwn()"
               >
-                <i [class]="own() ? 'pi pi-check' : 'pi pi-palette'" aria-hidden="true"></i>
+                <i [class]="own() ? 'tb-i tb-i-check' : 'tb-i tb-i-palette'" aria-hidden="true"></i>
               </button>
             </div>
             @if (own()) {
@@ -166,14 +166,14 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               <p-button
                 [label]="t.upload"
                 [ariaLabel]="t.uploadLogo"
-                icon="pi pi-upload"
+                icon="tb-i tb-i-upload"
                 severity="secondary"
                 [loading]="uploading()"
                 (onClick)="logoFile.click()"
               />
               @if (settings.logo !== null) {
                 <p-button
-                  icon="pi pi-trash"
+                  icon="tb-i tb-i-delete"
                   severity="danger"
                   [text]="true"
                   [rounded]="true"

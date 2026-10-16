@@ -24,7 +24,7 @@ import { T } from '../i18n/texts';
     @if (callOwner(); as owner) {
       <p-button
         [label]="label()"
-        icon="pi pi-video"
+        icon="tb-i tb-i-videocam"
         [severity]="tonal() ? 'secondary' : 'primary'"
         [styleClass]="medium() ? 'tb-button-m' : ''"
         [loading]="session.opening() === owner"
@@ -41,13 +41,13 @@ import { T } from '../i18n/texts';
         <p-button
           [styleClass]="medium() ? 'tb-split__main tb-button-m' : 'tb-split__main'"
           [label]="label()"
-          icon="pi pi-video"
+          icon="tb-i tb-i-videocam"
           [severity]="tonal() ? 'secondary' : 'primary'"
           (onClick)="openApp()"
         />
         <p-button
           styleClass="tb-split__more"
-          icon="pi pi-chevron-down"
+          icon="tb-i tb-i-expand_more"
           [severity]="tonal() ? 'secondary' : 'primary'"
           [ariaLabel]="t.other"
           [tbAttributes]="{
@@ -74,7 +74,7 @@ import { T } from '../i18n/texts';
         [severity]="tonal() ? 'secondary' : 'primary'"
         [class.tb-button-m]="medium()"
       >
-        <i pButtonIcon aria-hidden="true" class="pi pi-video"></i>
+        <i pButtonIcon aria-hidden="true" class="tb-i tb-i-videocam"></i>
         <span pButtonLabel>{{ label() }}</span>
       </a>
     }
@@ -109,7 +109,7 @@ export class JoinLessonButton {
   protected readonly items = computed<MenuItem[]>(() => [
     {
       label: T.join.inBrowser,
-      icon: 'pi pi-external-link',
+      icon: 'tb-i tb-i-open_in_new',
       url: this.url(),
       target: '_blank',
     },

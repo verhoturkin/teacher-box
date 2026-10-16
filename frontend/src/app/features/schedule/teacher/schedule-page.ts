@@ -118,7 +118,12 @@ const ALL_DAY_START_HOUR = 10;
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/schedule" />
-      <p-button class="tb-page-fab" [label]="t.lesson" icon="pi pi-plus" (onClick)="newLesson()" />
+      <p-button
+        class="tb-page-fab"
+        [label]="t.lesson"
+        icon="tb-i tb-i-add"
+        (onClick)="newLesson()"
+      />
     </tb-page-header>
     @if (localTimeHint(); as hint) {
       <p class="tb-hint">{{ hint }}</p>
@@ -189,7 +194,7 @@ const ALL_DAY_START_HOUR = 10;
                     <!-- stretched over the row: the whole row opens the sheet -->
                     <p-button
                       class="tb-list__stretched"
-                      icon="pi pi-chevron-right"
+                      icon="tb-i tb-i-chevron_right"
                       severity="secondary"
                       [text]="true"
                       [rounded]="true"
@@ -213,7 +218,7 @@ const ALL_DAY_START_HOUR = 10;
         @if (lesson.groupId !== null) {
           <p-button
             [label]="t.mark"
-            icon="pi pi-users"
+            icon="tb-i tb-i-group"
             [text]="!mobile()"
             [fluid]="mobile()"
             [ariaLabel]="t.markAttendance(with(lesson))"
@@ -222,7 +227,7 @@ const ALL_DAY_START_HOUR = 10;
         } @else {
           <p-button
             [label]="t.conductedLabel"
-            icon="pi pi-check"
+            icon="tb-i tb-i-check"
             [text]="!mobile()"
             [fluid]="mobile()"
             [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
@@ -231,7 +236,7 @@ const ALL_DAY_START_HOUR = 10;
           />
           <p-button
             [label]="t.missedLabel"
-            icon="pi pi-user-minus"
+            icon="tb-i tb-i-person_remove"
             severity="secondary"
             [text]="!mobile()"
             [fluid]="mobile()"
@@ -271,7 +276,7 @@ const ALL_DAY_START_HOUR = 10;
             <div class="tb-card-title__actions">
               <p-button
                 [label]="t.add"
-                icon="pi pi-plus"
+                icon="tb-i tb-i-add"
                 severity="secondary"
                 [ariaLabel]="t.addSeries"
                 (onClick)="newSeries()"
@@ -286,19 +291,21 @@ const ALL_DAY_START_HOUR = 10;
           (retry)="loadSeries()"
         >
           @if (series().length === 0) {
-            <tb-empty-state icon="pi-replay" [title]="t.noSeriesTitle" [hint]="t.noSeriesHint" />
+            <tb-empty-state icon="tb-i-replay" [title]="t.noSeriesTitle" [hint]="t.noSeriesHint" />
           } @else {
             <ul class="tb-list tb-list--no-phone-lead">
               @for (item of series(); track item.id) {
                 <li>
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-replay"></i></span>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i class="tb-i tb-i-replay"></i
+                  ></span>
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ with(item) }}</span>
                     <span class="tb-list__supporting">{{ weekly(item) }}</span>
                   </div>
                   <div class="tb-list__trail tb-list__trail--icons">
                     <p-button
-                      icon="pi pi-ellipsis-v"
+                      icon="tb-i tb-i-more_vert"
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
@@ -325,7 +332,7 @@ const ALL_DAY_START_HOUR = 10;
             <div class="tb-card-title__actions">
               <p-button
                 [label]="t.add"
-                icon="pi pi-plus"
+                icon="tb-i tb-i-add"
                 severity="secondary"
                 [ariaLabel]="t.addOffTime"
                 (onClick)="newOffTime()"
@@ -340,19 +347,25 @@ const ALL_DAY_START_HOUR = 10;
           (retry)="loadOffTimes()"
         >
           @if (offTimes().length === 0) {
-            <tb-empty-state icon="pi-moon" [title]="t.noOffTimeTitle" [hint]="t.noOffTimeHint" />
+            <tb-empty-state
+              icon="tb-i-dark_mode"
+              [title]="t.noOffTimeTitle"
+              [hint]="t.noOffTimeHint"
+            />
           } @else {
             <ul class="tb-list tb-list--no-phone-lead">
               @for (item of offTimes(); track item.id) {
                 <li>
-                  <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-moon"></i></span>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i class="tb-i tb-i-dark_mode"></i
+                  ></span>
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ item.note ?? t.notWorking }}</span>
                     <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
                   </div>
                   <div class="tb-list__trail tb-list__trail--icons">
                     <p-button
-                      icon="pi pi-ellipsis-v"
+                      icon="tb-i tb-i-more_vert"
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
@@ -664,14 +677,14 @@ export class SchedulePage implements OnInit {
     return [
       {
         label: T.page.editItem,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.editSeries(series);
         },
       },
       {
         label: T.page.stopItem,
-        icon: 'pi pi-stop-circle',
+        icon: 'tb-i tb-i-stop_circle',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.stopSeries(series);
@@ -685,14 +698,14 @@ export class SchedulePage implements OnInit {
     return [
       {
         label: T.page.editItem,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.editOffTime(offTime);
         },
       },
       {
         label: T.page.deleteItem,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.deleteOffTime(offTime);

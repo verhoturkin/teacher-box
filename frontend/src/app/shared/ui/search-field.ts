@@ -27,7 +27,7 @@ import { SHARED_T } from '@shared/i18n/texts';
   ],
   template: `
     <p-iconfield>
-      <p-inputicon styleClass="pi pi-search" />
+      <p-inputicon styleClass="tb-i tb-i-search" />
       <input
         #field
         pInputText
@@ -49,7 +49,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           [attr.aria-label]="clearLabel"
           (click)="clear()"
         >
-          <i class="pi pi-times" aria-hidden="true"></i>
+          <i class="tb-i tb-i-close" aria-hidden="true"></i>
         </button>
       }
     </p-iconfield>

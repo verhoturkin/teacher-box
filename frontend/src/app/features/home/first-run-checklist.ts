@@ -45,7 +45,7 @@ interface Step {
         <ol class="tb-checklist">
           @for (step of left(); track step.title) {
             <li>
-              <i class="pi pi-circle" aria-hidden="true"></i>
+              <i class="tb-i tb-i-radio_button_unchecked" aria-hidden="true"></i>
               <div>
                 <a
                   [routerLink]="step.link"

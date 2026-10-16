@@ -68,7 +68,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
             <p-button
               [label]="t.create"
               severity="secondary"
-              icon="pi pi-database"
+              icon="tb-i tb-i-database"
               [loading]="creating()"
               (onClick)="create()"
             />
@@ -83,12 +83,14 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
       </p>
       <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
         @if (backups().length === 0) {
-          <tb-empty-state icon="pi-database" [title]="t.empty" />
+          <tb-empty-state icon="tb-i-database" [title]="t.empty" />
         } @else {
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (backup of backups(); track backup.name) {
               <li>
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-database"></i></span>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i class="tb-i tb-i-database"></i
+                ></span>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{
                     backup.createdAt | date: 'dd.MM.yyyy HH:mm'
@@ -97,7 +99,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    icon="pi pi-ellipsis-v"
+                    icon="tb-i tb-i-more_vert"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -246,7 +248,7 @@ export class BackupsCard implements OnInit {
     const items: MenuItem[] = [
       {
         label: T.backups.restore,
-        icon: 'pi pi-history',
+        icon: 'tb-i tb-i-history',
         command: () => {
           this.openRestore(backup);
         },
@@ -255,7 +257,7 @@ export class BackupsCard implements OnInit {
     if (!this.isAdmin()) {
       items.push({
         label: T.backups.download,
-        icon: 'pi pi-download',
+        icon: 'tb-i tb-i-download',
         command: () => {
           this.download(backup);
         },
@@ -263,7 +265,7 @@ export class BackupsCard implements OnInit {
       if (this.drive.connected()) {
         items.push({
           label: T.backups.sendToDrive,
-          icon: 'pi pi-cloud-upload',
+          icon: 'tb-i tb-i-cloud_upload',
           command: () => {
             this.sendToDrive(backup);
           },
@@ -271,7 +273,7 @@ export class BackupsCard implements OnInit {
       }
       items.push({
         label: T.backups.deleteItem,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.confirmDelete(backup);

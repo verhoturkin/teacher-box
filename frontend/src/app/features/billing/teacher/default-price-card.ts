@@ -49,7 +49,7 @@ import { locale } from '@core/i18n/language';
               severity="secondary"
               type="submit"
               [label]="c.save"
-              icon="pi pi-check"
+              icon="tb-i tb-i-check"
               [loading]="pending()"
             />
           </div>
@@ -60,7 +60,7 @@ import { locale } from '@core/i18n/language';
           <span class="tb-stat__value">
             {{ price() | money: currency() }}
             <p-button
-              icon="pi pi-pencil"
+              icon="tb-i tb-i-edit"
               severity="secondary"
               [text]="true"
               [pTooltip]="t.edit"

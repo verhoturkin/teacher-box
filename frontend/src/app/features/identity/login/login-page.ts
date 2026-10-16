@@ -74,7 +74,7 @@ import { LanguagePicker } from '@core/i18n/language-picker';
           <p-button
             type="submit"
             [label]="t.submit"
-            icon="pi pi-sign-in"
+            icon="tb-i tb-i-login"
             [loading]="pending()"
             [fluid]="true"
           />

@@ -44,7 +44,7 @@ import { T } from '../i18n/texts';
             <!-- a phone: a swipe marks it read, no tick -->
             @if (!item.read && !mobile()) {
               <p-button
-                icon="pi pi-check"
+                icon="tb-i tb-i-check"
                 [text]="true"
                 [pTooltip]="t.markRead"
                 [rounded]="true"

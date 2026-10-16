@@ -85,7 +85,7 @@ export interface MemberOption {
             <div class="tb-textbook-file">
               <p-button
                 [label]="file() === null ? t.chooseFile : t.otherFile"
-                icon="pi pi-paperclip"
+                icon="tb-i tb-i-attach_file"
                 severity="secondary"
                 (onClick)="picker.click()"
               />

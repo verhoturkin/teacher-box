@@ -49,7 +49,7 @@ export const RESET_WORD = T.reset.word;
       </ng-template>
       <p>{{ t.about }}</p>
       <p class="tb-muted">{{ t.stays }}</p>
-      <p-button [label]="t.open" icon="pi pi-trash" severity="secondary" (onClick)="open()" />
+      <p-button [label]="t.open" icon="tb-i tb-i-delete" severity="secondary" (onClick)="open()" />
     </p-card>
     <p-dialog
       [header]="t.header"

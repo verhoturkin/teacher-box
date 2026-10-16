@@ -52,7 +52,7 @@ describe('CallTile', () => {
     });
 
     expect(host.textContent).toContain('Ольга (вы)');
-    expect(host.querySelector('.tb-call-crossed')).not.toBeNull();
+    expect(host.querySelector('.tb-i-mic_off')).not.toBeNull();
     expect(host.querySelector('.tb-call-tile__weak')).not.toBeNull();
     expect(host.getAttribute('aria-label')).toBe(
       'Ольга (вы), микрофон выключен, камера выключена, слабая связь',
@@ -75,7 +75,7 @@ describe('CallTile', () => {
 
     expect(screen.attached).toHaveLength(1);
     expect(host.classList).toContain('tb-call-tile--screen');
-    expect(host.querySelector('.tb-call-crossed')).toBeNull();
+    expect(host.querySelector('.tb-i-mic_off')).toBeNull();
     expect(host.querySelector('video')?.classList).not.toContain('tb-call-tile__video--mirror');
     expect(host.getAttribute('aria-label')).toBe('Экран: Анна');
 

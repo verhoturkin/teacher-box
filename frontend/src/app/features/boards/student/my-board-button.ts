@@ -27,12 +27,12 @@ import { T } from '../i18n/texts';
     @if (board(); as found) {
       @if (found.kind === 'EXCALIDRAW') {
         <a pButton [routerLink]="route(found)">
-          <i pButtonIcon aria-hidden="true" class="pi pi-tb-board"></i>
+          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-co_present"></i>
           <span pButtonLabel>{{ t.open }}</span>
         </a>
       } @else {
         <a pButton [href]="found.url" target="_blank" rel="noopener">
-          <i pButtonIcon aria-hidden="true" class="pi pi-external-link"></i>
+          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-open_in_new"></i>
           <span pButtonLabel>{{ t.open }}</span>
         </a>
       }

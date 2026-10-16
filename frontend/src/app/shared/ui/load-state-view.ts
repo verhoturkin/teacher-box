@@ -26,14 +26,14 @@ import { SHARED_T } from '@shared/i18n/texts';
       }
       @case ('error') {
         <div class="tb-load-state__error" role="alert">
-          <i class="pi pi-exclamation-circle tb-load-state__icon" aria-hidden="true"></i>
+          <i class="tb-i tb-i-error tb-load-state__icon" aria-hidden="true"></i>
           <p class="tb-load-state__title">{{ t.load.failed(what()) }}</p>
           @if (state().error(); as error) {
             <p class="tb-load-state__detail">{{ error }}</p>
           }
           <p-button
             [label]="t.common.retry"
-            icon="pi pi-refresh"
+            icon="tb-i tb-i-refresh"
             severity="secondary"
             (onClick)="retry.emit()"
           />

@@ -6,19 +6,27 @@ import { Shell } from './shell';
 export const TEACHER_MENU: MenuItem[] = [
   {
     label: CORE_T.nav.home,
-    icon: 'pi pi-home',
+    icon: 'tb-i tb-i-home',
     routerLink: '/teacher',
     routerLinkActiveOptions: { exact: true },
   },
-  { label: CORE_T.nav.schedule, icon: 'pi pi-calendar', routerLink: '/teacher/schedule' },
-  { label: CORE_T.nav.calls, icon: 'pi pi-video', routerLink: '/teacher/calls' },
-  { label: CORE_T.nav.students, icon: 'pi pi-users', routerLink: '/teacher/students' },
-  { label: CORE_T.nav.homework, icon: 'pi pi-pen-to-square', routerLink: '/teacher/homework' },
-  { label: CORE_T.nav.textbooks, icon: 'pi pi-book', routerLink: '/teacher/textbooks' },
-  { label: CORE_T.nav.billing, icon: 'pi pi-wallet', routerLink: '/teacher/billing' },
-  { label: CORE_T.nav.boards, icon: 'pi pi-tb-board', routerLink: '/teacher/boards' },
-  { label: CORE_T.nav.notifications, icon: 'pi pi-bell', routerLink: '/teacher/notifications' },
-  { label: CORE_T.nav.ai, icon: 'pi pi-sparkles', routerLink: '/teacher/ai' },
+  { label: CORE_T.nav.schedule, icon: 'tb-i tb-i-calendar_month', routerLink: '/teacher/schedule' },
+  { label: CORE_T.nav.calls, icon: 'tb-i tb-i-videocam', routerLink: '/teacher/calls' },
+  { label: CORE_T.nav.students, icon: 'tb-i tb-i-group', routerLink: '/teacher/students' },
+  { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/teacher/homework' },
+  { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/teacher/textbooks' },
+  {
+    label: CORE_T.nav.billing,
+    icon: 'tb-i tb-i-account_balance_wallet',
+    routerLink: '/teacher/billing',
+  },
+  { label: CORE_T.nav.boards, icon: 'tb-i tb-i-co_present', routerLink: '/teacher/boards' },
+  {
+    label: CORE_T.nav.notifications,
+    icon: 'tb-i tb-i-notifications',
+    routerLink: '/teacher/notifications',
+  },
+  { label: CORE_T.nav.ai, icon: 'tb-i tb-i-auto_awesome', routerLink: '/teacher/ai' },
 ];
 
 /** The sections that lead the bottom bar on a phone. */
@@ -31,7 +39,7 @@ export const TEACHER_BOTTOM_NAV: readonly string[] = [
 
 /** The teacher's user menu: instance settings next to the account. */
 export const TEACHER_USER_LINKS: MenuItem[] = [
-  { label: CORE_T.nav.settings, icon: 'pi pi-cog', routerLink: '/teacher/settings' },
+  { label: CORE_T.nav.settings, icon: 'tb-i tb-i-settings', routerLink: '/teacher/settings' },
 ];
 
 /** Frame of the teacher area (`/teacher/**`). */

@@ -23,7 +23,7 @@ import { T } from '../i18n/texts';
   template: `
     <p-button
       [styleClass]="toggleClass(session.microphone())"
-      icon="pi pi-microphone"
+      [icon]="session.microphone() ? 'tb-i tb-i-mic' : 'tb-i tb-i-mic_off'"
       [rounded]="true"
       [severity]="session.microphone() ? 'secondary' : 'danger'"
       [ariaLabel]="t.microphone"
@@ -33,7 +33,7 @@ import { T } from '../i18n/texts';
     />
     <p-button
       [styleClass]="toggleClass(session.camera())"
-      icon="pi pi-video"
+      [icon]="session.camera() ? 'tb-i tb-i-videocam' : 'tb-i tb-i-videocam_off'"
       [rounded]="true"
       [severity]="session.camera() ? 'secondary' : 'danger'"
       [ariaLabel]="t.camera"
@@ -45,7 +45,7 @@ import { T } from '../i18n/texts';
       @if (canShare && !mobile()) {
         <p-button
           [styleClass]="'tb-call-button' + (session.screen() ? ' tb-call-button--active' : '')"
-          icon="pi pi-desktop"
+          icon="tb-i tb-i-present_to_all"
           [rounded]="true"
           [severity]="session.screen() ? undefined : 'secondary'"
           [ariaLabel]="t.screen"
@@ -56,7 +56,7 @@ import { T } from '../i18n/texts';
       }
       <p-button
         styleClass="tb-call-button"
-        icon="pi pi-cog"
+        icon="tb-i tb-i-settings"
         [rounded]="true"
         severity="secondary"
         [ariaLabel]="t.settings"
@@ -79,7 +79,7 @@ import { T } from '../i18n/texts';
       }
       <p-button
         styleClass="tb-call-button"
-        icon="pi pi-window-minimize"
+        icon="tb-i tb-i-close_fullscreen"
         [rounded]="true"
         severity="secondary"
         [ariaLabel]="t.minimize"
@@ -88,7 +88,7 @@ import { T } from '../i18n/texts';
     } @else {
       <p-button
         styleClass="tb-call-button"
-        icon="pi pi-window-maximize"
+        icon="tb-i tb-i-open_in_full"
         [rounded]="true"
         severity="secondary"
         [ariaLabel]="t.expand"
@@ -97,7 +97,7 @@ import { T } from '../i18n/texts';
     }
     <p-button
       styleClass="tb-call-button tb-call-button--leave"
-      icon="pi pi-phone"
+      icon="tb-i tb-i-call_end"
       [rounded]="true"
       severity="danger"
       [ariaLabel]="t.leave"
@@ -140,7 +140,7 @@ export class CallControls {
               const selected = chosen === null ? index === 0 : chosen === device.deviceId;
               return {
                 label: device.label || `${label} ${String(index + 1)}`,
-                icon: selected ? 'pi pi-check' : 'pi pi-circle-off tb-call-menu__blank',
+                icon: selected ? 'tb-i tb-i-check' : 'tb-i tb-call-menu__blank',
                 styleClass: selected ? 'tb-menu-item--selected' : undefined,
                 command: () => {
                   void this.session.switchDevice(kind, device.deviceId);
@@ -151,7 +151,7 @@ export class CallControls {
     const processing = this.session.audioProcessing();
     const toggle = (label: string, key: keyof AudioProcessing): MenuItem => ({
       label,
-      icon: processing[key] ? 'pi pi-check' : 'pi pi-circle-off tb-call-menu__blank',
+      icon: processing[key] ? 'tb-i tb-i-check' : 'tb-i tb-call-menu__blank',
       styleClass: processing[key] ? 'tb-menu-item--selected' : undefined,
       command: () => {
         void this.session.setAudioProcessing({ ...processing, [key]: !processing[key] });
@@ -173,7 +173,7 @@ export class CallControls {
         items: [
           {
             label: T.controls.stats,
-            icon: 'pi pi-chart-bar',
+            icon: 'tb-i tb-i-bar_chart',
             command: () => {
               this.statsOpen.set(true);
             },

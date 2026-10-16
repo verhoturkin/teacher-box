@@ -260,10 +260,10 @@ export class ScheduleCalendar {
     const actions = document.createElement('div');
     actions.className = 'tb-lesson-move';
     actions.append(
-      moveButton('pi pi-check', C.move, () => {
+      moveButton('tb-i tb-i-check', C.move, () => {
         this.confirmMove();
       }),
-      moveButton('pi pi-times', C.undoMove, () => {
+      moveButton('tb-i tb-i-close', C.undoMove, () => {
         this.cancelMove();
       }),
     );

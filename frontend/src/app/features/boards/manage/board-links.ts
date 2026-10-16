@@ -37,11 +37,11 @@ import { T } from '../i18n/texts';
         @for (board of boards(); track board.id) {
           @if (board.kind === 'EXCALIDRAW') {
             <a [class]="linkClass()" [routerLink]="route(board.id)"
-              ><i class="pi pi-tb-board" aria-hidden="true"></i> {{ board.title }}</a
+              ><i class="tb-i tb-i-co_present" aria-hidden="true"></i> {{ board.title }}</a
             >
           } @else {
             <a [class]="linkClass()" [href]="board.url" target="_blank" rel="noopener"
-              ><i class="pi pi-external-link" aria-hidden="true"></i> {{ board.title }}</a
+              ><i class="tb-i tb-i-open_in_new" aria-hidden="true"></i> {{ board.title }}</a
             >
           }
         }

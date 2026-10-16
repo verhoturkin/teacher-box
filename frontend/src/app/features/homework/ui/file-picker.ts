@@ -41,7 +41,7 @@ export const ACCEPTED_FILES =
             </div>
             <div class="tb-list__trail tb-list__trail--icons">
               <p-button
-                icon="pi pi-times"
+                icon="tb-i tb-i-close"
                 [text]="true"
                 [rounded]="true"
                 severity="danger"
@@ -65,7 +65,7 @@ export const ACCEPTED_FILES =
     />
     <p-button
       [label]="label()"
-      icon="pi pi-paperclip"
+      icon="tb-i tb-i-attach_file"
       severity="secondary"
       (onClick)="input.click()"
     />

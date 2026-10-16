@@ -58,7 +58,7 @@ export interface AppliedDraft {
   template: `
     <section class="tb-ai-panel" [attr.aria-label]="t.title">
       <div class="tb-ai-panel__request" [class.tb-ai-panel__request--folded]="folded()">
-        <i class="pi pi-sparkles tb-ai-panel__mark" aria-hidden="true"></i>
+        <i class="tb-i tb-i-auto_awesome tb-ai-panel__mark" aria-hidden="true"></i>
         <textarea
           pTextarea
           id="ai-prompt"
@@ -74,7 +74,7 @@ export interface AppliedDraft {
       <div class="tb-ai-panel__actions">
         <p-button
           [label]="t.prompts"
-          icon="pi pi-bookmark"
+          icon="tb-i tb-i-bookmark"
           severity="secondary"
           ariaHasPopup="dialog"
           (onClick)="prompts.toggle($event)"
@@ -82,7 +82,7 @@ export interface AppliedDraft {
         @if (sources().length > 0) {
           <p-button
             [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
-            icon="pi pi-book"
+            icon="tb-i tb-i-menu_book"
             severity="secondary"
             ariaHasPopup="dialog"
             (onClick)="sourcePicker.toggle($event)"
@@ -91,7 +91,7 @@ export interface AppliedDraft {
         <p-button
           class="tb-ai-panel__generate"
           [label]="draft() === null ? t.generate : t.again"
-          [icon]="draft() === null ? 'pi pi-sparkles' : 'pi pi-refresh'"
+          [icon]="draft() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
           [loading]="pending()"
           (onClick)="generate()"
         />
@@ -143,13 +143,13 @@ export interface AppliedDraft {
             <div class="tb-ai-panel__menu-actions">
               <p-button
                 [label]="t.savePrompt"
-                icon="pi pi-bookmark"
+                icon="tb-i tb-i-bookmark"
                 severity="secondary"
                 [text]="true"
                 (onClick)="startNaming()"
               />
               <a pButton routerLink="/teacher/ai" severity="secondary" [text]="true">
-                <i pButtonIcon aria-hidden="true" class="pi pi-cog"></i>
+                <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
                 <span pButtonLabel>{{ t.manage }}</span>
               </a>
             </div>
@@ -199,7 +199,7 @@ export interface AppliedDraft {
               }
               <p-button
                 [label]="t.replace"
-                icon="pi pi-check"
+                icon="tb-i tb-i-check"
                 (onClick)="apply(current, 'replace')"
               />
             </div>

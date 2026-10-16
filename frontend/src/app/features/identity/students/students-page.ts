@@ -70,7 +70,7 @@ import { SearchField } from '@shared/ui/search-field';
       <p-button
         class="tb-page-fab"
         [label]="t.add"
-        icon="pi pi-user-plus"
+        icon="tb-i tb-i-person_add"
         (onClick)="openCreate()"
       />
     </tb-page-header>
@@ -111,7 +111,7 @@ import { SearchField } from '@shared/ui/search-field';
                       [pTooltip]="inviteHint(student)"
                     />
                     <p-button
-                      icon="pi pi-ellipsis-v"
+                      icon="tb-i tb-i-more_vert"
                       [text]="true"
                       [rounded]="true"
                       severity="secondary"
@@ -131,9 +131,9 @@ import { SearchField } from '@shared/ui/search-field';
               }
             </ul>
           } @else if (students().length === 0) {
-            <tb-empty-state icon="pi-user-plus" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+            <tb-empty-state icon="tb-i-person_add" [title]="t.emptyTitle" [hint]="t.emptyHint" />
           } @else {
-            <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
+            <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
           }
         </tb-load-state>
       </p-card>
@@ -287,7 +287,7 @@ export class StudentsPage implements OnInit {
       dangerConfirmation({
         header: T.students.deactivateHeader,
         message: T.students.deactivateMessage(student.displayName),
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'tb-i tb-i-warning',
         acceptLabel: T.students.deactivate,
         accept: () => {
           this.api.deactivate(student.id).subscribe((saved) => {
@@ -310,7 +310,7 @@ export class StudentsPage implements OnInit {
     const items: MenuItem[] = [
       {
         label: T.students.edit,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.openEdit(student);
         },
@@ -319,7 +319,7 @@ export class StudentsPage implements OnInit {
     if (student.status === 'DEACTIVATED') {
       items.push({
         label: T.students.reactivate,
-        icon: 'pi pi-replay',
+        icon: 'tb-i tb-i-replay',
         command: () => {
           this.reactivate(student);
         },
@@ -328,14 +328,14 @@ export class StudentsPage implements OnInit {
       items.push(
         {
           label: student.status === 'ACTIVE' ? T.students.resetPassword : T.students.newInvite,
-          icon: 'pi pi-link',
+          icon: 'tb-i tb-i-link',
           command: () => {
             this.reissueInvite(student);
           },
         },
         {
           label: T.students.deactivateItem,
-          icon: 'pi pi-ban',
+          icon: 'tb-i tb-i-block',
           styleClass: 'tb-menu-item--danger',
           command: () => {
             this.confirmDeactivate(student);

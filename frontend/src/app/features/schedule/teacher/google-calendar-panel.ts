@@ -114,7 +114,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             <div class="tb-actions">
               <p-button
                 [label]="t.sync"
-                icon="pi pi-refresh"
+                icon="tb-i tb-i-refresh"
                 severity="secondary"
                 [loading]="pending()"
                 (onClick)="sync()"
@@ -145,7 +145,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 <p-button
                   [label]="t.connect"
                   severity="secondary"
-                  icon="pi pi-google"
+                  icon="tb-i tb-i-link"
                   [loading]="pending()"
                   (onClick)="connect()"
                 />
@@ -177,7 +177,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   <div class="tb-google-uri">
                     <code>{{ redirectUri() }}</code>
                     <p-button
-                      icon="pi pi-copy"
+                      icon="tb-i tb-i-content_copy"
                       [text]="true"
                       [pTooltip]="t.copyAddress"
                       [rounded]="true"

@@ -44,11 +44,11 @@ import { T } from '../i18n/texts';
     }
     <span class="tb-call-tile__name" aria-hidden="true">
       @if (!participant().microphone && !screen()) {
-        <i class="pi pi-microphone tb-call-crossed"></i>
+        <i class="tb-i tb-i-mic_off"></i>
       }
       <span class="tb-call-tile__text">{{ caption() }}</span>
       @if (weak()) {
-        <i class="pi pi-wifi tb-call-tile__weak"></i>
+        <i class="tb-i tb-i-network_wifi_1_bar tb-call-tile__weak"></i>
       }
     </span>
   `,

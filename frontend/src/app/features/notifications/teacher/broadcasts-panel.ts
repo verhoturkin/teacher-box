@@ -22,18 +22,18 @@ import { T } from '../i18n/texts';
         <p-button
           [label]="t.write"
           severity="secondary"
-          icon="pi pi-send"
+          icon="tb-i tb-i-send"
           (onClick)="openBroadcast()"
         />
       </div>
       @if (history(); as history) {
         @if (history.length === 0) {
-          <tb-empty-state icon="pi-send" [title]="t.empty" />
+          <tb-empty-state icon="tb-i-send" [title]="t.empty" />
         } @else {
           <ul class="tb-list tb-broadcasts">
             @for (item of history; track item.id) {
               <li class="tb-broadcast">
-                <span class="tb-list__lead" aria-hidden="true"><i class="pi pi-send"></i></span>
+                <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-send"></i></span>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ item.title }}</span>
                   @if (item.body !== null) {

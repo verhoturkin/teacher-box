@@ -145,6 +145,6 @@ test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
   const end = page.getByRole('menuitem', { name: 'Завершить…' });
   await expect(end).toBeVisible();
   await expect(end.locator('xpath=ancestor-or-self::li')).toHaveClass(/tb-menu-item--danger/);
-  await expect(end.locator('.pi-stop-circle')).toHaveCount(1);
-  await expect(end.locator('.pi-trash')).toHaveCount(0);
+  await expect(end.locator('.tb-i-stop_circle')).toHaveCount(1);
+  await expect(end.locator('.tb-i-delete')).toHaveCount(0);
 });

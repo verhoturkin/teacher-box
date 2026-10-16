@@ -42,7 +42,7 @@ import { T } from './i18n/texts';
       @if (prompts().length === 0) {
         <tb-empty-state
           [compact]="true"
-          icon="pi-bookmark"
+          icon="tb-i-bookmark"
           [title]="t.empty"
           [hint]="t.emptyHint"
         />
@@ -56,7 +56,7 @@ import { T } from './i18n/texts';
               </div>
               <div class="tb-list__trail tb-list__trail--icons">
                 <p-button
-                  icon="pi pi-pencil"
+                  icon="tb-i tb-i-edit"
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
@@ -64,7 +64,7 @@ import { T } from './i18n/texts';
                   (onClick)="edit(prompt)"
                 />
                 <p-button
-                  icon="pi pi-trash"
+                  icon="tb-i tb-i-delete"
                   [text]="true"
                   [rounded]="true"
                   severity="danger"

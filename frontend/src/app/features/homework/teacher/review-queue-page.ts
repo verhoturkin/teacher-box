@@ -49,7 +49,7 @@ import { T } from '../i18n/texts';
             }
           </ul>
         } @else {
-          <tb-empty-state icon="pi-check-circle" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-check_circle" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>

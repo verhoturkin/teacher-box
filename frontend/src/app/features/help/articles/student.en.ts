@@ -168,7 +168,7 @@ Send the bot /stop or disconnect the messenger in «Notifications». There you c
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
 
-- The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Homework» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left.
+- The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Homework» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left. The chosen section's icon is filled.
 - The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
 - The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
 - Lists are shown as cards, forms open full screen.

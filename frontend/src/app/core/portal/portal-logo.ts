@@ -16,7 +16,7 @@ import { Portal } from './portal';
         [style.width]="round() ? size() : null"
       />
     } @else {
-      <i class="pi pi-graduation-cap" aria-hidden="true" [style.font-size]="size()"></i>
+      <i class="tb-i tb-i-school" aria-hidden="true" [style.font-size]="size()"></i>
     }
   `,
   styles: `

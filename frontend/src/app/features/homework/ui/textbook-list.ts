@@ -68,7 +68,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
             @if (downloadable()) {
               <div class="tb-list__trail tb-list__trail--icons">
                 <p-button
-                  icon="pi pi-download"
+                  icon="tb-i tb-i-download"
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
@@ -82,7 +82,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
               <div class="tb-list__trail tb-list__trail--icons">
                 @if (textbook.format !== 'DOCUMENT') {
                   <p-button
-                    icon="pi pi-tb-board"
+                    icon="tb-i tb-i-co_present"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -92,7 +92,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                   />
                 }
                 <p-button
-                  icon="pi pi-pencil"
+                  icon="tb-i tb-i-edit"
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
@@ -101,7 +101,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
                   (onClick)="edit.emit(textbook)"
                 />
                 <p-button
-                  icon="pi pi-times"
+                  icon="tb-i tb-i-close"
                   [text]="true"
                   [rounded]="true"
                   severity="danger"

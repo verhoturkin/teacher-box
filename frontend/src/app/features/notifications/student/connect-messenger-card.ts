@@ -29,7 +29,7 @@ export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
         <p>{{ t.text(names()) }}</p>
         <div class="tb-actions">
           <a pButton routerLink="/cabinet/notifications" severity="secondary">
-            <i pButtonIcon aria-hidden="true" class="pi pi-link"></i>
+            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-link"></i>
             <span pButtonLabel>{{ t.connect }}</span>
           </a>
           <p-button [label]="t.later" severity="secondary" [text]="true" (onClick)="dismiss()" />

@@ -55,7 +55,7 @@ import { SHARED_T } from '@shared/i18n/texts';
         />
         @if (invite()) {
           <p-button
-            [icon]="copied() ? 'pi pi-check' : 'pi pi-copy'"
+            [icon]="copied() ? 'tb-i tb-i-check' : 'tb-i tb-i-content_copy'"
             [label]="copied() ? t.copied : t.copy"
             (onClick)="copy()"
           />

@@ -70,7 +70,12 @@ import { SearchField } from '@shared/ui/search-field';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/textbooks" />
-      <p-button class="tb-page-fab" [label]="t.create" icon="pi pi-plus" (onClick)="openCreate()" />
+      <p-button
+        class="tb-page-fab"
+        [label]="t.create"
+        icon="tb-i tb-i-add"
+        (onClick)="openCreate()"
+      />
     </tb-page-header>
 
     <p-card>
@@ -102,7 +107,7 @@ import { SearchField } from '@shared/ui/search-field';
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    icon="pi pi-ellipsis-v"
+                    icon="tb-i tb-i-more_vert"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -120,9 +125,9 @@ import { SearchField } from '@shared/ui/search-field';
             }
           </ul>
         } @else if (textbooks().length > 0) {
-          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
+          <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
-          <tb-empty-state icon="pi-book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-menu_book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>
@@ -319,7 +324,7 @@ export class TextbooksPage implements OnInit {
     return [
       {
         label: T.list.download,
-        icon: 'pi pi-download',
+        icon: 'tb-i tb-i-download',
         command: () => {
           this.download(textbook);
         },
@@ -329,7 +334,7 @@ export class TextbooksPage implements OnInit {
         : [
             {
               label: T.list.toBoard,
-              icon: 'pi pi-tb-board',
+              icon: 'tb-i tb-i-co_present',
               command: () => {
                 this.openBoard(textbook);
               },
@@ -337,21 +342,21 @@ export class TextbooksPage implements OnInit {
           ]),
       {
         label: T.list.edit,
-        icon: 'pi pi-pencil',
+        icon: 'tb-i tb-i-edit',
         command: () => {
           this.openEdit(textbook);
         },
       },
       {
         label: T.list.replace,
-        icon: 'pi pi-upload',
+        icon: 'tb-i tb-i-upload',
         command: () => {
           this.pickReplacement(textbook);
         },
       },
       {
         label: T.list.deleteItem,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.confirmRemove(textbook);

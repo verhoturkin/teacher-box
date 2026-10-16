@@ -193,7 +193,7 @@ The section refreshes itself while open.
 
 ## During the call
 
-- **Microphone, camera** — turn on and off; a turned-off button becomes red and turns from a circle into a rounded square.
+- **Microphone, camera** — turn on and off; a turned-off button becomes red, turns from a circle into a rounded square and its icon is crossed out.
 - **Your picture** — in a call of two, your camera is in a small window in a corner. Drag it to any other corner — the portal remembers the choice.
 - **Share screen** — on a computer: share a window, a tab or the whole screen; while you share it, the button is square.
 - **Settings** (the gear) — another microphone or camera; sound processing: echo cancellation, noise suppression and automatic gain (on by default; turn them off if the voice is chopped or muffled — the portal remembers the choice); «Connection details» — the connection quality of each participant, the protocol (UDP or TCP), ports, delay and sound loss. If the sound stutters, open the details and pass them to the administrator.
@@ -547,7 +547,9 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 - **Tablet** — a narrow panel on the left: the section's icon with the label under it.
 - **Phone** — the bottom bar: «Home», «Schedule», «Boards», «Payments» and «More» with the other sections.
 
-The portal's name, the bell and the user menu are always at the top. A «?» next to the title of a page or a block opens help about it. On a phone there are no section titles — the section is seen in the bottom bar, and help is in the user menu.
+Icons are Material Symbols, as in Android; the chosen section's icon is filled, the others are outlined.
+
+The portal's name, the bell and the user menu (your photo or a person in a circle) are always at the top. A «?» next to the title of a page or a block opens help about it. On a phone there are no section titles — the section is seen in the bottom bar, and help is in the user menu.
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 

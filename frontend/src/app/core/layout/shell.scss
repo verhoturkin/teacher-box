@@ -79,6 +79,12 @@
   flex: none;
 }
 
+/* Without a photo, the person in a circle of the photo's size (32 px): the user button looks the same either way */
+.tb-shell__user-button.p-button .tb-shell__avatar-icon {
+  --tb-icon-size: 2rem;
+  --tb-icon-opsz: 24;
+}
+
 .tb-shell__body {
   display: flex;
   flex: 1;
@@ -199,8 +205,9 @@
     opacity: 0;
   }
 
-  i {
-    font-size: 1.25rem;
+  /* M3: a 24 px icon, filled in the active section (ADR-0046) */
+  .tb-i {
+    transition: font-variation-settings var(--tb-spring-fast-effects);
   }
 }
 
@@ -217,6 +224,7 @@
   font: var(--tb-type-label-m-emphasized);
 
   .tb-bottom-nav__icon {
+    --tb-icon-fill: 1;
     color: var(--p-md-on-secondary-container);
 
     &::before {

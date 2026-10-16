@@ -55,7 +55,7 @@ export interface Placed {
       @if (loaded() && sorted().length === 0) {
         <tb-empty-state
           [compact]="true"
-          icon="pi-tb-board"
+          icon="tb-i-co_present"
           [title]="emptyTitle()"
           [hint]="emptyHint()"
         />
@@ -119,14 +119,14 @@ export interface Placed {
         @if (pages(); as material) {
           <p-button
             [label]="t.title"
-            icon="pi pi-tb-board"
+            icon="tb-i tb-i-co_present"
             [disabled]="chosenBoard() === null || material.pictures.length === 0"
             (onClick)="placePages(material)"
           />
         } @else {
           <p-button
             [label]="t.asImage"
-            icon="pi pi-image"
+            icon="tb-i tb-i-image"
             severity="secondary"
             [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
             [loading]="copying()"
@@ -134,7 +134,7 @@ export interface Placed {
           />
           <p-button
             [label]="t.asText"
-            icon="pi pi-copy"
+            icon="tb-i tb-i-content_copy"
             [disabled]="chosenBoard() === null"
             [loading]="copying()"
             (onClick)="place('text')"

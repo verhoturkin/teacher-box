@@ -79,7 +79,7 @@ import { MaterialOpener } from './material-opener';
                 <div>
                   <p-button
                     [label]="t.draft"
-                    icon="pi pi-sparkles"
+                    icon="tb-i tb-i-auto_awesome"
                     severity="secondary"
                     [loading]="drafting()"
                     (onClick)="draftReview(task)"
@@ -114,21 +114,21 @@ import { MaterialOpener } from './material-opener';
                 @if (task.status === 'SUBMITTED') {
                   <p-button
                     [label]="t.accept"
-                    icon="pi pi-check"
+                    icon="tb-i tb-i-check"
                     [loading]="pending()"
                     (onClick)="review('ACCEPT')"
                   />
                 }
                 <p-button
                   [label]="t.return"
-                  icon="pi pi-replay"
+                  icon="tb-i tb-i-replay"
                   severity="secondary"
                   [loading]="pending()"
                   (onClick)="review('RETURN')"
                 />
                 <p-button
                   [label]="t.toBoard"
-                  icon="pi pi-tb-board"
+                  icon="tb-i tb-i-co_present"
                   [text]="true"
                   [disabled]="commentValue().trim() === ''"
                   (onClick)="boardVisible.set(true)"

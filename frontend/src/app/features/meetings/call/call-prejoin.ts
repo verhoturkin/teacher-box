@@ -68,7 +68,7 @@ interface DeviceOption {
             [styleClass]="
               media().microphone ? 'tb-call-button' : 'tb-call-button tb-call-button--off'
             "
-            icon="pi pi-microphone"
+            [icon]="media().microphone ? 'tb-i tb-i-mic' : 'tb-i tb-i-mic_off'"
             [rounded]="true"
             [severity]="media().microphone ? 'secondary' : 'danger'"
             [ariaLabel]="t.microphone"
@@ -77,7 +77,7 @@ interface DeviceOption {
           />
           <p-button
             [styleClass]="media().camera ? 'tb-call-button' : 'tb-call-button tb-call-button--off'"
-            icon="pi pi-video"
+            [icon]="media().camera ? 'tb-i tb-i-videocam' : 'tb-i tb-i-videocam_off'"
             [rounded]="true"
             [severity]="media().camera ? 'secondary' : 'danger'"
             [ariaLabel]="t.camera"
@@ -128,7 +128,12 @@ interface DeviceOption {
       </div>
       <ng-template #footer>
         <p-button [label]="c.cancel" severity="secondary" [text]="true" (onClick)="cancel()" />
-        <p-button [label]="t.join" icon="pi pi-video" [disabled]="!supported" (onClick)="join()" />
+        <p-button
+          [label]="t.join"
+          icon="tb-i tb-i-videocam"
+          [disabled]="!supported"
+          (onClick)="join()"
+        />
       </ng-template>
     </p-dialog>
   `,

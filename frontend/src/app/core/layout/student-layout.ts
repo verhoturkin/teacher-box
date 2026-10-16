@@ -6,15 +6,19 @@ import { Shell } from './shell';
 export const STUDENT_MENU: MenuItem[] = [
   {
     label: CORE_T.nav.home,
-    icon: 'pi pi-home',
+    icon: 'tb-i tb-i-home',
     routerLink: '/cabinet',
     routerLinkActiveOptions: { exact: true },
   },
-  { label: CORE_T.nav.schedule, icon: 'pi pi-calendar', routerLink: '/cabinet/schedule' },
-  { label: CORE_T.nav.homework, icon: 'pi pi-pen-to-square', routerLink: '/cabinet/homework' },
-  { label: CORE_T.nav.textbooks, icon: 'pi pi-book', routerLink: '/cabinet/textbooks' },
-  { label: CORE_T.nav.billing, icon: 'pi pi-wallet', routerLink: '/cabinet/billing' },
-  { label: CORE_T.nav.myBoards, icon: 'pi pi-tb-board', routerLink: '/cabinet/boards' },
+  { label: CORE_T.nav.schedule, icon: 'tb-i tb-i-calendar_month', routerLink: '/cabinet/schedule' },
+  { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/cabinet/homework' },
+  { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/cabinet/textbooks' },
+  {
+    label: CORE_T.nav.billing,
+    icon: 'tb-i tb-i-account_balance_wallet',
+    routerLink: '/cabinet/billing',
+  },
+  { label: CORE_T.nav.myBoards, icon: 'tb-i tb-i-co_present', routerLink: '/cabinet/boards' },
 ];
 
 /** The sections that lead the bottom bar on a phone. */

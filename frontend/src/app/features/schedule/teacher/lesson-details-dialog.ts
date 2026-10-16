@@ -81,7 +81,7 @@ import { SHARED_T } from '@shared/i18n/texts';
             <span class="tb-dialog-head__actions">
               @if (lesson.status === 'SCHEDULED') {
                 <p-button
-                  icon="pi pi-pencil"
+                  icon="tb-i tb-i-edit"
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"
@@ -92,7 +92,7 @@ import { SHARED_T } from '@shared/i18n/texts';
               }
               @if (menuItems().length > 0) {
                 <p-button
-                  icon="pi pi-ellipsis-v"
+                  icon="tb-i tb-i-more_vert"
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"
@@ -257,12 +257,16 @@ import { SHARED_T } from '@shared/i18n/texts';
           } @else if (lesson.status === 'CANCELLED') {
             <p-button
               [label]="t.restore"
-              icon="pi pi-replay"
+              icon="tb-i tb-i-replay"
               [loading]="pending()"
               (onClick)="restore()"
             />
           } @else if (started() && lesson.groupId !== null) {
-            <p-button [label]="t.markAttendance" icon="pi pi-users" (onClick)="markAttendance()" />
+            <p-button
+              [label]="t.markAttendance"
+              icon="tb-i tb-i-group"
+              (onClick)="markAttendance()"
+            />
           } @else if (started()) {
             <span class="tb-button-group" role="group" [attr.aria-label]="t.outcome">
               @if (lesson.status !== 'MISSED') {
@@ -399,7 +403,7 @@ export class LessonDetailsDialog {
     if (lesson.status === 'SCHEDULED') {
       items.push({
         label: T.details.cancelItem,
-        icon: 'pi pi-times-circle',
+        icon: 'tb-i tb-i-cancel',
         command: () => {
           this.cancelling.set(true);
         },
@@ -408,7 +412,7 @@ export class LessonDetailsDialog {
     if (lesson.status === 'CONDUCTED' || lesson.status === 'MISSED') {
       items.push({
         label: T.details.unmark,
-        icon: 'pi pi-undo',
+        icon: 'tb-i tb-i-undo',
         command: () => {
           this.reopen();
         },
@@ -417,7 +421,7 @@ export class LessonDetailsDialog {
     if (this.deletable()) {
       items.push({
         label: T.details.deleteItem,
-        icon: 'pi pi-trash',
+        icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
           this.deleting.set(true);

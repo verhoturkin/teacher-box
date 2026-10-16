@@ -49,7 +49,7 @@ let nextId = 0;
         >
           <ng-container [ngTemplateOutlet]="heading" />
           <span class="tb-fold-card__chevron" aria-hidden="true">
-            <i class="pi pi-chevron-down"></i>
+            <i class="tb-i tb-i-expand_more"></i>
           </span>
         </button>
       } @else {

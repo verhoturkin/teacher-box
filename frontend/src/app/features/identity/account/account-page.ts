@@ -69,13 +69,13 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
               <div class="tb-account__photo">
                 <p-button
                   [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
-                  icon="pi pi-camera"
+                  icon="tb-i tb-i-photo_camera"
                   [loading]="busy.is('photo')"
                   (onClick)="photoFile.click()"
                 />
                 @if (account.avatar !== null) {
                   <p-button
-                    icon="pi pi-trash"
+                    icon="tb-i tb-i-delete"
                     severity="danger"
                     [text]="true"
                     [rounded]="true"

@@ -79,7 +79,7 @@ import { SearchField } from '@shared/ui/search-field';
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    icon="pi pi-download"
+                    icon="tb-i tb-i-download"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
@@ -92,9 +92,9 @@ import { SearchField } from '@shared/ui/search-field';
             }
           </ul>
         } @else if (textbooks().length > 0) {
-          <tb-empty-state icon="pi-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
+          <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
         } @else {
-          <tb-empty-state icon="pi-book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+          <tb-empty-state icon="tb-i-menu_book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         }
       </tb-load-state>
     </p-card>

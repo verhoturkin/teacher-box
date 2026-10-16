@@ -85,12 +85,12 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
       <header class="tb-board-page__bar">
         @if (returnable) {
           <button pButton type="button" [text]="true" severity="secondary" (click)="back()">
-            <i pButtonIcon class="pi pi-arrow-left" aria-hidden="true"></i>
+            <i pButtonIcon class="tb-i tb-i-arrow_back" aria-hidden="true"></i>
             <span pButtonLabel>{{ backLabel() }}</span>
           </button>
         } @else {
           <a pButton [text]="true" severity="secondary" [routerLink]="backLink()">
-            <i pButtonIcon class="pi pi-arrow-left" aria-hidden="true"></i>
+            <i pButtonIcon class="tb-i tb-i-arrow_back" aria-hidden="true"></i>
             <span pButtonLabel>{{ backLabel() }}</span>
           </a>
         }
@@ -125,7 +125,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
               <div class="tb-board-page__external">
                 <p-message severity="info">{{ t.external }}</p-message>
                 <a pButton [href]="externalUrl()" target="_blank" rel="noopener">
-                  <i pButtonIcon class="pi pi-external-link"></i>
+                  <i pButtonIcon class="tb-i tb-i-open_in_new"></i>
                   <span pButtonLabel>{{ t.openBoard }}</span>
                 </a>
               </div>

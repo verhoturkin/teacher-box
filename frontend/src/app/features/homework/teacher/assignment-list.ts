@@ -66,7 +66,7 @@ export interface AssignmentActions {
           @if (reviewFilter() && (toReview() > 0 || onlyReview())) {
             <p-button
               [label]="t.toReview"
-              icon="pi pi-filter"
+              icon="tb-i tb-i-filter_list"
               [severity]="onlyReview() ? 'primary' : 'secondary'"
               [badge]="toReview() > 0 ? toReview().toString() : undefined"
               badgeSeverity="warn"
@@ -82,7 +82,9 @@ export interface AssignmentActions {
             <li>
               <span class="tb-list__lead" aria-hidden="true"
                 ><i
-                  [class]="assignment.boardId === null ? 'pi pi-pen-to-square' : 'pi pi-tb-board'"
+                  [class]="
+                    assignment.boardId === null ? 'tb-i tb-i-assignment' : 'tb-i tb-i-co_present'
+                  "
                 ></i
               ></span>
               <div class="tb-list__text">
@@ -96,7 +98,7 @@ export interface AssignmentActions {
                   <p-tag [value]="badge.label" [severity]="badge.severity" />
                 }
                 <p-button
-                  icon="pi pi-ellipsis-v"
+                  icon="tb-i tb-i-more_vert"
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
@@ -122,11 +124,11 @@ export interface AssignmentActions {
           />
         }
       } @else if (onlyReview() && query().trim() === '') {
-        <tb-empty-state [compact]="true" icon="pi-check" [title]="t.nothingToReview" />
+        <tb-empty-state [compact]="true" icon="tb-i-check" [title]="t.nothingToReview" />
       } @else if (assignments().length > 0) {
         <tb-empty-state
           [compact]="true"
-          icon="pi-search"
+          icon="tb-i-search"
           [title]="t.notFoundTitle"
           [hint]="t.notFoundHint"
         />
@@ -159,7 +161,7 @@ export class AssignmentList {
 
   readonly heading = input.required<string>();
   readonly assignments = input.required<readonly AssignmentSummary[]>();
-  readonly emptyIcon = input('pi-pen-to-square');
+  readonly emptyIcon = input('tb-i-assignment');
   readonly emptyTitle = input.required<string>();
   readonly emptyHint = input('');
   /** «На проверку»: a toggle that leaves only the assignments with work to review. */

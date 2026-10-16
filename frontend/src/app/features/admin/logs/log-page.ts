@@ -104,7 +104,7 @@ export const LOG_LIMIT = 200;
             type="submit"
             [label]="t.find"
             severity="secondary"
-            icon="pi pi-search"
+            icon="tb-i tb-i-search"
             [loading]="loading()"
             [fluid]="true"
           />
@@ -117,7 +117,7 @@ export const LOG_LIMIT = 200;
           @if (!result.available) {
             <p-message severity="warn">{{ t.noFile }}</p-message>
           } @else if (result.entries.length === 0) {
-            <tb-empty-state [compact]="true" icon="pi-search" [title]="t.nothing" />
+            <tb-empty-state [compact]="true" icon="tb-i-search" [title]="t.nothing" />
           } @else {
             @if (result.truncated) {
               <p class="tb-muted">{{ t.truncated(result.entries.length) }}</p>

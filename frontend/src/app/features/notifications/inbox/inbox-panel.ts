@@ -37,13 +37,13 @@ interface InboxPart {
       <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
         @if (unreadPart(); as part) {
           @if (part.items.length === 0) {
-            <tb-empty-state icon="pi-bell" [title]="t.nothing" />
+            <tb-empty-state icon="tb-i-notifications" [title]="t.nothing" />
           } @else {
             <div class="tb-inbox-header">
               <span class="tb-muted">{{ t.unread(unread()) }}</span>
               <p-button
                 [label]="t.readAll"
-                icon="pi pi-check"
+                icon="tb-i tb-i-check"
                 severity="secondary"
                 [loading]="busy.is('all')"
                 (onClick)="markAllRead()"
@@ -69,7 +69,7 @@ interface InboxPart {
         <div class="tb-inbox-read">
           <p-button
             [label]="t.read"
-            [icon]="readOpen() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            [icon]="readOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
             iconPos="right"
             [text]="true"
             severity="secondary"
@@ -89,7 +89,7 @@ interface InboxPart {
               >
                 @if (readPart(); as part) {
                   @if (part.items.length === 0) {
-                    <tb-empty-state icon="pi-inbox" [title]="t.noRead" />
+                    <tb-empty-state icon="tb-i-inbox" [title]="t.noRead" />
                   } @else {
                     <tb-notification-list
                       [label]="t.readList"

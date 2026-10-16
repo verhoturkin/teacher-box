@@ -82,7 +82,7 @@ describe('AiUsagePage', () => {
     expect(text).toMatch(
       /Черновики проверки Ошибка \d\d\.09\.2026 \d\d:\d\d · claude-opus-5 · 0[.,]8 с/,
     );
-    expect(hostElement(fixture).querySelector('.pi-check-square')).not.toBeNull();
+    expect(hostElement(fixture).querySelector('.tb-i-rate_review')).not.toBeNull();
     expect(hostElement(fixture).querySelector('p-progressbar')).not.toBeNull();
     expect(text).toContain('Системные промты');
   });

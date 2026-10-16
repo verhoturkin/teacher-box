@@ -65,7 +65,7 @@ import { locale } from '@core/i18n/language';
         <p-button
           class="tb-page-fab"
           [label]="t.payment"
-          icon="pi pi-wallet"
+          icon="tb-i tb-i-account_balance_wallet"
           (onClick)="paymentVisible.set(true)"
         />
       </tb-page-header>
@@ -119,7 +119,7 @@ import { locale } from '@core/i18n/language';
                   type="submit"
                   severity="secondary"
                   [label]="c.save"
-                  icon="pi pi-check"
+                  icon="tb-i tb-i-check"
                   [disabled]="price.invalid || !priceChanged()"
                   [loading]="savingPrice()"
                 />
@@ -131,7 +131,7 @@ import { locale } from '@core/i18n/language';
               <span class="tb-stat__value">
                 {{ ledger.lessonPrice | money: ledger.currency }}
                 <p-button
-                  icon="pi pi-pencil"
+                  icon="tb-i tb-i-edit"
                   severity="secondary"
                   [text]="true"
                   [rounded]="true"

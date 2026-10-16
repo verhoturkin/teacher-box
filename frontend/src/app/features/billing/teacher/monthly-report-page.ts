@@ -124,7 +124,7 @@ import { T } from '../i18n/texts';
               <ng-template #emptymessage>
                 <tr>
                   <td colspan="4">
-                    <tb-empty-state icon="pi-calendar" [title]="t.emptyMonth" />
+                    <tb-empty-state icon="tb-i-calendar_month" [title]="t.emptyMonth" />
                   </td>
                 </tr>
               </ng-template>
@@ -179,7 +179,9 @@ import { T } from '../i18n/texts';
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="5"><tb-empty-state icon="pi-calendar" [title]="t.noLessons" /></td>
+                  <td colspan="5">
+                    <tb-empty-state icon="tb-i-calendar_month" [title]="t.noLessons" />
+                  </td>
                 </tr>
               </ng-template>
             </p-table>
@@ -216,7 +218,9 @@ import { T } from '../i18n/texts';
               </ng-template>
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="4"><tb-empty-state icon="pi-wallet" [title]="t.noPayments" /></td>
+                  <td colspan="4">
+                    <tb-empty-state icon="tb-i-account_balance_wallet" [title]="t.noPayments" />
+                  </td>
                 </tr>
               </ng-template>
             </p-table>
