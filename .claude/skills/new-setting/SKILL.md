@@ -13,7 +13,9 @@ description: Add a new TEACHERBOX_* environment variable / configuration propert
    size, cron, URL, proxy, time zone, currency, choice), secret flag for passwords/tokens/keys (shown only as
    "set / not set"), read-only for Compose variables and accounts. A test compares the catalog with
    `.env.example`.
-4. README (Russian) — the settings table / integration section if users may need it.
+4. Wiki (Russian user docs, https://github.com/verhoturkin/teacher-box/wiki) — the variable in
+   the right page (Install, Messengers, Schedule, Calls, Boards, AI-assistant, Proxy…) if users may
+   need it; README stays slim and only links the wiki.
 5. A proxy for an external service: own variable `TEACHERBOX_<MODULE>_..._PROXY`, parsed by
    `OutboundProxy.setting`; Russian services go direct (ADR-0009).
 6. Secrets never in the repo, logs or API responses. If the value is also editable in the UI, the env var wins

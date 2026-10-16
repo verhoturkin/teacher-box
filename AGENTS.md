@@ -135,7 +135,8 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
   `docs/design-system.md`, `docs/modules/`, skills. Russian: README, `docs/operations.md`, `docs/glossary.md`,
   ADRs, CHANGELOG, help articles and all UI texts.
 - No secrets in the repo. Settings only via `TEACHERBOX_*` env vars; each new one → `.env.example`,
-  `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), README (skill `new-setting`).
+  `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), wiki user docs
+  (README stays slim, skill `new-setting`).
 - Time in UTC (`Instant`); teacher time zone — `TEACHERBOX_TIMEZONE`. Money — `long` minor units + instance
   currency, never `double`.
 - An architecture change → a new ADR (row in `docs/adr/README.md`) and an update of the spec it changes.
@@ -171,6 +172,6 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 
 - [ ] Isolation rules (§4) and conventions (§6, nested AGENTS.md, design system) followed.
 - [ ] Tests written, `./scripts/verify.sh` green, gates met.
-- [ ] New env vars in `.env.example`, `SettingsCatalog`, README.
+- [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
 - [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` / `docs/design-system.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.
