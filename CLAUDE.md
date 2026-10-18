@@ -21,7 +21,8 @@ CLAUDE.md → AGENTS.md, loaded when you work there.
    daemon is up). Commit only when green; fix causes, never `--no-verify`.
 5. Tick the substep in `docs/PLAN.md` in the same commit; release — skill `release`.
 6. Keep docs current in the same commit: `docs/modules/<m>.md` for module behaviour, `docs/design-system.md`
-   for UI rules, ADR index for new ADRs.
+   for UI rules, ADR index for new ADRs; user docs — the GitHub wiki (AGENTS.md §6.1), committed in its own
+   repository and pushed with the release.
 
 ## Context economy
 

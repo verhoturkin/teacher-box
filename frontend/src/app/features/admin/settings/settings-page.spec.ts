@@ -93,9 +93,9 @@ describe('SettingsPage', () => {
     expect(
       requireElement(host, '#setting-TEACHERBOX_AI_API_KEY', HTMLInputElement).placeholder,
     ).toBe('задан — введите новый, чтобы сменить');
-    expect(requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP', HTMLInputElement).value).toBe(
-      '14',
-    );
+    expect(
+      requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP_DAYS', HTMLInputElement).value,
+    ).toBe('14');
     expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(true);
   });
 
@@ -205,7 +205,7 @@ describe('SettingsPage', () => {
         TEACHERBOX_AI_MODEL: 'claude-opus-5',
         TEACHERBOX_AI_PROVIDER: 'gemini',
         TEACHERBOX_AI_FALLBACKS: 'false',
-        TEACHERBOX_BACKUP_KEEP: null,
+        TEACHERBOX_BACKUP_KEEP_DAYS: null,
       },
     });
     request.flush({ changed: ['TEACHERBOX_AI_MODEL'], restarting: true });
@@ -228,19 +228,22 @@ describe('SettingsPage', () => {
 
   it('explains a wrong value and a wrong password', async () => {
     await render();
-    typeInto(requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP', HTMLInputElement), 'много');
+    typeInto(
+      requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP_DAYS', HTMLInputElement),
+      'много',
+    );
 
     await saveWith('admin-password');
     backend.expectOne({ method: 'PUT', url: '/api/admin/settings' }).flush(
       {
         status: 422,
         code: 'settings.invalid',
-        detail: 'Сколько копий хранить (TEACHERBOX_BACKUP_KEEP): нужно целое число',
+        detail: 'Сколько дней хранить копии (TEACHERBOX_BACKUP_KEEP_DAYS): нужно целое число',
       },
       { status: 422, statusText: 'Unprocessable' },
     );
     await fixture.whenStable();
-    expect(bodyText()).toContain('TEACHERBOX_BACKUP_KEEP): нужно целое число');
+    expect(bodyText()).toContain('TEACHERBOX_BACKUP_KEEP_DAYS): нужно целое число');
 
     buttonByText(dialog(), 'Сохранить').click();
     backend

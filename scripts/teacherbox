@@ -26,6 +26,8 @@ teacherbox — обслуживание портала Teacher Box ($TEACHERBOX_
   teacherbox update            свежий compose.yaml и образы, перезапуск (данные остаются)
   teacherbox backups [каталог] скопировать резервные копии портала в каталог на сервере
   teacherbox config            открыть настройки (.env) в редакторе и применить их
+  teacherbox reset [--yes]     удалить ВСЕ данные портала из Docker (база, файлы, копии, сертификаты)
+                               и запустить его заново, как после новой установки; .env остаётся
   teacherbox version           версия портала
 EOF
 }
@@ -77,6 +79,49 @@ backups() {
     say "Резервные копии — в $target"
 }
 
+# reset: the containers, networks and volumes of the project go; the images, compose.yaml and .env stay.
+reset() {
+    local assume_yes=false answer project volumes
+    [ "${1:-}" = --yes ] && assume_yes=true
+    if [ "$assume_yes" = false ]; then
+        say "Будут удалены ВСЕ данные портала в Docker: база, файлы, резервные копии на сервере, настройки"
+        say "из интерфейса, сертификаты HTTPS. Учителю создастся новый пароль. Отменить это нельзя."
+        say "Сначала сохраните копии: teacherbox backups"
+        printf 'Чтобы продолжить, введите УДАЛИТЬ: '
+        IFS= read -r answer </dev/tty || answer=""
+        [ "$answer" = "УДАЛИТЬ" ] || fail "отменено"
+    fi
+    # The name compose itself uses (COMPOSE_PROJECT_NAME and .env included).
+    project="$(compose config 2>/dev/null | sed -n 's/^name: *//p' | head -1)"
+    [ -n "$project" ] || fail "не удалось прочитать конфигурацию: docker compose config"
+    say "==> Остановка и удаление контейнеров и томов"
+    compose down --volumes --remove-orphans
+    # What "down" leaves: containers of profiles turned off since, volumes of an older compose.yaml.
+    local label="label=com.docker.compose.project=$project" leftovers
+    leftovers="$(docker ps -aq --filter "$label")"
+    # shellcheck disable=SC2086 # one id or name per word
+    [ -z "$leftovers" ] || docker rm -f $leftovers >/dev/null
+    volumes="$(docker volume ls -q --filter "$label")"
+    # shellcheck disable=SC2086
+    [ -z "$volumes" ] || docker volume rm $volumes >/dev/null
+    leftovers="$(docker network ls -q --filter "$label")"
+    # shellcheck disable=SC2086
+    [ -z "$leftovers" ] || docker network rm $leftovers >/dev/null
+    say "==> Запуск с чистыми данными"
+    compose up -d --remove-orphans --wait --wait-timeout 300 || fail "портал не запустился: teacherbox logs"
+    local login password
+    login="$(sed -n 's/^TEACHERBOX_IDENTITY_TEACHER_LOGIN=//p' "$TEACHERBOX_DIR/.env" 2>/dev/null | tail -1)"
+    password="$(compose logs backend 2>/dev/null |
+        sed -n 's/.*Teacher account created\. Login: [^ ]*  Password: \([^ ]*\).*/\1/p' | tail -1 || true)"
+    say "Готово: портал как после новой установки."
+    say "Логин:  ${login:-teacher}"
+    if [ -n "$password" ]; then
+        say "Пароль: $password  (портал попросит сменить его после первого входа)"
+    else
+        say "Пароль: в журнале — teacherbox logs backend | grep \"Teacher account\""
+    fi
+}
+
 config() {
     "${EDITOR:-nano}" "$TEACHERBOX_DIR/.env"
     compose up -d --remove-orphans
@@ -104,6 +149,7 @@ case "$command" in
     update) update ;;
     backups) backups "$@" ;;
     config) config ;;
+    reset) reset "$@" ;;
     version) version ;;
     *)
         usage

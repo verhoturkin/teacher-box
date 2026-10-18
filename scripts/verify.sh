@@ -115,7 +115,7 @@ installer_dry_run() {
     for line in "TEACHERBOX_PUBLIC_URL: https://school.example.com" "image: caddy:" "image: livekit/"; do
         grep -qF "$line" "$tmp/config.yaml" || { echo "missing in the configuration: $line"; return 1; }
     done
-    TEACHERBOX_DIR="$tmp/opt" bash "$tmp/bin/teacherbox" help | grep -q "teacherbox update" || return 1
+    TEACHERBOX_DIR="$tmp/opt" bash "$tmp/bin/teacherbox" help | grep -q "teacherbox reset" || return 1
     # A second run keeps the settings.
     bash scripts/install.sh --yes --no-start --source "$ROOT" --dir "$tmp/opt" --bin "$tmp/bin" --no-calls || return 1
     grep -qx COMPOSE_PROFILES=https,calls "$env" || { echo ".env was rewritten"; return 1; }

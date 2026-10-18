@@ -23,7 +23,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
   `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
   Address changes by admin are audited.
-- `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`, `_KEEP`), download, restore via restart (check
+- `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`; backups of every kind older than
+  `TEACHERBOX_BACKUP_KEEP_DAYS`, 14 by default, are deleted after a new one), download, restore via restart (check
   archive → backup current → put into `restore/` → exit → apply before DB opens → module migrations;
   `TEACHERBOX_BACKUP_RESTART`), **full reset** (`/api/teacher/reset`) calling every module's `DataReset`;
   restore and reset are confirmed by password (`PasswordConfirmation`). `ResetIntegrationTest` checks that all
@@ -34,7 +35,7 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `drive.file`; uploads and downloads streamed through `OutboundHttp.streamingRequestFactory`), the connection in
   `<data-dir>/google-drive.json` (`DriveConnectionStore`; survives restore and reset), `CloudBackupService`: after
   `BackupCreated` of a scheduled or manual backup it uploads it in the background (one task at a time) into the
-  portal's folder and keeps the newest `TEACHERBOX_BACKUP_KEEP` there; a rejected token disconnects with an error.
+  portal's folder and deletes the ones uploaded more than `TEACHERBOX_BACKUP_KEEP_DAYS` ago; a rejected token disconnects with an error.
   OAuth client — `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET` or entered by the teacher; proxy
   `TEACHERBOX_BACKUP_GOOGLE_PROXY`. REST (teacher): `GET|DELETE /api/teacher/backups/google`, `PUT …/client`,
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is

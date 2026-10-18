@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +35,7 @@ import ru.teacherbox.platform.core.PlatformProperties;
 import ru.teacherbox.testing.TestUsers;
 
 /** Backups of the running application and restoring them into a fresh database. */
-@SpringBootTest(properties = "teacherbox.backup.keep=2")
+@SpringBootTest(properties = "teacherbox.backup.keep-days=3")
 @AutoConfigureMockMvc
 class BackupIntegrationTest {
 
@@ -87,36 +89,39 @@ class BackupIntegrationTest {
     }
 
     @Test
-    void keepsOnlyTheNewestBackups() {
-        String first = backups.create().name();
-        String second = backups.create().name();
-        String third = backups.create().name();
+    void backupsOfEveryKindOlderThanTheRetentionAreDeletedAfterANewOne() throws IOException {
+        String scheduled = backups.create(BackupKind.SCHEDULED).name();
+        String beforeReset = backups.create(BackupKind.BEFORE_RESET).name();
+        String beforeRestore = backups.create(BackupKind.BEFORE_RESTORE).name();
+        String recent = backups.create().name();
+        age(scheduled, Duration.ofDays(4));
+        age(beforeReset, Duration.ofDays(4));
+        age(beforeRestore, Duration.ofDays(3).plusMinutes(1));
+        age(recent, Duration.ofDays(2));
+        assertThat(backups.list()).hasSize(4);
 
-        assertThat(backups.list()).extracting(BackupService.BackupInfo::name).containsExactly(third, second);
-        assertThat(first).isLessThan(second);
+        String newest = backups.create(BackupKind.SCHEDULED).name();
+
+        assertThat(backups.list()).extracting(BackupService.BackupInfo::name).containsExactly(newest, recent);
+        assertThat(backups.info(newest).kind()).isEqualTo(BackupKind.SCHEDULED);
+        assertThat(backups.info(recent).kind()).isEqualTo(BackupKind.MANUAL);
     }
 
     @Test
-    void backupsBeforeARestoreOrAResetAreNotRotated() throws IOException {
-        String beforeReset = backups.create(BackupKind.BEFORE_RESET).name();
-        String beforeRestore = backups.create(BackupKind.BEFORE_RESTORE).name();
-        backups.create(BackupKind.SCHEDULED);
-        backups.create();
-        String newest = backups.create(BackupKind.SCHEDULED).name();
-        Path old = platform.dataDir().resolve("backups/teacherbox-20200101-000000-000.zip");
-        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(old))) {
+    void anUnknownKindIsNone() throws IOException {
+        Path other = platform.dataDir().resolve("backups/teacherbox-20200101-000000-000.zip");
+        Files.createDirectories(other.getParent());
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(other))) {
             zip.putNextEntry(new ZipEntry(BackupArchive.MANIFEST));
             zip.write("format=1\nkind=SOMETHING\n".getBytes(StandardCharsets.UTF_8));
             zip.closeEntry();
         }
 
-        assertThat(backups.list()).extracting(BackupService.BackupInfo::kind)
-                .containsExactly(BackupKind.SCHEDULED, BackupKind.MANUAL, BackupKind.BEFORE_RESTORE,
-                        BackupKind.BEFORE_RESET, null);
-        assertThat(backups.info(newest).kind()).isEqualTo(BackupKind.SCHEDULED);
-        backups.create(BackupKind.SCHEDULED);
-        assertThat(backups.list()).extracting(BackupService.BackupInfo::name)
-                .contains(beforeReset, beforeRestore).doesNotContain(old.getFileName().toString()).hasSize(4);
+        assertThat(backups.info(other.getFileName().toString()).kind()).isNull();
+    }
+
+    private void age(String name, Duration age) throws IOException {
+        Files.setLastModifiedTime(backups.file(name), FileTime.from(Instant.now().minus(age)));
     }
 
     @Test

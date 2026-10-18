@@ -1,5 +1,5 @@
--- Homework module: assignments, per-student tasks, submissions and attached files.
--- student_id refers to identity users by value only: no foreign keys across module schemas.
+-- Homework module: assignments, per-student tasks, submissions, attached files and bound textbooks.
+-- student_id, board_id and textbook_id refer to other modules by value only: no foreign keys across schemas.
 
 create table assignments (
     id          uuid                     primary key,
@@ -8,7 +8,9 @@ create table assignments (
     due_at      timestamp with time zone,
     created_at  timestamp with time zone not null,
     updated_at  timestamp with time zone not null,
-    version     bigint                   not null
+    version     bigint                   not null,
+    -- The board the assignment was put on (ADR-0041).
+    board_id    uuid
 );
 
 create table tasks (
@@ -55,3 +57,12 @@ create table attachments (
 );
 
 create index ix_attachments_owner on attachments (owner_type, owner_id);
+
+-- Textbooks bound to assignments (ADR-0033). pages - the normalized pages ("1-3, 7"); null - the whole textbook.
+create table assignment_textbooks (
+    assignment_id uuid                     not null references assignments (id) on delete cascade,
+    textbook_id   uuid                     not null,
+    pages         varchar(200),
+    bound_at      timestamp with time zone not null,
+    primary key (assignment_id, textbook_id)
+);

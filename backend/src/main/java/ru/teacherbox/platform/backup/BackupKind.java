@@ -6,13 +6,13 @@ public enum BackupKind {
     SCHEDULED,
     /** By the teacher or the administrator. */
     MANUAL,
-    /** The state before another backup was restored; not deleted by the rotation. */
+    /** The state before another backup was restored; stays on the server only. */
     BEFORE_RESTORE,
-    /** The state before a full reset; not deleted by the rotation. */
+    /** The state before a full reset; stays on the server only. */
     BEFORE_RESET;
 
-    /** Kept until someone deletes it. */
-    public boolean isRotated() {
+    /** Copied to Google Drive (ADR-0037). */
+    public boolean isCopiedToDrive() {
         return this == SCHEDULED || this == MANUAL;
     }
 }

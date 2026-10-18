@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { laterThisWeek } from './this-week';
 
 /**
  * Version 0.2: a group lesson charged at the price of the group, a Telemost room link (pasted by
@@ -96,6 +97,14 @@ function moscow(daysFromToday: number, hours: number): string {
   const date = new Date(Date.now() + daysFromToday * 86_400_000);
   const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(date);
   return new Date(`${day}T${String(hours).padStart(2, '0')}:00:00+03:00`).toISOString();
+}
+
+/** An instant of a lesson the student sees in «Ближайшие занятия» (this week, Monday first). */
+function thisWeek(hours: number): string {
+  const lesson = laterThisWeek(hours);
+  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
+  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
+  return new Date(`${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`).toISOString();
 }
 
 async function sentTo(request: APIRequestContext, chat: number): Promise<SentMessage[]> {
@@ -229,7 +238,8 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
   await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
     studentId: annaId,
-    startsAt: moscow(1, 15),
+    // the student's schedule lists this week only: tomorrow is next week on a Sunday
+    startsAt: thisWeek(15),
     durationMinutes: 60,
     topic: 'Проценты',
     allowOverlap: true,

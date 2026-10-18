@@ -594,7 +594,7 @@ Every night the portal backs up all the data: students, schedule, payments, home
 
 «Settings» → «Backups» → «Back up now». To download a backup, click «⋮» in its row → «Download» — keep the backup not only on the server.
 
-Under the date of a backup you see where it comes from (scheduled, manual, before a restore or before a reset), its size and whether it is in Google Drive. The portal does not delete backups made before a restore or a reset by itself.
+Under the date of a backup you see where it comes from (scheduled, manual, before a restore or before a reset), its size and whether it is in Google Drive. Backups of every kind are kept for two weeks (the administrator sets the period); the portal deletes older ones after making a new one.
 
 ## Backups in Google Drive
 
@@ -610,7 +610,7 @@ So that the backups are not lost with the server, connect Google Drive: «Settin
 
 Then click «Connect Google Drive» and allow the access.
 
-The portal creates a folder named after the portal in the Drive and sends every scheduled and manual backup there; the newest backups are kept, as on the server. The portal does not see other files of the Drive. Any backup can be sent by hand: «⋮» in its row → «Send to Google Drive». The «Google Drive» panel shows when the last backup went there, and the error if it did not.
+The portal creates a folder named after the portal in the Drive and sends every scheduled and manual backup there; they are kept there as long as on the server (two weeks by default). The portal does not see other files of the Drive. Any backup can be sent by hand: «⋮» in its row → «Send to Google Drive». The «Google Drive» panel shows when the last backup went there, and the error if it did not.
 
 **After a disaster:** install the portal again, connect the same Google Drive, click «Bring to the server» next to a backup in «Backups in Google Drive» — it appears among the «Backups» and can be restored.
 

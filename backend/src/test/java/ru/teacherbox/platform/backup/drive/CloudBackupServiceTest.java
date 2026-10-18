@@ -146,8 +146,8 @@ class CloudBackupServiceTest {
         Path file = Files.writeString(dir.resolve(B3), "zip");
         when(backups.file(B3)).thenReturn(file);
         when(api.folderExists("access", "folder-1")).thenReturn(true);
-        when(api.list("access", "folder-1")).thenReturn(List.of(cloud("3", B3), cloud("x", "notes.zip"),
-                cloud("2", B2), cloud("1", B1)));
+        when(api.list("access", "folder-1")).thenReturn(List.of(cloud("3", B3), cloud("x", "notes.zip", 30),
+                cloud("2", B2, 13), cloud("1", B1, 15), cloud("0", B1.replace("10-", "09-"))));
 
         drive.on(new BackupCreated(info(B3), BackupKind.SCHEDULED));
 
@@ -155,6 +155,7 @@ class CloudBackupServiceTest {
         verify(api).delete("access", "1");
         verify(api, never()).delete("access", "2");
         verify(api, never()).delete("access", "x");
+        verify(api, never()).delete("access", "0");
         assertThat(drive.status().lastUploadName()).isEqualTo(B3);
         assertThat(drive.status().lastUploadAt()).isEqualTo(clock.instant());
         assertThat(drive.status().running()).isNull();
@@ -317,7 +318,7 @@ class CloudBackupServiceTest {
     }
 
     private static BackupProperties properties(BackupProperties.Google google) {
-        return new BackupProperties("-", 2, false, google);
+        return new BackupProperties("-", 14, false, google);
     }
 
     private static BackupProperties.Google google(String clientId, String clientSecret) {
@@ -331,6 +332,11 @@ class CloudBackupServiceTest {
 
     private static DriveApi.DriveFile cloud(String id, String name) {
         return new DriveApi.DriveFile(id, name, 3, null);
+    }
+
+    /** A file uploaded the given number of days ago. */
+    private DriveApi.DriveFile cloud(String id, String name, int daysAgo) {
+        return new DriveApi.DriveFile(id, name, 3, clock.instant().minus(Duration.ofDays(daysAgo)));
     }
 
     private static BackupInfo info(String name) {

@@ -203,7 +203,7 @@ public class CloudBackupService implements AutoCloseable {
     /** Every scheduled and manual backup goes to the Drive once it is connected (not those before a restore or a reset). */
     @EventListener
     public void on(BackupCreated created) {
-        if (created.kind().isRotated() && store.load().isConnected()) {
+        if (created.kind().isCopiedToDrive() && store.load().isConnected()) {
             String name = created.backup().name();
             executor.execute(() -> upload(name));
         }
@@ -304,11 +304,12 @@ public class CloudBackupService implements AutoCloseable {
         }
     }
 
-    /** The newest {@link BackupProperties#keep()} backups stay in the folder. */
+    /** Backups older than {@link BackupProperties#keepDays()} are deleted from the folder. */
     private void rotate(DriveConnection connection, String folderId) {
+        Instant oldest = clock.instant().minus(properties.retention());
         List<DriveApi.DriveFile> old = withToken(connection, token -> api.list(token, folderId)).stream()
                 .filter(file -> BackupService.isBackupName(file.name()))
-                .skip(properties.keep())
+                .filter(file -> file.createdAt() != null && file.createdAt().isBefore(oldest))
                 .toList();
         for (DriveApi.DriveFile file : old) {
             withToken(connection, token -> {

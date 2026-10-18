@@ -176,9 +176,10 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_BACKUP_CRON", w("Расписание копий", "Backup schedule"), CRON,
                         w("Cron из 6 частей, например 0 30 3 * * * (каждую ночь в 3:30); - — выключить.",
                                 "Cron of 6 parts, e.g. 0 30 3 * * * (every night at 3:30); - — off."))
-                .add("TEACHERBOX_BACKUP_KEEP", w("Сколько копий хранить", "Backups to keep"), NUMBER,
-                        w("Копии перед восстановлением и сбросом хранятся всегда.",
-                                "Copies made before a restore or a reset are always kept."))
+                .add("TEACHERBOX_BACKUP_KEEP_DAYS", w("Сколько дней хранить копии", "Days to keep backups"), NUMBER,
+                        w("Более старые копии удаляются после новой — на сервере и в Google Диске; по умолчанию 14.",
+                                "Older backups are deleted after a new one, on the server and in Google Drive; "
+                                        + "14 by default."))
                 .add("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after a restore"),
                         BOOLEAN, w("true в Docker; false — перезапускать портал вручную.",
                                 "true in Docker; false — restart the portal by hand."))
