@@ -17,25 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.18.1
-
-The wiki sources move into the repository: pages are edited and reviewed in the same branch as the code, CI
-publishes them for every release tag, so the wiki shows the released version and no manual push is left.
-
-### 215. The wiki in the repository (D)
-
-- [x] 215.1 **D** `docs/wiki/` from `teacher-box.wiki.git` (with the unpushed 0.18.0 pages) + `_Footer.md`;
-  `scripts/publish-wiki.sh`, CI job «Publish the wiki» after the images on a tag, manual `wiki.yml`;
-  `scripts/check-wiki.sh` (`verify.sh docs`, pre-commit for `*.md`, CI job «Docs»); `AGENTS.md` §2, §3, §6.1,
-  §9, `CLAUDE.md`, skills `release`, `new-setting`.
-
-### 216. Interface fixes (F)
-
-- [x] 216.1 **F** No divider under the top bar on the phone (`core/layout/shell.scss`); the dropped lesson's
-  «Перенести» / «Отменить перенос» in the middle of its card as M3E extra small icon buttons (filled wide ✓,
-  tonal ✕) over a surface veil (`styles.scss` `.tb-lesson-move`); a chip in student multiselects is removed with «×», not the «!» of `times-circle`
-  (`styles.scss` `.p-chip`); no divider above «Прочитанные» in the inbox (`notifications/inbox/inbox-panel.ts`).
-
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

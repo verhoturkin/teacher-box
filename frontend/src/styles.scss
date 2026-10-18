@@ -1889,7 +1889,14 @@ a.p-menu-item-link:hover {
 
   .fc-event-main {
     position: relative;
+    container-type: inline-size;
   }
+}
+
+/* the dragged card lies above the lessons beside it, so its buttons are never under them (its wrapper has an
+   inline z-index and hashed classes in FullCalendar 7) */
+full-calendar :has(> .tb-lesson--moving) {
+  z-index: 5 !important;
 }
 
 .tb-lesson-move {
@@ -1902,6 +1909,16 @@ a.p-menu-item-link:hover {
   gap: 1.125rem;
   border-radius: inherit;
   background: color-mix(in srgb, var(--p-md-surface-container-lowest) 88%, transparent);
+
+  /* our decision (not in M3): a card narrower than the group (lessons side by side) narrows the gap and the
+     wide button, the buttons stay 32 dp */
+  @container (width < 6rem) {
+    gap: var(--tb-space-1);
+
+    .tb-lesson-move__button {
+      width: 2rem;
+    }
+  }
 }
 
 .tb-lesson-move__button {

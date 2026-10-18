@@ -218,8 +218,9 @@ component that shows one adds it to `PRIME`).
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
   lesson waiting for confirmation — 2 px primary outline and, in the middle of its card over an 88 %
   surface-container-lowest veil, a standard button group of M3E extra small icon buttons (32 dp, 20 dp icon, 18 dp
-  apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); the move is
-  saved only on ✓.
+  apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); on a card
+  narrower than 6 rem (lessons side by side) both are 32 dp and 4 px apart, and the dragged card lies above its
+  neighbours; the move is saved only on ✓.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
