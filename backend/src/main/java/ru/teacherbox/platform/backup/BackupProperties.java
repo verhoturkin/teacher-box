@@ -1,5 +1,6 @@
 package ru.teacherbox.platform.backup;
 
+import java.time.Duration;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -8,8 +9,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * Backups of the database and files ({@code TEACHERBOX_BACKUP_*}).
  *
  * @param cron schedule in the instance time zone; {@code -} disables automatic backups
- * @param keep    how many scheduled and manual backups to keep (older ones are deleted after a new
- *                backup), on the server and in Google Drive
+ * @param keepDays how many days a backup is kept: older ones are deleted after a new backup, on the server
+ *                 and in Google Drive
  * @param restart restoring from the interface ends the application to be started again by the
  *                container ({@code TEACHERBOX_BACKUP_RESTART}, {@code true} in the Docker image)
  * @param google  copies in the teacher's Google Drive (ADR-0037)
@@ -17,14 +18,19 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 @ConfigurationProperties("teacherbox.backup")
 public record BackupProperties(
         @DefaultValue("0 30 3 * * *") String cron,
-        @DefaultValue("7") int keep,
+        @DefaultValue("14") int keepDays,
         @DefaultValue("false") boolean restart,
         @DefaultValue Google google) {
 
     public BackupProperties {
-        if (keep < 1) {
-            throw new IllegalArgumentException("teacherbox.backup.keep must be at least 1");
+        if (keepDays < 1) {
+            throw new IllegalArgumentException("teacherbox.backup.keep-days must be at least 1");
         }
+    }
+
+    /** How long a backup is kept. */
+    public Duration retention() {
+        return Duration.ofDays(keepDays);
     }
 
     /**

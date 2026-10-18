@@ -45,7 +45,7 @@ public class BackupService {
     /**
      * A backup file.
      *
-     * @param kind    why it was made; {@code null} for backups made before version 0.3
+     * @param kind    why it was made; {@code null} if the manifest names no known kind
      * @param version version of the portal that made it; {@code null} if unknown
      */
     public record BackupInfo(String name, long size, Instant createdAt, @Nullable BackupKind kind,
@@ -81,10 +81,7 @@ public class BackupService {
         return create(BackupKind.MANUAL);
     }
 
-    /**
-     * Writes a new backup and deletes the oldest scheduled and manual ones beyond
-     * {@link BackupProperties#keep()}.
-     */
+    /** Writes a new backup and deletes the ones older than {@link BackupProperties#keepDays()}. */
     public synchronized BackupInfo create(BackupKind kind) {
         Instant now = clock.instant();
         try {
@@ -106,7 +103,7 @@ public class BackupService {
             Files.move(partial, target, StandardCopyOption.ATOMIC_MOVE);
             BackupInfo info = info(target);
             log.info("Backup {} created ({}, {} bytes)", info.name(), kind, info.size());
-            rotate();
+            deleteExpired(now);
             events.publishEvent(new BackupCreated(info, kind));
             return info;
         } catch (IOException e) {
@@ -279,14 +276,14 @@ public class BackupService {
         }
     }
 
-    /** Only scheduled and manual backups are rotated (and those made before kinds existed). */
-    private void rotate() throws IOException {
-        List<BackupInfo> rotated = list().stream()
-                .filter(backup -> backup.kind() == null || backup.kind().isRotated())
-                .toList();
-        for (BackupInfo old : rotated.subList(Math.min(properties.keep(), rotated.size()), rotated.size())) {
-            Files.deleteIfExists(backupDir.resolve(old.name()));
-            log.info("Old backup {} deleted", old.name());
+    /** Backups of every kind live {@link BackupProperties#keepDays()} days. */
+    private void deleteExpired(Instant now) throws IOException {
+        Instant oldest = now.minus(properties.retention());
+        for (BackupInfo backup : list()) {
+            if (backup.createdAt().isBefore(oldest)) {
+                Files.deleteIfExists(backupDir.resolve(backup.name()));
+                log.info("Old backup {} deleted", backup.name());
+            }
         }
     }
 

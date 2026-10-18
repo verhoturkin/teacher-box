@@ -54,7 +54,7 @@ export const en: Translation<typeof ru> = {
     title: 'Backups',
     create: 'Back up now',
     about:
-      'A backup of the database and the files is made automatically every night; the latest backups are kept. Backups made before a restore or a reset stay until the teacher deletes them.',
+      'A backup of the database and the files is made automatically every night; backups are kept for two weeks (the administrator sets the period), older ones are deleted.',
     teacherOnly: 'Only the teacher can download a backup: backups hold the students’ data.',
     what: 'the list of backups',
     empty: 'No backups yet',
@@ -86,7 +86,7 @@ export const en: Translation<typeof ru> = {
     since: (date: string) => `since ${date}`,
     account: (account: string) => `Account: ${account}`,
     about: (portal: string) =>
-      `Every scheduled and manual backup goes to the folder “${portal}” in your Google Drive; the newest backups are kept there, as on the server. Backups made before a restore or a reset stay on the server only.`,
+      `Every scheduled and manual backup goes to the folder “${portal}” in your Google Drive; they are kept there as long as on the server. Backups made before a restore or a reset stay on the server only.`,
     lastUpload: (date: string, name: string) => `Last backup in the Drive: ${date} (${name})`,
     uploading: (name: string) => `Backup ${name} is being sent to Google Drive…`,
     downloading: (name: string) => `Backup ${name} is coming to the server…`,

@@ -196,10 +196,10 @@ export function adminSettings(overrides: Partial<AdminSettings> = {}): AdminSett
         set: true,
       }),
       adminSetting({
-        name: 'TEACHERBOX_BACKUP_KEEP',
+        name: 'TEACHERBOX_BACKUP_KEEP_DAYS',
         section: 'backups',
         group: 'Резервные копии',
-        title: 'Сколько копий хранить',
+        title: 'Сколько дней хранить копии',
         hint: '',
         kind: 'NUMBER',
         source: 'ADMIN',

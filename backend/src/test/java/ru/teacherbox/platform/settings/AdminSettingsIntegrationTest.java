@@ -99,10 +99,10 @@ class AdminSettingsIntegrationTest {
                 });
         assertThat(mvc.put().uri("/api/admin/settings").header(HttpHeaders.ACCEPT_LANGUAGE, "en-GB,en;q=0.9")
                 .with(TestUsers.admin(ADMIN)).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP\":\"many\"}}"))
+                .content("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"many\"}}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.detail").asString()
-                .isEqualTo("Backups to keep (TEACHERBOX_BACKUP_KEEP): a whole number is needed");
+                .isEqualTo("Days to keep backups (TEACHERBOX_BACKUP_KEEP_DAYS): a whole number is needed");
     }
 
     @Test
@@ -116,38 +116,38 @@ class AdminSettingsIntegrationTest {
         assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_IDENTITY_TEACHER_PASSWORD\":\"x\"}}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("settings.read-only");
-        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP\":\"много\"}}"))
+        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"много\"}}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.code").isEqualTo("settings.invalid");
                     assertThat(json).extractingPath("$.detail").asString()
-                            .contains("TEACHERBOX_BACKUP_KEEP", "нужно целое число");
+                            .contains("TEACHERBOX_BACKUP_KEEP_DAYS", "нужно целое число");
                 });
         assertThat(change("{\"values\":{}}")).hasStatus(HttpStatus.BAD_REQUEST);
         verify(restarter, never()).restartSoon();
 
         assertThat(change("{\"password\":\"admin-password\",\"values\":"
-                + "{\"TEACHERBOX_BACKUP_KEEP\":\" 14 \",\"TEACHERBOX_AI_MODEL\":\"claude-opus-5\"}}"))
+                + "{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\" 14 \",\"TEACHERBOX_AI_MODEL\":\"claude-opus-5\"}}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.changed").asArray()
-                            .containsExactly("TEACHERBOX_AI_MODEL", "TEACHERBOX_BACKUP_KEEP");
+                            .containsExactly("TEACHERBOX_AI_MODEL", "TEACHERBOX_BACKUP_KEEP_DAYS");
                     assertThat(json).extractingPath("$.restarting").isEqualTo(true);
                 });
         verify(restarter).restartSoon();
         assertThat(Files.readString(platform.dataDir().resolve(SettingsFile.LOCATION)))
-                .contains("TEACHERBOX_BACKUP_KEEP=14");
+                .contains("TEACHERBOX_BACKUP_KEEP_DAYS=14");
         clearInvocations(restarter);
 
-        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP\":\"14\"}}"))
+        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"14\"}}"))
                 .as("nothing changes: no restart")
                 .hasStatusOk().bodyJson().extractingPath("$.restarting").isEqualTo(false);
         verify(restarter, never()).restartSoon();
 
-        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP\":null}}"))
+        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":null}}"))
                 .hasStatusOk().bodyJson().extractingPath("$.changed").asArray()
-                .containsExactly("TEACHERBOX_BACKUP_KEEP");
+                .containsExactly("TEACHERBOX_BACKUP_KEEP_DAYS");
         assertThat(mvc.get().uri("/api/admin/settings").with(TestUsers.admin(ADMIN))).hasStatusOk().bodyJson()
-                .extractingPath("$.settings[?(@.name == 'TEACHERBOX_BACKUP_KEEP')].source").asArray()
+                .extractingPath("$.settings[?(@.name == 'TEACHERBOX_BACKUP_KEEP_DAYS')].source").asArray()
                 .doesNotContain("ADMIN");
     }
 

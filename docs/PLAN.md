@@ -50,7 +50,7 @@ copies.
 
 ### 211. Backups kept N days (B, F)
 
-- [ ] 211.1 **B** `TEACHERBOX_BACKUP_KEEP_DAYS` (14) replaces `TEACHERBOX_BACKUP_KEEP`: `BackupProperties.keepDays`,
+- [x] 211.1 **B** `TEACHERBOX_BACKUP_KEEP_DAYS` (14) replaces `TEACHERBOX_BACKUP_KEEP`: `BackupProperties.keepDays`,
   `BackupService.deleteExpired` (every kind, by file time, after a new backup), `CloudBackupService.rotate` (Drive
   files uploaded earlier); `SettingsCatalog`, `.env.example`, `docs/modules/platform.md`, `docs/operations.md`,
   ADR-0014/0037 notes. **F** settings texts (`settings/i18n`), admin settings fixtures and specs.
