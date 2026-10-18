@@ -127,8 +127,6 @@ interface InboxPart {
 
     .tb-inbox-read {
       margin-top: var(--tb-space-4);
-      padding-top: var(--tb-space-2);
-      border-top: 1px solid var(--p-md-outline-variant);
     }
 
     /* the opened list keeps its distance from the «Прочитанные» button */

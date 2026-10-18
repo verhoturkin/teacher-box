@@ -90,6 +90,11 @@
   }
 }
 
+/* A chip is removed with «×» (M3 input chip): `times-circle` is the error sign of messages elsewhere */
+.p-chip svg.p-icon[data-p-icon='times-circle'] {
+  mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "times")}');
+}
+
 /* 24 px like ours (a field's trailing icon, «×» of a dialog); smaller where the box is small (M3) */
 .p-inputnumber-button {
   --tb-icon-size: 1.25rem;
@@ -1870,30 +1875,59 @@ a.p-menu-item-link:hover {
   outline-offset: 1px;
 }
 
-/* A dropped lesson waits for confirmation: the primary outline and two icon buttons on its card */
+/*
+ * A dropped lesson waits for confirmation: the primary outline and, in the middle of its card, a standard
+ * button group of two extra small icon buttons (M3E XSmallIconButton: 32 dp high, a 20 dp icon, full corners,
+ * pressed CornerSmall 8 dp; 18 dp between them, the group's XS inner padding). The main action is the filled
+ * wide one (10 + 20 + 10 dp) — ✓ «Перенести»; ✕ «Отменить перенос» is tonal and of the default width
+ * (6 + 20 + 6 dp). Our decision (not in M3): the group lies on a veil of surface-container-lowest over the card,
+ * so the filled and tonal buttons keep their contrast on any lesson color (primary-container is close to primary).
+ */
 .tb-lesson--moving {
   outline: 2px solid var(--p-md-primary);
   outline-offset: 1px;
+
+  .fc-event-main {
+    position: relative;
+  }
 }
 
 .tb-lesson-move {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
-  gap: var(--tb-space-1);
-  margin-block-start: var(--tb-space-1);
+  align-items: center;
+  justify-content: center;
+  gap: 1.125rem;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--p-md-surface-container-lowest) 88%, transparent);
 }
 
 .tb-lesson-move__button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  flex: none;
+  width: 2.5rem;
+  height: 2rem;
   padding: 0;
   border: 0;
   border-radius: var(--tb-shape-full);
   background: var(--p-md-primary);
   color: var(--p-md-on-primary);
   cursor: pointer;
+  transition:
+    background var(--tb-spring-fast-effects),
+    border-radius var(--tb-spring-fast-spatial);
+
+  /* the 48 dp target of an extra small icon button */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.25rem;
+  }
 
   &:hover {
     background: color-mix(
@@ -1903,17 +1937,39 @@ a.p-menu-item-link:hover {
     );
   }
 
-  & + & {
-    background: var(--p-md-surface-container-highest);
-    color: var(--p-md-on-surface);
-  }
-
-  & + &:hover {
+  &:active {
+    border-radius: var(--tb-shape-sm);
     background: color-mix(
       in srgb,
-      var(--p-md-on-surface) var(--tb-state-hover),
-      var(--p-md-surface-container-highest)
+      var(--p-md-on-primary) var(--tb-state-pressed),
+      var(--p-md-primary)
     );
+  }
+
+  & + & {
+    width: 2rem;
+    background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+
+    &::after {
+      inset: -0.5rem;
+    }
+
+    &:hover {
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-secondary-container) var(--tb-state-hover),
+        var(--p-md-secondary-container)
+      );
+    }
+
+    &:active {
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-secondary-container) var(--tb-state-pressed),
+        var(--p-md-secondary-container)
+      );
+    }
   }
 
   &:focus-visible {
@@ -1922,7 +1978,7 @@ a.p-menu-item-link:hover {
   }
 
   i {
-    font-size: 0.875rem;
+    font-size: 1.25rem;
   }
 }
 

@@ -71,7 +71,8 @@ loads and screen readers skip it; the meaning is in the label or the tooltip. In
 **PrimeNG's own icons** are SVG components (`<svg data-p-icon="…">`), not primeicons: `npm run icons` also
 writes the outlines of our symbols as masks (`core/theme/prime-icons.scss`, map `PRIME` in the script) and
 `styles.scss` hides the paths and masks the box — one place for every component, no per-use templates: select
-and multiselect `arrow_drop_down` / `arrow_drop_up`, «×» of dialogs, drawers, toasts and chips `close`, the date
+and multiselect `arrow_drop_down` / `arrow_drop_up`, «×» of dialogs, drawers, toasts and chips `close` (a chip's own
+`times-circle` too, `styles.scss` `.p-chip`; elsewhere `times-circle` is the `error` of messages), the date
 picker `calendar_month`, `chevron_left` / `chevron_right` (its time `keyboard_arrow_up` / `_down`), number
 steps `keyboard_arrow_up` / `_down`, checkbox `check` / `remove`, paginator `first_page` / `chevron_*` /
 `last_page`, table sorting `unfold_more` / `arrow_upward` / `arrow_downward`, toast and message `info` /
@@ -215,8 +216,10 @@ component that shows one adds it to `PRIME`).
   calm counter `secondary`; a badge on an icon (the bell) has no outline and sits inside the 40 px button: its start at the icon's middle, 4 px from the top (M3). Calendar events: conducted —
   success-container, missed — warning-container, cancelled — surface-container-highest + on-surface-variant +
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
-  lesson waiting for confirmation — 2 px primary outline and two 28 px round buttons on its card: ✓ «Перенести»
-  (primary) and ✕ «Отменить перенос» (surface-container-highest); the move is saved only on ✓.
+  lesson waiting for confirmation — 2 px primary outline and, in the middle of its card over an 88 %
+  surface-container-lowest veil, a standard button group of M3E extra small icon buttons (32 dp, 20 dp icon, 18 dp
+  apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); the move is
+  saved only on ✓.
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
@@ -268,7 +271,7 @@ component that shows one adds it to `PRIME`).
   **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
-- **Top bar** (64 px, sticky): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
+- **Top bar** (64 px, sticky, no divider below it on the phone either): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
   (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
   name.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
