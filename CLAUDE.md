@@ -32,7 +32,13 @@ CLAUDE.md → AGENTS.md, loaded when you work there.
   and take its conclusion, not the file dumps.
 - Targeted tests while iterating, `verify.sh` once before the commit (AGENTS.md §5). Don't run `npm run format`
   for files you edited: the PostToolUse hook in `.claude/settings.json` formats them.
-- `package-lock.json` files are not readable (`permissions.deny`); check versions with `npm ls <pkg>`.
+- Project subagent `docs-sync` (Sonnet, `.claude/agents/`) — only when a change touches 3 or more docs, or to
+  sync docs before a release. Ticking the PLAN.md checkbox or editing one doc — do it inline: a subagent starts
+  cold and costs more there.
+- Browser checks: only when the change is visible in the UI. Verify with text tools first (`read_page`,
+  `get_page_text`, console/network); take one final screenshot with `scale: 0.5` as proof, not one per step.
+- `package-lock.json` files and build output (`dist`, `target/classes`, `node_modules`, HTML coverage reports,
+  `backend/data`) are not readable (`permissions.deny`); check versions with `npm ls <pkg>`.
 
 ## Developer environment
 
