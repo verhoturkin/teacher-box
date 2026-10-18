@@ -32,7 +32,8 @@ If the portal was set up by the installer, the server has the \`teacherbox\` com
 - \`sudo teacherbox status\` — whether the portal runs and its version;
 - \`sudo teacherbox logs backend\` — the log, if the portal does not open;
 - \`sudo teacherbox update\` — update the portal to a new release (the data and the settings stay);
-- \`sudo teacherbox backups\` — copy the backups to a folder on the server.
+- \`sudo teacherbox backups\` — copy the backups to a folder on the server;
+- \`sudo teacherbox reset\` — delete all data of the portal (the database, files, backups on the server, accounts) and start it as after a new installation; the settings in .env stay.
 
 HTTPS comes from the built-in Caddy: it gets a certificate for the domain of the TEACHERBOX_DOMAIN setting by itself. If there is no certificate, check that the domain points to the server and ports 80 and 443 are open (\`sudo teacherbox logs caddy\`).
 `,
@@ -44,6 +45,8 @@ HTTPS comes from the built-in Caddy: it gets a certificate for the domain of the
 ## Backups
 
 The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data. Google Drive for the backups is connected by the teacher too; whether it works is shown in «Integrations».
+
+Backups are kept for as many days as «Settings» → «Backups» → «Days to keep backups» says (14 by default); the portal deletes older backups of every kind after making a new one, on the server and in Google Drive.
 
 To restore a backup:
 
