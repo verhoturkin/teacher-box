@@ -57,7 +57,7 @@ copies.
 
 ### 212. The wiki in the release rules (D)
 
-- [ ] 212.1 **D** `AGENTS.md` §2, §6.1, §9, `CLAUDE.md` workflow, skills `release` (wiki pages, LF clone, push
+- [x] 212.1 **D** `AGENTS.md` §2, §6.1, §9, `CLAUDE.md` workflow, skills `release` (wiki pages, LF clone, push
   after the tag) and `new-setting`, `backend/AGENTS.md`.
 
 ### 213. Release 0.18.0

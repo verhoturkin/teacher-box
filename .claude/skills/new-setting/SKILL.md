@@ -1,6 +1,6 @@
 ---
 name: new-setting
-description: Add a new TEACHERBOX_* environment variable / configuration property to Teacher Box everywhere it must appear (properties record, .env.example, SettingsCatalog, README, tests). Use whenever code needs a new setting.
+description: Add a new TEACHERBOX_* environment variable / configuration property to Teacher Box everywhere it must appear (properties record, .env.example, SettingsCatalog, wiki, tests). Use whenever code needs a new setting.
 ---
 
 # New setting `TEACHERBOX_<MODULE>_<NAME>`

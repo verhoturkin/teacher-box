@@ -37,7 +37,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 | UI texts | [`docs/glossary.md`](docs/glossary.md) (Russian wording) |
 | Why a decision was made | [`docs/adr/README.md`](docs/adr/README.md) → the specific ADR |
 | Release, new module, new env var | skills `.claude/skills/{release,new-module,new-setting}/SKILL.md` |
-| Running the product | `README.md`, `docs/operations.md` (Russian, for users) |
+| Running the product | `README.md`, `docs/operations.md`, the [wiki](https://github.com/verhoturkin/teacher-box/wiki) (Russian, for users; §6.1) |
 
 **Don't read unless the task needs it:** `docs/archive/` (completed plans, design audit; left out of searches by
 `.ignore` — find an item with `rg --no-ignore DA-081 docs/archive`), old `CHANGELOG.md` entries (only the top one), whole ADRs when the spec answers.
@@ -133,7 +133,13 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
 ### 6.1 General
 - English: code, identifiers, comments, commit messages, `AGENTS.md`/`CLAUDE.md` files, `docs/PLAN.md`,
   `docs/design-system.md`, `docs/modules/`, skills. Russian: README, `docs/operations.md`, `docs/glossary.md`,
-  ADRs, CHANGELOG, help articles and all UI texts.
+  ADRs, CHANGELOG, help articles, the wiki and all UI texts.
+- **User docs live in the GitHub wiki** (`https://github.com/verhoturkin/teacher-box.wiki.git`, Russian): install,
+  update, backups, messengers, schedule, calls, boards, AI, proxy, FAQ. A change users see or must act on
+  (install, the `teacherbox` command, settings, integrations, backups, operations) updates its wiki pages in the
+  same release; README stays slim and only links the wiki. The wiki is a separate repository without branches or
+  review: clone it with `git -c core.autocrlf=false clone …` (LF, otherwise every line changes), commit
+  `docs(wiki): … (X.Y.Z)` and push it only after the release is merged and tagged (skill `release`, step 1).
 - No secrets in the repo. Settings only via `TEACHERBOX_*` env vars; each new one → `.env.example`,
   `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), wiki user docs
   (README stays slim, skill `new-setting`).
@@ -173,5 +179,6 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 - [ ] Isolation rules (§4) and conventions (§6, nested AGENTS.md, design system) followed.
 - [ ] Tests written, `./scripts/verify.sh` green, gates met.
 - [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
+- [ ] User-visible change → wiki pages updated (§6.1), help articles in every language.
 - [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` / `docs/design-system.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.
