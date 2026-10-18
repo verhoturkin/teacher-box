@@ -36,7 +36,7 @@ copies.
 
 ### 209. Full data wipe in the `teacherbox` command (D)
 
-- [ ] 209.1 **D** `scripts/teacherbox reset [--yes]`: asks for «УДАЛИТЬ», `compose down --volumes --remove-orphans`,
+- [x] 209.1 **D** `scripts/teacherbox reset [--yes]`: asks for «УДАЛИТЬ», `compose down --volumes --remove-orphans`,
   then removes what is left with the project label (containers of profiles turned off, volumes, networks), starts
   the portal and prints the login and the new password — as after a new installation; `compose.yaml`, `.env` and
   images stay. `verify.sh` dry run checks the command; `docs/operations.md`, admin help, wiki `Backups`/`FAQ`/`Install`.
