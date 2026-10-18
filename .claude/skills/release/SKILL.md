@@ -11,12 +11,10 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
 1. **Help and user docs** (user-facing):
    - Help articles, every language — `frontend/src/app/features/help/articles/{teacher,student,admin}.{ru,en}.ts`:
      describe every user-visible change of the release; wording per `docs/glossary.md`.
-   - **Wiki** (Russian, https://github.com/verhoturkin/teacher-box/wiki) — every page the release changes for users:
-     install, update, the `teacherbox` command, settings (`TEACHERBOX_*` with defaults), integrations, backups,
-     features, FAQ. Clone into the scratchpad with `git -c core.autocrlf=false clone
-     https://github.com/verhoturkin/teacher-box.wiki.git`, edit, commit `docs(wiki): <what> (X.Y.Z)`. The wiki has
-     no branches and goes live on push: push it **after** the release is merged and tagged (step 7), and list the
-     changed pages in the PR description. Remove wiki notes that the release makes obsolete.
+   - **Wiki** (`docs/wiki/`, Russian) — check that the release's substeps updated every page they change for
+     users: install, update, the `teacherbox` command, settings (`TEACHERBOX_*` with defaults), integrations,
+     backups, features, FAQ; fill the gaps and remove notes the release makes obsolete
+     (`git diff vPREV -- docs/wiki` shows what changed). CI publishes it with the tag (step 7).
    - README only if the basics or its links change (it stays slim and links the wiki); `docs/operations.md` if
      operations changed.
 2. **E2E** — add `e2e/tests/version-X-Y-Z.spec.ts` (dashes) covering the release's scenarios; reuse helpers
@@ -34,5 +32,5 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
    (`git tag -a vX.Y.Z -m "X.Y.Z"`) and push it together with the branch
    (`git push origin <branch> vX.Y.Z`). The tag push makes CI publish the images to GHCR. If the release
    commit changes after tagging (a fix before the push), move the tag to the new commit.
-8. **Wiki** — once the release is in `main` and tagged, push the wiki commit(s) of step 1
-   (`git push` in the wiki clone) and check the changed pages on GitHub.
+8. **Wiki** — the tag's CI run publishes `docs/wiki/` after the images (job «Publish the wiki»); check that it
+   passed and glance at the changed pages on GitHub. Republish by hand — workflow `wiki.yml` on the tag.

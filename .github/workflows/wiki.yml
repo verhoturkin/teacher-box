@@ -1,0 +1,22 @@
+name: Wiki
+
+# Republishes docs/wiki by hand (CI publishes it for every release tag): pick a tag in "Use workflow from"
+# to restore the wiki of that release, or main for an urgent fix between releases.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wiki:
+    name: Publish the wiki
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Links to the wiki pages
+        run: ./scripts/verify.sh docs
+      - name: docs/wiki → GitHub wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/publish-wiki.sh "${GITHUB_REF_NAME}"

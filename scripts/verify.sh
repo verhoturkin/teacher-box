@@ -9,6 +9,7 @@
 #                                # + the installer checks
 #   scripts/verify.sh installer  # shellcheck of the scripts, a dry run of install.sh (ADR-0032)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
+#   scripts/verify.sh docs       # links to the wiki pages (docs/wiki) are valid
 #
 # Each step writes its full output to .verify-logs/<step>.log and prints one line; a failed step prints
 # the end of its log. VERIFY_VERBOSE=1 streams the full output, VERIFY_TAIL=<n> sets how many lines of a
@@ -88,7 +89,8 @@ verify_docker() {
 }
 
 shellcheck_scripts() {
-    local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh)
+    local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh scripts/check-wiki.sh
+        scripts/publish-wiki.sh)
     if command -v shellcheck >/dev/null 2>&1; then
         shellcheck -x "${scripts[@]}"
     else
@@ -137,21 +139,28 @@ verify_e2e() {
     run e2e-typecheck "$ROOT/e2e" npm run typecheck
 }
 
+verify_docs() {
+    step "docs"
+    run docs-wiki-links "$ROOT" bash scripts/check-wiki.sh
+}
+
 target="${1:-all}"
 case "$target" in
     all)
+        verify_docs
         verify_backend
         verify_frontend
         verify_e2e
         verify_docker
         ;;
+    docs) verify_docs ;;
     backend) verify_backend ;;
     frontend) verify_frontend ;;
     docker) verify_docker ;;
     installer) verify_installer ;;
     e2e) verify_e2e ;;
     *)
-        echo "usage: $0 [all|backend|frontend|docker|installer|e2e]" >&2
+        echo "usage: $0 [all|docs|backend|frontend|docker|installer|e2e]" >&2
         exit 2
         ;;
 esac

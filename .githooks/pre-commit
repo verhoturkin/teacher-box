@@ -11,6 +11,7 @@ backend=false
 frontend=false
 docker=false
 e2e=false
+docs=false
 
 while IFS= read -r file; do
     case "$file" in
@@ -18,9 +19,13 @@ while IFS= read -r file; do
         frontend/*) frontend=true ;;
         docker/* | compose.yaml | compose.*.yaml | .dockerignore | .env.example | scripts/install.sh | scripts/teacherbox) docker=true ;;
         e2e/*) e2e=true ;;
+        *.md | scripts/check-wiki.sh) docs=true ;;
     esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 
+if [ "$docs" = true ]; then
+    "$ROOT/scripts/verify.sh" docs
+fi
 if [ "$backend" = true ]; then
     "$ROOT/scripts/verify.sh" backend
 fi
