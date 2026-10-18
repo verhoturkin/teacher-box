@@ -1,7 +1,16 @@
 {
   "permissions": {
     "deny": [
-      "Read(**/package-lock.json)"
+      "Read(**/package-lock.json)",
+      "Read(**/node_modules/**)",
+      "Read(frontend/dist/**)",
+      "Read(frontend/.angular/**)",
+      "Read(frontend/coverage/**/*.html)",
+      "Read(backend/target/classes/**)",
+      "Read(backend/target/test-classes/**)",
+      "Read(backend/target/site/**/*.html)",
+      "Read(backend/data/**)",
+      "Read(e2e/test-results/**)"
     ]
   },
   "hooks": {
