@@ -17,11 +17,12 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release
+## v0.18.0
 
-README (~600 lines) duplicates the user guides: messengers, schedule, calls, boards, AI, proxy and
-the feature tour. Move the guides to the GitHub wiki (enabled 2026-10-16) and leave a slim stylish
-README with the basics and links.
+User guides move to the GitHub wiki (enabled 2026-10-16) with a slim README; the wiki becomes part of every
+release. Before the first installations: `teacherbox reset` wipes everything a new installation would not have,
+the migrations of every module restart from one `V1`, backups are kept a number of days instead of a number of
+copies.
 
 ### 208. User guides to the wiki, slim README (D)
 
@@ -32,6 +33,36 @@ README with the basics and links.
 - [x] 208.2 **D** Slim stylish README (~150 lines, Russian): centered hero, badges, highlights,
   feature grid, one-command install, short manual/HTTPS/NAS (`<details>`), first steps, update,
   settings, FAQ and security in short, links to the wiki pages.
+
+### 209. Full data wipe in the `teacherbox` command (D)
+
+- [ ] 209.1 **D** `scripts/teacherbox reset [--yes]`: asks for «УДАЛИТЬ», `compose down --volumes --remove-orphans`,
+  then removes what is left with the project label (containers of profiles turned off, volumes, networks), starts
+  the portal and prints the login and the new password — as after a new installation; `compose.yaml`, `.env` and
+  images stay. `verify.sh` dry run checks the command; `docs/operations.md`, admin help, wiki `Backups`/`FAQ`/`Install`.
+
+### 210. Migrations restart from V1 (B)
+
+- [x] 210.1 **B** One `V1__create_<module>_schema.sql` per module in `db/migration/<module>/` (the schema the old
+  V1…Vn produced — compared through H2 `INFORMATION_SCHEMA`: columns, checks, keys, indexes, seed rows). Tests tied
+  to old schemas: none run old versions or data migrations; the pre-0.3 "backup without a kind" wording goes.
+  `backend/AGENTS.md`: a released script is never edited.
+
+### 211. Backups kept N days (B, F)
+
+- [ ] 211.1 **B** `TEACHERBOX_BACKUP_KEEP_DAYS` (14) replaces `TEACHERBOX_BACKUP_KEEP`: `BackupProperties.keepDays`,
+  `BackupService.deleteExpired` (every kind, by file time, after a new backup), `CloudBackupService.rotate` (Drive
+  files uploaded earlier); `SettingsCatalog`, `.env.example`, `docs/modules/platform.md`, `docs/operations.md`,
+  ADR-0014/0037 notes. **F** settings texts (`settings/i18n`), admin settings fixtures and specs.
+
+### 212. The wiki in the release rules (D)
+
+- [ ] 212.1 **D** `AGENTS.md` §2, §6.1, §9, `CLAUDE.md` workflow, skills `release` (wiki pages, LF clone, push
+  after the tag) and `new-setting`, `backend/AGENTS.md`.
+
+### 213. Release 0.18.0
+
+- [ ] 213.1 Help (teacher, admin; ru, en), wiki pages, E2E `version-0-18-0.spec.ts`, CHANGELOG, version, archive.
 
 ## Backlog
 
