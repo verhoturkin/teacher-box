@@ -64,6 +64,12 @@ describe('StudentFormDialog', () => {
     typeInto(field('displayName'), 'Пётр');
     typeInto(field('phone'), '+7 900');
     await fixture.whenStable();
+    // choosing a colour keeps what was typed: the form is filled only when the dialog opens
+    requireElement(document.body, 'tb-label-color-field .p-select', HTMLElement).click();
+    await fixture.whenStable();
+    requireElement(document.body, 'li[aria-label="Фиолетовый"]', HTMLElement).click();
+    await fixture.whenStable();
+    expect(field('displayName').value).toBe('Пётр');
     buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
@@ -73,7 +79,7 @@ describe('StudentFormDialog', () => {
       phone: '+7 900',
       note: null,
       defaultTopic: null,
-      color: null,
+      color: 'VIOLET',
     });
     const response: CreatedStudent = {
       student: { ...STUDENT, id: 's-2', displayName: 'Пётр', status: 'INVITED' },

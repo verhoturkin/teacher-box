@@ -8,6 +8,7 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   FormControl,
@@ -189,18 +190,22 @@ export class GroupFormDialog {
   });
 
   constructor() {
-    // Fill the form whenever the dialog opens.
+    // Fill the form whenever the dialog opens; untracked: the colour select reads its own signals when written,
+    // and choosing a colour must not fill the form again.
     effect(() => {
       if (this.visible()) {
         const group = this.group();
-        const price = this.lessonPrice();
-        this.error.set(null);
-        this.form.reset({
-          name: group?.name ?? '',
-          memberIds: group?.members.map((member) => member.id) ?? [],
-          price: price === null ? null : toMajorUnits(price, this.currency()),
-          defaultTopic: group?.defaultTopic ?? '',
-          color: group?.color ?? null,
+        const lessonPrice = this.lessonPrice();
+        const price = lessonPrice === null ? null : toMajorUnits(lessonPrice, this.currency());
+        untracked(() => {
+          this.error.set(null);
+          this.form.reset({
+            name: group?.name ?? '',
+            memberIds: group?.members.map((member) => member.id) ?? [],
+            price,
+            defaultTopic: group?.defaultTopic ?? '',
+            color: group?.color ?? null,
+          });
         });
       }
     });

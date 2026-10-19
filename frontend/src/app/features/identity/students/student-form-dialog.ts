@@ -8,6 +8,7 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   FormControl,
@@ -149,18 +150,21 @@ export class StudentFormDialog {
   });
 
   constructor() {
-    // Fill the form whenever the dialog opens.
+    // Fill the form whenever the dialog opens; untracked: the colour select reads its own signals when written,
+    // and choosing a colour must not fill the form again.
     effect(() => {
       if (this.visible()) {
         const student = this.student();
-        this.error.set(null);
-        this.form.reset({
-          displayName: student?.displayName ?? '',
-          email: student?.email ?? '',
-          phone: student?.phone ?? '',
-          note: student?.note ?? '',
-          defaultTopic: student?.defaultTopic ?? '',
-          color: student?.color ?? null,
+        untracked(() => {
+          this.error.set(null);
+          this.form.reset({
+            displayName: student?.displayName ?? '',
+            email: student?.email ?? '',
+            phone: student?.phone ?? '',
+            note: student?.note ?? '',
+            defaultTopic: student?.defaultTopic ?? '',
+            color: student?.color ?? null,
+          });
         });
       }
     });
