@@ -10,7 +10,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Card } from 'primeng/card';
 import { pageDetail } from '@core/routing/page-detail';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
@@ -20,10 +19,12 @@ import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
 import { T } from './i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
+import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 
 /**
- * The help of an area (`/<area>/help/<topic>`): the contents with search on top, the chosen article
- * under them.
+ * The help of an area (`/<area>/help/<topic>`): list-detail — the contents with search in a fixed pane,
+ * the chosen article beside it; on compact and medium `/<area>/help` is the contents and an article has
+ * «back» to it.
  */
 @Component({
   selector: 'tb-help-page',
@@ -32,80 +33,89 @@ import { SearchField } from '@shared/ui/search-field';
     EmptyState,
     ReactiveFormsModule,
     RouterLink,
-    Card,
+    Panes,
+    Pane,
     HelpArticleView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.help" />
-    <div class="tb-stack">
-      <p-card styleClass="tb-help__contents">
-        <tb-search-field [formControl]="search" [label]="t.search" />
-        <nav [attr.aria-label]="t.articles">
-          <ul class="tb-help__list">
-            @for (article of found(); track article.id) {
-              <li>
-                <a
-                  class="tb-help__chip"
-                  [routerLink]="['/', area(), 'help', article.id]"
-                  [class.tb-help__current]="article.id === current()?.id"
-                  [attr.aria-current]="article.id === current()?.id ? 'page' : null"
-                  [attr.title]="article.summary"
-                  >{{ article.title }}</a
-                >
-              </li>
-            } @empty {
-              @if (loaded()) {
+    <tb-panes>
+      @if (layout.list()) {
+        <tb-pane kind="fixed" [label]="t.articles">
+          <tb-page-header [title]="t.help" />
+          <tb-search-field [formControl]="search" [label]="t.search" />
+          <nav [attr.aria-label]="t.articles">
+            <ul class="tb-help__list">
+              @for (article of found(); track article.id) {
                 <li>
-                  <tb-empty-state
-                    [compact]="true"
-                    icon="tb-i-search"
-                    [title]="t.notFoundTitle"
-                    [hint]="t.notFoundHint"
-                  />
+                  <a
+                    class="tb-help__item"
+                    [routerLink]="['/', area(), 'help', article.id]"
+                    [class.tb-help__current]="isCurrent(article)"
+                    [attr.aria-current]="isCurrent(article) ? 'page' : null"
+                  >
+                    <span class="tb-help__item-title">{{ article.title }}</span>
+                    <span class="tb-help__item-summary">{{ article.summary }}</span>
+                  </a>
                 </li>
+              } @empty {
+                @if (loaded()) {
+                  <li>
+                    <tb-empty-state
+                      [compact]="true"
+                      icon="tb-i-search"
+                      [title]="t.notFoundTitle"
+                      [hint]="t.notFoundHint"
+                    />
+                  </li>
+                }
               }
-            }
-          </ul>
-        </nav>
-      </p-card>
-      <p-card class="tb-help__article-card" styleClass="tb-help__article">
-        @if (current(); as article) {
-          @if (missing()) {
-            <p class="tb-muted">{{ t.missing(article.title) }}</p>
+            </ul>
+          </nav>
+        </tb-pane>
+      }
+      @if (layout.detail()) {
+        <tb-pane class="tb-help__article-card">
+          @if (layout.single()) {
+            <tb-page-header [title]="t.help" [back]="['/', area(), 'help']" [backLabel]="t.all" />
           }
-          <h2 class="tb-help__title">{{ article.title }}</h2>
-          <p class="tb-help__summary">{{ article.summary }}</p>
-          <tb-help-article [body]="article.body" />
-        }
-      </p-card>
-    </div>
+          @if (current(); as article) {
+            <article class="tb-help__article">
+              @if (missing()) {
+                <p class="tb-muted">{{ t.missing(article.title) }}</p>
+              }
+              <h2 class="tb-help__title">{{ article.title }}</h2>
+              <p class="tb-help__summary">{{ article.summary }}</p>
+              <tb-help-article [body]="article.body" />
+            </article>
+          }
+        </tb-pane>
+      }
+    </tb-panes>
   `,
   styles: `
     /*
-     * The contents on top (ADR-0021): the search and the titles of the articles as chips in a few
-     * lines, the summary of an article in its tooltip; the chosen article right under them.
+     * List-detail (redesign spec §3.3): the contents with the search in the fixed pane, the chosen
+     * article in the flexible one; on compact and medium the route shows one of them. Running text keeps
+     * 66 ch (spec §1).
      */
     .tb-help__list {
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
+      flex-direction: column;
+      gap: var(--tb-space-1);
       margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
     }
 
-    .tb-help__chip {
-      display: inline-flex;
-      align-items: center;
-      min-height: 2rem;
-      box-sizing: border-box;
-      padding: var(--tb-space-1) var(--tb-space-3);
-      border: 1px solid var(--p-md-outline-variant);
-      border-radius: var(--tb-shape-sm);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-l);
+    .tb-help__item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-1);
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border-radius: var(--tb-shape-lg);
+      color: var(--p-md-on-surface);
 
       &:hover {
         background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
@@ -113,11 +123,31 @@ import { SearchField } from '@shared/ui/search-field';
       }
     }
 
+    .tb-help__item-title {
+      font: var(--tb-type-title-m);
+    }
+
+    .tb-help__item-summary {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+    }
+
     .tb-help__current,
     .tb-help__current:hover {
-      border-color: var(--p-md-secondary-container);
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
+
+      .tb-help__item-title {
+        font: var(--tb-type-title-m-emphasized);
+      }
+
+      .tb-help__item-summary {
+        color: inherit;
+      }
+    }
+
+    .tb-help__article {
+      max-width: 66ch;
     }
 
     .tb-help__title {
@@ -150,6 +180,8 @@ export class HelpPage {
     const all = this.articles();
     return all.find((article) => article.id === topic) ?? all[0] ?? null;
   });
+  /** The article of the address (or the first one) is open; on one pane only an address opens it. */
+  protected readonly layout = injectListDetail(() => this.topic() !== undefined);
   protected readonly missing = computed(() => {
     const topic = this.topic();
     return (
@@ -159,8 +191,12 @@ export class HelpPage {
     );
   });
 
+  protected isCurrent(article: HelpArticle): boolean {
+    return this.layout.detail() && article.id === this.current()?.id;
+  }
+
   constructor() {
-    pageDetail(() => this.current()?.title);
+    pageDetail(() => (this.layout.detail() ? this.current()?.title : null));
     effect(() => {
       const area = this.area();
       void this.library.articles(area).then((articles) => {

@@ -284,8 +284,22 @@ component that shows one adds it to `PRIME`).
   | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
 
   Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
-  keeps 13rem from large. Panes, regions and «Создать» by breakpoint — redesign spec §3 (230.2–231).
+  keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
+- **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
+  `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
+  `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
+  28 dp corners on the surface-container window (*ours*), 24 dp inner padding (16 on compact, *ours*); 24 dp
+  spacer between panes, 24 dp margin at the trailing edge and the bottom, 16 dp at the sides on compact
+  (**M3**). From expanded the panes stand side by side and each scrolls on its own; on compact and medium they
+  follow one another and the window scrolls. Focus order = template order = visual order (nothing reorders
+  panes); `label` makes a pane a named region. A pane that appears after the page enters on
+  `--tb-spring-default-spatial` (opacity on the effects spring), panes of a new page don't, no stagger
+  (*ours*). The shell drops its own content padding for a page of panes. **List-detail:**
+  `injectListDetail(() => routeHasDetail)` — from expanded both panes, on compact and medium only the list or
+  the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
+  title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
+  the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
 - **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
   (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
   help, settings, account, sign out); five sections fit without «Ещё». Item as wide as its label, ≥ 64 px, the

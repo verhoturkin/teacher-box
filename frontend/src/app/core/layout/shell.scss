@@ -103,6 +103,17 @@
   }
 }
 
+/* A page of panes (shared/ui/panes.ts) takes the whole width: the panes keep their own margins */
+.tb-shell__content:has(> * > tb-panes) {
+  max-width: none;
+  padding-top: 0;
+  padding-inline: 0;
+
+  &:not(.tb-shell__content--nav) {
+    padding-bottom: 0;
+  }
+}
+
 /* Room for the bottom navigation */
 .tb-shell__content--nav {
   padding-bottom: calc(

@@ -561,7 +561,7 @@ The portal's name, the bell and the user menu (your photo or a person in a circl
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
-The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window, «Settings» and «My account» included. In the help the contents are on top and the article under them.
+The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window, «Settings» and «My account» included. The exception is the help: on a wide screen the list of articles is on the left and the chosen article on the right, each scrolling on its own; on a phone or a tablet the list comes first, an article opens in its place and the back arrow returns to the list.
 
 Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 

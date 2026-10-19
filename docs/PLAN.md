@@ -45,7 +45,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
   extra-large at 600 / 840 / 1200 / 1600), `core/layout/shell.scss`, `side-nav.scss`, every `48em` / `75em` media
   query (`rg "48em|75em" frontend/src`), `styles.scss`. Collapsed rail below 1600 (D5). Tests: `shell.spec.ts`,
   `shell-mobile.spec.ts`, `side-nav.spec.ts` at 599 / 600 / 839 / 840 / 1199 / 1200 / 1599 / 1600.
-- [ ] 230.2 **F** Spec §3.2–3.3: `shared/ui/panes.ts` (`tb-panes`, `tb-pane` fixed / flexible / sheet; own scroll;
+- [x] 230.2 **F** Spec §3.2–3.3: `shared/ui/panes.ts` (`tb-panes`, `tb-pane` fixed / flexible / sheet; own scroll;
   28 dp sheets on `surface container`; margins and spacer by breakpoint) and a list-detail helper (list or detail by
   route below expanded). Specs for widths per breakpoint and focus order. Not used by sections yet, except
   `/teacher/help` as a first consumer if it fits (list of topics + article).
