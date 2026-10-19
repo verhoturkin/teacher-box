@@ -7,6 +7,7 @@ import static ru.teacherbox.schedule.LessonsIntegrationTests.lesson;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,9 @@ class AvailabilityIntegrationTests {
     @Test
     void aStudentSeesWhenTheTeacherIsBusyButNotWithWhom() throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Смотрит");
-        Instant own = Slots.next(clock);
-        Instant others = Slots.next(clock);
+        // Far ahead of every other lesson and off time: the merged busy periods hold only these lessons.
+        Instant own = clock.instant().truncatedTo(ChronoUnit.DAYS).plus(Duration.ofDays(3 * 365)).plus(HOUR);
+        Instant others = own.plus(Duration.ofHours(3));
         plan(student, own);
         plan(directory.addStudent("Чужая Фамилия"), others);
 
@@ -46,9 +48,8 @@ class AvailabilityIntegrationTests {
                 others.plus(HOUR)).with(TestUsers.student(student)).exchange();
 
         assertThat(busy).hasStatusOk().bodyJson().satisfies(json -> {
-            assertThat(json).extractingPath("$[?(@.start == '" + others + "')].end").asArray()
-                    .containsExactly(others.plus(HOUR).toString());
-            assertThat(json).extractingPath("$[?(@.start == '" + own + "')]").asArray().isEmpty();
+            assertThat(json).extractingPath("$[*].start").asArray().containsExactly(others.toString());
+            assertThat(json).extractingPath("$[*].end").asArray().containsExactly(others.plus(HOUR).toString());
         });
         assertThat(busy.getResponse().getContentAsString()).doesNotContain("Чужая", "studentId", "topic");
         assertThat(mvc.get().uri("/api/me/schedule/busy?from={from}&to={to}", own, others).with(teacher()))
