@@ -153,6 +153,11 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
 
 ### 6.3 Frontend — [`frontend/AGENTS.md`](frontend/AGENTS.md) and [`docs/design-system.md`](docs/design-system.md)
 
+**Every interface change is made with the `m3-expressive` skill** (Claude Code plugin `m3-expressive`): load it
+before touching templates or styles, take M3 values from its references, and mark anything M3
+does not publish as our decision (as `docs/design-system.md` does). Agents without the skill follow the same
+Material 3 Expressive guidelines (m3.material.io).
+
 ## 7. Testing
 
 All code is tested; the build fails below the gates. Test kinds — in the nested AGENTS.md files.
@@ -182,5 +187,6 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 - [ ] Tests written, `./scripts/verify.sh` green, gates met.
 - [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
 - [ ] User-visible change → `docs/wiki/` pages updated (§6.1), help articles in every language.
+- [ ] Interface change → made with the `m3-expressive` skill (§6.3).
 - [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` / `docs/design-system.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.
