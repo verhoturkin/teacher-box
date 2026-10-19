@@ -25,49 +25,6 @@ spec §0–§2 and the § it names, load the `m3-expressive` skill for UI work, 
 the substep changed, help articles (ru, en) and `docs/wiki/` for what users see. Releases go in order; a later
 release may start only after the previous one is merged to `main`.
 
-## v0.22.0 — Settings and the bell
-
-Integrations leave the sections: Settings become list-detail with eight categories; Calls and AI leave the
-navigation; notifications live in the bell's side sheet. ADR: none (0048).
-
-### 234. Settings list-detail (F)
-
-- [x] 234.1 **F** Spec §10.3: `features/settings/settings-page.ts` → list-detail on `tb-panes`, routes
-  `/teacher/settings/:category` (`app.routes.ts`; `?open=` of the fold cards redirects), categories Мой аккаунт
-  (`identity/account/account-page.ts`; `/teacher/account` redirects), Портал, Данные. Medium: 50 / 50.
-- [x] 234.2 **F** «Расписание и календарь» (time zone, `schedule/teacher/google-calendar-panel.ts`,
-  `schedule/ui/calendar-feed-panel.ts` — removed from `schedule-page.ts`) and «Звонки»
-  (`meetings/settings/meetings-settings-panel.ts`). Calls section goes: `meetings/calls/calls-page.ts`, its route →
-  redirect to the category, menu item out of `TEACHER_MENU`.
-- [x] 234.3 **F** «Мессенджеры»: `bots-panel.ts`, `channels-panel.ts`, `bot-abilities-panel.ts`,
-  `preferences-panel.ts`, `student-messengers-panel.ts` (summary + «Напомнить»), failed deliveries (from
-  `settings-page.ts`); badge with the failed count on the category. `notifications-page.ts` keeps only the inbox and
-  broadcasts until 235.
-- [x] 234.4 **F** «Оплаты» (`billing/teacher/default-price-card.ts`, removed from `billing-overview-page.ts`) and
-  «ИИ-помощник» (`ai/ai-usage-page.ts` → category, `system-prompts-card.ts`; `prompt-library-card.ts` stays
-  reachable from the editor's «Промты» menu); `/teacher/ai` redirects, menu item out. Backups: one component for
-  the teacher and the admin per D4.
-- [x] 234.5 **D** design-system (settings = list-detail; `tb-fold-card` only where still used), help articles
-  (settings, messengers, calendar, calls, AI; ru, en), wiki pages of the same topics (they name the paths).
-
-### 235. Notifications in the bell (F)
-
-- [x] 235.1 **F** Spec §10.3 «Bell»: `core/notifications/notification-bell.ts` opens a side sheet (pattern of
-  `help/help-button.ts`; non-modal third pane on extra-large) with tabs «Входящие» (`notifications/inbox/inbox-panel.ts`)
-  and «Отправленные» (`teacher/broadcasts-panel.ts`); compact — full screen. `/teacher/notifications` redirects to
-  the home page with the sheet open (`?notifications=inbox|sent`; backend `Portal.link(` targets checked).
-- [x] 235.2 **F** Remove «Уведомления» from `TEACHER_MENU` and `STUDENT_MENU`, `notifications/home/latest-notifications-widget.ts`
-  from both home pages, `notifications-page.ts`; the student's messenger linking and preferences move to the
-  student's «Мой аккаунт» (`account-page.ts`, spec §10.4); `/cabinet/notifications` redirects to the home page with
-  the sheet open, and `connect-messenger-card.ts` and the backend «connect» reminder
-  (`NotificationService.remindToConnect`) point to «Мой аккаунт».
-- [x] 235.3 **F** «Создать › Сообщение» opens `broadcast-dialog.ts` directly (replaces the 232.1 route).
-- [x] 235.4 **D** design-system, help (ru, en), wiki (notifications, bots).
-
-### 236. Release 0.22.0 (D)
-
-- [ ] 236.1 **D** Skill `release`; E2E: settings categories, bell sheet, old routes redirect.
-
 ## v0.23.0 — Student card
 
 Students become list-detail; the card holds lessons, homework, payments, connection and the profile of one
