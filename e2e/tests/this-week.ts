@@ -17,6 +17,15 @@ export function laterThisWeek(hours: number): { days: number; hours: number } {
   return there.getDay() === 0 ? { days: shift, hours: 23 } : { days: shift + 1, hours };
 }
 
+/**
+ * Today at `hour`:00 in the browser's time zone (Moscow, UTC+3 all year): the week view opens on that day even
+ * when this machine's date is already another one (after 21:00 in Moscow on a machine east of it).
+ */
+export function todayThereAt(hour: number): string {
+  const day = new Date().toLocaleDateString('en-CA', { timeZone: ZONE });
+  return new Date(`${day}T${String(hour).padStart(2, '0')}:00:00+03:00`).toISOString();
+}
+
 function midnight(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }

@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { todayThereAt } from './this-week';
 
 /**
  * Version 0.10.1: a lesson dragged in the calendar is saved only after «Перенести» on its card
@@ -68,14 +69,11 @@ test.beforeAll(async ({ request }) => {
   });
   expect(created.ok()).toBe(true);
   const { student } = (await created.json()) as { student: { id: string } };
-  // today at 10:00 of the browser's time zone: the week view opens on it
-  const start = new Date();
-  start.setHours(10, 0, 0, 0);
   const lesson = await request.post('/api/teacher/schedule/lessons', {
     headers,
     data: {
       studentId: student.id,
-      startsAt: start.toISOString(),
+      startsAt: todayThereAt(10),
       durationMinutes: 60,
       allowOverlap: true,
     },
