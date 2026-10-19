@@ -66,20 +66,19 @@ interface RoomStatus {
             } @else {
               <ul class="tb-list" [attr.aria-label]="t.list">
                 @for (room of overview.rooms; track room.ownerId) {
-                  <li>
+                  <li
+                    [attr.data-tb-label]="
+                      room.ownerType === 'GROUP'
+                        ? colors.groupLabel(room.ownerId)
+                        : colors.studentLabel(room.ownerId)
+                    "
+                  >
                     @if (room.ownerType === 'GROUP') {
-                      <span
-                        class="tb-list__lead"
-                        aria-hidden="true"
-                        [attr.data-tb-label]="colors.groupLabel(room.ownerId)"
+                      <span class="tb-list__lead" aria-hidden="true"
                         ><i class="tb-i tb-i-group"></i
                       ></span>
                     } @else {
-                      <tb-avatar
-                        [name]="room.name"
-                        [photo]="room.avatar"
-                        [color]="colors.student(room.ownerId)"
-                      />
+                      <tb-avatar [name]="room.name" [photo]="room.avatar" />
                     }
                     <div class="tb-list__text">
                       <span class="tb-list__title">{{ room.name }}</span>

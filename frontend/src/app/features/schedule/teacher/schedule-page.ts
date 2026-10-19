@@ -145,11 +145,10 @@ const ALL_DAY_START_HOUR = 10;
         <p-card [header]="t.requests">
           <ul class="tb-list">
             @for (request of requests(); track request.id) {
-              <li>
+              <li [attr.data-tb-label]="colors.studentLabel(request.studentId)">
                 <tb-avatar
                   [name]="request.studentName ?? c.student"
                   [photo]="request.studentAvatar"
-                  [color]="colors.student(request.studentId)"
                 />
                 <div class="tb-list__text">
                   <span class="tb-list__title">
@@ -184,12 +183,11 @@ const ALL_DAY_START_HOUR = 10;
         <p-card [header]="t.unmarked">
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
-              <li [class.tb-list__item--link]="mobile()">
-                <tb-avatar
-                  [name]="with(lesson)"
-                  [photo]="lesson.studentAvatar"
-                  [color]="colors.owner(lesson.studentId, lesson.groupId)"
-                />
+              <li
+                [attr.data-tb-label]="colors.ownerLabel(lesson.studentId, lesson.groupId)"
+                [class.tb-list__item--link]="mobile()"
+              >
+                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ with(lesson) }}</span>
                   <span class="tb-list__supporting">{{ time(lesson) }}</span>

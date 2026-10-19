@@ -1215,22 +1215,45 @@ p-button.tb-list__stretched .p-button {
     --tb-on-label: var(--p-md-on-label-#{$label});
     --tb-label-container: var(--p-md-label-#{$label}-container);
     --tb-on-label-container: var(--p-md-on-label-#{$label}-container);
+    --tb-label-surface-container-lowest: var(--p-md-label-#{$label}-surface-container-lowest);
+    --tb-label-surface-container-low: var(--p-md-label-#{$label}-surface-container-low);
+    --tb-label-surface-container-high: var(--p-md-label-#{$label}-surface-container-high);
+    --tb-on-label-surface: var(--p-md-on-label-#{$label}-surface);
+    --tb-on-label-surface-variant: var(--p-md-on-label-#{$label}-surface-variant);
   }
 }
 
-/* The initials on the container of the colour; a photo keeps the colour as a 2 px ring inside its edge */
-.tb-avatar[data-tb-label],
-.tb-list__lead[data-tb-label] {
-  background: var(--tb-label-container);
-  color: var(--tb-on-label-container);
+/*
+ * A row of a student or a group (a list tile, a table row or its card on a phone; the teacher only) is built like any row: the
+ * same surface role — container-low on a light card, container-high on a dark one, container-lowest in a
+ * dialog — and the same text roles, taken from the Fidelity scheme of its colour instead of the portal's
+ * (its neutral palette, so only the tint differs). Links, amounts and buttons keep their roles: the tones are
+ * the portal's. The avatar and the lead keep the colours of the theme; a selected row keeps
+ * secondary-container (our decision, not in M3).
+ */
+.tb-list > li[data-tb-label],
+.p-datatable-tbody > tr[data-tb-label]:not(.p-datatable-row-selected) {
+  --tb-list-item: var(--tb-label-surface-container-low);
+  color: var(--tb-on-label-surface);
+
+  :is(td, .tb-list__title) {
+    color: var(--tb-on-label-surface);
+  }
+
+  :is(.tb-list__supporting, .tb-muted, .tb-hint) {
+    color: var(--tb-on-label-surface-variant);
+  }
 }
 
-.tb-avatar--photo[data-tb-label] {
-  outline: 2px solid var(--tb-label);
-  outline-offset: -2px;
+:root.tb-dark :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
+  --tb-list-item: var(--tb-label-surface-container-high);
 }
 
-/* A chip of a student or a group (multiselects): the container of the colour, as on the avatar */
+:root .p-dialog :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
+  --tb-list-item: var(--tb-label-surface-container-lowest);
+}
+
+/* A chip of a student or a group (multiselects): the container of the colour */
 .p-chip[data-tb-label] {
   background: var(--tb-label-container);
   color: var(--tb-on-label-container);

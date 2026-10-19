@@ -29,6 +29,7 @@ import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { quietContext } from '@core/http/api-error.interceptor';
+import { labelKey } from '@core/theme/label-colors';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -91,12 +92,8 @@ import { SearchField } from '@shared/ui/search-field';
           @if (visibleStudents().length > 0) {
             <ul class="tb-list" [attr.aria-label]="t.title">
               @for (student of visibleStudents(); track student.id) {
-                <li>
-                  <tb-avatar
-                    [name]="student.displayName"
-                    [photo]="student.avatar"
-                    [color]="student.color"
-                  />
+                <li [attr.data-tb-label]="student.color === null ? null : labelKey(student.color)">
+                  <tb-avatar [name]="student.displayName" [photo]="student.avatar" />
                   <div class="tb-list__text">
                     <span
                       class="tb-list__title"
@@ -178,6 +175,7 @@ export class StudentsPage implements OnInit {
 
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly statusSeverities = STATUS_SEVERITIES;
+  protected readonly labelKey = labelKey;
 
   /** `?create=...` from the quick actions of the home page: opens the form at once. */
   readonly create = input<string>();

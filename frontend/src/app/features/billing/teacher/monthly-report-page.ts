@@ -149,15 +149,14 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.lessons">
-                <tr [class.tb-inactive]="entry.lesson.status === 'CANCELLED'">
+                <tr
+                  [attr.data-tb-label]="colors.studentLabel(entry.lesson.studentId)"
+                  [class.tb-inactive]="entry.lesson.status === 'CANCELLED'"
+                >
                   <td [attr.data-label]="t.date">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar
-                        [name]="entry.studentName"
-                        [photo]="entry.studentAvatar"
-                        [color]="colors.student(entry.lesson.studentId)"
-                      />
+                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>
@@ -203,17 +202,16 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.payments">
-                <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
+                <tr
+                  [attr.data-tb-label]="colors.studentLabel(entry.payment.studentId)"
+                  [class.tb-inactive]="entry.payment.voidedAt !== null"
+                >
                   <td [attr.data-label]="t.date">
                     {{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}
                   </td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar
-                        [name]="entry.studentName"
-                        [photo]="entry.studentAvatar"
-                        [color]="colors.student(entry.payment.studentId)"
-                      />
+                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>

@@ -120,6 +120,17 @@ describe('StudentsPage', () => {
     }
   });
 
+  it('tints the row of a student with a colour, not the avatar', async () => {
+    await loadStudents([{ ...MARIA, color: 'GREEN' }, BORIS]);
+
+    const [maria, boris] = Array.from(
+      host.querySelectorAll('ul.tb-list[aria-label="Ученики"] > li'),
+    );
+    expect(maria?.getAttribute('data-tb-label')).toBe('green');
+    expect(maria?.querySelector('tb-avatar')?.hasAttribute('data-tb-label')).toBe(false);
+    expect(boris?.hasAttribute('data-tb-label')).toBe(false);
+  });
+
   it('puts the login and the note in the tooltip of the name', async () => {
     await loadStudents([MARIA, BORIS]);
 

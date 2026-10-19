@@ -84,11 +84,8 @@ import { labelKey } from '@core/theme/label-colors';
         @if (visibleGroups().length > 0) {
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (group of visibleGroups(); track group.id) {
-              <li>
-                <span
-                  class="tb-list__lead"
-                  aria-hidden="true"
-                  [attr.data-tb-label]="group.color === null ? null : labelKey(group.color)"
+              <li [attr.data-tb-label]="group.color === null ? null : labelKey(group.color)">
+                <span class="tb-list__lead" aria-hidden="true"
                   ><i class="tb-i tb-i-group"></i
                 ></span>
                 <div class="tb-list__text">

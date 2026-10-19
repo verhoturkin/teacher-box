@@ -36,12 +36,8 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
       @if (finance.topDebtors.length > 0) {
         <ul class="tb-list tb-debtors">
           @for (debtor of finance.topDebtors; track debtor.studentId) {
-            <li>
-              <tb-avatar
-                [name]="debtor.displayName"
-                [photo]="debtor.avatar"
-                [color]="colors.student(debtor.studentId)"
-              />
+            <li [attr.data-tb-label]="colors.studentLabel(debtor.studentId)">
+              <tb-avatar [name]="debtor.displayName" [photo]="debtor.avatar" />
               <div class="tb-list__text">
                 <a
                   [routerLink]="['/teacher/billing/students', debtor.studentId]"

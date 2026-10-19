@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal } from '@angular/core';
-import { LabelColor, labelKey } from '@core/theme/label-colors';
 import { InitialsPipe } from './initials';
 
 /**
  * A person's avatar (ADR-0020): their photo cut to a circle, or the initials of the name when there is
- * no photo or it does not load. Decorative: the name is always next to it.
+ * no photo or it does not load. Decorative: the name is always next to it. The initials keep the colours of
+ * the theme: the colour of a student or a group tints the row or the card around the avatar (`data-tb-label`).
  */
 @Component({
   selector: 'tb-avatar',
@@ -17,7 +17,6 @@ import { InitialsPipe } from './initials';
     '[style.width]': 'size()',
     '[style.height]': 'size()',
     '[style.font-size]': 'fontSize()',
-    '[attr.data-tb-label]': 'label()',
   },
   template: `
     @if (shown(); as photo) {
@@ -45,13 +44,6 @@ export class Avatar {
   /** Diameter, e.g. `6rem`; by default the 40 px of a list row. */
   readonly size = input<string | null>(null);
 
-  /** The colour of the student or the group (the teacher's lists); `null`: the neutral one. */
-  readonly color = input<LabelColor | null>(null);
-
-  protected readonly label = computed(() => {
-    const color = this.color();
-    return color === null ? null : labelKey(color);
-  });
   /** The photo did not load (removed meanwhile): the initials instead, until another photo comes. */
   protected readonly failed = linkedSignal({ source: this.photo, computation: () => false });
   protected readonly shown = computed(() => (this.failed() ? null : this.photo()));

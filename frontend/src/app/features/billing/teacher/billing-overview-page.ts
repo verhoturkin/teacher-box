@@ -117,12 +117,8 @@ import { T } from '../i18n/texts';
           @if (rows().length > 0) {
             <ul class="tb-list" [attr.aria-label]="t.balances">
               @for (row of rows(); track row.studentId) {
-                <li>
-                  <tb-avatar
-                    [name]="row.displayName"
-                    [photo]="row.avatar"
-                    [color]="colors.student(row.studentId)"
-                  />
+                <li [attr.data-tb-label]="colors.studentLabel(row.studentId)">
+                  <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
                   <div class="tb-list__text">
                     <a [routerLink]="['students', row.studentId]" class="tb-list__title tb-link">{{
                       row.displayName

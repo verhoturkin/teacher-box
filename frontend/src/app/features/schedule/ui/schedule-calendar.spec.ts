@@ -58,6 +58,15 @@ describe('ScheduleCalendar', () => {
     expect(host.querySelectorAll('.tb-label')).toHaveLength(2);
   });
 
+  it('never paints the calendar of a student', async () => {
+    const colors = TestBed.inject(TeacherColors);
+    colors.rememberStudent({ id: 's-1', color: 'RED' });
+
+    await render([scheduledLesson()], false);
+
+    expect(hostElement(fixture).querySelectorAll('.tb-label')).toHaveLength(0);
+  });
+
   it('has M3 buttons: the views are a segmented button, the toolbar only on top', async () => {
     await render([]);
     const host = hostElement(fixture);

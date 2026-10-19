@@ -23,15 +23,6 @@ describe('Avatar', () => {
     expect(host.hasAttribute('data-tb-label')).toBe(false);
   });
 
-  it('takes the colour of the student or the group', () => {
-    const { fixture, host } = render('Анна', null);
-
-    fixture.componentRef.setInput('color', 'CYAN');
-    fixture.detectChanges();
-
-    expect(host.getAttribute('data-tb-label')).toBe('cyan');
-  });
-
   it('shows the photo and falls back to the initials when it does not load', () => {
     const { fixture, host } = render('Анна', '/api/public/avatars/a', '6rem');
 

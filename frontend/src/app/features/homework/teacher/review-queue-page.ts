@@ -35,12 +35,8 @@ import { T } from '../i18n/texts';
         @if (items().length > 0) {
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (item of items(); track item.taskId) {
-              <li>
-                <tb-avatar
-                  [name]="item.studentName"
-                  [photo]="item.studentAvatar"
-                  [color]="colors.student(item.studentId)"
-                />
+              <li [attr.data-tb-label]="colors.studentLabel(item.studentId)">
+                <tb-avatar [name]="item.studentName" [photo]="item.studentAvatar" />
                 <div class="tb-list__text">
                   <a
                     class="tb-list__title tb-link"

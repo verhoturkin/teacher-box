@@ -92,7 +92,7 @@ The «⋮» button right of the status opens the menu:
 
 ## Student colour
 
-In the «Edit» window pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints their circle with initials (a ring around the edge of a photo) in every list — billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
+In the «Edit» window pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints the background of their row (the circle with initials keeps the portal colour) in every list — students, billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
 
 In the calendar a planned lesson is filled with the colour. A conducted, missed or cancelled lesson keeps the colour of its status, with the student's colour as a stripe on the left.
 `,
@@ -106,7 +106,7 @@ A group is students who study together. A group has its own lesson price: it is 
 ## Create a group
 
 1. «Students» → the «Groups» card under the list of students → «Create group».
-2. Enter the name, tick the students and set the price of one lesson for each. A default topic and a colour are optional: the group's colour paints its icon in lists, its lessons in the calendar and its chip in the group pickers.
+2. Enter the name, tick the students and set the price of one lesson for each. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
 
 ## Group card
 

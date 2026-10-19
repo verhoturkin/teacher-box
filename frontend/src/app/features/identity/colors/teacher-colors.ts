@@ -6,6 +6,10 @@ import { IdentityApi } from '../data-access/identity-api';
 
 type Colors = ReadonlyMap<string, LabelColor>;
 
+function keyOf(color: LabelColor | null): string | null {
+  return color === null ? null : labelKey(color);
+}
+
 function colorsOf(rows: readonly { id: string; color: LabelColor | null }[]): Colors {
   return new Map(
     rows.flatMap((row): [string, LabelColor][] =>
@@ -49,10 +53,22 @@ export class TeacherColors {
     return id == null ? null : (this.groups().get(id) ?? null);
   }
 
-  /** `data-tb-label` of a group's lead (the group icon in a list); `null`: none. */
-  groupLabel(id: string): string | null {
-    const color = this.group(id);
-    return color === null ? null : labelKey(color);
+  /** `data-tb-label` of a student's row or card (the teacher's lists); `null`: none. */
+  studentLabel(id: string | null | undefined): string | null {
+    return keyOf(this.student(id));
+  }
+
+  /** `data-tb-label` of a group's row or card; `null`: none. */
+  groupLabel(id: string | null | undefined): string | null {
+    return keyOf(this.group(id));
+  }
+
+  /** `data-tb-label` of a lesson's or a board's row or card: its group, else its student. */
+  ownerLabel(
+    studentId: string | null | undefined,
+    groupId: string | null | undefined,
+  ): string | null {
+    return keyOf(this.owner(studentId, groupId));
   }
 
   /** The colours of all students or all groups by id. */
