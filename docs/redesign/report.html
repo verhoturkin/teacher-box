@@ -1,0 +1,1651 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>Редизайн Teacher Box</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..800&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=account_balance_wallet,add,arrow_back,arrow_forward,assignment,assignment_return,auto_awesome,calendar_month,chat,check,check_circle,checklist,chevron_left,chevron_right,close,content_copy,dashboard,database,description,desktop_windows,done_all,download,draw,edit,error,event,event_available,event_busy,expand_more,filter_list,forum,group,groups,help,home,info,library_books,logout,low_priority,menu,menu_book,more_vert,notifications,open_in_full,open_in_new,palette,payments,person,public,rate_review,rocket_launch,schedule,school,search,send,settings,smartphone,sms,sort,swap_horiz,today,tune,videocam,view_sidebar&display=block">
+<style>
+/* Layout: report column (≤1240px) with a sticky contents rail on wide screens; every section = problems → proposals → wide mockup (1920×1080, scaled) + phone mockup (390×844). Mockups use the portal's own M3 indigo scheme. */
+:root{
+  --font:"Google Sans Flex","Google Sans","Roboto Flex",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,Consolas,monospace;
+  --surface:#fcf8ff;--sc-lowest:#ffffff;--sc-low:#f5f2fe;--sc:#efecf8;--sc-high:#e9e6f3;--sc-highest:#e4e1ed;
+  --on-surface:#1b1b23;--on-sv:#464554;--outline:#767586;--outline-v:#c7c4d7;
+  --primary:#4648d4;--on-primary:#ffffff;--pc:#6063ee;--on-pc:#fffbff;
+  --secondary:#575992;--sec-c:#dcdcff;--sec-c-strong:#bdbefe;--on-sec-c:#3f4178;
+  --tertiary:#904900;--tc:#ffdcc5;--on-tc:#301400;
+  --error:#ba1a1a;--on-error:#ffffff;--ec:#ffdad6;--on-ec:#93000a;
+  --succ:#006c4b;--succ-c:#b4f1d3;--on-succ-c:#002114;
+  --warn-c:#ffdcc5;--on-warn-c:#301400;
+  --c1:#dce1ff;--on-c1:#131c3b;--c2:#c9f0d5;--on-c2:#0f2a1a;--c3:#f3dcf4;--on-c3:#2f1530;
+  --c4:#ffdcc5;--on-c4:#301400;--c5:#c7eef7;--on-c5:#002025;--c6:#ffd9e2;--on-c6:#3b0716;
+  --scrim:rgba(14,14,22,.6);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --surface:#13131b;--sc-lowest:#0e0e16;--sc-low:#1b1b23;--sc:#1f1f27;--sc-high:#2a2932;--sc-highest:#35343d;
+  --on-surface:#e4e1ed;--on-sv:#c7c4d7;--outline:#918f9f;--outline-v:#464554;
+  --primary:#c0c1ff;--on-primary:#1000a9;--pc:#6063ee;--on-pc:#fffbff;
+  --secondary:#c1c1fd;--sec-c:#3f4178;--sec-c-strong:#4a4c86;--on-sec-c:#e0e0ff;
+  --tertiary:#ffb783;--tc:#6e3900;--on-tc:#ffdcc5;
+  --error:#ffb4ab;--on-error:#690005;--ec:#93000a;--on-ec:#ffdad6;
+  --succ:#5fdca8;--succ-c:#005138;--on-succ-c:#b4f1d3;
+  --warn-c:#6e3900;--on-warn-c:#ffdcc5;
+  --c1:#2d3a66;--on-c1:#dce1ff;--c2:#1f4a33;--on-c2:#c9f0d5;--c3:#523a54;--on-c3:#f3dcf4;
+  --c4:#6e3900;--on-c4:#ffdcc5;--c5:#1c4a53;--on-c5:#c7eef7;--c6:#6a2a3d;--on-c6:#ffd9e2;
+  --scrim:rgba(0,0,0,.7);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --surface:#13131b;--sc-lowest:#0e0e16;--sc-low:#1b1b23;--sc:#1f1f27;--sc-high:#2a2932;--sc-highest:#35343d;
+  --on-surface:#e4e1ed;--on-sv:#c7c4d7;--outline:#918f9f;--outline-v:#464554;
+  --primary:#c0c1ff;--on-primary:#1000a9;--pc:#6063ee;--on-pc:#fffbff;
+  --secondary:#c1c1fd;--sec-c:#3f4178;--sec-c-strong:#4a4c86;--on-sec-c:#e0e0ff;
+  --tertiary:#ffb783;--tc:#6e3900;--on-tc:#ffdcc5;
+  --error:#ffb4ab;--on-error:#690005;--ec:#93000a;--on-ec:#ffdad6;
+  --succ:#5fdca8;--succ-c:#005138;--on-succ-c:#b4f1d3;
+  --warn-c:#6e3900;--on-warn-c:#ffdcc5;
+  --c1:#2d3a66;--on-c1:#dce1ff;--c2:#1f4a33;--on-c2:#c9f0d5;--c3:#523a54;--on-c3:#f3dcf4;
+  --c4:#6e3900;--on-c4:#ffdcc5;--c5:#1c4a53;--on-c5:#c7eef7;--c6:#6a2a3d;--on-c6:#ffd9e2;
+  --scrim:rgba(0,0,0,.7);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--sc);color:var(--on-surface);font-family:var(--font);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.ms{font-family:"Material Symbols Rounded";font-weight:400;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0;flex:none;overflow:hidden;width:1em;height:1em}
+.ms.f{font-variation-settings:'FILL' 1}
+a{color:var(--primary)}
+code{font-family:var(--mono);font-size:.86em;background:var(--sc-high);padding:1px 5px;border-radius:4px}
+
+/* ---------- report chrome ---------- */
+.wrap{max-width:1240px;margin:0 auto}
+.masthead{padding-block:56px 32px;display:grid;gap:20px}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--on-sv);font-weight:600}
+h1{font-size:clamp(36px,5.4vw,64px);line-height:1.05;margin:0;font-weight:750;letter-spacing:-.02em;text-wrap:balance;font-variation-settings:"opsz" 144}
+h1 em{font-style:normal;color:var(--primary)}
+.lede{max-width:68ch;font-size:19px;color:var(--on-sv);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--outline-v);font-size:14px;color:var(--on-sv)}
+.pill .ms{font-size:18px}
+
+.layout{display:grid;grid-template-columns:1fr;gap:32px}
+@media (min-width:1100px){.layout{grid-template-columns:220px minmax(0,1fr)}}
+.toc{display:none}
+@media (min-width:1100px){.toc{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;font-size:14px}
+  .toc a{display:block;padding:7px 14px;border-radius:20px;color:var(--on-sv);text-decoration:none}
+  .toc a:hover{background:var(--sc-high);color:var(--on-surface)}
+  .toc .grp{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--outline);padding:14px 14px 4px;font-weight:600}}
+main{min-width:0}
+section.blk{background:var(--surface);border-radius:28px;padding:clamp(20px,3vw,40px);margin-bottom:24px;min-width:0}
+section.blk>h2{font-size:clamp(26px,3vw,34px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--on-sv);margin:0 0 24px;max-width:72ch}
+h3{font-size:20px;margin:28px 0 10px;font-weight:650}
+p,li{max-width:76ch}
+ul.tight{padding-left:20px;margin:8px 0}
+ul.tight li{margin:4px 0}
+.cols{display:grid;gap:24px;grid-template-columns:1fr}
+@media (min-width:860px){.cols.two{grid-template-columns:1fr 1fr}.cols.phone{grid-template-columns:minmax(0,1fr) 330px;align-items:start}}
+.note{background:var(--sc-low);border-radius:16px;padding:16px 20px;font-size:15px}
+.note b{font-weight:650}
+.lbl{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;font-size:12px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+.lbl.exp{background:var(--tc);color:var(--on-tc)}
+.lbl.keep{background:var(--succ-c);color:var(--on-succ-c)}
+.lbl.cut{background:var(--ec);color:var(--on-ec)}
+.lbl.m3{background:var(--sec-c);color:var(--on-sec-c)}
+.lbl.our{background:var(--sc-highest);color:var(--on-sv)}
+
+.prob{display:grid;gap:10px;margin:12px 0 0;padding:0;list-style:none}
+.prob li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;max-width:none}
+.prob .ms{font-size:22px;margin-top:2px;color:var(--error)}
+.prob.good .ms{color:var(--succ)}
+
+.tablewrap{overflow-x:auto;border-radius:16px;border:1px solid var(--outline-v)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:760px}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--outline-v)}
+th{background:var(--sc-low);font-weight:650;font-size:13px;letter-spacing:.02em;color:var(--on-sv)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td .x{color:var(--error);font-weight:600}
+td.mono{font-family:var(--mono);font-size:13px;white-space:nowrap}
+
+.summary{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));counter-reset:s}
+.sum{background:var(--sc-low);border-radius:20px;padding:20px;display:grid;gap:6px;align-content:start}
+.sum .ms{font-size:28px;color:var(--primary)}
+.sum b{font-size:17px}
+.sum span{color:var(--on-sv);font-size:15px}
+
+.navcmp{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.navcol{background:var(--sc-low);border-radius:20px;padding:18px}
+.navcol h4{margin:0 0 10px;font-size:15px;font-weight:650}
+.navcol ol{margin:0;padding-left:22px;font-size:15px}
+.navcol li{margin:3px 0}
+.navcol .gone{color:var(--outline);text-decoration:line-through}
+
+/* figures */
+figure.mock{margin:20px 0 0;min-width:0}
+figure.mock figcaption{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-top:10px;font-size:14px;color:var(--on-sv)}
+.zoom{appearance:none;border:0;background:var(--sec-c);color:var(--on-sec-c);height:36px;border-radius:18px;padding:0 14px;font:600 14px var(--font);display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.zoom:focus-visible,.close-lb:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.zoom .ms{font-size:18px}
+.frame{position:relative;overflow:hidden;border-radius:16px;outline:1px solid var(--outline-v);background:var(--sc)}
+.frame.wide{aspect-ratio:1920/1080}
+.frame.phone{aspect-ratio:390/844;max-width:330px;border-radius:28px;margin-inline:auto}
+.frame>.scr{position:absolute;left:0;top:0;transform-origin:0 0}
+.lb{position:fixed;inset:0;background:var(--scrim);z-index:50;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 12px) max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(12px,env(safe-area-inset-left,0px))}
+.lb .bar{display:flex;justify-content:flex-end;padding-bottom:8px}
+.close-lb{appearance:none;border:0;background:var(--surface);color:var(--on-surface);height:44px;border-radius:22px;padding:0 18px;font:600 15px var(--font);display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.lb .stage{overflow:auto;flex:1;border-radius:16px}
+.lb .stage .scr{position:relative;margin:0 auto}
+
+/* ---------- mockup system (M3) ---------- */
+.scr{font-family:var(--font);color:var(--on-surface);background:var(--sc);font-size:14px;line-height:20px;letter-spacing:.2px;overflow:hidden}
+.scr *{min-width:0}
+.scr .ms{font-size:24px}
+.xl{width:1920px;height:1080px;display:grid;grid-template-columns:280px 1fr;grid-template-rows:80px 1fr}
+.xl.col{grid-template-columns:96px 1fr}
+.rail{grid-row:1/3;display:flex;flex-direction:column;gap:4px;padding:12px 12px 24px 20px}
+.brand{height:56px;display:flex;align-items:center;gap:12px;padding-left:12px;font-size:18px;font-weight:500;color:var(--on-surface)}
+.brand .lg{width:32px;height:32px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:grid;place-items:center}
+.brand .lg .ms{font-size:20px}
+.efab{height:56px;border-radius:16px;background:var(--pc);color:var(--on-pc);display:inline-flex;align-items:center;gap:12px;padding:0 20px 0 16px;font-size:16px;line-height:24px;font-weight:600;width:fit-content;margin:8px 0 16px}
+.ri{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-radius:28px;color:var(--on-sv);font-size:14px;font-weight:500;width:fit-content}
+.ri.on{background:var(--sec-c-strong);color:var(--on-sec-c);font-weight:700}
+.ri .ct{margin-left:8px;font-size:12px;font-weight:600;color:var(--on-sv)}
+.ri.on .ct{color:var(--on-sec-c)}
+.rail hr{border:0;border-top:1px solid var(--outline-v);margin:8px 16px;width:calc(100% - 32px)}
+.rail .grow{flex:1}
+.xl.col .rail{padding:12px 0 24px;align-items:center;gap:12px}
+.xl.col .brand{padding:0;justify-content:center}
+.fab{width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--on-pc);display:grid;place-items:center;margin-bottom:12px}
+.rv{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;line-height:16px;font-weight:500;color:var(--on-sv);width:80px;text-align:center}
+.rv .pl{width:56px;height:32px;border-radius:16px;display:grid;place-items:center}
+.rv.on{color:var(--secondary);font-weight:700}
+.rv.on .pl{background:var(--sec-c-strong);color:var(--on-sec-c)}
+.top{display:flex;align-items:center;gap:8px;padding:0 24px 0 0}
+.xl.col .top{padding-left:0}
+.search{height:56px;border-radius:28px;background:var(--sc-high);display:flex;align-items:center;gap:16px;padding:0 20px 0 16px;width:720px;color:var(--on-sv);font-size:16px;line-height:24px}
+.search.s{height:48px;width:auto;flex:none;font-size:15px}
+.kbd{margin-left:auto;font-family:var(--mono);font-size:12px;border:1px solid var(--outline-v);border-radius:6px;padding:2px 6px}
+.top .grow{flex:1}
+.ib{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;position:relative;color:var(--on-sv);flex:none}
+.ib.sm{width:40px;height:40px}
+.ib.ton{background:var(--sec-c);color:var(--on-sec-c)}
+.bdg{position:absolute;top:6px;right:5px;min-width:16px;height:16px;border-radius:8px;background:var(--error);color:var(--on-error);font-size:11px;line-height:16px;font-weight:600;padding:0 4px;text-align:center}
+.av{border-radius:50%;display:grid;place-items:center;font-weight:600;flex:none;width:40px;height:40px;font-size:15px}
+.av.l{width:72px;height:72px;font-size:26px}
+.av.s{width:32px;height:32px;font-size:13px}
+.c1{background:var(--c1);color:var(--on-c1)}.c2{background:var(--c2);color:var(--on-c2)}.c3{background:var(--c3);color:var(--on-c3)}
+.c4{background:var(--c4);color:var(--on-c4)}.c5{background:var(--c5);color:var(--on-c5)}.c6{background:var(--c6);color:var(--on-c6)}
+.cp{background:var(--primary);color:var(--on-primary)}
+.panes{display:flex;gap:24px;padding:0 24px 24px 0;min-height:0}
+.xl.col .panes{padding-left:0}
+.pane{background:var(--surface);border-radius:28px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.p412{flex:0 0 412px}.p360{flex:0 0 360px}.pflex{flex:1 1 0}.psheet{flex:0 0 400px;background:var(--sc-low)}
+.phd{padding:20px 24px 12px;display:flex;align-items:center;gap:8px;min-height:72px}
+.phd h3{font-size:24px;line-height:32px;font-weight:500;margin:0;flex:1;letter-spacing:0}
+.phd h3 small{display:block;font-size:14px;line-height:20px;color:var(--on-sv);font-weight:400}
+.pbd{padding:4px 24px 24px;display:flex;flex-direction:column;gap:16px;min-height:0;flex:1;overflow:hidden}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row.nw{flex-wrap:nowrap}
+.sp{flex:1}
+.b{height:40px;border-radius:20px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;letter-spacing:.1px;white-space:nowrap;flex:none}
+.b .ms{font-size:20px}
+.b.fill{background:var(--primary);color:var(--on-primary)}
+.b.ton{background:var(--sec-c);color:var(--on-sec-c)}
+.b.txt{color:var(--primary);padding:0 12px}
+.b.m{height:56px;border-radius:28px;padding:0 24px;font-size:16px;line-height:24px}
+.b.m .ms{font-size:24px}
+.b.w{flex:1;justify-content:center}
+.seg{display:flex;gap:2px;flex:none}
+.seg span{height:40px;padding:0 16px;display:inline-flex;align-items:center;gap:6px;background:var(--sec-c);color:var(--on-sec-c);font-weight:600;border-radius:8px;white-space:nowrap}
+.seg span:first-child{border-radius:20px 8px 8px 20px}
+.seg span:last-child{border-radius:8px 20px 20px 8px}
+.seg span.on{background:var(--primary);color:var(--on-primary);border-radius:20px}
+.seg span .ms{font-size:18px}
+.seg .n{font-size:12px;opacity:.85}
+.chip{height:32px;border-radius:8px;border:1px solid var(--outline-v);padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-weight:500;color:var(--on-sv);white-space:nowrap;flex:none}
+.chip .ms{font-size:18px}
+.chip.on{background:var(--sec-c);border-color:transparent;color:var(--on-sec-c)}
+.chip.as{border-color:var(--outline-v);color:var(--on-surface)}
+.tabs{display:flex;border-bottom:1px solid var(--outline-v);flex:none}
+.tabs span{padding:14px 16px;font-weight:600;color:var(--on-sv);position:relative;white-space:nowrap}
+.tabs .on{color:var(--primary)}
+.tabs .on::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+.ls{display:flex;flex-direction:column;gap:2px}
+.li{display:flex;align-items:center;gap:16px;min-height:56px;padding:8px 16px;background:var(--sc-low);border-radius:4px}
+.ls>.li:first-child{border-top-left-radius:16px;border-top-right-radius:16px}
+.ls>.li:last-child{border-bottom-left-radius:16px;border-bottom-right-radius:16px}
+.li.tall{min-height:72px}
+.li.sel{background:var(--sec-c)}
+.li.sel .st{color:var(--on-sec-c)}
+.tx{flex:1;min-width:0}
+.tt{font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st{font-size:14px;line-height:20px;color:var(--on-sv);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr{display:flex;align-items:center;gap:8px;color:var(--on-sv);flex:none}
+.amt{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--on-surface)}
+.amt.neg{color:var(--error)}
+.amt.pos{color:var(--succ)}
+.lead{width:40px;height:40px;border-radius:50%;background:var(--sec-c);color:var(--on-sec-c);display:grid;place-items:center;flex:none}
+.lead .ms{font-size:22px}
+.tag{height:24px;border-radius:12px;padding:0 10px;font-size:12px;line-height:16px;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;flex:none}
+.tag.err{background:var(--ec);color:var(--on-ec)}
+.tag.ok{background:var(--succ-c);color:var(--on-succ-c)}
+.tag.warn{background:var(--warn-c);color:var(--on-warn-c)}
+.tag.pri{background:var(--sec-c);color:var(--on-sec-c)}
+.tag.ai{background:var(--tc);color:var(--on-tc)}
+.tag .ms{font-size:14px}
+.h4{font-size:16px;line-height:24px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.h4 .n{font-size:12px;font-weight:700;background:var(--error);color:var(--on-error);border-radius:10px;padding:0 7px;line-height:20px}
+.h4 .n.q{background:var(--sec-c-strong);color:var(--on-sec-c)}
+.cd{background:var(--sc-low);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.lab{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.5px;color:var(--on-sv)}
+.big{font-size:28px;line-height:36px;font-weight:500;font-variant-numeric:tabular-nums}
+.disp{font-size:36px;line-height:44px;font-weight:700;font-variant-numeric:tabular-nums}
+.hero{background:var(--pc);color:var(--on-pc);border-radius:28px;padding:20px;display:flex;gap:20px;align-items:center}
+.tile{background:var(--primary);color:var(--on-primary);border-radius:20px;padding:12px 18px;text-align:center;flex:none}
+:root[data-theme="dark"] .tile{background:#3a3cb8;color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tile{background:#3a3cb8;color:#fff}}
+.tile .d{font-size:14px;line-height:20px;font-weight:600}
+.tile .t{font-size:36px;line-height:44px;font-weight:750;font-variant-numeric:tabular-nums}
+.tile .l{font-size:12px;line-height:16px;font-weight:600;opacity:.9}
+.hero .who{font-size:22px;line-height:28px;font-weight:600}
+.hero .what{font-size:16px;line-height:24px;opacity:.92}
+.hero .chip{border-color:rgba(255,255,255,.45);color:var(--on-pc)}
+.hero .b.fill{background:var(--on-pc);color:#2b2da8}
+.hero .b.ton{background:rgba(255,255,255,.18);color:var(--on-pc)}
+.split{display:flex;gap:2px;flex:none}
+.split .b:first-child{border-radius:28px 4px 4px 28px}
+.split .b:last-child{border-radius:4px 28px 28px 4px;padding:0 14px}
+.sw{width:52px;height:32px;border-radius:16px;background:var(--primary);position:relative;flex:none}
+.sw::after{content:"";position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;background:var(--on-primary)}
+.sw.off{background:var(--sc-highest);outline:2px solid var(--outline);outline-offset:-2px}
+.sw.off::after{left:8px;right:auto;top:8px;width:16px;height:16px;background:var(--outline)}
+.field{border-radius:4px 4px 0 0;background:var(--sc-highest);padding:8px 16px;border-bottom:1px solid var(--on-sv);min-height:56px}
+.field .lab{color:var(--on-sv)}
+.prog{height:4px;border-radius:2px;background:var(--sc-highest);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--primary);border-radius:2px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:56px repeat(7,1fr);grid-template-rows:48px repeat(26,28px);column-gap:4px;position:relative;
+  background-image:linear-gradient(var(--outline-v) 1px,transparent 1px);background-size:100% 56px;background-position:0 48px}
+.cal .dh{grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;line-height:16px;color:var(--on-sv);background:var(--surface)}
+.cal .dh b{font-size:20px;line-height:26px;font-weight:500;color:var(--on-surface)}
+.cal .dh.today b{background:var(--primary);color:var(--on-primary);border-radius:50%;width:32px;height:32px;display:grid;place-items:center;font-size:16px}
+.cal .hr{grid-column:1;font-size:11px;color:var(--on-sv);text-align:right;padding-right:8px;transform:translateY(-8px)}
+.ev{border-radius:8px;padding:4px 8px;font-size:12px;line-height:16px;font-weight:600;overflow:hidden;margin:1px 0;display:flex;flex-direction:column;gap:2px}
+.ev span{font-weight:400}
+.ev.need{outline:2px solid var(--error);outline-offset:-2px}
+.ev.req{outline:2px dashed var(--outline);outline-offset:-2px}
+.ev.done{opacity:.6}
+.off{background:repeating-linear-gradient(135deg,var(--sc-high) 0 6px,transparent 6px 12px);border-radius:8px;margin:1px 0;font-size:11px;color:var(--on-sv);padding:2px 6px}
+.now{height:2px;background:var(--error);align-self:start;margin-top:13px;position:relative;z-index:2}
+.now::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--error)}
+.mini{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:12px;line-height:32px;font-variant-numeric:tabular-nums}
+.mini b{font-weight:600;color:var(--on-sv);font-size:11px}
+.mini .t{background:var(--primary);color:var(--on-primary);border-radius:50%}
+.mini .w{background:var(--sec-c);color:var(--on-sec-c)}
+.mini .w.s{border-radius:16px 0 0 16px}.mini .w.e{border-radius:0 16px 16px 0}
+.mini .o{color:var(--outline)}
+
+/* materials */
+.feed{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.mat{background:var(--sc-low);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.th{aspect-ratio:16/10;background-color:var(--sc-lowest);background-image:radial-gradient(var(--outline-v) 1px,transparent 1.2px);background-size:14px 14px;display:grid;place-items:center;color:var(--primary);position:relative}
+.th svg{width:78%;height:78%}
+.th .k{position:absolute;left:8px;top:8px}
+.cov{aspect-ratio:16/10;display:flex;align-items:flex-end;padding:12px;position:relative}
+.cov .bk{width:46%;height:118%;border-radius:4px 10px 10px 4px;position:absolute;left:50%;top:10%;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,.18);display:flex;align-items:flex-start;padding:10px;font-size:11px;line-height:14px;font-weight:700}
+.mat .mb{padding:10px 8px 12px 14px;display:flex;align-items:center;gap:4px}
+.mat .mb .tx .tt{font-size:15px;line-height:20px;font-weight:500}
+.mat .mb .tx .st{font-size:13px;line-height:18px}
+
+/* phone */
+.ph{width:390px;height:844px;display:flex;flex-direction:column;background:var(--surface);position:relative}
+.sbar{height:28px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:13px;font-weight:600}
+.sbar i{font-style:normal;letter-spacing:2px}
+.tab{height:64px;display:flex;align-items:center;padding:0 4px 0 8px;gap:4px;flex:none}
+.tab h4{font-size:22px;line-height:28px;font-weight:500;margin:0;flex:1;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcn{flex:1;overflow:hidden;padding:4px 16px 0;display:flex;flex-direction:column;gap:16px;min-height:0}
+.nb{height:64px;background:var(--sc);display:grid;grid-template-columns:repeat(5,1fr);flex:none;padding:6px 0}
+.nbi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;line-height:16px;font-weight:500;color:var(--on-sv)}
+.nbi .pl{width:56px;height:32px;border-radius:16px;display:grid;place-items:center}
+.nbi.on{color:var(--secondary);font-weight:700}
+.nbi.on .pl{background:var(--sec-c-strong);color:var(--on-sec-c)}
+.gest{height:20px;flex:none;display:grid;place-items:center;background:var(--sc)}
+.gest::after{content:"";width:108px;height:4px;border-radius:2px;background:var(--on-surface);opacity:.45}
+.ph .pfab{position:absolute;right:16px;bottom:100px;height:56px;min-width:56px;border-radius:16px;background:var(--pc);color:var(--on-pc);display:flex;align-items:center;justify-content:center;gap:10px;padding:0 16px;font-size:16px;font-weight:600;box-shadow:0 3px 6px rgba(0,0,0,.18)}
+.ftb{position:absolute;left:16px;right:16px;bottom:36px;height:64px;border-radius:32px;background:var(--sc-highest);display:flex;align-items:center;gap:8px;padding:0 12px;box-shadow:0 3px 8px rgba(0,0,0,.16)}
+.strip{display:flex;gap:6px}
+.strip span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 8px;border-radius:20px;font-size:12px;color:var(--on-sv)}
+.strip b{font-size:18px;line-height:24px;font-weight:500;color:var(--on-surface)}
+.strip .on{background:var(--primary);color:var(--on-primary)}
+.strip .on b{color:var(--on-primary)}
+.strip i{width:5px;height:5px;border-radius:50%;background:var(--primary)}
+.strip .on i{background:var(--on-primary)}
+.ph .hero{flex-direction:column;align-items:stretch;padding:16px;gap:14px;border-radius:24px}
+.hs{display:flex;gap:10px;overflow:hidden}
+.hs .cd{flex:0 0 150px;padding:12px}
+.fade{-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+.ph .li{padding:8px 12px;gap:12px}
+@media (prefers-reduced-motion:no-preference){.zoom,.close-lb{transition:background-color .2s}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="d1" viewBox="0 0 200 120"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 100 Q60 10 100 60 T180 30"/><path d="M20 105 H185 M25 110 V15"/><circle cx="100" cy="60" r="5" fill="currentColor"/></g><text x="120" y="98" font-size="16" fill="currentColor" font-family="sans-serif">y = x²−4</text></symbol>
+  <symbol id="d2" viewBox="0 0 200 120"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M40 95 L100 20 L160 95 Z"/><path d="M100 20 V95" stroke-dasharray="6 6"/><path d="M92 95 v-8 h8"/></g><text x="104" y="64" font-size="15" fill="currentColor" font-family="sans-serif">h</text><text x="60" y="114" font-size="14" fill="currentColor" font-family="sans-serif">S = ½·a·h</text></symbol>
+  <symbol id="d3" viewBox="0 0 200 120"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="20" y="18" width="70" height="40" rx="8"/><rect x="110" y="62" width="70" height="40" rx="8"/><path d="M90 38 C110 38 110 82 110 82"/></g><text x="30" y="43" font-size="14" fill="currentColor" font-family="sans-serif">ОГЭ №20</text><text x="118" y="87" font-size="14" fill="currentColor" font-family="sans-serif">разбор</text></symbol>
+  <symbol id="d4" viewBox="0 0 200 120"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M30 30 h140 M30 60 h110 M30 90 h125"/></g><text x="30" y="24" font-size="14" fill="currentColor" font-family="sans-serif">x₁ + x₂ = −b/a</text><text x="30" y="54" font-size="14" fill="currentColor" font-family="sans-serif">x₁ · x₂ = c/a</text><text x="30" y="84" font-size="14" fill="currentColor" font-family="sans-serif">D = b² − 4ac</text></symbol>
+</svg>
+
+<div class="wrap">
+<header class="masthead">
+  <div class="eyebrow">Teacher Box 0.20.1 · анализ интерфейса · 19 октября 2026</div>
+  <h1>Меньше разделов, <em>больше экрана</em></h1>
+  <p class="lede">Разбор каждого раздела портала учителя, кабинета ученика и администратора по Material 3 Expressive: где функции повторяются, что объединить, как занять широкий монитор панелями вместо растянутой колонки и как это выглядит на телефоне.</p>
+  <div class="meta">
+    <span class="pill"><span class="ms">desktop_windows</span>Эскизы 1920×1080 (extra-large)</span>
+    <span class="pill"><span class="ms">smartphone</span>Эскизы 390×844 (compact)</span>
+    <span class="pill"><span class="ms">palette</span>Схема портала (индиго), светлая и тёмная</span>
+    <span class="pill"><span class="ms">info</span>Данные в эскизах — примеры</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Содержание">
+  <div class="grp">Обзор</div>
+  <a href="#summary">Главное</a>
+  <a href="#shell">Каркас</a>
+  <a href="#dupes">Дублирование</a>
+  <a href="#nav">Навигация</a>
+  <div class="grp">Учитель</div>
+  <a href="#today">Сегодня</a>
+  <a href="#schedule">Расписание</a>
+  <a href="#students">Ученики</a>
+  <a href="#homework">Задания</a>
+  <a href="#materials">Материалы</a>
+  <a href="#billing">Оплаты</a>
+  <a href="#settings">Настройки и уведомления</a>
+  <div class="grp">Другие роли</div>
+  <a href="#cabinet">Кабинет ученика</a>
+  <a href="#admin">Администратор</a>
+  <div class="grp">Дальше</div>
+  <a href="#spec">Значения M3</a>
+  <a href="#roadmap">План внедрения</a>
+</nav>
+
+<main>
+<!-- ============ SUMMARY ============ -->
+<section class="blk" id="summary">
+  <h2>Главное</h2>
+  <p class="sub">Сейчас портал аккуратно следует M3 на уровне компонентов, но не на уровне раскладки: на мониторе 1920 px контент — одна колонка карточек шириной 1440 px, а у учителя 10 разделов при лимите навигационного рейла в 7. Шесть решений ниже дают основной выигрыш.</p>
+  <div class="summary">
+    <div class="sum"><span class="ms">view_sidebar</span><b>Панели вместо колонки</b><span>На широком экране — канонические макеты M3: список + детали, основная + вспомогательная панель, лента. Правило «одна колонка, без сеток» отменить для expanded и шире.</span></div>
+    <div class="sum"><span class="ms">low_priority</span><b>6 разделов вместо 10</b><span>Звонки, Уведомления и ИИ-помощник перестают быть разделами; Доски и Учебники становятся «Материалами». Нижняя панель ученика помещается без «Ещё».</span></div>
+    <div class="sum"><span class="ms">person</span><b>Карточка ученика</b><span>Всё об ученике в одном месте: занятия, задания, баланс, мессенджер, комната, цвет. Сейчас это разбросано по пяти разделам и диалогу.</span></div>
+    <div class="sum"><span class="ms">checklist</span><b>Одна очередь «Нужно сделать»</b><span>Отметить занятия, проверить работы, ответить на запросы, напомнить о долге. Сегодня то же самое живёт в трёх карточках на двух страницах.</span></div>
+    <div class="sum"><span class="ms">add</span><b>Одна кнопка «Создать»</b><span>FAB вверху рейла и FAB-меню на телефоне вместо ряда быстрых действий на Главной плюс отдельной кнопки в каждом разделе.</span></div>
+    <div class="sum"><span class="ms">tune</span><b>Все интеграции в Настройках</b><span>Мессенджеры, календари, звонки, ИИ, цены, данные — разделы настроек со списком слева. Сейчас они в Уведомлениях, Расписании, Оплатах, Звонках, ИИ и Настройках.</span></div>
+  </div>
+</section>
+
+<!-- ============ SHELL ============ -->
+<section class="blk" id="shell">
+  <h2>Каркас</h2>
+  <p class="sub">Верхняя панель, рейл, нижняя панель и заголовок страницы. Сюда же — брейкпоинты, потому что от них зависит всё остальное.</p>
+  <h3>Что не так сейчас</h3>
+  <ul class="prob">
+    <li><span class="ms">error</span><span><b>Две полосы заголовков.</b> Верхняя панель 64 px (логотип, колокольчик, пользователь) плюс заголовок страницы 56 px — 120 px хрома до первой строки данных. Логотип повторяется в рейле визуально, а название раздела уже подсвечено в рейле.</span></li>
+    <li><span class="ms">error</span><span><b>Широкий экран не используется.</b> При 1920 px контент занимает 1440 px одной колонкой: список из пяти учеников растянут на всю ширину, справа от имён — пустота. M3 для large и extra-large рекомендует две панели (на extra-large — до трёх) и строку текста 40–60 знаков.</span></li>
+    <li><span class="ms">error</span><span><b>10 пунктов в рейле учителя.</b> M3: рейл — 3–7 разделов, при большем числе — модальный развёрнутый рейл. На телефоне 4 + «Ещё», и в «Ещё» уходят Ученики и Задания — ежедневные разделы.</span></li>
+    <li><span class="ms">error</span><span><b>Брейкпоинты не совпадают с M3.</b> Сейчас 48em (768 px) и 75em (1200 px). У M3 пять: 600, 840, 1200, 1600. Между 840 и 1200 (ноутбук, планшет в ландшафте) портал показывает одну панель там, где M3 рекомендует две.</span></li>
+    <li><span class="ms">error</span><span><b>Главное действие в трёх местах.</b> Быстрые действия на Главной, кнопка/FAB в каждом разделе, FAB-меню на телефоне. M3: на экране не больше одного FAB, а FAB в рейле стоит сверху и становится расширенным при раскрытии рейла.</span></li>
+  </ul>
+  <ul class="prob good">
+    <li><span class="ms">check_circle</span><span><b>Оставить:</b> карточку ближайшего занятия как hero-момент, сегментированные списки, правила кнопок (один filled на экран), снекбар, справку в боковой панели, переходы на пружинах.</span></li>
+  </ul>
+
+  <h3>Предложение</h3>
+  <div class="cols two">
+    <div>
+      <p><span class="lbl m3">M3</span> <b>Scaffold из баров, рейлов и панелей.</b> Регион навигации — <code>surface container</code>, тело — <code>surface</code>, одинаково на всех ширинах. Отступ от края 24 dp, между панелями 24 dp; фиксированная панель 360 dp (expanded) и 412 dp (large, extra-large); третья панель на extra-large — стандартная боковая панель до 400 dp.</p>
+      <p><span class="lbl our">Наше решение</span> Панели — скруглённые листы <code>surface</code> с углом 28 dp (extra large) поверх фона <code>surface container</code>. Глобальная верхняя полоса остаётся, но несёт только поиск, колокольчик и аккаунт; название раздела — в заголовке панели.</p>
+    </div>
+    <div>
+      <p><span class="lbl m3">M3</span> <b>Рейл:</b> развёрнутый 220–360 dp (оставляем 280) на extra-large, свёрнутый 96 dp на medium–large и на вложенных экранах. FAB «Создать» — сверху, с уровнем подъёма 0. Внизу рейла — Настройки и Справка.</p>
+      <p><span class="lbl exp">Эксперимент</span> <b>Глобальный поиск</b> (Ctrl+K): ученики, группы, задания, доски, учебники. Заменяет четыре локальных поиска, которые сейчас живут внутри карточек.</p>
+    </div>
+  </div>
+
+  <div class="tablewrap" style="margin-top:20px">
+  <table>
+    <thead><tr><th>Ширина окна (M3)</th><th>Навигация</th><th>Панели</th><th>«Создать»</th><th>Сейчас в портале</th></tr></thead>
+    <tbody>
+      <tr><td>Compact &lt; 600</td><td>Нижняя панель, 5 разделов; меню ☰ открывает модальный развёрнутый рейл</td><td>1</td><td>FAB-меню над нижней панелью справа</td><td>до 768 px: 4 раздела + «Ещё»</td></tr>
+      <tr><td>Medium 600–839</td><td>Свёрнутый рейл 96</td><td>1 (2 — только для настроек, 50/50)</td><td>FAB вверху рейла</td><td>768–1199: рейл 96, одна колонка</td></tr>
+      <tr><td>Expanded 840–1199</td><td>Свёрнутый рейл 96</td><td>2: фиксированная 360 + гибкая</td><td>FAB вверху рейла</td><td>то же, одна колонка</td></tr>
+      <tr><td>Large 1200–1599</td><td>Свёрнутый или развёрнутый рейл</td><td>2: фиксированная 412 + гибкая</td><td>Расширенный FAB</td><td>от 1200: рейл 280, одна колонка</td></tr>
+      <tr><td>Extra-large ≥ 1600</td><td>Развёрнутый рейл 280; на вложенных — свёрнутый</td><td>2–3: 412 + гибкая + боковая 400</td><td>Расширенный FAB</td><td>то же, одна колонка</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ DUPES ============ -->
+<section class="blk" id="dupes">
+  <h2>Дублирование функций</h2>
+  <p class="sub">Каждая строка — функция, у которой сейчас больше одного дома. Справа — единственное место после переделки.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Функция</th><th>Где сейчас</th><th>Где будет</th></tr></thead>
+    <tbody>
+      <tr><td>Отметить прошедшие занятия</td><td>Главная › «Требует внимания» · Расписание › карточка над календарём</td><td>Очередь «Нужно сделать» на «Сегодня». В календаре неотмеченное занятие обведено красным и отмечается из него же.</td></tr>
+      <tr><td>Создать занятие, оплату, ученика, задание</td><td>Быстрые действия на Главной · кнопка в заголовке каждого раздела · FAB-меню на телефоне</td><td>Один «Создать» (FAB-меню, до 6 пунктов). Пункт текущего раздела стоит первым.</td></tr>
+      <tr><td>Список учеников</td><td>Ученики · Оплаты › «Балансы учеников» · Звонки › «Комнаты учеников и групп» · Уведомления › «Ученики» (мессенджеры)</td><td>Только Ученики. Баланс, комната и мессенджер — колонки и фильтры этого списка («Должники», «Без мессенджера»).</td></tr>
+      <tr><td>Данные ученика</td><td>Диалог «Изменить» (контакты, цвет, комната) · страница баланса <code>/billing/students/:id</code> · задания и занятия только через свои разделы</td><td>Карточка ученика: вкладки Обзор · Занятия · Задания · Оплаты · Профиль.</td></tr>
+      <tr><td>Уведомления</td><td>Колокольчик · пункт «Уведомления» в рейле · карточка «Уведомления» на Главной</td><td>Только колокольчик: боковая панель на компьютере, полноэкранная на телефоне.</td></tr>
+      <tr><td>Мессенджеры</td><td>Уведомления › Мессенджеры, Ученики, Что присылать · Настройки › Неудачные доставки · Главная › «С чего начать»</td><td>Настройки › Мессенджеры (боты, что присылать, ошибки доставки). Статус ученика — в его карточке.</td></tr>
+      <tr><td>Сообщения ученикам</td><td>Уведомления › «Сообщения ученикам»</td><td>«Написать» в карточке ученика, группы или для выбранных в списке; пункт «Сообщение» в «Создать». История — вкладка «Отправленные» в панели уведомлений.</td></tr>
+      <tr><td>Календари и звонки</td><td>Расписание › «Календарь на телефоне» · Настройки › «Календарь и звонки» · раздел «Звонки» · диалог ученика › комната</td><td>Настройки › «Расписание и календарь» и › «Звонки». Комната ученика — в его профиле. Раздел «Звонки» убрать.</td></tr>
+      <tr><td>Цена занятия</td><td>Оплаты › «Цена для новых учеников» · строка ученика в Оплатах</td><td>Настройки › Оплаты (цена по умолчанию); цена ученика — в его профиле.</td></tr>
+      <tr><td>ИИ-помощник</td><td>Раздел в рейле (расход, системные промты, библиотека) · панель в редакторе задания</td><td>Настройки › ИИ (расход, системные промты). Библиотека промтов — внутри редактора, где ей пользуются.</td></tr>
+      <tr><td>Проверка работ</td><td>Скрытая страница «На проверку» (нет в рейле) · страница задания · страница работы</td><td>Задания › сегмент «На проверку» первым; проверка — в панели деталей.</td></tr>
+      <tr><td>Поиск</td><td>Свой поиск в «Задания» (две карточки), «Доски» (две карточки), «Ученики»</td><td>Один фильтр-поиск на список + глобальный поиск в верхней полосе.</td></tr>
+      <tr><td>Справка</td><td>«?» у заголовков · меню пользователя · маршрут <code>/help</code></td><td>«?» открывает боковую панель; «Справка» внизу рейла. Из меню пользователя убрать.</td></tr>
+      <tr><td>Аккаунт</td><td>Страница «Мой аккаунт» · меню пользователя (тема, язык)</td><td>Меню пользователя: тема, язык, выход и ссылка на Настройки › Мой аккаунт.</td></tr>
+      <tr><td>Резервные копии</td><td>Учитель: Настройки › Данные · Администратор: «Резервные копии»</td><td>Один компонент на обе роли; проверить, нужен ли он учителю, если на портале есть администратор.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ NAV ============ -->
+<section class="blk" id="nav">
+  <h2>Новая навигация</h2>
+  <p class="sub">Рейл — 3–7 разделов, нижняя панель — 3–5 (M3). Разделы называют задачи учителя, а не модули бэкенда.</p>
+  <div class="navcmp">
+    <div class="navcol"><h4>Учитель, рейл</h4><ol>
+      <li>Сегодня <span style="color:var(--on-sv)">(было «Главная»)</span></li><li>Расписание</li><li class="gone">Звонки</li><li>Ученики <span style="color:var(--on-sv)">+ группы</span></li><li>Задания <span style="color:var(--on-sv)">+ проверка</span></li><li>Материалы <span style="color:var(--on-sv)">= Учебники + Доски</span></li><li>Оплаты</li><li class="gone">Доски</li><li class="gone">Уведомления</li><li class="gone">ИИ-помощник</li></ol>
+      <p style="font-size:14px;margin:10px 0 0;color:var(--on-sv)">Внизу рейла: Настройки, Справка. 10 → 6.</p></div>
+    <div class="navcol"><h4>Учитель, телефон</h4><ol>
+      <li>Сегодня</li><li>Расписание</li><li>Задания</li><li>Ученики</li><li>Оплаты</li></ol>
+      <p style="font-size:14px;margin:10px 0 0;color:var(--on-sv)">Материалы, Настройки, Справка — в модальном рейле (☰). Доски также открываются из урока и задания.</p>
+      <p style="font-size:14px;margin:8px 0 0"><span class="lbl our">Проверить</span> Сейчас на телефоне в панели Доски; если они нужнее Учеников — поменять местами.</p></div>
+    <div class="navcol"><h4>Ученик</h4><ol>
+      <li>Главная</li><li>Расписание</li><li>Задания</li><li>Материалы <span style="color:var(--on-sv)">= Учебники + Мои доски</span></li><li>Оплаты</li></ol>
+      <p style="font-size:14px;margin:10px 0 0;color:var(--on-sv)">Пять разделов — нижняя панель без «Ещё».</p></div>
+    <div class="navcol"><h4>Администратор</h4><ol>
+      <li>Состояние <span style="color:var(--on-sv)">+ Диагностика</span></li><li>Журнал <span style="color:var(--on-sv)">+ События</span></li><li>Интеграции</li><li>Резервные копии</li><li>Настройки</li></ol>
+      <p style="font-size:14px;margin:10px 0 0;color:var(--on-sv)">7 → 5.</p></div>
+  </div>
+</section>
+
+<!-- ============ TODAY ============ -->
+<section class="blk" id="today">
+  <h2>Сегодня</h2>
+  <p class="sub">Главная учителя. Отвечает на два вопроса: какое следующее занятие и что ждёт моего действия.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Ряд из четырёх быстрых действий дублирует кнопки разделов.</span></li>
+        <li><span class="ms">error</span><span>«С чего начать», «Требует внимания» и «Уведомления» — три карточки про одно: что сделать дальше.</span></li>
+        <li><span class="ms">error</span><span>Карточка уведомлений повторяет колокольчик.</span></li>
+        <li><span class="ms">error</span><span>Hero растянут на 1440 px; в нём только время и имя.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li><span class="lbl m3">Feed</span> Лента в три колонки на extra-large, в две на large, одна на телефоне.</li>
+        <li><b>Колонка 1:</b> hero ближайшего занятия + лента дня (все занятия сегодня).</li>
+        <li><b>Колонка 2:</b> «Нужно сделать» — единая очередь с действием прямо в строке. Пункты онбординга становятся пунктами очереди и исчезают по мере выполнения.</li>
+        <li><b>Колонка 3:</b> деньги месяца и неделя в цифрах; ссылки в Оплаты и Расписание.</li>
+        <li>Заголовок — дата и сводка одной строкой («4 занятия · 2 работы на проверку»).</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri on"><span class="ms f">today</span>Сегодня</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane pflex">
+          <div class="phd"><h3>Понедельник, 19 октября<small>4 занятия · 2 работы на проверку · 1 запрос на перенос</small></h3></div>
+          <div class="pbd" style="display:grid;grid-template-columns:1.25fr 1fr .8fr;gap:24px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="hero">
+                <div class="tile"><div class="d">Сегодня</div><div class="t">12:00</div><div class="l">через 25 мин · 60 мин</div></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                  <div class="row nw"><span class="av s c2">БК</span><span class="who">Борис Ковалёв</span></div>
+                  <div class="what">Квадратные уравнения: теорема Виета</div>
+                  <div class="row"><span class="chip"><span class="ms">draw</span>Виета — разбор</span><span class="chip"><span class="ms">menu_book</span>Алгебра 8, с. 112</span></div>
+                </div>
+                <div class="split"><span class="b fill m"><span class="ms">videocam</span>Начать урок</span><span class="b fill m"><span class="ms">expand_more</span></span></div>
+              </div>
+              <div class="h4">Занятия сегодня</div>
+              <div class="ls">
+                <div class="li"><span class="lead" style="background:transparent;width:56px;color:var(--on-sv);font-variant-numeric:tabular-nums">10:00</span><span class="av s c1">АС</span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">Линейные неравенства</div></div><span class="tag ok"><span class="ms">check</span>Проведено</span></div>
+                <div class="li sel"><span class="lead" style="background:transparent;width:56px;color:var(--on-sec-c);font-weight:700">12:00</span><span class="av s c2">БК</span><div class="tx"><div class="tt">Борис Ковалёв</div><div class="st">Теорема Виета · через 25 мин</div></div><span class="tag pri">Следующее</span></div>
+                <div class="li"><span class="lead" style="background:transparent;width:56px;color:var(--on-sv)">16:00</span><span class="av s c3"><span class="ms" style="font-size:18px">groups</span></span><div class="tx"><div class="tt">ОГЭ 9 класс</div><div class="st">Разбор задания 20 · 90 мин · 2 ученика</div></div></div>
+                <div class="li"><span class="lead" style="background:transparent;width:56px;color:var(--on-sv)">19:00</span><span class="av s c1">АС</span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">Подготовка к контрольной</div></div></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Нужно сделать <span class="n">5</span></div>
+              <div class="ls">
+                <div class="li tall"><span class="lead"><span class="ms">event_available</span></span><div class="tx"><div class="tt">Отметьте занятие</div><div class="st">Дина Лебедева · вчера, 11:00</div></div><div class="seg"><span>Проведено</span><span>Пропуск</span></div></div>
+                <div class="li tall"><span class="lead"><span class="ms">rate_review</span></span><div class="tx"><div class="tt">Проверьте работу</div><div class="st">Вера Орлова · ОГЭ: задание 20</div></div><span class="b ton">Проверить</span></div>
+                <div class="li tall"><span class="lead"><span class="ms">rate_review</span></span><div class="tx"><div class="tt">Проверьте работу</div><div class="st">Глеб Иванов · ОГЭ: задание 20</div></div><span class="b ton">Проверить</span></div>
+                <div class="li tall"><span class="lead"><span class="ms">swap_horiz</span></span><div class="tx"><div class="tt">Запрос на перенос</div><div class="st">Глеб Иванов · чт 16:00 → пт 17:00</div></div><span class="b ton">Ответить</span></div>
+                <div class="li tall"><span class="lead" style="background:var(--ec);color:var(--on-ec)"><span class="ms">account_balance_wallet</span></span><div class="tx"><div class="tt">Долг 3 000 ₽</div><div class="st">Дина Лебедева · 2 занятия</div></div><span class="b ton">Напомнить</span></div>
+              </div>
+              <div class="cd" style="background:transparent;border:1px dashed var(--outline-v)">
+                <div class="row nw"><span class="ms" style="color:var(--primary)">rocket_launch</span><div class="tx"><div class="tt" style="font-size:15px">Осталось: подключить мессенджер</div><div class="prog" style="margin-top:8px"><i style="width:75%"></i></div></div><span class="b txt">Подключить</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Октябрь</div>
+              <div class="cd">
+                <div><div class="lab">ПОСТУПИЛО</div><div class="big">42 000 ₽</div><div class="st">28 занятий · план 54 000 ₽</div></div>
+                <div class="prog"><i style="width:78%"></i></div>
+                <div class="grid2"><div><div class="lab">ДОЛГ</div><div class="amt neg">3 000 ₽</div></div><div><div class="lab">АВАНСЫ</div><div class="amt">7 500 ₽</div></div></div>
+              </div>
+              <div class="h4">Неделя</div>
+              <div class="cd">
+                <div class="grid2"><div><div class="lab">ЗАНЯТИЙ</div><div class="big">14</div></div><div><div class="lab">ПРОПУСКОВ</div><div class="big">1</div></div></div>
+                <div class="grid2"><div><div class="lab">ВЫДАНО ЗАДАНИЙ</div><div class="big">6</div></div><div><div class="lab">СДАНО ВОВРЕМЯ</div><div class="big">83%</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Сегодня · extra-large · лента в три колонки, одна панель</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Порядок колонок сохраняется: hero → «Нужно сделать» → деньги.</li>
+        <li>Действия в очереди: одно — кнопкой в строке; два и больше — нижний лист (как сейчас для «Отметить»).</li>
+        <li><span class="lbl m3">M3</span> FAB справа над нижней панелью, не перекрывает её; открывает FAB-меню «Создать» (2–6 пунктов, кнопка закрытия 56 dp).</li>
+        <li>Нижняя панель — 5 разделов, без «Ещё».</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">menu</span></span><h4>Сегодня</h4><span class="ib sm"><span class="ms">search</span></span><span class="ib sm"><span class="ms">notifications</span><span class="bdg">3</span></span></div>
+        <div class="pcn fade">
+          <div class="hero">
+            <div class="row nw" style="gap:14px"><div class="tile"><div class="d">Сегодня</div><div class="t">12:00</div><div class="l">через 25 мин</div></div>
+              <div class="tx"><div class="who" style="font-size:18px;line-height:24px">Борис Ковалёв</div><div class="what" style="font-size:14px;line-height:20px">Теорема Виета</div></div></div>
+            <div class="split" style="width:100%"><span class="b fill m" style="flex:1;justify-content:center"><span class="ms">videocam</span>Начать урок</span><span class="b fill m"><span class="ms">expand_more</span></span></div>
+          </div>
+          <div class="h4">Нужно сделать <span class="n">5</span></div>
+          <div class="ls">
+            <div class="li"><div class="tx"><div class="tt">Отметьте занятие</div><div class="st">Дина Лебедева · вчера, 11:00</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><div class="tx"><div class="tt">Проверьте работу</div><div class="st">Вера Орлова · ОГЭ: задание 20</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><div class="tx"><div class="tt">Запрос на перенос</div><div class="st">Глеб Иванов · чт → пт 17:00</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><div class="tx"><div class="tt">Долг 3 000 ₽</div><div class="st">Дина Лебедева</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+          </div>
+          <div class="h4">Октябрь</div>
+          <div class="cd"><div class="row nw"><div class="tx"><div class="lab">ПОСТУПИЛО</div><div class="big">42 000 ₽</div></div><div><div class="lab">ДОЛГ</div><div class="amt neg">3 000 ₽</div></div></div></div>
+        </div>
+        <span class="pfab"><span class="ms">add</span></span>
+        <div class="nb">
+          <span class="nbi on"><span class="pl"><span class="ms f">today</span></span>Сегодня</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Сегодня · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section class="blk" id="schedule">
+  <h2>Расписание</h2>
+  <p class="sub">Календарь занимает всё место, всё остальное — во вспомогательной панели.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Над календарём — карточка «Отметьте прошедшие занятия» (дубль Главной) и строка о часовом поясе.</span></li>
+        <li><span class="ms">error</span><span>Под календарём три карточки: «Регулярные занятия», «Нерабочее время», «Календарь на телефоне». На мониторе они за пределами первого экрана.</span></li>
+        <li><span class="ms">error</span><span>На телефоне переключатель «Список / День / Месяц» оказывается ниже списка.</span></li>
+        <li><span class="ms">error</span><span>Ссылка на ICS-календарь живёт отдельно от Google Календаря в Настройках.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li><span class="lbl m3">Supporting pane</span> Календарь — гибкая основная панель, справа фиксированная 412 dp: мини-месяц, запросы, регулярные занятия и нерабочее время вкладками.</li>
+        <li>Неотмеченные занятия — красная обводка прямо в сетке; запрос на перенос — пунктир. Отдельная карточка не нужна.</li>
+        <li>Нерабочее время — штриховка в сетке; добавляется выделением диапазона.</li>
+        <li>Часовой пояс — ассист-чип в панели инструментов, только если пояс устройства отличается от портала.</li>
+        <li>«Календарь на телефоне» → Настройки › Расписание и календарь.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri"><span class="ms">today</span>Сегодня</span>
+        <span class="ri on"><span class="ms f">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane pflex">
+          <div class="phd"><h3>19 – 25 октября 2026</h3>
+            <span class="chip as"><span class="ms">public</span>Екатеринбург · портал — Москва</span>
+            <span class="b ton">Сегодня</span><span class="ib sm"><span class="ms">chevron_left</span></span><span class="ib sm"><span class="ms">chevron_right</span></span>
+            <div class="seg" style="margin-left:8px"><span class="on">Неделя</span><span>Месяц</span><span>Список</span></div>
+          </div>
+          <div class="pbd" style="padding-top:0">
+            <div class="row"><span class="chip on"><span class="ms">check</span>Все ученики</span><span class="chip"><span class="dot" style="background:var(--on-c1)"></span>Анна</span><span class="chip"><span class="dot" style="background:var(--on-c2)"></span>Борис</span><span class="chip"><span class="dot" style="background:var(--on-c3)"></span>ОГЭ 9 класс</span><span class="chip"><span class="ms">add</span>Ещё 4</span></div>
+            <div class="cal">
+              <span class="dh" style="grid-column:1"></span>
+              <span class="dh today" style="grid-column:2">пн<b>19</b></span><span class="dh" style="grid-column:3">вт<b>20</b></span><span class="dh" style="grid-column:4">ср<b>21</b></span><span class="dh" style="grid-column:5">чт<b>22</b></span><span class="dh" style="grid-column:6">пт<b>23</b></span><span class="dh" style="grid-column:7">сб<b>24</b></span><span class="dh" style="grid-column:8">вс<b>25</b></span>
+              <span class="hr" style="grid-row:2">8:00</span><span class="hr" style="grid-row:4">9:00</span><span class="hr" style="grid-row:6">10:00</span><span class="hr" style="grid-row:8">11:00</span><span class="hr" style="grid-row:10">12:00</span><span class="hr" style="grid-row:12">13:00</span><span class="hr" style="grid-row:14">14:00</span><span class="hr" style="grid-row:16">15:00</span><span class="hr" style="grid-row:18">16:00</span><span class="hr" style="grid-row:20">17:00</span><span class="hr" style="grid-row:22">18:00</span><span class="hr" style="grid-row:24">19:00</span><span class="hr" style="grid-row:26">20:00</span>
+              <span class="off" style="grid-column:2;grid-row:12/14">Обед</span><span class="off" style="grid-column:3;grid-row:12/14">Обед</span><span class="off" style="grid-column:4;grid-row:12/14">Обед</span><span class="off" style="grid-column:5;grid-row:12/14">Обед</span><span class="off" style="grid-column:6;grid-row:12/14">Обед</span>
+              <span class="off" style="grid-column:8;grid-row:2/28">Выходной</span>
+              <span class="ev c1 done" style="grid-column:2;grid-row:6/8">10:00 Анна С.<span>Неравенства</span></span>
+              <span class="ev c2" style="grid-column:2;grid-row:10/12">12:00 Борис К.<span>Теорема Виета</span></span>
+              <span class="now" style="grid-column:2/9;grid-row:9"></span>
+              <span class="ev c3" style="grid-column:2;grid-row:18/21">16:00 ОГЭ 9 класс<span>Разбор №20 · 90 мин</span></span>
+              <span class="ev c1" style="grid-column:2;grid-row:24/26">19:00 Анна С.<span>К контрольной</span></span>
+              <span class="ev c4" style="grid-column:3;grid-row:6/8">10:00 Дина Л.<span>Проценты</span></span>
+              <span class="ev c1" style="grid-column:3;grid-row:20/22">17:00 Анна С.<span>Регулярное</span></span>
+              <span class="ev c5" style="grid-column:4;grid-row:8/10">11:00 Егор Н.<span>Геометрия</span></span>
+              <span class="ev c3" style="grid-column:4;grid-row:18/21">16:00 ОГЭ 9 класс<span>Регулярное</span></span>
+              <span class="ev c2" style="grid-column:5;grid-row:10/12">12:00 Борис К.</span>
+              <span class="ev c6 req" style="grid-column:5;grid-row:18/20">16:00 Глеб И.<span>Просит перенести</span></span>
+              <span class="ev c1" style="grid-column:6;grid-row:20/22">17:00 Анна С.<span>Регулярное</span></span>
+              <span class="ev c4" style="grid-column:6;grid-row:22/24">18:00 Дина Л.</span>
+              <span class="ev c3" style="grid-column:7;grid-row:8/11">11:00 ОГЭ 9 класс<span>Пробник</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="pane p412" style="background:var(--sc-low)">
+          <div class="phd"><h3 style="font-size:22px;line-height:28px">Октябрь 2026</h3><span class="ib sm"><span class="ms">chevron_left</span></span><span class="ib sm"><span class="ms">chevron_right</span></span></div>
+          <div class="pbd">
+            <div class="mini"><b>пн</b><b>вт</b><b>ср</b><b>чт</b><b>пт</b><b>сб</b><b>вс</b>
+              <span class="o">28</span><span class="o">29</span><span class="o">30</span><span>1</span><span>2</span><span>3</span><span>4</span>
+              <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+              <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+              <span class="t">19</span><span class="w s">20</span><span class="w">21</span><span class="w">22</span><span class="w">23</span><span class="w">24</span><span class="w e">25</span>
+              <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span class="o">1</span></div>
+            <div class="h4">Запросы <span class="n">1</span></div>
+            <div class="ls"><div class="li tall" style="background:var(--surface)"><span class="av s c6">ГИ</span><div class="tx"><div class="tt">Глеб Иванов</div><div class="st">чт 16:00 → пт 17:00</div></div><span class="b ton">Ответить</span></div></div>
+            <div class="tabs"><span class="on">Регулярные</span><span>Нерабочее время</span></div>
+            <div class="ls">
+              <div class="li" style="background:var(--surface)"><span class="dot" style="background:var(--on-c1)"></span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">вт, пт · 17:00 · 60 мин</div></div><span class="ms">more_vert</span></div>
+              <div class="li" style="background:var(--surface)"><span class="dot" style="background:var(--on-c3)"></span><div class="tx"><div class="tt">ОГЭ 9 класс</div><div class="st">пн, ср · 16:00 · 90 мин</div></div><span class="ms">more_vert</span></div>
+              <div class="li" style="background:var(--surface)"><span class="dot" style="background:var(--on-c2)"></span><div class="tx"><div class="tt">Борис Ковалёв</div><div class="st">пн, чт · 12:00 · 60 мин</div></div><span class="ms">more_vert</span></div>
+            </div>
+            <span class="b txt" style="align-self:flex-start"><span class="ms">add</span>Регулярное занятие</span>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Расписание · extra-large · основная панель + вспомогательная 412 dp</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>По умолчанию — повестка: полоса недели сверху (точки = есть занятия), под ней занятия выбранного дня.</li>
+        <li>Неделя/Месяц, Регулярные, Нерабочее время — в меню «⋮» верхней панели; каждый пункт открывает свой экран.</li>
+        <li>Расширенный FAB «Занятие» — главное действие раздела; FAB-меню «Создать» здесь не нужно.</li>
+        <li>Прошедшее неотмеченное занятие — строка с двумя кнопками, как в очереди.</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">menu</span></span><h4>Октябрь</h4><span class="ib sm"><span class="ms">today</span></span><span class="ib sm"><span class="ms">more_vert</span></span></div>
+        <div class="pcn fade">
+          <div class="strip"><span class="on">пн<b>19</b><i></i></span><span>вт<b>20</b><i></i></span><span>ср<b>21</b><i></i></span><span>чт<b>22</b><i></i></span><span>пт<b>23</b><i></i></span><span>сб<b>24</b><i></i></span><span>вс<b>25</b></span></div>
+          <div class="ls">
+            <div class="li" style="min-height:64px"><div style="width:48px;font-variant-numeric:tabular-nums;color:var(--on-sv)">10:00</div><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">Неравенства</div></div><span class="tag ok">Проведено</span></div>
+            <div class="li" style="min-height:64px;outline:2px solid var(--error);outline-offset:-2px"><div style="width:48px;color:var(--on-sv)">11:00</div><div class="tx"><div class="tt">Дина Лебедева</div><div class="st">Не отмечено</div></div></div>
+            <div class="li" style="flex-wrap:wrap;padding-top:0;padding-bottom:12px;min-height:0"><div class="seg" style="width:100%"><span style="flex:1;justify-content:center">Проведено</span><span style="flex:1;justify-content:center">Пропуск</span></div></div>
+            <div class="li sel" style="min-height:64px"><div style="width:48px;font-weight:700">12:00</div><div class="tx"><div class="tt">Борис Ковалёв</div><div class="st">через 25 мин · Виета</div></div><span class="ib sm ton"><span class="ms">videocam</span></span></div>
+            <div class="li" style="min-height:64px"><div style="width:48px;color:var(--on-sv)">13:00</div><div class="tx"><div class="tt" style="color:var(--on-sv)">Обед</div><div class="st">Нерабочее время</div></div></div>
+            <div class="li" style="min-height:64px"><div style="width:48px;color:var(--on-sv)">16:00</div><div class="tx"><div class="tt">ОГЭ 9 класс</div><div class="st">Разбор №20 · 90 мин</div></div></div>
+            <div class="li" style="min-height:64px"><div style="width:48px;color:var(--on-sv)">19:00</div><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">К контрольной</div></div></div>
+          </div>
+        </div>
+        <span class="pfab"><span class="ms">add</span>Занятие</span>
+        <div class="nb">
+          <span class="nbi"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+          <span class="nbi on"><span class="pl"><span class="ms f">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Расписание · compact · повестка дня</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ STUDENTS ============ -->
+<section class="blk" id="students">
+  <h2>Ученики</h2>
+  <p class="sub">Самая большая перемена: раздел становится домом для всего, что касается конкретного человека.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Список даёт только имя и статус приглашения. Всё остальное — в диалоге «Изменить» (контакты, цвет, тема по умолчанию, комната) или в других разделах.</span></li>
+        <li><span class="ms">error</span><span>Чтобы увидеть баланс, задания и занятия одного ученика, нужно пройти Оплаты, Задания и Расписание.</span></li>
+        <li><span class="ms">error</span><span>Тот же список учеников ещё трижды: в Оплатах, Звонках и Уведомлениях.</span></li>
+        <li><span class="ms">error</span><span>Группы — отдельная карточка под учениками со своим переключателем «Показывать архив».</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li><span class="lbl m3">List-detail</span> Слева список 412 dp, справа карточка выбранного ученика или группы.</li>
+        <li>В строке списка — ближайшее занятие и баланс; фильтр-чипы «Группы», «Должники», «Без мессенджера», «Отключённые» вместо переключателей.</li>
+        <li>Карточка: аватар, имя, статус; действия «Написать», «Оплата», «Занятие»; вкладки Обзор · Занятия · Задания · Оплаты · Профиль.</li>
+        <li>Профиль редактируется на месте (поля вкладки), диалог «Изменить» не нужен. Там же комната, мессенджер, приглашение, цвет и цена.</li>
+        <li>Группа — та же карточка: участники вместо контактов, общие занятия и задания.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri"><span class="ms">today</span>Сегодня</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri on"><span class="ms f">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane p412">
+          <div class="phd"><h3>Ученики<small>8 учеников · 2 группы</small></h3></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="search s"><span class="ms">filter_list</span>Найти ученика</div>
+            <div class="row"><span class="chip on">Все</span><span class="chip">Группы</span><span class="chip">Должники 1</span><span class="chip">Без мессенджера 3</span></div>
+            <div class="ls">
+              <div class="li sel"><span class="av c1">АС</span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">вт 17:00 · аванс 1 500 ₽</div></div><span class="ms" style="color:var(--on-sec-c)">send</span></div>
+              <div class="li"><span class="av c2">БК</span><div class="tx"><div class="tt">Борис Ковалёв</div><div class="st">сегодня 12:00</div></div></div>
+              <div class="li"><span class="av c4">ДЛ</span><div class="tx"><div class="tt">Дина Лебедева</div><div class="st">вт 10:00</div></div><span class="amt neg" style="font-size:14px">−3 000 ₽</span></div>
+              <div class="li"><span class="av c5">ЕН</span><div class="tx"><div class="tt">Егор Николаев</div><div class="st">ср 11:00</div></div><span class="tag warn">Приглашён</span></div>
+              <div class="li"><span class="av c3">ВО</span><div class="tx"><div class="tt">Вера Орлова</div><div class="st">ОГЭ 9 класс · сегодня 16:00</div></div></div>
+              <div class="li"><span class="av c6">ГИ</span><div class="tx"><div class="tt">Глеб Иванов</div><div class="st">ОГЭ 9 класс · запрос на перенос</div></div></div>
+              <div class="li"><span class="av c1">ЖК</span><div class="tx"><div class="tt">Жанна Кузнецова</div><div class="st">пт 18:30</div></div></div>
+              <div class="li"><span class="av c2">ИМ</span><div class="tx"><div class="tt">Илья Морозов</div><div class="st">нет занятий</div></div></div>
+              <div class="li"><span class="lead"><span class="ms">groups</span></span><div class="tx"><div class="tt">ОГЭ 9 класс</div><div class="st">Вера, Глеб · пн, ср 16:00</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane pflex">
+          <div style="padding:24px 24px 8px;display:flex;gap:20px;align-items:center">
+            <span class="av l c1">АС</span>
+            <div class="tx"><div style="font-size:28px;line-height:36px;font-weight:500">Анна Смирнова</div><div class="row" style="margin-top:4px"><span class="st">9 класс · с сентября 2025</span><span class="tag ok"><span class="ms">send</span>Telegram</span><span class="tag pri">Аванс 1 500 ₽</span></div></div>
+            <span class="b ton"><span class="ms">chat</span>Написать</span><span class="b ton"><span class="ms">payments</span>Оплата</span><span class="b fill"><span class="ms">event</span>Занятие</span><span class="ib sm"><span class="ms">more_vert</span></span>
+          </div>
+          <div class="tabs" style="margin:0 24px"><span class="on">Обзор</span><span>Занятия 34</span><span>Задания 12</span><span>Оплаты</span><span>Профиль</span></div>
+          <div class="pbd" style="padding-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Ближайшие занятия</div>
+              <div class="ls">
+                <div class="li tall"><div class="tile" style="padding:6px 10px;border-radius:12px"><div class="l">вт 20.10</div><div style="font-size:18px;font-weight:700">17:00</div></div><div class="tx"><div class="tt">Теорема Виета</div><div class="st">60 мин · регулярное</div></div></div>
+                <div class="li tall"><div class="tile" style="padding:6px 10px;border-radius:12px;background:var(--sec-c);color:var(--on-sec-c)"><div class="l">пт 23.10</div><div style="font-size:18px;font-weight:700">17:00</div></div><div class="tx"><div class="tt">Тема не задана</div><div class="st">60 мин · регулярное</div></div></div>
+              </div>
+              <div class="h4">Посещаемость</div>
+              <div class="cd"><div class="grid3"><div><div class="lab">ЗА МЕСЯЦ</div><div class="big">8</div></div><div><div class="lab">ПРОПУСКОВ</div><div class="big">0</div></div><div><div class="lab">ВСЕГО</div><div class="big">34</div></div></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Задания</div>
+              <div class="ls">
+                <div class="li tall"><div class="tx"><div class="tt">Квадратные уравнения</div><div class="st">до 22.10 · сдано вчера</div></div><span class="tag warn">На проверке</span></div>
+                <div class="li tall"><div class="tx"><div class="tt">Неравенства, вариант 2</div><div class="st">до 24.10</div></div><span class="tag pri">Выдано</span></div>
+                <div class="li tall"><div class="tx"><div class="tt">Проценты</div><div class="st">12.10</div></div><span class="tag ok">Принято</span></div>
+              </div>
+              <div class="h4">Доски и учебники</div>
+              <div class="row"><span class="chip as"><span class="ms">draw</span>Анна — алгебра</span><span class="chip as"><span class="ms">menu_book</span>Алгебра 9</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Баланс</div>
+              <div class="cd"><div><div class="lab">АВАНС</div><div class="big amt pos" style="font-size:28px">+1 500 ₽</div><div class="st">хватит на 1 занятие · 1 500 ₽ за занятие</div></div>
+                <div class="ls"><div class="li" style="background:var(--surface)"><div class="tx"><div class="tt" style="font-size:14px">Оплата</div><div class="st">12.10 · перевод</div></div><span class="amt pos" style="font-size:14px">+6 000 ₽</span></div><div class="li" style="background:var(--surface)"><div class="tx"><div class="tt" style="font-size:14px">Занятие</div><div class="st">19.10</div></div><span class="amt" style="font-size:14px">−1 500 ₽</span></div></div></div>
+              <div class="h4">Связь</div>
+              <div class="cd">
+                <div class="row nw"><span class="ms" style="color:var(--succ)">check_circle</span><div class="tx"><div class="tt" style="font-size:15px">Telegram подключён</div><div class="st">напоминания за 1 час</div></div></div>
+                <div class="row nw"><span class="ms" style="color:var(--on-sv)">videocam</span><div class="tx"><div class="tt" style="font-size:15px">Комната Телемоста</div><div class="st">telemost.yandex.ru/j/…4821</div></div><span class="ib sm"><span class="ms">content_copy</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Ученики · extra-large · список 412 dp + карточка ученика</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Список и карточка — два экрана; карточка открывается поверх с «←».</li>
+        <li>Нижняя панель на карточке остаётся (Ученики подсвечены): это раздел, а не модальная задача.</li>
+        <li>Три действия — тональные кнопки с иконкой во всю ширину; вкладки прокручиваются.</li>
+        <li><span class="lbl exp">Эксперимент</span> Свайп по строке списка вправо — «Написать», влево — «Оплата».</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">arrow_back</span></span><h4></h4><span class="ib sm"><span class="ms">edit</span></span><span class="ib sm"><span class="ms">more_vert</span></span></div>
+        <div class="pcn fade" style="padding-top:0">
+          <div class="row nw" style="gap:16px"><span class="av l c1">АС</span><div class="tx"><div style="font-size:24px;line-height:32px;font-weight:500">Анна Смирнова</div><div class="row" style="margin-top:4px"><span class="tag ok">Telegram</span><span class="tag pri">+1 500 ₽</span></div></div></div>
+          <div class="row nw"><span class="b ton w"><span class="ms">chat</span>Написать</span><span class="b ton w"><span class="ms">payments</span>Оплата</span><span class="b ton w"><span class="ms">event</span>Занятие</span></div>
+          <div class="tabs" style="margin:0 -16px;padding:0 4px"><span class="on">Обзор</span><span>Занятия</span><span>Задания</span><span>Оплаты</span><span>Профиль</span></div>
+          <div class="h4">Ближайшие занятия</div>
+          <div class="ls"><div class="li"><div class="tx"><div class="tt">вт 20.10, 17:00</div><div class="st">Теорема Виета</div></div></div><div class="li"><div class="tx"><div class="tt">пт 23.10, 17:00</div><div class="st">Тема не задана</div></div></div></div>
+          <div class="h4">Задания</div>
+          <div class="ls"><div class="li"><div class="tx"><div class="tt">Квадратные уравнения</div><div class="st">до 22.10</div></div><span class="tag warn">На проверке</span></div><div class="li"><div class="tx"><div class="tt">Неравенства, в. 2</div><div class="st">до 24.10</div></div><span class="tag pri">Выдано</span></div></div>
+        </div>
+        <div class="nb">
+          <span class="nbi"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi on"><span class="pl"><span class="ms f">group</span></span>Ученики</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Карточка ученика · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ HOMEWORK ============ -->
+<section class="blk" id="homework">
+  <h2>Задания</h2>
+  <p class="sub">Проверка работ — главная ежедневная задача раздела, поэтому она открывается первой.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Очередь «На проверку» — отдельная страница без пункта в навигации; попасть туда можно только с Главной.</span></li>
+        <li><span class="ms">error</span><span>Путь проверки: Задания → задание → ученик → страница работы → назад → следующий ученик. Четыре перехода на одну работу.</span></li>
+        <li><span class="ms">error</span><span>«Активные» и «Выполненные» — две карточки, у каждой свой поиск.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li>Сегменты «На проверку · Активные · Готовые» над одним списком, один поиск; черновики — в фильтре.</li>
+        <li><span class="lbl m3">3 панели</span> На extra-large: список работ 412 → работа ученика (гибкая) → боковая панель проверки 400 dp (комментарий, черновик ИИ, «Принять» / «На доработку»). M3 допускает третью панель только как стандартную боковую панель — она ею и является.</li>
+        <li>После «Принять» открывается следующая работа из очереди; рейл сворачивается до 96 dp, чтобы отдать место работе.</li>
+        <li>Редактор задания остаётся полноэкранным: M3 советует одну панель для творческих задач.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl col" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span></div>
+        <span class="fab"><span class="ms">add</span></span>
+        <span class="rv"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+        <span class="rv"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+        <span class="rv"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+        <span class="rv on"><span class="pl"><span class="ms f">assignment</span></span>Задания</span>
+        <span class="rv"><span class="pl"><span class="ms">library_books</span></span>Материалы</span>
+        <span class="rv"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        <span class="grow" style="flex:1"></span>
+        <span class="rv"><span class="pl"><span class="ms">settings</span></span>Настройки</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane p412">
+          <div class="phd"><h3>Задания</h3><span class="ib sm"><span class="ms">filter_list</span></span></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="seg"><span class="on">На проверку <span class="n">3</span></span><span>Активные <span class="n">6</span></span><span>Готовые</span></div>
+            <div class="ls">
+              <div class="li tall sel"><span class="av c3">ВО</span><div class="tx"><div class="tt">Вера Орлова</div><div class="st">ОГЭ: задание 20 · 12 мин назад</div></div></div>
+              <div class="li tall"><span class="av c6">ГИ</span><div class="tx"><div class="tt">Глеб Иванов</div><div class="st">ОГЭ: задание 20 · 1 ч назад</div></div></div>
+              <div class="li tall"><span class="av c1">АС</span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">Квадратные уравнения · вчера</div></div><span class="tag err">Просрочено</span></div>
+            </div>
+            <div class="lab" style="margin-top:8px">ЖДУТ СДАЧИ</div>
+            <div class="ls">
+              <div class="li"><span class="lead"><span class="ms">assignment</span></span><div class="tx"><div class="tt">Неравенства, вариант 2</div><div class="st">Анна · до 24.10</div></div></div>
+              <div class="li"><span class="lead"><span class="ms">assignment</span></span><div class="tx"><div class="tt">Проценты: задачи на смеси</div><div class="st">Дина, Борис · до 25.10</div></div><span class="st">1 из 2</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane pflex">
+          <div class="phd"><h3>ОГЭ: задание 20<small>Вера Орлова · срок 20.10, 23:59 · сдано вовремя · попытка 1</small></h3><span class="b ton"><span class="ms">draw</span>Открыть на доске</span><span class="ib sm"><span class="ms">more_vert</span></span></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="cd" style="flex-direction:row;align-items:flex-start;gap:16px"><span class="ms" style="color:var(--on-sv)">description</span><div class="tx"><div class="lab">ЗАДАНИЕ</div><div style="font-size:15px;line-height:22px;margin-top:4px">Решите уравнение x⁴ = (4x − 5)². Запишите полное решение и ответ. Учебник: Алгебра 9, с. 112, № 4.18.</div></div><span class="ms" style="color:var(--on-sv)">expand_more</span></div>
+            <div class="lab">ОТВЕТ УЧЕНИКА</div>
+            <div style="font-size:16px;line-height:26px;max-width:66ch">x⁴ − (4x − 5)² = 0 → (x² − 4x + 5)(x² + 4x − 5) = 0.<br>Первый множитель: D = 16 − 20 &lt; 0, корней нет.<br>Второй: x² + 4x − 5 = 0, x₁ = 1, x₂ = −5.<br><b>Ответ:</b> −5; 1.</div>
+            <div class="row" style="gap:16px">
+              <div class="mat" style="width:260px"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Черновик.jpg</div><div class="st">1,2 МБ</div></div></div></div>
+              <div class="mat" style="width:260px"><div class="th"><svg><use href="#d1"/></svg></div><div class="mb"><div class="tx"><div class="tt">Проверка.jpg</div><div class="st">860 КБ</div></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane psheet">
+          <div class="phd"><h3 style="font-size:22px;line-height:28px">Проверка</h3><span class="st">1 из 3</span><span class="ib sm"><span class="ms">close</span></span></div>
+          <div class="pbd">
+            <div class="cd" style="background:var(--surface)"><div class="row nw"><span class="tag ai"><span class="ms">auto_awesome</span>Черновик ИИ</span><span class="sp"></span><span class="b txt">Вставить</span></div><div class="st" style="white-space:normal;line-height:21px">Решение верное и полное. Разложение на множители через разность квадратов — удачный ход. Стоит явно записать, почему x² − 4x + 5 &gt; 0.</div></div>
+            <div class="field" style="min-height:160px"><div class="lab">Комментарий ученику</div><div style="font-size:16px;line-height:24px;margin-top:4px">Отлично! Добавь одну строку: почему у первого множителя нет корней.</div></div>
+            <div class="row nw"><span class="chip">Отлично</span><span class="chip">Есть ошибка</span><span class="chip">Перепроверь</span></div>
+            <span class="sp" style="flex:1"></span>
+            <div class="row nw"><span class="b ton w">На доработку</span><span class="b fill w"><span class="ms">check</span>Принять</span></div>
+            <div class="row nw st"><span class="ms" style="font-size:18px">arrow_forward</span>Дальше: Глеб Иванов</div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Задания · extra-large · свёрнутый рейл, три панели (третья — боковая 400 dp)</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Работа открывается полноэкранно, нижняя панель скрыта (вложенный экран, есть «←»).</li>
+        <li><span class="lbl m3">Floating toolbar</span> Внизу плавающая панель инструментов 64 dp: «ИИ», «На доработку», «Принять». M3: плавающая — для контекстных действий страницы; закреплённая не ставится вместе с нижней панелью навигации.</li>
+        <li>Комментарий — нижний лист, открывается из панели.</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">arrow_back</span></span><h4>Вера Орлова</h4><span class="st" style="padding-right:4px">1 из 3</span><span class="ib sm"><span class="ms">more_vert</span></span></div>
+        <div class="pcn">
+          <div><div style="font-size:18px;font-weight:600">ОГЭ: задание 20</div><div class="st">срок 20.10 · сдано вовремя</div></div>
+          <div class="cd" style="padding:12px"><div class="lab">ЗАДАНИЕ</div><div style="font-size:14px">Решите уравнение x⁴ = (4x − 5)². Запишите решение и ответ.</div></div>
+          <div class="lab">ОТВЕТ</div>
+          <div style="font-size:16px;line-height:26px">x⁴ − (4x − 5)² = 0 →<br>(x² − 4x + 5)(x² + 4x − 5) = 0.<br>D₁ &lt; 0; x₁ = 1, x₂ = −5.<br><b>Ответ:</b> −5; 1.</div>
+          <div class="row nw"><div class="mat" style="flex:1"><div class="th"><svg><use href="#d4"/></svg></div></div><div class="mat" style="flex:1"><div class="th"><svg><use href="#d1"/></svg></div></div></div>
+        </div>
+        <div class="ftb"><span class="ib ton"><span class="ms">auto_awesome</span></span><span class="ib"><span class="ms">chat</span></span><span class="sp"></span><span class="b ton">На доработку</span><span class="b fill"><span class="ms">check</span>Принять</span></div>
+        <div class="gest" style="background:var(--surface);margin-top:auto"></div>
+      </div></div>
+      <figcaption><span>Проверка работы · compact · плавающая панель</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ MATERIALS ============ -->
+<section class="blk" id="materials">
+  <h2>Материалы <span class="lbl exp" style="vertical-align:middle">Эксперимент</span></h2>
+  <p class="sub">Доски и учебники — одно и то же для учителя: что показать на уроке и к чему привязать задание. Объединяем их в один раздел-ленту с превью.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Два раздела в рейле. В Досках ещё две карточки («На портале», «Внешние»), у каждой свой поиск.</span></li>
+        <li><span class="ms">error</span><span>Строки списка без превью: отличить «Виета — разбор» от «Виета — дз» можно только по названию.</span></li>
+        <li><span class="ms">error</span><span>Действие «Резервные копии» доски спрятано в «⋮» строки.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li><span class="lbl m3">Feed</span> Сетка карточек с превью: 6 колонок на extra-large, 4 на large, 2 на телефоне.</li>
+        <li>Сегменты «Доски · Учебники», фильтр-чипы по виду (портал/внешние), по ученику или группе; один поиск.</li>
+        <li>Превью доски — снимок сцены Excalidraw, учебника — первая страница (нужен бэкенд: генерация миниатюр).</li>
+        <li>Если объединение не подходит — минимум: один список досок с чипами вместо двух карточек.</li>
+      </ul>
+    </div>
+  </div>
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri"><span class="ms">today</span>Сегодня</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri on"><span class="ms f">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane pflex">
+          <div class="phd"><h3>Материалы</h3><div class="seg"><span class="on"><span class="ms">draw</span>Доски <span class="n">12</span></span><span><span class="ms">menu_book</span>Учебники <span class="n">5</span></span></div></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="row"><div class="search s" style="flex:0 0 360px"><span class="ms">filter_list</span>Найти доску</div><span class="chip on">Все</span><span class="chip">На портале</span><span class="chip">Внешние</span><span class="chip"><span class="ms">person</span>Ученик или группа</span><span class="sp"></span><span class="chip"><span class="ms">sort</span>Сначала изменённые</span></div>
+            <div class="feed">
+              <div class="mat"><div class="th"><svg><use href="#d1"/></svg></div><div class="mb"><div class="tx"><div class="tt">Виета — разбор</div><div class="st">Борис · сегодня</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d3"/></svg></div><div class="mb"><div class="tx"><div class="tt">ОГЭ №20, урок 3</div><div class="st">ОГЭ 9 класс · вчера</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d2"/></svg></div><div class="mb"><div class="tx"><div class="tt">Площадь треугольника</div><div class="st">Егор · 16.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Анна — алгебра</div><div class="st">Анна · 15.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th" style="background:var(--sc-high);background-image:none"><span class="tag pri k"><span class="ms">open_in_new</span>Холст</span><span class="ms" style="font-size:48px;opacity:.6">dashboard</span></div><div class="mb"><div class="tx"><div class="tt">Карта тем ОГЭ</div><div class="st">внешняя · 14.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d2"/></svg></div><div class="mb"><div class="tx"><div class="tt">Подобие</div><div class="st">Дина · 12.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Формулы: корни</div><div class="st">все ученики · 10.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d1"/></svg></div><div class="mb"><div class="tx"><div class="tt">Парабола</div><div class="st">Жанна · 09.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d3"/></svg></div><div class="mb"><div class="tx"><div class="tt">ОГЭ №20, урок 2</div><div class="st">ОГЭ 9 класс · 07.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th" style="background:var(--sc-high);background-image:none"><span class="tag pri k"><span class="ms">open_in_new</span>Miro</span><span class="ms" style="font-size:48px;opacity:.6">dashboard</span></div><div class="mb"><div class="tx"><div class="tt">План подготовки</div><div class="st">внешняя · 05.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d2"/></svg></div><div class="mb"><div class="tx"><div class="tt">Теорема Пифагора</div><div class="st">Илья · 02.10</div></div><span class="ms">more_vert</span></div></div>
+              <div class="mat"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Проценты</div><div class="st">Дина · 30.09</div></div><span class="ms">more_vert</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Материалы · extra-large · лента в 6 колонок</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Две колонки карточек; сегменты и чипы прокручиваются по горизонтали.</li>
+        <li>Раздел открывается из модального рейла (☰) — в нижней панели его нет. Доску к уроку учитель обычно открывает из hero или из задания.</li>
+        <li>Учебник открывается на странице, привязанной к ближайшему занятию.</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">menu</span></span><h4>Материалы</h4><span class="ib sm"><span class="ms">search</span></span></div>
+        <div class="pcn fade">
+          <div class="seg"><span class="on" style="flex:1;justify-content:center">Доски 12</span><span style="flex:1;justify-content:center">Учебники 5</span></div>
+          <div class="row nw" style="overflow:hidden"><span class="chip on">Все</span><span class="chip">На портале</span><span class="chip">Внешние</span><span class="chip">Ученик</span></div>
+          <div class="grid2" style="gap:10px">
+            <div class="mat"><div class="th"><svg><use href="#d1"/></svg></div><div class="mb"><div class="tx"><div class="tt">Виета — разбор</div><div class="st">сегодня</div></div></div></div>
+            <div class="mat"><div class="th"><svg><use href="#d3"/></svg></div><div class="mb"><div class="tx"><div class="tt">ОГЭ №20, урок 3</div><div class="st">вчера</div></div></div></div>
+            <div class="mat"><div class="th"><svg><use href="#d2"/></svg></div><div class="mb"><div class="tx"><div class="tt">Площадь</div><div class="st">16.10</div></div></div></div>
+            <div class="mat"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Анна — алгебра</div><div class="st">15.10</div></div></div></div>
+            <div class="mat"><div class="th" style="background:var(--sc-high);background-image:none"><span class="ms" style="font-size:40px;opacity:.6">dashboard</span></div><div class="mb"><div class="tx"><div class="tt">Карта тем ОГЭ</div><div class="st">Холст</div></div></div></div>
+            <div class="mat"><div class="th"><svg><use href="#d2"/></svg></div><div class="mb"><div class="tx"><div class="tt">Подобие</div><div class="st">12.10</div></div></div></div>
+          </div>
+        </div>
+        <span class="pfab"><span class="ms">add</span></span>
+        <div class="nb">
+          <span class="nbi"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Материалы · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ BILLING ============ -->
+<section class="blk" id="billing">
+  <h2>Оплаты</h2>
+  <p class="sub">Раздел про деньги в целом. Баланс конкретного ученика — в его карточке; здесь — месяц, движение денег и отчёт.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>«Балансы учеников» — второй список учеников. Баланс одного ученика — отдельная страница <code>/billing/students/:id</code>.</span></li>
+        <li><span class="ms">error</span><span>«Цена для новых учеников» — это настройка, а стоит среди показателей.</span></li>
+        <li><span class="ms">error</span><span>«Отчёт за месяц» — отдельная страница; показатели месяца на обзоре не видны (долг, авансы, должники — без поступлений).</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li>Сверху — месяц: поступило, начислено, долг, авансы; переключение месяца.</li>
+        <li><span class="lbl m3">List-detail</span> Слева журнал операций (оплаты и списания) с фильтрами, справа — выбранная операция или отчёт за месяц.</li>
+        <li>Должники — фильтр «Должники» в Учениках и пункт в «Нужно сделать»; здесь — короткий список со ссылкой.</li>
+        <li>Цена по умолчанию → Настройки › Оплаты.</li>
+      </ul>
+    </div>
+  </div>
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri"><span class="ms">today</span>Сегодня</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri on"><span class="ms f">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane pflex">
+          <div class="phd"><h3>Октябрь 2026</h3><span class="ib sm"><span class="ms">chevron_left</span></span><span class="ib sm"><span class="ms">chevron_right</span></span><span class="b ton"><span class="ms">download</span>Отчёт за месяц</span></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="grid3" style="grid-template-columns:repeat(4,1fr)">
+              <div class="cd"><div class="lab">ПОСТУПИЛО</div><div class="big">42 000 ₽</div><div class="st">11 оплат</div></div>
+              <div class="cd"><div class="lab">НАЧИСЛЕНО ЗА ЗАНЯТИЯ</div><div class="big">45 000 ₽</div><div class="st">30 занятий</div></div>
+              <div class="cd" style="background:var(--ec);color:var(--on-ec)"><div class="lab" style="color:inherit">ДОЛГ</div><div class="big">3 000 ₽</div><div style="font-size:14px">1 ученик</div></div>
+              <div class="cd"><div class="lab">АВАНСЫ</div><div class="big">7 500 ₽</div><div class="st">4 ученика</div></div>
+            </div>
+            <div class="row"><span class="h4">Операции</span><span class="sp"></span><span class="chip on">Все</span><span class="chip">Оплаты</span><span class="chip">Занятия</span><span class="chip">Пропуски</span><span class="chip"><span class="ms">person</span>Ученик</span></div>
+            <div class="ls">
+              <div class="li"><span class="lead"><span class="ms">event_available</span></span><span class="av s c1">АС</span><div class="tx"><div class="tt">Занятие · Анна Смирнова</div><div class="st">19.10, 10:00 · Неравенства</div></div><span class="amt">−1 500 ₽</span></div>
+              <div class="li"><span class="lead" style="background:var(--succ-c);color:var(--on-succ-c)"><span class="ms">payments</span></span><span class="av s c5">ЕН</span><div class="tx"><div class="tt">Оплата · Егор Николаев</div><div class="st">18.10 · перевод · «за ноябрь вперёд»</div></div><span class="amt pos">+6 000 ₽</span></div>
+              <div class="li"><span class="lead"><span class="ms">event_available</span></span><span class="av s c3"><span class="ms" style="font-size:16px">groups</span></span><div class="tx"><div class="tt">Занятие · ОГЭ 9 класс</div><div class="st">17.10 · 2 ученика по 1 200 ₽</div></div><span class="amt">−2 400 ₽</span></div>
+              <div class="li"><span class="lead"><span class="ms">event_busy</span></span><span class="av s c4">ДЛ</span><div class="tx"><div class="tt">Пропуск · Дина Лебедева</div><div class="st">16.10 · без списания</div></div><span class="amt" style="color:var(--on-sv)">0 ₽</span></div>
+              <div class="li"><span class="lead" style="background:var(--succ-c);color:var(--on-succ-c)"><span class="ms">payments</span></span><span class="av s c1">АС</span><div class="tx"><div class="tt">Оплата · Анна Смирнова</div><div class="st">12.10 · наличные</div></div><span class="amt pos">+6 000 ₽</span></div>
+              <div class="li"><span class="lead"><span class="ms">event_available</span></span><span class="av s c2">БК</span><div class="tx"><div class="tt">Занятие · Борис Ковалёв</div><div class="st">12.10, 12:00</div></div><span class="amt">−1 500 ₽</span></div>
+              <div class="li"><span class="lead" style="background:var(--succ-c);color:var(--on-succ-c)"><span class="ms">payments</span></span><span class="av s c2">БК</span><div class="tx"><div class="tt">Оплата · Борис Ковалёв</div><div class="st">10.10 · перевод</div></div><span class="amt pos">+3 000 ₽</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane p412" style="background:var(--sc-low)">
+          <div class="phd"><h3 style="font-size:22px;line-height:28px">По ученикам</h3><span class="b txt">Все в Учениках</span></div>
+          <div class="pbd">
+            <div class="lab">ДОЛЖНИКИ</div>
+            <div class="ls"><div class="li tall" style="background:var(--surface)"><span class="av c4">ДЛ</span><div class="tx"><div class="tt">Дина Лебедева</div><div class="st">2 занятия · с 12.10</div></div><span class="amt neg">−3 000 ₽</span></div></div>
+            <span class="b ton" style="align-self:flex-start"><span class="ms">send</span>Напомнить</span>
+            <div class="lab" style="margin-top:8px">АВАНСЫ ЗАКАНЧИВАЮТСЯ</div>
+            <div class="ls">
+              <div class="li" style="background:var(--surface)"><span class="av s c1">АС</span><div class="tx"><div class="tt">Анна Смирнова</div><div class="st">хватит на 1 занятие</div></div><span class="amt">1 500 ₽</span></div>
+              <div class="li" style="background:var(--surface)"><span class="av s c2">БК</span><div class="tx"><div class="tt">Борис Ковалёв</div><div class="st">хватит на 1 занятие</div></div><span class="amt">1 500 ₽</span></div>
+            </div>
+            <div class="lab" style="margin-top:8px">ПО НЕДЕЛЯМ</div>
+            <div style="display:flex;align-items:flex-end;gap:12px;height:140px;padding:8px 4px 0;border-bottom:1px solid var(--outline-v)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><span class="st" style="font-size:12px">12 000</span><i style="display:block;width:100%;height:60px;background:var(--primary);border-radius:6px 6px 0 0"></i></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><span class="st" style="font-size:12px">9 000</span><i style="display:block;width:100%;height:45px;background:var(--primary);border-radius:6px 6px 0 0"></i></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><span class="st" style="font-size:12px">15 000</span><i style="display:block;width:100%;height:75px;background:var(--primary);border-radius:6px 6px 0 0"></i></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><span class="st" style="font-size:12px">6 000</span><i style="display:block;width:100%;height:30px;background:var(--sec-c-strong);border-radius:6px 6px 0 0"></i></div>
+            </div>
+            <div class="row nw st" style="justify-content:space-around;font-size:12px"><span>1–4</span><span>5–11</span><span>12–18</span><span>19–25</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Оплаты · extra-large · основная панель + вспомогательная 412 dp</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Показатели месяца — горизонтальная полоса плиток, долг выделен цветом ошибки.</li>
+        <li>Ниже — журнал операций; расширенный FAB «Оплата» — главное действие раздела.</li>
+        <li>Отчёт за месяц — пункт меню «⋮».</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">menu</span></span><h4>Октябрь</h4><span class="ib sm"><span class="ms">chevron_left</span></span><span class="ib sm"><span class="ms">more_vert</span></span></div>
+        <div class="pcn fade">
+          <div class="hs">
+            <div class="cd"><div class="lab">ПОСТУПИЛО</div><div class="big" style="font-size:24px">42 000 ₽</div></div>
+            <div class="cd" style="background:var(--ec);color:var(--on-ec)"><div class="lab" style="color:inherit">ДОЛГ</div><div class="big" style="font-size:24px">3 000 ₽</div></div>
+            <div class="cd"><div class="lab">АВАНСЫ</div><div class="big" style="font-size:24px">7 500 ₽</div></div>
+          </div>
+          <div class="row nw" style="overflow:hidden"><span class="chip on">Все</span><span class="chip">Оплаты</span><span class="chip">Занятия</span><span class="chip">Пропуски</span></div>
+          <div class="ls">
+            <div class="li"><span class="av s c1">АС</span><div class="tx"><div class="tt">Занятие</div><div class="st">Анна · 19.10</div></div><span class="amt">−1 500 ₽</span></div>
+            <div class="li"><span class="av s c5">ЕН</span><div class="tx"><div class="tt">Оплата</div><div class="st">Егор · 18.10</div></div><span class="amt pos">+6 000 ₽</span></div>
+            <div class="li"><span class="av s c3"><span class="ms" style="font-size:16px">groups</span></span><div class="tx"><div class="tt">Занятие</div><div class="st">ОГЭ 9 класс · 17.10</div></div><span class="amt">−2 400 ₽</span></div>
+            <div class="li"><span class="av s c4">ДЛ</span><div class="tx"><div class="tt">Пропуск</div><div class="st">Дина · 16.10</div></div><span class="amt" style="color:var(--on-sv)">0 ₽</span></div>
+            <div class="li"><span class="av s c1">АС</span><div class="tx"><div class="tt">Оплата</div><div class="st">Анна · 12.10</div></div><span class="amt pos">+6 000 ₽</span></div>
+            <div class="li"><span class="av s c2">БК</span><div class="tx"><div class="tt">Занятие</div><div class="st">Борис · 12.10</div></div><span class="amt">−1 500 ₽</span></div>
+          </div>
+        </div>
+        <span class="pfab"><span class="ms">add</span>Оплата</span>
+        <div class="nb">
+          <span class="nbi"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+          <span class="nbi on"><span class="pl"><span class="ms f">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Оплаты · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section class="blk" id="settings">
+  <h2>Настройки, уведомления, ИИ, звонки</h2>
+  <p class="sub">Четыре нынешних раздела сходятся в два места: колокольчик для событий и Настройки для всего, что настраивается один раз.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>«Уведомления» смешивают входящие, рассылки и настройку ботов. «Неудачные доставки» при этом — в Настройках.</span></li>
+        <li><span class="ms">error</span><span>«Звонки» без LiveKit — пустой раздел с текстом «не настроены». Ссылки на занятия — в Настройках › «Календарь и звонки».</span></li>
+        <li><span class="ms">error</span><span>«ИИ-помощник» без настроенного провайдера — тоже пустой раздел.</span></li>
+        <li><span class="ms">error</span><span>Настройки — складные карточки (<code>tb-fold-card</code>) одной колонкой; на мониторе раскрытая карточка уводит остальные вниз.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li><span class="lbl m3">List-detail</span> Настройки: категории слева, содержимое справа. Это прямой пример M3 («settings + category detail»). На medium допустимы две панели 50/50 — у настроек низкая плотность.</li>
+        <li>Категории: Мой аккаунт · Портал · Расписание и календарь · Звонки · Мессенджеры · Оплаты · ИИ-помощник · Данные.</li>
+        <li>Неработающая интеграция видна как бейдж на категории («2 ошибки»), а не как пустой раздел в рейле.</li>
+        <li><span class="lbl m3">Side sheet</span> Колокольчик открывает немодальную боковую панель 400 dp: «Входящие · Отправленные». На телефоне — полноэкранная.</li>
+      </ul>
+    </div>
+  </div>
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Teacher Box</div>
+        <span class="efab"><span class="ms">add</span>Создать</span>
+        <span class="ri"><span class="ms">today</span>Сегодня</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">group</span>Ученики</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">3</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri on"><span class="ms f">settings</span>Настройки</span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <div class="search"><span class="ms">search</span>Ученики, задания, доски<span class="kbd">Ctrl K</span></div>
+        <span class="grow"></span>
+        <span class="ib ton"><span class="ms f">notifications</span><span class="bdg">3</span></span>
+        <span class="av s cp">ИП</span>
+      </div>
+      <div class="panes">
+        <div class="pane p360">
+          <div class="phd"><h3>Настройки</h3></div>
+          <div class="pbd" style="padding-top:0">
+            <div class="ls">
+              <div class="li tall"><span class="lead"><span class="ms">person</span></span><div class="tx"><div class="tt">Мой аккаунт</div><div class="st">Имя, фото, пароль</div></div></div>
+              <div class="li tall"><span class="lead"><span class="ms">palette</span></span><div class="tx"><div class="tt">Портал</div><div class="st">Название, логотип, цвет</div></div></div>
+              <div class="li tall"><span class="lead"><span class="ms">calendar_month</span></span><div class="tx"><div class="tt">Расписание и календарь</div><div class="st">Пояс, Google, телефон</div></div></div>
+              <div class="li tall"><span class="lead"><span class="ms">videocam</span></span><div class="tx"><div class="tt">Звонки</div><div class="st">Телемост, ссылки</div></div></div>
+              <div class="li tall sel"><span class="lead" style="background:var(--surface)"><span class="ms">forum</span></span><div class="tx"><div class="tt">Мессенджеры</div><div class="st">Боты, что присылать</div></div><span class="tag err">2</span></div>
+              <div class="li tall"><span class="lead"><span class="ms">account_balance_wallet</span></span><div class="tx"><div class="tt">Оплаты</div><div class="st">Цена по умолчанию</div></div></div>
+              <div class="li tall"><span class="lead"><span class="ms">auto_awesome</span></span><div class="tx"><div class="tt">ИИ-помощник</div><div class="st">Не подключён</div></div></div>
+              <div class="li tall"><span class="lead"><span class="ms">database</span></span><div class="tx"><div class="tt">Данные</div><div class="st">Копии, Google Диск, сброс</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane pflex">
+          <div class="phd"><h3>Мессенджеры</h3><span class="b txt"><span class="ms">help</span>Как подключить</span></div>
+          <div class="pbd" style="padding-top:0;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Боты портала</div>
+              <div class="ls">
+                <div class="li tall"><span class="lead" style="background:var(--succ-c);color:var(--on-succ-c)"><span class="ms">send</span></span><div class="tx"><div class="tt">Telegram</div><div class="st">@teacherbox_irina_bot · работает</div></div><span class="ms">more_vert</span></div>
+                <div class="li tall"><span class="lead"><span class="ms">chat</span></span><div class="tx"><div class="tt">ВКонтакте</div><div class="st">Не подключён</div></div><span class="b ton">Подключить</span></div>
+                <div class="li tall"><span class="lead"><span class="ms">sms</span></span><div class="tx"><div class="tt">MAX</div><div class="st">Не подключён</div></div><span class="b ton">Подключить</span></div>
+              </div>
+              <div class="h4">Не дошли <span class="n">2</span></div>
+              <div class="ls">
+                <div class="li"><div class="tx"><div class="tt">Напоминание о занятии</div><div class="st">Глеб Иванов · 18.10 · бот заблокирован</div></div><span class="b txt">Повторить</span></div>
+                <div class="li"><div class="tx"><div class="tt">Новое задание</div><div class="st">Илья Морозов · 17.10 · бот заблокирован</div></div><span class="b txt">Повторить</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="h4">Что присылать</div>
+              <div class="ls">
+                <div class="li"><div class="tx"><div class="tt">Напоминания о занятиях</div><div class="st">за 1 час и за сутки</div></div><span class="sw"></span></div>
+                <div class="li"><div class="tx"><div class="tt">Новые задания и проверки</div></div><span class="sw"></span></div>
+                <div class="li"><div class="tx"><div class="tt">Списания и оплаты</div></div><span class="sw"></span></div>
+                <div class="li"><div class="tx"><div class="tt">Запросы на перенос</div><div class="st">только мне</div></div><span class="sw"></span></div>
+                <div class="li"><div class="tx"><div class="tt">Ежедневная сводка</div></div><span class="sw off"></span></div>
+              </div>
+              <div class="h4">Ученики без мессенджера <span class="n q">3</span></div>
+              <div class="cd"><div class="row nw"><span class="av s c5">ЕН</span><span class="av s c2" style="margin-left:-10px;outline:2px solid var(--sc-low)">ИМ</span><span class="av s c6" style="margin-left:-10px;outline:2px solid var(--sc-low)">ГИ</span><span class="st" style="flex:1">Егор, Илья, Глеб</span><span class="b ton">Напомнить</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane psheet">
+          <div class="phd"><h3 style="font-size:22px;line-height:28px">Уведомления</h3><span class="ib sm"><span class="ms">done_all</span></span><span class="ib sm"><span class="ms">close</span></span></div>
+          <div class="tabs" style="margin:0 24px"><span class="on">Входящие 3</span><span>Отправленные</span></div>
+          <div class="pbd" style="padding-top:16px">
+            <div class="ls">
+              <div class="li tall" style="background:var(--surface)"><span class="dot" style="background:var(--primary)"></span><div class="tx"><div class="tt">Вера сдала работу</div><div class="st">ОГЭ: задание 20 · 12 мин</div></div></div>
+              <div class="li tall" style="background:var(--surface)"><span class="dot" style="background:var(--primary)"></span><div class="tx"><div class="tt">Глеб просит перенести</div><div class="st">чт 16:00 → пт 17:00 · 1 ч</div></div></div>
+              <div class="li tall" style="background:var(--surface)"><span class="dot" style="background:var(--primary)"></span><div class="tx"><div class="tt">Егор оплатил 6 000 ₽</div><div class="st">вчера, 21:40</div></div></div>
+              <div class="li tall" style="background:var(--surface)"><span class="dot" style="background:transparent"></span><div class="tx"><div class="tt" style="color:var(--on-sv)">Анна сдала работу</div><div class="st">вчера, 18:02</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Настройки · extra-large · список 360 + категория + панель уведомлений 400 dp</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Список категорий → экран категории. Аккаунт — первым, со своим аватаром.</li>
+        <li>Тема и язык остаются в меню аватара: их меняют чаще, чем остальное.</li>
+        <li>Колокольчик — полноэкранный список с теми же вкладками.</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><span class="ib sm"><span class="ms">menu</span></span><h4>Настройки</h4></div>
+        <div class="pcn">
+          <div class="li tall" style="border-radius:16px;background:var(--sc-low)"><span class="av cp">ИП</span><div class="tx"><div class="tt">Ирина Павловна</div><div class="st">Мой аккаунт · teacher</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+          <div class="ls">
+            <div class="li"><span class="lead"><span class="ms">palette</span></span><div class="tx"><div class="tt">Портал</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><span class="lead"><span class="ms">calendar_month</span></span><div class="tx"><div class="tt">Расписание и календарь</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><span class="lead"><span class="ms">videocam</span></span><div class="tx"><div class="tt">Звонки</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><span class="lead"><span class="ms">forum</span></span><div class="tx"><div class="tt">Мессенджеры</div></div><span class="tag err">2</span></div>
+            <div class="li"><span class="lead"><span class="ms">account_balance_wallet</span></span><div class="tx"><div class="tt">Оплаты</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><span class="lead"><span class="ms">auto_awesome</span></span><div class="tx"><div class="tt">ИИ-помощник</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><span class="lead"><span class="ms">database</span></span><div class="tx"><div class="tt">Данные</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+          </div>
+          <div class="ls">
+            <div class="li"><span class="lead"><span class="ms">help</span></span><div class="tx"><div class="tt">Справка</div></div></div>
+            <div class="li"><span class="lead"><span class="ms">logout</span></span><div class="tx"><div class="tt">Выйти</div></div></div>
+          </div>
+        </div>
+        <div class="nb">
+          <span class="nbi"><span class="pl"><span class="ms">today</span></span>Сегодня</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">group</span></span>Ученики</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Настройки · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ CABINET ============ -->
+<section class="blk" id="cabinet">
+  <h2>Кабинет ученика</h2>
+  <p class="sub">Ученику нужно три вещи: когда урок и как в него войти, что сдать, сколько осталось оплаченных занятий.</p>
+  <div class="cols two">
+    <div>
+      <h3 style="margin-top:0">Сейчас</h3>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>Шесть разделов + Уведомления: на телефоне 4 + «Ещё», и Задания уходят в «Ещё».</span></li>
+        <li><span class="ms">error</span><span>Учебники и «Мои доски» — два раздела для «материалов урока».</span></li>
+        <li><span class="ms">error</span><span>Баланс на Главной не говорит главного: на сколько занятий хватит.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Предлагаю</h3>
+      <ul class="tight">
+        <li>Пять разделов: Главная, Расписание, Задания, Материалы, Оплаты — нижняя панель без «Ещё».</li>
+        <li>Главная на мониторе — лента в две колонки: занятие и задания слева, баланс и материалы справа.</li>
+        <li>Баланс в занятиях: «Оплачено ещё 1 занятие».</li>
+        <li>Задания — list-detail: список слева, задание и форма ответа справа.</li>
+      </ul>
+    </div>
+  </div>
+  <figure class="mock">
+    <div class="frame wide"><div class="scr xl" data-w="1920" data-h="1080">
+      <nav class="rail">
+        <div class="brand"><span class="lg"><span class="ms f">school</span></span>Математика с Ириной</div>
+        <div style="height:16px"></div>
+        <span class="ri on"><span class="ms f">home</span>Главная</span>
+        <span class="ri"><span class="ms">calendar_month</span>Расписание</span>
+        <span class="ri"><span class="ms">assignment</span>Задания<span class="ct">2</span></span>
+        <span class="ri"><span class="ms">library_books</span>Материалы</span>
+        <span class="ri"><span class="ms">account_balance_wallet</span>Оплаты</span>
+        <span class="grow"></span>
+        <span class="ri"><span class="ms">help</span>Справка</span>
+      </nav>
+      <div class="top">
+        <span class="grow"></span>
+        <span class="ib"><span class="ms">notifications</span><span class="bdg">1</span></span>
+        <span class="av s c1">АС</span>
+      </div>
+      <div class="panes">
+        <div class="pane pflex">
+          <div class="phd"><h3>Привет, Анна<small>Следующее занятие завтра · 2 задания к пятнице</small></h3></div>
+          <div class="pbd" style="padding-top:0;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="hero">
+                <div class="tile"><div class="d">Завтра</div><div class="t">17:00</div><div class="l">60 мин</div></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="who">Теорема Виета</div><div class="what">Ирина Павловна · занятий на неделе: 2</div><div class="row"><span class="chip"><span class="ms">draw</span>Анна — алгебра</span><span class="chip"><span class="ms">menu_book</span>Алгебра 9, с. 112</span></div></div>
+                <div style="display:flex;flex-direction:column;gap:8px"><span class="b ton"><span class="ms">schedule</span>Перенести</span><span class="b ton"><span class="ms">event_busy</span>Не приду</span></div>
+              </div>
+              <div class="h4">Сдать</div>
+              <div class="ls">
+                <div class="li tall"><span class="lead"><span class="ms">assignment</span></span><div class="tx"><div class="tt">Неравенства, вариант 2</div><div class="st">до пт 24.10, 23:59 · 6 задач</div></div><span class="b fill">Открыть</span></div>
+                <div class="li tall"><span class="lead"><span class="ms">assignment_return</span></span><div class="tx"><div class="tt">Квадратные уравнения</div><div class="st">вернули на доработку · «добавь проверку корней»</div></div><span class="b ton">Исправить</span></div>
+              </div>
+              <div class="h4">Проверено недавно</div>
+              <div class="ls"><div class="li"><div class="tx"><div class="tt">Проценты</div><div class="st">«Отлично, все задачи верно» · 12.10</div></div><span class="tag ok">Принято</span></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="cd"><div class="lab">ОПЛАЧЕНО</div><div class="row nw" style="align-items:baseline"><span class="disp">1</span><span style="font-size:18px">занятие</span></div><div class="st">1 500 ₽ на балансе · следующее спишется завтра</div><div class="prog"><i style="width:25%"></i></div></div>
+              <div class="h4">Материалы урока</div>
+              <div class="grid2">
+                <div class="mat"><div class="th"><svg><use href="#d4"/></svg></div><div class="mb"><div class="tx"><div class="tt">Анна — алгебра</div><div class="st">изм. 19.10</div></div></div></div>
+                <div class="mat"><div class="cov" style="background:var(--sc-high)"><div class="bk c1">Алгебра 9</div></div><div class="mb"><div class="tx"><div class="tt">Алгебра 9</div><div class="st">с. 112</div></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <figcaption><span>Кабинет ученика · extra-large · лента в две колонки</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+  </figure>
+  <div class="cols phone" style="margin-top:24px">
+    <div>
+      <h3 style="margin-top:0">На телефоне</h3>
+      <ul class="tight">
+        <li>Hero занятия: «Войти в урок» появляется за 10 минут до начала, до этого — «Перенести» и «Не приду».</li>
+        <li>Пять разделов в нижней панели, без «Ещё». FAB не нужен: ученик ничего не создаёт с главной.</li>
+      </ul>
+    </div>
+    <figure class="mock" style="margin:0">
+      <div class="frame phone"><div class="scr ph" data-w="390" data-h="844">
+        <div class="sbar"><span>9:41</span><i>▴▴ ▮</i></div>
+        <div class="tab"><h4 style="padding-left:8px">Привет, Анна</h4><span class="ib sm"><span class="ms">notifications</span><span class="bdg">1</span></span><span class="av s c1" style="margin-right:8px">АС</span></div>
+        <div class="pcn fade">
+          <div class="hero">
+            <div class="row nw" style="gap:14px"><div class="tile"><div class="d">Завтра</div><div class="t">17:00</div><div class="l">60 мин</div></div><div class="tx"><div class="who" style="font-size:18px;line-height:24px">Теорема Виета</div><div class="what" style="font-size:14px;line-height:20px">Ирина Павловна</div></div></div>
+            <div class="row nw"><span class="b ton w">Перенести</span><span class="b ton w">Не приду</span></div>
+          </div>
+          <div class="h4">Сдать <span class="n q">2</span></div>
+          <div class="ls">
+            <div class="li"><div class="tx"><div class="tt">Неравенства, вариант 2</div><div class="st">до пт 24.10</div></div><span class="ms" style="color:var(--on-sv)">chevron_right</span></div>
+            <div class="li"><div class="tx"><div class="tt">Квадратные уравнения</div><div class="st">на доработку</div></div><span class="tag warn">Исправить</span></div>
+          </div>
+          <div class="cd"><div class="row nw"><div class="tx"><div class="lab">ОПЛАЧЕНО</div><div class="row nw" style="align-items:baseline;gap:6px"><span class="big">1</span><span>занятие</span></div></div><span class="b txt">История</span></div></div>
+        </div>
+        <div class="nb">
+          <span class="nbi on"><span class="pl"><span class="ms f">home</span></span>Главная</span>
+          <span class="nbi"><span class="pl"><span class="ms">calendar_month</span></span>Расписание</span>
+          <span class="nbi"><span class="pl"><span class="ms">assignment</span></span>Задания</span>
+          <span class="nbi"><span class="pl"><span class="ms">library_books</span></span>Материалы</span>
+          <span class="nbi"><span class="pl"><span class="ms">account_balance_wallet</span></span>Оплаты</span>
+        </div>
+        <div class="gest"></div>
+      </div></div>
+      <figcaption><span>Кабинет ученика · compact</span><button class="zoom" type="button"><span class="ms">open_in_full</span>1:1</button></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="blk" id="admin">
+  <h2>Администратор</h2>
+  <p class="sub">Технический кабинет без данных учеников. Эскиз не нужен: те же каркас и шаблоны.</p>
+  <div class="cols two">
+    <div>
+      <ul class="prob">
+        <li><span class="ms">error</span><span>7 разделов: Журнал, Состояние, События, Интеграции, Резервные копии, Настройки, Диагностика. «Состояние» и «Диагностика» отвечают на один вопрос «всё ли работает».</span></li>
+        <li><span class="ms">error</span><span>«Журнал» и «События» — две ленты записей с разными фильтрами.</span></li>
+      </ul>
+    </div>
+    <div>
+      <ul class="tight">
+        <li><b>Состояние</b> = лента плиток (feed): сервисы, диск, очередь событий, последняя копия; кнопка «Собрать диагностику» в заголовке.</li>
+        <li><b>Журнал</b> = list-detail: записи логов и событий в одном списке с чипами «Логи / События / Ошибки»; справа — запись целиком.</li>
+        <li><b>Интеграции, Резервные копии, Настройки</b> — list-detail как у учителя.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPEC ============ -->
+<section class="blk" id="spec">
+  <h2>Значения M3 в эскизах</h2>
+  <p class="sub">Что взято из спецификации Material 3 Expressive, а что — наше решение. Это граница, по которой проверять реализацию.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Элемент</th><th>Значение</th><th>Источник</th></tr></thead>
+    <tbody>
+      <tr><td>Брейкпоинты</td><td class="mono">600 / 840 / 1200 / 1600 dp</td><td><span class="lbl m3">M3</span> compact, medium, expanded, large, extra-large</td></tr>
+      <tr><td>Число панелей</td><td class="mono">1 · 1–2 · 2 · 2 · 2–3</td><td><span class="lbl m3">M3</span> не больше трёх; третья на extra-large — стандартная боковая панель</td></tr>
+      <tr><td>Поля и разделитель панелей</td><td class="mono">16 dp (compact) · 24 dp</td><td><span class="lbl m3">M3</span></td></tr>
+      <tr><td>Фиксированная панель</td><td class="mono">360 dp · 412 dp</td><td><span class="lbl m3">M3</span> expanded · large и extra-large</td></tr>
+      <tr><td>Боковая панель (третья)</td><td class="mono">≤ 400 dp</td><td><span class="lbl m3">M3</span></td></tr>
+      <tr><td>Рейл</td><td class="mono">свёрнутый 96 dp · развёрнутый 220–360 dp (у нас 280)</td><td><span class="lbl m3">M3</span> 3–7 разделов; FAB сверху, подъём 0</td></tr>
+      <tr><td>Нижняя панель</td><td class="mono">3–5 разделов</td><td><span class="lbl m3">M3</span> FAB справа над панелью, не перекрывает</td></tr>
+      <tr><td>FAB / расширенный FAB</td><td class="mono">56 dp, угол 16 dp</td><td><span class="lbl m3">M3</span> small extended FAB</td></tr>
+      <tr><td>FAB-меню</td><td class="mono">2–6 пунктов, закрытие 56 dp</td><td><span class="lbl m3">M3</span> пункты — родственные действия («Создать»)</td></tr>
+      <tr><td>Тулбар</td><td class="mono">64 dp, отступ 16 dp</td><td><span class="lbl m3">M3</span> плавающий — для контекстных действий; закреплённый — не вместе с нижней панелью</td></tr>
+      <tr><td>Шкала углов</td><td class="mono">4 · 8 · 12 · 16 · 20 · 28 · 32 · 48 · full</td><td><span class="lbl m3">M3</span> карточки 12, FAB 16, листы и панели 28</td></tr>
+      <tr><td>Типографика</td><td class="mono">Display S 36/44 · Headline S 24/32 · Title L 22/28 · Title M 16/24 · Body L 16/24 · Label L 14/20</td><td><span class="lbl m3">M3</span> время в hero — emphasized</td></tr>
+      <tr><td>Цвет регионов</td><td class="mono">навигация surface container · тело surface</td><td><span class="lbl m3">M3</span> одинаково на всех ширинах</td></tr>
+      <tr><td>Длина строки</td><td class="mono">40–60 знаков</td><td><span class="lbl m3">M3</span> текст работ и заданий ограничен 66ch — <span class="lbl our">наше</span></td></tr>
+      <tr><td>Панели — листы с углом 28 dp на фоне surface container</td><td class="mono">28 dp</td><td><span class="lbl our">Наше решение</span> M3 разрешает и неявную группировку</td></tr>
+      <tr><td>Глобальный поиск в верхней полосе</td><td class="mono">56 dp, full</td><td><span class="lbl our">Наше решение</span> размер — docked search bar M3</td></tr>
+      <tr><td>Очередь «Нужно сделать», карточка ученика, «Материалы»</td><td class="mono">—</td><td><span class="lbl our">Наше решение</span></td></tr>
+      <tr><td>Пункты нижней панели учителя</td><td class="mono">Сегодня · Расписание · Задания · Ученики · Оплаты</td><td><span class="lbl our">Наше решение</span> проверить на реальном использовании</td></tr>
+      <tr><td>Анимации переходов панелей</td><td class="mono">spatial default spring</td><td><span class="lbl m3">M3</span> пружины; задержки и хореография — <span class="lbl our">наше</span> (в M3 их нет)</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section class="blk" id="roadmap">
+  <h2>План внедрения</h2>
+  <p class="sub">Этапы идут от дешёвых и обратимых к дорогим. Каждый — отдельный выпуск со своей строкой в <code>docs/PLAN.md</code>. Этапы 1 и 6 меняют правила <code>docs/design-system.md</code> §4–5 и требуют нового ADR (раскладка по панелям вместо «одной колонки»).</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Этап</th><th>Что меняется</th><th>Объём</th></tr></thead>
+    <tbody>
+      <tr><td>1. Навигация без лишнего</td><td>Убрать из рейла Звонки, Уведомления, ИИ; колокольчик → боковая панель; Настройки — list-detail со всеми интеграциями (мессенджеры + ошибки доставки, календари, звонки, ИИ, цена); глобальный «Создать»; убрать быстрые действия с Главной.</td><td>Фронтенд; бэкенд не меняется</td></tr>
+      <tr><td>2. Брейкпоинты M3</td><td>600 / 840 / 1200 / 1600; панели и поля по таблице; свёрнутый рейл на вложенных страницах. Компонент двухпанельной раскладки в <code>shared/ui</code>.</td><td>Фронтенд, ADR, design-system</td></tr>
+      <tr><td>3. Карточка ученика</td><td>Ученики → list-detail; вкладки Обзор, Занятия, Задания, Оплаты, Профиль. Нужны фасадные методы «сводка по ученику» в schedule, homework, billing, notifications, meetings — каждый модуль отдаёт своё через <code>api</code>, без чтения чужих схем.</td><td>Фронтенд + фасады 5 модулей</td></tr>
+      <tr><td>4. Сегодня и Расписание</td><td>Очередь «Нужно сделать» (агрегирует фасады), лента в три колонки; вспомогательная панель расписания; повестка на телефоне.</td><td>Фронтенд + фасад «что ждёт действия»</td></tr>
+      <tr><td>5. Задания и проверка</td><td>Сегменты вместо скрытой очереди; три панели на extra-large; «следующая работа»; плавающий тулбар на телефоне.</td><td>Фронтенд</td></tr>
+      <tr><td>6. Оплаты</td><td>Показатели месяца, журнал операций, отчёт в разделе; страница баланса ученика уходит в карточку.</td><td>Фронтенд + фасад отчёта</td></tr>
+      <tr><td>7. Материалы <span class="lbl exp">Эксперимент</span></td><td>Объединить Доски и Учебники; превью досок и обложки учебников.</td><td>Бэкенд: миниатюры в boards и textbooks</td></tr>
+      <tr><td>8. Кабинет ученика и админка</td><td>5 разделов ученика без «Ещё»; админка 7 → 5.</td><td>Фронтенд</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note" style="margin-top:20px"><b>Что проверить до начала.</b> (1) Действительно ли на телефоне доски нужнее учеников — сейчас в нижней панели Доски. (2) Нужны ли учителю резервные копии, если на портале есть администратор. (3) Готовы ли вы отказаться от правила «одна колонка» — оно записано в design-system §4 как сознательное решение.</p>
+</section>
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  function fit(f){var s=f.querySelector('.scr');if(!s)return;var w=+s.dataset.w;var k=f.clientWidth/w;s.style.width=w+'px';s.style.height=s.dataset.h+'px';s.style.transform='scale('+k+')';}
+  var frames=[].slice.call(document.querySelectorAll('.frame'));
+  frames.forEach(fit);
+  if('ResizeObserver' in window){var ro=new ResizeObserver(function(es){es.forEach(function(e){fit(e.target)})});frames.forEach(function(f){ro.observe(f)});}
+  else window.addEventListener('resize',function(){frames.forEach(fit)});
+  var opener=null;
+  function close(){var lb=document.querySelector('.lb');if(lb){lb.remove();document.body.style.overflow='';if(opener)opener.focus();}}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.zoom');if(!b)return;
+    var fig=b.closest('figure');var src=fig.querySelector('.frame .scr');if(!src)return;
+    opener=b;
+    var lb=document.createElement('div');lb.className='lb';lb.setAttribute('role','dialog');lb.setAttribute('aria-modal','true');lb.setAttribute('aria-label','Эскиз в натуральную величину');
+    var bar=document.createElement('div');bar.className='bar';
+    var c=document.createElement('button');c.type='button';c.className='close-lb';c.innerHTML='<span class="ms">close</span>Закрыть';c.onclick=close;bar.appendChild(c);
+    var st=document.createElement('div');st.className='stage';
+    var cl=src.cloneNode(true);cl.style.transform='none';st.appendChild(cl);
+    lb.appendChild(bar);lb.appendChild(st);
+    lb.addEventListener('click',function(ev){if(ev.target===lb)close();});
+    document.body.appendChild(lb);document.body.style.overflow='hidden';c.focus();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+</script>
+</html>
