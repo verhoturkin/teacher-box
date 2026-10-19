@@ -3,6 +3,8 @@ package ru.teacherbox.homework.youtube;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -16,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.w3c.dom.Document;
@@ -44,8 +47,12 @@ class YoutubeCaptions implements VideoCaptions {
 
     private static final Logger log = LoggerFactory.getLogger(YoutubeCaptions.class);
 
-    /** A caption track of the video. */
-    record Track(String url, String language, boolean automatic) {
+    /** A caption track of the video and where to download it. */
+    record Source(String url, String language, boolean automatic) {
+
+        Track track() {
+            return new Track(language, automatic);
+        }
     }
 
     private final RestClient http;
@@ -57,19 +64,36 @@ class YoutubeCaptions implements VideoCaptions {
     }
 
     @Override
-    public Captions fetch(String videoId) {
+    public Tracks tracks(String videoId) {
+        JsonNode player = playable(videoId);
+        List<Source> sources = sources(player);
+        Source suggested = choose(sources).orElseThrow(YoutubeCaptions::none);
+        return new Tracks(title(player), sources.stream().map(Source::track).distinct().toList(), suggested.track());
+    }
+
+    @Override
+    public Captions fetch(String videoId, @Nullable Track track) {
+        JsonNode player = playable(videoId);
+        List<Source> sources = sources(player);
+        Source source = (track == null ? choose(sources)
+                : sources.stream().filter(candidate -> candidate.track().equals(track)).findFirst())
+                .orElseThrow(YoutubeCaptions::none);
+        return new Captions(title(player), source.language(), source.automatic(), cues(download(videoId, source)));
+    }
+
+    private JsonNode playable(String videoId) {
         JsonNode player = player(videoId);
         String status = player.path("playabilityStatus").path("status").asString("");
         if (!status.equals("OK")) {
             log.warn("YouTube player of video {} answered {}", videoId, status);
             throw failed();
         }
-        List<Track> tracks = tracks(player);
-        Track track = choose(tracks).orElseThrow(
-                () -> new BusinessRuleException("video.captions-none", "The video has no captions"));
+        return player;
+    }
+
+    private static @Nullable String title(JsonNode player) {
         String title = player.path("videoDetails").path("title").asString("");
-        return new Captions(title.isBlank() ? null : title, track.language(), track.automatic(),
-                cues(download(videoId, track)));
+        return title.isBlank() ? null : title;
     }
 
     private JsonNode player(String videoId) {
@@ -92,24 +116,24 @@ class YoutubeCaptions implements VideoCaptions {
         }
     }
 
-    private static List<Track> tracks(JsonNode player) {
-        List<Track> tracks = new ArrayList<>();
+    private static List<Source> sources(JsonNode player) {
+        List<Source> sources = new ArrayList<>();
         for (JsonNode track : player.path("captions").path("playerCaptionsTracklistRenderer").path("captionTracks")) {
             String url = track.path("baseUrl").asString("");
             String language = track.path("languageCode").asString("");
             if (url.startsWith("https://www.youtube.com/") && !language.isEmpty()) {
-                tracks.add(new Track(url, language, track.path("kind").asString("").equals("asr")));
+                sources.add(new Source(url, language, track.path("kind").asString("").equals("asr")));
             }
         }
-        return tracks;
+        return sources;
     }
 
     /**
      * The author's captions in the spoken language (the language of the recognized track), else the recognized
      * track, else the author's first track.
      */
-    static Optional<Track> choose(List<Track> tracks) {
-        Optional<Track> recognized = tracks.stream().filter(Track::automatic).findFirst();
+    static Optional<Source> choose(List<Source> tracks) {
+        Optional<Source> recognized = tracks.stream().filter(Source::automatic).findFirst();
         if (recognized.isPresent()) {
             String spoken = base(recognized.get().language());
             return tracks.stream()
@@ -124,10 +148,15 @@ class YoutubeCaptions implements VideoCaptions {
         return language.toLowerCase(Locale.ROOT).split("-")[0];
     }
 
-    private String download(String videoId, Track track) {
+    private String download(String videoId, Source track) {
         try {
-            String text = http.get().uri(URI.create(track.url())).header("User-Agent", USER_AGENT).retrieve()
-                    .body(String.class);
+            ResponseEntity<byte[]> answer = http.get().uri(URI.create(track.url())).header("User-Agent", USER_AGENT)
+                    .retrieve().toEntity(byte[].class);
+            MediaType type = answer.getHeaders().getContentType();
+            Charset declared = type == null ? null : type.getCharset();
+            byte[] body = answer.getBody();
+            // timed text is XML, whose default is UTF-8
+            String text = body == null ? null : new String(body, declared == null ? StandardCharsets.UTF_8 : declared);
             if (text == null || text.isBlank()) {
                 log.warn("YouTube captions of video {} are empty", videoId);
                 throw failed();
@@ -188,6 +217,10 @@ class YoutubeCaptions implements VideoCaptions {
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static BusinessRuleException none() {
+        return new BusinessRuleException("video.captions-none", "The video has no captions");
     }
 
     private static BusinessRuleException failed() {

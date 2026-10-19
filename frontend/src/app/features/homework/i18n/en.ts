@@ -64,6 +64,14 @@ export const en: Translation<typeof ru> = {
     aiSource: (name: string) => `Video: ${name}`,
     failed: "Couldn't get the captions",
   },
+  captionLanguage: {
+    header: 'Which captions to take?',
+    replacing: 'The current transcript will be replaced.',
+    automatic: 'Automatic — recognized by YouTube',
+    author: 'By the author of the video',
+    take: 'Take',
+    replace: 'Replace',
+  },
   deadlines: {
     title: 'Homework',
     nothing: 'No open homework',

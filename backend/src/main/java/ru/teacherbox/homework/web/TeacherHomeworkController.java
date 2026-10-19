@@ -33,6 +33,7 @@ import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.application.ReviewService;
+import ru.teacherbox.homework.application.VideoCaptions;
 import ru.teacherbox.homework.application.VideoTranscripts;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.VideoLink;
@@ -78,7 +79,20 @@ class TeacherHomeworkController {
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos) {
     }
 
-    record TranscriptRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url) {
+    record CaptionsRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url) {
+    }
+
+    /**
+     * @param language  the code of the chosen caption track; {@code null} — the suggested track
+     * @param automatic the chosen track is recognized by YouTube
+     */
+    record TranscriptRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url,
+            @Size(max = 35) @Nullable String language, @Nullable Boolean automatic) {
+
+        VideoCaptions.@Nullable Track track() {
+            return language == null || language.isBlank() ? null
+                    : new VideoCaptions.Track(language, Boolean.TRUE.equals(automatic));
+        }
     }
 
     /** @param boardId the board the assignment was put on; {@code null} — none */
@@ -111,10 +125,16 @@ class TeacherHomeworkController {
         this.transcripts = transcripts;
     }
 
+    /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks of the video to choose from. */
+    @PostMapping("/videos/captions")
+    VideoCaptions.Tracks captions(@Valid @RequestBody CaptionsRequest request) {
+        return transcripts.youtubeTracks(request.url());
+    }
+
     /** «Взять субтитры с YouTube» (ADR-0047): the captions of the video as a transcript; nothing is saved. */
     @PostMapping("/videos/transcript")
     VideoTranscripts.Transcript transcript(@Valid @RequestBody TranscriptRequest request) {
-        return transcripts.youtube(request.url());
+        return transcripts.youtube(request.url(), request.track());
     }
 
     @GetMapping("/summary")

@@ -17,7 +17,9 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import ru.teacherbox.homework.application.VideoCaptions.Captions;
 import ru.teacherbox.homework.application.VideoCaptions.Cue;
-import ru.teacherbox.homework.youtube.YoutubeCaptions.Track;
+import ru.teacherbox.homework.application.VideoCaptions.Track;
+import ru.teacherbox.homework.application.VideoCaptions.Tracks;
+import ru.teacherbox.homework.youtube.YoutubeCaptions.Source;
 import tools.jackson.databind.json.JsonMapper;
 
 class YoutubeCaptionsTest {
@@ -53,7 +55,7 @@ class YoutubeCaptionsTest {
                         </body></timedtext>
                         """, MediaType.TEXT_XML));
 
-        Captions found = captions.fetch("aaaaaaaaaaa");
+        Captions found = captions.fetch("aaaaaaaaaaa", null);
 
         assertThat(found.title()).isEqualTo("Present Simple");
         assertThat(found.language()).isEqualTo("en-GB");
@@ -74,9 +76,9 @@ class YoutubeCaptionsTest {
 
     @Test
     void choosesATrack() {
-        Track ru = new Track("u1", "ru", false);
-        Track asr = new Track("u2", "en", true);
-        Track en = new Track("u3", "en-US", false);
+        Source ru = new Source("u1", "ru", false);
+        Source asr = new Source("u2", "en", true);
+        Source en = new Source("u3", "en-US", false);
 
         assertThat(YoutubeCaptions.choose(List.of(ru, asr, en))).contains(en);
         assertThat(YoutubeCaptions.choose(List.of(ru, asr))).contains(asr);
@@ -89,7 +91,7 @@ class YoutubeCaptionsTest {
         server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess("""
                 {"playabilityStatus":{"status":"LOGIN_REQUIRED"}}""", MediaType.APPLICATION_JSON));
 
-        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-failed");
     }
 
@@ -98,19 +100,19 @@ class YoutubeCaptionsTest {
         server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess("""
                 {"playabilityStatus":{"status":"OK"}}""", MediaType.APPLICATION_JSON));
 
-        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-none");
     }
 
     @Test
     void reportsABrokenPlayer() {
         server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withServerError());
-        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-failed");
 
         server.reset();
         server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess("not json", MediaType.TEXT_PLAIN));
-        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-failed");
     }
 
@@ -121,14 +123,48 @@ class YoutubeCaptionsTest {
             server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess(ONE_TRACK,
                     MediaType.APPLICATION_JSON));
             server.expect(requestTo(TRACK)).andRespond(withSuccess(answer, MediaType.TEXT_XML));
-            assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+            assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                     .hasFieldOrPropertyWithValue("code", "video.captions-failed");
         }
         server.reset();
         server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess(ONE_TRACK,
                 MediaType.APPLICATION_JSON));
         server.expect(requestTo(TRACK)).andRespond(withServerError());
-        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa"))
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-failed");
+    }
+
+    @Test
+    void listsTheTracksAndReadsTheChosenOne() {
+        String player = """
+                {"playabilityStatus":{"status":"OK"},"captions":{"playerCaptionsTracklistRenderer":{"captionTracks":[
+                  {"baseUrl":"https://www.youtube.com/api/timedtext?v=aaaaaaaaaaa&lang=ru","languageCode":"ru"},
+                  {"baseUrl":"https://www.youtube.com/api/timedtext?v=aaaaaaaaaaa&kind=asr","languageCode":"en",
+                   "kind":"asr"}]}}}""";
+        server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess(player, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess(player, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://www.youtube.com/api/timedtext?v=aaaaaaaaaaa&lang=ru"))
+                .andRespond(withSuccess("<timedtext><p t=\"10\">Привет</p></timedtext>", MediaType.TEXT_XML));
+        server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess(player, MediaType.APPLICATION_JSON));
+
+        assertThat(captions.tracks("aaaaaaaaaaa")).isEqualTo(new Tracks(null,
+                List.of(new Track("ru", false), new Track("en", true)), new Track("en", true)));
+
+        Captions found = captions.fetch("aaaaaaaaaaa", new Track("ru", false));
+        assertThat(found.language()).isEqualTo("ru");
+        assertThat(found.cues()).containsExactly(new Cue(10, "Привет"));
+
+        assertThatThrownBy(() -> captions.fetch("aaaaaaaaaaa", new Track("ru", true)))
+                .hasFieldOrPropertyWithValue("code", "video.captions-none");
+        server.verify();
+    }
+
+    @Test
+    void listsNoTracksOfAVideoWithoutCaptions() {
+        server.expect(requestTo(YoutubeCaptions.PLAYER)).andRespond(withSuccess("""
+                {"playabilityStatus":{"status":"OK"}}""", MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> captions.tracks("aaaaaaaaaaa"))
+                .hasFieldOrPropertyWithValue("code", "video.captions-none");
     }
 }

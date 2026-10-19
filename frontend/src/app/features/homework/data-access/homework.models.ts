@@ -78,6 +78,23 @@ export interface VideoInput {
   readonly transcriptShown: boolean;
 }
 
+/** A caption track of a YouTube video. */
+export interface CaptionTrack {
+  /** The code of the track: `en`, `ru`… */
+  readonly language: string;
+  /** Recognized by YouTube, not written by the author. */
+  readonly automatic: boolean;
+}
+
+/** «Взять субтитры с YouTube»: the caption tracks of a video to choose from. */
+export interface CaptionTracks {
+  readonly title: string | null;
+  /** In YouTube's order, never empty. */
+  readonly tracks: readonly CaptionTrack[];
+  /** Taken when the teacher does not choose: the author's in the spoken language, else the recognized one. */
+  readonly suggested: CaptionTrack;
+}
+
 /** «Взять субтитры с YouTube»: the captions as a transcript. */
 export interface VideoTranscript {
   readonly title: string | null;
