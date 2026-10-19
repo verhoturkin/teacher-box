@@ -62,8 +62,8 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
   «Удалить…» (`dangerConfirmation`). `textbook-dialog.ts` — the file (only when added; the title comes from the
   file name; over 100 MB refused before sending), kind, title, course (suggestions from the other textbooks),
   pages of a Word file, students, groups (members that left stay).
-- `student/my-textbooks-page.ts` — «Учебники» (`/cabinet/textbooks`, after «Задания»; the student's sixth
-  section, so «Оплаты» and «Мои доски» go under «Ещё» on a phone): their textbooks with the group names and the same
+- `student/my-textbooks-page.ts` — «Учебники» (`/cabinet/textbooks`, after «Задания»; on a phone under ☰
+  since 231.2): their textbooks with the group names and the same
   search; a tap on the title opens one, the download button saves it.
 - `teacher/textbook-to-board-dialog.ts` (in `parts.ts`, also used by homework) — «На доску» (row menu, not for a
   Word file): the boards' `ToBoardDialog` in its pages mode with a projected «Страницы» field for a PDF of more

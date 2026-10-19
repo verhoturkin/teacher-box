@@ -61,7 +61,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
   inside the first pane; compact top app bar shows the section title and ☰ that opens the modal expanded rail
   (`side-nav.ts` modal mode, scrim, Esc, focus return) with the destinations not in the bar; «Ещё» goes
   (`NAV_ITEMS`, `moreItems` in `shell.ts`).
-- [ ] 231.3 **D** design-system §4–5 (rail, top strip, header, ☰), help «Как устроен портал» articles (ru, en),
+- [x] 231.3 **D** design-system §4–5 (rail, top strip, header, ☰), help «Как устроен портал» articles (ru, en),
   wiki pages that show navigation screenshots or words («Ещё»).
 
 ### 232. Global «Создать» (F)

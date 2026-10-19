@@ -40,7 +40,7 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 ## Steps
 
 1. **Password.** If the portal made up the password for the first sign-in itself, replace it with your own: that password is written to the server log. This step cannot be skipped.
-2. **About you.** Your name — this is how students see you. The portal's name is shown in the header, the browser tab, on the sign-in page and in the calendar.
+2. **About you.** Your name — this is how students see you. The portal's name is shown at the top of the sections panel, the browser tab, on the sign-in page and in the calendar.
 3. **Address.** The address at which students open the portal, e.g. \`https://school.example.com\`. Invitation links, links in bot messages and the calendar subscription start with it. «As in the browser» fills in the address the portal is open at now.
 4. **Lessons.** The lesson price for new students and groups. Each student's price can be changed separately.
 5. **Done.** The portal suggests what to connect later: messengers, video meetings, Google Calendar.
@@ -509,7 +509,7 @@ Students can make such a link too — it has only their lessons.
     title: 'Settings',
     summary: 'Portal, calendar and calls, backups, full reset',
     body: `
-«Settings» (the user menu in the header → «Settings») gathers what concerns the whole portal. The sections fold: click a name to open or close it.
+«Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal. The sections fold: click a name to open or close it.
 
 - **Portal** — the name, address, colour and logo of the portal ([Look, language and phone](/teacher/help/appearance)).
 - **Calendar and calls** — connecting Google Calendar ([Calendars](/teacher/help/calendars)) and video meetings ([Video meetings](/teacher/help/meetings)).
@@ -518,7 +518,7 @@ Students can make such a link too — it has only their lessons.
 
 Messengers are connected in «Notifications» → «Messengers», the AI assistant is set up by the portal administrator.
 
-The password, the name and your photo are changed in «My account» (the user menu in the header). The portal address is set in the initial setup; later the portal administrator changes it.
+The password, the name and your photo are changed in «My account» (the menu under your photo, top right). The portal address is set in the initial setup; later the portal administrator changes it.
 `,
   },
   appearance: {
@@ -531,17 +531,17 @@ The password, the name and your photo are changed in «My account» (the user me
 «Settings» → «Portal»:
 
 - **Colour** — choose one of the ready colours or «Own colour»: a palette or a code like #0f766e. The colour sets the buttons, links, highlights and a light tint of the background — in the light and the dark theme. Under the palette you see how the buttons look in both themes. The portal picks the tones of the text itself so that buttons and links stay readable in any colour; if the colour is too light or dark, the portal warns that it will be changed noticeably. A red portal colour also gets a warning: red buttons delete, and the main action would look like them. Click «Save».
-- **Logo** — «Upload»: a PNG, JPEG, WebP or SVG picture up to 1 MB. The logo appears in the header (in a circle), on the sign-in page and on the browser tab. The bin next to it brings back the default icon.
+- **Logo** — «Upload»: a PNG, JPEG, WebP or SVG picture up to 1 MB. The logo appears at the top of the sections panel (in a circle), on the sign-in page and on the browser tab. The bin next to it brings back the default icon.
 
-The portal's name is there too — it is shown in the header next to the logo.
+The portal's name is there too — it is shown next to the logo at the top of the sections panel.
 
 ## Dark theme
 
-User menu → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device; students have their own setting.
+The menu under your photo (top right) → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device; students have their own setting.
 
 ## Language
 
-User menu → under the theme — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in.
+The same menu → under the theme — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in.
 
 The chosen language is also kept in the account: notifications in the «Inbox» and in messengers, the bot's answers and the calendar by link come in it. Each student gets them in their own language. Notifications already received are not translated. Group names, lesson topics and your messages to students stay as you wrote them.
 
@@ -551,13 +551,15 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 
 ## Sections
 
-- **Computer** — all sections in the panel on the left with labels, the chosen one highlighted.
-- **Tablet** — a narrow panel on the left: the section's icon with the label under it.
-- **Phone** — the bottom bar: «Home», «Schedule», «Boards», «Payments» and «More» with the other sections.
+- **Wide screen** (from 1600 pixels) — the sections panel on the left: the icon and the label on one line, the chosen section highlighted.
+- **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
+- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Calls», «Textbooks», «Boards», «Notifications», «AI assistant»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
+
+The top of the sections panel holds the portal's logo and name, its bottom — «Settings» and «Help».
 
 Icons are Material Symbols, as in Android; the chosen section's icon is filled, the others are outlined.
 
-The portal's name, the bell and the user menu (your photo or a person in a circle) are always at the top. A «?» next to the title of a page or a block opens help about it. On a phone there are no section titles — the section is seen in the bottom bar, and help is in the user menu.
+The bell and your photo (or a person in a circle) are always at the top right: the photo opens the menu — «My account», the theme, the language and «Sign out». A page's title starts its content, and a «?» next to the title of a page or a block opens help about it. On a phone the top has ☰ and the section's name, and the page itself shows no section title and no «?»: help is under ☰.
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
@@ -588,7 +590,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 - Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the status and the «⋮» menu on the right.
 - On nested pages (homework, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
-- Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Boards», «Payments» and «More».
+- Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
 - The portal's messages («Saved», errors) appear at the bottom of the screen.
 `,
   },

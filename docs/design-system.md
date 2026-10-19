@@ -55,8 +55,8 @@ classes in use (§1 «Icons», ADR-0046); no primeicons.
   the bottom edge and would lift off it on an overshoot, so it enters on the standard fast spring too; the scrim
   fades on default effects (in) and fast effects (out).
   `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator stays a circle).
-- **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
-  64 px, bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
+- **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top strip
+  80 px (compact top app bar 64 px), bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
 
 ### Icons (ADR-0046)
@@ -617,8 +617,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
   white is short of 3:1 on teal and emerald.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
-  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar, the rail
-  and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
+  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the rail (the modal
+  one under ☰ too) and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
 - Browser icon — `favicon.svg` (graduation cap on indigo, rounded square) with `favicon.ico` (16/32/48) and
   `apple-touch-icon.png` (180 px); the portal logo, when set, replaces all of them.
 - Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`, `color-mix()`); older ones get
