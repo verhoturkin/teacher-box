@@ -12,6 +12,7 @@ import {
   ReviewDecision,
   ReviewQueueItem,
   TaskDetails,
+  VideoTranscript,
 } from './homework.models';
 import { quietContext } from '@core/http/api-error.interceptor';
 
@@ -48,6 +49,15 @@ export class HomeworkApi {
     version: number,
   ): Observable<AssignmentDetails> {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
+  }
+
+  /** «Взять субтитры с YouTube» (ADR-0047); errors are shown by the video card, not a toast. */
+  videoTranscript(url: string): Observable<VideoTranscript> {
+    return this.http.post<VideoTranscript>(
+      `${TEACHER}/videos/transcript`,
+      { url },
+      { context: quietContext() },
+    );
   }
 
   /** Deletes the assignment with the students' answers and every file. */

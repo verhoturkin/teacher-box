@@ -29,6 +29,7 @@ import {
 } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
+import { VideoList } from '../ui/video-list';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { FilePicker } from '../ui/file-picker';
@@ -48,6 +49,7 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-assignment-page',
   imports: [
+    VideoList,
     Avatar,
     EmptyState,
     RouterLink,
@@ -111,6 +113,10 @@ import { T } from '../i18n/texts';
             <tb-markdown [text]="assignment.description" />
           } @else {
             <p class="tb-muted">{{ t.noText }}</p>
+          }
+          @if (assignment.videos.length > 0) {
+            <h3 class="tb-subtitle">{{ tv.title }}</h3>
+            <tb-video-list [videos]="assignment.videos" [teacher]="true" />
           }
           <h3 class="tb-subtitle">{{ t.materials }}</h3>
           <tb-attachment-list
@@ -235,6 +241,7 @@ import { T } from '../i18n/texts';
 })
 export class AssignmentPage implements OnInit {
   protected readonly t = T.page;
+  protected readonly tv = T.videos;
   protected readonly r = T.remove;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);

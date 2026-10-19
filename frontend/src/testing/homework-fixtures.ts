@@ -63,6 +63,7 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     version: 0,
     attachments: [attachment()],
     textbooks: [],
+    videos: [],
     tasks: [
       {
         taskId: 't-1',
@@ -121,6 +122,7 @@ export function taskDetails(overrides: Partial<TaskDetails> = {}): TaskDetails {
       boardId: null,
       attachments: [attachment()],
       textbooks: [],
+      videos: [],
     },
     submissions: [submission()],
     ...overrides,

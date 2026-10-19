@@ -302,6 +302,14 @@ export const en: Translation<typeof ru> = {
       'textbooks.pages-beyond': 'The textbook has fewer pages',
       'textbooks.students-only': 'Only students have textbooks in their cabinet',
       'homework.textbook-not-found': 'This textbook is no longer in the homework',
+      'video.link-invalid': 'A video link starts with http:// or https://',
+      'video.too-many': 'At most 5 videos in a homework',
+      'video.title-invalid': 'A video title is up to 200 characters',
+      'video.transcript-too-long': 'A transcript is up to 100,000 characters',
+      'video.not-youtube': 'Captions are taken from YouTube only',
+      'video.captions-none': 'This video has no captions. Paste the transcript or load a file',
+      'video.captions-failed':
+        "Couldn't get the captions from YouTube. Paste the transcript or load an .srt / .vtt file",
       // administrator
       'settings.unknown': 'There is no such setting',
       'settings.read-only': 'This setting is changed only in the .env file on the server',

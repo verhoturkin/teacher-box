@@ -101,3 +101,13 @@ with a search by the title and pages of 10, as the teacher's) are `tb-list` card
 of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the pictures — png / jpeg / webp /
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+
+Videos (0.19.0, ADR-0047): the editor's «Видео» card (`teacher/video-section.ts`, new and saved assignments alike —
+sent whole with `videos`): per video the link (checked by `ui/video-links.ts` `parseVideoLink`, the player under it),
+«Название», «Расшифровка» with «Взять субтитры с YouTube» (YouTube links; asks before replacing a transcript, the result
+or the error under it) and «Загрузить субтитры» (.srt / .vtt → `subtitlesToTranscript`, `[m:ss]` paragraphs of
+~30 s), «Показывать расшифровку ученику», a red «×»; «Добавить видео» up to 5; changes count for `canLeave`. Videos
+with a transcript are «Видео: <name>» in «Опереться на». `ui/video-player.ts` — a 16:9 `iframe` (`embedUrl`:
+`youtube-nocookie.com/embed`, `rutube.ru/play/embed`, `vkvideo.ru/video_ext.php`, built only from checked IDs), a link
+card «Открыть видео в новой вкладке» otherwise; `ui/video-list.ts` on the assignment and task pages (the title, the
+player, a «Расшифровка» toggle; the teacher's «ученик видит расшифровку»).

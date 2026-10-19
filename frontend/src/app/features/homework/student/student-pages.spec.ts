@@ -126,6 +126,31 @@ describe('MyTaskPage', () => {
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
+  it('plays the videos of the assignment with the transcripts the teacher shows', async () => {
+    const task = taskDetails();
+    const { host } = await render({
+      ...task,
+      assignment: {
+        ...task.assignment,
+        videos: [
+          {
+            url: 'https://youtu.be/dQw4w9WgXcQ',
+            provider: 'YOUTUBE' as const,
+            videoId: 'dQw4w9WgXcQ',
+            startSeconds: null,
+            title: 'Present Simple',
+            transcript: '[0:05] We play',
+            transcriptShown: true,
+          },
+        ],
+      },
+    });
+
+    expect(readableText(host)).toContain('Видео Present Simple');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toContain('youtube-nocookie.com');
+    expect(readableText(host)).not.toContain('ученик видит расшифровку');
+  });
+
   it('leads to the board the teacher put the task on', async () => {
     const task = taskDetails();
     const { host, backend, fixture } = await render({

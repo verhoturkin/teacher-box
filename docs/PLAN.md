@@ -44,7 +44,7 @@ ADR: [0047](adr/0047-video-links-and-transcripts.md).
 
 ### 221. The «Видео» section (F)
 
-- [ ] 221.1 **F** `homework/ui/video-player.ts` (embed by provider, a link otherwise), `ui/video-links.ts`,
+- [x] 221.1 **F** `homework/ui/video-player.ts` (embed by provider, a link otherwise), `ui/video-links.ts`,
   `teacher/video-section.ts` in the editor (link, title, transcript: «Взять субтитры с YouTube», «Загрузить
   субтитры», «Показывать ученику»; «Добавить видео»), the assignment and task pages; the videos with a transcript
   in «Опереться на»; help articles, wiki `Features`, `AI-assistant`, `Proxy`.

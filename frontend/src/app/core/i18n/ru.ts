@@ -293,6 +293,15 @@ export const ru = {
       'textbooks.pages-beyond': 'В учебнике меньше страниц',
       'textbooks.students-only': 'Учебники в личном кабинете есть только у учеников',
       'homework.textbook-not-found': 'Этого учебника в задании уже нет',
+      'video.link-invalid': 'Ссылка на видео должна начинаться с http:// или https://',
+      'video.too-many': 'В задании — не больше 5 видео',
+      'video.title-invalid': 'Название видео — до 200 символов',
+      'video.transcript-too-long': 'Расшифровка — до 100 000 символов',
+      'video.not-youtube': 'Субтитры берутся только с YouTube',
+      'video.captions-none':
+        'У этого видео нет субтитров. Вставьте расшифровку вручную или загрузите файл',
+      'video.captions-failed':
+        'Не удалось получить субтитры с YouTube. Вставьте расшифровку вручную или загрузите файл .srt / .vtt',
       // administrator
       'settings.unknown': 'Такой настройки нет',
       'settings.read-only': 'Эта настройка меняется только в файле .env на сервере',

@@ -305,6 +305,29 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
+  it('shows the videos and whether the student sees a transcript', async () => {
+    const { host, fixture } = await render(
+      assignmentDetails({
+        videos: [
+          {
+            url: 'https://youtu.be/dQw4w9WgXcQ',
+            provider: 'YOUTUBE' as const,
+            videoId: 'dQw4w9WgXcQ',
+            startSeconds: null,
+            title: 'Present Simple',
+            transcript: '[0:05] We play',
+            transcriptShown: true,
+          },
+        ],
+      }),
+    );
+
+    expect(readableText(host)).toContain('Видео Present Simple');
+    expect(readableText(host)).toContain('ученик видит расшифровку');
+    expect(host.querySelector('iframe')).not.toBeNull();
+    fixture.destroy();
+  });
+
   it('uploads and removes materials', async () => {
     const { fixture, host, backend } = await render();
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);

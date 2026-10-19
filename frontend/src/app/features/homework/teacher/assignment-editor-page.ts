@@ -46,10 +46,12 @@ import { AssignmentDetails, AssignmentInput, BoundTextbook } from '../data-acces
 import { T } from '../i18n/texts';
 import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
+import { videoName } from '../ui/video-list';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
+import { VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
 
 /** A student that can receive homework. */
 export interface StudentOption {
@@ -91,6 +93,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     FilePicker,
     TextbookList,
     BindTextbookDialog,
+    VideoSection,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -159,6 +162,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               <small class="tb-hint">{{ t.markdownHint }}</small>
             </div>
           </div>
+        </p-card>
+
+        <p-card [header]="tv.title">
+          <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
         </p-card>
 
         <p-card>
@@ -273,6 +280,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 })
 export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly t = T.editor;
+  protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
   private readonly identity = inject(IdentityApi);
@@ -351,6 +359,10 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   });
 
   readonly newFiles = signal<File[]>([]);
+  /** The videos by link (ADR-0047): saved with the assignment, the whole list. */
+  readonly videos = signal<readonly VideoDraft[]>([]);
+  /** The teacher changed the videos: leaving asks. */
+  private readonly videosChanged = signal(false);
   /** Textbooks of a new assignment, bound after it is created. */
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
   protected readonly textbooks = computed(
@@ -389,7 +401,19 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
         label: file.name,
         source: file,
       }));
-    return [...textbooks, ...files, ...picked];
+    const videos = this.videos()
+      .filter((video) => video.url.trim() !== '' && video.transcript.trim() !== '')
+      .map((video, index) => ({
+        key: `video-${String(video.key)}`,
+        label: T.videos.aiSource(videoName(video, index)),
+        source: {
+          type: 'VIDEO' as const,
+          title: video.title.trim() === '' ? null : video.title.trim(),
+          url: video.url.trim(),
+          transcript: video.transcript,
+        },
+      }));
+    return [...textbooks, ...files, ...picked, ...videos];
   });
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);
@@ -470,6 +494,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
           dueAt: assignment.dueAt === null ? null : new Date(assignment.dueAt),
           studentIds: [],
         });
+        this.videos.set(assignment.videos.map((video) => videoDraft(video)));
         this.dueTouched.set(true);
       });
   }
@@ -532,6 +557,11 @@ ${draft.description}`,
     this.mode.setValue('preview');
   }
 
+  changeVideos(videos: readonly VideoDraft[]): void {
+    this.videos.set(videos);
+    this.videosChanged.set(true);
+  }
+
   protected bindTextbook(): void {
     this.binding.set(null);
     this.bindVisible.set(true);
@@ -566,6 +596,7 @@ ${draft.description}`,
       title: value.title.trim(),
       description: value.description.trim() === '' ? null : value.description,
       dueAt: value.dueAt === null ? null : value.dueAt.toISOString(),
+      videos: videoInputs(this.videos()),
     };
     const existing = this.assignment();
     this.pending.set(true);
@@ -665,7 +696,10 @@ ${draft.description}`,
   /** Asks before leaving changes that are not saved. */
   canLeave(): boolean | Promise<boolean> {
     const dirty =
-      this.form.dirty || this.newFiles().length > 0 || this.pickedTextbooks().length > 0;
+      this.form.dirty ||
+      this.newFiles().length > 0 ||
+      this.pickedTextbooks().length > 0 ||
+      this.videosChanged();
     if (this.saved || !dirty) {
       return true;
     }

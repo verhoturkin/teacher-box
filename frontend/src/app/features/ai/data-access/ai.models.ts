@@ -12,10 +12,19 @@ export interface AiStatus {
   readonly limitReached: boolean;
 }
 
-/** A material of a draft (ADR-0039): pages of a textbook (`pages` `null` — the whole one) or a file of an assignment. */
+/**
+ * A material of a draft (ADR-0039): pages of a textbook (`pages` `null` — the whole one), a file of an assignment or
+ * a video by its transcript (ADR-0047).
+ */
 export type DraftSource =
   | { readonly type: 'TEXTBOOK'; readonly id: string; readonly pages: string | null }
-  | { readonly type: 'FILE'; readonly id: string; readonly assignmentId: string };
+  | { readonly type: 'FILE'; readonly id: string; readonly assignmentId: string }
+  | {
+      readonly type: 'VIDEO';
+      readonly title: string | null;
+      readonly url: string;
+      readonly transcript: string;
+    };
 
 /**
  * A material the editor offers the assistant: its label and what the backend reads — a saved source named by its

@@ -13,6 +13,7 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { Attachment, BoundTextbook, TaskDetails } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
+import { VideoList } from '../ui/video-list';
 import { FilePicker } from '../ui/file-picker';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
@@ -32,6 +33,7 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-my-task-page',
   imports: [
+    VideoList,
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -84,6 +86,10 @@ import { T } from '../i18n/texts';
 
         <p-card [header]="t.assignment">
           <tb-markdown [text]="task.assignment.description" />
+          @if (task.assignment.videos.length > 0) {
+            <h3 class="tb-subtitle">{{ tv.title }}</h3>
+            <tb-video-list [videos]="task.assignment.videos" />
+          }
           <tb-attachment-list
             [attachments]="task.assignment.attachments"
             (download)="download($event)"
@@ -134,6 +140,7 @@ import { T } from '../i18n/texts';
 })
 export class MyTaskPage implements OnInit {
   protected readonly t = T.myTask;
+  protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);

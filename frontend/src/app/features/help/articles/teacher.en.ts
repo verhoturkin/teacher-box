@@ -293,15 +293,16 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
 3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
 4. Bind textbooks and add files right here — they show as cards; click a name to open the textbook or the file (PDF files and pictures open in a new tab).
-5. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
+5. Need a video — in «Video» click «Add a video» and paste a link (up to 5 videos). YouTube, Rutube and VK Video play right in the homework, other links open in a new tab. Below is «Transcript»: «Take captions from YouTube» fills it with the video's captions (if it has any), «Load subtitles» — from an .srt or .vtt file, or paste the text yourself. The AI assistant relies on the transcript; the student sees it only with «Show the transcript to the student» on.
+6. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is split into two cards: «Active» — not all the work accepted yet, and «Done» — everything accepted. Each has a search by the title or a student's name; a long list shows 10 at a page. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮». «To review» next to the search in «Active» leaves only the homework with handed-in work; press it again to see all.
+«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is split into two cards: «Active» — not all the work accepted yet, and «Done» — everything accepted. Each has a search by the title or a student's name; a long list shows 10 at a page. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮». «To review» next to the search in «Active» leaves only the homework with handed-in work; press it again to see all.
 
 ## The homework's page
 
-The text, «Materials» (files) and «Textbooks» are cards; a name opens the file or the textbook in a new tab (a textbook at its first bound page, a Word file is downloaded), the arrow button downloads a file, the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
+The text, «Video» (the player and a «Transcript» button), «Materials» (files) and «Textbooks» are cards; a name opens the file or the textbook in a new tab (a textbook at its first bound page, a Word file is downloaded), the arrow button downloads a file, the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
 
 ## Delete homework
 
@@ -358,6 +359,7 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 
 - **Homework draft** — the AI assistant bar above the «Homework text» field of the editor (in «Text» mode). Write in your own words what you need and click «Generate». The draft appears between the request and the text: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it, «Once more» asks for a new one.
 - **From a textbook and files** — the «Base it on» button in the assistant bar: tick the bound textbooks (their pages) and the materials of the homework — PDF files and pictures, up to 5 of them and 20 pages at once. Files of a new homework can be ticked as soon as they are picked, without saving it; the AI does not read Word files.
+- **From a video** — «Base it on» also lists the homework's videos with a transcript: the AI reads it (it does not watch the video) and writes tasks on what the video says, with the time of the fragment — «[1:05]». A video without a transcript is not listed: take the captions from YouTube or load a file first.
 - **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts on the «AI» page («Manage the library» in the same menu).
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 

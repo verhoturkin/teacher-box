@@ -53,6 +53,43 @@ export interface BoundTextbook {
   readonly pages: string | null;
 }
 
+export type VideoProvider = 'YOUTUBE' | 'RUTUBE' | 'VK' | 'OTHER';
+
+/** A video of an assignment by link (ADR-0047). */
+export interface Video {
+  readonly url: string;
+  readonly provider: VideoProvider;
+  /** The video on its platform; `null` — a plain link opened in a new tab. */
+  readonly videoId: string | null;
+  /** Where the player starts; `null` — from the beginning. */
+  readonly startSeconds: number | null;
+  readonly title: string | null;
+  /** Lines «[m:ss] text»; `null` — none, or hidden from the student. */
+  readonly transcript: string | null;
+  /** The student sees the transcript. */
+  readonly transcriptShown: boolean;
+}
+
+/** A video the teacher gives with the assignment. */
+export interface VideoInput {
+  readonly url: string;
+  readonly title: string | null;
+  readonly transcript: string | null;
+  readonly transcriptShown: boolean;
+}
+
+/** «Взять субтитры с YouTube»: the captions as a transcript. */
+export interface VideoTranscript {
+  readonly title: string | null;
+  /** The code of the caption track: `en`, `ru`… */
+  readonly language: string;
+  /** Recognized by YouTube, not written by the author. */
+  readonly automatic: boolean;
+  readonly transcript: string;
+  /** The end did not fit and is cut off. */
+  readonly truncated: boolean;
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;
@@ -65,6 +102,7 @@ export interface AssignmentDetails {
   readonly attachments: Attachment[];
   readonly tasks: TaskSummary[];
   readonly textbooks: BoundTextbook[];
+  readonly videos: Video[];
 }
 
 export interface Submission {
@@ -83,6 +121,7 @@ export interface AssignmentInfo {
   readonly boardId: string | null;
   readonly attachments: Attachment[];
   readonly textbooks: BoundTextbook[];
+  readonly videos: Video[];
 }
 
 export interface TaskDetails {
@@ -128,6 +167,8 @@ export interface AssignmentInput {
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;
+  /** The videos in place of the assignment's ones; left out — keep them. */
+  readonly videos?: readonly VideoInput[];
 }
 
 /** Mirrors `HomeworkSummary`: homework at a glance for the teacher. */

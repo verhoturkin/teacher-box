@@ -127,6 +127,7 @@ describe('AssignmentEditorPage', () => {
       title: 'Дроби',
       description: 'Решите **№1**',
       dueAt: next.startsAt,
+      videos: [],
     });
     created.flush(assignmentDetails({ id: 'a-9', tasks: [] }));
     backend.expectOne('/api/teacher/homework/assignments/a-9/attachments').flush([attachment()]);
@@ -398,6 +399,52 @@ describe('AssignmentEditorPage', () => {
       id: 'f-1',
       assignmentId: 'a-1',
     });
+  });
+
+  it('edits the videos, saves them and offers their transcripts to the assistant', async () => {
+    const video = {
+      url: 'https://youtu.be/dQw4w9WgXcQ',
+      provider: 'YOUTUBE' as const,
+      videoId: 'dQw4w9WgXcQ',
+      startSeconds: null,
+      title: 'Present Simple',
+      transcript: '[0:05] We play',
+      transcriptShown: false,
+    };
+    const { page, host } = await edit(
+      assignmentDetails({
+        attachments: [],
+        videos: [video, { ...video, title: null, transcript: null }],
+      }),
+    );
+
+    expect(host.querySelector('iframe')).not.toBeNull();
+    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Видео: Present Simple']);
+    expect(page.sourceOptions()[0]?.source).toEqual({
+      type: 'VIDEO',
+      title: 'Present Simple',
+      url: 'https://youtu.be/dQw4w9WgXcQ',
+      transcript: '[0:05] We play',
+    });
+    expect(page.canLeave()).toBe(true);
+
+    page.changeVideos(page.videos().slice(0, 1));
+    expect(page.canLeave()).not.toBe(true);
+    exactButton(host, 'Сохранить').click();
+    const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
+    expect(put.request.body).toMatchObject({
+      videos: [
+        {
+          url: 'https://youtu.be/dQw4w9WgXcQ',
+          title: 'Present Simple',
+          transcript: '[0:05] We play',
+          transcriptShown: false,
+        },
+      ],
+    });
+    put.flush(assignmentDetails({ version: 1 }));
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
   });
 
   it('offers the assistant the textbooks and readable files picked for a new assignment', async () => {

@@ -86,6 +86,8 @@ The links to the lesson and the boards are in the bot too: «Join lesson» and �
 
 «Homework» — two cards: «Active» (not accepted by the teacher yet; what is still to do comes first) and «Done» (accepted). Each has a search by the title; a long list shows 10 at a page. A row: the title, the deadline and the status. Overdue ones are marked red. A reminder comes before the deadline.
 
+If the homework has a video, it plays right in the homework (a link to another site opens with «Open the video in a new tab»). If the teacher shows its transcript, there is a «Transcript» button under the video.
+
 If a textbook is bound to homework, it is in the homework, in «Textbooks», with its pages. Click the title — only the pages you need open; the arrow button downloads them.
 
 ## Send work for review
