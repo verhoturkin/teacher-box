@@ -35,6 +35,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 | Backend code | `backend/AGENTS.md` (auto-loaded there) + the module's `docs/modules/<m>.md` |
 | Frontend code | `frontend/AGENTS.md` + the relevant section of [`docs/design-system.md`](docs/design-system.md) |
 | UI texts | [`docs/glossary.md`](docs/glossary.md) (Russian wording) |
+| Redesign stages 229–249 | [`docs/redesign/README.md`](docs/redesign/README.md) §0–§2 + the § the substep names |
 | Why a decision was made | [`docs/adr/README.md`](docs/adr/README.md) → the specific ADR |
 | Release, new module, new env var | skills `.claude/skills/{release,new-module,new-setting}/SKILL.md` |
 | Running the product | `README.md`, `docs/operations.md`, `docs/wiki/` = the [wiki](https://github.com/verhoturkin/teacher-box/wiki) (Russian, for users; §6.1) |
