@@ -2,7 +2,7 @@ import { T } from './i18n/texts';
 
 /**
  * The categories of the settings in the order of the list (redesign spec §10.3); the address is
- * `/teacher/settings/<category>`. «Мессенджеры» holds what the old page had until 234.3 fills it.
+ * `/teacher/settings/<category>`.
  */
 export const CATEGORIES = ['account', 'portal', 'calendar', 'calls', 'messengers', 'data'] as const;
 export type SettingsCategory = (typeof CATEGORIES)[number];
@@ -34,7 +34,7 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   { id: 'portal', icon: 'tb-i-palette', title: t.portal, summary: t.portalSummary },
   { id: 'calendar', icon: 'tb-i-calendar_month', title: t.calendar, summary: t.calendarSummary },
   { id: 'calls', icon: 'tb-i-videocam', title: t.calls, summary: t.callsSummary },
-  { id: 'messengers', icon: 'tb-i-chat', title: t.messengers, summary: t.deliveriesSummary },
+  { id: 'messengers', icon: 'tb-i-chat', title: t.messengers, summary: t.messengersSummary },
   { id: 'data', icon: 'tb-i-database', title: t.data, summary: t.dataSummary },
 ];
 

@@ -39,7 +39,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
   `schedule/ui/calendar-feed-panel.ts` — removed from `schedule-page.ts`) and «Звонки»
   (`meetings/settings/meetings-settings-panel.ts`). Calls section goes: `meetings/calls/calls-page.ts`, its route →
   redirect to the category, menu item out of `TEACHER_MENU`.
-- [ ] 234.3 **F** «Мессенджеры»: `bots-panel.ts`, `channels-panel.ts`, `bot-abilities-panel.ts`,
+- [x] 234.3 **F** «Мессенджеры»: `bots-panel.ts`, `channels-panel.ts`, `bot-abilities-panel.ts`,
   `preferences-panel.ts`, `student-messengers-panel.ts` (summary + «Напомнить»), failed deliveries (from
   `settings-page.ts`); badge with the failed count on the category. `notifications-page.ts` keeps only the inbox and
   broadcasts until 235.

@@ -93,13 +93,7 @@ export const ru = {
     title: 'Уведомления',
     inbox: 'Входящие',
     messages: 'Сообщения ученикам',
-    messengers: 'Мессенджеры',
-    messengersSummary: 'Боты портала, ваши мессенджеры и что умеет бот',
     myMessengers: 'Мои мессенджеры',
-    students: 'Ученики',
-    studentsSummary: 'Кто из учеников подключил мессенджер, напоминание подключить',
-    preferences: 'Что присылать',
-    preferencesSummary: 'Какие уведомления дублировать в мессенджеры',
   },
   preferences: {
     title: 'Что присылать в мессенджеры',

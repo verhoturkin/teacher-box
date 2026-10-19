@@ -95,13 +95,7 @@ export const en: Translation<typeof ru> = {
     title: 'Notifications',
     inbox: 'Inbox',
     messages: 'Messages to students',
-    messengers: 'Messengers',
-    messengersSummary: 'The portal’s bots, your messengers and what the bot can do',
     myMessengers: 'My messengers',
-    students: 'Students',
-    studentsSummary: 'Which students connected a messenger, a reminder to connect',
-    preferences: 'What to send',
-    preferencesSummary: 'Which notifications also go to messengers',
   },
   preferences: {
     title: 'What to send to messengers',

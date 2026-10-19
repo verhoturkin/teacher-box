@@ -97,7 +97,7 @@ function roles(page: Page, names: string[]): Promise<Record<string, string>> {
 
 test('a dialog of an opened section is in the middle of the screen', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
-  await page.goto('/teacher/notifications?open=messengers');
+  await page.goto('/teacher/settings/messengers');
   const bots = page.locator('tb-bots-panel');
   await expect(bots.getByRole('listitem').first()).toBeVisible();
   // any bot that is not connected yet (the messengers scenario connects Telegram)

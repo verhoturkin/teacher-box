@@ -35,7 +35,7 @@ function style(page: Page, selector: string, property: string): Promise<string> 
     .evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
 }
 
-test('the teacher notifications are cards: the inbox and the messages open, the settings folded', async ({
+test('the teacher notifications are cards: the inbox and the messages; the messengers are in the settings', async ({
   page,
 }) => {
   await signIn(page);
@@ -44,23 +44,17 @@ test('the teacher notifications are cards: the inbox and the messages open, the 
   await expect(page.getByRole('tab')).toHaveCount(0);
   await expect(page.locator('#notifications-inbox')).toContainText('Входящие');
   await expect(page.locator('#notifications-messages')).toContainText('Написать ученикам');
-  for (const section of ['messengers', 'students', 'preferences']) {
-    await expect(
-      page.locator(`#notifications-${section}`).getByRole('button', { expanded: false }),
-    ).toBeVisible();
-  }
   await expect(page.getByText('Мои мессенджеры')).toHaveCount(0);
 
-  await page.locator('#notifications-messengers').getByRole('button', { expanded: false }).click();
-  await expect(page).toHaveURL(/open=messengers/);
-  await expect(page.getByText('Мои мессенджеры')).toBeVisible();
-
-  // A link of the former tabs opens its section.
-  await page.goto('/teacher/notifications?tab=students');
-  await expect(
-    page.locator('#notifications-students').getByRole('button', { expanded: true }),
-  ).toBeVisible();
-  await expect(page.locator('#notifications-students')).toContainText('Подключили мессенджер');
+  // 0.22.0: links of the former tabs and folded sections lead to the category «Мессенджеры» (234.3)
+  for (const old of ['?tab=students', '?open=messengers']) {
+    await page.goto(`/teacher/notifications${old}`);
+    await expect(page).toHaveURL(/\/teacher\/settings\/messengers$/);
+    await expect(page.locator('tb-student-messengers-panel')).toContainText(
+      'Подключили мессенджер',
+    );
+    await expect(page.getByText('Мои мессенджеры')).toBeVisible();
+  }
 });
 
 test('confirming buttons are primary, cancelling neutral, and the dialog stands apart from a card', async ({

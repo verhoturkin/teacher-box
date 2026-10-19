@@ -229,6 +229,20 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(title()).toBe('Уведомления — Teacher Box');
   });
 
+  it.each([
+    ['/teacher/notifications?open=messengers', '/teacher/settings/messengers'],
+    ['/teacher/notifications?open=unknown,students', '/teacher/settings/messengers'],
+    ['/teacher/notifications?tab=preferences', '/teacher/settings/messengers'],
+    ['/teacher/notifications?tab=inbox', '/teacher/notifications?tab=inbox'],
+  ])('leads the old links to the messengers into the settings: %s → %s', async (from, to) => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl(from);
+
+    expect(TestBed.inject(Router).url).toBe(to);
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
   it('opens the AI assistant page for the teacher', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 

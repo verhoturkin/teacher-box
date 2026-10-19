@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,13 +9,12 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
-import { TableModule } from 'primeng/table';
 import { pageDetail } from '@core/routing/page-detail';
 import { HelpButton } from '@features/help/parts';
 import { AccountPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
+import { MessengersSettingsPanel } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
-import { RowType } from '@shared/ui/row-type.directive';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { BackupsCard } from './backups/backups-card';
 import { DrivePanel } from './backups/drive-panel';
@@ -24,18 +22,11 @@ import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import { ResetCard } from './reset-card';
 import { TimeZoneCard } from './time-zone-card';
-import { FailedDelivery, MessengerType } from './data-access/settings.models';
+import { FailedDeliveriesCard } from './failed-deliveries-card';
+import { FailedDelivery } from './data-access/settings.models';
 import { CATEGORY_ITEMS, CategoryItem, FIRST_CATEGORY, isCategory } from './settings-categories';
 import { PageHeader } from '@shared/ui/page-header';
-import { EmptyState } from '@shared/ui/empty-state';
 import { T } from './i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
-
-const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
-  { type: 'TELEGRAM', name: 'Telegram' },
-  { type: 'VK', name: SHARED_T.messengers.VK },
-  { type: 'MAX', name: 'MAX' },
-];
 
 /**
  * The teacher's settings (redesign spec §10.3): list-detail — the categories in the fixed pane, the chosen
@@ -46,7 +37,6 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   selector: 'tb-settings-page',
   imports: [
     HelpButton,
-    DatePipe,
     RouterLink,
     Badge,
     Panes,
@@ -56,14 +46,13 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
     GoogleCalendarPanel,
     CalendarFeedPanel,
     MeetingsSettingsPanel,
+    MessengersSettingsPanel,
+    FailedDeliveriesCard,
     PortalSettingsCard,
     BackupsCard,
     DrivePanel,
     ResetCard,
-    TableModule,
-    RowType,
     PageHeader,
-    EmptyState,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -127,33 +116,16 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
               <tb-meetings-settings-panel />
             }
             @case ('messengers') {
-              <h3 class="tb-settings__subheading">{{ t.deliveries }}</h3>
-              @if (failed().length === 0) {
-                <tb-empty-state icon="tb-i-check_circle" [title]="t.allDelivered" />
-              } @else {
-                <p-table [value]="failed()" styleClass="tb-cards">
-                  <ng-template #header>
-                    <tr>
-                      <th>{{ t.when }}</th>
-                      <th>{{ t.to }}</th>
-                      <th>{{ t.where }}</th>
-                      <th>{{ t.error }}</th>
-                    </tr>
-                  </ng-template>
-                  <ng-template #body let-row [tbRowType]="failed()">
-                    <tr>
-                      <td [attr.data-label]="t.when">
-                        {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-                      </td>
-                      <td [attr.data-label]="t.to">{{ row.recipientName ?? t.you }}</td>
-                      <td [attr.data-label]="t.where">{{ messengerName(row) }}</td>
-                      <td [attr.data-label]="t.error" class="tb-error-cell tb-cell-wide">
-                        {{ row.error ?? '—' }}
-                      </td>
-                    </tr>
-                  </ng-template>
-                </p-table>
-              }
+              <!-- a problem first: the badge of the category leads to it -->
+              <div class="tb-stack">
+                @if (failed().length > 0) {
+                  <tb-failed-deliveries-card [deliveries]="failed()" />
+                }
+                <tb-messengers-settings-panel />
+                @if (failed().length === 0) {
+                  <tb-failed-deliveries-card [deliveries]="failed()" />
+                }
+              </div>
             }
             @case ('data') {
               <div class="tb-stack">
@@ -238,15 +210,6 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
       margin: 0 0 var(--tb-space-4);
       font: var(--tb-type-headline-s-emphasized);
     }
-
-    .tb-settings__subheading {
-      margin: 0 0 var(--tb-space-3);
-      font: var(--tb-type-title-m);
-    }
-
-    .tb-error-cell {
-      overflow-wrap: anywhere;
-    }
   `,
 })
 export class SettingsPage implements OnInit {
@@ -278,9 +241,5 @@ export class SettingsPage implements OnInit {
 
   protected isCurrent(item: CategoryItem): boolean {
     return this.layout.detail() && item.id === this.current().id;
-  }
-
-  protected messengerName(row: FailedDelivery): string {
-    return MESSENGERS.find((messenger) => messenger.type === row.channel)?.name ?? row.channel;
   }
 }

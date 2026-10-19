@@ -49,10 +49,7 @@ describe('FirstRunChecklist', () => {
     const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );
-    expect(links).toEqual([
-      '/teacher/notifications?open=messengers#notifications-messengers',
-      '/teacher/schedule?create=lesson',
-    ]);
+    expect(links).toEqual(['/teacher/settings/messengers', '/teacher/schedule?create=lesson']);
   });
 
   it('waits until everything is known and hides when done', async () => {

@@ -22,7 +22,7 @@ export const en: Translation<typeof ru> = {
       `This device has another time zone (${zone}): the portal shows the time in its own time zone.`,
     messengers: 'Messengers',
     deliveries: 'Failed deliveries',
-    deliveriesSummary: 'Notifications that did not reach the messenger',
+    messengersSummary: 'Bots, your messengers, students and what to send',
     allDelivered: 'All notifications are delivered',
     when: 'When',
     to: 'To',

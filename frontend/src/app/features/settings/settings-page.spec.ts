@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { PageDetail } from '@core/routing/page-detail';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { portalSettings } from '@testing/portal-fixtures';
+import { channelSetup, preferences, studentMessengers } from '@testing/notification-fixtures';
 import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
@@ -77,6 +78,13 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
       case 'messengers':
+        backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
+        backend.expectOne('/api/me/channels').flush([]);
+        backend
+          .expectOne('/api/teacher/notifications/bot')
+          .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
+        backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
+        backend.expectOne('/api/me/notifications/preferences').flush(preferences());
         break;
       case 'data':
         backend.expectOne('/api/teacher/backups').flush([BACKUP]);
@@ -147,7 +155,7 @@ describe('SettingsPage', () => {
       'Расписание и календарь Часовой пояс, Google Календарь и подписка на расписание',
     );
     expect(list).toContain('Звонки Звонки в портале и внешние видеовстречи');
-    expect(list).toContain('Мессенджеры Уведомления, которые не дошли до мессенджера 2');
+    expect(list).toContain('Мессенджеры Боты, ваши мессенджеры, ученики и что присылать 2');
     expect(list).toContain('Данные');
     expect(list).not.toContain('Интеграции');
     const links = Array.from(host.querySelectorAll('nav a')).map((link) =>
@@ -242,22 +250,33 @@ describe('SettingsPage', () => {
     expect(current(host)).toBe('Звонки');
   });
 
-  it('shows the failed deliveries in the messengers', async () => {
+  it('shows the failed deliveries first in the messengers, then the bots and the students', async () => {
     const host = await render(1200, 'messengers');
 
     const text = readableText(host);
     expect(text).toContain('Неудачные доставки');
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
+    expect(text.indexOf('Неудачные доставки')).toBeLessThan(text.indexOf('Мои мессенджеры'));
+    expect(text).toContain('Что умеет бот');
+    expect(text).toContain('Подключили мессенджер');
+    expect(text).toContain('Что присылать в мессенджеры');
+    expect(readableText(requireElement(host, '[aria-current="page"]', HTMLElement))).toContain(
+      'Мессенджеры',
+    );
   });
 
-  it('says when every notification was delivered, without a badge', async () => {
+  it('says last when every notification was delivered, without a badge', async () => {
     const host = await render(1200, 'messengers', 'messengers', {
       channels: [],
       failedDeliveries: [],
     });
 
-    expect(readableText(host)).toContain('Все уведомления доставлены');
+    const text = readableText(host);
+    expect(text).toContain('Все уведомления доставлены');
+    expect(text.indexOf('Все уведомления доставлены')).toBeGreaterThan(
+      text.indexOf('Что присылать в мессенджеры'),
+    );
     expect(host.querySelector('p-badge')).toBeNull();
   });
 });

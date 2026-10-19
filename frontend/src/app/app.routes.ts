@@ -150,9 +150,10 @@ export const routes: Routes = [
         loadComponent: () => import('@features/ai').then((m) => m.AiUsagePage),
       },
       {
+        // the inbox and the messages; old links to the bots and messengers lead to the settings (234.3)
         path: 'notifications',
-        title: NAV.notifications,
-        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
+        loadChildren: () =>
+          import('@features/notifications').then((m) => m.TEACHER_NOTIFICATIONS_ROUTES),
       },
       {
         path: 'help',

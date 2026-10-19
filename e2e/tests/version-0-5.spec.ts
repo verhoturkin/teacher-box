@@ -79,10 +79,9 @@ test('sections lie on the page and the phone navigation has five sections', asyn
   browser,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto('/teacher/notifications');
-  await expect(
-    page.locator('#notifications-preferences').getByRole('button', { expanded: false }),
-  ).toContainText('Что присылать');
+  // 0.22.0: what to send is in the category «Мессенджеры» of the settings
+  await page.goto('/teacher/settings/messengers');
+  await expect(page.locator('tb-preferences-panel')).toContainText('Что присылать');
 
   const phone = await (await browser.newContext({ baseURL: BASE_URL, viewport: PHONE })).newPage();
   await signIn(phone, 'teacher', TEACHER_PASSWORD);

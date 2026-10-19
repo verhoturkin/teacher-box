@@ -25,7 +25,7 @@ done
 
 while IFS=: read -r file page; do
     check "$file" "$page"
-done < <(grep -roE --include='*.md' --include='*.ts' --exclude-dir=node_modules --exclude-dir=archive \
+done < <(grep -roE --include='*.md' --include='*.ts' --exclude-dir=node_modules --exclude-dir=archive --exclude-dir=worktrees \
     'github\.com/verhoturkin/teacher-box/wiki/[^)#" ]+' README.md docs .claude frontend/src backend/src 2>/dev/null |
     sed 's#github\.com/verhoturkin/teacher-box/wiki/##' || true)
 
