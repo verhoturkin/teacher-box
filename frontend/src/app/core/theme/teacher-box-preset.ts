@@ -1,6 +1,7 @@
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { ColorScheme, Shades, auraPalette, colorScheme } from './color-scheme';
+import { LABEL_TOKENS } from './label-colors';
 
 /**
  * Material 3 Expressive on top of Aura (ADR-0017, ADR-0019, ADR-0023).
@@ -135,8 +136,14 @@ export function schemeTokens(colors: ColorScheme): Record<string, unknown> {
   return {
     primary: colors.primary,
     colorScheme: {
-      light: { ...scheme('{md.surface.container.lowest}', colors.neutral), md: colors.light },
-      dark: { ...scheme('{md.surface.container}', colors.neutral), md: colors.dark },
+      light: {
+        ...scheme('{md.surface.container.lowest}', colors.neutral),
+        md: { ...colors.light, ...LABEL_TOKENS.light },
+      },
+      dark: {
+        ...scheme('{md.surface.container}', colors.neutral),
+        md: { ...colors.dark, ...LABEL_TOKENS.dark },
+      },
     },
   };
 }

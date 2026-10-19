@@ -13,6 +13,7 @@ const STUDENT: Student = {
   phone: null,
   note: '5 класс',
   defaultTopic: null,
+  color: null,
   status: 'ACTIVE',
   login: 'maria',
   createdAt: '2026-09-01T10:00:00Z',
@@ -72,6 +73,7 @@ describe('StudentFormDialog', () => {
       phone: '+7 900',
       note: null,
       defaultTopic: null,
+      color: null,
     });
     const response: CreatedStudent = {
       student: { ...STUDENT, id: 's-2', displayName: 'Пётр', status: 'INVITED' },
@@ -122,13 +124,19 @@ describe('StudentFormDialog', () => {
   it('edits a student with its version', async () => {
     const updated: Student[] = [];
     fixture.componentInstance.updated.subscribe((value) => updated.push(value));
-    await open(STUDENT);
+    await open({ ...STUDENT, color: 'GREEN' });
     expect(bodyText()).toContain('Изменить ученика');
     expect(field('displayName').value).toBe('Мария');
     expect(requireElement(document.body, '#note', HTMLTextAreaElement).value).toBe('5 класс');
+    const color = requireElement(document.body, 'tb-label-color-field .p-select', HTMLElement);
+    expect(color.textContent).toContain('Зелёный');
+    expect(color.querySelector('.tb-label-swatch')?.getAttribute('data-tb-label')).toBe('green');
 
     typeInto(field('email'), '');
     typeInto(field('defaultTopic'), ' Физика ');
+    color.click();
+    await fixture.whenStable();
+    requireElement(document.body, 'li[aria-label="Синий"]', HTMLElement).click();
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
 
@@ -139,6 +147,7 @@ describe('StudentFormDialog', () => {
       phone: null,
       note: '5 класс',
       defaultTopic: 'Физика',
+      color: 'BLUE',
       version: 2,
     });
     request.flush({ ...STUDENT, email: null, version: 3 });

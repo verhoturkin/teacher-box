@@ -29,7 +29,7 @@ lesson in the calendar), and so do the chips of student and group multiselects.
 - [x] 225.1 **B** `identity`: migration `V2__colors.sql` (`users.color`, `student_groups.color`), enum
   `domain.LabelColor`, `Profile.color` / `StudentGroup.color`; `StudentView.color`, `GroupView.color`; create and
   update requests of `/api/teacher/students/**` and `/api/teacher/groups/**` take `color` (null — none).
-- [ ] 225.2 **F** `core/theme/label-colors.ts` (palette, M3 custom colours → `--p-md-label-<key>{,-container,-on-container}`
+- [x] 225.2 **F** `core/theme/label-colors.ts` (palette, M3 custom colours → `--p-md-label-<key>{,-container,-on-container}`
   of both themes, contrast tests), `identity/data-access/label-colors.ts` (teacher's lookup by student / group id,
   refreshed on save), colour select in `student-form-dialog.ts` and `group-form-dialog.ts`.
 - [ ] 225.3 **F** colour in lists: `tb-avatar` `[color]`, directive `tbChipColors` for `p-multiselect`; billing,

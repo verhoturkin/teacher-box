@@ -20,6 +20,16 @@ describe('Avatar', () => {
     expect(host.classList).toContain('tb-avatar');
     expect(host.classList).not.toContain('tb-avatar--photo');
     expect(host.getAttribute('aria-hidden')).toBe('true');
+    expect(host.hasAttribute('data-tb-label')).toBe(false);
+  });
+
+  it('takes the colour of the student or the group', () => {
+    const { fixture, host } = render('Анна', null);
+
+    fixture.componentRef.setInput('color', 'CYAN');
+    fixture.detectChanges();
+
+    expect(host.getAttribute('data-tb-label')).toBe('cyan');
   });
 
   it('shows the photo and falls back to the initials when it does not load', () => {

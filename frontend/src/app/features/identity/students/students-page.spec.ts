@@ -26,6 +26,7 @@ function student(overrides: Partial<Student>): Student {
     phone: null,
     note: null,
     defaultTopic: null,
+    color: null,
     status: 'ACTIVE',
     login: null,
     createdAt: '2026-09-01T10:00:00Z',

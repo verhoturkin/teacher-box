@@ -50,7 +50,12 @@ describe('GroupFormDialog', () => {
 
     dialog.save();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/groups' });
-    expect(create.request.body).toEqual({ name: 'ОГЭ', memberIds: ['a'], defaultTopic: null });
+    expect(create.request.body).toEqual({
+      name: 'ОГЭ',
+      memberIds: ['a'],
+      defaultTopic: null,
+      color: null,
+    });
     create.flush(aGroup({ id: 'g', name: 'ОГЭ' }));
     const price = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/groups/g/price' });
     expect(price.request.body).toEqual({ lessonPrice: 80000 });
@@ -79,7 +84,7 @@ describe('GroupFormDialog', () => {
   });
 
   it('keeps the price when it did not change', async () => {
-    const group = aGroup({ id: 'g', version: 3 });
+    const group = aGroup({ id: 'g', version: 3, color: 'PINK' });
     fixture.componentRef.setInput('group', group);
     fixture.componentRef.setInput('lessonPrice', 90000);
     const dialog = await open();
@@ -88,8 +93,9 @@ describe('GroupFormDialog', () => {
       memberIds: ['student-1', 'student-2'],
       price: 900,
       defaultTopic: '',
+      color: 'PINK',
     });
-    dialog.form.patchValue({ name: 'ОГЭ 9Б', defaultTopic: ' Алгебра ' });
+    dialog.form.patchValue({ name: 'ОГЭ 9Б', defaultTopic: ' Алгебра ', color: null });
 
     dialog.save();
     const update = backend.expectOne({ method: 'PUT', url: '/api/teacher/groups/g' });
@@ -97,6 +103,7 @@ describe('GroupFormDialog', () => {
       name: 'ОГЭ 9Б',
       memberIds: ['student-1', 'student-2'],
       defaultTopic: 'Алгебра',
+      color: null,
       version: 3,
     });
     update.flush({ ...group, name: 'ОГЭ 9Б', version: 4 });

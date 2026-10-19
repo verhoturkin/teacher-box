@@ -1202,6 +1202,65 @@ p-button.tb-list__stretched .p-button {
   }
 }
 
+/*
+ * Colours of students and groups (core/theme/label-colors.ts): M3 static colours, four roles each.
+ * `data-tb-label="<colour>"` brings the roles of one colour as `--tb-label*`.
+ */
+@each $label in 'red', 'orange', 'yellow', 'lime', 'green', 'cyan', 'blue', 'violet', 'purple',
+  'pink'
+{
+  [data-tb-label='#{$label}'] {
+    --tb-label: var(--p-md-label-#{$label});
+    --tb-on-label: var(--p-md-on-label-#{$label});
+    --tb-label-container: var(--p-md-label-#{$label}-container);
+    --tb-on-label-container: var(--p-md-on-label-#{$label}-container);
+  }
+}
+
+/* The initials on the container of the colour; a photo keeps the colour as a 2 px ring inside its edge */
+.tb-avatar[data-tb-label],
+.tb-list__lead[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
+}
+
+.tb-avatar--photo[data-tb-label] {
+  outline: 2px solid var(--tb-label);
+  outline-offset: -2px;
+}
+
+/* A chip of a student or a group (multiselects): the container of the colour, as on the avatar */
+.p-chip[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
+
+  .p-chip-label,
+  .p-chip-remove-icon,
+  .p-icon {
+    color: inherit;
+  }
+}
+
+/* The colour in a list of colours: a 20 px circle; «Без цвета» is an empty outlined one */
+.tb-label-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tb-label-swatch {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+
+  &[data-tb-label] {
+    border: 0;
+    background: var(--tb-label-container);
+  }
+}
+
 /* The lead of a row that needs attention (an unread notification, a debt) */
 .tb-list__lead--accent {
   background: var(--p-md-primary-container);

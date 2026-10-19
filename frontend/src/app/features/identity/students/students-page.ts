@@ -21,6 +21,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { TeacherColors } from '../colors/teacher-colors';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, IssuedInvite, Student } from '../data-access/identity.models';
 import { GroupsPanel } from '../groups/groups-panel';
@@ -91,7 +92,11 @@ import { SearchField } from '@shared/ui/search-field';
             <ul class="tb-list" [attr.aria-label]="t.title">
               @for (student of visibleStudents(); track student.id) {
                 <li>
-                  <tb-avatar [name]="student.displayName" [photo]="student.avatar" />
+                  <tb-avatar
+                    [name]="student.displayName"
+                    [photo]="student.avatar"
+                    [color]="student.color"
+                  />
                   <div class="tb-list__text">
                     <span
                       class="tb-list__title"
@@ -165,6 +170,7 @@ export class StudentsPage implements OnInit {
   protected readonly t = T.students;
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
+  private readonly colors = inject(TeacherColors);
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);
@@ -262,11 +268,13 @@ export class StudentsPage implements OnInit {
 
   protected onCreated(created: CreatedStudent): void {
     this.students.update((students) => sortByName([...students, created.student]));
+    this.colors.rememberStudent(created.student);
     this.showInvite(created.student, created.invite);
   }
 
   protected onUpdated(student: Student): void {
     this.replace(student);
+    this.colors.rememberStudent(student);
     this.snackbar.success(T.students.saved(student.displayName));
   }
 

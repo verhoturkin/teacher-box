@@ -1,8 +1,20 @@
-import { Routes } from '@angular/router';
+import { Injector, inject } from '@angular/core';
+import { CanActivateFn, Routes } from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { CORE_T } from '@core/i18n/texts';
+
+/**
+ * Opens the teacher's area and loads the colours of the students and groups for its lists in the background;
+ * the identity parts are loaded lazily, out of the first bundle.
+ */
+const loadTeacherColors: CanActivateFn = async () => {
+  const injector = inject(Injector);
+  const parts = await import('@features/identity/parts');
+  injector.get(parts.TeacherColors).load();
+  return true;
+};
 
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
@@ -44,7 +56,7 @@ export const routes: Routes = [
   },
   {
     path: 'teacher',
-    canActivate: [roleGuard('TEACHER')],
+    canActivate: [roleGuard('TEACHER'), loadTeacherColors],
     canActivateChild: [setupGuard],
     loadComponent: () => import('@core/layout/teacher-layout').then((m) => m.TeacherLayout),
     children: [

@@ -9,7 +9,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -18,6 +23,9 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { describeError } from '@core/http/error-messages';
+import { LabelColor } from '@core/theme/label-colors';
+import { ChipColors } from '../colors/chip-colors';
+import { LabelColorField } from '../colors/label-color-field';
 import { BillingApi } from '@features/billing/parts';
 import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
@@ -49,6 +57,8 @@ export interface SavedGroup {
     FieldErrors,
     SubmitFor,
     RoomPanel,
+    LabelColorField,
+    ChipColors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -83,6 +93,7 @@ export interface SavedGroup {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />
@@ -112,6 +123,7 @@ export interface SavedGroup {
           />
           <small id="group-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
         </div>
+        <tb-label-color-field inputId="group-color" [control]="form.controls.color" />
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
@@ -173,6 +185,7 @@ export class GroupFormDialog {
     memberIds: [[] as string[]],
     price: [null as number | null, [Validators.min(0)]],
     defaultTopic: ['', [Validators.maxLength(500)]],
+    color: new FormControl<LabelColor | null>(null),
   });
 
   constructor() {
@@ -187,6 +200,7 @@ export class GroupFormDialog {
           memberIds: group?.members.map((member) => member.id) ?? [],
           price: price === null ? null : toMajorUnits(price, this.currency()),
           defaultTopic: group?.defaultTopic ?? '',
+          color: group?.color ?? null,
         });
       }
     });
@@ -202,6 +216,7 @@ export class GroupFormDialog {
       name: value.name,
       memberIds: value.memberIds,
       defaultTopic: topic === '' ? null : topic,
+      color: value.color,
     };
     const group = this.group();
     const request =

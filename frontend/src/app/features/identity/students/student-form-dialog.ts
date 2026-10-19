@@ -9,13 +9,20 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { LabelColor } from '@core/theme/label-colors';
+import { LabelColorField } from '../colors/label-color-field';
 import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
@@ -37,6 +44,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     FieldErrors,
     SubmitFor,
     RoomPanel,
+    LabelColorField,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -76,6 +84,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           />
           <small id="default-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
         </div>
+        <tb-label-color-field inputId="student-color" [control]="form.controls.color" />
         @if (student(); as student) {
           <div class="tb-field">
             <label for="login">{{ t.login }}</label>
@@ -136,6 +145,7 @@ export class StudentFormDialog {
     phone: ['', [Validators.maxLength(32)]],
     note: ['', [Validators.maxLength(2000)]],
     defaultTopic: ['', [Validators.maxLength(500)]],
+    color: new FormControl<LabelColor | null>(null),
   });
 
   constructor() {
@@ -150,6 +160,7 @@ export class StudentFormDialog {
           phone: student?.phone ?? '',
           note: student?.note ?? '',
           defaultTopic: student?.defaultTopic ?? '',
+          color: student?.color ?? null,
         });
       }
     });
@@ -166,6 +177,7 @@ export class StudentFormDialog {
       phone: value.phone === '' ? null : value.phone,
       note: value.note === '' ? null : value.note,
       defaultTopic: value.defaultTopic.trim() === '' ? null : value.defaultTopic.trim(),
+      color: value.color,
     };
     const student = this.student();
     this.pending.set(true);
