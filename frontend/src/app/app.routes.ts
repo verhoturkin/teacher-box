@@ -214,9 +214,10 @@ export const routes: Routes = [
         loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
+        // the inbox is in the bell's sheet, the messengers in «Мой аккаунт» (235.2)
         path: 'notifications',
-        title: NAV.notifications,
-        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
+        loadChildren: () =>
+          import('@features/notifications').then((m) => m.STUDENT_NOTIFICATIONS_ROUTES),
       },
       {
         path: 'help',

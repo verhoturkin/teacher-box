@@ -4,7 +4,8 @@
  */
 export { NotificationsApi } from './data-access/notifications-api';
 export type { TeacherNotificationsSummary } from './data-access/notifications.models';
-export { LatestNotificationsWidget } from './home/latest-notifications-widget';
 export { NotificationsSheetContent } from './sheet/notifications-sheet-content';
+export { ChannelsPanel } from './channels/channels-panel';
 export { ConnectMessengerCard } from './student/connect-messenger-card';
+export { PreferencesPanel } from './preferences/preferences-panel';
 export { MessengersSettingsPanel } from './teacher/messengers-settings-panel';

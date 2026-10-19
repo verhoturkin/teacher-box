@@ -66,17 +66,6 @@ export const ru = {
     unlinked: (name: string) => `${name} отключён`,
     connected: (name: string) => `${name} подключён`,
   },
-  latest: {
-    title: 'Уведомления',
-    readAll: 'Прочитать все',
-    what: 'уведомления',
-    nothing: 'Новых уведомлений нет',
-    unreadList: 'Непрочитанные уведомления',
-    markRead: 'Отметить прочитанным',
-    markReadOf: (title: string) => `Отметить прочитанным: ${title}`,
-    unread: (count: number) => `Непрочитанных: ${String(count)}`,
-    all: 'Все уведомления',
-  },
   inbox: {
     what: 'уведомления',
     nothing: 'Новых уведомлений нет',
@@ -94,9 +83,6 @@ export const ru = {
     sent: 'Отправленные',
   },
   page: {
-    title: 'Уведомления',
-    inbox: 'Входящие',
-    messages: 'Сообщения ученикам',
     myMessengers: 'Мои мессенджеры',
   },
   preferences: {

@@ -1,3 +1,2 @@
-/** Public API of the notifications feature (pages are lazy-loaded by the application routes). */
-export { NotificationsPage } from './notifications-page';
-export { TEACHER_NOTIFICATIONS_ROUTES } from './notifications.routes';
+/** Public API of the notifications feature (the old addresses of the page, lazy-loaded by the application routes). */
+export { STUDENT_NOTIFICATIONS_ROUTES, TEACHER_NOTIFICATIONS_ROUTES } from './notifications.routes';

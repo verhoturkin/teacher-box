@@ -1,8 +1,8 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.10.2: the home card «Уведомления» shows only unread notifications, each with
- * «Отметить прочитанным», and «Прочитать все» in its title.
+ * Version 0.10.2: the unread notifications, each with «Отметить прочитанным», and «Прочитать все» (the home
+ * card until 0.22.0, the bell's sheet since).
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -70,28 +70,37 @@ test.beforeAll(async ({ request }) => {
     .toBe(TASKS.length);
 });
 
-test('home shows only unread notifications: ✓ one, then «Прочитать все»', async ({ page }) => {
+// 0.22.0: the home card is gone — the unread notifications are in the bell's sheet
+test('the bell’s sheet shows the unread notifications: ✓ one, then «Прочитать все»', async ({
+  page,
+}) => {
   await signIn(page);
-  const card = page.locator('tb-latest-notifications-widget');
-  const list = card.getByRole('list', { name: 'Непрочитанные уведомления' });
+  // the old address of the page opens the sheet on the home page
+  const openSheet = async (): Promise<void> => {
+    await page.goto('/cabinet/notifications');
+    await expect(page).toHaveURL(/\/cabinet$/);
+  };
+  await openSheet();
+  const sheet = page.getByRole('dialog', { name: 'Уведомления' });
+  const list = sheet.getByRole('list', { name: 'Непрочитанные', exact: true });
   for (const task of TASKS) {
     await expect(list).toContainText(task);
   }
 
   const first = list.getByRole('listitem').filter({ hasText: TASKS[0] });
-  await first.getByRole('button', { name: /^Отметить прочитанным:/ }).click();
+  await first.getByRole('button', { name: 'Отметить прочитанным' }).click();
   await expect(list).not.toContainText(TASKS[0] ?? '');
   await expect(list).toContainText(TASKS[1] ?? '');
 
-  // a reload keeps the read one away
-  await page.reload();
+  // opened again, the sheet keeps the read one away
+  await openSheet();
   await expect(list).toContainText(TASKS[2] ?? '');
   await expect(list).not.toContainText(TASKS[0] ?? '');
 
-  await card.getByRole('button', { name: 'Прочитать все' }).click();
-  await expect(card.getByText('Новых уведомлений нет')).toBeVisible();
-  await expect(card.getByRole('button', { name: 'Прочитать все' })).toHaveCount(0);
+  await sheet.getByRole('button', { name: 'Прочитать все' }).click();
+  await expect(sheet.getByText('Новых уведомлений нет')).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Прочитать все' })).toHaveCount(0);
 
-  await page.reload();
-  await expect(card.getByText('Новых уведомлений нет')).toBeVisible();
+  await openSheet();
+  await expect(sheet.getByText('Новых уведомлений нет')).toBeVisible();
 });

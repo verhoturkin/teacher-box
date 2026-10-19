@@ -82,23 +82,16 @@ test.beforeAll(async ({ request }) => {
 
 test('a notification has no tick on a phone, keeps it on a computer', async ({ page }) => {
   await signIn(page, LOGIN, PASSWORD, 390);
-  await page.goto('/cabinet/notifications');
   const row = page.locator('ul[aria-label="Непрочитанные"] > li').filter({ hasText: HOMEWORK });
-  // the notification of the task comes from an event: wait for it with a reload
+  // the notification of the task comes from an event: wait for it, opening the bell's sheet again (0.22.0)
   await expect(async () => {
-    await page.reload();
+    await page.goto('/cabinet/notifications');
     await expect(row).toBeVisible({ timeout: 2_000 });
   }).toPass();
   await expect(row.getByRole('button', { name: 'Отметить прочитанным' })).toHaveCount(0);
-  await page.goto('/cabinet');
-  await expect(
-    page.getByRole('button', { name: `Отметить прочитанным: Новое задание: «${HOMEWORK}»` }),
-  ).toHaveCount(0);
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(
-    page.getByRole('button', { name: `Отметить прочитанным: Новое задание: «${HOMEWORK}»` }),
-  ).toBeVisible();
+  await expect(row.getByRole('button', { name: 'Отметить прочитанным' })).toBeVisible();
 });
 
 test('the teacher searches the boards inside each card', async ({ page }) => {

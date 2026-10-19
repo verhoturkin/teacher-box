@@ -165,12 +165,11 @@ test('the student’s boards are in two cards, a tap on a row opens the board', 
 
 test('notifications have no icons, a swipe on a phone marks one read', async ({ page }) => {
   await signIn(page, LOGIN, PASSWORD, PHONE);
-  await page.goto('/cabinet/notifications');
   const unread = page.locator('ul[aria-label="Непрочитанные"] > li');
   const row = unread.filter({ hasText: HOMEWORK });
-  // the notification of the task comes from an event: wait for it with a reload
+  // the notification of the task comes from an event: wait for it, opening the bell's sheet again (0.22.0)
   await expect(async () => {
-    await page.reload();
+    await page.goto('/cabinet/notifications');
     await expect(row).toBeVisible({ timeout: 2_000 });
   }).toPass();
   await expect(page.locator('tb-notification-list .tb-list__lead')).toHaveCount(0);

@@ -227,7 +227,7 @@ public class NotificationService {
                 .toList();
         for (UUID id : recipients) {
             NotificationMessages t = NotificationMessages.of(users.language(id));
-            notify(id, NotificationKind.MESSAGE, t.connectTitle(), t.connectBody(), "/cabinet/notifications");
+            notify(id, NotificationKind.MESSAGE, t.connectTitle(), t.connectBody(), "/cabinet/account");
         }
         return recipients.size();
     }

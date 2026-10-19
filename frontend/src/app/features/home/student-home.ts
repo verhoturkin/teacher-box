@@ -5,7 +5,7 @@ import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
 import { HomeworkApi, MyDeadlinesWidget } from '@features/homework/parts';
 import type { MyHomeworkSummary } from '@features/homework/parts';
-import { ConnectMessengerCard, LatestNotificationsWidget } from '@features/notifications/parts';
+import { ConnectMessengerCard } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
@@ -16,14 +16,13 @@ import { T } from './i18n/texts';
 
 /**
  * Student personal area dashboard: the nearest lesson with its link and boards on top, then the widgets of
- * the modules one under another (ADR-0021): homework, balance, notifications.
+ * the modules one under another (ADR-0021): homework, balance; the notifications are in the bell.
  */
 @Component({
   selector: 'tb-student-home',
   imports: [
     HelpButton,
     ConnectMessengerCard,
-    LatestNotificationsWidget,
     MyBalanceWidget,
     MyDeadlinesWidget,
     NextLessonWidget,
@@ -52,7 +51,6 @@ import { T } from './i18n/texts';
       @if (billing(); as billing) {
         <tb-my-balance-widget [summary]="billing" />
       }
-      <tb-latest-notifications-widget link="/cabinet/notifications" />
     </div>
   `,
 })

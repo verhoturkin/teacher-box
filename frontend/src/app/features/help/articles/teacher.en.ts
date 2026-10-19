@@ -416,7 +416,7 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     body: `
 Notifications are always in the bell at the top of the page. To get them in a messenger, connect a bot.
 
-New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
 The «Notifications» section holds the «Inbox» and «Messages to students» cards. Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
 
@@ -424,7 +424,7 @@ The «Notifications» section holds the «Inbox» and «Messages to students» c
 
 «Settings» → «Messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
 
-One messenger is enough — the one your students use. Students connect a messenger themselves, in their «Notifications».
+One messenger is enough — the one your students use. Students connect a messenger themselves, in their «My account».
 
 ## Who is connected
 
@@ -547,7 +547,7 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 
 - **Wide screen** (from 1600 pixels) — the sections panel on the left: the icon and the label on one line, the chosen section highlighted.
 - **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
-- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards», «Notifications»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
+- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
 
 The top of the sections panel holds the portal's logo and name with «Create» under them, its bottom — «Settings» and «Help». «Create» is the only such button on the screen: on a computer and a tablet the sections have no «Add…» buttons in their headers, they stay only on a phone.
 
@@ -557,7 +557,7 @@ The bell and your photo (or a person in a circle) are always at the top right: t
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
-The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
+The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention» and «Finance»; the notifications are under the bell in the header. Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
 
 Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 

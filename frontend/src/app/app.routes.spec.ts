@@ -220,10 +220,28 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(text()).toContain('Мой аккаунт');
   });
 
-  it('opens the student’s notifications page', async () => {
+  it('leads the student’s notifications page to the home page with the bell’s sheet open', async () => {
     auth.acceptSession(authResponse('STUDENT'));
-    await harness.navigateByUrl('/cabinet/notifications');
-    expect(title()).toBe('Уведомления — Teacher Box');
+
+    await harness.navigateByUrl('/cabinet/notifications?from=bot');
+
+    await vi.waitFor(() => {
+      expect(TestBed.inject(Router).url).toBe('/cabinet?from=bot');
+    });
+    const sheet = TestBed.inject(NotificationsSheetState);
+    expect(sheet.open()).toBe(true);
+    expect(sheet.tab()).toBe('inbox');
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it('opens the student’s account with the messengers and what to send', async () => {
+    auth.acceptSession(authResponse('STUDENT'));
+
+    await harness.navigateByUrl('/cabinet/account');
+
+    expect(title()).toBe('Мой аккаунт — Teacher Box');
+    expect(harness.routeNativeElement?.querySelector('tb-channels-panel')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('tb-preferences-panel')).not.toBeNull();
     TestBed.inject(HttpTestingController).match(() => true);
   });
 

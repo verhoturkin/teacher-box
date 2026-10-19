@@ -20,11 +20,6 @@ export const TEACHER_MENU: MenuItem[] = [
     routerLink: '/teacher/billing',
   },
   { label: CORE_T.nav.boards, icon: 'tb-i tb-i-co_present', routerLink: '/teacher/boards' },
-  {
-    label: CORE_T.nav.notifications,
-    icon: 'tb-i tb-i-notifications',
-    routerLink: '/teacher/notifications',
-  },
 ];
 
 /**

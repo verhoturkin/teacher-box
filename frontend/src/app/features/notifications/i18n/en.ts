@@ -68,17 +68,6 @@ export const en: Translation<typeof ru> = {
     unlinked: (name: string) => `${name} disconnected`,
     connected: (name: string) => `${name} connected`,
   },
-  latest: {
-    title: 'Notifications',
-    readAll: 'Mark all read',
-    what: 'the notifications',
-    nothing: 'No new notifications',
-    unreadList: 'Unread notifications',
-    markRead: 'Mark as read',
-    markReadOf: (title: string) => `Mark as read: ${title}`,
-    unread: (count: number) => `Unread: ${String(count)}`,
-    all: 'All notifications',
-  },
   inbox: {
     what: 'the notifications',
     nothing: 'No new notifications',
@@ -96,9 +85,6 @@ export const en: Translation<typeof ru> = {
     sent: 'Sent',
   },
   page: {
-    title: 'Notifications',
-    inbox: 'Inbox',
-    messages: 'Messages to students',
     myMessengers: 'My messengers',
   },
   preferences: {

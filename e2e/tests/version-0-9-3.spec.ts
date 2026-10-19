@@ -120,6 +120,7 @@ test('boards are a list with a row menu', async ({ page }) => {
 
 test('a read notification moves into the folded «Прочитанные»', async ({ page }) => {
   await signIn(page, 1280, LOGIN, PASSWORD);
+  // 0.22.0: the old address opens the bell's sheet on the home page
   await page.goto('/cabinet/notifications');
   const unread = page.locator('ul[aria-label="Непрочитанные"] > li');
   await expect(unread.filter({ hasText: 'Получена оплата 2 000 ₽' })).toBeVisible({

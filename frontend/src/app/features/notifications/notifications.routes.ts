@@ -41,3 +41,15 @@ const teacherNotificationsAddress: RedirectFunction = ({ queryParams }) => {
 export const TEACHER_NOTIFICATIONS_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: teacherNotificationsAddress },
 ];
+
+/**
+ * The student's notifications: the inbox is in the bell's sheet on the home page, the messengers and what to send
+ * in «Мой аккаунт» (redesign spec §10.4).
+ */
+export const STUDENT_NOTIFICATIONS_ROUTES: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: ({ queryParams }) => notificationsSheetAddress('/cabinet', queryParams),
+  },
+];

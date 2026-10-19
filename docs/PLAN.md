@@ -56,7 +56,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
   `help/help-button.ts`; non-modal third pane on extra-large) with tabs «Входящие» (`notifications/inbox/inbox-panel.ts`)
   and «Отправленные» (`teacher/broadcasts-panel.ts`); compact — full screen. `/teacher/notifications` redirects to
   the home page with the sheet open (`?notifications=inbox|sent`; backend `Portal.link(` targets checked).
-- [ ] 235.2 **F** Remove «Уведомления» from `TEACHER_MENU` and `STUDENT_MENU`, `notifications/home/latest-notifications-widget.ts`
+- [x] 235.2 **F** Remove «Уведомления» from `TEACHER_MENU` and `STUDENT_MENU`, `notifications/home/latest-notifications-widget.ts`
   from both home pages, `notifications-page.ts`; the student's messenger linking and preferences move to the
   student's «Мой аккаунт» (`account-page.ts`, spec §10.4); `/cabinet/notifications` redirects to the home page with
   the sheet open, and `connect-messenger-card.ts` and the backend «connect» reminder

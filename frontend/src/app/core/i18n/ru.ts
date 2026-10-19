@@ -10,7 +10,6 @@ export const ru = {
     billing: 'Оплаты',
     boards: 'Доски',
     myBoards: 'Мои доски',
-    notifications: 'Уведомления',
     settings: 'Настройки',
     log: 'Журнал',
     status: 'Состояние',

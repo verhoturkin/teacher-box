@@ -43,7 +43,7 @@ describe('ConnectMessengerCard', () => {
 
     expect(text()).toContain('Подключите Telegram, ВКонтакте или MAX');
     const link = hostElement(fixture).querySelector('a');
-    expect(link?.getAttribute('href')).toBe('/cabinet/notifications');
+    expect(link?.getAttribute('href')).toBe('/cabinet/account');
   });
 
   it('names the only messenger', async () => {
