@@ -328,10 +328,18 @@ component that shows one adds it to `PRIME`).
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
   the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
   `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 % each
-  (redesign spec §3.1: Settings only, *ours*). Settings (`/teacher/settings[/:category]`, 234.1): the categories
-  as two-line list items with a leading icon in the fixed pane, the chosen one beside it (from expanded
-  `/teacher/settings` shows the first, «Мой аккаунт»); the old `?open=` / `?google=` / `?drive=` addresses
-  and `/teacher/account` redirect to their category.
+  (redesign spec §3.1: Settings only, *ours*). **Settings** (`/teacher/settings[/:category]`, 234,
+  `features/settings/settings-categories.ts`): the categories as two-line list items (icon, name, what it holds)
+  in the fixed pane, the chosen one beside it (from expanded `/teacher/settings` shows the first, «Мой
+  аккаунт»). Categories in list order: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и
+  календарь» (`calendar`: time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры»
+  (`messengers`: failed deliveries first when there are any — the item carries their count as a badge — then
+  bots, own messengers, bot abilities, students' messengers, what to send), «Оплаты» (`payments`: default
+  lesson price), «ИИ-помощник» (`ai`: model, usage, prompt library, system prompts), «Данные» (`data`). A
+  category's detail is a stack of `p-card`s, no fold cards. Integrations live only here (ADR-0048): there are no
+  Calls or AI sections. The old addresses redirect to their category: `?open=<fold>`, `?google=` (→
+  calendar), `?drive=` (→ data), `/teacher/account`, `/teacher/calls`, `/teacher/ai` and the messenger tabs of
+  «Уведомления» (`?open=` / `?tab=` → messengers).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
   Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
@@ -370,10 +378,10 @@ component that shows one adds it to `PRIME`).
   readable width inside its card (`tb-form--narrow`); «Мой аккаунт» puts its forms in cards side by side — they
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
-- **Long settings pages** use foldable sections `tb-fold-card` (not tabs): header is a button with chevron and
-  a line of explanation; content loads on first open; open sections in the URL (`?open=`). Pages: the
-  administrator's and the teacher's «Настройки» (portal · calendar and calls · failed deliveries with a
-  counter · data), «Уведомления».
+- **Foldable sections** `tb-fold-card` (not tabs): header is a button with chevron and a line of explanation;
+  content loads on first open; open sections in the URL (`?open=`). Still used by the administrator's
+  «Настройки» (`admin/settings`, until 247.2) and the teacher's «Уведомления» (inbox and broadcasts,
+  non-collapsible, until 235). The teacher's settings are list-detail (§ panes above), not fold cards.
 
 ## 5. Page anatomy
 

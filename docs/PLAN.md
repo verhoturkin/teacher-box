@@ -47,7 +47,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
   «ИИ-помощник» (`ai/ai-usage-page.ts` → category, `system-prompts-card.ts`; `prompt-library-card.ts` stays
   reachable from the editor's «Промты» menu); `/teacher/ai` redirects, menu item out. Backups: one component for
   the teacher and the admin per D4.
-- [ ] 234.5 **D** design-system (settings = list-detail; `tb-fold-card` only where still used), help articles
+- [x] 234.5 **D** design-system (settings = list-detail; `tb-fold-card` only where still used), help articles
   (settings, messengers, calendar, calls, AI; ru, en), wiki pages of the same topics (they name the paths).
 
 ### 235. Notifications in the bell (F)

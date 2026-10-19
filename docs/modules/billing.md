@@ -46,4 +46,5 @@ lesson, the student's payments.
 
 `features/billing/`: `teacher/` (payments page, student ledger, monthly report; the payment dialog takes an
 optional receipt), `student/` (own payments), `ledger/` (the receipt opens from its payment row; the teacher
-attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `billing-labels.ts`.
+attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
+(the settings category «Оплаты», `/teacher/settings/payments`), `billing-labels.ts`.

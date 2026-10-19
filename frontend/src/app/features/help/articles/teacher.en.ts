@@ -16,7 +16,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Payments» → click the student's name → the «Lesson price» field. Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
-4. **Connect a messenger.** «Notifications» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
+4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 The home page has the «Getting started» list — only the steps not done yet stay in it, and the bar shows how many are done.
 
@@ -56,7 +56,7 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 - Name, logo and colour — «Settings» → «Portal».
 - Address — with the portal administrator.
 - Your name and photo — «My account».
-- Price for new students — «Payments», the «Price for new students» card.
+- Price for new students — «Settings» → «Payments».
 `,
   },
   students: {
@@ -358,16 +358,16 @@ The AI assistant saves time, but you always decide: it only suggests a draft.
 - **Homework draft** — the AI assistant bar above the «Homework text» field of the editor (in «Text» mode). Write in your own words what you need and click «Generate». The draft appears between the request and the text: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it, «Once more» asks for a new one.
 - **From a textbook and files** — the «Base it on» button in the assistant bar: tick the bound textbooks (their pages) and the materials of the homework — PDF files and pictures, up to 5 of them and 20 pages at once. Files of a new homework can be ticked as soon as they are picked, without saving it; the AI does not read Word files.
 - **From a video** — «Base it on» also lists the homework's videos with a transcript: the AI reads it (it does not watch the video) and writes tasks on what the video says, with the time of the fragment — «[1:05]». A video without a transcript is not listed: take the captions from YouTube or load a file first.
-- **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts on the «AI» page («Manage the library» in the same menu).
+- **Prompt library** — the «Prompts» button: search the saved prompts and «Save the request as a prompt» for a request that worked. Rename, edit and delete prompts in «Settings» → «AI assistant», the «Prompt library» card («Manage the library» in the same menu).
 - **Review draft** — on the page of a work under review. The AI suggests a comment, a grade, and whether to accept the work or return it.
 
 ## System prompts
 
-The rules the AI follows in its drafts (tone, language, the layout of a task, how strict a review is) are on the «AI assistant» page, the «System prompts» card. Click the pencil next to «Homework draft» or «Review draft», rewrite the text and save: the next drafts follow your rules, and the prompt is marked «Changed». The portal sets the answer format itself, and the AI gets the task and the student answer separately — no need to mention them in the prompt. «Restore the standard one» in the same window brings the original text back.
+The rules the AI follows in its drafts (tone, language, the layout of a task, how strict a review is) are in «Settings» → «AI assistant», the «System prompts» card. Click the pencil next to «Homework draft» or «Review draft», rewrite the text and save: the next drafts follow your rules, and the prompt is marked «Changed». The portal sets the answer format itself, and the AI gets the task and the student answer separately — no need to mention them in the prompt. «Restore the standard one» in the same window brings the original text back.
 
 ## Limit and costs
 
-The «AI assistant» page shows how many tokens were spent this month and how many are left before the limit. «Recent requests» are cards: what was asked, the result, the time, the model and how many tokens it took; a failed one shows its error. The 10 newest come first, the rest of the month — with «Show more». When the limit is used up, the AI buttons stop working until the next month.
+«Settings» → «AI assistant» shows how many tokens were spent this month and how many are left before the limit. «Recent requests» are cards: what was asked, the result, the time, the model and how many tokens it took; a failed one shows its error. The 10 newest come first, the rest of the month — with «Show more». When the limit is used up, the AI buttons stop working until the next month.
 
 The AI assistant is connected when the portal is installed (by whoever set up the server): Claude, Gemini, DeepSeek, OpenRouter — models of many companies with one key — or another service. If there are no AI buttons, it is not connected.
 `,
@@ -418,17 +418,17 @@ Notifications are always in the bell at the top of the page. To get them in a me
 
 New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. The «Notifications» card on the home page shows only unread ones: the tick next to a notification and «Mark all read» remove them from there. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
-The «Notifications» section is made of cards. «Inbox» and «Messages to students» are always open, and the settings — «Messengers», «Students» and «What to send» — are folded: click a card's title to open or fold it.
+The «Notifications» section holds the «Inbox» and «Messages to students» cards. Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
 
 ## Connect a bot
 
-«Notifications» → «Messengers» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
+«Settings» → «Messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
 
 One messenger is enough — the one your students use. Students connect a messenger themselves, in their «Notifications».
 
 ## Who is connected
 
-The «Students» card shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
+The «Students’ messengers» card («Settings» → «Messengers») shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
 
 ## Message to students
 
@@ -436,7 +436,7 @@ The «Students» card shows who has a messenger connected and whether deliveries
 
 ## What to send
 
-In the «What to send» card choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
+«Settings» → «Messengers» → «What to send to messengers»: choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
 
 Notifications and bot messages are written by the server in Russian.
 
@@ -472,7 +472,7 @@ The schedule and the lesson link, cancelling and moving a lesson (in a group —
 
 ## Turn management off
 
-«Notifications» → «Messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
+«Settings» → «Messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
 
 In VK the buttons need «Bot features» turned on in the community settings.
 `,
@@ -499,19 +499,20 @@ Students can make such a link too — it has only their lessons.
   },
   settings: {
     title: 'Settings',
-    summary: 'Portal, schedule and calendar, calls, backups, full reset',
+    summary: 'Account, portal, calendar, calls, messengers, payments, AI assistant, data',
     body: `
-«Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal. The sections fold: click a name to open or close it.
+«Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal: connections, appearance and data. On the left is the list of setting groups, on the right — the chosen group. On a phone the list comes first; the chosen group opens in its place, and the back arrow returns to the list. Each group has its own address — you can bookmark it.
 
-- **Portal** — the name, address, colour and logo of the portal ([Look, language and phone](/teacher/help/appearance)).
+- **My account** — photo, name and password. The same section opens from the menu under your photo at the top right.
+- **Portal** — the portal's name, address, colour and logo ([Look, language and phone](/teacher/help/appearance)).
 - **Schedule and calendar** — the portal's time zone, Google Calendar and the schedule subscription ([Calendars](/teacher/help/calendars)).
 - **Calls** — calls in the portal ([Calls](/teacher/help/calls)) and video meetings ([Video meetings](/teacher/help/meetings)).
-- **Failed deliveries** — messages that did not reach the messenger (the number next to the name); the portal administrator can resend them.
+- **Messengers** — bots, your messengers, what the bot can do, students' messengers and what to send ([Notifications and bots](/teacher/help/notifications)). If messages did not reach a messenger, the group shows their number in the list, and the «Failed deliveries» card comes first; the portal administrator can resend them.
+- **Payments** — the lesson price for new students and groups ([Payments](/teacher/help/billing)).
+- **AI assistant** — the model, tokens spent this month, recent requests, the prompt library and the system prompts ([AI assistant](/teacher/help/ai)).
 - **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
 
-Messengers are connected in «Notifications» → «Messengers», the AI assistant is set up by the portal administrator.
-
-The password, the name and your photo are changed in «My account» (the menu under your photo, top right). The portal address is set in the initial setup; later the portal administrator changes it.
+The portal address is set during the initial setup; later the portal administrator changes it.
 `,
   },
   appearance: {
@@ -546,7 +547,7 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 
 - **Wide screen** (from 1600 pixels) — the sections panel on the left: the icon and the label on one line, the chosen section highlighted.
 - **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
-- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards», «Notifications», «AI assistant»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
+- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards», «Notifications»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
 
 The top of the sections panel holds the portal's logo and name with «Create» under them, its bottom — «Settings» and «Help». «Create» is the only such button on the screen: on a computer and a tablet the sections have no «Add…» buttons in their headers, they stay only on a phone.
 
@@ -556,7 +557,7 @@ The bell and your photo (or a person in a circle) are always at the top right: t
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
-The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window, «Settings» and «My account» included. The exception is the help: on a wide screen the list of articles is on the left and the chosen article on the right, each scrolling on its own; on a phone or a tablet the list comes first, an article opens in its place and the back arrow returns to the list.
+The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention», «Notifications» and «Finance». Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
 
 Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 
@@ -595,7 +596,7 @@ Every night the portal backs up all the data: students, schedule, payments, home
 
 ## Make and download a backup
 
-«Settings» → «Backups» → «Back up now». To download a backup, click «⋮» in its row → «Download» — keep the backup not only on the server.
+«Settings» → «Data» → «Backups» → «Back up now». To download a backup, click «⋮» in its row → «Download» — keep the backup not only on the server.
 
 Under the date of a backup you see where it comes from (scheduled, manual, before a restore or before a reset), its size and whether it is in Google Drive. Backups of every kind are kept for two weeks (the administrator sets the period); the portal deletes older ones after making a new one.
 
@@ -629,7 +630,7 @@ If the restore fails, the data stays as it was, and the window shows the reason.
 
 ## Full reset
 
-«Settings» → «Full reset» deletes everything: students and groups, lessons, payments, homework, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in, all backups and their Google Drive connection stay.
+«Settings» → «Data» → «Full reset» deletes everything: students and groups, lessons, payments, homework, notifications, connections, the portal's name and address. Your sign-in, the administrator's sign-in, all backups and their Google Drive connection stay.
 
 1. Click «Reset all data…».
 2. Enter your password and the word «RESET».
@@ -647,7 +648,7 @@ If after the reset the portal asks you to delete the calendar in Google, open Go
 Check the portal address: «Settings» → «Portal». The address must open from the internet, not only at your home.
 
 **How to get data back if something was deleted by mistake?**
-Restore a backup: «Settings» → «Backups» ([more](/teacher/help/backups)).
+Restore a backup: «Settings» → «Data» → «Backups» ([more](/teacher/help/backups)).
 
 **A student cannot sign in.**
 Check that their access is not turned off. Issue a password reset link: «Students» → «⋮» next to the student → «Reset password».
@@ -656,7 +657,7 @@ Check that their access is not turned off. Issue a password reset link: «Studen
 Issue a new one in the same place — the old one stops working.
 
 **Notifications do not reach the messenger.**
-Check «Notifications» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are in «Settings» → «Failed deliveries».
+Check «Settings» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Messengers» in the settings list).
 
 **A lesson was marked by mistake.**
 Open the lesson and click «Remove the mark» — the charge is undone.
@@ -668,7 +669,7 @@ Check that the payment is recorded for the right student with the right amount: 
 «Schedule» → the «Recurring lessons» card → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.
 
 **Where to download all the data?**
-«Settings» → «Backups» → «Back up now» → download the file.
+«Settings» → «Data» → «Backups» → «Back up now» → download the file.
 `,
   },
 };
