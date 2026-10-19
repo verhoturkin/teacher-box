@@ -514,9 +514,20 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
-  2 dp, 1 dp outline-variant divider. `?notifications=inbox|sent` opens the sheet on any page and is dropped
-  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=inbox` (other parameters kept). The frame gets the feature's content through `NOTIFICATIONS_SHEET_CONTENT`
-  (provided in `app.config.ts`), so core/ imports no feature.
+  2 dp, 1 dp outline-variant divider. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
+  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (`tb-list--no-lead`,
+  «Прочитать все», «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
+  explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
+  §4) and the sent messages (title, text, time · recipients). The bell's badge (`p-overlaybadge`, danger) is the
+  unread count, hidden at zero. `?notifications=inbox|sent` opens the sheet on any page and is dropped
+  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=inbox` (other parameters kept),
+  `/cabinet/notifications` to `/cabinet?notifications=inbox`. The frame gets the feature's content through
+  `NOTIFICATIONS_SHEET_CONTENT` (provided in `app.config.ts`), so core/ imports no feature. **There is no
+  Notifications section** (235.2, ADR-0048): no «Уведомления» in the menus, no home card of the latest
+  notifications. The student's messengers and «Что присылать в мессенджеры» are cards of «Мой аккаунт»
+  (`/cabinet/account`: account, then «Мессенджеры», then the preferences, one `tb-stack`); the «connect»
+  card on the student's home and the «connect» reminder lead there. The teacher's are in Settings ›
+  «Мессенджеры» (§4).
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
 - **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and

@@ -133,11 +133,11 @@ If something does not add up — write to the teacher.
     body: `
 ## Notifications in the cabinet
 
-The bell in the header opens the notifications at the side; new ones are at the top. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+The bell in the header opens the notifications at the side (on a phone — full screen); its number is how many are unread, new ones are at the top. There is no separate «Notifications» section. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
 ## Connect
 
-Your photo at the top right → «My account» → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
+Your photo at the top right → «My account» → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
 
 ## Buttons under notifications
 
@@ -159,7 +159,7 @@ The bot speaks Russian.
 
 ## Turn off
 
-Send the bot /stop or disconnect the messenger in «My account» (your photo at the top right). There you can also choose the topics and the quiet hours.
+Send the bot /stop or disconnect the messenger in «My account» (your photo at the top right). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
 `,
   },
   appearance: {

@@ -22,7 +22,7 @@ The home page has the «Getting started» list — only the steps not done yet s
 
 ## Home page
 
-- **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section; the item of the section you are in comes first. On a phone the home page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
+- **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section, and «Message» opens the new message window right over the page; the item of the section you are in comes first. On a phone the home page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
 - **Next lesson** — the first card of the home page. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs) — the largest button of the portal. When the lesson ends, the card shows the next one by itself.
 - **Needs attention** — unmarked lessons (mark them in «Schedule»), work to review, students' requests and failed deliveries of notifications.
 - **Finance** — income of the month and students' debts.
@@ -414,11 +414,18 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     title: 'Notifications and bots',
     summary: 'The bell, messengers and messages to students',
     body: `
-Notifications are always in the bell at the top of the page. To get them in a messenger, connect a bot.
+Notifications are always under the bell at the top of the page. To get them in a messenger, connect a bot.
 
-New notifications are at the top of «Inbox». Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom of the card — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+## The bell
 
-The «Notifications» section holds the «Inbox» and «Messages to students» cards. Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
+The bell opens the notifications at the side, on a phone — full screen; its number is how many are unread. There is no separate «Notifications» section. At the top there are two tabs:
+
+- **Inbox** (with the number of unread ones) — new notifications are at the top. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+- **Sent** — your messages to students: the text, when it was sent and how many recipients; «Write to students» starts a new one.
+
+On a wide screen the notifications open as a third column on the right and do not cover the page: you can keep working and move between sections — the column stays until you press «×» (or Esc) or the bell again. On a narrower screen and on a phone they close when you open a notification that leads to another page. Old links to the «Notifications» section open the bell.
+
+Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
 
 ## Connect a bot
 
@@ -432,7 +439,7 @@ The «Students’ messengers» card («Settings» → «Messengers») shows who 
 
 ## Message to students
 
-«Create» → «Message» (or the «Messages to students» card → «Write to students») → write the text and choose the recipients (everyone, separate students or a group).
+«Create» → «Message» on any page (or the bell → «Sent» → «Write to students») → write the text and choose the recipients (everyone, separate students or a group). The window opens over the page you were on; the message sent appears in «Sent».
 
 ## What to send
 

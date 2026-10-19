@@ -62,7 +62,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
   the sheet open, and `connect-messenger-card.ts` and the backend «connect» reminder
   (`NotificationService.remindToConnect`) point to «Мой аккаунт».
 - [x] 235.3 **F** «Создать › Сообщение» opens `broadcast-dialog.ts` directly (replaces the 232.1 route).
-- [ ] 235.4 **D** design-system, help (ru, en), wiki (notifications, bots).
+- [x] 235.4 **D** design-system, help (ru, en), wiki (notifications, bots).
 
 ### 236. Release 0.22.0 (D)
 
