@@ -1,12 +1,15 @@
-# Прокси для Telegram и ИИ
+# Прокси для Telegram, ИИ и YouTube
 
 Из России Telegram Bot API недоступен, а API Anthropic, OpenAI и Gemini не обслуживают
 российские адреса. Если на сервере есть прокси с VPN, направьте через него только эти
-интеграции (ВКонтакте и MAX всегда работают напрямую):
+интеграции (ВКонтакте и MAX всегда работают напрямую). YouTube из России замедлен: если кнопка
+«Взять субтитры с YouTube» в задании выдаёт ошибку связи, укажите прокси и для неё —
+`TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`:
 
 ```ini
 TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY=socks5://host.docker.internal:1080
 TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
+TEACHERBOX_HOMEWORK_YOUTUBE_PROXY=socks5://host.docker.internal:1080
 ```
 
 - Адрес прокси — `http://хост:порт` или `socks5://хост:порт`, без логина и пароля.

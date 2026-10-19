@@ -141,6 +141,12 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
     }
 
     private static ContentBlockParam block(LlmSource source) {
+        if (source.isText()) {
+            return ContentBlockParam.ofDocument(DocumentBlockParam.builder()
+                    .textSource(source.text())
+                    .title(source.name())
+                    .build());
+        }
         String data = Base64.getEncoder().encodeToString(source.content());
         if (source.isPdf()) {
             return ContentBlockParam.ofDocument(DocumentBlockParam.builder()

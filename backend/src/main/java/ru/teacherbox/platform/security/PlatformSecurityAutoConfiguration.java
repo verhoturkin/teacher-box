@@ -78,11 +78,13 @@ public class PlatformSecurityAutoConfiguration {
 
     /**
      * The SPA uses no inline scripts (critical CSS inlining is off in the Angular build); PrimeNG
-     * needs inline styles. Images may come from https URLs in the teacher's Markdown.
+     * needs inline styles. Images may come from https URLs in the teacher's Markdown. Frames — the video players of
+     * homework (ADR-0047).
      */
+    static final String VIDEO_PLAYERS = "https://www.youtube-nocookie.com https://rutube.ru https://vkvideo.ru";
     static final String CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; "
             + "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; "
-            + "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+            + "connect-src 'self'; frame-src 'self' " + VIDEO_PLAYERS + "; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
     static final String PERMISSIONS_POLICY =
             "camera=(self), microphone=(self), display-capture=(self), geolocation=()";
 

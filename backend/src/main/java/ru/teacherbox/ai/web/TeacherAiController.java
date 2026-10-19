@@ -42,32 +42,45 @@ import ru.teacherbox.textbooks.api.PageRanges;
 @RequestMapping("/api/teacher/ai")
 class TeacherAiController {
 
-    enum SourceType { TEXTBOOK, FILE }
+    enum SourceType { TEXTBOOK, FILE, VIDEO }
 
     /**
-     * A material of the draft: a textbook ({@code id}, {@code pages} — blank for the whole one) or a file of an
-     * assignment ({@code assignmentId}, {@code id}).
+     * A material of the draft: a textbook ({@code id}, {@code pages} — blank for the whole one), a file of an
+     * assignment ({@code assignmentId}, {@code id}) or a video by its transcript ({@code url}, {@code transcript},
+     * {@code title}; ADR-0047).
      */
     record SourceRequest(
             @NotNull SourceType type,
-            @NotNull UUID id,
+            @Nullable UUID id,
             @Nullable UUID assignmentId,
-            @Size(max = PageRanges.MAX_TEXT) @Nullable String pages) {
+            @Size(max = PageRanges.MAX_TEXT) @Nullable String pages,
+            @Size(max = 200) @Nullable String title,
+            @Size(max = 500) @Nullable String url,
+            @Size(max = 100_000) @Nullable String transcript) {
 
         @AssertTrue
         boolean isComplete() {
-            return type != SourceType.FILE || assignmentId != null;
+            return switch (type) {
+                case TEXTBOOK -> id != null;
+                case FILE -> id != null && assignmentId != null;
+                case VIDEO -> url != null && !url.isBlank() && transcript != null && !transcript.isBlank();
+            };
         }
 
         DraftSources.Source toSource() {
-            return type == SourceType.TEXTBOOK ? new DraftSources.TextbookPages(id, pages)
-                    : new DraftSources.AssignmentFileRef(Objects.requireNonNull(assignmentId), id);
+            return switch (type) {
+                case TEXTBOOK -> new DraftSources.TextbookPages(Objects.requireNonNull(id), pages);
+                case FILE -> new DraftSources.AssignmentFileRef(Objects.requireNonNull(assignmentId),
+                        Objects.requireNonNull(id));
+                case VIDEO -> new DraftSources.VideoTranscript(title, Objects.requireNonNull(url),
+                        Objects.requireNonNull(transcript));
+            };
         }
     }
 
     /**
      * @param title   what the teacher already called the assignment
-     * @param sources textbook pages and files of the assignment to base the draft on
+     * @param sources textbook pages, files and video transcripts of the assignment to base the draft on
      */
     record HomeworkDraftRequest(
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,

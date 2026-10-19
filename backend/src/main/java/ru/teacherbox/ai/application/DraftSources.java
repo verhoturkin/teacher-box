@@ -2,6 +2,7 @@ package ru.teacherbox.ai.application;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -20,9 +21,9 @@ import ru.teacherbox.textbooks.api.TextbookSummary;
 import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * The sources of a homework draft (ADR-0039, ADR-0042): pages of a textbook or a file of an assignment, read through
- * their modules' facades, or a file the teacher picked for an assignment not saved yet, sent with the request; all
- * kept within what a request may carry.
+ * The sources of a homework draft (ADR-0039, ADR-0042, ADR-0047): pages of a textbook or a file of an assignment, read
+ * through their modules' facades, a file the teacher picked for an assignment not saved yet or the transcript of a
+ * video, sent with the request; all kept within what a request may carry.
  */
 @Component
 public class DraftSources {
@@ -45,6 +46,14 @@ public class DraftSources {
 
     /** A file sent with the request (ADR-0042). */
     public record Upload(String filename, String contentType, long size, Resource content) implements Source {
+    }
+
+    /**
+     * A video of the assignment by link, read through its transcript (ADR-0047).
+     *
+     * @param transcript lines {@code [m:ss] text}
+     */
+    public record VideoTranscript(@Nullable String title, String url, String transcript) implements Source {
     }
 
     private final Textbooks textbooks;
@@ -72,6 +81,7 @@ public class DraftSources {
                 case AssignmentFileRef file -> file(file);
                 case Upload upload -> material(upload.filename(), upload.contentType(), upload.size(),
                         upload.content());
+                case VideoTranscript video -> video(video);
             };
             total += material.content().length;
             if (total > MAX_BYTES) {
@@ -116,6 +126,12 @@ public class DraftSources {
             throw notFound();
         }
         return material(file.filename(), file.contentType(), file.size(), file.content());
+    }
+
+    private static LlmSource video(VideoTranscript video) {
+        String title = video.title() == null || video.title().isBlank() ? "" : " «" + video.title().strip() + "»";
+        return new LlmSource("Расшифровка видео" + title + " (" + video.url().strip() + ")", LlmSource.TEXT,
+                video.transcript().strip().getBytes(StandardCharsets.UTF_8));
     }
 
     private static LlmSource material(String name, TextbookContent content) {

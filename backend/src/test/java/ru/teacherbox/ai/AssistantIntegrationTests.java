@@ -140,6 +140,30 @@ class AssistantIntegrationTests {
     }
 
     @Test
+    void draftsHomeworkFromAVideoTranscript() {
+        llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "Вопросы по видео",
+                 "sources": [{"type": "VIDEO", "title": "Present Simple", "url": "https://youtu.be/aaaaaaaaaaa",
+                              "transcript": " [0:05] We play football "}]}
+                """)).hasStatusOk();
+
+        assertThat(llm.lastRequest().sources()).singleElement().satisfies(source -> {
+            assertThat(source.name()).isEqualTo("Расшифровка видео «Present Simple» (https://youtu.be/aaaaaaaaaaa)");
+            assertThat(source.isText()).isTrue();
+            assertThat(source.text()).isEqualTo("[0:05] We play football");
+        });
+        assertThat(llm.lastRequest().system()).contains("расшифровка видео");
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "x", "sources": [{"type": "VIDEO", "url": "https://youtu.be/aaaaaaaaaaa"}]}
+                """)).as("a video needs its transcript").hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "x", "sources": [{"type": "TEXTBOOK"}]}
+                """)).as("a textbook needs its id").hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void draftsHomeworkFromFilesSentWithTheRequest() {
         llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
         MockMultipartFile brief = new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE, """

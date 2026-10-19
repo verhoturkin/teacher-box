@@ -21,6 +21,7 @@ import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.TaskSummary;
+import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
@@ -44,45 +45,60 @@ public class AssignmentService {
     private final SubmissionRepository submissions;
     private final AttachmentService attachments;
     private final TextbookBindings textbooks;
+    private final AssignmentVideos videos;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
-            UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            AssignmentVideos videos, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
         this.assignments = assignments;
         this.tasks = tasks;
         this.submissions = submissions;
         this.attachments = attachments;
         this.textbooks = textbooks;
+        this.videos = videos;
         this.directory = directory;
         this.events = events;
         this.clock = clock;
     }
 
+    /** An assignment without videos. */
     @Transactional
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
             Collection<UUID> studentIds) {
+        return create(title, description, dueAt, List.of(), studentIds);
+    }
+
+    /** @param videoInputs the videos of the assignment by link (ADR-0047), at most 5 */
+    @Transactional
+    public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
+            List<VideoInput> videoInputs, Collection<UUID> studentIds) {
         Instant now = clock.instant();
         Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
         assignments.insert(assignment);
+        videos.replace(assignment.id(), videoInputs);
         assignTo(assignment, studentIds, now);
         return details(assignment);
     }
 
     /**
+     * @param videoInputs the videos in place of the assignment's ones; {@code null} — keep them
      * @throws OptimisticLockingFailureException if the assignment was changed after {@code expectedVersion}
      */
     @Transactional
     public AssignmentDetails update(UUID assignmentId, String title, @Nullable String description,
-            @Nullable Instant dueAt, long expectedVersion) {
+            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, long expectedVersion) {
         Assignment assignment = load(assignmentId);
         if (assignment.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Assignment " + assignmentId + " was modified");
         }
         assignment.update(title, description, dueAt, clock.instant());
         assignments.update(assignment);
+        if (videoInputs != null) {
+            videos.replace(assignment.id(), videoInputs);
+        }
         return details(assignment);
     }
 
@@ -225,7 +241,8 @@ public class AssignmentService {
                         .map(summary)
                         .sorted(Comparator.comparing(TaskSummary::studentName, String.CASE_INSENSITIVE_ORDER))
                         .toList(),
-                textbooks.of(assignment.id()));
+                textbooks.of(assignment.id()),
+                videos.of(assignment.id()));
     }
 
     private Assignment load(UUID assignmentId) {

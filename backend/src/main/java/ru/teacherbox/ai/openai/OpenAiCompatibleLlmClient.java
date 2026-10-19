@@ -214,7 +214,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     /**
      * The prompt alone, or the materials first as pictures — a PDF drawn page by page, since these APIs do not all
-     * read PDF files (ADR-0039) — and the prompt after them.
+     * read PDF files (ADR-0039) — or as text (a video transcript, ADR-0047), and the prompt after them.
      */
     private static Object userContent(LlmRequest request) {
         if (request.sources().isEmpty()) {
@@ -222,6 +222,10 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         }
         List<Map<String, Object>> parts = new ArrayList<>();
         for (LlmSource source : request.sources()) {
+            if (source.isText()) {
+                parts.add(Map.of("type", "text", "text", source.name() + ":\n" + source.text()));
+                continue;
+            }
             parts.add(Map.of("type", "text", "text", source.name()));
             List<byte[]> pictures = source.isPdf()
                     ? PdfPictures.render(source.content(), DraftSources.MAX_PAGES)

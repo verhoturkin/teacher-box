@@ -69,7 +69,10 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD", w("Файлов за одну отправку", "Files per upload"),
                         NUMBER, NONE)
                 .add("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", w("Напоминание о сроке сдачи за", "Deadline reminder before"),
-                        DURATION, w("Например 24h.", "E.g. 24h."));
+                        DURATION, w("Например 24h.", "E.g. 24h."))
+                .add("TEACHERBOX_HOMEWORK_YOUTUBE_PROXY", w("Прокси для субтитров YouTube", "Proxy for YouTube captions"),
+                        PROXY, w("Из России YouTube замедлен; пусто — напрямую.",
+                                "YouTube is slowed down in Russia; empty — direct."));
 
         b.group("schedule", w("Расписание", "Schedule"))
                 .add("TEACHERBOX_SCHEDULE_DEFAULT_DURATION",

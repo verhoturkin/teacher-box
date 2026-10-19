@@ -15,6 +15,19 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **The board of an assignment** (ADR-0041): `assignments.board_id` — the board it was put on (a UUID only,
   `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
+- **Videos by link** ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): up to 5 per assignment
+  (`homework.assignment_videos`, cascade with the assignment), sent as `videos [{url, title?, transcript?,
+  transcriptShown}]` in the create / update requests — the list replaces the old one, an update without it keeps them.
+  `VideoLink.parse`: YouTube (`watch`, `youtu.be`, `shorts`, `embed`, `live`, `t=` → `startSeconds`), Rutube
+  (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
+  player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
+  100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
+  those with `transcriptShown`. `POST /api/teacher/homework/videos/transcript {url}` («Взять субтитры с YouTube»,
+  saves nothing): `VideoTranscripts` over the port `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube
+  player (client `ANDROID`), the author's track in the spoken language, else the recognized one, else the first;
+  cues merged into ~30-second paragraphs; `{title, language, automatic, transcript, truncated}`; errors
+  `video.not-youtube`, `video.captions-none`, `video.captions-failed` (422). Proxy
+  `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`. CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
   `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits
@@ -41,13 +54,14 @@ file of the assignment's materials — name, type, size, content; another assign
 
 ## Data
 
-`assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages).
+`assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
+`assignment_videos` (position, url, provider, video ID, start, title, transcript, shown).
 
 ## REST
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
-`DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, summary);
+`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, summary);
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
 
 ## Frontend

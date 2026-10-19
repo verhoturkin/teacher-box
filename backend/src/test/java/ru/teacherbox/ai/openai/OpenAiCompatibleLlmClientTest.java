@@ -76,14 +76,17 @@ class OpenAiCompatibleLlmClientTest {
                         org.hamcrest.Matchers.startsWith("data:image/png;base64,")))
                 .andExpect(jsonPath("$.messages[1].content[3].text").value("Фото"))
                 .andExpect(jsonPath("$.messages[1].content[4].image_url.url").value("data:image/jpeg;base64,AQI="))
-                .andExpect(jsonPath("$.messages[1].content[5].text").value("user text"))
+                .andExpect(jsonPath("$.messages[1].content[5].text").value("Расшифровка видео:\n[0:05] Привет"))
+                .andExpect(jsonPath("$.messages[1].content[6].text").value("user text"))
                 .andRespond(withSuccess("""
                         {"model": "m", "choices": [{"finish_reason": "stop", "message": {"content": "{}"}}]}
                         """, MediaType.APPLICATION_JSON));
 
         client.complete(new LlmRequest("system text", "user text", "review_draft", REQUEST.schema(), List.of(
                 new LlmSource("Spotlight 5", LlmSource.PDF, PdfPicturesTest.pdf(2)),
-                new LlmSource("Фото", "image/jpeg", new byte[] {1, 2}))));
+                new LlmSource("Фото", "image/jpeg", new byte[] {1, 2}),
+                new LlmSource("Расшифровка видео", LlmSource.TEXT,
+                        "[0:05] Привет".getBytes(java.nio.charset.StandardCharsets.UTF_8)))));
 
         server.verify();
     }

@@ -31,7 +31,11 @@ import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
+import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.application.ReviewService;
+import ru.teacherbox.homework.application.VideoTranscripts;
+import ru.teacherbox.homework.domain.AssignmentVideo;
+import ru.teacherbox.homework.domain.VideoLink;
 import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
@@ -39,18 +43,42 @@ import ru.teacherbox.textbooks.api.PageRanges;
 @RequestMapping("/api/teacher/homework")
 class TeacherHomeworkController {
 
+    /**
+     * A video of the assignment by link (ADR-0047).
+     *
+     * @param transcript      lines {@code [m:ss] text}
+     * @param transcriptShown the student sees the transcript
+     */
+    record VideoRequest(
+            @NotBlank @Size(max = VideoLink.MAX_URL) String url,
+            @Size(max = AssignmentVideo.MAX_TITLE) @Nullable String title,
+            @Size(max = AssignmentVideo.MAX_TRANSCRIPT) @Nullable String transcript,
+            boolean transcriptShown) {
+
+        VideoInput toInput() {
+            return new VideoInput(url, title, transcript, transcriptShown);
+        }
+    }
+
+    /** @param videos the videos by link, at most 5 */
     record CreateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
-            @Nullable List<UUID> studentIds) {
+            @Nullable List<UUID> studentIds,
+            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos) {
     }
 
+    /** @param videos the videos in place of the assignment's ones; {@code null} — keep them */
     record UpdateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
-            @NotNull Long version) {
+            @NotNull Long version,
+            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos) {
+    }
+
+    record TranscriptRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url) {
     }
 
     /** @param boardId the board the assignment was put on; {@code null} — none */
@@ -73,12 +101,20 @@ class TeacherHomeworkController {
     private final AssignmentService assignments;
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
+    private final VideoTranscripts transcripts;
 
     TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
-            HomeworkSummaryService summaries) {
+            HomeworkSummaryService summaries, VideoTranscripts transcripts) {
         this.assignments = assignments;
         this.reviews = reviews;
         this.summaries = summaries;
+        this.transcripts = transcripts;
+    }
+
+    /** «Взять субтитры с YouTube» (ADR-0047): the captions of the video as a transcript; nothing is saved. */
+    @PostMapping("/videos/transcript")
+    VideoTranscripts.Transcript transcript(@Valid @RequestBody TranscriptRequest request) {
+        return transcripts.youtube(request.url());
     }
 
     @GetMapping("/summary")
@@ -95,7 +131,7 @@ class TeacherHomeworkController {
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
         return assignments.create(request.title(), request.description(), request.dueAt(),
-                request.studentIds() == null ? List.of() : request.studentIds());
+                inputs(request.videos()), request.studentIds() == null ? List.of() : request.studentIds());
     }
 
     @GetMapping("/assignments/{assignmentId}")
@@ -106,7 +142,7 @@ class TeacherHomeworkController {
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
-                request.version());
+                request.videos() == null ? null : inputs(request.videos()), request.version());
     }
 
     /** Deletes the assignment with the tasks, the answers and every file of them. */
@@ -168,5 +204,9 @@ class TeacherHomeworkController {
     @PostMapping("/tasks/{taskId}/review")
     TaskDetails review(@PathVariable UUID taskId, @Valid @RequestBody ReviewRequest request) {
         return reviews.review(taskId, request.decision(), request.grade(), request.comment());
+    }
+
+    private static List<VideoInput> inputs(@Nullable List<VideoRequest> videos) {
+        return videos == null ? List.of() : videos.stream().map(VideoRequest::toInput).toList();
     }
 }

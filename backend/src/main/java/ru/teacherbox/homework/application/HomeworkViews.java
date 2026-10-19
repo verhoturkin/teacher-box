@@ -4,8 +4,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
+import ru.teacherbox.homework.domain.VideoLink;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.api.TextbookSummary;
@@ -35,6 +37,34 @@ public final class HomeworkViews {
         static BoundTextbookView of(TextbookSummary textbook, @Nullable String pages) {
             return new BoundTextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
                     textbook.format(), textbook.pageCount(), pages);
+        }
+    }
+
+    /**
+     * A video of an assignment the teacher gives (ADR-0047).
+     *
+     * @param transcript      lines {@code [m:ss] text}; blank — none
+     * @param transcriptShown the student sees the transcript
+     */
+    public record VideoInput(String url, @Nullable String title, @Nullable String transcript,
+            boolean transcriptShown) {
+    }
+
+    /**
+     * A video of an assignment (ADR-0047).
+     *
+     * @param videoId      the video on its platform; {@code null} — a plain link opened in a new tab
+     * @param startSeconds where the player starts; {@code null} — from the beginning
+     * @param transcript   {@code null} — none, or hidden from the student
+     */
+    public record VideoView(String url, VideoLink.Provider provider, @Nullable String videoId,
+            @Nullable Integer startSeconds, @Nullable String title, @Nullable String transcript,
+            boolean transcriptShown) {
+
+        static VideoView of(AssignmentVideo video, boolean teacher) {
+            VideoLink link = video.link();
+            return new VideoView(link.url(), link.provider(), link.videoId(), link.startSeconds(), video.title(),
+                    teacher || video.transcriptShown() ? video.transcript() : null, video.transcriptShown());
         }
     }
 
@@ -86,7 +116,8 @@ public final class HomeworkViews {
             long version,
             List<AttachmentView> attachments,
             List<TaskSummary> tasks,
-            List<BoundTextbookView> textbooks) {
+            List<BoundTextbookView> textbooks,
+            List<VideoView> videos) {
     }
 
     public record SubmissionView(UUID id, @Nullable String text, Instant submittedAt, List<AttachmentView> attachments) {
@@ -104,7 +135,8 @@ public final class HomeworkViews {
             @Nullable Instant dueAt,
             @Nullable UUID boardId,
             List<AttachmentView> attachments,
-            List<BoundTextbookView> textbooks) {
+            List<BoundTextbookView> textbooks,
+            List<VideoView> videos) {
     }
 
     /** A task with the assignment, all submissions (newest first) and the review. */

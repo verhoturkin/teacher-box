@@ -84,7 +84,7 @@ public class SystemPrompts {
     /** The default prompt of a feature among the module resources. */
     static String resource(AiFeature feature) {
         return switch (feature) {
-            case HOMEWORK_DRAFT -> "homework-draft.system.v3";
+            case HOMEWORK_DRAFT -> "homework-draft.system.v4";
             case REVIEW_DRAFT -> "review-draft.system.v1";
         };
     }

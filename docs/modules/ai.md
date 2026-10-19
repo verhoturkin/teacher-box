@@ -33,7 +33,7 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
 - System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
   0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `REVIEW_DRAFT`; 1–10000 characters,
-  `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v3`,
+  `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
   `review-draft.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
   default prompt has version 0; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
   with `<request>` / `<answer>`) stay resources.
@@ -47,6 +47,11 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `ai.source-not-found`. Files of an assignment not saved yet ([ADR-0042](../adr/0042-ai-reads-picked-files.md)):
   the same endpoint as `multipart/form-data` — part `brief` (the JSON request) and parts `files`
   (`DraftSources.Upload`, the same types and limits, counted among the 5 sources; nothing is stored).
+  A video ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): `{type: VIDEO, title?, url,
+  transcript}` — the transcript the frontend has (new or saved assignment), `DraftSources.VideoTranscript` →
+  `LlmSource` `text/plain` «Расшифровка видео «title» (url)»; Anthropic — a text `document`, OpenAI-compatible — a
+  text part (DeepSeek reads it too); counted among the 5 sources. `homework-draft.system.v4` asks to build the tasks
+  on what the video says and give the `[m:ss]` of each fragment.
   `LlmRequest.sources` go before the prompt: Anthropic — `document` (titled) and `image`
   blocks; OpenAI-compatible — `image_url` data URIs, a PDF drawn page by page by `PdfPictures` (PDFBox, 100 dpi). The
   prompt names them; `ai.requests` keeps no names.

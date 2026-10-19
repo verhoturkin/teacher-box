@@ -100,7 +100,9 @@ class AnthropicLlmClientTest {
         respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
         LlmRequest request = new LlmRequest("system text", "user text", "homework_draft", REQUEST.schema(),
                 List.of(new LlmSource("Spotlight 5, с. 2", LlmSource.PDF, new byte[] {'%', 'P'}),
-                        new LlmSource("Схема.png", "image/png", new byte[] {1, 2})));
+                        new LlmSource("Схема.png", "image/png", new byte[] {1, 2}),
+                        new LlmSource("Расшифровка видео", LlmSource.TEXT,
+                                "[0:05] Привет".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
 
         try (AnthropicLlmClient client = client(null, false)) {
             client.complete(request);
@@ -113,7 +115,11 @@ class AnthropicLlmClientTest {
         assertThat(content.path(0).path("source").path("data").asString()).isEqualTo("JVA=");
         assertThat(content.path(1).path("type").asString()).isEqualTo("image");
         assertThat(content.path(1).path("source").path("media_type").asString()).isEqualTo("image/png");
-        assertThat(content.path(2).path("text").asString()).isEqualTo("user text");
+        assertThat(content.path(2).path("type").asString()).isEqualTo("document");
+        assertThat(content.path(2).path("title").asString()).isEqualTo("Расшифровка видео");
+        assertThat(content.path(2).path("source").path("type").asString()).isEqualTo("text");
+        assertThat(content.path(2).path("source").path("data").asString()).isEqualTo("[0:05] Привет");
+        assertThat(content.path(3).path("text").asString()).isEqualTo("user text");
     }
 
     @Test
