@@ -53,7 +53,6 @@ describe('TeacherHome', () => {
     await fixture.whenStable();
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Занятие Оплата Ученик Задание');
     expect(text).toContain('Следующее занятие');
     expect(text).toContain('Степени');
     expect(text).toContain('С чего начать');
@@ -70,7 +69,6 @@ describe('TeacherHome', () => {
       (widget) => widget.tagName.toLowerCase(),
     );
     expect(widgets).toEqual([
-      'tb-quick-actions',
       'tb-upcoming-lesson-widget',
       'tb-first-run-checklist',
       'tb-attention-card',

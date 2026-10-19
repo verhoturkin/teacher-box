@@ -119,12 +119,15 @@ const ALL_DAY_START_HOUR = 10;
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/schedule" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.lesson"
-        icon="tb-i tb-i-add"
-        (onClick)="newLesson()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.lesson"
+          icon="tb-i tb-i-add"
+          (onClick)="newLesson()"
+        />
+      }
     </tb-page-header>
     @if (localTimeHint(); as hint) {
       <p class="tb-hint">{{ hint }}</p>

@@ -13,6 +13,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
+import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
@@ -50,12 +51,15 @@ import { T } from '../i18n/texts';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/homework" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.create"
-        icon="tb-i tb-i-add"
-        (onClick)="openCreate()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.create"
+          icon="tb-i tb-i-add"
+          (onClick)="openCreate()"
+        />
+      }
     </tb-page-header>
 
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -99,6 +103,7 @@ import { T } from '../i18n/texts';
   `,
 })
 export class AssignmentsPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.list;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);

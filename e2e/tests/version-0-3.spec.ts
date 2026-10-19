@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.3: the name of the portal in the header and its address in the invitation link, a backup
@@ -38,7 +39,7 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await expect(page).toHaveTitle(`Настройки — ${PORTAL_NAME}`);
 
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(STUDENT);
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.getByRole('textbox', { name: 'Ссылка-приглашение' })).toHaveValue(

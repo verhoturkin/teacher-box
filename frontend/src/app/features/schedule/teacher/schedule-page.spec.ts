@@ -330,7 +330,7 @@ describe('SchedulePage', () => {
 
   it('opens a new lesson, a lesson card and the editor', async () => {
     await render();
-    buttonByText(hostElement(fixture), 'Занятие').click();
+    await TestBed.inject(Router).navigateByUrl('/?create=lesson');
     await fixture.whenStable();
     expect(bodyText()).toContain('Новое занятие');
 

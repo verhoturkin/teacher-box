@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.17.0 (ADR-0045, one accent): the main action of a page or a dialog is filled primary — the colour
@@ -49,12 +50,14 @@ test('a dialog submits with the portal colour, like the main action of the page'
   page,
 }) => {
   await signIn(page);
-  await page.goto('/teacher/students');
-  const add = page.locator('main').getByRole('button', { name: 'Добавить ученика' }).first();
-  await expect(add).toBeVisible();
-  const accent = await add.evaluate((node) => getComputedStyle(node).backgroundColor);
+  // the main action of a section outside «Создать» (232.2): the header button of the textbooks
+  await page.goto('/teacher/textbooks');
+  const main = page.locator('main').getByRole('button', { name: 'Новый учебник' }).first();
+  await expect(main).toBeVisible();
+  const accent = await main.evaluate((node) => getComputedStyle(node).backgroundColor);
 
-  await add.click();
+  await page.goto('/teacher/students');
+  await create(page, 'Ученик');
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   await expect(dialog).toBeVisible();
   const save = dialog.getByRole('button', { name: 'Сохранить' });

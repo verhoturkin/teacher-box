@@ -180,16 +180,16 @@ describe('StudentsPage', () => {
     await loadStudents([]);
     expect(host.textContent).toContain('Учеников пока нет');
 
-    // the first action is the FAB of the page, not a second button in the empty state (ADR-0018)
+    // the first action is «Создать» (the rail, the FAB on a phone), not a button in the empty state
     expect(host.querySelector('tb-empty-state button')).toBeNull();
-    requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();
+    await TestBed.inject(Router).navigateByUrl('/?create=student');
     await fixture.whenStable();
     expect(bodyText()).toContain('Новый ученик');
   });
 
   it('shows the invitation link after creating a student', async () => {
     await loadStudents([MARIA]);
-    buttonByText(host, 'Добавить ученика').click();
+    await TestBed.inject(Router).navigateByUrl('/?create=student');
     await fixture.whenStable();
 
     typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Анна');
@@ -305,7 +305,6 @@ describe('StudentsPage', () => {
     await loadStudents([MARIA], [aGroup()]);
 
     expect(host.querySelector('[role="tab"]')).toBeNull();
-    expect(host.textContent).toContain('Добавить ученика');
     expect(host.textContent).toContain('Создать группу');
     const panel = fixture.debugElement.query(By.directive(GroupsPanel)).injector.get(GroupsPanel);
     expect(panel.students()).toEqual([MARIA]);

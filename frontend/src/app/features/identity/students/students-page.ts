@@ -27,6 +27,7 @@ import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
+import { injectMobile } from '@core/layout/mobile';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { labelKey } from '@core/theme/label-colors';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -69,12 +70,15 @@ import { SearchField } from '@shared/ui/search-field';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/students" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.add"
-        icon="tb-i tb-i-person_add"
-        (onClick)="openCreate()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.add"
+          icon="tb-i tb-i-person_add"
+          (onClick)="openCreate()"
+        />
+      }
     </tb-page-header>
 
     <div class="tb-stack">
@@ -164,6 +168,7 @@ import { SearchField } from '@shared/ui/search-field';
   `,
 })
 export class StudentsPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.students;
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);

@@ -135,7 +135,8 @@ describe('BoardsPage', () => {
     expect(text()).toContain('У них досок пока нет');
     expect(text()).toContain('Доски ученика: Мария');
 
-    buttonByText(host, 'Новая доска').click();
+    // «Создать › Доска» on the filtered page: the board is for the student of the filter
+    await TestBed.inject(Router).navigateByUrl('/?create=board');
     await fixture.whenStable();
     const dialog = fixture.debugElement.query(By.directive(BoardDialog)).injector.get(BoardDialog);
     expect(dialog.visible()).toBe(true);

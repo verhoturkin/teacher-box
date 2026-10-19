@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { laterThisWeek } from './this-week';
 
 /**
@@ -262,7 +263,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
 
   // 0.7.3: the students page links no boards; a board for Anna is made on «Доски»
   await page.goto('/teacher/boards');
-  await page.getByRole('button', { name: 'Новая доска' }).click();
+  await create(page, 'Доска');
   const dialog = page.getByRole('dialog', { name: 'Новая доска' });
   await dialog.getByText('Внешняя доска', { exact: true }).click();
   await page.locator('#board-title').fill('Алгебра');

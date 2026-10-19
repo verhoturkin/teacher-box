@@ -278,10 +278,10 @@ component that shows one adds it to `PRIME`).
   | Window | Query | Navigation | Panes | Main action |
   |---|---|---|---|---|
   | compact (phone) | `width < 37.5em` | bottom bar: five sections; ☰ → modal expanded rail | 1 | extended FAB above the bar |
-  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | teacher: FAB «Создать» atop the rail; button in page header |
-  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | teacher: FAB «Создать» atop the rail; button in page header |
-  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | teacher: FAB «Создать» atop the rail; button in page header |
-  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | teacher: small extended FAB «Создать» atop the rail; button in page header |
+  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | teacher: FAB «Создать» atop the rail, the only FAB |
+  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | teacher: FAB «Создать» atop the rail, the only FAB |
+  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | teacher: FAB «Создать» atop the rail, the only FAB |
+  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | teacher: small extended FAB «Создать» atop the rail, the only FAB |
 
   Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
   keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
@@ -308,8 +308,11 @@ component that shows one adds it to `PRIME`).
   current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
   one global entry point instead of a create button per section (ADR-0048). An item opens
   `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
-  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. The header `tb-page-fab` buttons
-  and the home quick actions stay until 232.2.
+  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. From 600 px it is the screen's only
+  FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
+  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
+  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
+  (textbooks), «Оплата» of one student (ledger, prefilled).
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -376,11 +379,12 @@ component that shows one adds it to `PRIME`).
   bar names the section since 231.2) and no «?» («Справка» is under ☰); the header keeps only details and
   actions, and takes no room without them.
   Nested pages keep «Назад» + title on one line.
-- **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
+- **Main action** — filled `tb-page-fab`, last header action (from 600 px only when «Создать» does not make it,
+  232.2); on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
-- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's quick actions on a phone instead of
-  the row of buttons. The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the six
+  items of the rail menu, 232.2). The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
   and turns into the round «Закрыть» (primary). Esc, a tap outside, the focus leaving or an item close it; the focus
   goes to the first item and back to the FAB; ↓ ↑ Home End move between items. In the rail (`variant` `rail` /

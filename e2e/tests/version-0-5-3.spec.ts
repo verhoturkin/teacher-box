@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { laterThisWeek, saveLesson } from './this-week';
 
 /**
@@ -55,7 +56,7 @@ async function studentPage(browser: Browser): Promise<Page> {
 test('the groups are under the students, without tabs', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/students');
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(STUDENT);
   await page.getByRole('button', { name: 'Сохранить' }).click();
   const link = page.getByRole('textbox', { name: 'Ссылка-приглашение' });

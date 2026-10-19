@@ -57,7 +57,7 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('AssignmentsPage', () => {
-  it('lists active and done assignments in two cards and opens the editor of a new one', async () => {
+  it('lists active and done assignments in two cards', async () => {
     const { backend } = configure();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
@@ -126,8 +126,6 @@ describe('AssignmentsPage', () => {
     await act('Дроби', 'Проверить работы');
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework/review']);
 
-    buttonByText(host, 'Новое задание').click();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
     fixture.destroy();
   });
 

@@ -21,6 +21,7 @@ import { BillingOverview, StudentBalance } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { DefaultPriceCard } from './default-price-card';
 import { PaymentDialog } from './payment-dialog';
+import { injectMobile } from '@core/layout/mobile';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
@@ -65,13 +66,16 @@ import { T } from '../i18n/texts';
         <i pButtonIcon aria-hidden="true" class="tb-i tb-i-bar_chart"></i>
         <span pButtonLabel>{{ t.report }}</span>
       </a>
-      <p-button
-        class="tb-page-fab"
-        [label]="t.payment"
-        icon="tb-i tb-i-account_balance_wallet"
-        (onClick)="openPayment(null)"
-        [disabled]="!overview()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.payment"
+          icon="tb-i tb-i-account_balance_wallet"
+          (onClick)="openPayment(null)"
+          [disabled]="!overview()"
+        />
+      }
     </tb-page-header>
 
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -167,6 +171,7 @@ import { T } from '../i18n/texts';
   `,
 })
 export class BillingOverviewPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.overview;
   protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);

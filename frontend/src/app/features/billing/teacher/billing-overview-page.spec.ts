@@ -117,8 +117,8 @@ describe('BillingOverviewPage', () => {
     expect(router.url).toBe('/');
   });
 
-  it('opens the payment dialog from the toolbar and for a student', async () => {
-    buttonByText(host, 'Оплата').click();
+  it('opens the payment dialog from «Создать» and for a student', async () => {
+    await TestBed.inject(Router).navigateByUrl('/?create=payment');
     await fixture.whenStable();
     const dialog = fixture.debugElement
       .query(By.directive(PaymentDialog))

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.20.1: the colour of a student tints the background of their row (a tile from the same tones as any
@@ -20,7 +21,7 @@ test('the colour of a student tints their row, not the avatar', async ({ page })
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/students');
 
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(student);
   const dialog = page.getByRole('dialog');
   await dialog.locator('tb-label-color-field .p-select').click();

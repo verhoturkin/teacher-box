@@ -20,6 +20,7 @@ import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
+import { injectMobile } from '@core/layout/mobile';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { openOnCreate } from '@core/routing/create-param';
 import { HelpButton } from '@features/help/parts';
@@ -82,12 +83,15 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/boards" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.create"
-        icon="tb-i tb-i-add"
-        (onClick)="openCreate()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.create"
+          icon="tb-i tb-i-add"
+          (onClick)="openCreate()"
+        />
+      }
     </tb-page-header>
 
     @if (filterLabel(); as label) {
@@ -228,6 +232,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
   `,
 })
 export class BoardsPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.list;
   protected readonly k = T.cards;
   private readonly api = inject(BoardsApi);

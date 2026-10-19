@@ -72,7 +72,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
   section page opens its existing dialog / route and drops the parameter: `schedule-page.ts` (`lesson-dialog`),
   `/teacher/homework/new`, `billing-overview-page.ts` (`payment-dialog`), `students-page.ts`
   (`student-form-dialog`), `boards-page.ts` (`board-dialog`), `notifications-page.ts` (`broadcast-dialog`).
-- [ ] 232.2 **F** Remove `features/home/quick-actions.ts` and the header create buttons (`tb-page-fab`) from
+- [x] 232.2 **F** Remove `features/home/quick-actions.ts` and the header create buttons (`tb-page-fab`) from
   expanded and wider; on compact a section keeps its extended FAB, Today keeps the FAB menu. Tests: one FAB per
   screen at each breakpoint.
 - [ ] 232.3 **D** design-system §5 «Main action», help (ru, en), wiki.

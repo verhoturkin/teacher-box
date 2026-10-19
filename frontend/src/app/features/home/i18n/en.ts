@@ -24,13 +24,6 @@ export const en: Translation<typeof ru> = {
     lesson: 'Plan the first lesson',
     lessonHint: 'one-off or recurring — reminders come by themselves',
   },
-  quickActions: {
-    title: 'Quick actions',
-    lesson: 'Lesson',
-    payment: 'Payment',
-    student: 'Student',
-    assignment: 'Homework',
-  },
   studentHome: {
     title: 'Home',
     what: 'the lessons, homework and balance',

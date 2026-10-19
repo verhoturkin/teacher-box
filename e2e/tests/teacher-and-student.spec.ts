@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { laterThisWeek, saveLesson } from './this-week';
 
 /**
@@ -70,8 +71,8 @@ test('the teacher signs in and invites a student', async ({ page }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
-  // The empty list offers the same button: the one in the page header.
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  // The empty list offers no button: «Создать › Ученик» in the rail (232.2).
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(STUDENT_NAME);
   await page.getByRole('button', { name: 'Сохранить' }).click();
 
@@ -99,8 +100,8 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Задания' })
     .click();
-  // The main action of the page; the empty list offers the same button
-  await page.locator('tb-page-header').getByRole('button', { name: 'Новое задание' }).click();
+  // «Создать › Задание» in the rail (232.2)
+  await create(page, 'Задание');
   // The editor page (0.14.0).
   await page.locator('#editor-title').fill(HOMEWORK_TITLE);
   await page.locator('#editor-text').fill('1. Сложите 1/2 и 1/3');

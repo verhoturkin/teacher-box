@@ -1,4 +1,5 @@
 import { type Page, type Response, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.17.2 (ADR-0046): icons are Material Symbols Rounded from a small subset font (hashed, cached for
@@ -61,7 +62,7 @@ test('the active section has a filled icon, the others are outlined', async ({ p
 test('no primeicons are left and PrimeNG icons show our symbols', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/schedule');
-  await page.getByRole('button', { name: 'Занятие' }).first().click();
+  await create(page, 'Занятие');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
 
