@@ -19,6 +19,8 @@ The administrator helps with the server: reads the log, checks the integrations 
 - **Settings** — [portal settings](/admin/help/settings) instead of the .env file.
 - **Diagnostics** — an archive for the developer: the log and the settings without passwords and personal data.
 
+The sections are in the panel on the left, «Settings» and «Help» at its bottom. On a phone the bottom of the screen has «Status», «Log», «Integrations», «Backups», «Events»; «Diagnostics», «Settings» and «Help» are under the ☰ button at the top left. Your photo (or a person icon) at the top right opens the menu: «My account», the theme, the language and «Sign out».
+
 ## If something broke
 
 1. Open «Integrations» and click «Check».

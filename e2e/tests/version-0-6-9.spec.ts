@@ -2,7 +2,7 @@ import { type Page, expect, test } from '@playwright/test';
 
 /**
  * Version 0.6.9: fixes of 0.6.8 (ADR-0021) — the notifications and the help are as wide as the
- * other sections and the contents of the help are above the article.
+ * other sections and the contents of the help mark the current article.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -28,23 +28,19 @@ test('the notifications and the help are as wide as the other sections', async (
   const schedule = await widthOfFirstCard(page, '/teacher/schedule');
 
   expect(await widthOfFirstCard(page, '/teacher/notifications')).toBe(schedule);
-  expect(await widthOfFirstCard(page, '/teacher/help')).toBe(schedule);
+  // the help is list-detail from 0.21.0: version-0-21-0.spec.ts checks its panes
 });
 
-test('the contents of the help are above the article', async ({ page }) => {
+test('the contents of the help mark the article and lead to another one', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1440);
   await page.goto('/teacher/help/groups');
 
   const contents = page.getByRole('navigation', { name: 'Статьи справки' });
   const current = contents.locator('a[aria-current="page"]');
-  await expect(current).toHaveText('Группы');
-  const title = page.locator('.tb-help__title');
-  await expect(title).toHaveText('Группы');
-  const contentsBox = await contents.boundingBox();
-  const titleBox = await title.boundingBox();
-  expect((contentsBox?.y ?? 0) + (contentsBox?.height ?? 0)).toBeLessThan(titleBox?.y ?? 0);
+  await expect(current.locator('.tb-help__item-title')).toHaveText('Группы');
+  await expect(page.locator('.tb-help__title')).toHaveText('Группы');
 
-  await contents.getByRole('link', { name: 'Оплаты' }).click();
+  await contents.getByRole('link', { name: /^Оплаты/ }).click();
   await expect(page).toHaveURL(/\/teacher\/help\/billing$/);
   await expect(page.locator('.tb-help__title')).toHaveText('Оплаты');
 });

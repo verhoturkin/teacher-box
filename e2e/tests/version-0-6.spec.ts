@@ -21,6 +21,9 @@ const SECTIONS = [
   'Доски',
   'Уведомления',
   'ИИ-помощник',
+  // the bottom group of the rail (0.21.0)
+  'Настройки',
+  'Справка',
 ];
 
 async function signIn(page: Page): Promise<void> {
@@ -81,9 +84,8 @@ test('on a phone the main action is the FAB above the bottom navigation', async 
   await signIn(page);
   await expect(page.locator('tb-side-nav')).toHaveCount(0);
 
-  // «Ученики» is under «Ещё» since 0.10.1
-  await page.locator('nav.tb-bottom-nav').getByRole('button', { name: 'Ещё разделы' }).click();
-  await page.getByRole('menuitem', { name: 'Ученики' }).click();
+  // «Ученики» is back in the bar since 0.21.0 (D2)
+  await page.locator('nav.tb-bottom-nav').getByRole('link', { name: 'Ученики' }).click();
   const fab = page.getByRole('button', { name: 'Добавить ученика' });
   await expect(fab).toBeVisible();
   // the FAB slides in: measure it where it stops
@@ -130,8 +132,9 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   await rename(current);
 
   // A filled button is the primary role: a tone of the portal color readable on white (ADR-0023).
-  await page.goto('/teacher/students');
-  await expect(page.getByRole('button', { name: 'Добавить ученика' }).first()).toBeVisible();
+  // the header button of a section outside «Создать» (232.2)
+  await page.goto('/teacher/textbooks');
+  await expect(page.getByRole('button', { name: 'Новый учебник' }).first()).toBeVisible();
   const [button, shade] = await page.evaluate(() => {
     const probe = document.createElement('div');
     probe.style.color = 'var(--p-md-primary)';

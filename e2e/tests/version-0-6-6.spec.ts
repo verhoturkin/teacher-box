@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.6.6: Material 3 Expressive and the meaning of button colors (ADR-0019; since 0.17.0 one
@@ -67,7 +68,7 @@ test('confirming buttons are primary, cancelling neutral, and the dialog stands 
 }) => {
   await signIn(page);
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).first().click();
+  await create(page, 'Ученик');
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   await expect(dialog).toBeVisible();
 
@@ -100,10 +101,12 @@ test('the frame: room between the sections, no name of the area, Expressive shap
 
   const header = page.locator('header.tb-shell__header');
   await expect(header).not.toContainText('Кабинет учителя');
-  // the name of the portal (other scenarios rename it)
-  await expect(header.locator('.tb-shell__brand')).not.toBeEmpty();
+  // the name of the portal at the top of the rail (231.1; other scenarios rename it)
+  await expect(page.locator('tb-side-nav .tb-side-nav__brand')).not.toBeEmpty();
 
   expect(await style(page, 'main .p-card', 'border-radius')).toBe('20px');
+  // the main action of a section outside «Создать» (232.2): the header button of the textbooks
+  await page.goto('/teacher/textbooks');
   expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');
 });
 

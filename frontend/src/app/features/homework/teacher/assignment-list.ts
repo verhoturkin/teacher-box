@@ -147,7 +147,7 @@ export interface AssignmentActions {
     .tb-toolbar > p-button {
       margin-left: auto;
 
-      @media (width <= 48em) {
+      @media (width < 37.5em) {
         margin-left: 0;
       }
     }

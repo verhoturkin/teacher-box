@@ -17,13 +17,13 @@ Ask the teacher to send a password reset link. Set a new password with it.
 
 ## Change the password
 
-The menu with your name (top right) → «My account» → «Change password».
+Your photo (or a person icon) at the top right → «My account» → «Change password».
 
 If a link does not open or is out of date, ask the teacher to send a new one.
 
 ## Photo and name
 
-The menu with your name → «My account»: the photo is in the top card, the name in the «Name» card.
+Your photo at the top right → «My account»: the photo is in the top card, the name in the «Name» card.
 
 - **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo at the top right, and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
 - **Name** — how the portal calls you in the cabinet. The teacher still sees you under the name they gave. Erase your name and save to go back to the teacher's name.
@@ -170,7 +170,7 @@ Send the bot /stop or disconnect the messenger in «Notifications». There you c
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
 
-- The sections are in the bottom bar of the screen: «Home», «Schedule», «My boards», «Payments», and «Homework» and «Textbooks» are under «More»; on a computer all of them are in the panel on the left. The chosen section's icon is filled.
+- The sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «My boards», «Payments»; the ☰ button at the top left opens «Textbooks» and «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled.
 - The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
 - The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
 - Lists are shown as cards, forms open full screen.
@@ -179,11 +179,11 @@ The cabinet works in the phone's browser, nothing needs installing. If you want 
 
 ## Dark theme
 
-The menu with your name (top right) → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device.
+Your photo (or a person icon) at the top right → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device.
 
 ## Language
 
-The menu with your name → «Русский» or «English» (under the theme). On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
+The same menu → «Русский» or «English» (under the theme). On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
 `,
   },
 };

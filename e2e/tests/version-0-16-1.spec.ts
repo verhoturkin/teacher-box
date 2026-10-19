@@ -19,6 +19,7 @@ async function signIn(page: Page): Promise<void> {
 
 /** Holds the mouse down on the element until the shape spring settles; the release lands elsewhere. */
 async function pressAndHold(page: Page, element: Locator): Promise<void> {
+  await element.scrollIntoViewIfNeeded();
   const box = await element.boundingBox();
   if (!box) {
     throw new Error('the element is not on screen');

@@ -12,16 +12,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { MenuItem } from 'primeng/api';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { ButtonDirective, ButtonIcon } from 'primeng/button';
+import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
-import { Portal } from '@core/portal/portal';
-import { PortalLogo } from '@core/portal/portal-logo';
 import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
 import { CORE_T } from '@core/i18n/texts';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { CreateMenu } from './create-menu';
 import { SideNav } from './side-nav';
 
 const T = CORE_T.shell;
@@ -32,16 +33,14 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
   { choice: 'system', label: T.systemTheme, icon: 'tb-i tb-i-brightness_auto' },
 ];
 
-/**
- * Sections in the bottom navigation: four and «Ещё» (ADR-0027); the others are under «Ещё». Five
- * sections fit without «Ещё» (M3: up to five destinations).
- */
-const NAV_ITEMS = 4;
+/** M3: a navigation bar holds up to five destinations; the others are under ☰ in the modal rail. */
+const BAR_ITEMS = 5;
 
 /**
- * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the portal, the
- * bell and the user menu; the sections of the role in the expanded navigation rail on a wide
- * screen, in the rail on a tablet and in the bottom navigation on a phone; the routed content.
+ * Application frame (ADR-0017, ADR-0019, spec §3): the top strip with the bell and the user menu (on compact
+ * the top app bar with ☰ and the title of the section before them); the sections of the role in the expanded
+ * navigation rail from extra-large, in the collapsed rail from medium to large (ADR-0048, D5) and, on compact,
+ * in the bottom navigation with the rest in the modal expanded rail under ☰; the routed content.
  */
 /** An item of a choice in a menu (the theme, the language) and the chosen one. */
 const CHOICE = 'tb-menu-item--choice';
@@ -52,23 +51,38 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   imports: [
     ButtonDirective,
     ButtonIcon,
-    ButtonLabel,
+    CreateMenu,
+    Drawer,
+    ModalDrawer,
     Menu,
     NotificationBell,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    PortalLogo,
     SideNav,
     Avatar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="tb-shell__header">
-      <a class="tb-shell__brand" [routerLink]="homeLink()">
-        <tb-portal-logo size="1.75rem" round />
-        <span>{{ portalName() }}</span>
-      </a>
+      @if (compact()) {
+        <!-- M3 small top app bar: ☰ opens the modal expanded rail, the title names the section -->
+        <button
+          pButton
+          type="button"
+          class="tb-shell__rail-button"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          [attr.aria-label]="sections"
+          aria-haspopup="dialog"
+          [attr.aria-expanded]="railOpen()"
+          (click)="railOpen.set(true)"
+        >
+          <i pButtonIcon class="tb-i tb-i-menu" aria-hidden="true"></i>
+        </button>
+        <span class="tb-shell__title">{{ title() }}</span>
+      }
       <div class="tb-shell__user">
         @if (notifications()) {
           <tb-notification-bell [link]="homeLink() + '/notifications'" />
@@ -77,12 +91,11 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
         <button
           pButton
           type="button"
-          class="tb-shell__user-button"
-          [class.tb-shell__user-button--round]="compact()"
+          class="tb-shell__user-button tb-shell__user-button--round"
           [text]="true"
           [rounded]="true"
           severity="secondary"
-          [attr.aria-label]="compact() ? t.userMenu : t.userMenuOf(userName())"
+          [attr.aria-label]="t.userMenuOf(userName())"
           aria-haspopup="menu"
           [attr.aria-expanded]="userOpen()"
           (click)="userMenu.toggle($event)"
@@ -95,9 +108,6 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
               class="tb-i tb-i-account_circle tb-shell__avatar-icon"
               aria-hidden="true"
             ></i>
-          }
-          @if (!compact()) {
-            <span pButtonLabel>{{ userName() }}</span>
           }
         </button>
         <p-menu
@@ -112,7 +122,11 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [rail]="size() === 'medium'" />
+        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'">
+          @if (create()) {
+            <tb-create-menu [extended]="size() === 'extra-large'" />
+          }
+        </tb-side-nav>
       }
       <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
         <router-outlet />
@@ -120,7 +134,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </div>
     @if (compact()) {
       <nav class="tb-bottom-nav" [attr.aria-label]="sections">
-        @for (item of navItems(); track item.label) {
+        @for (item of barItems(); track item.label) {
           <a
             class="tb-bottom-nav__item"
             [routerLink]="item.routerLink"
@@ -132,35 +146,42 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
             <span class="tb-bottom-nav__label">{{ item.label }}</span>
           </a>
         }
-        @if (moreItems().length > 0) {
-          <!-- a section from «Ещё» marks «Ещё» (ADR-0024) -->
-          <button
-            type="button"
-            class="tb-bottom-nav__item"
-            [class.tb-bottom-nav__item--active]="moreActive()"
-            [attr.aria-label]="t.moreSections"
-            aria-haspopup="menu"
-            [attr.aria-expanded]="moreOpen()"
-            [attr.aria-current]="moreActive() ? 'page' : null"
-            (click)="moreMenu.toggle($event)"
-          >
-            <span class="tb-bottom-nav__icon"
-              ><i class="tb-i tb-i-more_horiz" aria-hidden="true"></i
-            ></span>
-            <span class="tb-bottom-nav__label">{{ t.more }}</span>
-          </button>
-        }
       </nav>
-      <!-- Outside the navigation: in its grid the menu would take a column of its own. -->
-      <p-menu
-        #moreMenu
-        [model]="moreItems()"
-        [popup]="true"
+      <!-- the modal expanded rail (M3E): the scrim, the focus trap and the focus back to ☰ come with
+           tbModalDrawer; Esc in the rail closes it as the drawer's own Esc does -->
+      <p-drawer
+        #rail
+        tbModalDrawer
+        [(visible)]="railOpen"
+        position="left"
         appendTo="body"
-        styleClass="tb-more-menu"
-        (onShow)="moreOpen.set(true)"
-        (onHide)="moreOpen.set(false)"
-      />
+        [blockScroll]="true"
+        [closable]="false"
+        styleClass="tb-modal-rail"
+      >
+        <ng-template #header>
+          <button
+            pButton
+            type="button"
+            class="tb-modal-rail__close"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [attr.aria-label]="close"
+            (click)="rail.close($event)"
+          >
+            <i pButtonIcon class="tb-i tb-i-menu_open" aria-hidden="true"></i>
+          </button>
+          <span class="p-drawer-title tb-sr-only">{{ sections }}</span>
+        </ng-template>
+        <tb-side-nav
+          [items]="railItems()"
+          [footer]="footer()"
+          [modal]="true"
+          (navigate)="railOpen.set(false)"
+          (keydown.escape)="rail.close($event)"
+        />
+      </p-drawer>
     }
   `,
   styleUrl: './shell.scss',
@@ -171,38 +192,43 @@ export class Shell {
 
   protected readonly t = T;
   protected readonly sections = CORE_T.nav.sections;
-  protected readonly portalName = inject(Portal).name;
+  protected readonly close = CORE_T.close;
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();
-  /** Links shown in the user menu before «Мой аккаунт» (e.g. the teacher's settings). */
-  readonly userLinks = input<MenuItem[]>([]);
+  /** Links at the bottom of the rail before «Справка» (the settings of the area). */
+  readonly footerLinks = input<MenuItem[]>([]);
+  /**
+   * «Создать» at the top of the rail (the teacher only, ADR-0048); on compact the sections keep their own
+   * create actions (spec §3.1).
+   */
+  readonly create = input(false);
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
   /**
-   * Links of the sections that lead the bottom bar on a phone, in this order; the other sections
-   * follow in the order of `items` (the rail keeps the order of `items`).
+   * Links of the sections of the bottom bar on a phone, in this order; up to five, filled up with the
+   * other sections in the order of `items` (the rail keeps the order of `items`).
    */
   readonly bottomNav = input<readonly string[]>([]);
 
-  /** The sections in the order of the bottom bar. */
-  private readonly bottomItems = computed(() => {
+  /** The sections of the bottom bar (M3: up to five destinations, spec §5). */
+  protected readonly barItems = computed(() => {
     const items = this.items();
     const first = this.bottomNav()
       .map((link) => items.find((item) => item.routerLink === link))
       .filter((item): item is MenuItem => item !== undefined);
-    return [...first, ...items.filter((item) => !first.includes(item))];
+    return [...first, ...items.filter((item) => !first.includes(item))].slice(0, BAR_ITEMS);
   });
-  /** How many sections the bottom bar shows. */
-  private readonly shown = computed(() =>
-    this.items().length <= NAV_ITEMS + 1 ? this.items().length : NAV_ITEMS,
+  /** The other sections: in the modal expanded rail under ☰, in the order of the rail. */
+  protected readonly railItems = computed(() =>
+    this.items().filter((item) => !this.barItems().includes(item)),
   );
-  protected readonly navItems = computed(() => this.bottomItems().slice(0, this.shown()));
+  /** The modal expanded rail is open (compact only). */
+  protected readonly railOpen = signal(false);
   private readonly document = inject(DOCUMENT);
   protected readonly userOpen = signal(false);
-  protected readonly moreOpen = signal(false);
   private readonly router = inject(Router);
   private readonly url = toSignal(
     this.router.events.pipe(
@@ -211,21 +237,31 @@ export class Shell {
     ),
     { initialValue: this.router.url },
   );
-  /** The sections under «Ещё»; the current one is chosen in the menu (ADR-0027, ADR-0022). */
-  protected readonly moreItems = computed<MenuItem[]>(() => {
+  /**
+   * The title of the top app bar on compact (spec §3.2): the destination the page belongs to — the longest
+   * link of the sections, the bottom group and «Мой аккаунт» that leads the address.
+   */
+  protected readonly title = computed(() => {
     const url = this.url().split(/[?#]/)[0] ?? '';
-    return this.bottomItems()
-      .slice(this.shown())
-      .map((item) => {
-        const link: unknown = item.routerLink;
-        const current = typeof link === 'string' && (url === link || url.startsWith(`${link}/`));
-        return current ? { ...item, styleClass: 'tb-menu-item--selected' } : item;
-      });
+    const home = this.homeLink();
+    const destinations: MenuItem[] = [
+      ...this.items(),
+      ...this.footer(),
+      { label: T.account, routerLink: `${home}/account` },
+    ];
+    let best = { label: '', length: 0 };
+    for (const item of destinations) {
+      const link: unknown = item.routerLink;
+      if (
+        typeof link === 'string' &&
+        (url === link || (link !== home && url.startsWith(`${link}/`))) &&
+        link.length > best.length
+      ) {
+        best = { label: item.label ?? '', length: link.length };
+      }
+    }
+    return best.label;
   });
-  /** The current page is a section from «Ещё». */
-  protected readonly moreActive = computed(() =>
-    this.moreItems().some((item) => item.styleClass === 'tb-menu-item--selected'),
-  );
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   /** The photo of a student or the teacher on the user button; without one, the person icon. */
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
@@ -240,9 +276,14 @@ export class Shell {
     }
   }
 
-  protected readonly userItems = computed<MenuItem[]>(() => [
-    ...this.userLinks(),
+  /** The bottom group of the rail: the settings of the area and the help (spec §3.2). */
+  protected readonly footer = computed<MenuItem[]>(() => [
+    ...this.footerLinks(),
     { label: T.help, icon: 'tb-i tb-i-help', routerLink: `${this.homeLink()}/help` },
+  ]);
+
+  /** «Мой аккаунт», theme, language, sign out (spec §3.2): the settings and the help are in the rail. */
+  protected readonly userItems = computed<MenuItem[]>(() => [
     { label: T.account, icon: 'tb-i tb-i-badge', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.

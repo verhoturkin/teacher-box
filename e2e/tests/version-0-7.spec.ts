@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.7: our own Excalidraw boards (ADR-0028). The teacher creates a board for a student and a
@@ -147,7 +148,7 @@ test('the teacher creates a board for a student and a group, draws and returns',
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/boards');
-  await page.getByRole('button', { name: 'Новая доска' }).click();
+  await create(page, 'Доска');
   const dialog = page.getByRole('dialog', { name: 'Новая доска' });
   await page.locator('#board-title').fill(BOARD);
   await page.locator('p-multiselect:has(#board-students)').click();

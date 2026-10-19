@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { laterThisWeek, saveLesson } from './this-week';
 
 /**
@@ -44,8 +45,7 @@ async function planLesson(
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Расписание' })
     .click();
-  // The accessible name starts with the icon glyph.
-  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   // The date picker parses typed keys, not a pasted value.
@@ -70,8 +70,8 @@ test('the teacher signs in and invites a student', async ({ page }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
-  // The empty list offers the same button: the one in the page header.
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  // The empty list offers no button: «Создать › Ученик» in the rail (232.2).
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(STUDENT_NAME);
   await page.getByRole('button', { name: 'Сохранить' }).click();
 
@@ -90,7 +90,10 @@ test('the student accepts the invitation', async ({ browser }) => {
   await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
   await expect(page).toHaveURL(/\/cabinet$/);
-  await expect(page.getByText(STUDENT_NAME)).toBeVisible();
+  // the top strip shows the avatar only (0.21.0); the name is its accessible name
+  await expect(
+    page.getByRole('button', { name: `${STUDENT_NAME}: меню пользователя` }),
+  ).toBeVisible();
 });
 
 test('the teacher gives homework and the student hands it in', async ({ page, browser }) => {
@@ -99,8 +102,8 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Задания' })
     .click();
-  // The main action of the page; the empty list offers the same button
-  await page.locator('tb-page-header').getByRole('button', { name: 'Новое задание' }).click();
+  // «Создать › Задание» in the rail (232.2)
+  await create(page, 'Задание');
   // The editor page (0.14.0).
   await page.locator('#editor-title').fill(HOMEWORK_TITLE);
   await page.locator('#editor-text').fill('1. Сложите 1/2 и 1/3');

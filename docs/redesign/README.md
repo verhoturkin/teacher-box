@@ -54,14 +54,15 @@ rows and the order of blocks changed with the width. Panes keep those fixes:
 
 | # | Question | Default in this spec | Status |
 |---|---|---|---|
-| D1 | Give up «one column» (ADR-0021) for expanded and wider | Yes, via ADR-0048 | ask the teacher at 229.1 |
-| D2 | Teacher's bottom bar on a phone | Сегодня · Расписание · Задания · Ученики · Оплаты; Материалы in the ☰ modal rail | ask at 229.1 (now Доски are in the bar) |
-| D3 | Merge Boards and Textbooks into «Материалы» | Yes, experiment in 0.26.0; fallback — one boards list with chips | ask at 229.1 |
-| D4 | Backups in the teacher's Settings when the portal has an administrator | Keep both, one component | ask at 229.1 |
-| D5 | Expanded rail (280) from large (1200) or from extra-large (1600) | From 1600; collapsed rail 96 below | our decision, revisit at 230 |
+| D1 | Give up «one column» (ADR-0021) for expanded and wider | Yes, via ADR-0048 | **yes** — teacher, 2026-10-19 (ADR-0048) |
+| D2 | Teacher's bottom bar on a phone | Сегодня · Расписание · Задания · Ученики · Оплаты; Материалы in the ☰ modal rail | **default** — teacher, 2026-10-19: Доски leave the bar |
+| D3 | Merge Boards and Textbooks into «Материалы» | Yes, experiment in 0.26.0; fallback — one boards list with chips | **experiment** — teacher, 2026-10-19 |
+| D4 | Backups in the teacher's Settings when the portal has an administrator | Keep both, one component | **keep both** — teacher, 2026-10-19 |
+| D5 | Expanded rail (280) from large (1200) or from extra-large (1600) | From 1600; collapsed rail 96 below | our decision (ADR-0048), revisit at 230 |
 | D6 | Global search (Ctrl K) | Experiment, last release | 248 |
 
-Record answers here (Status column) in the commit of 229.1.
+Answers recorded at 229.1 (2026-10-19): the teacher took every default, so §3–§10 and stages 230–249 stand
+as written.
 
 ## 3. Shell (report `#shell`)
 

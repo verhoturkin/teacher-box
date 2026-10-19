@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.16.2 (M3 Expressive alignment, shape and type): a list nests its outer corners in its card (4 px on a
@@ -68,7 +69,7 @@ test('a list nests its corners in its card: 4 px on a computer, 8 px on a phone'
 test('a dialog is surface-container-high', async ({ page }) => {
   await signIn(page, 1280);
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   const dialog = page.locator('.p-dialog');
   await expect(dialog).toBeVisible();
 

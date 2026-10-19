@@ -141,8 +141,13 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  /* The frame in px: a larger font grows the text, not the bars (ADR-0024) */
+  /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small
+     top app bar (64 dp) on compact and the 80 px top strip over the panes from medium (ours, spec §3.2) */
   --tb-header-height: 64px;
+
+  @media (width >= 37.5em) {
+    --tb-header-height: 80px;
+  }
   --tb-bottom-nav-height: 64px;
 
   /* Icons (ADR-0046): the size with its optical size; 20 in buttons, 18 in chips */
@@ -535,7 +540,7 @@ textarea.p-textarea {
   margin: 0 0 var(--tb-space-4);
   font: var(--tb-type-headline-m-emphasized);
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     font: var(--tb-type-headline-s-emphasized);
   }
 }
@@ -920,7 +925,7 @@ textarea.p-textarea {
   justify-content: flex-end;
   gap: var(--tb-space-2);
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     > p-button,
     > .p-button {
       flex: 1 1 auto;
@@ -1060,7 +1065,7 @@ textarea.p-textarea {
  * phone the icon goes away and the text takes its place, so the title gets the width. Avatars of
  * people stay — such lists do not take the modifier.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .tb-list--no-phone-lead {
     grid-template-columns: minmax(0, 1fr) auto;
 
@@ -1357,7 +1362,7 @@ p-button.tb-list__stretched .p-button {
   cursor: pointer;
 }
 
-/* The main column of a list (a name, a title) is not squeezed by the others on a computer */
+/* The main column of a list (a name, a title) is not squeezed by the others from large (M3, 1200 px) */
 @media (width >= 75em) {
   .tb-col-main {
     min-width: 13rem;
@@ -1423,7 +1428,7 @@ p-button.tb-button-steady .p-button {
 
 /*
  * Links: the primary color, underlined on hover, the focus ring from the keyboard; links styled as
- * buttons stay buttons, menu items (the navigation, the user menu, «Ещё») are highlighted by the
+ * buttons stay buttons, menu items (the navigation, the user menu) are highlighted by the
  * menu itself
  */
 a {
@@ -1597,7 +1602,7 @@ a.p-menu-item-link:hover {
     min-width: 16rem;
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     flex-direction: column;
     align-items: stretch;
 
@@ -2311,7 +2316,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
  * action buttons are at the bottom of the card.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   /* Search fills the width of the toolbar */
   .tb-toolbar > tb-search-field {
     width: 100%;
@@ -2341,8 +2346,8 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-/* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
-@media (48em < width < 75em) {
+/* Tables on medium and expanded: narrower cell padding leaves room for the columns next to the rail */
+@media (37.5em <= width < 75em) {
   .p-datatable .p-datatable-thead > tr > th,
   .p-datatable .p-datatable-tbody > tr > td {
     padding-inline: var(--tb-space-2);
@@ -2363,7 +2368,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
  * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   p-button.tb-page-fab {
     position: fixed;
     right: var(--tb-space-4);
@@ -2425,7 +2430,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
  */
 .p-toast.p-toast-bottom-center {
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2)
     ) !important;
@@ -2433,7 +2438,7 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-@media (width <= 48em) {
+@media (width < 37.5em) {
   body:has(p-button.tb-page-fab, tb-fab-menu) .p-toast.p-toast-bottom-center {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
@@ -2523,7 +2528,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
  * or none: a password, a link) stay ordinary windows in the middle of the screen.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
     width: 100vw !important;
     max-width: 100vw;
@@ -2571,10 +2576,10 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   /*
-   * A section page has no title line on a phone (0.9.2): the navigation names the section, the room
-   * goes to the content. The title stays for screen readers; its «?» is in the user menu («Справка»).
+   * A section page has no title line on a phone (0.9.2): the top app bar names the section (231.2), the
+   * room goes to the content. The title stays for screen readers; «Справка» is under ☰.
    * A nested page keeps «Назад» with its title: they share one line.
    */
   .tb-page-header:not(:has(.tb-page-header__back)) {
@@ -2881,7 +2886,7 @@ full-calendar :has(> .tb-lesson--moving) {
     padding: 0 var(--tb-space-6) var(--tb-space-6);
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     inset: 0;
     width: 100vw;
     border-radius: 0;
@@ -2898,6 +2903,30 @@ full-calendar :has(> .tb-lesson--moving) {
   /* «←» stands in the padding: the headline keeps its line */
   > p-button {
     margin-inline-start: calc(-1 * var(--tb-space-3));
+  }
+}
+
+/*
+ * M3E modal expanded navigation rail (☰ on compact, shell.ts): on the start edge over a 32 % scrim,
+ * surface container, elevation level 2, 16 dp trailing corners (CornerLarge); 280 px like the expanded
+ * rail (ours, M3: 220–360 dp). The header holds the menu button that closes it, in line with the items.
+ */
+.p-drawer.tb-modal-rail {
+  width: min(280px, calc(100vw - var(--tb-space-16)));
+  height: 100%;
+  border: none;
+  border-radius: 0 var(--tb-shape-lg) var(--tb-shape-lg) 0;
+  background: var(--p-md-surface-container);
+  box-shadow: var(--tb-elevation-2);
+  color: var(--p-md-on-surface);
+
+  .p-drawer-header {
+    min-height: 56px;
+    padding: var(--tb-space-2) var(--tb-space-3) 0 var(--tb-space-4);
+  }
+
+  .p-drawer-content {
+    padding: 0 var(--tb-space-3) var(--tb-space-4);
   }
 }
 
@@ -2929,12 +2958,6 @@ full-calendar :has(> .tb-lesson--moving) {
 .p-menu .tb-menu-item--danger .p-menu-item-link,
 .p-menu .tb-menu-item--danger .p-menu-item-icon {
   color: var(--p-md-error);
-}
-
-/* «Ещё» opens at the right edge: in five columns its computed place may stick out by a pixel. */
-.tb-more-menu.p-menu-overlay {
-  right: var(--tb-space-2) !important;
-  left: auto !important;
 }
 
 /* A dialog without buttons in its footer (a stage that only informs) has no footer (ADR-0026) */
@@ -2989,7 +3012,7 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* On a phone the titles of the lessons are cut with an ellipsis, not in the middle of a word */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .fc .fc-event-title,
   .fc .fc-list-event-title {
     overflow: hidden;
@@ -3206,7 +3229,7 @@ full-calendar :has(> .tb-lesson--moving) {
     color: var(--p-md-on-surface-variant);
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     &--screen {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr auto;
@@ -3274,7 +3297,7 @@ full-calendar :has(> .tb-lesson--moving) {
     outline-offset: 2px;
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     width: 7rem;
     aspect-ratio: 3 / 4;
   }
@@ -3416,7 +3439,7 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .p-button.tb-call-button.tb-call-button {
     --tb-call-button-selected-shape: var(--tb-shape-md);
     --tb-call-button-pressed-shape: var(--tb-shape-sm);
@@ -3574,7 +3597,7 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* On a phone the bar of a call sits where the FAB was: the FAB moves above it */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   :root:has(.tb-call-mini--bar) p-button.tb-page-fab {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 4rem

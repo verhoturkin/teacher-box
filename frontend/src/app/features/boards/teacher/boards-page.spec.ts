@@ -16,9 +16,12 @@ describe('BoardsPage', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(query: { student?: string; group?: string } = {}): Promise<void> {
+  async function render(
+    query: { student?: string; group?: string; url?: string } = {},
+  ): Promise<void> {
     TestBed.configureTestingModule({ imports: [BoardsPage], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
+    if (query.url) await TestBed.inject(Router).navigateByUrl(query.url);
     fixture = TestBed.createComponent(BoardsPage);
     if (query.student) fixture.componentRef.setInput('student', query.student);
     if (query.group) fixture.componentRef.setInput('group', query.group);
@@ -67,6 +70,17 @@ describe('BoardsPage', () => {
     expect(text).toContain('изменена');
     expect(host.querySelector('p-select')).toBeNull();
     expect(text).not.toContain('Все доски');
+  });
+
+  it('opens the form of a new board from «Создать» and drops ?create', async () => {
+    await render({ url: '/?create=board' });
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    const dialog = fixture.debugElement.query(By.directive(BoardDialog)).injector.get(BoardDialog);
+    expect(dialog.visible()).toBe(true);
+    expect(dialog.board()).toBeNull();
+    expect(TestBed.inject(Router).url).toBe('/');
   });
 
   it('searches each card on its own, by the title or a student’s or group’s name', async () => {
@@ -121,7 +135,8 @@ describe('BoardsPage', () => {
     expect(text()).toContain('У них досок пока нет');
     expect(text()).toContain('Доски ученика: Мария');
 
-    buttonByText(host, 'Новая доска').click();
+    // «Создать › Доска» on the filtered page: the board is for the student of the filter
+    await TestBed.inject(Router).navigateByUrl('/?create=board');
     await fixture.whenStable();
     const dialog = fixture.debugElement.query(By.directive(BoardDialog)).injector.get(BoardDialog);
     expect(dialog.visible()).toBe(true);

@@ -4,7 +4,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -14,6 +13,8 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
+import { injectMobile } from '@core/layout/mobile';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -50,12 +51,15 @@ import { T } from '../i18n/texts';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/homework" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.create"
-        icon="tb-i tb-i-add"
-        (onClick)="openCreate()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.create"
+          icon="tb-i tb-i-add"
+          (onClick)="openCreate()"
+        />
+      }
     </tb-page-header>
 
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -99,6 +103,7 @@ import { T } from '../i18n/texts';
   `,
 })
 export class AssignmentsPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.list;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
@@ -120,14 +125,19 @@ export class AssignmentsPage implements OnInit {
   );
   /** Every task of the assignment is accepted («Принято»). */
   protected readonly done = computed(() => this.assignments().filter(isDone));
-  /** `?create=...` from the quick actions of the home page: opens the editor at once. */
-  readonly create = input<string>();
+
+  constructor() {
+    // the editor is a route of its own: it takes the place of the list in the history
+    openOnCreate(
+      'assignment',
+      () => {
+        void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
+      },
+      false,
+    );
+  }
 
   ngOnInit(): void {
-    if (this.create() === 'assignment') {
-      void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
-      return;
-    }
     this.load();
   }
 

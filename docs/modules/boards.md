@@ -67,7 +67,7 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
-- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under «Ещё» on a phone): all boards,
+- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under ☰ on a phone since 231.2): all boards,
   a search by the title or a member's (student's or group's) name above the list (0.15.0);
   a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 0.7.3 the
   students page links no boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
@@ -77,8 +77,8 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
   (`dangerConfirmation`). `board-dialog.ts` — kind (only when created), title, link (external), students, groups;
   members that left stay. `board-backups-dialog.ts` — copies: «Сделать копию», «Восстановить» / delete with a
   confirmation step inside the dialog (no dialog on top).
-- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — under «Ещё» on a
-  phone); `my-board-list.ts`; `my-board-links.ts` — the boards of the student's nearest lesson as chips on the home
+- `student/my-boards-page.ts` — «Мои доски» (`/cabinet/boards`, the student's sixth section since 0.10.0 — in the
+  phone's bottom bar since 231.2); `my-board-list.ts`; `my-board-links.ts` — the boards of the student's nearest lesson as chips on the home
   page (0.15.3, instead of the «Мои доски» card): of a group lesson those of the group, of an own lesson all of them.
 - `manage/` — `BoardLinks` — the boards of a lesson (lesson dialog; chips in «Следующее занятие» on the home page).
 - `editor/` — the Excalidraw island (ADR-0028): `excalidraw-island.ts` (the only file importing React and

@@ -1,4 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { laterThisWeek, saveLesson } from './this-week';
 
 /**
@@ -38,7 +39,7 @@ function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
 
 async function addStudent(page: Page, name: string): Promise<string> {
   await page.goto('/teacher/students');
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(name);
   await page.getByRole('button', { name: 'Сохранить' }).click();
   const link = page.getByRole('textbox', { name: 'Ссылка-приглашение' });
@@ -56,8 +57,7 @@ async function planLesson(
   topic: string,
 ): Promise<void> {
   await page.goto('/teacher/schedule');
-  // The accessible name starts with the icon glyph.
-  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: student }).click();
   // The date picker parses typed keys, not a pasted value.
@@ -87,8 +87,14 @@ test('sections lie on the page and the phone navigation has five sections', asyn
   const phone = await (await browser.newContext({ baseURL: BASE_URL, viewport: PHONE })).newPage();
   await signIn(phone, 'teacher', TEACHER_PASSWORD);
   const nav = phone.locator('nav.tb-bottom-nav');
-  // 0.10.1: «Доски» and «Оплаты» after «Расписание»
-  await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Доски', 'Оплаты']);
+  // 0.21.0: five sections, no «Ещё» (D2)
+  await expect(nav.getByRole('link')).toHaveText([
+    'Главная',
+    'Расписание',
+    'Задания',
+    'Ученики',
+    'Оплаты',
+  ]);
   const widths = await nav
     .locator('.tb-bottom-nav__item')
     .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().width)));

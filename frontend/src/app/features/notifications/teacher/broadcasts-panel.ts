@@ -7,6 +7,7 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastDialog, Recipient } from './broadcast-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 
@@ -94,6 +95,13 @@ export class BroadcastsPanel implements OnInit {
   protected readonly history = signal<BroadcastItem[] | null>(null);
   protected readonly broadcastVisible = signal(false);
   protected readonly students = signal<Recipient[]>([]);
+
+  constructor() {
+    // «Создать › Сообщение» (spec §4) until the bell's «Отправленные» (235.3)
+    openOnCreate('message', () => {
+      this.openBroadcast();
+    });
+  }
 
   ngOnInit(): void {
     this.reload();

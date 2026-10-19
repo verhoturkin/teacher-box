@@ -220,7 +220,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
       }
     }
 
-    @media (width <= 48em) {
+    @media (width < 37.5em) {
       .tb-account__name {
         font: var(--tb-type-headline-s-emphasized);
       }

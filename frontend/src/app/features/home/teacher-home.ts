@@ -7,6 +7,9 @@ import {
   signal,
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
+import { CORE_T } from '@core/i18n/texts';
+import { createItems } from '@core/layout/create-menu';
+import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
@@ -18,14 +21,14 @@ import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
 import { AttentionCard } from './attention-card';
 import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
-import { QuickActions } from './quick-actions';
+import { FabMenu } from '@shared/ui/fab-menu';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { T } from './i18n/texts';
 
 /**
- * Teacher dashboard: quick actions, the next lesson on top, then the widgets of the modules one under
+ * Teacher dashboard: the next lesson on top, then the widgets of the modules one under
  * another (ADR-0021): what needs attention, notifications, finance.
  */
 @Component({
@@ -33,10 +36,10 @@ import { T } from './i18n/texts';
   imports: [
     HelpButton,
     AttentionCard,
+    FabMenu,
     FinanceWidget,
     FirstRunChecklist,
     LatestNotificationsWidget,
-    QuickActions,
     UpcomingLessonWidget,
     LoadStateView,
     PageHeader,
@@ -47,7 +50,6 @@ import { T } from './i18n/texts';
       <tb-help-button help topic="teacher/first-steps" />
     </tb-page-header>
     <div class="tb-stack">
-      <tb-quick-actions />
       @if (!state.ready()) {
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
       }
@@ -67,10 +69,17 @@ import { T } from './i18n/texts';
         <tb-finance-widget [summary]="billing" />
       }
     </div>
+    <!-- on a phone the home page's FAB is «Создать»; wider it is in the rail (spec §3.1) -->
+    @if (mobile()) {
+      <tb-fab-menu [items]="createItems" [label]="createLabel" />
+    }
   `,
 })
 export class TeacherHome implements OnInit {
   protected readonly t = T.teacherHome;
+  protected readonly mobile = injectMobile();
+  protected readonly createItems = createItems('/teacher');
+  protected readonly createLabel = CORE_T.create.title;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);

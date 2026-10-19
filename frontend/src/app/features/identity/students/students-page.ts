@@ -5,7 +5,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -28,6 +27,7 @@ import { GroupsPanel } from '../groups/groups-panel';
 import { InviteLinkDialog } from './invite-link-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
+import { injectMobile } from '@core/layout/mobile';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { labelKey } from '@core/theme/label-colors';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -36,6 +36,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Avatar } from '@shared/ui/avatar';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
@@ -69,12 +70,15 @@ import { SearchField } from '@shared/ui/search-field';
   template: `
     <tb-page-header [title]="t.title">
       <tb-help-button help topic="teacher/students" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.add"
-        icon="tb-i tb-i-person_add"
-        (onClick)="openCreate()"
-      />
+      <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+      @if (mobile()) {
+        <p-button
+          class="tb-page-fab"
+          [label]="t.add"
+          icon="tb-i tb-i-person_add"
+          (onClick)="openCreate()"
+        />
+      }
     </tb-page-header>
 
     <div class="tb-stack">
@@ -164,6 +168,7 @@ import { SearchField } from '@shared/ui/search-field';
   `,
 })
 export class StudentsPage implements OnInit {
+  protected readonly mobile = injectMobile();
   protected readonly t = T.students;
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
@@ -176,9 +181,6 @@ export class StudentsPage implements OnInit {
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly statusSeverities = STATUS_SEVERITIES;
   protected readonly labelKey = labelKey;
-
-  /** `?create=...` from the quick actions of the home page: opens the form at once. */
-  readonly create = input<string>();
 
   protected readonly students = signal<Student[]>([]);
 
@@ -213,10 +215,13 @@ export class StudentsPage implements OnInit {
   protected readonly invite = signal<IssuedInvite | null>(null);
   protected readonly inviteStudentName = signal('');
 
-  ngOnInit(): void {
-    if (this.create() === 'student') {
+  constructor() {
+    openOnCreate('student', () => {
       this.openCreate();
-    }
+    });
+  }
+
+  ngOnInit(): void {
     this.loadStudents();
   }
 

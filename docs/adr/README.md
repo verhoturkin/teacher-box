@@ -34,13 +34,13 @@ commit.
 | [0018](0018-component-rules.md) | One look per component type | refined by 0019–0026 | design-system |
 | [0019](0019-material-3-expressive.md) | M3 Expressive; button colour = meaning | refined by 0022, 0023, 0025, 0026, 0044, 0046; button colours superseded by 0045 | design-system |
 | [0020](0020-lists-in-cards.md) | Segmented lists in cards | active (corners refined by 0044) | design-system |
-| [0021](0021-single-column.md) | One column; steady buttons; word wrapping | active | design-system |
+| [0021](0021-single-column.md) | One column; steady buttons; word wrapping | active, refined by 0048 (one column inside a pane from expanded) | design-system |
 | [0022](0022-expressive-fields-menus-sheets.md) | Fields, menus, split button, bottom sheet | active | design-system |
 | [0023](0023-status-colors-and-contrast.md) | Status colours, warning role, contrast | colour computation superseded by 0034 | design-system |
 | [0024](0024-accessibility.md) | Accessibility | active | design-system |
 | [0025](0025-page-states.md) | Page states: loading, error, empty, feedback | active | design-system |
 | [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | partly superseded by 0045 (green decision and safe confirmation) | design-system |
-| [0027](0027-bottom-navigation.md) | Bottom bar: four sections and «Ещё» | active | design-system |
+| [0027](0027-bottom-navigation.md) | Bottom bar: four sections and «Ещё» | active, refined by 0048 («Ещё» → ☰) | design-system |
 | [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active (real time — 0029) | [boards](../modules/boards.md) |
 | [0029](0029-live-boards.md) | Live boards: WebSocket with a one-time ticket, relayed cursors and elements | active | [boards](../modules/boards.md) |
 | [0030](0030-livekit-calls.md) | Built-in video calls on LiveKit: own server, rooms `tb-<ownerId>`, tokens, link precedence | active | [meetings](../modules/meetings.md) |
@@ -61,3 +61,4 @@ commit.
 | [0045](0045-button-accent-and-medium-size.md) | Buttons: one accent — filled primary, tonal secondary, red only for destruction, green/amber only for statuses; size M (56 px) only for the hero «Начать урок» (0.17.1) | active | design-system |
 | [0046](0046-material-symbols-rounded.md) | Material Symbols Rounded instead of primeicons: a subset font of the used glyphs (`npm run icons`, 29 KB instead of 5.4 MB), code points not ligatures, 24/20/18 px, filled active section, grade −25 in the dark theme | active | design-system |
 | [0047](0047-video-links-and-transcripts.md) | Video in homework by link only (YouTube, Rutube, VK Video players; other links open in a tab), up to 5 per assignment with a `[m:ss]` transcript; YouTube captions fetched by the server (InnerTube), .srt / .vtt by the browser; the AI reads transcripts as `text/plain` sources | active | [homework](../modules/homework.md), [ai](../modules/ai.md) |
+| [0048](0048-panes-and-task-navigation.md) | Panes and task navigation: M3 breakpoints 600 / 840 / 1200 / 1600, panes from expanded (fixed 360 / 412 + flexible + side sheet), one column inside a pane; sections are tasks (Сегодня · Расписание · Ученики · Задания · Материалы · Оплаты), one home per function, one «Создать» at the top of the rail; phone — five destinations and ☰ instead of «Ещё» | active | design-system, [redesign](../redesign/README.md) |

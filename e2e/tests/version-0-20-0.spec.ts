@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.20.0: the teacher gives a student and a group a colour from a fixed palette; their rows in the list
@@ -28,7 +29,7 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/students');
 
-  await page.locator('.tb-page-header').getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(student);
   await pickColor(page, 'Фиолетовый');
   await page.getByRole('button', { name: 'Сохранить' }).click();

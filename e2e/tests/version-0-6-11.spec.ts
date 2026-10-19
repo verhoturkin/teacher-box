@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import AxeBuilder from '@axe-core/playwright';
 import { laterThisWeek } from './this-week';
 
@@ -207,7 +208,9 @@ test('the focus is a visible ring in the navigation, on the current section too'
   await home.focus();
   await page.keyboard.press('Shift+Tab');
   await page.keyboard.press('Tab');
-  const ring = await home.evaluate((element) => {
+  await expect(home).toBeFocused();
+  // the ring is around the indicator of the collapsed rail (the 56x32 around the icon), not the target (0.21.0)
+  const ring = await home.locator('.tb-side-nav__icon').evaluate((element) => {
     const style = getComputedStyle(element);
     return { width: style.outlineWidth, style: style.outlineStyle };
   });
@@ -244,7 +247,7 @@ test('the bottom sheet of a lesson is a modal dialog with the focus inside', asy
 test('a form shows what is wrong at the field instead of a disabled button', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).first().click();
+  await create(page, 'Ученик');
   const dialog = page.getByRole('dialog');
   const save = dialog.getByRole('button', { name: 'Сохранить' });
   await expect(save).toBeEnabled();

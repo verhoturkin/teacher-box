@@ -182,7 +182,7 @@ let nextId = 0;
       }
     }
 
-    @media (width <= 48em) {
+    @media (width < 37.5em) {
       .tb-fold-card__heading,
       :host(.tb-fold-card--collapsible) .tb-fold-card__heading {
         padding-inline: var(--tb-space-4) var(--tb-space-2);

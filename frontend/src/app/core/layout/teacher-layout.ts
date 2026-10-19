@@ -29,16 +29,20 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: CORE_T.nav.ai, icon: 'tb-i tb-i-auto_awesome', routerLink: '/teacher/ai' },
 ];
 
-/** The sections that lead the bottom bar on a phone. */
+/**
+ * The five sections of the bottom bar on a phone (D2: Сегодня · Расписание · Задания · Ученики · Оплаты;
+ * «Главная» stands for «Сегодня» until it ships); the others are under ☰.
+ */
 export const TEACHER_BOTTOM_NAV: readonly string[] = [
   '/teacher',
   '/teacher/schedule',
-  '/teacher/boards',
+  '/teacher/homework',
+  '/teacher/students',
   '/teacher/billing',
 ];
 
-/** The teacher's user menu: instance settings next to the account. */
-export const TEACHER_USER_LINKS: MenuItem[] = [
+/** The bottom of the rail before «Справка»: the settings of the instance (spec §3.2). */
+export const TEACHER_FOOTER_LINKS: MenuItem[] = [
   { label: CORE_T.nav.settings, icon: 'tb-i tb-i-settings', routerLink: '/teacher/settings' },
 ];
 
@@ -50,12 +54,13 @@ export const TEACHER_USER_LINKS: MenuItem[] = [
   template: `<tb-shell
     [items]="menu"
     [bottomNav]="bottomNav"
-    [userLinks]="userLinks"
+    [footerLinks]="footerLinks"
+    [create]="true"
     homeLink="/teacher"
   />`,
 })
 export class TeacherLayout {
   protected readonly menu = TEACHER_MENU;
   protected readonly bottomNav = TEACHER_BOTTOM_NAV;
-  protected readonly userLinks = TEACHER_USER_LINKS;
+  protected readonly footerLinks = TEACHER_FOOTER_LINKS;
 }

@@ -1,5 +1,9 @@
 # Design system
 
+> **Redesign 2026-10 in progress** (ADR-0048, releases 0.21.0–0.26.0): the target interface is
+> [`redesign/README.md`](redesign/README.md). This page describes what is shipped; each stage rewrites only the
+> sections it changed.
+
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
 ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044, the button accent of ADR-0045 and the icons of ADR-0046, which are the history (*why*); if they disagree with this page, this page is right. A change to
 a rule updates this page in the same commit, and a new decision also gets an ADR. UI wording follows
@@ -51,8 +55,8 @@ classes in use (§1 «Icons», ADR-0046); no primeicons.
   the bottom edge and would lift off it on an overshoot, so it enters on the standard fast spring too; the scrim
   fades on default effects (in) and fast effects (out).
   `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator stays a circle).
-- **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top bar
-  64 px, bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
+- **Layout** — content up to `--tb-content-max` (1440 px); short pages (not found) in `--tb-content-narrow` (56 rem), form fields `tb-form--narrow` (26 rem); top strip
+  80 px (compact top app bar 64 px), bottom bar 64 px (M3E flexible navigation bar), rail 96 / 280 px — chrome sizes in **px** so a large font grows text, not frames.
 - Preset tokens reference `--tb-*`; no literal values in component styles.
 
 ### Icons (ADR-0046)
@@ -238,7 +242,7 @@ component that shows one adds it to `PRIME`).
   lesson takes the container, a conducted / missed / cancelled one keeps its status container plus a 4 px stripe
   of the colour at its start. The dialogs pick it in a select «Цвет» with a 20 px swatch per option («Без цвета» — an
   outlined empty circle).
-- **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
+- **Surfaces:** page — surface-container (light) / surface (dark); cards, menus, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
   themes: inside `.p-dialog` `--tb-card` is the dialog's colour (the notch of a field's label) and list tiles are
@@ -268,34 +272,96 @@ component that shows one adds it to `PRIME`).
 
 ## 4. Layout and navigation
 
-- **Breakpoints** (em ranges, same in CSS and `mobile.ts`, no gaps):
+- **Breakpoints** — M3 (600 / 840 / 1200 / 1600 px, ADR-0048); em ranges, same in CSS and `mobile.ts`
+  (`BREAKPOINT_QUERIES`, `injectWindowSize()`), no gaps:
 
-  | Window | Query | Navigation | Main action |
-  |---|---|---|---|
-  | compact (phone) | `width <= 48em` | bottom bar: four sections + «Ещё» | extended FAB above the bar |
-  | medium | `48em < width < 75em` | navigation rail 96 px (icon + label) | button in page header |
-  | expanded | `width >= 75em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
+  | Window | Query | Navigation | Panes | Main action |
+  |---|---|---|---|---|
+  | compact (phone) | `width < 37.5em` | bottom bar: five sections; ☰ → modal expanded rail | 1 | extended FAB above the bar |
+  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | teacher: FAB «Создать» atop the rail, the only FAB |
+  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | teacher: FAB «Создать» atop the rail, the only FAB |
+  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | teacher: FAB «Создать» atop the rail, the only FAB |
+  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | teacher: small extended FAB «Создать» atop the rail, the only FAB |
 
+  Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
+  keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
-- **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
-  (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
-  help, settings, account, sign out); five sections fit without «Ещё». Item as wide as its label, ≥ 64 px, the
+- **Regions** (**M3**): the window and the navigation region (rail, top bar, bottom bar) are surface-container;
+  page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The page title
+  is the `tb-page-header` of the first pane (or of the page without panes), never a band of its own.
+- **Rail** (`side-nav.ts`, 231.1, redesign spec §3.2): brand · «Создать» (teacher, 232.1) · sections · spacer ·
+  bottom group. **Brand** —
+  the portal logo (`tb-portal-logo round`) and name, plain text, not a link or button (**M3**: a logo in the
+  rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
+  the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
+  group** (`tb-side-nav__footer`, pushed down by `margin-top: auto`): the area's settings (`footerLinks`:
+  teacher `/teacher/settings`, admin `/admin/settings`; the student has none) and «Справка»
+  (`/<area>/help`), same items as the sections. **Expanded item** (**M3E** expanded rail): the target spans
+  the rail's width, the 56 px pill indicator hugs icon + label — 16 dp before and after, 8 dp between — in
+  secondary-container; state layer and focus ring on the indicator.
+- **«Создать»** (`core/layout/create-menu.ts`, 232.1, ADR-0048): the teacher's global create action, projected
+  into the rail under the brand (`Shell` input `create`; student and admin have none; none on compact). Small
+  extended FAB in the expanded rail (56 px, corner large, 16/8/16, Title Medium — **M3**), FAB 56 px centred in
+  the collapsed rail (**M3**: collapsed rail → FAB, expanded → extended FAB); elevation 0 as nested in the rail
+  (**M3**), primary-container, hover = state layer; 16 px to the destinations (*ours*). It opens `tb-fab-menu`
+  (variant `extended` / `rail`) with six items — Занятие, Задание, Оплата, Ученик, Доска, Сообщение — the
+  current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
+  one global entry point instead of a create button per section (ADR-0048). An item opens
+  `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
+  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. From 600 px it is the screen's only
+  FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
+  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
+  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
+  (textbooks), «Оплата» of one student (ledger, prefilled).
+- **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
+  `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
+  `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
+  28 dp corners on the surface-container window (*ours*), 24 dp inner padding (16 on compact, *ours*); 24 dp
+  spacer between panes, 24 dp margin at the trailing edge and the bottom, 16 dp at the sides on compact
+  (**M3**). From expanded the panes stand side by side and each scrolls on its own; on compact and medium they
+  follow one another and the window scrolls. Focus order = template order = visual order (nothing reorders
+  panes); `label` makes a pane a named region. A pane that appears after the page enters on
+  `--tb-spring-default-spatial` (opacity on the effects spring), panes of a new page don't, no stagger
+  (*ours*). The shell drops its own content padding for a page of panes. **List-detail:**
+  `injectListDetail(() => routeHasDetail)` — from expanded both panes, on compact and medium only the list or
+  the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
+  title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
+  the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
+- **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
+  order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
+  Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
+  «Главная», «Расписание», «Задания», «Мои доски» (for «Материалы»), «Оплаты»; admin: «Состояние», «Журнал»,
+  «Интеграции», «Копии», «События». The other sections and the rail's bottom group are in the **modal expanded
+  rail** under ☰ (**M3E**: more than five destinations → modal expanded rail): `p-drawer` + `tbModalDrawer` on the
+  start edge — scrim 32 % (**M3**), Esc / scrim / a destination / its menu button (`menu_open`, «Закрыть») close
+  it, focus trap, focus back to ☰; `tb-side-nav [modal]` with the brand at the top; surface-container, elevation
+  level 2, 16 dp trailing corners (**M3E** modal expanded rail), 280 px wide (*ours*, M3: 220–360). Item as
+  wide as its label, ≥ 64 px, the
   rest of the width shared (`minmax(64px, auto)`: «Расписание» fits a 360 px phone), Label Medium, never truncated —
-  a larger font wraps a label with hyphens (M3: whole up to 2× text); the rail's labels wrap the same way. «Ещё» is
-  active when its section is open. The bar (M3E flexible navigation bar, 0.16.3, ADR-0044) is 64 px of
+  a larger font wraps a label with hyphens (M3: whole up to 2× text); the rail's labels wrap the same way. The bar
+  (M3E flexible navigation bar, 0.16.3, ADR-0044) is 64 px of
   surface-container without a top border; item padding 4 px, 4 px from the icon to the label. Indicator — 56×32
   pill, secondary-container, moves on `--tb-spring-fast-spatial`; same in the rail (96 px, M3E collapsed rail). **Active item** (M3E flexible bar and vertical rail item, 0.16.2):
   label in **secondary** and Label Medium emphasized (Bold 700), the icon on-secondary-container on the pill and
   **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
-- **Top bar** (64 px, sticky, no divider below it on the phone either): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
-  (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
-  name.
+- **Top bar** (sticky, no divider below it): from medium the **top strip** — 80 px (*ours*, spec §3.2), only the
+  bell and the avatar at the trailing end (no portal name: it is at the top of the rail); on compact the **M3
+  small top app bar** — 64 dp, ☰ (leading button, «Разделы», `aria-haspopup="dialog"`), the title of the section
+  in Title Large on one line (the destination whose link leads the address; reverses 0.9.2, which hid it), bell,
+  avatar. The title is not a heading: the page's one h1 stays in `tb-page-header`. User button — the avatar alone
+  (40 px circle, a photo or the person icon) at every size, named «<name>: меню пользователя». User menu:
+  «Мой аккаунт», theme, language, sign out. No cabinet name.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
-- **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
-  first). No card grids. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
+- **One column inside a pane** (ADR-0021, refined by ADR-0048): panes replace multi-column pages only from
+  expanded, and keep the fixes of ADR-0021 — a pane is never narrower than 360 dp and below expanded there is
+  one pane; lists keep the subgrid of `tb-list`, so row buttons line up within a pane; running text (task
+  statements, answers, help) is at most 66 ch. Inside a pane cards are stacked (`tb-stack`), ordered by
+  importance (what needs action first); no card grids, except the feed layouts the redesign spec names (Today,
+  Materials, the student's home, admin status) once they ship, with a fixed column order that is also the
+  reading order. A page without panes is one column of cards. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
   readable width inside its card (`tb-form--narrow`); «Мой аккаунт» puts its forms in cards side by side — they
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
@@ -309,17 +375,21 @@ component that shows one adds it to `PRIME`).
 - **Header** `tb-page-header` (`@shared/ui`): «Назад» icon button on nested pages (tooltip = destination,
   e.g. «Все задания»); h1; «?» help if the section has an article; detail line (due date, status); actions on
   the title line (56 px), main one last (right). On the phone actions go under the title, equal width.
-  **0.9.2:** on the phone a section page shows no title (visually hidden, kept for screen readers) and no
-  «?» (help is in the user menu); the header keeps only details and actions, and takes no room without them.
+  **0.9.2:** on the phone a section page shows no title (visually hidden, kept for screen readers; the top app
+  bar names the section since 231.2) and no «?» («Справка» is under ☰); the header keeps only details and
+  actions, and takes no room without them.
   Nested pages keep «Назад» + title on one line.
-- **Main action** — filled `tb-page-fab`, last header action; on the phone an extended FAB (icon + label,
+- **Main action** — filled `tb-page-fab`, last header action (from 600 px only when «Создать» does not make it,
+  232.2); on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
-- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's quick actions on a phone instead of
-  the row of buttons. The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the six
+  items of the rail menu, 232.2). The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
-  and turns into the round «Закрыть» (primary). Esc, a tap outside or an item close it; the focus goes to the first
-  item and back to the FAB.
+  and turns into the round «Закрыть» (primary). Esc, a tap outside, the focus leaving or an item close it; the focus
+  goes to the first item and back to the FAB; ↓ ↑ Home End move between items. In the rail (`variant` `rail` /
+  `extended`, 232.1) the list opens 8 px under the FAB, start-aligned, fixed over the page (*ours*), and the FAB
+  keeps its shape with the close icon.
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
@@ -464,7 +534,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
     0.15.2: a list whose icon only decorates (tasks, boards, textbooks, calls, notifications, requests, lessons
     of the student, recurring lessons and days off, payments, AI requests and prompts) takes `tb-list--no-phone-lead`:
-    on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
+    on the phone (< 37.5em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
     0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
     unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
     ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll); 0.15.4: on the phone
@@ -542,8 +612,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   goes around the item and state layers lie over the active indicator, not instead of it.
   Custom controls (the search field's «×», calendar buttons) take the same ring; their hover is a state layer
   (`color-mix` with `--tb-state-*`), never `filter` or a literal opacity.
-- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; «Ещё» and the user menu —
-  `aria-haspopup="menu"` + `aria-expanded`; the user-menu name starts with the visible name.
+- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; the user menu —
+  `aria-haspopup="menu"` + `aria-expanded`, ☰ — `aria-haspopup="dialog"` + `aria-expanded`; the user-menu name starts with the visible name.
 - Headings: h1 page title (and «Вход», «Приглашение»); **h2 section** (`p-card` title via the global
   pass-through `core/a11y/pass-through.ts`, `tb-fold-card`); h3 cards inside a foldable section; Markdown
   headings one level below their container.
@@ -565,8 +635,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
   white is short of 3:1 on teal and emerald.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
-  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar
-  and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
+  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the rail (the modal
+  one under ☰ too) and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
 - Browser icon — `favicon.svg` (graduation cap on indigo, rounded square) with `favicon.ico` (16/32/48) and
   `apple-touch-icon.png` (180 px); the portal logo, when set, replaces all of them.
 - Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`, `color-mix()`); older ones get

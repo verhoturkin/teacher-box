@@ -22,13 +22,6 @@ export const ru = {
     lesson: 'Запланируйте первое занятие',
     lessonHint: 'разовое или регулярное — напоминания придут сами',
   },
-  quickActions: {
-    title: 'Быстрые действия',
-    lesson: 'Занятие',
-    payment: 'Оплата',
-    student: 'Ученик',
-    assignment: 'Задание',
-  },
   studentHome: {
     title: 'Главная',
     what: 'занятия, задания и баланс',

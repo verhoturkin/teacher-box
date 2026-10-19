@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.3: the name of the portal in the header and its address in the invitation link, a backup
@@ -34,11 +35,11 @@ test('the portal has its name and gives out links with its address', async ({ pa
   const card = page.locator('#portal');
   await card.locator('#portal-name').fill(PORTAL_NAME);
   await card.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.locator('.tb-shell__brand')).toContainText(PORTAL_NAME);
+  await expect(page.locator('.tb-side-nav__brand')).toContainText(PORTAL_NAME);
   await expect(page).toHaveTitle(`Настройки — ${PORTAL_NAME}`);
 
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(STUDENT);
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.getByRole('textbox', { name: 'Ссылка-приглашение' })).toHaveValue(
@@ -81,7 +82,7 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
 
   await expect(page).toHaveURL(/\/teacher\/setup$/);
   await expect(page.getByRole('heading', { name: 'Первоначальная настройка' })).toBeVisible();
-  await expect(page.locator('.tb-shell__brand')).toContainText('Teacher Box');
+  await expect(page.locator('.tb-side-nav__brand')).toContainText('Teacher Box');
   await page.getByRole('button', { name: 'Далее' }).click();
   await expect(page.getByRole('heading', { name: 'Адрес портала' })).toBeVisible();
   await page.getByRole('button', { name: 'Пропустить настройку' }).click();
@@ -115,7 +116,7 @@ test('the administrator restores the backup and the data comes back', async ({ p
   await expect(dialog).toContainText('Копия восстановлена', { timeout: 180_000 });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await expect(page.locator('.tb-shell__brand')).toContainText(PORTAL_NAME);
+  await expect(page.locator('.tb-side-nav__brand')).toContainText(PORTAL_NAME);
   await page.goto('/teacher/students');
   await expect(page.getByText(STUDENT)).toBeVisible();
 });

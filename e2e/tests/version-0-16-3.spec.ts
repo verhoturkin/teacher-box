@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 /**
  * Version 0.16.3 (M3 Expressive alignment, navigation and motion): the flexible navigation bar is 64 px with a
@@ -61,7 +62,7 @@ test('a dialog enters on the M3E springs', async ({ page }) => {
       true,
     );
   });
-  await page.getByRole('button', { name: 'Добавить ученика' }).click();
+  await create(page, 'Ученик');
   await expect(page.locator('.p-dialog')).toBeVisible();
 
   await expect

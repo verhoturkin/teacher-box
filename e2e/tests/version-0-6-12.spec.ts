@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
 
@@ -17,7 +18,7 @@ async function signIn(page: Page): Promise<void> {
 test('«Отмена» of a form is neutral and a button is 40 px high', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/students');
-  await page.getByRole('button', { name: 'Добавить ученика' }).first().click();
+  await create(page, 'Ученик');
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
   await expect(cancel).toHaveClass(/p-button-secondary/);

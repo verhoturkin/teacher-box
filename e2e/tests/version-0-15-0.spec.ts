@@ -81,13 +81,14 @@ test('the nearest lesson is a calendar event without a title or «Расписа
   await expect(hero.getByRole('heading', { name: 'Следующее занятие' })).toHaveClass(/tb-sr-only/);
 });
 
-test('on a phone the quick actions are a FAB menu', async ({ page }) => {
+test('on a phone «Создать» of the home page is a FAB menu', async ({ page }) => {
   await signIn(page, PHONE.width);
-  const fab = page.getByRole('button', { name: 'Быстрые действия' });
+  // 232.2: the rail's «Создать» with its six items instead of the four quick actions
+  const fab = page.getByRole('button', { name: 'Создать' });
   await fab.click();
   const close = page.getByRole('button', { name: 'Закрыть' });
   await expect(close).toHaveAttribute('aria-expanded', 'true');
-  for (const action of ['Занятие', 'Оплата', 'Ученик', 'Задание']) {
+  for (const action of ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Сообщение']) {
     await expect(page.locator('tb-fab-menu').getByRole('link', { name: action })).toBeVisible();
   }
   await page.keyboard.press('Escape');
