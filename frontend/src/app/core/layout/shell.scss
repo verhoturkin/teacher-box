@@ -24,6 +24,7 @@
   }
 
   @media (width < 37.5em) {
+    justify-content: flex-start;
     padding-left: var(--tb-space-4);
   }
 
@@ -33,28 +34,20 @@
   }
 }
 
-.tb-shell__brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tb-space-3);
+/* Compact: the M3 small top app bar — ☰ (leading button), the title of the section in Title Large, one line */
+.tb-shell__rail-button {
+  flex: none;
+  margin-inline-start: calc(-1 * var(--tb-space-2));
+}
+
+.tb-shell__title {
+  flex: 1;
   min-width: 0;
+  overflow: hidden;
   color: var(--p-md-on-surface);
   font: var(--tb-type-title-l);
+  text-overflow: ellipsis;
   white-space: nowrap;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: none;
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  @media (width < 37.5em) {
-    font: var(--tb-type-title-m);
-  }
 }
 
 .tb-shell__user {
@@ -65,7 +58,7 @@
   gap: var(--tb-space-1);
 }
 
-/* Without the name (a phone) the button is a 40 px circle around the photo or the icon */
+/* The avatar alone (spec §3.2): the button is a 40 px circle around the photo or the icon */
 .tb-shell__user-button--round {
   flex: none;
   justify-content: center;
@@ -124,7 +117,7 @@
 
 /*
  * M3E flexible navigation bar (ADR-0044): 64 px, no border, the icon in the 56x32 pill indicator, 4 px to the
- * label under it (four sections and «Ещё», ADR-0027).
+ * label under it (five sections, the others under ☰ — spec §5).
  * An item is as wide as its label and at least 64 px, the rest of the width is shared: «Расписание» fits a
  * 360 px phone whole. A larger font wraps a label (with hyphens), never cuts it (M3: up to 2x text).
  */
@@ -149,12 +142,9 @@
   min-height: var(--tb-bottom-nav-height);
   padding: var(--tb-space-1) 2px;
   box-sizing: border-box;
-  border: 0;
-  background: none;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m);
   text-decoration: none;
-  cursor: pointer;
 
   &:hover {
     text-decoration: none;

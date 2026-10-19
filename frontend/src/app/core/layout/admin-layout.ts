@@ -12,6 +12,17 @@ export const ADMIN_MENU: MenuItem[] = [
   { label: CORE_T.nav.diagnostics, icon: 'tb-i tb-i-download', routerLink: '/admin/diagnostics' },
 ];
 
+/**
+ * The sections of the bottom bar on a phone (spec §5: Состояние · Журнал · Интеграции · Резервные копии),
+ * the fifth — «События» — until it joins the log (247); «Диагностика» and the bottom group are under ☰.
+ */
+export const ADMIN_BOTTOM_NAV: readonly string[] = [
+  '/admin/status',
+  '/admin/logs',
+  '/admin/integrations',
+  '/admin/backups',
+];
+
 /** The bottom of the rail before «Справка»: the settings of the portal (spec §3.2). */
 export const ADMIN_FOOTER_LINKS: MenuItem[] = [
   { label: CORE_T.nav.settings, icon: 'tb-i tb-i-settings', routerLink: '/admin/settings' },
@@ -25,6 +36,7 @@ export const ADMIN_FOOTER_LINKS: MenuItem[] = [
   template: `<tb-shell
     [items]="menu"
     [footerLinks]="footerLinks"
+    [bottomNav]="bottomNav"
     homeLink="/admin"
     [notifications]="false"
   />`,
@@ -32,4 +44,5 @@ export const ADMIN_FOOTER_LINKS: MenuItem[] = [
 export class AdminLayout {
   protected readonly menu = ADMIN_MENU;
   protected readonly footerLinks = ADMIN_FOOTER_LINKS;
+  protected readonly bottomNav = ADMIN_BOTTOM_NAV;
 }

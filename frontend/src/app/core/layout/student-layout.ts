@@ -21,10 +21,14 @@ export const STUDENT_MENU: MenuItem[] = [
   { label: CORE_T.nav.myBoards, icon: 'tb-i tb-i-co_present', routerLink: '/cabinet/boards' },
 ];
 
-/** The sections that lead the bottom bar on a phone. */
+/**
+ * The five sections of the bottom bar on a phone (spec §5: Главная · Расписание · Задания · Материалы ·
+ * Оплаты; «Мои доски» stand for «Материалы» until they ship); «Учебники» are under ☰.
+ */
 export const STUDENT_BOTTOM_NAV: readonly string[] = [
   '/cabinet',
   '/cabinet/schedule',
+  '/cabinet/homework',
   '/cabinet/boards',
   '/cabinet/billing',
 ];

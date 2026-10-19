@@ -59,3 +59,55 @@ describe('The rail of each role (spec §3.2)', () => {
     },
   );
 });
+
+describe('The phone navigation of each role (spec §3.1, D2)', () => {
+  it.each<[string, Type<unknown>, Role, string[], string[]]>([
+    [
+      'teacher',
+      TeacherLayout,
+      'TEACHER',
+      ['Главная', 'Расписание', 'Задания', 'Ученики', 'Оплаты'],
+      ['Звонки', 'Учебники', 'Доски', 'Уведомления', 'ИИ-помощник', 'Настройки', 'Справка'],
+    ],
+    [
+      'student',
+      StudentLayout,
+      'STUDENT',
+      ['Главная', 'Расписание', 'Задания', 'Мои доски', 'Оплаты'],
+      ['Учебники', 'Справка'],
+    ],
+    [
+      'administrator',
+      AdminLayout,
+      'ADMIN',
+      ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'События'],
+      ['Диагностика', 'Настройки', 'Справка'],
+    ],
+  ])(
+    'of the %s: five sections in the bar, the rest under ☰, no «Ещё»',
+    async (_, layout, role, bar, rail) => {
+      TestBed.configureTestingModule({
+        imports: [layout],
+        providers: testProvidersWithRouter(
+          provideRouter([{ path: '**', children: [] }]),
+          screenWidth(599),
+        ),
+      });
+      TestBed.inject(AuthService).acceptSession(authResponse(role));
+      const fixture = TestBed.createComponent(layout);
+      await fixture.whenStable();
+      const host = hostElement(fixture);
+      const texts = (root: ParentNode, selector: string) =>
+        Array.from(root.querySelectorAll(selector)).map((a) => a.textContent.trim());
+
+      expect(texts(host, 'nav.tb-bottom-nav a')).toEqual(bar);
+      expect(host.querySelector('nav.tb-bottom-nav button')).toBeNull();
+      expect(host.textContent).not.toContain('Ещё');
+      requireElement(host, 'button[aria-label="Разделы"]', HTMLButtonElement).click();
+      await fixture.whenStable();
+      const modal = requireElement(document.body, '.tb-modal-rail', HTMLElement);
+      expect(texts(modal, 'tb-side-nav a')).toEqual(rail);
+      fixture.destroy();
+    },
+  );
+});

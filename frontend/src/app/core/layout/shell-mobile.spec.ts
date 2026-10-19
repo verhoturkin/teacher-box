@@ -1,13 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { MenuItem } from 'primeng/api';
+import { Drawer } from 'primeng/drawer';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
-import { bodyText, hostElement, requireElement } from '@testing/dom';
+import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { Shell } from './shell';
 import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
-import { TEACHER_BOTTOM_NAV, TEACHER_MENU } from './teacher-layout';
+import { TEACHER_BOTTOM_NAV, TEACHER_FOOTER_LINKS, TEACHER_MENU } from './teacher-layout';
 
 describe('Shell on a phone', () => {
   let fixture: ComponentFixture<Shell>;
@@ -15,6 +17,7 @@ describe('Shell on a phone', () => {
   async function render(
     items: MenuItem[],
     bottomNav: readonly string[] = [],
+    url = '/teacher',
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
@@ -27,88 +30,164 @@ describe('Shell on a phone', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('bottomNav', bottomNav);
+    fixture.componentRef.setInput('footerLinks', TEACHER_FOOTER_LINKS);
     fixture.componentRef.setInput('homeLink', '/teacher');
+    await TestBed.inject(Router).navigateByUrl(url);
     await fixture.whenStable();
     return hostElement(fixture);
+  }
+
+  const labels = (root: ParentNode, selector: string): string[] =>
+    Array.from(root.querySelectorAll(selector)).map((link) => link.textContent.trim());
+
+  /** The ☰ of the top app bar. */
+  const menuButton = (host: HTMLElement): HTMLButtonElement =>
+    requireElement(host, '.tb-shell__header button[aria-label="Разделы"]', HTMLButtonElement);
+
+  /** Opens the modal rail with ☰ and waits for it. */
+  async function openRail(host: HTMLElement): Promise<HTMLElement> {
+    const button = menuButton(host);
+    button.focus();
+    button.click();
+    await fixture.whenStable();
+    // jsdom runs no animation: the drawer is shown as when its animation ends
+    fixture.debugElement.query(By.directive(Drawer)).injector.get(Drawer).show();
+    return requireElement(document.body, '.p-drawer.tb-modal-rail', HTMLElement);
   }
 
   afterEach(() => {
     fixture.destroy();
   });
 
-  it('moves the sections to the bottom navigation with «Ещё»', async () => {
+  it('puts five sections of the teacher in the bottom bar and no «Ещё» (D2)', async () => {
     const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
 
     const nav = requireElement(host, 'nav.tb-bottom-nav', HTMLElement);
-    expect(Array.from(nav.querySelectorAll('a')).map((link) => link.textContent.trim())).toEqual([
-      'Главная',
-      'Расписание',
-      'Доски',
-      'Оплаты',
-    ]);
+    expect(labels(nav, 'a')).toEqual(['Главная', 'Расписание', 'Задания', 'Ученики', 'Оплаты']);
+    expect(nav.querySelector('button')).toBeNull();
+    expect(host.textContent).not.toContain('Ещё');
     expect(host.querySelector('tb-side-nav')).toBeNull();
-    const user = requireElement(host, 'button[aria-label="Меню пользователя"]', HTMLButtonElement);
-    expect(user.textContent).not.toContain('Анна');
-    // a circle around the photo or the icon, not a pill
-    expect(user.classList).toContain('tb-shell__user-button--round');
-
-    const more = requireElement(nav, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
-    expect(more.getAttribute('aria-haspopup')).toBe('menu');
-    more.click();
-    await fixture.whenStable();
-    expect(more.getAttribute('aria-expanded')).toBe('true');
-    // four sections and «Ещё» (ADR-0027): the rest of the sections are in the menu
-    expect(bodyText()).toContain('Звонки');
-    expect(bodyText()).toContain('Ученики');
-    expect(bodyText()).toContain('Задания');
-    expect(bodyText()).toContain('Уведомления');
-    expect(bodyText()).toContain('ИИ');
-    expect(nav.children).toHaveLength(5);
-  });
-
-  it('marks «Ещё» when the page is a section from it', async () => {
-    const host = await render(TEACHER_MENU);
-    await TestBed.inject(Router).navigateByUrl('/teacher/notifications?open=messengers');
-    await fixture.whenStable();
-
-    const more = requireElement(host, 'button[aria-label="Ещё разделы"]', HTMLButtonElement);
-    expect(more.classList).toContain('tb-bottom-nav__item--active');
-    expect(more.getAttribute('aria-current')).toBe('page');
-
-    // the chosen section stands out in the menu
-    more.click();
-    await fixture.whenStable();
-    const chosen = document.body.querySelector('.p-menu .tb-menu-item--selected');
-    expect(chosen?.textContent).toContain('Уведомления');
-    expect(document.body.querySelectorAll('.p-menu .tb-menu-item--selected')).toHaveLength(1);
-  });
-
-  it('has no «Ещё» when all five sections fit', async () => {
-    const host = await render(STUDENT_MENU.slice(0, 5));
-
-    expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(5);
-    expect(host.querySelector('button[aria-label="Ещё разделы"]')).toBeNull();
     expect(host.querySelector('.tb-shell__content--nav')).not.toBeNull();
   });
 
-  it('keeps the order of the sections without a bottom bar order', async () => {
-    const host = await render(TEACHER_MENU);
+  it('shows ☰, the title of the section, the bell and the avatar in the top app bar', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher/schedule/week?day=1');
 
-    expect(
-      Array.from(host.querySelectorAll('nav.tb-bottom-nav a')).map((link) =>
-        link.textContent.trim(),
-      ),
-    ).toEqual(['Главная', 'Расписание', 'Звонки', 'Ученики']);
+    const header = requireElement(host, '.tb-shell__header', HTMLElement);
+    const button = menuButton(host);
+    expect(button.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(header.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Расписание');
+    expect(header.querySelector('tb-notification-bell')).not.toBeNull();
+    // the brand is at the top of the modal rail, not in the bar (spec §3.2)
+    expect(header.querySelector('.tb-shell__brand')).toBeNull();
+    expect(header.textContent).not.toContain('Teacher Box');
+    // the page header holds the one h1 of the page; the bar's title is not a heading
+    expect(host.querySelector('h1, h2, [role="heading"]')).toBeNull();
   });
 
-  it('puts the sixth section of the student under «Ещё»', async () => {
-    const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV);
+  it('names the section of the rail’s bottom group and the home page', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher/help/first-steps');
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Справка');
 
-    expect(
-      Array.from(host.querySelectorAll('nav.tb-bottom-nav a')).map((link) =>
-        link.textContent.trim(),
-      ),
-    ).toEqual(['Главная', 'Расписание', 'Мои доски', 'Оплаты']);
-    expect(host.querySelector('button[aria-label="Ещё разделы"]')).not.toBeNull();
+    await TestBed.inject(Router).navigateByUrl('/teacher');
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Главная');
+
+    await TestBed.inject(Router).navigateByUrl('/teacher/account');
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Мой аккаунт');
+  });
+
+  it('opens the modal expanded rail with the other sections, the settings and the help', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
+
+    const rail = await openRail(host);
+    expect(menuButton(host).getAttribute('aria-expanded')).toBe('true');
+    expect(rail.getAttribute('role')).toBe('dialog');
+    expect(rail.getAttribute('aria-modal')).toBe('true');
+    expect(rail.getAttribute('aria-labelledby')).not.toBeNull();
+    expect(document.body.querySelector('.p-drawer-mask')).not.toBeNull();
+    const nav = requireElement(rail, 'tb-side-nav', HTMLElement);
+    expect(nav.classList).toContain('tb-side-nav--modal');
+    expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
+    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual([
+      'Звонки',
+      'Учебники',
+      'Доски',
+      'Уведомления',
+      'ИИ-помощник',
+    ]);
+    expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
+    // the focus goes into the rail
+    expect(rail.contains(document.activeElement)).toBe(true);
+  });
+
+  it('closes the modal rail with Esc and gives the focus back to ☰', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
+    const rail = await openRail(host);
+
+    requireElement(rail, 'a', HTMLAnchorElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }),
+    );
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(menuButton(host).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(menuButton(host));
+  });
+
+  it('closes the modal rail with its menu button and when a destination is chosen', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
+    let rail = await openRail(host);
+
+    requireElement(rail, 'button[aria-label="Закрыть"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(menuButton(host).getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(menuButton(host));
+
+    rail = await openRail(host);
+    const boards = Array.from(rail.querySelectorAll('a')).find(
+      (link) => link.textContent.trim() === 'Доски',
+    );
+    boards?.click();
+    await fixture.whenStable();
+    expect(menuButton(host).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('puts five sections of the student in the bar and the textbooks under ☰', async () => {
+    const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV, '/cabinet');
+
+    expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
+      'Главная',
+      'Расписание',
+      'Задания',
+      'Мои доски',
+      'Оплаты',
+    ]);
+    const rail = await openRail(host);
+    expect(labels(rail, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники']);
+  });
+
+  it('takes the first five sections without a bar order', async () => {
+    const host = await render(TEACHER_MENU);
+
+    expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
+      'Главная',
+      'Расписание',
+      'Звонки',
+      'Ученики',
+      'Задания',
+    ]);
+  });
+
+  it('has no other sections in the modal rail when all fit the bar', async () => {
+    const host = await render(STUDENT_MENU.slice(0, 3));
+
+    expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(3);
+    const rail = await openRail(host);
+    expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
+    expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
   });
 });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { CORE_T } from '@core/i18n/texts';
@@ -11,7 +11,8 @@ import { PortalLogo } from '@core/portal/portal-logo';
  * below it (ADR-0048, D5). Top to bottom (spec §3.2): the brand (the portal's logo and name, not a
  * button — M3 warns against logos mistaken for actions), the sections, a spacer, the bottom group
  * (Настройки, Справка). It is a list of links (not a menu): Tab goes through the sections, the current
- * one is `aria-current="page"` and has the pill indicator.
+ * one is `aria-current="page"` and has the pill indicator. On compact the shell opens it as the modal
+ * expanded rail from ☰ (`modal`), with the sections that are not in the bottom bar.
  */
 @Component({
   selector: 'tb-side-nav',
@@ -21,6 +22,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
     role: 'navigation',
     '[attr.aria-label]': 'sections',
     '[class.tb-side-nav--rail]': 'rail()',
+    '[class.tb-side-nav--modal]': 'modal()',
   },
   template: `
     <div class="tb-side-nav__brand">
@@ -38,6 +40,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
               routerLinkActive="tb-side-nav__item--active"
               ariaCurrentWhenActive="page"
               [routerLinkActiveOptions]="item.routerLinkActiveOptions ?? { exact: false }"
+              (click)="navigate.emit()"
             >
               <span class="tb-side-nav__indicator">
                 <span class="tb-side-nav__icon"
@@ -59,12 +62,18 @@ export class SideNav {
   readonly footer = input<MenuItem[]>([]);
   /** The narrow rail instead of the expanded one. */
   readonly rail = input(false);
+  /** The modal expanded rail under ☰ on compact: it fills its sheet instead of standing by the page. */
+  readonly modal = input(false);
+  /** A destination is chosen (the modal rail closes). */
+  readonly navigate = output();
 
   protected readonly sections = CORE_T.nav.sections;
   protected readonly portalName = inject(Portal).name;
-  /** The sections, then the bottom group when the area has one. */
-  protected readonly groups = computed(() => [
-    { footer: false, items: this.items() },
-    ...(this.footer().length > 0 ? [{ footer: true, items: this.footer() }] : []),
-  ]);
+  /** The sections, then the bottom group, each when it has links. */
+  protected readonly groups = computed(() =>
+    [
+      { footer: false, items: this.items() },
+      { footer: true, items: this.footer() },
+    ].filter((group) => group.items.length > 0),
+  );
 }

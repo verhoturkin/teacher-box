@@ -29,11 +29,15 @@ export const TEACHER_MENU: MenuItem[] = [
   { label: CORE_T.nav.ai, icon: 'tb-i tb-i-auto_awesome', routerLink: '/teacher/ai' },
 ];
 
-/** The sections that lead the bottom bar on a phone. */
+/**
+ * The five sections of the bottom bar on a phone (D2: Сегодня · Расписание · Задания · Ученики · Оплаты;
+ * «Главная» stands for «Сегодня» until it ships); the others are under ☰.
+ */
 export const TEACHER_BOTTOM_NAV: readonly string[] = [
   '/teacher',
   '/teacher/schedule',
-  '/teacher/boards',
+  '/teacher/homework',
+  '/teacher/students',
   '/teacher/billing',
 ];
 

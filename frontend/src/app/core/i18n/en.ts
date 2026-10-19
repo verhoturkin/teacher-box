@@ -40,10 +40,7 @@ export const en: Translation<typeof ru> = {
     notFound: 'Page not found',
   },
   shell: {
-    userMenu: 'User menu',
     userMenuOf: (name: string) => `${name}: user menu`,
-    moreSections: 'More sections',
-    more: 'More',
     help: 'Help',
     account: 'My account',
     lightTheme: 'Light theme',

@@ -84,6 +84,22 @@ describe('SideNav', () => {
     expect(host.querySelectorAll('a[aria-current]')).toHaveLength(1);
   });
 
+  it('is the modal expanded rail under ☰ and tells when a destination is chosen', async () => {
+    const host = await render(false);
+    fixture.componentRef.setInput('modal', true);
+    fixture.componentRef.setInput('items', []);
+    await fixture.whenStable();
+    const chosen = vi.fn();
+    fixture.componentInstance.navigate.subscribe(chosen);
+
+    expect(host.classList).toContain('tb-side-nav--modal');
+    expect(host.classList).not.toContain('tb-side-nav--rail');
+    // no sections left for it: the brand and the bottom group only
+    expect(host.querySelectorAll('ul')).toHaveLength(1);
+    requireElement(host, 'ul.tb-side-nav__footer a', HTMLAnchorElement).click();
+    expect(chosen).toHaveBeenCalledOnce();
+  });
+
   it('has no bottom group without links', async () => {
     const host = await render(false);
     fixture.componentRef.setInput('footer', []);

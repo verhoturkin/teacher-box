@@ -64,8 +64,21 @@ describe('Shell', () => {
     const text = hostElement(fixture).textContent;
     expect(text).toContain('Teacher Box');
     expect(text).toContain('Ученики');
-    expect(text).toContain('Анна Сергеевна');
+    expect(
+      hostElement(fixture).querySelector('.tb-shell__user-button')?.getAttribute('aria-label'),
+    ).toBe('Анна Сергеевна: меню пользователя');
     expect(text).not.toContain('Кабинет учителя');
+  });
+
+  it('keeps only the bell and the avatar in the top strip (spec §3.2)', () => {
+    const header = requireElement(hostElement(fixture), '.tb-shell__header', HTMLElement);
+
+    expect(header.querySelector('tb-notification-bell')).not.toBeNull();
+    expect(header.querySelector('.tb-shell__user-button')).not.toBeNull();
+    expect(header.querySelector('button[aria-label="Разделы"]')).toBeNull();
+    expect(header.querySelector('.tb-shell__title')).toBeNull();
+    expect(header.textContent.trim()).toBe('');
+    expect(document.body.querySelector('.tb-modal-rail')).toBeNull();
   });
 
   it('shows a student photo on the user button instead of the person icon', async () => {
@@ -82,7 +95,7 @@ describe('Shell', () => {
     expect(button()?.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
       '/api/public/avatars/a',
     );
-    expect(button()?.textContent).toContain('Ника');
+    expect(button()?.getAttribute('aria-label')).toBe('Ника: меню пользователя');
   });
 
   it('puts the sections in the expanded rail on an extra-large screen (D5)', () => {
@@ -208,17 +221,15 @@ describe('Shell by the M3 breakpoint (ADR-0048)', () => {
     fixture.destroy();
   });
 
-  it('keeps the portal, the settings and the help in the top bar on compact until the ☰ rail (231.2)', async () => {
+  it('keeps the settings and the help out of the user menu on compact: they are under ☰', async () => {
     const host = await render(599);
 
-    expect(host.querySelector('.tb-shell__header .tb-shell__brand')?.textContent).toContain(
-      'Teacher Box',
-    );
+    expect(host.querySelector('.tb-shell__brand')).toBeNull();
     requireElement(host, '.tb-shell__user-button', HTMLButtonElement).click();
     await fixture.whenStable();
     const menu = requireElement(document.body, '.p-menu', HTMLElement).textContent;
-    expect(menu).toContain('Настройки');
-    expect(menu).toContain('Справка');
+    expect(menu).not.toContain('Настройки');
+    expect(menu).not.toContain('Справка');
     expect(menu).toContain('Мой аккаунт');
   });
 
@@ -240,12 +251,13 @@ describe('Shell by the M3 breakpoint (ADR-0048)', () => {
     expect(nav?.classList.contains('tb-side-nav--rail') ?? false).toBe(navigation === 'rail');
   });
 
-  it('keeps the name on the user button from medium', async () => {
-    const host = await render(600);
+  it.each([599, 600, 1600])('shows the avatar alone on the user button at %i px', async (width) => {
+    const host = await render(width);
 
     const user = requireElement(host, '.tb-shell__user-button', HTMLButtonElement);
-    expect(user.textContent).toContain('Анна');
-    // the visible name is the start of the accessible one (WCAG 2.5.3)
-    expect(user.getAttribute('aria-label')).toMatch(/^Анна.*: меню пользователя$/);
+    expect(user.textContent.trim()).toBe('');
+    // a circle around the photo or the icon, named after the user
+    expect(user.classList).toContain('tb-shell__user-button--round');
+    expect(user.getAttribute('aria-label')).toBe('Анна Сергеевна: меню пользователя');
   });
 });

@@ -139,9 +139,17 @@ test('the sections have their icons and the phone bar leads with the daily ones'
 
   await page.setViewportSize(PHONE);
   const bar = page.locator('nav.tb-bottom-nav');
-  await expect(bar.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Доски', 'Оплаты']);
-  await bar.getByRole('button', { name: 'Ещё разделы' }).click();
-  for (const section of ['Звонки', 'Ученики', 'Задания', 'Учебники']) {
-    await expect(page.getByRole('menuitem', { name: section })).toBeVisible();
+  // 0.21.0: five sections in the bar (D2), the rest in the modal rail under ☰
+  await expect(bar.getByRole('link')).toHaveText([
+    'Главная',
+    'Расписание',
+    'Задания',
+    'Ученики',
+    'Оплаты',
+  ]);
+  await page.getByRole('button', { name: 'Разделы' }).click();
+  const rail = page.getByRole('dialog', { name: 'Разделы' });
+  for (const section of ['Звонки', 'Учебники', 'Доски']) {
+    await expect(rail.getByRole('link', { name: section })).toBeVisible();
   }
 });

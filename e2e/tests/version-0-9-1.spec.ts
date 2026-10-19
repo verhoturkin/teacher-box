@@ -78,7 +78,11 @@ test('a student sets a photo and an own name; the teacher keeps the name they ga
   await student.locator('#account-own-name').fill(OWN_NAME);
   await student.getByRole('button', { name: 'Сохранить' }).first().click();
   await expect(student.getByText('Имя сохранено')).toBeVisible();
-  await expect(student.locator('.tb-shell__user-button')).toContainText(OWN_NAME);
+  // the avatar alone since 0.21.0: the name is in the accessible name of the user button
+  await expect(student.locator('.tb-shell__user-button')).toHaveAttribute(
+    'aria-label',
+    `${OWN_NAME}: меню пользователя`,
+  );
   await expect(student.getByText(`Учитель видит вас как «${STUDENT}»`)).toBeVisible();
 
   const teacher = await (await browser.newContext()).newPage();
@@ -97,7 +101,8 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 375);
   await page.goto('/teacher/settings?open=data');
-  await expect(page.locator('.tb-shell__brand tb-portal-logo')).toBeVisible();
+  // 0.21.0: the top app bar names the section; the brand is at the top of the ☰ rail
+  await expect(page.locator('.tb-shell__title')).toHaveText('Настройки');
 
   const backups = page.locator('#backups');
   await backups.getByRole('button', { name: 'Создать копию сейчас' }).click();

@@ -90,13 +90,23 @@ test.describe('on a phone', () => {
   }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
     const nav = page.locator('nav.tb-bottom-nav');
-    // 0.10.1: «Доски» and «Оплаты» after «Расписание», «Звонки» and «Ученики» under «Ещё»
-    await expect(nav.getByRole('link')).toHaveText(['Главная', 'Расписание', 'Доски', 'Оплаты']);
-    await nav.getByRole('button', { name: 'Ещё разделы' }).click();
-    await expect(page.getByRole('menuitem', { name: 'Ученики' })).toBeVisible();
-    await expect(page.getByRole('menuitem', { name: 'Уведомления' })).toBeVisible();
+    // 0.21.0: five sections in the bar (D2), the rest in the modal rail under ☰ (no «Ещё»)
+    await expect(nav.getByRole('link')).toHaveText([
+      'Главная',
+      'Расписание',
+      'Задания',
+      'Ученики',
+      'Оплаты',
+    ]);
+    const menu = page.getByRole('button', { name: 'Разделы' });
+    await menu.click();
+    const rail = page.getByRole('dialog', { name: 'Разделы' });
+    await expect(rail.getByRole('link', { name: 'Доски' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Уведомления' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Справка' })).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('menu')).toBeHidden();
+    await expect(rail).toBeHidden();
+    await expect(menu).toBeFocused();
     await expectNoSideScroll(page);
 
     // 0.15.0: the quick actions of a phone are behind the FAB menu
@@ -146,20 +156,23 @@ test.describe('on a phone', () => {
     await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
     await expect(page).toHaveURL(/\/cabinet$/);
-    // six sections since 0.10.0 («Учебники»): four in the bar (0.10.1 order), the rest under «Ещё»
+    // six sections since 0.10.0 («Учебники»): five in the bar (0.21.0), «Учебники» under ☰
     const bar = page.locator('nav.tb-bottom-nav');
     await expect(bar.getByRole('link')).toHaveText([
       'Главная',
       'Расписание',
+      'Задания',
       'Мои доски',
       'Оплаты',
     ]);
-    await expect(bar.getByRole('button', { name: 'Ещё разделы' })).toBeVisible();
+    await expect(bar.getByRole('button')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Разделы' })).toBeVisible();
     await expectNoSideScroll(page);
     for (const section of ['Расписание', 'Оплаты']) {
       await page.locator('nav.tb-bottom-nav').getByRole('link', { name: section }).click();
-      // on a phone a section's title is only for screen readers (0.9.2)
+      // on a phone a section's title is only for screen readers (0.9.2); the top app bar shows it
       await expect(page.getByRole('heading', { level: 1, name: section })).toBeAttached();
+      await expect(page.locator('.tb-shell__title')).toHaveText(section);
       await expectNoSideScroll(page);
     }
     await context.close();

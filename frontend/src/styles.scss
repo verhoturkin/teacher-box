@@ -141,8 +141,13 @@
   --tb-space-16: 4rem;
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
-  /* The frame in px: a larger font grows the text, not the bars (ADR-0024) */
+  /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small
+     top app bar (64 dp) on compact and the 80 px top strip over the panes from medium (ours, spec §3.2) */
   --tb-header-height: 64px;
+
+  @media (width >= 37.5em) {
+    --tb-header-height: 80px;
+  }
   --tb-bottom-nav-height: 64px;
 
   /* Icons (ADR-0046): the size with its optical size; 20 in buttons, 18 in chips */
@@ -2573,8 +2578,8 @@ full-calendar :has(> .tb-lesson--moving) {
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
 @media (width < 37.5em) {
   /*
-   * A section page has no title line on a phone (0.9.2): the navigation names the section, the room
-   * goes to the content. The title stays for screen readers; its «?» is in the user menu («Справка»).
+   * A section page has no title line on a phone (0.9.2): the top app bar names the section (231.2), the
+   * room goes to the content. The title stays for screen readers; «Справка» is under ☰.
    * A nested page keeps «Назад» with its title: they share one line.
    */
   .tb-page-header:not(:has(.tb-page-header__back)) {
@@ -2902,6 +2907,30 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /*
+ * M3E modal expanded navigation rail (☰ on compact, shell.ts): on the start edge over a 32 % scrim,
+ * surface container, elevation level 2, 16 dp trailing corners (CornerLarge); 280 px like the expanded
+ * rail (ours, M3: 220–360 dp). The header holds the menu button that closes it, in line with the items.
+ */
+.p-drawer.tb-modal-rail {
+  width: min(280px, calc(100vw - var(--tb-space-16)));
+  height: 100%;
+  border: none;
+  border-radius: 0 var(--tb-shape-lg) var(--tb-shape-lg) 0;
+  background: var(--p-md-surface-container);
+  box-shadow: var(--tb-elevation-2);
+  color: var(--p-md-on-surface);
+
+  .p-drawer-header {
+    min-height: 56px;
+    padding: var(--tb-space-2) var(--tb-space-3) 0 var(--tb-space-4);
+  }
+
+  .p-drawer-content {
+    padding: 0 var(--tb-space-3) var(--tb-space-4);
+  }
+}
+
+/*
  * The chosen item of a menu (the theme in the user menu): the secondary container and 12 px corners, as M3
  * menus have it
  */
@@ -2929,12 +2958,6 @@ full-calendar :has(> .tb-lesson--moving) {
 .p-menu .tb-menu-item--danger .p-menu-item-link,
 .p-menu .tb-menu-item--danger .p-menu-item-icon {
   color: var(--p-md-error);
-}
-
-/* «Ещё» opens at the right edge: in five columns its computed place may stick out by a pixel. */
-.tb-more-menu.p-menu-overlay {
-  right: var(--tb-space-2) !important;
-  left: auto !important;
 }
 
 /* A dialog without buttons in its footer (a stage that only informs) has no footer (ADR-0026) */

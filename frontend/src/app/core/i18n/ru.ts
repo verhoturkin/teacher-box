@@ -38,10 +38,7 @@ export const ru = {
     notFound: 'Страница не найдена',
   },
   shell: {
-    userMenu: 'Меню пользователя',
     userMenuOf: (name: string) => `${name}: меню пользователя`,
-    moreSections: 'Ещё разделы',
-    more: 'Ещё',
     help: 'Справка',
     account: 'Мой аккаунт',
     lightTheme: 'Светлая тема',
