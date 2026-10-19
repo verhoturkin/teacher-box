@@ -327,6 +327,11 @@ component that shows one adds it to `PRIME`).
   the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
   the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
+  `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 % each
+  (redesign spec §3.1: Settings only, *ours*). Settings (`/teacher/settings[/:category]`, 234.1): the categories
+  as two-line list items with a leading icon in the fixed pane, the chosen one beside it (from expanded
+  `/teacher/settings` shows the first, «Мой аккаунт»); the old `?open=` / `?google=` / `?drive=` addresses
+  and `/teacher/account` redirect to their category.
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
   Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:

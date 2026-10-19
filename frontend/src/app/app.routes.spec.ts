@@ -209,13 +209,14 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(title()).toBe('Задание — Teacher Box');
   });
 
-  it('opens the teacher account page', async () => {
+  it('leads the teacher from the account page to its category of the settings', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
     await harness.navigateByUrl('/teacher/account');
 
+    expect(TestBed.inject(Router).url).toBe('/teacher/settings/account');
     TestBed.inject(HttpTestingController).expectOne('/api/me');
-    expect(title()).toBe('Мой аккаунт — Teacher Box');
+    expect(text()).toContain('Мой аккаунт');
   });
 
   it('opens the notifications page in both areas', async () => {
@@ -243,7 +244,39 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.navigateByUrl('/teacher/settings');
 
     TestBed.inject(HttpTestingController).expectOne('/api/teacher/notifications/status');
-    expect(title()).toBe('Настройки — Teacher Box');
+    // beside the list from expanded: the first category
+    expect(title()).toBe('Мой аккаунт — Настройки — Teacher Box');
+    TestBed.inject(HttpTestingController).expectOne('/api/me');
+  });
+
+  it.each([
+    ['/teacher/settings/portal', '/teacher/settings/portal'],
+    ['/teacher/settings?open=portal', '/teacher/settings/portal'],
+    ['/teacher/settings?open=calendar', '/teacher/settings/calendar'],
+    ['/teacher/settings?open=unknown,deliveries,data', '/teacher/settings/messengers'],
+    ['/teacher/settings?open=data', '/teacher/settings/data'],
+    ['/teacher/settings?open=unknown', '/teacher/settings?open=unknown'],
+    ['/teacher/settings?google=connected', '/teacher/settings/calendar?google=connected'],
+    ['/teacher/settings?drive=denied&open=portal', '/teacher/settings/data?drive=denied'],
+    ['/teacher/settings/calendar?google=failed', '/teacher/settings/calendar?google=failed'],
+    ['/teacher/settings/no-such-category', '/teacher/settings'],
+  ])('leads the old and unknown addresses of the settings: %s → %s', async (from, to) => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl(from);
+
+    expect(TestBed.inject(Router).url).toBe(to);
+    expect(title()).toContain('Настройки');
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it('has no addresses under a category of the settings', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl('/teacher/settings/portal/extra');
+
+    expect(text()).toContain('Такой страницы нет');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it('opens invitation links without signing in', async () => {

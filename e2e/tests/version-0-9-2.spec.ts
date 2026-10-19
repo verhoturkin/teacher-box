@@ -64,9 +64,11 @@ test('the teacher sees the student photo in «Оплаты»', async ({ page }) 
   await expect(row.locator('tb-avatar img')).toBeVisible();
 });
 
-test('the teacher sets a photo in a full-width «Мой аккаунт»', async ({ page }) => {
-  await signIn(page);
+test('the teacher sets a photo in «Мой аккаунт» of the settings', async ({ page }) => {
+  // 234.1: the account is the detail pane beside the categories; at 1600 px it holds both forms in a row
+  await signIn(page, 1600);
   await page.goto('/teacher/account');
+  await expect(page).toHaveURL(/\/teacher\/settings\/account$/);
   await expect(page.locator('.tb-account__role')).toHaveText('Учитель');
   await page
     .locator('input[type="file"][aria-label="Файл фото"]')
@@ -87,19 +89,23 @@ test('the teacher sets a photo in a full-width «Мой аккаунт»', async
   await expect(page.locator('.tb-shell__user-button tb-avatar img')).toHaveCount(0);
 });
 
-test('the settings fold, without integrations, profile or address', async ({ page }) => {
+test('the settings list their categories, without integrations, profile or address', async ({
+  page,
+}) => {
   await signIn(page);
   await page.goto('/teacher/settings');
-  const main = page.locator('main');
-  for (const section of ['Портал', 'Календарь и звонки', 'Неудачные доставки', 'Данные']) {
-    await expect(main.getByRole('button', { name: new RegExp(`^${section}`) })).toBeVisible();
+  // 234.1: list-detail of the categories instead of the fold cards
+  const list = page.getByRole('navigation', { name: 'Категории настроек' });
+  for (const category of ['Мой аккаунт', 'Портал', 'Календарь и звонки', 'Мессенджеры', 'Данные']) {
+    await expect(list.getByRole('link', { name: new RegExp(`^${category}`) })).toBeVisible();
   }
+  const main = page.locator('main');
   await expect(main).not.toContainText('Интеграции');
   await expect(main).not.toContainText('Профиль');
   await expect(page.locator('#portal')).toHaveCount(0);
 
-  await main.getByRole('button', { name: /^Портал/ }).click();
-  await expect(page).toHaveURL(/open=portal/);
+  await list.getByRole('link', { name: /^Портал/ }).click();
+  await expect(page).toHaveURL(/\/teacher\/settings\/portal$/);
   await expect(page.locator('#portal-name')).toBeVisible();
   await expect(page.locator('#portal-address')).toHaveCount(0);
 });

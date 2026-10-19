@@ -4,10 +4,15 @@ import type { ru } from './ru';
 export const en: Translation<typeof ru> = {
   page: {
     title: 'Settings',
+    categories: 'Settings categories',
+    all: 'All settings',
+    account: 'My account',
+    accountSummary: 'Photo, name and password',
     portal: 'Portal',
     portalSummary: 'Name, logo and colour of the portal',
     calendar: 'Calendar and calls',
     calendarSummary: 'Google Calendar, video meetings and lesson links',
+    messengers: 'Messengers',
     deliveries: 'Failed deliveries',
     deliveriesSummary: 'Notifications that did not reach the messenger',
     allDelivered: 'All notifications are delivered',

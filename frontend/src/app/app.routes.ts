@@ -143,9 +143,9 @@ export const routes: Routes = [
         loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
       },
       {
+        // `/teacher/settings[/:category]`: list-detail of the categories (redesign spec §10.3)
         path: 'settings',
-        title: NAV.settings,
-        loadComponent: () => import('@features/settings').then((m) => m.SettingsPage),
+        loadChildren: () => import('@features/settings').then((m) => m.SETTINGS_ROUTES),
       },
       {
         path: 'ai',
@@ -169,11 +169,8 @@ export const routes: Routes = [
         data: { area: 'teacher' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
-      {
-        path: 'account',
-        title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
-      },
+      // the teacher's «Мой аккаунт» is a category of the settings (234.1)
+      { path: 'account', redirectTo: 'settings/account' },
       {
         path: '**',
         title: N.notFound,

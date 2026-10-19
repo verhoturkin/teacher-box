@@ -2,10 +2,15 @@
 export const ru = {
   page: {
     title: 'Настройки',
+    categories: 'Категории настроек',
+    all: 'Все настройки',
+    account: 'Мой аккаунт',
+    accountSummary: 'Фото, имя и пароль',
     portal: 'Портал',
     portalSummary: 'Название, логотип и цвет портала',
     calendar: 'Календарь и звонки',
     calendarSummary: 'Google Календарь, видеовстречи и ссылки на занятия',
+    messengers: 'Мессенджеры',
     deliveries: 'Неудачные доставки',
     deliveriesSummary: 'Уведомления, которые не дошли до мессенджера',
     allDelivered: 'Все уведомления доставлены',

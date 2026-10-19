@@ -32,7 +32,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
 
 ### 234. Settings list-detail (F)
 
-- [ ] 234.1 **F** Spec §10.3: `features/settings/settings-page.ts` → list-detail on `tb-panes`, routes
+- [x] 234.1 **F** Spec §10.3: `features/settings/settings-page.ts` → list-detail on `tb-panes`, routes
   `/teacher/settings/:category` (`app.routes.ts`; `?open=` of the fold cards redirects), categories Мой аккаунт
   (`identity/account/account-page.ts`; `/teacher/account` redirects), Портал, Данные. Medium: 50 / 50.
 - [ ] 234.2 **F** «Расписание и календарь» (time zone, `schedule/teacher/google-calendar-panel.ts`,
