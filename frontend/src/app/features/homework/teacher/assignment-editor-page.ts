@@ -32,7 +32,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { AiApi, AppliedDraft, HomeworkAiPanel, SourceOption } from '@features/ai/parts';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
-import { GroupPicker, IdentityApi } from '@features/identity/parts';
+import { ChipColors, GroupPicker, IdentityApi } from '@features/identity/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -80,6 +80,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     InputText,
     Message,
     MultiSelect,
+    ChipColors,
     SelectButton,
     Textarea,
     GroupPicker,
@@ -184,6 +185,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   [filterPlaceHolder]="t.search"
                   [ariaFilterLabel]="t.search"
                   display="chip"
+                  tbChipColors="student"
                   appendTo="body"
                   [fluid]="true"
                 />

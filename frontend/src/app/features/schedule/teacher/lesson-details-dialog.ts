@@ -37,6 +37,7 @@ import {
   requestKindLabel,
 } from '../schedule-labels';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { AttendanceDialog } from './attendance-dialog';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -142,7 +143,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           @if (lesson.groupId !== null) {
             <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
-                <li>
+                <li [attr.data-tb-label]="colors.studentLabel(participant.studentId)">
                   <tb-avatar
                     [name]="participant.studentName ?? c.student"
                     [photo]="participant.studentAvatar"
@@ -362,6 +363,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 export class LessonDetailsDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.details;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);

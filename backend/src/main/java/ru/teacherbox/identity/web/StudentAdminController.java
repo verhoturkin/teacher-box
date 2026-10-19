@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.identity.application.IssuedInvite;
 import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.application.StudentView;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.Profile;
 
 /** Student management; the whole {@code /api/teacher/**} area requires the teacher role. */
@@ -31,10 +32,11 @@ class StudentAdminController {
             @Size(max = 254) @Nullable String email,
             @Size(max = 32) @Nullable String phone,
             @Size(max = 2000) @Nullable String note,
-            @Size(max = Profile.MAX_TOPIC_LENGTH) @Nullable String defaultTopic) {
+            @Size(max = Profile.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
+            @Nullable LabelColor color) {
 
         Profile profile() {
-            return new Profile(displayName, email, phone, note, defaultTopic);
+            return new Profile(displayName, email, phone, note, defaultTopic, color);
         }
     }
 
@@ -44,10 +46,11 @@ class StudentAdminController {
             @Size(max = 32) @Nullable String phone,
             @Size(max = 2000) @Nullable String note,
             @Size(max = Profile.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
+            @Nullable LabelColor color,
             @NotNull Long version) {
 
         Profile profile() {
-            return new Profile(displayName, email, phone, note, defaultTopic);
+            return new Profile(displayName, email, phone, note, defaultTopic, color);
         }
     }
 

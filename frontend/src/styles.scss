@@ -1202,6 +1202,89 @@ p-button.tb-list__stretched .p-button {
   }
 }
 
+/*
+ * Colours of students and groups (core/theme/label-colors.ts): M3 static colours, four roles each.
+ * `data-tb-label="<colour>"` brings the roles of one colour as `--tb-label*`.
+ */
+@each $label in 'red', 'orange', 'yellow', 'lime', 'green', 'cyan', 'blue', 'violet', 'purple',
+  'pink'
+{
+  [data-tb-label='#{$label}'],
+  .tb-label--#{$label} {
+    --tb-label: var(--p-md-label-#{$label});
+    --tb-on-label: var(--p-md-on-label-#{$label});
+    --tb-label-container: var(--p-md-label-#{$label}-container);
+    --tb-on-label-container: var(--p-md-on-label-#{$label}-container);
+    --tb-label-surface-container-lowest: var(--p-md-label-#{$label}-surface-container-lowest);
+    --tb-label-surface-container-low: var(--p-md-label-#{$label}-surface-container-low);
+    --tb-label-surface-container-high: var(--p-md-label-#{$label}-surface-container-high);
+    --tb-on-label-surface: var(--p-md-on-label-#{$label}-surface);
+    --tb-on-label-surface-variant: var(--p-md-on-label-#{$label}-surface-variant);
+  }
+}
+
+/*
+ * A row of a student or a group (a list tile, a table row or its card on a phone; the teacher only) is built like any row: the
+ * same surface role — container-low on a light card, container-high on a dark one, container-lowest in a
+ * dialog — and the same text roles, taken from the Fidelity scheme of its colour instead of the portal's
+ * (its neutral palette, so only the tint differs). Links, amounts and buttons keep their roles: the tones are
+ * the portal's. The avatar and the lead keep the colours of the theme; a selected row keeps
+ * secondary-container (our decision, not in M3).
+ */
+.tb-list > li[data-tb-label],
+.p-datatable-tbody > tr[data-tb-label]:not(.p-datatable-row-selected) {
+  --tb-list-item: var(--tb-label-surface-container-low);
+  color: var(--tb-on-label-surface);
+
+  :is(td, .tb-list__title) {
+    color: var(--tb-on-label-surface);
+  }
+
+  :is(.tb-list__supporting, .tb-muted, .tb-hint) {
+    color: var(--tb-on-label-surface-variant);
+  }
+}
+
+:root.tb-dark :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
+  --tb-list-item: var(--tb-label-surface-container-high);
+}
+
+:root .p-dialog :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
+  --tb-list-item: var(--tb-label-surface-container-lowest);
+}
+
+/* A chip of a student or a group (multiselects): the container of the colour */
+.p-chip[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
+
+  .p-chip-label,
+  .p-chip-remove-icon,
+  .p-icon {
+    color: inherit;
+  }
+}
+
+/* The colour in a list of colours: a 20 px circle; «Без цвета» is an empty outlined one */
+.tb-label-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tb-label-swatch {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+
+  &[data-tb-label] {
+    border: 0;
+    background: var(--tb-label-container);
+  }
+}
+
 /* The lead of a row that needs attention (an unread notification, a debt) */
 .tb-list__lead--accent {
   background: var(--p-md-primary-container);
@@ -1867,6 +1950,20 @@ a.p-menu-item-link:hover {
   --fc-classic-event: var(--p-md-surface-container-highest);
   --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
+}
+
+/*
+ * The colour of the student or the group (the teacher's calendar): a planned lesson takes the container of the
+ * colour; a conducted, missed or cancelled one keeps the container of its status and gets a 4 px stripe of the
+ * colour at its start, so the status stays readable (our decision, not in M3).
+ */
+.tb-lesson--scheduled.tb-label {
+  --fc-classic-event: var(--tb-label-container);
+  --fc-classic-event-contrast: var(--tb-on-label-container);
+}
+
+.tb-label:not(.tb-lesson--scheduled) {
+  box-shadow: inset 4px 0 0 var(--tb-label);
 }
 
 /* A request waits for an answer: the outline of the warning role, 3:1 to the card */

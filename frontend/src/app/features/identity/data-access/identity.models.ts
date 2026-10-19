@@ -1,4 +1,5 @@
 import { Role } from '@core/auth/auth.models';
+import { LabelColor } from '@core/theme/label-colors';
 
 export type AccountStatus = 'INVITED' | 'ACTIVE' | 'DEACTIVATED';
 export type InvitePurpose = 'ACTIVATION' | 'PASSWORD_RESET';
@@ -15,6 +16,8 @@ export interface Student {
   readonly note: string | null;
   /** Topic of a new lesson with the student unless the teacher types another. */
   readonly defaultTopic: string | null;
+  /** The colour in the teacher's lists; `null`: none. */
+  readonly color: LabelColor | null;
   readonly status: AccountStatus;
   readonly login: string | null;
   readonly createdAt: string;
@@ -44,6 +47,8 @@ export interface StudentProfileInput {
   readonly phone: string | null;
   readonly note: string | null;
   readonly defaultTopic: string | null;
+  /** The colour in the teacher's lists; `null`: none. */
+  readonly color: LabelColor | null;
 }
 
 export interface InviteInfo {
@@ -78,6 +83,8 @@ export interface StudentGroup {
   readonly members: readonly GroupMember[];
   /** Topic of a new lesson with the group unless the teacher types another. */
   readonly defaultTopic: string | null;
+  /** The colour in the teacher's lists; `null`: none. */
+  readonly color: LabelColor | null;
   readonly archivedAt: string | null;
   readonly createdAt: string;
   readonly version: number;
@@ -93,4 +100,6 @@ export interface GroupInput {
   readonly name: string;
   readonly memberIds: readonly string[];
   readonly defaultTopic: string | null;
+  /** The colour in the teacher's lists; `null`: none. */
+  readonly color: LabelColor | null;
 }

@@ -33,17 +33,20 @@ public final class StudentGroup {
     private String name;
     private final Set<UUID> memberIds;
     private @Nullable String defaultTopic;
+    private @Nullable LabelColor color;
     private @Nullable Instant archivedAt;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
     private StudentGroup(UUID id, String name, Collection<UUID> memberIds, @Nullable String defaultTopic,
-            @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt, long version) {
+            @Nullable LabelColor color, @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt,
+            long version) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.memberIds = new LinkedHashSet<>(memberIds);
         this.defaultTopic = defaultTopic;
+        this.color = color;
         this.archivedAt = archivedAt;
         this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt);
@@ -51,18 +54,19 @@ public final class StudentGroup {
     }
 
     public static StudentGroup create(UUID id, String name, Collection<UUID> memberIds, Instant now) {
-        return create(id, name, memberIds, null, now);
+        return create(id, name, memberIds, null, null, now);
     }
 
     public static StudentGroup create(UUID id, String name, Collection<UUID> memberIds,
-            @Nullable String defaultTopic, Instant now) {
-        return new StudentGroup(id, validName(name), validMembers(memberIds), validTopic(defaultTopic), null, now, now,
-                0);
+            @Nullable String defaultTopic, @Nullable LabelColor color, Instant now) {
+        return new StudentGroup(id, validName(name), validMembers(memberIds), validTopic(defaultTopic), color, null,
+                now, now, 0);
     }
 
     public static StudentGroup restore(UUID id, String name, Collection<UUID> memberIds, @Nullable String defaultTopic,
-            @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt, long version) {
-        return new StudentGroup(id, name, memberIds, defaultTopic, archivedAt, createdAt, updatedAt, version);
+            @Nullable LabelColor color, @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt,
+            long version) {
+        return new StudentGroup(id, name, memberIds, defaultTopic, color, archivedAt, createdAt, updatedAt, version);
     }
 
     /** @return {@code true} if the name changed */
@@ -87,6 +91,20 @@ public final class StudentGroup {
             return false;
         }
         defaultTopic = valid;
+        updatedAt = now;
+        return true;
+    }
+
+    /**
+     * Sets the group's colour in the teacher's lists; {@code null} takes it off.
+     *
+     * @return {@code true} if the colour changed
+     */
+    public boolean changeColor(@Nullable LabelColor newColor, Instant now) {
+        if (newColor == color) {
+            return false;
+        }
+        color = newColor;
         updatedAt = now;
         return true;
     }
@@ -176,6 +194,10 @@ public final class StudentGroup {
 
     public @Nullable String defaultTopic() {
         return defaultTopic;
+    }
+
+    public @Nullable LabelColor color() {
+        return color;
     }
 
     public boolean isArchived() {

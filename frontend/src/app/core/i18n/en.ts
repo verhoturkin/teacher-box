@@ -88,6 +88,18 @@ export const en: Translation<typeof ru> = {
     violet: 'Violet',
     pink: 'Pink',
   },
+  labelColors: {
+    RED: 'Red',
+    ORANGE: 'Orange',
+    YELLOW: 'Yellow',
+    LIME: 'Lime',
+    GREEN: 'Green',
+    CYAN: 'Cyan',
+    BLUE: 'Blue',
+    VIOLET: 'Violet',
+    PURPLE: 'Purple',
+    PINK: 'Pink',
+  },
   errors: {
     codes: {
       'auth.required': 'Please sign in',

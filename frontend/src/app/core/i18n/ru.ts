@@ -86,6 +86,18 @@ export const ru = {
     violet: 'Фиолетовый',
     pink: 'Розовый',
   },
+  labelColors: {
+    RED: 'Красный',
+    ORANGE: 'Оранжевый',
+    YELLOW: 'Жёлтый',
+    LIME: 'Салатовый',
+    GREEN: 'Зелёный',
+    CYAN: 'Голубой',
+    BLUE: 'Синий',
+    VIOLET: 'Фиолетовый',
+    PURPLE: 'Пурпурный',
+    PINK: 'Розовый',
+  },
   errors: {
     codes: {
       'auth.required': 'Требуется вход в систему',

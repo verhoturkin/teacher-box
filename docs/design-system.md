@@ -221,6 +221,23 @@ component that shows one adds it to `PRIME`).
   apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); on a card
   narrower than 6 rem (lessons side by side) both are 32 dp and 4 px apart, and the dragged card lies above its
   neighbours; the move is saved only on ✓.
+- **Colours of students and groups (0.20.0, `core/theme/label-colors.ts`):** M3 static colours (formerly custom
+  colours) — ten reference colours (Tailwind 500, red 600; hues about 30° apart), each giving the four roles
+  `label-<c>`, `on-label-<c>`, `label-<c>-container`, `on-label-<c>-container` of both themes (`--p-md-*`) from its
+  **Fidelity** scheme (2025 spec), so the container keeps the reference colour. Our decisions: not harmonized with
+  the portal colour (harmonizing pulls neighbouring hues together); on-roles moved along the hue to 4.5:1;
+  containers at least ΔE×100 10 apart and the colour role 3:1 on list and dialog surfaces (`label-colors.spec.ts`).
+  `data-tb-label="<c>"` (or class `tb-label--<c>`) brings `--tb-label`, `--tb-on-label`, `--tb-label-container`,
+  `--tb-on-label-container`; the same scheme gives its surface containers lowest / low / high and on-surface /
+  on-surface-variant (`--tb-label-surface-container-*`, `--tb-on-label-surface*`, text 4.5:1 on all of them). Where
+  it shows (the teacher only; the colour is looked up by id, `TeacherColors`): a row of a student or a group (list
+  tile, table row, its card on a phone; 0.20.1) is built like any row — container-low on a light card,
+  container-high on a dark one, container-lowest in a dialog — from the colour's scheme instead of the portal's, so
+  only the tint differs; links, amounts and buttons keep their roles; the avatar and a group's lead keep the theme
+  colours, the nearest-lesson card keeps primary-container; chips of student and group multiselects — the container (`tbChipColors`); the teacher's calendar (`showStudent`; the student's never) — a planned
+  lesson takes the container, a conducted / missed / cancelled one keeps its status container plus a 4 px stripe
+  of the colour at its start. The dialogs pick it in a select «Цвет» with a 20 px swatch per option («Без цвета» — an
+  outlined empty circle).
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, «Ещё» panel, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
   surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both

@@ -116,7 +116,20 @@ describe('app routes', { timeout: 20_000 }, () => {
     auth.acceptSession(authResponse('TEACHER'));
 
     await harness.navigateByUrl('/teacher/students');
-    TestBed.inject(HttpTestingController).expectOne('/api/teacher/students').flush([]);
+    const backend = TestBed.inject(HttpTestingController);
+    // the page and the colours of the teacher's lists, loaded when the teacher's area opens
+    const lists = backend.match(
+      (request) => request.url === '/api/teacher/students' || request.url === '/api/teacher/groups',
+    );
+    expect(lists.map((request) => request.request.url).sort()).toEqual([
+      '/api/teacher/groups',
+      '/api/teacher/groups',
+      '/api/teacher/students',
+      '/api/teacher/students',
+    ]);
+    for (const request of lists) {
+      request.flush([]);
+    }
     await harness.fixture.whenStable();
 
     expect(title()).toBe('Ученики — Teacher Box');

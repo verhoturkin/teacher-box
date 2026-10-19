@@ -77,7 +77,7 @@ public class AccountService {
         User user = load(userId);
         Profile profile = user.profile();
         user.updateProfile(new Profile(displayName, profile.email(), profile.phone(), profile.note(),
-                profile.defaultTopic()), clock.instant());
+                profile.defaultTopic(), profile.color()), clock.instant());
         users.update(user);
         return view(user);
     }

@@ -31,6 +31,11 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   have a topic up to 500 characters, returned in `StudentView` / `GroupView`; the teacher's lesson and series
   dialogs fill it in for a new lesson (`schedule` itself stores only the lesson's own topic). Changing it
   publishes no event.
+- **Colour (0.20.0)** — a student (`users.color`) and a group (`student_groups.color`) may have a colour of the
+  palette `domain.LabelColor` (`RED`, `ORANGE`, `YELLOW`, `LIME`, `GREEN`, `CYAN`, `BLUE`, `VIOLET`, `PURPLE`,
+  `PINK`; null — none), set in the create / update requests and returned in `StudentView` / `GroupView`. Only the
+  teacher's interface paints it (the frontend looks it up by id — other modules' DTOs don't carry it); changing it
+  publishes no event.
 - **Language (0.11.1, ADR-0036)** — `users.language` (`ru` by default): the language of the interface the
   browser saves to the account (`PUT /api/me/language`, also open to the administrator); returned in `/api/me`
   and the session user. Other modules write notifications, bot messages and calendars in it
@@ -47,7 +52,7 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 
 ## Data
 
-`users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`), `invites`, `refresh_tokens`, `student_groups`,
+`users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`, `color`), `invites`, `refresh_tokens`, `student_groups`,
 `group_members`. Housekeeping job removes expired tokens/invites (`IdentityHousekeeping`). Photo files are removed
 with the rest of the files by the full reset.
 
@@ -59,7 +64,10 @@ with the rest of the files by the full reset.
 
 ## Frontend
 
-`features/identity/`: `login/`, `invite/`, `students/` (list, form, invite link), `groups/` (panel on the
+`features/identity/`: `login/`, `invite/`, `colors/` (0.20.0: `TeacherColors` — the colours of students and groups
+by id, loaded by the teacher area's guard in `app.routes.ts`, used by every teacher list; `tbChipColors` — paints the
+chips of a student / group multiselect; `tb-label-color-field` — the colour select of both dialogs),
+`students/` (list, form, invite link), `groups/` (panel on the
 students page; `group-picker.ts` — `tb-group-picker`, a multiselect of groups next to a students multiselect: a chosen
 group emits its current students (`picked`), a group taken off emits those in no other chosen group (`dropped`), the
 host adds / removes them; `selected` is a model the host clears), `account/` («Мой аккаунт»: profile hero, password change; the teacher's name; the photo of the teacher or a student, a student's own name). Avatars —

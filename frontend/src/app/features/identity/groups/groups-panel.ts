@@ -21,6 +21,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { BillingApi } from '@features/billing/parts';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { TeacherColors } from '../colors/teacher-colors';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog, SavedGroup } from './group-form-dialog';
@@ -33,6 +34,7 @@ import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Busy } from '@shared/ui/busy';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
+import { labelKey } from '@core/theme/label-colors';
 
 /** Teacher: groups of students taught together, their members and lesson prices (under the students). */
 @Component({
@@ -82,7 +84,7 @@ import { T } from '../i18n/texts';
         @if (visibleGroups().length > 0) {
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (group of visibleGroups(); track group.id) {
-              <li>
+              <li [attr.data-tb-label]="group.color === null ? null : labelKey(group.color)">
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i class="tb-i tb-i-group"></i
                 ></span>
@@ -150,9 +152,11 @@ import { T } from '../i18n/texts';
 })
 export class GroupsPanel implements OnInit {
   protected readonly t = T.groups;
+  protected readonly labelKey = labelKey;
   private readonly snackbar = inject(Snackbar);
   protected readonly busy = new Busy();
   private readonly api = inject(IdentityApi);
+  private readonly colors = inject(TeacherColors);
   private readonly billing = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly menu = viewChild.required<Menu>('menu');
@@ -225,6 +229,7 @@ export class GroupsPanel implements OnInit {
   protected onSaved({ group, lessonPrice }: SavedGroup): void {
     this.snackbar.success(T.groups.saved);
     this.replace(group);
+    this.colors.rememberGroup(group);
     if (lessonPrice !== null) {
       this.prices.update((prices) => new Map(prices).set(group.id, lessonPrice));
     }

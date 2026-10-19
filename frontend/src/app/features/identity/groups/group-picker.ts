@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MultiSelect } from 'primeng/multiselect';
+import { ChipColors } from '../colors/chip-colors';
 import { IdentityApi } from '../data-access/identity-api';
 import { StudentGroup } from '../data-access/identity.models';
 import { T } from '../i18n/texts';
@@ -21,7 +22,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-group-picker',
-  imports: [FormsModule, MultiSelect],
+  imports: [FormsModule, MultiSelect, ChipColors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (groups().length > 0) {
@@ -36,6 +37,7 @@ import { T } from '../i18n/texts';
           optionValue="id"
           [placeholder]="t.placeholder"
           display="chip"
+          tbChipColors="group"
           appendTo="body"
           [fluid]="true"
         />

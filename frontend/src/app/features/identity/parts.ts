@@ -3,5 +3,7 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { ChangePasswordForm } from './account/change-password-form';
+export { ChipColors } from './colors/chip-colors';
+export { TeacherColors } from './colors/teacher-colors';
 export { IdentityApi } from './data-access/identity-api';
 export { GroupPicker } from './groups/group-picker';

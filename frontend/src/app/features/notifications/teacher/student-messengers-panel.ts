@@ -19,6 +19,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
@@ -63,7 +64,7 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-row [tbRowType]="students">
-                <tr>
+                <tr [attr.data-tb-label]="colors.studentLabel(row.studentId)">
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
@@ -131,6 +132,7 @@ import { T } from '../i18n/texts';
 })
 export class StudentMessengersPanel implements OnInit {
   protected readonly t = T.students;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
 

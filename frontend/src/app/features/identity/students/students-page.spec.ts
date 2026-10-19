@@ -26,6 +26,7 @@ function student(overrides: Partial<Student>): Student {
     phone: null,
     note: null,
     defaultTopic: null,
+    color: null,
     status: 'ACTIVE',
     login: null,
     createdAt: '2026-09-01T10:00:00Z',
@@ -117,6 +118,17 @@ describe('StudentsPage', () => {
     for (const hidden of ['5 класс', 'maria', 'm@example.com']) {
       expect(rows[1]).not.toContain(hidden);
     }
+  });
+
+  it('tints the row of a student with a colour, not the avatar', async () => {
+    await loadStudents([{ ...MARIA, color: 'GREEN' }, BORIS]);
+
+    const [maria, boris] = Array.from(
+      host.querySelectorAll('ul.tb-list[aria-label="Ученики"] > li'),
+    );
+    expect(maria?.getAttribute('data-tb-label')).toBe('green');
+    expect(maria?.querySelector('tb-avatar')?.hasAttribute('data-tb-label')).toBe(false);
+    expect(boris?.hasAttribute('data-tb-label')).toBe(false);
   });
 
   it('puts the login and the note in the tooltip of the name', async () => {

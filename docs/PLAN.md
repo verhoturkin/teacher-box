@@ -19,6 +19,9 @@ unless the task needs history.
 
 ## Backlog
 
+Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,
+homework and board lists by name) and the options of student / group selects.
+
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 - Shared `tb-steps` and `tb-copy-field` components.
 - `cssLayer` instead of `::ng-deep` / `!important`.

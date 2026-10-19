@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText, requireElement } from '@testing/dom';
+import { TeacherColors } from '@features/identity/parts';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { CalendarRange, LessonMove, ScheduleCalendar, lessonClasses } from './schedule-calendar';
 
@@ -38,6 +39,32 @@ describe('ScheduleCalendar', () => {
     expect(text).toContain('? Ученик');
     expect(text).toContain('ОГЭ · Разбор');
     expect(text).toContain('Группа');
+  });
+
+  it('paints the lessons of the teacher in the colours of their students and groups', async () => {
+    const colors = TestBed.inject(TeacherColors);
+    colors.rememberStudent({ id: 's-1', color: 'RED' });
+    colors.rememberGroup({ id: 'g-1', color: 'BLUE' });
+
+    await render([
+      scheduledLesson(),
+      groupLesson(),
+      scheduledLesson({ id: 'l-3', studentId: 's-3', topic: 'Без цвета' }),
+    ]);
+    const host = hostElement(fixture);
+
+    expect(host.querySelectorAll('.tb-label.tb-label--red')).toHaveLength(1);
+    expect(host.querySelectorAll('.tb-label.tb-label--blue')).toHaveLength(1);
+    expect(host.querySelectorAll('.tb-label')).toHaveLength(2);
+  });
+
+  it('never paints the calendar of a student', async () => {
+    const colors = TestBed.inject(TeacherColors);
+    colors.rememberStudent({ id: 's-1', color: 'RED' });
+
+    await render([scheduledLesson()], false);
+
+    expect(hostElement(fixture).querySelectorAll('.tb-label')).toHaveLength(0);
   });
 
   it('has M3 buttons: the views are a segmented button, the toolbar only on top', async () => {

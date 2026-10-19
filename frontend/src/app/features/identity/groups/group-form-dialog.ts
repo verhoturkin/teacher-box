@@ -8,8 +8,14 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -18,6 +24,9 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { describeError } from '@core/http/error-messages';
+import { LabelColor } from '@core/theme/label-colors';
+import { ChipColors } from '../colors/chip-colors';
+import { LabelColorField } from '../colors/label-color-field';
 import { BillingApi } from '@features/billing/parts';
 import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
@@ -49,6 +58,8 @@ export interface SavedGroup {
     FieldErrors,
     SubmitFor,
     RoomPanel,
+    LabelColorField,
+    ChipColors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -83,6 +94,7 @@ export interface SavedGroup {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />
@@ -112,6 +124,7 @@ export interface SavedGroup {
           />
           <small id="group-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
         </div>
+        <tb-label-color-field inputId="group-color" [control]="form.controls.color" />
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
@@ -173,20 +186,26 @@ export class GroupFormDialog {
     memberIds: [[] as string[]],
     price: [null as number | null, [Validators.min(0)]],
     defaultTopic: ['', [Validators.maxLength(500)]],
+    color: new FormControl<LabelColor | null>(null),
   });
 
   constructor() {
-    // Fill the form whenever the dialog opens.
+    // Fill the form whenever the dialog opens; untracked: the colour select reads its own signals when written,
+    // and choosing a colour must not fill the form again.
     effect(() => {
       if (this.visible()) {
         const group = this.group();
-        const price = this.lessonPrice();
-        this.error.set(null);
-        this.form.reset({
-          name: group?.name ?? '',
-          memberIds: group?.members.map((member) => member.id) ?? [],
-          price: price === null ? null : toMajorUnits(price, this.currency()),
-          defaultTopic: group?.defaultTopic ?? '',
+        const lessonPrice = this.lessonPrice();
+        const price = lessonPrice === null ? null : toMajorUnits(lessonPrice, this.currency());
+        untracked(() => {
+          this.error.set(null);
+          this.form.reset({
+            name: group?.name ?? '',
+            memberIds: group?.members.map((member) => member.id) ?? [],
+            price,
+            defaultTopic: group?.defaultTopic ?? '',
+            color: group?.color ?? null,
+          });
         });
       }
     });
@@ -202,6 +221,7 @@ export class GroupFormDialog {
       name: value.name,
       memberIds: value.memberIds,
       defaultTopic: topic === '' ? null : topic,
+      color: value.color,
     };
     const group = this.group();
     const request =

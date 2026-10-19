@@ -16,6 +16,7 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -65,7 +66,13 @@ interface RoomStatus {
             } @else {
               <ul class="tb-list" [attr.aria-label]="t.list">
                 @for (room of overview.rooms; track room.ownerId) {
-                  <li>
+                  <li
+                    [attr.data-tb-label]="
+                      room.ownerType === 'GROUP'
+                        ? colors.groupLabel(room.ownerId)
+                        : colors.studentLabel(room.ownerId)
+                    "
+                  >
                     @if (room.ownerType === 'GROUP') {
                       <span class="tb-list__lead" aria-hidden="true"
                         ><i class="tb-i tb-i-group"></i
@@ -110,6 +117,7 @@ interface RoomStatus {
 })
 export class CallsPage implements OnInit {
   protected readonly t = T.calls;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(MeetingsApi);
   private readonly document = inject(DOCUMENT);
   protected readonly session = inject(CallSession);

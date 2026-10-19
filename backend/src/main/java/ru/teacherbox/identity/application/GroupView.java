@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.identity.domain.AccountStatus;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.StudentGroup;
 import ru.teacherbox.identity.domain.User;
 
@@ -16,6 +17,7 @@ public record GroupView(
         String name,
         List<Member> members,
         @Nullable String defaultTopic,
+        @Nullable LabelColor color,
         @Nullable Instant archivedAt,
         Instant createdAt,
         long version) {
@@ -29,7 +31,7 @@ public record GroupView(
                 .filter(Objects::nonNull)
                 .map(student -> new Member(student.id(), student.profile().displayName(), student.status()))
                 .toList();
-        return new GroupView(group.id(), group.name(), members, group.defaultTopic(), group.archivedAt(), group.createdAt(),
+        return new GroupView(group.id(), group.name(), members, group.defaultTopic(), group.color(), group.archivedAt(), group.createdAt(),
                 group.version());
     }
 }

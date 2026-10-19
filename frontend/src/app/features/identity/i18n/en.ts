@@ -128,6 +128,10 @@ export const en: Translation<typeof ru> = {
     loginHint: 'The student chooses the login when they open the invitation.',
     failed: 'Could not save. Try again later',
   },
+  colors: {
+    label: 'Colour',
+    none: 'No colour',
+  },
   statuses: {
     INVITED: 'Invited',
     ACTIVE: 'Active',

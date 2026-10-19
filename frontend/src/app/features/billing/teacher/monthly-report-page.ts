@@ -26,6 +26,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: income and lessons of a month. */
@@ -148,7 +149,10 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.lessons">
-                <tr [class.tb-inactive]="entry.lesson.status === 'CANCELLED'">
+                <tr
+                  [attr.data-tb-label]="colors.studentLabel(entry.lesson.studentId)"
+                  [class.tb-inactive]="entry.lesson.status === 'CANCELLED'"
+                >
                   <td [attr.data-label]="t.date">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
@@ -198,7 +202,10 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-entry [tbRowType]="report.payments">
-                <tr [class.tb-inactive]="entry.payment.voidedAt !== null">
+                <tr
+                  [attr.data-tb-label]="colors.studentLabel(entry.payment.studentId)"
+                  [class.tb-inactive]="entry.payment.voidedAt !== null"
+                >
                   <td [attr.data-label]="t.date">
                     {{ entry.payment.paidOn | date: 'dd.MM.yyyy' }}
                   </td>
@@ -232,6 +239,7 @@ import { T } from '../i18n/texts';
 })
 export class MonthlyReportPage implements OnInit {
   protected readonly t = T.report;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);
   private readonly destroyRef = inject(DestroyRef);
 

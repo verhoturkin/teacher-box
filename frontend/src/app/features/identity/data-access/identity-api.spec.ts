@@ -27,6 +27,7 @@ describe('IdentityApi', () => {
       phone: null,
       note: null,
       defaultTopic: null,
+      color: null,
     };
     api.listStudents().subscribe();
     api.createStudent(profile).subscribe();

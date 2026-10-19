@@ -20,6 +20,7 @@ describe('Avatar', () => {
     expect(host.classList).toContain('tb-avatar');
     expect(host.classList).not.toContain('tb-avatar--photo');
     expect(host.getAttribute('aria-hidden')).toBe('true');
+    expect(host.hasAttribute('data-tb-label')).toBe(false);
   });
 
   it('shows the photo and falls back to the initials when it does not load', () => {
