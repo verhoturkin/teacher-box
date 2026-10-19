@@ -37,7 +37,8 @@ describe('MeetingsSettingsPanel', () => {
     const text = await render('OK');
 
     expect(text).toContain('Звонки в портале включены');
-    expect(hostElement(fixture).querySelector('a')?.getAttribute('href')).toBe('/teacher/calls');
+    expect(text).toContain('кнопкой «Начать урок»');
+    expect(hostElement(fixture).querySelector('a')).toBeNull();
     expect(text).toContain('строка «Видеовстреча»');
     expect(text).not.toContain('Яндекс');
 

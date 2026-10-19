@@ -6,7 +6,6 @@ export const en: Translation<typeof ru> = {
     sections: 'Sections',
     home: 'Home',
     schedule: 'Schedule',
-    calls: 'Calls',
     students: 'Students',
     homework: 'Homework',
     textbooks: 'Textbooks',

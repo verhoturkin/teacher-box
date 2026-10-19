@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { PageDetail } from '@core/routing/page-detail';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { portalSettings } from '@testing/portal-fixtures';
+import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
@@ -58,6 +59,8 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/portal').flush(portalSettings());
         break;
       case 'calendar':
+        backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+        backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
         backend.expectOne('/api/teacher/schedule/google').flush({
           clientConfigured: false,
           clientFromEnvironment: false,
@@ -69,6 +72,8 @@ describe('SettingsPage', () => {
           connectedAt: null,
           callbackPath: '/api/public/schedule/google/callback',
         });
+        break;
+      case 'calls':
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
       case 'messengers':
@@ -138,7 +143,10 @@ describe('SettingsPage', () => {
     const list = readableText(requireElement(host, 'nav', HTMLElement));
     expect(list).toContain('Мой аккаунт Фото, имя и пароль');
     expect(list).toContain('Портал Название, логотип и цвет портала');
-    expect(list).toContain('Календарь и звонки');
+    expect(list).toContain(
+      'Расписание и календарь Часовой пояс, Google Календарь и подписка на расписание',
+    );
+    expect(list).toContain('Звонки Звонки в портале и внешние видеовстречи');
     expect(list).toContain('Мессенджеры Уведомления, которые не дошли до мессенджера 2');
     expect(list).toContain('Данные');
     expect(list).not.toContain('Интеграции');
@@ -149,6 +157,7 @@ describe('SettingsPage', () => {
       '/teacher/settings/account',
       '/teacher/settings/portal',
       '/teacher/settings/calendar',
+      '/teacher/settings/calls',
       '/teacher/settings/messengers',
       '/teacher/settings/data',
     ]);
@@ -212,11 +221,25 @@ describe('SettingsPage', () => {
     expect(host.querySelector('#reset')).not.toBeNull();
   });
 
-  it('shows the calendar and the calls', async () => {
+  it('shows the time zone, Google Calendar and the subscription in the schedule and calendar', async () => {
     const host = await render(1200, 'calendar');
 
+    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain(
+      'Расписание и календарь',
+    );
+    expect(host.querySelector('#time-zone')).not.toBeNull();
     expect(host.querySelector('#google')).not.toBeNull();
+    expect(host.querySelector('tb-calendar-feed-panel')).not.toBeNull();
+    expect(host.querySelector('#meetings')).toBeNull();
+  });
+
+  it('shows the video meetings in the calls', async () => {
+    const host = await render(1200, 'calls');
+
+    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain('Звонки');
     expect(host.querySelector('#meetings')).not.toBeNull();
+    expect(host.querySelector('#google')).toBeNull();
+    expect(current(host)).toBe('Звонки');
   });
 
   it('shows the failed deliveries in the messengers', async () => {

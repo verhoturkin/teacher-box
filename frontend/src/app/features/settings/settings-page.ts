@@ -15,7 +15,7 @@ import { pageDetail } from '@core/routing/page-detail';
 import { HelpButton } from '@features/help/parts';
 import { AccountPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
-import { GoogleCalendarPanel } from '@features/schedule/parts';
+import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
 import { RowType } from '@shared/ui/row-type.directive';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { BackupsCard } from './backups/backups-card';
@@ -23,6 +23,7 @@ import { DrivePanel } from './backups/drive-panel';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import { ResetCard } from './reset-card';
+import { TimeZoneCard } from './time-zone-card';
 import { FailedDelivery, MessengerType } from './data-access/settings.models';
 import { CATEGORY_ITEMS, CategoryItem, FIRST_CATEGORY, isCategory } from './settings-categories';
 import { PageHeader } from '@shared/ui/page-header';
@@ -51,7 +52,9 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
     Panes,
     Pane,
     AccountPanel,
+    TimeZoneCard,
     GoogleCalendarPanel,
+    CalendarFeedPanel,
     MeetingsSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
@@ -115,9 +118,13 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
             }
             @case ('calendar') {
               <div class="tb-stack">
+                <tb-time-zone-card />
                 <tb-google-calendar-panel />
-                <tb-meetings-settings-panel />
+                <tb-calendar-feed-panel />
               </div>
+            }
+            @case ('calls') {
+              <tb-meetings-settings-panel />
             }
             @case ('messengers') {
               <h3 class="tb-settings__subheading">{{ t.deliveries }}</h3>

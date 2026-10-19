@@ -1,9 +1,9 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.8.0: built-in calls on LiveKit (ADR-0030) — the teacher sees the room of a student on
- * «Звонки», joins it, minimizes the call and keeps working in the portal; the student joins from the
- * card on the home page and both see each other; the room's status follows. The browser has a fake
+ * Version 0.8.0: built-in calls on LiveKit (ADR-0030) — the teacher opens the room of a student by its
+ * link (0.22.0: «Звонки» is a category of the settings), joins it, minimizes the call and keeps working
+ * in the portal; the student joins by the room's link and both see each other. The browser has a fake
  * camera and microphone (playwright.config.ts).
  */
 
@@ -72,15 +72,13 @@ test.beforeAll(async ({ request }) => {
 test('the teacher and the student meet in the room of the student', async ({ browser }) => {
   const teacher = await (await browser.newContext()).newPage();
   await signIn(teacher, 'teacher', TEACHER_PASSWORD);
-  await teacher
-    .getByRole('navigation', { name: 'Разделы' })
-    .getByRole('link', { name: 'Звонки' })
-    .click();
-  const rooms = teacher.getByRole('list', { name: 'Комнаты' });
-  const card = rooms.getByRole('listitem').filter({ hasText: STUDENT });
-  await expect(card).toContainText('Пусто');
+  // 0.22.0: no «Звонки» section — its address leads to the category of the settings
+  await teacher.goto('/teacher/calls');
+  await expect(teacher).toHaveURL(/\/teacher\/settings\/calls$/);
+  await expect(teacher.locator('#meetings')).toContainText('Звонки в портале включены');
 
-  await card.getByRole('button', { name: `Войти в звонок: ${STUDENT}` }).click();
+  // the room's link opens the call over the teacher's pages
+  await teacher.goto(`/call/${vera.id}`);
   await joinFromSheet(teacher, STUDENT);
   await expect(teacher.getByText('Пока в комнате только вы')).toBeVisible();
   await expect(teacher.getByRole('button', { name: 'Микрофон' })).toHaveAttribute(

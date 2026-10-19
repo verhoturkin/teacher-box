@@ -50,10 +50,10 @@ list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-pre
 `call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
 `call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
-`CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`), `CallsPage` (`/teacher/calls`, menu «Звонки» after «Расписание»; refreshes
-every 10 s while visible and on return to the tab) — never import them from `parts.ts` in the root, it pulls the
+`CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
+settings category «Звонки», `/teacher/settings/calls`) — never import them from `parts.ts` in the root, it pulls the
 help articles into the first load (0.15.3: no call card on the student's home — the student joins from the lesson). `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
-once), `settings/` (device setting), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
+once), `settings/` (`meetings-settings-panel.ts`: calls status and device setting, the category «Звонки» of the settings), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.
 
 ### Sound quality

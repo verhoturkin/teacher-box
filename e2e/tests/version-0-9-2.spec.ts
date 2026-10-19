@@ -96,7 +96,15 @@ test('the settings list their categories, without integrations, profile or addre
   await page.goto('/teacher/settings');
   // 234.1: list-detail of the categories instead of the fold cards
   const list = page.getByRole('navigation', { name: 'Категории настроек' });
-  for (const category of ['Мой аккаунт', 'Портал', 'Календарь и звонки', 'Мессенджеры', 'Данные']) {
+  // 234.2: «Расписание и календарь» and «Звонки»
+  for (const category of [
+    'Мой аккаунт',
+    'Портал',
+    'Расписание и календарь',
+    'Звонки',
+    'Мессенджеры',
+    'Данные',
+  ]) {
     await expect(list.getByRole('link', { name: new RegExp(`^${category}`) })).toBeVisible();
   }
   const main = page.locator('main');
@@ -108,6 +116,22 @@ test('the settings list their categories, without integrations, profile or addre
   await expect(page).toHaveURL(/\/teacher\/settings\/portal$/);
   await expect(page.locator('#portal-name')).toBeVisible();
   await expect(page.locator('#portal-address')).toHaveCount(0);
+});
+
+test('the schedule and calendar category holds the time zone and the subscription', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto('/teacher/settings/calendar');
+  await expect(page.locator('#time-zone')).toContainText('Часовой пояс');
+  await expect(page.locator('#google')).toBeVisible();
+  await expect(page.locator('tb-calendar-feed-panel')).toContainText('Календарь на телефоне');
+  await expect(page.locator('#meetings')).toHaveCount(0);
+
+  // 234.2: the schedule no longer holds the subscription
+  await page.goto('/teacher/schedule');
+  await expect(page.locator('tb-schedule-page')).toBeVisible();
+  await expect(page.locator('tb-calendar-feed-panel')).toHaveCount(0);
 });
 
 test('a phone shows no section titles; nested pages keep theirs', async ({ page }) => {

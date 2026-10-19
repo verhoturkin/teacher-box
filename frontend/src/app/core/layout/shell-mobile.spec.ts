@@ -112,7 +112,6 @@ describe('Shell on a phone', () => {
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
     expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual([
-      'Звонки',
       'Учебники',
       'Доски',
       'Уведомления',
@@ -176,9 +175,9 @@ describe('Shell on a phone', () => {
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
       'Главная',
       'Расписание',
-      'Звонки',
       'Ученики',
       'Задания',
+      'Учебники',
     ]);
   });
 

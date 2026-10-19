@@ -13,7 +13,7 @@ const TABLET = { width: 900, height: 1000 };
 const SECTIONS = [
   'Главная',
   'Расписание',
-  'Звонки',
+  // 0.22.0: no «Звонки» — a category of the settings
   'Ученики',
   'Задания',
   'Учебники',

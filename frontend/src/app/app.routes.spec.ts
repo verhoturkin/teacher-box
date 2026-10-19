@@ -260,6 +260,8 @@ describe('app routes', { timeout: 20_000 }, () => {
     ['/teacher/settings?drive=denied&open=portal', '/teacher/settings/data?drive=denied'],
     ['/teacher/settings/calendar?google=failed', '/teacher/settings/calendar?google=failed'],
     ['/teacher/settings/no-such-category', '/teacher/settings'],
+    ['/teacher/settings/calls', '/teacher/settings/calls'],
+    ['/teacher/calls', '/teacher/settings/calls'],
   ])('leads the old and unknown addresses of the settings: %s → %s', async (from, to) => {
     auth.acceptSession(authResponse('TEACHER'));
 

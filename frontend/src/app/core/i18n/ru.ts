@@ -4,7 +4,6 @@ export const ru = {
     sections: 'Разделы',
     home: 'Главная',
     schedule: 'Расписание',
-    calls: 'Звонки',
     students: 'Ученики',
     homework: 'Задания',
     textbooks: 'Учебники',

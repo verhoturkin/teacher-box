@@ -183,19 +183,11 @@ The student sees in their calendar when you are busy or not working (without oth
     body: `
 Each student and each group has its own permanent call room in the portal. The call runs right in the browser — nothing needs installing.
 
-## The «Calls» section
-
-Cards of all students and groups: on the left — who, on the right — the state of the room and the «Join» button.
-
-- **Empty** — nobody in the room.
-- **Waiting: N** — students are already in the room, their names under the title.
-- **You are in the call** — you are in this room now.
-
-The section refreshes itself while open.
+Whether calls are on in the portal is shown in «Settings» → «Calls». The room link is in the card of the student or the group.
 
 ## How to join
 
-«Join» on the card, «Start lesson» in a lesson or the link from a reminder. A window opens before joining: check the camera and the microphone, turn them off or choose others if needed, and click «Join». The browser asks for permission for the camera and the microphone — allow it.
+«Start lesson» at a lesson, the room link from the card of the student or the group, or the link from a reminder. A window opens before joining: check the camera and the microphone, turn them off or choose others if needed, and click «Join». The browser asks for permission for the camera and the microphone — allow it.
 
 ## During the call
 
@@ -231,7 +223,7 @@ Create a meeting in Telemost, Zoom or another service, paste the link and click 
 
 ## Start a lesson
 
-In the lesson card click «Start lesson». On Windows the meeting opens in the Telemost app; to open it in the browser, click the arrow on the right of the button — the menu has «Open in the browser». The choice is kept on your computer: «Settings» → «Video meetings».
+In the lesson card click «Start lesson». On Windows the meeting opens in the Telemost app; to open it in the browser, click the arrow on the right of the button — the menu has «Open in the browser». The choice is kept on your computer: «Settings» → «Calls» → «Video meetings».
 
 One lesson can have another link — in the lesson window.
 `,
@@ -491,7 +483,7 @@ In VK the buttons need «Bot features» turned on in the community settings.
     body: `
 ## Calendar subscription (any calendar)
 
-«Schedule» → the «Calendar on the phone» card → «Get link». Add the link to the calendar of your phone or computer as a subscription: the lessons appear there and update by themselves.
+«Settings» → «Schedule and calendar» → the «Calendar on the phone» card → «Get link». Add the link to the calendar of your phone or computer as a subscription: the lessons appear there and update by themselves.
 
 The link is secret: whoever knows it sees the schedule. If it got to the wrong place, create a new one — the old one stops working.
 
@@ -499,7 +491,7 @@ Students can make such a link too — it has only their lessons.
 
 ## Google Calendar
 
-«Settings» → «Calendar and calls» → «Google Calendar» → connect the account. Then:
+«Settings» → «Schedule and calendar» → «Google Calendar» → connect the account. Then:
 
 - the portal's lessons appear in your Google Calendar;
 - the portal's schedule shows when you are busy in Google Calendar — handy not to put a lesson on busy time.
@@ -507,12 +499,13 @@ Students can make such a link too — it has only their lessons.
   },
   settings: {
     title: 'Settings',
-    summary: 'Portal, calendar and calls, backups, full reset',
+    summary: 'Portal, schedule and calendar, calls, backups, full reset',
     body: `
 «Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal. The sections fold: click a name to open or close it.
 
 - **Portal** — the name, address, colour and logo of the portal ([Look, language and phone](/teacher/help/appearance)).
-- **Calendar and calls** — connecting Google Calendar ([Calendars](/teacher/help/calendars)) and video meetings ([Video meetings](/teacher/help/meetings)).
+- **Schedule and calendar** — the portal's time zone, Google Calendar and the schedule subscription ([Calendars](/teacher/help/calendars)).
+- **Calls** — calls in the portal ([Calls](/teacher/help/calls)) and video meetings ([Video meetings](/teacher/help/meetings)).
 - **Failed deliveries** — messages that did not reach the messenger (the number next to the name); the portal administrator can resend them.
 - **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
 
@@ -553,7 +546,7 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 
 - **Wide screen** (from 1600 pixels) — the sections panel on the left: the icon and the label on one line, the chosen section highlighted.
 - **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
-- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Calls», «Textbooks», «Boards», «Notifications», «AI assistant»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
+- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards», «Notifications», «AI assistant»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
 
 The top of the sections panel holds the portal's logo and name with «Create» under them, its bottom — «Settings» and «Help». «Create» is the only such button on the screen: on a computer and a tablet the sections have no «Add…» buttons in their headers, they stay only on a phone.
 

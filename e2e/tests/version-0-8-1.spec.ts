@@ -63,14 +63,8 @@ test.beforeAll(async ({ request }) => {
 test('the call window: movable own camera, settings menu and details', async ({ browser }) => {
   const teacher = await (await browser.newContext()).newPage();
   await signIn(teacher, 'teacher', TEACHER_PASSWORD);
-  await teacher
-    .getByRole('navigation', { name: 'Разделы' })
-    .getByRole('link', { name: 'Звонки' })
-    .click();
-  await teacher
-    .getByRole('list', { name: 'Комнаты' })
-    .getByRole('button', { name: `Войти в звонок: ${STUDENT}` })
-    .click();
+  // 0.22.0: no «Звонки» section — the room's link opens the call
+  await teacher.goto(`/call/${studentId}`);
   await joinFromSheet(teacher, STUDENT);
 
   const student = await (await browser.newContext()).newPage();

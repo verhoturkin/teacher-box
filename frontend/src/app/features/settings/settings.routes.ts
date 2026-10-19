@@ -14,7 +14,7 @@ const settingsMatcher: UrlMatcher = (segments) => {
 };
 
 /**
- * Old addresses lead to a category: Google's redirects (`?google=` → «Календарь и звонки», `?drive=` →
+ * Old addresses lead to a category: Google's redirects (`?google=` → «Расписание и календарь», `?drive=` →
  * «Данные», the result stays in the address for the panel) and the fold cards (`?open=portal`); an unknown
  * category — to the list.
  */

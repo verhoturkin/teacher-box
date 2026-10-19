@@ -137,11 +137,8 @@ export const routes: Routes = [
         title: NAV.boards,
         loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
-      {
-        path: 'calls',
-        title: NAV.calls,
-        loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
-      },
+      // the rooms are in the cards and the lessons; «Звонки» is a category of the settings (234.2)
+      { path: 'calls', redirectTo: 'settings/calls' },
       {
         // `/teacher/settings[/:category]`: list-detail of the categories (redesign spec §10.3)
         path: 'settings',
