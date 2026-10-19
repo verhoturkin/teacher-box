@@ -3,7 +3,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService } from 'primeng/api';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { testProviders } from '@testing/setup';
+import { CaptionTrack, CaptionTracks } from '../data-access/homework.models';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
+
+const RU: CaptionTrack = { language: 'ru', automatic: false };
+const EN_AUTO: CaptionTrack = { language: 'en', automatic: true };
+
+function tracks(list: CaptionTrack[], suggested = list[0]): CaptionTracks {
+  if (suggested === undefined) {
+    throw new Error('No track');
+  }
+  return { title: null, tracks: list, suggested };
+}
 
 describe('VideoSection', () => {
   let fixture: ComponentFixture<VideoSection>;
@@ -65,8 +76,15 @@ describe('VideoSection', () => {
     await fixture.whenStable();
     expect(host.querySelector('iframe')?.getAttribute('src')).toContain('dQw4w9WgXcQ');
     buttonByText(host, 'Взять субтитры с YouTube').click();
+    const captions = backend.expectOne('/api/teacher/homework/videos/captions');
+    expect(captions.request.body).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ' });
+    captions.flush(tracks([EN_AUTO]));
     const request = backend.expectOne('/api/teacher/homework/videos/transcript');
-    expect(request.request.body).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ' });
+    expect(request.request.body).toEqual({
+      url: 'https://youtu.be/dQw4w9WgXcQ',
+      language: 'en',
+      automatic: true,
+    });
     request.flush({
       title: 'Present Simple',
       language: 'en',
@@ -77,17 +95,66 @@ describe('VideoSection', () => {
     await fixture.whenStable();
 
     expect(first(section)).toMatchObject({ title: 'Present Simple', transcript: '[0:05] We play' });
-    expect(readableText(host)).toContain('Субтитры YouTube: en, автоматические');
+    expect(readableText(host)).toContain('Субтитры YouTube: английский, автоматические');
     expect(confirmation.confirm).not.toHaveBeenCalled();
 
-    // A transcript is there: replacing it is asked; «Отмена» keeps it.
+    // A transcript is there and the video has one track: replacing it is asked; «Отмена» keeps it.
     answer = false;
     buttonByText(host, 'Взять субтитры с YouTube').click();
+    backend.expectOne('/api/teacher/homework/videos/captions').flush(tracks([EN_AUTO]));
     backend.expectNone('/api/teacher/homework/videos/transcript');
-    answer = true;
-    section.change(first(section).key, { title: 'Мой' });
+    expect(confirmation.confirm).toHaveBeenCalledOnce();
+  });
+
+  it('lets the teacher pick the caption language', async () => {
+    const { section, host } = await render([
+      {
+        ...videoDraft(),
+        url: 'https://youtu.be/dQw4w9WgXcQ',
+        title: 'Мой',
+        transcript: '[0:00] Был',
+      },
+    ]);
+
     buttonByText(host, 'Взять субтитры с YouTube').click();
-    backend.expectOne('/api/teacher/homework/videos/transcript').flush({
+    backend
+      .expectOne('/api/teacher/homework/videos/captions')
+      .flush(tracks([RU, EN_AUTO], EN_AUTO));
+    await fixture.whenStable();
+
+    const text = readableText(document.body);
+    expect(text).toContain('Субтитры на каком языке взять?');
+    expect(text).toContain('Текущая расшифровка будет заменена.');
+    expect(text).toContain('Русский');
+    expect(text).toContain('От автора видео');
+    expect(text).toContain('Автоматические — распознал YouTube');
+    expect(confirmation.confirm).not.toHaveBeenCalled();
+    const radios = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[name="caption-track"]'),
+    );
+    // The suggested track comes first and is checked.
+    expect(radios.map((radio) => radio.checked)).toEqual([true, false]);
+
+    // «Отмена» takes nothing.
+    buttonByText(document.body, 'Отмена').click();
+    await fixture.whenStable();
+    backend.expectNone('/api/teacher/homework/videos/transcript');
+
+    buttonByText(host, 'Взять субтитры с YouTube').click();
+    backend
+      .expectOne('/api/teacher/homework/videos/captions')
+      .flush(tracks([RU, EN_AUTO], EN_AUTO));
+    await fixture.whenStable();
+    requireElement(document.body, 'label[for="caption-track-1"]', HTMLLabelElement).click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Заменить').click();
+    const request = backend.expectOne('/api/teacher/homework/videos/transcript');
+    expect(request.request.body).toEqual({
+      url: 'https://youtu.be/dQw4w9WgXcQ',
+      language: 'ru',
+      automatic: false,
+    });
+    request.flush({
       title: 'Другое',
       language: 'ru',
       automatic: false,
@@ -96,7 +163,7 @@ describe('VideoSection', () => {
     });
     await fixture.whenStable();
     expect(first(section)).toMatchObject({ title: 'Мой', transcript: '[0:00] Длинно' });
-    expect(readableText(host)).toContain('Субтитры YouTube: ru. Расшифровка длинная');
+    expect(readableText(host)).toContain('Субтитры YouTube: русский. Расшифровка длинная');
   });
 
   it('says why the captions did not come', async () => {
@@ -104,14 +171,24 @@ describe('VideoSection', () => {
 
     buttonByText(host, 'Взять субтитры с YouTube').click();
     backend
-      .expectOne('/api/teacher/homework/videos/transcript')
+      .expectOne('/api/teacher/homework/videos/captions')
       .flush(
         { status: 422, code: 'video.captions-failed' },
         { status: 422, statusText: 'Unprocessable' },
       );
     await fixture.whenStable();
-
     expect(readableText(host)).toContain('Не удалось получить субтитры с YouTube');
+
+    buttonByText(host, 'Взять субтитры с YouTube').click();
+    backend.expectOne('/api/teacher/homework/videos/captions').flush(tracks([RU]));
+    backend
+      .expectOne('/api/teacher/homework/videos/transcript')
+      .flush(
+        { status: 422, code: 'video.captions-none' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('У этого видео нет субтитров');
   });
 
   it('loads a subtitle file, edits and removes a video', async () => {

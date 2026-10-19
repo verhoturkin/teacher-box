@@ -22,10 +22,13 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
   player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
   100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
-  those with `transcriptShown`. `POST /api/teacher/homework/videos/transcript {url}` («Взять субтитры с YouTube»,
-  saves nothing): `VideoTranscripts` over the port `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube
-  player (client `ANDROID`), the author's track in the spoken language, else the recognized one, else the first;
-  cues merged into ~30-second paragraphs; `{title, language, automatic, transcript, truncated}`; errors
+  those with `transcriptShown`. «Взять субтитры с YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
+  {url}` → `{title, tracks: [{language, automatic}], suggested}` (0.19.1), then `POST …/videos/transcript {url,
+  language?, automatic}` — the chosen track, without `language` the suggested one. `VideoTranscripts` over the port
+  `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube player (client `ANDROID`); suggested: the author's
+  track in the spoken language, else the recognized one, else the first; timed text decoded as UTF-8 unless the answer
+  names a charset; cues merged into ~30-second paragraphs; `{title, language, automatic, transcript, truncated}`; a
+  track the video does not have — `video.captions-none`; errors
   `video.not-youtube`, `video.captions-none`, `video.captions-failed` (422). Proxy
   `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`. CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
@@ -104,8 +107,12 @@ none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
 
 Videos (0.19.0, ADR-0047): the editor's «Видео» card (`teacher/video-section.ts`, new and saved assignments alike —
 sent whole with `videos`): per video the link (checked by `ui/video-links.ts` `parseVideoLink`, the player under it),
-«Название», «Расшифровка» with «Взять субтитры с YouTube» (YouTube links; asks before replacing a transcript, the result
-or the error under it) and «Загрузить субтитры» (.srt / .vtt → `subtitlesToTranscript`, `[m:ss]` paragraphs of
+«Название», «Расшифровка» with «Взять субтитры с YouTube» (YouTube links; several caption tracks — 0.19.1
+`teacher/caption-language-dialog.ts` «Субтитры на каком языке взять?»: a radio list, the language by `Intl.DisplayNames`
+in the interface language, «От автора видео» / «Автоматические — распознал YouTube», the suggested track first and checked,
+«Взять», or «Заменить» with «Текущая расшифровка будет заменена.» when a transcript is written; a single track is taken
+at once, asking before replacing a transcript; the result — «Субтитры YouTube: английский, автоматические» — or the
+error under it) and «Загрузить субтитры» (.srt / .vtt → `subtitlesToTranscript`, `[m:ss]` paragraphs of
 ~30 s), «Показывать расшифровку ученику», a red «×»; «Добавить видео» up to 5; changes count for `canLeave`. Videos
 with a transcript are «Видео: <name>» in «Опереться на». `ui/video-player.ts` — a 16:9 `iframe` (`embedUrl`:
 `youtube-nocookie.com/embed`, `rutube.ru/play/embed`, `vkvideo.ru/video_ext.php`, built only from checked IDs), a link

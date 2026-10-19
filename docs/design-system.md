@@ -411,6 +411,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   (`tbSubmitFor`) so Enter submits; order «Отмена», then the action.
 - **At most one red button per dialog** — the confirmation of the dangerous action. Other dangerous actions go
   to the «⋮» menu in the dialog header (`tb-menu-item--danger`) or a confirmation step inside.
+- **Single choice in a dialog** (0.19.1, the caption language): a `tb-list` with `p-radiobutton` in the lead and a
+  `label` covering the tile (the whole tile selects, hover state layer); the checked tile — secondary-container /
+  on-secondary-container (*our decision: M3 publishes no role for a selected list tile; as our selected menu items*);
+  the default option is checked, so the action is never disabled; `tb-dialog--short`. A note the choice needs (e.g. «will
+  be replaced») goes above the list instead of a second dialog.
 - Initial focus on the dialog title (`[focusOnShow]="false"`, `tabindex="-1"`), not on a button. A dialog
   never opens another dialog on top.
 - **Confirmations** only via `dangerConfirmation` / `safeConfirmation` (`@shared/ui/confirmation`): danger —

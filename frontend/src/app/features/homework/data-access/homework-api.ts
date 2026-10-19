@@ -13,6 +13,8 @@ import {
   ReviewQueueItem,
   TaskDetails,
   VideoTranscript,
+  CaptionTrack,
+  CaptionTracks,
 } from './homework.models';
 import { quietContext } from '@core/http/api-error.interceptor';
 
@@ -51,11 +53,20 @@ export class HomeworkApi {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
   }
 
-  /** «Взять субтитры с YouTube» (ADR-0047); errors are shown by the video card, not a toast. */
-  videoTranscript(url: string): Observable<VideoTranscript> {
+  /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks; errors are shown by the video card, not a toast. */
+  videoCaptions(url: string): Observable<CaptionTracks> {
+    return this.http.post<CaptionTracks>(
+      `${TEACHER}/videos/captions`,
+      { url },
+      { context: quietContext() },
+    );
+  }
+
+  /** The captions of the chosen track as a transcript; errors are shown by the video card, not a toast. */
+  videoTranscript(url: string, track: CaptionTrack): Observable<VideoTranscript> {
     return this.http.post<VideoTranscript>(
       `${TEACHER}/videos/transcript`,
-      { url },
+      { url, language: track.language, automatic: track.automatic },
       { context: quietContext() },
     );
   }

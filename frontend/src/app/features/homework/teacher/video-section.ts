@@ -9,11 +9,12 @@ import { describeError } from '@core/http/error-messages';
 import { Busy } from '@shared/ui/busy';
 import { safeConfirmation } from '@shared/ui/confirmation';
 import { HomeworkApi } from '../data-access/homework-api';
-import { Video, VideoInput } from '../data-access/homework.models';
+import { CaptionTrack, CaptionTracks, Video, VideoInput } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { videoName } from '../ui/video-list';
 import { parseVideoLink, subtitlesToTranscript } from '../ui/video-links';
 import { PlayableVideo, VideoPlayer } from '../ui/video-player';
+import { CaptionLanguageDialog, languageName } from './caption-language-dialog';
 
 /** A video being written in the editor. */
 export interface VideoDraft {
@@ -67,7 +68,15 @@ interface TranscriptNote {
  */
 @Component({
   selector: 'tb-video-section',
-  imports: [FormsModule, Button, InputText, Textarea, ToggleSwitch, VideoPlayer],
+  imports: [
+    FormsModule,
+    Button,
+    InputText,
+    Textarea,
+    ToggleSwitch,
+    VideoPlayer,
+    CaptionLanguageDialog,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <small class="tb-hint">{{ t.hint }}</small>
@@ -128,7 +137,7 @@ interface TranscriptNote {
                   [label]="t.fromYoutube"
                   icon="tb-i tb-i-subtitles"
                   severity="secondary"
-                  [loading]="busy.is('captions-' + draft.key)"
+                  [loading]="taking(draft.key)"
                   (onClick)="fromYoutube(draft)"
                 />
               }
@@ -181,6 +190,13 @@ interface TranscriptNote {
     @if (videos().length < max) {
       <p-button [label]="t.add" icon="tb-i tb-i-add" severity="secondary" (onClick)="add()" />
     }
+    <tb-caption-language-dialog
+      [visible]="choosing() !== null"
+      (visibleChange)="dialogShown($event)"
+      [tracks]="choosing()?.tracks ?? null"
+      [replacing]="choosing()?.replacing ?? false"
+      (chosen)="chose($event)"
+    />
   `,
   styles: `
     :host {
@@ -241,6 +257,12 @@ export class VideoSection {
   readonly videos = model<readonly VideoDraft[]>([]);
   /** Where each transcript came from, by draft key. */
   protected readonly notes = signal<ReadonlyMap<number, TranscriptNote>>(new Map());
+  /** The video whose caption language the teacher picks in the dialog. */
+  protected readonly choosing = signal<{
+    readonly key: number;
+    readonly tracks: CaptionTracks;
+    readonly replacing: boolean;
+  } | null>(null);
 
   protected name(draft: VideoDraft, index: number): string {
     return videoName({ title: draft.title }, index);
@@ -277,30 +299,71 @@ export class VideoSection {
     );
   }
 
-  /** «Взять субтитры с YouTube»: asks before replacing a transcript already written. */
+  /**
+   * «Взять субтитры с YouTube»: several caption tracks — the teacher picks one in the dialog (which also says a
+   * written transcript will be replaced); a single track is taken at once, asking before replacing a transcript.
+   */
   fromYoutube(draft: VideoDraft): void {
-    this.replacing(draft, () => {
-      this.busy
-        .guard(`captions-${String(draft.key)}`, this.api.videoTranscript(draft.url))
-        .subscribe({
-          next: (found) => {
-            const title = this.videos().find((video) => video.key === draft.key)?.title ?? '';
-            this.change(draft.key, {
-              transcript: found.transcript,
-              title: title.trim() === '' ? (found.title ?? '') : title,
-            });
-            this.note(draft.key, {
-              severity: found.truncated ? 'warn' : 'info',
-              text: found.truncated
-                ? `${this.t.fetched(found.language, found.automatic)}. ${this.t.truncated}`
-                : this.t.fetched(found.language, found.automatic),
-            });
-          },
-          error: (error: unknown) => {
-            this.note(draft.key, { severity: 'error', text: describeError(error, this.t.failed) });
-          },
-        });
+    this.busy.guard(`captions-${String(draft.key)}`, this.api.videoCaptions(draft.url)).subscribe({
+      next: (found) => {
+        const [only, ...others] = found.tracks;
+        if (only !== undefined && others.length === 0) {
+          this.replacing(draft, () => {
+            this.take(draft.key, only);
+          });
+        } else {
+          this.choosing.set({ key: draft.key, tracks: found, replacing: this.written(draft.key) });
+        }
+      },
+      error: (error: unknown) => {
+        this.failed(draft.key, error);
+      },
     });
+  }
+
+  /** The tracks or the captions of this video are on their way. */
+  protected taking(key: number): boolean {
+    return this.busy.is(`captions-${String(key)}`) || this.busy.is(`transcript-${String(key)}`);
+  }
+
+  protected dialogShown(visible: boolean): void {
+    if (!visible) {
+      this.choosing.set(null);
+    }
+  }
+
+  /** The track picked in the dialog. */
+  chose(track: CaptionTrack): void {
+    const choosing = this.choosing();
+    this.choosing.set(null);
+    if (choosing !== null) {
+      this.take(choosing.key, track);
+    }
+  }
+
+  private take(key: number, track: CaptionTrack): void {
+    const url = this.videos().find((video) => video.key === key)?.url ?? '';
+    this.busy.guard(`transcript-${String(key)}`, this.api.videoTranscript(url, track)).subscribe({
+      next: (found) => {
+        const title = this.videos().find((video) => video.key === key)?.title ?? '';
+        this.change(key, {
+          transcript: found.transcript,
+          title: title.trim() === '' ? (found.title ?? '') : title,
+        });
+        const fetched = this.t.fetched(languageName(found.language), found.automatic);
+        this.note(key, {
+          severity: found.truncated ? 'warn' : 'info',
+          text: found.truncated ? `${fetched}. ${this.t.truncated}` : fetched,
+        });
+      },
+      error: (error: unknown) => {
+        this.failed(key, error);
+      },
+    });
+  }
+
+  private failed(key: number, error: unknown): void {
+    this.note(key, { severity: 'error', text: describeError(error, this.t.failed) });
   }
 
   /** «Загрузить субтитры»: an .srt / .vtt file becomes `[m:ss]` paragraphs. */
@@ -318,9 +381,16 @@ export class VideoSection {
     });
   }
 
+  private written(key: number): boolean {
+    return (
+      (this.videos()
+        .find((video) => video.key === key)
+        ?.transcript.trim() ?? '') !== ''
+    );
+  }
+
   private replacing(draft: VideoDraft, replace: () => void): void {
-    const current = this.videos().find((video) => video.key === draft.key);
-    if (current === undefined || current.transcript.trim() === '') {
+    if (!this.written(draft.key)) {
       replace();
       return;
     }

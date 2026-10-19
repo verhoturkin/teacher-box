@@ -17,6 +17,25 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.19.1
+
+The teacher picks the language of YouTube captions: «Взять субтитры с YouTube» lists the video's caption tracks
+and, when there are several, asks which one to take. Interface changes are made with the `m3-expressive` skill
+(AGENTS.md §6.3).
+
+### 223. Caption language (B, F)
+
+- [x] 223.1 **B** `VideoCaptions.tracks` / `fetch(videoId, track)`, `YoutubeCaptions` (the suggested track stays
+  the default), `VideoTranscripts.youtubeTracks`; `POST /api/teacher/homework/videos/captions {url}` →
+  `{title, tracks: [{language, automatic}], suggested}`, `POST …/videos/transcript {url, language?, automatic}`.
+- [x] 223.2 **F** `homework/teacher/caption-language-dialog.ts` (a basic dialog, radio list of tracks, the
+  suggested one first and checked; «Заменить» when a transcript is written), `video-section.ts` `fromYoutube`; help
+  articles, wiki `AI-assistant`.
+
+### 224. Release 0.19.1 (D)
+
+- [ ] 224.1 **D** CHANGELOG, version 0.19.1, plan archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

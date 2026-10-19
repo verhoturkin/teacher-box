@@ -24,8 +24,38 @@ public interface VideoCaptions {
     }
 
     /**
+     * A caption track of a video.
+     *
+     * @param language  the code of the track ({@code en}, {@code ru}…)
+     * @param automatic recognized by YouTube, not written by the author
+     */
+    record Track(String language, boolean automatic) {
+    }
+
+    /**
+     * The caption tracks of a video.
+     *
+     * @param tracks    in YouTube's order, never empty
+     * @param suggested the one taken when the teacher does not choose: the author's in the spoken language, else
+     *                  the recognized one, else the first
+     */
+    record Tracks(@Nullable String title, List<Track> tracks, Track suggested) {
+
+        public Tracks {
+            tracks = List.copyOf(tracks);
+        }
+    }
+
+    /**
      * @throws BusinessRuleException {@code video.captions-none} if the video has no captions,
      *                               {@code video.captions-failed} if YouTube can't be read
      */
-    Captions fetch(String videoId);
+    Tracks tracks(String videoId);
+
+    /**
+     * @param track the track to read; {@code null} — the suggested one
+     * @throws BusinessRuleException {@code video.captions-none} if the video has no captions or not this track,
+     *                               {@code video.captions-failed} if YouTube can't be read
+     */
+    Captions fetch(String videoId, @Nullable Track track);
 }

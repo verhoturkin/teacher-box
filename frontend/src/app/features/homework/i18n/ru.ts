@@ -62,6 +62,14 @@ export const ru = {
     aiSource: (name: string) => `Видео: ${name}`,
     failed: 'Не удалось получить субтитры',
   },
+  captionLanguage: {
+    header: 'Субтитры на каком языке взять?',
+    replacing: 'Текущая расшифровка будет заменена.',
+    automatic: 'Автоматические — распознал YouTube',
+    author: 'От автора видео',
+    take: 'Взять',
+    replace: 'Заменить',
+  },
   deadlines: {
     title: 'Домашние задания',
     nothing: 'Открытых заданий нет',

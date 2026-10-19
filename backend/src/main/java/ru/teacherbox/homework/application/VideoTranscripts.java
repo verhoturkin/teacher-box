@@ -6,6 +6,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.homework.application.VideoCaptions.Captions;
 import ru.teacherbox.homework.application.VideoCaptions.Cue;
+import ru.teacherbox.homework.application.VideoCaptions.Track;
+import ru.teacherbox.homework.application.VideoCaptions.Tracks;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.VideoLink;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -32,15 +34,22 @@ public class VideoTranscripts {
     }
 
     /**
+     * The caption tracks of a video, for the teacher to choose one.
+     *
+     * @throws BusinessRuleException {@code video.not-youtube} for a link that is not a YouTube video, and the errors
+     *                               of {@link VideoCaptions#tracks}
+     */
+    public Tracks youtubeTracks(String url) {
+        return captions.tracks(youtubeId(url));
+    }
+
+    /**
+     * @param track the track the teacher chose; {@code null} — the suggested one
      * @throws BusinessRuleException {@code video.not-youtube} for a link that is not a YouTube video, and the errors
      *                               of {@link VideoCaptions#fetch}
      */
-    public Transcript youtube(String url) {
-        VideoLink link = VideoLink.parse(url);
-        if (link.provider() != VideoLink.Provider.YOUTUBE || link.videoId() == null) {
-            throw new BusinessRuleException("video.not-youtube", "Captions are taken from YouTube videos only");
-        }
-        Captions found = captions.fetch(link.videoId());
+    public Transcript youtube(String url, @Nullable Track track) {
+        Captions found = captions.fetch(youtubeId(url), track);
         StringBuilder text = new StringBuilder();
         boolean truncated = false;
         for (String paragraph : paragraphs(found.cues())) {
@@ -55,6 +64,14 @@ public class VideoTranscripts {
             throw new BusinessRuleException("video.captions-none", "The video has no captions");
         }
         return new Transcript(found.title(), found.language(), found.automatic(), text.toString(), truncated);
+    }
+
+    private static String youtubeId(String url) {
+        VideoLink link = VideoLink.parse(url);
+        if (link.provider() != VideoLink.Provider.YOUTUBE || link.videoId() == null) {
+            throw new BusinessRuleException("video.not-youtube", "Captions are taken from YouTube videos only");
+        }
+        return link.videoId();
     }
 
     /** Cues merged into paragraphs of about 30 seconds, each with its start time. */
