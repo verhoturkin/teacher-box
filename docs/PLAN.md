@@ -49,7 +49,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
   28 dp sheets on `surface container`; margins and spacer by breakpoint) and a list-detail helper (list or detail by
   route below expanded). Specs for widths per breakpoint and focus order. Not used by sections yet, except
   `/teacher/help` as a first consumer if it fits (list of topics + article).
-- [ ] 230.3 **D** `docs/design-system.md` §4 «Layout and navigation»: breakpoints table, regions, panes; §4 «One
+- [x] 230.3 **D** `docs/design-system.md` §4 «Layout and navigation»: breakpoints table, regions, panes; §4 «One
   column» → «One column inside a pane» with the ADR-0021 safeguards (spec §1).
 
 ### 231. Rail, top strip, page header (F)

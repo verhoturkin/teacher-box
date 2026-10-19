@@ -275,17 +275,20 @@ component that shows one adds it to `PRIME`).
 - **Breakpoints** — M3 (600 / 840 / 1200 / 1600 px, ADR-0048); em ranges, same in CSS and `mobile.ts`
   (`BREAKPOINT_QUERIES`, `injectWindowSize()`), no gaps:
 
-  | Window | Query | Navigation | Main action |
-  |---|---|---|---|
-  | compact (phone) | `width < 37.5em` | bottom bar: four sections + «Ещё» | extended FAB above the bar |
-  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | button in page header |
-  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | button in page header |
-  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | button in page header |
-  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
+  | Window | Query | Navigation | Panes | Main action |
+  |---|---|---|---|---|
+  | compact (phone) | `width < 37.5em` | bottom bar: four sections + «Ещё» | 1 | extended FAB above the bar |
+  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | button in page header |
+  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | button in page header |
+  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | button in page header |
+  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | button in page header |
 
   Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
   keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
+- **Regions** (**M3**): the window and the navigation region (rail, top bar, bottom bar) are surface-container;
+  page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The contents of
+  the top bar and the rail change in 231 (redesign spec §3.2).
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -317,8 +320,13 @@ component that shows one adds it to `PRIME`).
   name.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
-- **One column:** cards stacked (`tb-stack`) on every screen, ordered by importance (what needs action
-  first). No card grids. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
+- **One column inside a pane** (ADR-0021, refined by ADR-0048): panes replace multi-column pages only from
+  expanded, and keep the fixes of ADR-0021 — a pane is never narrower than 360 dp and below expanded there is
+  one pane; lists keep the subgrid of `tb-list`, so row buttons line up within a pane; running text (task
+  statements, answers, help) is at most 66 ch. Inside a pane cards are stacked (`tb-stack`), ordered by
+  importance (what needs action first); no card grids, except the feed layouts the redesign spec names (Today,
+  Materials, the student's home, admin status) once they ship, with a fixed column order that is also the
+  reading order. A page without panes is one column of cards. Every page full width (0.9.2: settings and «Мой аккаунт» too); a form keeps a
   readable width inside its card (`tb-form--narrow`); «Мой аккаунт» puts its forms in cards side by side — they
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
