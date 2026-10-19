@@ -58,7 +58,7 @@ class StudentGroupTest {
 
     @Test
     void changesTheDefaultTopicOnlyWhenItChanges() {
-        StudentGroup group = StudentGroup.create(UUID.randomUUID(), "Группа", List.of(), " Алгебра ", NOW);
+        StudentGroup group = StudentGroup.create(UUID.randomUUID(), "Группа", List.of(), " Алгебра ", null, NOW);
 
         assertThat(group.defaultTopic()).isEqualTo("Алгебра");
         assertThat(group.changeDefaultTopic("Алгебра ", NOW.plusSeconds(1))).isFalse();
@@ -68,6 +68,19 @@ class StudentGroupTest {
         assertThat(group.changeDefaultTopic(null, NOW.plusSeconds(3))).isFalse();
         assertThatThrownBy(() -> group.changeDefaultTopic("x".repeat(501), NOW))
                 .isInstanceOf(BusinessRuleException.class).hasFieldOrPropertyWithValue("code", "group.topic-invalid");
+    }
+
+    @Test
+    void changesTheColorOnlyWhenItChanges() {
+        StudentGroup group = StudentGroup.create(UUID.randomUUID(), "Группа", List.of(), null, LabelColor.CYAN,
+                NOW);
+
+        assertThat(group.color()).isEqualTo(LabelColor.CYAN);
+        assertThat(group.changeColor(LabelColor.CYAN, NOW.plusSeconds(1))).isFalse();
+        assertThat(group.updatedAt()).isEqualTo(NOW);
+        assertThat(group.changeColor(null, NOW.plusSeconds(2))).isTrue();
+        assertThat(group.color()).isNull();
+        assertThat(group.updatedAt()).isEqualTo(NOW.plusSeconds(2));
     }
 
     @Test

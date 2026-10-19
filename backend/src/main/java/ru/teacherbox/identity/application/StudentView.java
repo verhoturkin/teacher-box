@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import ru.teacherbox.identity.domain.AccountStatus;
 import ru.teacherbox.identity.domain.Invite;
 import ru.teacherbox.identity.domain.InvitePurpose;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.User;
 
 /**
@@ -22,6 +23,7 @@ public record StudentView(
         @Nullable String phone,
         @Nullable String note,
         @Nullable String defaultTopic,
+        @Nullable LabelColor color,
         AccountStatus status,
         @Nullable String login,
         Instant createdAt,
@@ -34,7 +36,8 @@ public record StudentView(
 
     static StudentView of(User user, @Nullable Invite pendingInvite) {
         return new StudentView(user.id(), user.profile().displayName(), AccountService.avatarUrl(user.avatar()),
-                user.profile().email(), user.profile().phone(), user.profile().note(), user.profile().defaultTopic(), user.status(), user.login(),
+                user.profile().email(), user.profile().phone(), user.profile().note(), user.profile().defaultTopic(), user.profile().color(), user.status(),
+                user.login(),
                 user.createdAt(), user.version(),
                 pendingInvite == null ? null : new PendingInvite(pendingInvite.purpose(), pendingInvite.expiresAt()));
     }

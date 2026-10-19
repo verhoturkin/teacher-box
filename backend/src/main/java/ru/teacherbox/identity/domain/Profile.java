@@ -9,9 +9,10 @@ import ru.teacherbox.shared.error.BusinessRuleException;
  *
  * @param note         private note of the teacher about a student (never shown to the student)
  * @param defaultTopic topic of a new lesson with the student unless the teacher types another
+ * @param color        the student's colour in the teacher's lists; {@code null}: none
  */
 public record Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note,
-        @Nullable String defaultTopic) {
+        @Nullable String defaultTopic, @Nullable LabelColor color) {
 
     public static final int MAX_NAME_LENGTH = 100;
     public static final int MAX_TOPIC_LENGTH = 500;
@@ -41,8 +42,13 @@ public record Profile(String displayName, @Nullable String email, @Nullable Stri
         }
     }
 
+    public Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note,
+            @Nullable String defaultTopic) {
+        this(displayName, email, phone, note, defaultTopic, null);
+    }
+
     public Profile(String displayName, @Nullable String email, @Nullable String phone, @Nullable String note) {
-        this(displayName, email, phone, note, null);
+        this(displayName, email, phone, note, null, null);
     }
 
     public static Profile named(String displayName) {

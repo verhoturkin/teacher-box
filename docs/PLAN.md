@@ -17,6 +17,29 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
+## v0.20.0
+
+Students and groups get a colour: the teacher picks it in the student's and the group's dialog from a fixed palette
+of ten M3 custom colours (roles of both themes computed by `@material/material-color-utilities`, not harmonized —
+the colours must stay apart). Rows of the teacher's lists tied to a student or a group show it (the avatar, the
+lesson in the calendar), and so do the chips of student and group multiselects.
+
+### 225. Colours of students and groups (B, F)
+
+- [x] 225.1 **B** `identity`: migration `V2__colors.sql` (`users.color`, `student_groups.color`), enum
+  `domain.LabelColor`, `Profile.color` / `StudentGroup.color`; `StudentView.color`, `GroupView.color`; create and
+  update requests of `/api/teacher/students/**` and `/api/teacher/groups/**` take `color` (null — none).
+- [ ] 225.2 **F** `core/theme/label-colors.ts` (palette, M3 custom colours → `--p-md-label-<key>{,-container,-on-container}`
+  of both themes, contrast tests), `identity/data-access/label-colors.ts` (teacher's lookup by student / group id,
+  refreshed on save), colour select in `student-form-dialog.ts` and `group-form-dialog.ts`.
+- [ ] 225.3 **F** colour in lists: `tb-avatar` `[color]`, directive `tbChipColors` for `p-multiselect`; billing,
+  homework, schedule (rows and calendar events), meetings, notifications, boards, textbooks, students and groups.
+- [ ] 225.4 **D** help articles, wiki, `docs/modules/identity.md`, `docs/design-system.md`.
+
+### 226. Release 0.20.0 (D)
+
+- [ ] 226.1 **D** CHANGELOG, version 0.20.0, plan archive.
+
 ## Backlog
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):

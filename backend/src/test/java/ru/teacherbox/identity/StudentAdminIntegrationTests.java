@@ -113,6 +113,31 @@ class StudentAdminIntegrationTests {
     }
 
     @Test
+    void keepsTheColor() {
+        MvcTestResult created = create("{\"displayName\":\"Лев\",\"color\":\"GREEN\"}");
+        assertThat(created).hasStatus(HttpStatus.CREATED)
+                .bodyJson().extractingPath("$.student.color").isEqualTo("GREEN");
+        UUID id = UUID.fromString(JsonPath.read(body(created), "$.student.id"));
+
+        assertThat(mvc.put().uri("/api/teacher/students/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Лев\",\"color\":\"VIOLET\",\"version\":0}"))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.color").isEqualTo("VIOLET");
+        assertThat(mvc.get().uri("/api/teacher/students/" + id).header(HttpHeaders.AUTHORIZATION, teacher))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.color").isEqualTo("VIOLET");
+        assertThat(mvc.put().uri("/api/teacher/students/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Лев\",\"version\":1}"))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.color").isNull();
+        assertThat(create("{\"displayName\":\"Лев\",\"color\":\"GOLD\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void unknownStudentIsNotFound() {
         assertThat(get("/api/teacher/students/" + UUID.randomUUID()))
                 .hasStatus(HttpStatus.NOT_FOUND)

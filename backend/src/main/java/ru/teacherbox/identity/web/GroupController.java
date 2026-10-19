@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.identity.application.GroupService;
 import ru.teacherbox.identity.application.GroupView;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.StudentGroup;
 
 /** Groups of students; the whole {@code /api/teacher/**} area requires the teacher role. */
@@ -28,13 +29,15 @@ class GroupController {
     record GroupRequest(
             @NotBlank @Size(max = StudentGroup.MAX_NAME_LENGTH) String name,
             @NotNull @Size(max = StudentGroup.MAX_MEMBERS) List<@NotNull UUID> memberIds,
-            @Size(max = StudentGroup.MAX_TOPIC_LENGTH) @Nullable String defaultTopic) {
+            @Size(max = StudentGroup.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
+            @Nullable LabelColor color) {
     }
 
     record UpdateGroupRequest(
             @NotBlank @Size(max = StudentGroup.MAX_NAME_LENGTH) String name,
             @NotNull @Size(max = StudentGroup.MAX_MEMBERS) List<@NotNull UUID> memberIds,
             @Size(max = StudentGroup.MAX_TOPIC_LENGTH) @Nullable String defaultTopic,
+            @Nullable LabelColor color,
             @NotNull Long version) {
     }
 
@@ -52,7 +55,7 @@ class GroupController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     GroupView create(@Valid @RequestBody GroupRequest request) {
-        return groups.create(request.name(), request.memberIds(), request.defaultTopic());
+        return groups.create(request.name(), request.memberIds(), request.defaultTopic(), request.color());
     }
 
     @GetMapping("/{id}")
@@ -63,7 +66,7 @@ class GroupController {
     @PutMapping("/{id}")
     GroupView update(@PathVariable UUID id, @Valid @RequestBody UpdateGroupRequest request) {
         return groups.update(id, request.name(), request.memberIds(), request.defaultTopic(),
-                request.version());
+                request.color(), request.version());
     }
 
     @PostMapping("/{id}/archive")

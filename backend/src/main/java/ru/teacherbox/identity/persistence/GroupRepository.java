@@ -14,19 +14,20 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.StudentGroup;
 
 @Repository
 public class GroupRepository {
 
     private static final String SELECT = """
-            select id, name, default_topic, archived_at, created_at, updated_at, version
+            select id, name, default_topic, color, archived_at, created_at, updated_at, version
             from identity.student_groups
             """;
 
     /** A group row before its members are loaded. */
-    private record Row(UUID id, String name, @Nullable String defaultTopic, @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt,
-            long version) {
+    private record Row(UUID id, String name, @Nullable String defaultTopic, @Nullable LabelColor color,
+            @Nullable Instant archivedAt, Instant createdAt, Instant updatedAt, long version) {
     }
 
     private final JdbcClient jdbc;
@@ -37,13 +38,14 @@ public class GroupRepository {
 
     public void insert(StudentGroup group) {
         jdbc.sql("""
-                insert into identity.student_groups (id, name, default_topic, archived_at, created_at, updated_at,
-                    version)
-                values (:id, :name, :defaultTopic, :archivedAt, :createdAt, :updatedAt, :version)
+                insert into identity.student_groups (id, name, default_topic, color, archived_at, created_at,
+                    updated_at, version)
+                values (:id, :name, :defaultTopic, :color, :archivedAt, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", group.id())
                 .param("name", group.name())
                 .param("defaultTopic", group.defaultTopic())
+                .param("color", LabelColor.nameOf(group.color()))
                 .param("archivedAt", group.archivedAt())
                 .param("createdAt", group.createdAt())
                 .param("updatedAt", group.updatedAt())
@@ -60,13 +62,15 @@ public class GroupRepository {
     public void update(StudentGroup group) {
         int updated = jdbc.sql("""
                 update identity.student_groups
-                set name = :name, default_topic = :defaultTopic, archived_at = :archivedAt, updated_at = :updatedAt, version = version + 1
+                set name = :name, default_topic = :defaultTopic, color = :color, archived_at = :archivedAt,
+                    updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
                 .param("id", group.id())
                 .param("version", group.version())
                 .param("name", group.name())
                 .param("defaultTopic", group.defaultTopic())
+                .param("color", LabelColor.nameOf(group.color()))
                 .param("archivedAt", group.archivedAt())
                 .param("updatedAt", group.updatedAt())
                 .update();
@@ -144,7 +148,7 @@ public class GroupRepository {
                         .add(entry.getValue()));
         return rows.stream()
                 .map(row -> StudentGroup.restore(row.id(), row.name(), members.getOrDefault(row.id(), List.of()),
-                        row.defaultTopic(), row.archivedAt(), row.createdAt(), row.updatedAt(), row.version()))
+                        row.defaultTopic(), row.color(), row.archivedAt(), row.createdAt(), row.updatedAt(), row.version()))
                 .toList();
     }
 
@@ -153,6 +157,7 @@ public class GroupRepository {
                 rs.getObject("id", UUID.class),
                 rs.getString("name"),
                 rs.getString("default_topic"),
+                LabelColor.ofName(rs.getString("color")),
                 rs.getObject("archived_at", Instant.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),

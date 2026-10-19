@@ -19,6 +19,7 @@ import ru.teacherbox.identity.api.GroupArchived;
 import ru.teacherbox.identity.api.GroupChanged;
 import ru.teacherbox.identity.api.GroupCreated;
 import ru.teacherbox.identity.domain.AccountStatus;
+import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.StudentGroup;
 import ru.teacherbox.identity.domain.StudentGroup.MembersChange;
 import ru.teacherbox.identity.domain.User;
@@ -45,10 +46,11 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupView create(String name, List<UUID> memberIds, @Nullable String defaultTopic) {
+    public GroupView create(String name, List<UUID> memberIds, @Nullable String defaultTopic,
+            @Nullable LabelColor color) {
         requireCurrentStudents(memberIds);
         Instant now = clock.instant();
-        StudentGroup group = StudentGroup.create(Ids.newId(), name, memberIds, defaultTopic, now);
+        StudentGroup group = StudentGroup.create(Ids.newId(), name, memberIds, defaultTopic, color, now);
         groups.insert(group);
         events.publishEvent(new GroupCreated(group.id(), group.name(), group.memberIds(), now));
         return view(group);
@@ -67,13 +69,14 @@ public class GroupService {
     }
 
     /**
-     * Renames the group, replaces its members and sets its default topic; new members must be current students.
+     * Renames the group, replaces its members and sets its default topic and colour; new members must be current
+     * students.
      *
      * @throws OptimisticLockingFailureException if the group was changed after {@code expectedVersion}
      */
     @Transactional
     public GroupView update(UUID groupId, String name, List<UUID> memberIds, @Nullable String defaultTopic,
-            long expectedVersion) {
+            @Nullable LabelColor color, long expectedVersion) {
         StudentGroup group = load(groupId);
         if (group.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Group " + groupId + " was modified");
@@ -86,7 +89,8 @@ public class GroupService {
         boolean renamed = group.rename(name, now);
         MembersChange change = group.changeMembers(memberIds, now);
         boolean topicChanged = group.changeDefaultTopic(defaultTopic, now);
-        if (renamed || topicChanged || !group.memberIds().equals(before)) {
+        boolean recolored = group.changeColor(color, now);
+        if (renamed || topicChanged || recolored || !group.memberIds().equals(before)) {
             groups.update(group);
         }
         if (renamed || !change.isEmpty()) {

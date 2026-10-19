@@ -151,6 +151,31 @@ class GroupIntegrationTests {
     }
 
     @Test
+    void keepsTheColorWithoutAnEvent(AssertablePublishedEvents events) {
+        UUID anna = student("Анна");
+        MvcTestResult created = postJson("/api/teacher/groups",
+                "{\"name\":\"ЕГЭ\",\"memberIds\":%s,\"color\":\"BLUE\"}".formatted(ids(anna)));
+        assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.color").isEqualTo("BLUE");
+        UUID id = id(created);
+
+        MvcTestResult changed = mvc.put().uri("/api/teacher/groups/" + id)
+                .header(HttpHeaders.AUTHORIZATION, teacher)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"ЕГЭ\",\"memberIds\":%s,\"color\":\"PINK\",\"version\":0}".formatted(ids(anna)))
+                .exchange();
+
+        assertThat(changed).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.color").isEqualTo("PINK");
+            assertThat(json).extractingPath("$.version").isEqualTo(1);
+        });
+        assertThat(events.ofType(GroupChanged.class).matching(event -> event.groupId().equals(id))).isEmpty();
+        assertThat(get("/api/teacher/groups/" + id)).bodyJson().extractingPath("$.color").isEqualTo("PINK");
+        assertThat(update(id, "ЕГЭ", 1, anna)).hasStatusOk().bodyJson().extractingPath("$.color").isNull();
+        assertThat(postJson("/api/teacher/groups", "{\"name\":\"X\",\"memberIds\":[],\"color\":\"GOLD\"}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void archivesAndRestores(AssertablePublishedEvents events) {
         UUID id = create("Летняя школа", student("Анна"));
 
