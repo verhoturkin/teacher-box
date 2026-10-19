@@ -34,7 +34,7 @@ lesson in the calendar), and so do the chips of student and group multiselects.
   refreshed on save), colour select in `student-form-dialog.ts` and `group-form-dialog.ts`.
 - [x] 225.3 **F** colour in lists: `tb-avatar` `[color]`, directive `tbChipColors` for `p-multiselect`; billing,
   homework, schedule (rows and calendar events), meetings, notifications, boards, textbooks, students and groups.
-- [ ] 225.4 **D** help articles, wiki, `docs/modules/identity.md`, `docs/design-system.md`.
+- [x] 225.4 **D** help articles, wiki, `docs/modules/identity.md`, `docs/design-system.md`.
 
 ### 226. Release 0.20.0 (D)
 
