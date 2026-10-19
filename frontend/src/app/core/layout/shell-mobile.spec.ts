@@ -115,7 +115,6 @@ describe('Shell on a phone', () => {
       'Учебники',
       'Доски',
       'Уведомления',
-      'ИИ-помощник',
     ]);
     expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
     // the focus goes into the rail

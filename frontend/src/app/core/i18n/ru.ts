@@ -11,7 +11,6 @@ export const ru = {
     boards: 'Доски',
     myBoards: 'Мои доски',
     notifications: 'Уведомления',
-    ai: 'ИИ-помощник',
     settings: 'Настройки',
     log: 'Журнал',
     status: 'Состояние',

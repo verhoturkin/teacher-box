@@ -4,7 +4,16 @@ import { T } from './i18n/texts';
  * The categories of the settings in the order of the list (redesign spec §10.3); the address is
  * `/teacher/settings/<category>`.
  */
-export const CATEGORIES = ['account', 'portal', 'calendar', 'calls', 'messengers', 'data'] as const;
+export const CATEGORIES = [
+  'account',
+  'portal',
+  'calendar',
+  'calls',
+  'messengers',
+  'payments',
+  'ai',
+  'data',
+] as const;
 export type SettingsCategory = (typeof CATEGORIES)[number];
 
 export function isCategory(value: unknown): value is SettingsCategory {
@@ -35,6 +44,13 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   { id: 'calendar', icon: 'tb-i-calendar_month', title: t.calendar, summary: t.calendarSummary },
   { id: 'calls', icon: 'tb-i-videocam', title: t.calls, summary: t.callsSummary },
   { id: 'messengers', icon: 'tb-i-chat', title: t.messengers, summary: t.messengersSummary },
+  {
+    id: 'payments',
+    icon: 'tb-i-account_balance_wallet',
+    title: t.payments,
+    summary: t.paymentsSummary,
+  },
+  { id: 'ai', icon: 'tb-i-auto_awesome', title: t.ai, summary: t.aiSummary },
   { id: 'data', icon: 'tb-i-database', title: t.data, summary: t.dataSummary },
 ];
 
@@ -44,6 +60,7 @@ const FOLDS: Readonly<Record<string, SettingsCategory>> = {
   calendar: 'calendar',
   meetings: 'calls',
   deliveries: 'messengers',
+  ai: 'ai',
   data: 'data',
 };
 

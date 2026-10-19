@@ -11,6 +11,8 @@ import { RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
 import { pageDetail } from '@core/routing/page-detail';
 import { HelpButton } from '@features/help/parts';
+import { AiSettingsPanel } from '@features/ai/parts';
+import { DefaultPriceCard } from '@features/billing/parts';
 import { AccountPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { MessengersSettingsPanel } from '@features/notifications/parts';
@@ -48,6 +50,8 @@ import { T } from './i18n/texts';
     MeetingsSettingsPanel,
     MessengersSettingsPanel,
     FailedDeliveriesCard,
+    DefaultPriceCard,
+    AiSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
     DrivePanel,
@@ -126,6 +130,12 @@ import { T } from './i18n/texts';
                   <tb-failed-deliveries-card [deliveries]="failed()" />
                 }
               </div>
+            }
+            @case ('payments') {
+              <tb-default-price-card />
+            }
+            @case ('ai') {
+              <tb-ai-settings-panel />
             }
             @case ('data') {
               <div class="tb-stack">

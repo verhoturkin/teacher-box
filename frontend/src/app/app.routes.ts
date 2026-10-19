@@ -144,11 +144,8 @@ export const routes: Routes = [
         path: 'settings',
         loadChildren: () => import('@features/settings').then((m) => m.SETTINGS_ROUTES),
       },
-      {
-        path: 'ai',
-        title: NAV.ai,
-        loadComponent: () => import('@features/ai').then((m) => m.AiUsagePage),
-      },
+      // the AI assistant is a category of the settings (234.4)
+      { path: 'ai', redirectTo: 'settings/ai' },
       {
         // the inbox and the messages; old links to the bots and messengers lead to the settings (234.3)
         path: 'notifications',

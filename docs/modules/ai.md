@@ -65,5 +65,5 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), AI usage page (`/teacher/ai`: usage, the request log with «Показать ещё») with `prompt-library-card.ts` and
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), `ai-settings-panel.ts` = the settings category «ИИ-помощник» (`/teacher/settings/ai`, `/teacher/ai` redirects; usage, the request log with «Показать ещё») with `prompt-library-card.ts` (`#prompt-library`, the menu's link) and
 `system-prompts-card.ts` (both system prompts, «Изменён», a dialog with «Вернуть стандартный»); embedded via `parts.ts`.

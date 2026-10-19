@@ -19,7 +19,6 @@ import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
 import { BillingOverview, StudentBalance } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
-import { DefaultPriceCard } from './default-price-card';
 import { PaymentDialog } from './payment-dialog';
 import { injectMobile } from '@core/layout/mobile';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -52,7 +51,6 @@ import { T } from '../i18n/texts';
     Tooltip,
     MoneyPipe,
     BalanceAmount,
-    DefaultPriceCard,
     PaymentDialog,
     LoadStateView,
     PageHeader,
@@ -103,11 +101,6 @@ import { T } from '../i18n/texts';
               <span class="tb-stat__value">{{ debtorsCount() }}</span>
             </div>
           </p-card>
-          <tb-default-price-card
-            [price]="overview.defaultLessonPrice"
-            [currency]="overview.currency"
-            (changed)="defaultPriceChanged($event)"
-          />
         </div>
 
         <p-card>
@@ -212,13 +205,6 @@ export class BillingOverviewPage implements OnInit {
   protected onSaved(message: string): void {
     this.snackbar.success(message);
     this.load();
-  }
-
-  protected defaultPriceChanged(price: number): void {
-    const overview = this.overview();
-    if (overview !== null) {
-      this.overview.set({ ...overview, defaultLessonPrice: price });
-    }
   }
 
   /** «1 500 ₽ за занятие · 3 занятия · последнее 01.09.2026», «отключён» first for a deactivated one. */

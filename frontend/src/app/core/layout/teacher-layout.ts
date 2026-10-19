@@ -25,7 +25,6 @@ export const TEACHER_MENU: MenuItem[] = [
     icon: 'tb-i tb-i-notifications',
     routerLink: '/teacher/notifications',
   },
-  { label: CORE_T.nav.ai, icon: 'tb-i tb-i-auto_awesome', routerLink: '/teacher/ai' },
 ];
 
 /**

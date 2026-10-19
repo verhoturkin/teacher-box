@@ -49,7 +49,7 @@ const MAX_TEXT = 10_000;
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card id="system-prompts" [header]="t.title">
       <p class="tb-hint">{{ t.hint }}</p>
       <ul class="tb-list tb-list--no-phone-lead">
         @for (prompt of prompts(); track prompt.feature) {

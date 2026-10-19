@@ -243,13 +243,14 @@ describe('app routes', { timeout: 20_000 }, () => {
     TestBed.inject(HttpTestingController).match(() => true);
   });
 
-  it('opens the AI assistant page for the teacher', async () => {
+  it('leads the AI assistant page to its category of the settings', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
     await harness.navigateByUrl('/teacher/ai');
 
-    TestBed.inject(HttpTestingController).expectOne('/api/teacher/ai/status');
-    expect(title()).toBe('ИИ-помощник — Teacher Box');
+    expect(TestBed.inject(Router).url).toBe('/teacher/settings/ai');
+    expect(title()).toBe('ИИ-помощник — Настройки — Teacher Box');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it('opens the settings page for the teacher', async () => {
@@ -276,6 +277,8 @@ describe('app routes', { timeout: 20_000 }, () => {
     ['/teacher/settings/no-such-category', '/teacher/settings'],
     ['/teacher/settings/calls', '/teacher/settings/calls'],
     ['/teacher/calls', '/teacher/settings/calls'],
+    ['/teacher/settings/payments', '/teacher/settings/payments'],
+    ['/teacher/settings?open=ai', '/teacher/settings/ai'],
   ])('leads the old and unknown addresses of the settings: %s → %s', async (from, to) => {
     auth.acceptSession(authResponse('TEACHER'));
 

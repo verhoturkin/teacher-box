@@ -20,7 +20,7 @@ const SECTIONS = [
   'Оплаты',
   'Доски',
   'Уведомления',
-  'ИИ-помощник',
+  // 0.22.0: no «ИИ-помощник» — a category of the settings
   // the bottom group of the rail (0.21.0)
   'Настройки',
   'Справка',

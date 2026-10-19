@@ -103,6 +103,9 @@ test('the settings list their categories, without integrations, profile or addre
     'Расписание и календарь',
     'Звонки',
     'Мессенджеры',
+    // 234.4: «Оплаты» and «ИИ-помощник»
+    'Оплаты',
+    'ИИ-помощник',
     'Данные',
   ]) {
     await expect(list.getByRole('link', { name: new RegExp(`^${category}`) })).toBeVisible();
@@ -132,6 +135,25 @@ test('the schedule and calendar category holds the time zone and the subscriptio
   await page.goto('/teacher/schedule');
   await expect(page.locator('tb-schedule-page')).toBeVisible();
   await expect(page.locator('tb-calendar-feed-panel')).toHaveCount(0);
+});
+
+test('the payments category holds the price for new students, the AI page is a category', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto('/teacher/settings/payments');
+  await expect(page.locator('#default-price')).toContainText('Цена для новых учеников');
+
+  // 234.4: the payments page no longer holds the price
+  await page.goto('/teacher/billing');
+  await expect(page.locator('tb-billing-overview-page')).toBeVisible();
+  await expect(page.locator('#default-price')).toHaveCount(0);
+
+  // the instance has no AI service: the category says so
+  await page.goto('/teacher/ai');
+  await expect(page).toHaveURL(/\/teacher\/settings\/ai$/);
+  await expect(page.locator('tb-ai-settings-panel')).toContainText('ИИ-помощник не настроен');
+  await expect(page.getByRole('navigation', { name: 'Разделы' })).not.toContainText('ИИ-помощник');
 });
 
 test('a phone shows no section titles; nested pages keep theirs', async ({ page }) => {

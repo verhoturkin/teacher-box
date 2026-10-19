@@ -148,7 +148,13 @@ export interface AppliedDraft {
                 [text]="true"
                 (onClick)="startNaming()"
               />
-              <a pButton routerLink="/teacher/ai" severity="secondary" [text]="true">
+              <a
+                pButton
+                routerLink="/teacher/settings/ai"
+                fragment="prompt-library"
+                severity="secondary"
+                [text]="true"
+              >
                 <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
                 <span pButtonLabel>{{ t.manage }}</span>
               </a>

@@ -3,6 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { PageDetail } from '@core/routing/page-detail';
 import { hostElement, readableText, requireElement } from '@testing/dom';
+import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
+import { overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { channelSetup, preferences, studentMessengers } from '@testing/notification-fixtures';
 import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
@@ -86,6 +88,13 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
         backend.expectOne('/api/me/notifications/preferences').flush(preferences());
         break;
+      case 'payments':
+        backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
+        break;
+      case 'ai':
+        backend.expectOne('/api/teacher/ai/status').flush(aiStatus());
+        backend.expectOne('/api/teacher/ai/usage').flush(usageReport());
+        break;
       case 'data':
         backend.expectOne('/api/teacher/backups').flush([BACKUP]);
         backend.expectOne('/api/teacher/backups/google').flush({
@@ -156,6 +165,8 @@ describe('SettingsPage', () => {
     );
     expect(list).toContain('Звонки Звонки в портале и внешние видеовстречи');
     expect(list).toContain('Мессенджеры Боты, ваши мессенджеры, ученики и что присылать 2');
+    expect(list).toContain('Оплаты Цена занятия для новых учеников и групп');
+    expect(list).toContain('ИИ-помощник Модель, расход токенов, библиотека и системные промты');
     expect(list).toContain('Данные');
     expect(list).not.toContain('Интеграции');
     const links = Array.from(host.querySelectorAll('nav a')).map((link) =>
@@ -167,6 +178,8 @@ describe('SettingsPage', () => {
       '/teacher/settings/calendar',
       '/teacher/settings/calls',
       '/teacher/settings/messengers',
+      '/teacher/settings/payments',
+      '/teacher/settings/ai',
       '/teacher/settings/data',
     ]);
   });
@@ -248,6 +261,32 @@ describe('SettingsPage', () => {
     expect(host.querySelector('#meetings')).not.toBeNull();
     expect(host.querySelector('#google')).toBeNull();
     expect(current(host)).toBe('Звонки');
+  });
+
+  it('shows the price for new students in the payments', async () => {
+    const host = await render(1200, 'payments');
+
+    expect(readableText(host)).toContain('Цена для новых учеников 1 500 ₽');
+    expect(host.querySelector('#default-price')).not.toBeNull();
+    expect(current(host)).toBe('Оплаты');
+  });
+
+  it('shows the model, the usage and the prompts in the AI assistant', async () => {
+    const host = await render(1200, 'ai');
+    for (const request of backend.match('/api/teacher/ai/prompts')) {
+      request.flush([]);
+    }
+    for (const request of backend.match('/api/teacher/ai/system-prompts')) {
+      request.flush([systemPrompt()]);
+    }
+    await fixture.whenStable();
+
+    const text = readableText(host);
+    expect(text).toContain('Модель');
+    expect(host.querySelector('#prompt-library')).not.toBeNull();
+    expect(host.querySelector('#system-prompts')).not.toBeNull();
+    expect(host.querySelector('tb-ai-settings-panel tb-page-header')).toBeNull();
+    expect(current(host)).toBe('ИИ-помощник');
   });
 
   it('shows the failed deliveries first in the messengers, then the bots and the students', async () => {

@@ -43,7 +43,7 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
   `preferences-panel.ts`, `student-messengers-panel.ts` (summary + «Напомнить»), failed deliveries (from
   `settings-page.ts`); badge with the failed count on the category. `notifications-page.ts` keeps only the inbox and
   broadcasts until 235.
-- [ ] 234.4 **F** «Оплаты» (`billing/teacher/default-price-card.ts`, removed from `billing-overview-page.ts`) and
+- [x] 234.4 **F** «Оплаты» (`billing/teacher/default-price-card.ts`, removed from `billing-overview-page.ts`) and
   «ИИ-помощник» (`ai/ai-usage-page.ts` → category, `system-prompts-card.ts`; `prompt-library-card.ts` stays
   reachable from the editor's «Промты» menu); `/teacher/ai` redirects, menu item out. Backups: one component for
   the teacher and the admin per D4.
