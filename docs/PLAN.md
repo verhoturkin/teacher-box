@@ -17,23 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.20.1
-
-The colour of a student or a group tints the background of their rows in the teacher's lists instead of the
-avatar: the row is built from the same surface roles as any row, taken from the Fidelity scheme of the colour;
-the avatar and the lead keep the theme colours. Interface changes are made with the `m3-expressive` skill.
-
-### 227. Coloured rows (F)
-
-- [x] 227.1 **F** `core/theme/label-colors.ts` surface roles of every colour, `styles.scss` rows
-  `[data-tb-label]`, `TeacherColors.studentLabel / groupLabel / ownerLabel`, `tb-avatar` without `[color]`, the nearest-lesson card without a colour, the calendar painted only for the teacher (`showStudent`); lists
-  of students, groups, billing, homework, schedule, meetings, messengers; help articles, wiki `Features`,
-  `docs/design-system.md`.
-
-### 228. Release 0.20.1 (D)
-
-- [ ] 228.1 **D** CHANGELOG, version 0.20.1, plan archive.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,

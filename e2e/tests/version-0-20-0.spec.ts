@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Version 0.20.0: the teacher gives a student and a group a colour from a fixed palette; the avatar in the list, the
- * group's icon and the chips of the group's member picker take it.
+ * Version 0.20.0: the teacher gives a student and a group a colour from a fixed palette; their rows in the list
+ * (0.20.1; the avatar in 0.20.0) and the chips of the group's member picker take it.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -38,7 +38,7 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await expect(invite).toBeHidden();
 
   const row = page.locator('li', { hasText: student });
-  await expect(row.locator('tb-avatar')).toHaveAttribute('data-tb-label', 'violet');
+  await expect(row).toHaveAttribute('data-tb-label', 'violet');
 
   await page.getByRole('button', { name: 'Создать группу' }).click();
   await page.getByLabel('Название').fill(group);
@@ -51,8 +51,5 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await pickColor(page, 'Салатовый');
   await page.getByRole('button', { name: 'Сохранить' }).click();
 
-  await expect(page.locator('li', { hasText: group }).locator('.tb-list__lead')).toHaveAttribute(
-    'data-tb-label',
-    'lime',
-  );
+  await expect(page.locator('li', { hasText: group })).toHaveAttribute('data-tb-label', 'lime');
 });
