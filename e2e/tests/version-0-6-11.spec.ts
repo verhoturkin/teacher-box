@@ -208,7 +208,9 @@ test('the focus is a visible ring in the navigation, on the current section too'
   await home.focus();
   await page.keyboard.press('Shift+Tab');
   await page.keyboard.press('Tab');
-  const ring = await home.evaluate((element) => {
+  await expect(home).toBeFocused();
+  // the ring is around the indicator of the collapsed rail (the 56x32 around the icon), not the target (0.21.0)
+  const ring = await home.locator('.tb-side-nav__icon').evaluate((element) => {
     const style = getComputedStyle(element);
     return { width: style.outlineWidth, style: style.outlineStyle };
   });

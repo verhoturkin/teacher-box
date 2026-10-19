@@ -36,8 +36,7 @@ function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
 
 async function planLesson(page: Page, daysFromToday: number, hours: number, topic: string) {
   await page.goto('/teacher/schedule');
-  // The accessible name starts with the icon glyph.
-  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT }).click();
   // The date picker parses typed keys, not a pasted value.

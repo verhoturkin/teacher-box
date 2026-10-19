@@ -21,6 +21,9 @@ const SECTIONS = [
   'Доски',
   'Уведомления',
   'ИИ-помощник',
+  // the bottom group of the rail (0.21.0)
+  'Настройки',
+  'Справка',
 ];
 
 async function signIn(page: Page): Promise<void> {

@@ -57,8 +57,7 @@ async function planLesson(
   topic: string,
 ): Promise<void> {
   await page.goto('/teacher/schedule');
-  // The accessible name starts with the icon glyph.
-  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: student }).click();
   // The date picker parses typed keys, not a pasted value.

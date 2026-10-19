@@ -84,7 +84,8 @@ async function expectOneColumn(page: Page): Promise<void> {
 
 test('the cards of every section are in one column', async ({ page }) => {
   await signIn(page);
-  for (const path of ['/teacher', '/teacher/schedule', '/teacher/billing', '/teacher/help']) {
+  // the help is list-detail from 0.21.0 (version-0-21-0.spec.ts), not a column of cards
+  for (const path of ['/teacher', '/teacher/schedule', '/teacher/billing']) {
     await page.goto(path);
     await expect(page.locator('h1.tb-page-title')).toBeVisible();
     await expect(sectionCards(page).nth(1)).toBeVisible();
@@ -158,10 +159,13 @@ test('the actions of the page header are at one height on every page', async ({
   expect(created.ok()).toBe(true);
   await signIn(page);
   await page.goto('/teacher/homework');
-  const list = await page.locator('.tb-page-header > .tb-actions p-button').first().boundingBox();
+  // from 0.21.0 the list has no header action on a desktop («Создать» in the rail): the titles line up
+  await expect(page.locator('h1.tb-page-title')).toHaveText('Задания');
+  const list = await page.locator('h1.tb-page-title').boundingBox();
   await page.getByRole('link', { name: 'Колонка 0.6.8' }).click();
   await expect(page.locator('h1.tb-page-title')).toHaveText('Колонка 0.6.8');
-  const nested = await page.locator('.tb-page-header > .tb-actions p-button').first().boundingBox();
+  const nested = await page.locator('h1.tb-page-title').boundingBox();
+  await expect(page.locator('.tb-page-header > .tb-actions p-button').first()).toBeVisible();
   expect(Math.round(nested?.y ?? 0)).toBe(Math.round(list?.y ?? -1));
 });
 

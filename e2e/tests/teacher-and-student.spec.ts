@@ -45,8 +45,7 @@ async function planLesson(
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Расписание' })
     .click();
-  // The accessible name starts with the icon glyph.
-  await page.getByRole('button', { name: /Занятие$/ }).click();
+  await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   // The date picker parses typed keys, not a pasted value.
@@ -91,7 +90,10 @@ test('the student accepts the invitation', async ({ browser }) => {
   await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
   await expect(page).toHaveURL(/\/cabinet$/);
-  await expect(page.getByText(STUDENT_NAME)).toBeVisible();
+  // the top strip shows the avatar only (0.21.0); the name is its accessible name
+  await expect(
+    page.getByRole('button', { name: `${STUDENT_NAME}: меню пользователя` }),
+  ).toBeVisible();
 });
 
 test('the teacher gives homework and the student hands it in', async ({ page, browser }) => {
