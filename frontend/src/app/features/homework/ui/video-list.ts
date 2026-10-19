@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { Button } from 'primeng/button';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Video } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { PlayableVideo, VideoPlayer } from './video-player';
@@ -16,7 +17,7 @@ export function videoName(video: { readonly title: string | null }, index: numbe
  */
 @Component({
   selector: 'tb-video-list',
-  imports: [Button, VideoPlayer],
+  imports: [Button, ButtonAttributes, VideoPlayer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (videos().length > 0) {
@@ -31,7 +32,7 @@ export function videoName(video: { readonly title: string | null }, index: numbe
                   [label]="open().has($index) ? t.hideTranscript : t.showTranscript"
                   icon="tb-i tb-i-subtitles"
                   [text]="true"
-                  [attr.aria-expanded]="open().has($index)"
+                  [tbAttributes]="{ 'aria-expanded': open().has($index) ? 'true' : 'false' }"
                   (onClick)="toggle($index)"
                 />
                 @if (teacher() && video.transcriptShown) {

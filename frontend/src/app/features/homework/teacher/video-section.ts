@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { describeError } from '@core/http/error-messages';
@@ -68,10 +67,10 @@ interface TranscriptNote {
  */
 @Component({
   selector: 'tb-video-section',
-  imports: [FormsModule, Button, InputText, Message, Textarea, ToggleSwitch, VideoPlayer],
+  imports: [FormsModule, Button, InputText, Textarea, ToggleSwitch, VideoPlayer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <small class="tb-hint tb-video-section__hint">{{ t.hint }}</small>
+    <small class="tb-hint">{{ t.hint }}</small>
     @for (draft of videos(); track draft.key; let index = $index) {
       <section class="tb-video-card" [attr.aria-label]="name(draft, index)">
         <div class="tb-video-card__head">
@@ -158,13 +157,15 @@ interface TranscriptNote {
             [ngModel]="draft.transcript"
             (ngModelChange)="change(draft.key, { transcript: $event })"
           ></textarea>
-          @if (notes().get(draft.key); as note) {
-            <p-message [severity]="note.severity" styleClass="tb-form-message">{{
-              note.text
-            }}</p-message>
-          } @else {
-            <small class="tb-hint">{{ t.transcriptHint }}</small>
-          }
+          <div role="status" aria-live="polite">
+            @if (notes().get(draft.key); as note) {
+              <small [class]="note.severity === 'error' ? 'tb-field__error' : 'tb-hint'">{{
+                note.text
+              }}</small>
+            } @else {
+              <small class="tb-hint">{{ t.transcriptHint }}</small>
+            }
+          </div>
         </div>
 
         <label class="tb-switch" [for]="'video-shown-' + draft.key">
@@ -192,17 +193,15 @@ interface TranscriptNote {
       max-width: 100%;
     }
 
-    .tb-video-section__hint {
-      margin-top: calc(-1 * var(--tb-space-2));
-    }
-
     .tb-video-card {
       display: grid;
       gap: var(--tb-space-4);
       width: 100%;
       padding: var(--tb-space-4);
-      border-radius: var(--tb-shape-md);
-      background: var(--p-md-surface-container-low);
+      border-radius: var(--tb-list-outer);
+      background: var(--tb-list-item);
+      /* Nested corners: the player inside rounds by this tile's corner less its padding, never below 4 px. */
+      --tb-list-outer: var(--tb-shape-xs);
     }
 
     .tb-video-card__head {

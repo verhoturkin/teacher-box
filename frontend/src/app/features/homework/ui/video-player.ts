@@ -16,7 +16,8 @@ export interface PlayableVideo {
 
 /**
  * The player of a video by link (ADR-0047): YouTube (no-cookie), Rutube or VK Video in a 16:9 frame; any other link
- * is a card that opens it in a new tab.
+ * is a tile that opens it in a new tab. Both round by the container's nested corner (`--tb-list-outer`, design system
+ * §1); the tile has the tone of list tiles and the hover state layer of a row that acts.
  */
 @Component({
   selector: 'tb-video-player',
@@ -48,7 +49,7 @@ export interface PlayableVideo {
       aspect-ratio: 16 / 9;
       width: 100%;
       overflow: hidden;
-      border-radius: var(--tb-shape-md);
+      border-radius: var(--tb-list-outer);
       background: var(--p-md-surface-container-highest);
     }
 
@@ -63,15 +64,30 @@ export interface PlayableVideo {
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
+      min-height: 3.5rem;
       padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-md);
-      background: var(--p-md-surface-container);
+      border-radius: var(--tb-list-outer);
+      background: var(--tb-list-item);
       color: var(--p-md-on-surface);
       text-decoration: none;
+      transition: background-color var(--tb-spring-fast-effects);
     }
 
     .tb-video-link:hover {
-      background: var(--p-md-surface-container-high);
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-surface) var(--tb-state-hover),
+        var(--tb-list-item)
+      );
+    }
+
+    .tb-video-link:focus-visible {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: 2px;
+    }
+
+    .tb-video-link .tb-i {
+      color: var(--p-md-on-surface-variant);
     }
 
     .tb-video-link__text {
