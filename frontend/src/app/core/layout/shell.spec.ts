@@ -6,7 +6,7 @@ import { Portal } from '@core/portal/portal';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
 import { authResponse } from '@testing/auth';
-import { bodyText, hostElement, requireElement } from '@testing/dom';
+import { hostElement, requireElement } from '@testing/dom';
 import { Shell } from './shell';
 import { screenWidth, testProviders } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
@@ -24,7 +24,7 @@ describe('Shell', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
-    fixture.componentRef.setInput('userLinks', [
+    fixture.componentRef.setInput('footerLinks', [
       { label: 'Настройки', routerLink: '/teacher/settings' },
     ]);
     await fixture.whenStable();
@@ -34,13 +34,30 @@ describe('Shell', () => {
     fixture.destroy();
   });
 
-  it('shows the name of the portal', async () => {
+  it('shows the name of the portal at the top of the rail, not in the top bar (spec §3.2)', async () => {
     TestBed.inject(Portal).set(portalInfo({ name: 'Английский с Марией', address: null }));
     await fixture.whenStable();
 
-    expect(hostElement(fixture).querySelector('.tb-shell__brand')?.textContent).toContain(
+    const host = hostElement(fixture);
+    expect(host.querySelector('tb-side-nav .tb-side-nav__brand')?.textContent).toContain(
       'Английский с Марией',
     );
+    expect(host.querySelector('.tb-shell__header')?.textContent).not.toContain('Английский');
+    expect(host.querySelector('.tb-shell__brand')).toBeNull();
+  });
+
+  it('ends the rail with the settings and the help of the area', () => {
+    const footer = requireElement(
+      hostElement(fixture),
+      'tb-side-nav .tb-side-nav__footer',
+      HTMLElement,
+    );
+    const links = Array.from(footer.querySelectorAll('a'));
+    expect(links.map((a) => a.textContent.trim())).toEqual(['Настройки', 'Справка']);
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/teacher/settings',
+      '/teacher/help',
+    ]);
   });
 
   it('shows the navigation and the user, but not the name of the area (ADR-0019)', () => {
@@ -146,8 +163,14 @@ describe('Shell', () => {
   it('signs out from the user menu', async () => {
     requireElement(hostElement(fixture), '.tb-shell__user-button', HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Настройки');
-    expect(bodyText()).toContain('Мой аккаунт');
+    // the user menu keeps the account, the theme, the language and sign out; the settings and the
+    // help are in the rail (spec §3.2)
+    const menu = requireElement(document.body, '.p-menu', HTMLElement).textContent;
+    expect(menu).toContain('Мой аккаунт');
+    expect(menu).toContain('Тёмная тема');
+    expect(menu).toContain('English');
+    expect(menu).not.toContain('Настройки');
+    expect(menu).not.toContain('Справка');
 
     const logout = Array.from(document.body.querySelectorAll('a')).find((element) =>
       element.textContent.includes('Выйти'),
@@ -163,18 +186,41 @@ describe('Shell', () => {
 });
 
 describe('Shell by the M3 breakpoint (ADR-0048)', () => {
+  let fixture: ComponentFixture<Shell>;
+
   async function render(width: number): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
       providers: testProviders(screenWidth(width)),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
-    const fixture = TestBed.createComponent(Shell);
+    fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
+    fixture.componentRef.setInput('footerLinks', [
+      { label: 'Настройки', routerLink: '/teacher/settings' },
+    ]);
     await fixture.whenStable();
     return hostElement(fixture);
   }
+
+  afterEach(() => {
+    fixture.destroy();
+  });
+
+  it('keeps the portal, the settings and the help in the top bar on compact until the ☰ rail (231.2)', async () => {
+    const host = await render(599);
+
+    expect(host.querySelector('.tb-shell__header .tb-shell__brand')?.textContent).toContain(
+      'Teacher Box',
+    );
+    requireElement(host, '.tb-shell__user-button', HTMLButtonElement).click();
+    await fixture.whenStable();
+    const menu = requireElement(document.body, '.p-menu', HTMLElement).textContent;
+    expect(menu).toContain('Настройки');
+    expect(menu).toContain('Справка');
+    expect(menu).toContain('Мой аккаунт');
+  });
 
   it.each([
     [599, 'bar'],

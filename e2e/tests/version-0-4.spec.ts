@@ -68,7 +68,7 @@ test.describe('on a computer', () => {
     await card
       .getByLabel('Файл логотипа')
       .setInputFiles({ name: 'logo.svg', mimeType: 'image/svg+xml', buffer: LOGO });
-    await expect(page.locator('.tb-shell__brand img')).toBeVisible();
+    await expect(page.locator('.tb-side-nav__brand img')).toBeVisible();
 
     await page.reload();
     await expect(

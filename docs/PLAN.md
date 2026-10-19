@@ -54,7 +54,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
 
 ### 231. Rail, top strip, page header (F)
 
-- [ ] 231.1 **F** Spec §3.2: `side-nav.ts` — brand at the top (from the header of `shell.ts`), Настройки and
+- [x] 231.1 **F** Spec §3.2: `side-nav.ts` — brand at the top (from the header of `shell.ts`), Настройки and
   Справка at the bottom (from `TEACHER_USER_LINKS` in `teacher-layout.ts` and the user menu); user menu in
   `shell.ts` keeps theme, language, «Мой аккаунт», sign out. Student and admin layouts the same.
 - [ ] 231.2 **F** Top strip: bell + avatar only (`shell.ts`, `shell.scss`); `shared/ui/page-header.ts` renders

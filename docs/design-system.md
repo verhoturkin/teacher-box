@@ -287,8 +287,17 @@ component that shows one adds it to `PRIME`).
   keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
 - **Regions** (**M3**): the window and the navigation region (rail, top bar, bottom bar) are surface-container;
-  page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The contents of
-  the top bar and the rail change in 231 (redesign spec §3.2).
+  page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The top bar
+  changes in 231.2 (redesign spec §3.2).
+- **Rail** (`side-nav.ts`, 231.1, redesign spec §3.2): brand · sections · spacer · bottom group. **Brand** —
+  the portal logo (`tb-portal-logo round`) and name, plain text, not a link or button (**M3**: a logo in the
+  rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
+  the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
+  group** (`tb-side-nav__footer`, pushed down by `margin-top: auto`): the area's settings (`footerLinks`:
+  teacher `/teacher/settings`, admin `/admin/settings`; the student has none) and «Справка»
+  (`/<area>/help`), same items as the sections. **Expanded item** (**M3E** expanded rail): the target spans
+  the rail's width, the 56 px pill indicator hugs icon + label — 16 dp before and after, 8 dp between — in
+  secondary-container; state layer and focus ring on the indicator.
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -315,9 +324,11 @@ component that shows one adds it to `PRIME`).
   **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
-- **Top bar** (64 px, sticky, no divider below it on the phone either): logo (cut to a circle, `tb-portal-logo round`) and portal name, bell, user menu
-  (settings, help, account, theme, language, sign out; a student's photo instead of the person icon). No cabinet
-  name.
+- **Top bar** (64 px, sticky, no divider below it on the phone either): bell and user menu at the trailing
+  end; on compact also the logo (cut to a circle, `tb-portal-logo round`) and portal name — from medium they
+  are at the top of the rail. User menu: «Мой аккаунт», theme, language, sign out (a student's photo instead
+  of the person icon); on compact, until the ☰ modal rail (231.2), the rail's bottom group (settings, help)
+  leads it. No cabinet name.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
 - **One column inside a pane** (ADR-0021, refined by ADR-0048): panes replace multi-column pages only from
@@ -596,7 +607,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
   white is short of 3:1 on teal and emerald.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
-  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar
+  served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the top bar, the rail
   and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.
 - Browser icon — `favicon.svg` (graduation cap on indigo, rounded square) with `favicon.ico` (16/32/48) and
   `apple-touch-icon.png` (180 px); the portal logo, when set, replaces all of them.

@@ -39,8 +39,8 @@ const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = 
 const NAV_ITEMS = 4;
 
 /**
- * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the portal, the
- * bell and the user menu; the sections of the role in the expanded navigation rail from extra-large,
+ * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the bell and the user
+ * menu, and the portal on compact (from medium it is at the top of the rail); the sections of the role in the expanded navigation rail from extra-large,
  * in the collapsed rail from medium to large (ADR-0048, D5) and in the bottom navigation on compact;
  * the routed content.
  */
@@ -66,10 +66,13 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="tb-shell__header">
-      <a class="tb-shell__brand" [routerLink]="homeLink()">
-        <tb-portal-logo size="1.75rem" round />
-        <span>{{ portalName() }}</span>
-      </a>
+      <!-- from medium the brand is at the top of the rail (spec §3.2) -->
+      @if (compact()) {
+        <a class="tb-shell__brand" [routerLink]="homeLink()">
+          <tb-portal-logo size="1.75rem" round />
+          <span>{{ portalName() }}</span>
+        </a>
+      }
       <div class="tb-shell__user">
         @if (notifications()) {
           <tb-notification-bell [link]="homeLink() + '/notifications'" />
@@ -113,7 +116,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [rail]="size() !== 'extra-large'" />
+        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'" />
       }
       <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
         <router-outlet />
@@ -178,8 +181,11 @@ export class Shell {
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();
-  /** Links shown in the user menu before «Мой аккаунт» (e.g. the teacher's settings). */
-  readonly userLinks = input<MenuItem[]>([]);
+  /**
+   * Links at the bottom of the rail before «Справка» (the settings of the area); on compact they are in
+   * the user menu.
+   */
+  readonly footerLinks = input<MenuItem[]>([]);
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
   /**
@@ -241,9 +247,18 @@ export class Shell {
     }
   }
 
-  protected readonly userItems = computed<MenuItem[]>(() => [
-    ...this.userLinks(),
+  /** The bottom group of the rail: the settings of the area and the help (spec §3.2). */
+  protected readonly footer = computed<MenuItem[]>(() => [
+    ...this.footerLinks(),
     { label: T.help, icon: 'tb-i tb-i-help', routerLink: `${this.homeLink()}/help` },
+  ]);
+
+  /**
+   * Theme, language, «Мой аккаунт», sign out (spec §3.2). On compact there is no rail yet, so the bottom
+   * group of the rail comes first (until the ☰ modal rail, 231.2).
+   */
+  protected readonly userItems = computed<MenuItem[]>(() => [
+    ...(this.compact() ? this.footer() : []),
     { label: T.account, icon: 'tb-i tb-i-badge', routerLink: `${this.homeLink()}/account` },
     { separator: true },
     // Flat items: a group (`items`) would turn every top-level item into a group label.

@@ -100,8 +100,8 @@ test('the frame: room between the sections, no name of the area, Expressive shap
 
   const header = page.locator('header.tb-shell__header');
   await expect(header).not.toContainText('Кабинет учителя');
-  // the name of the portal (other scenarios rename it)
-  await expect(header.locator('.tb-shell__brand')).not.toBeEmpty();
+  // the name of the portal at the top of the rail (231.1; other scenarios rename it)
+  await expect(page.locator('tb-side-nav .tb-side-nav__brand')).not.toBeEmpty();
 
   expect(await style(page, 'main .p-card', 'border-radius')).toBe('20px');
   expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');

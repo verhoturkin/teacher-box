@@ -1,18 +1,42 @@
 /*
- * The expanded navigation rail (M3 Expressive, ADR-0019) from extra-large, 1600 px (ADR-0048, D5): 280 px, items 56 px high and 4 px apart,
- * the pill indicator of the active section springs out from its middle. The state layer of hover
- * and focus lies over the indicator, the focus ring is around the item (ADR-0024).
+ * The expanded navigation rail (M3 Expressive, ADR-0019) from extra-large, 1600 px (ADR-0048, D5): 280 px,
+ * the brand at the top, the sections, the bottom group (Настройки, Справка) pushed down by a spacer (spec §3.2).
+ * Items are 56 px high and 4 px apart; the target spans the width of the rail, the pill indicator hugs the icon
+ * and the label (M3E expanded rail: 16 dp before and after, 8 dp between) and springs out from its middle.
+ * The state layer of hover and focus lies over the indicator, the focus ring is around it (ADR-0024).
  */
 :host {
   position: sticky;
   top: var(--tb-header-height);
-  display: block;
+  display: flex;
   flex: none;
+  flex-direction: column;
+  gap: var(--tb-space-1);
   box-sizing: border-box;
   width: 280px;
   height: calc(100vh - var(--tb-header-height));
   padding: var(--tb-space-2) var(--tb-space-3);
   overflow-y: auto;
+  /* ours: a low window scrolls the rail; a thin scrollbar keeps the 96 px rail's items wide */
+  scrollbar-width: thin;
+}
+
+/* ours: the logo in line with the icons, Title Medium, a long name wraps instead of being cut */
+.tb-side-nav__brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-3);
+  min-height: 56px;
+  margin-bottom: var(--tb-space-2);
+  padding: 0 var(--tb-space-4);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-title-m);
+  overflow-wrap: anywhere;
+
+  tb-portal-logo {
+    flex: none;
+  }
 }
 
 .tb-side-nav__list {
@@ -24,14 +48,16 @@
   list-style: none;
 }
 
+/* the spacer: the bottom group stands at the bottom of the rail */
+.tb-side-nav__footer {
+  margin-top: auto;
+  padding-top: var(--tb-space-3);
+}
+
 .tb-side-nav__item {
-  position: relative;
-  isolation: isolate;
   display: flex;
   align-items: center;
-  gap: var(--tb-space-3);
   min-height: 56px;
-  padding: 0 var(--tb-space-6) 0 var(--tb-space-4);
   border-radius: var(--tb-shape-full);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-l);
@@ -40,6 +66,21 @@
   &:hover {
     text-decoration: none;
   }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.tb-side-nav__indicator {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 56px;
+  padding: 0 var(--tb-space-4);
+  border-radius: var(--tb-shape-full);
 
   /* the indicator of the active section */
   &::before {
@@ -67,17 +108,17 @@
     opacity: 0;
     transition: opacity var(--tb-spring-fast-effects);
   }
+}
 
-  &:hover::after {
-    opacity: var(--tb-state-hover);
-  }
+.tb-side-nav__item:hover .tb-side-nav__indicator::after {
+  opacity: var(--tb-state-hover);
+}
 
-  &:focus-visible {
-    outline: 3px solid var(--p-md-secondary);
-    outline-offset: 2px;
-  }
+.tb-side-nav__item:focus-visible .tb-side-nav__indicator {
+  outline: 3px solid var(--p-md-secondary);
+  outline-offset: 2px;
 
-  &:focus-visible::after {
+  &::after {
     opacity: var(--tb-state-focus);
   }
 }
@@ -95,16 +136,21 @@
   --tb-icon-fill: 1;
   color: var(--p-md-on-secondary-container);
 
-  &::before {
+  .tb-side-nav__indicator::before {
     opacity: 1;
     transform: none;
   }
 }
 
-/* The collapsed rail (M3E, ADR-0044) from medium to large, 600–1599 px: 96 px, the label under the icon, the 56x32 indicator around the icon */
+/* The collapsed rail (M3E, ADR-0044) from medium to large, 600–1599 px: 96 px, the logo alone at the top, the label under the icon, the 56x32 indicator around the icon */
 :host(.tb-side-nav--rail) {
   width: 96px;
   padding: var(--tb-space-2) 0;
+
+  .tb-side-nav__brand {
+    justify-content: center;
+    padding: 0;
+  }
 
   .tb-side-nav__list {
     gap: var(--tb-space-3);
@@ -112,21 +158,29 @@
 
   .tb-side-nav__item {
     flex-direction: column;
-    gap: var(--tb-space-1);
     min-height: 0;
-    padding: 0 2px;
     border-radius: 0;
     font: var(--tb-type-label-m);
     text-align: center;
+  }
+
+  .tb-side-nav__indicator {
+    flex-direction: column;
+    gap: var(--tb-space-1);
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 0 2px;
+    border-radius: 0;
 
     &::before,
     &::after {
       display: none;
     }
+  }
 
-    &:focus-visible {
-      outline: none;
-    }
+  .tb-side-nav__item:focus-visible .tb-side-nav__indicator {
+    outline: none;
   }
 
   .tb-side-nav__icon {
