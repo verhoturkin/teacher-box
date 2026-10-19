@@ -75,7 +75,7 @@ page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-lis
 the download button saves them under `boundTextbookFilename`; 0.14.5: the teacher's tap on the title opens the whole
 textbook, a PDF at its first bound page — `teacher/material-opener.ts`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
 `@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
-`canLeaveGuard`; «Новое задание» and the home quick action lead there): one Markdown field with a «Текст / Просмотр»
+`canLeaveGuard`; «Создать › Задание» in the rail and, on a phone, «Новое задание» lead there): one Markdown field with a «Текст / Просмотр»
 switch; students and groups (`tb-group-picker`, a multiselect: a group adds its students, taking it off removes them),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
 (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new

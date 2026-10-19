@@ -75,7 +75,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
 - [x] 232.2 **F** Remove `features/home/quick-actions.ts` and the header create buttons (`tb-page-fab`) from
   expanded and wider; on compact a section keeps its extended FAB, Today keeps the FAB menu. Tests: one FAB per
   screen at each breakpoint.
-- [ ] 232.3 **D** design-system §5 «Main action», help (ru, en), wiki.
+- [x] 232.3 **D** design-system §5 «Main action», help (ru, en), wiki.
 
 ### 233. Release 0.21.0 (D)
 

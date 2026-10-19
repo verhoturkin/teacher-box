@@ -13,17 +13,17 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 
 ## Four steps
 
-1. **Add students.** «Students» → «Add student». The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
+1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Payments» → click the student's name → the «Lesson price» field. Debts and prepayments are counted from it.
-3. **Plan lessons.** «Schedule» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
+3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
 4. **Connect a messenger.** «Notifications» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 The home page has the «Getting started» list — only the steps not done yet stay in it, and the bar shows how many are done.
 
 ## Home page
 
-- **Quick actions** — «Lesson», «Payment», «Student», «Homework»: each opens the form on its page. On a phone they are behind the «+» button at the bottom right.
-- **Next lesson** — the first card under the quick actions. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs) — the largest button of the portal. When the lesson ends, the card shows the next one by itself.
+- **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section; the item of the section you are in comes first. On a phone the home page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
+- **Next lesson** — the first card of the home page. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs) — the largest button of the portal. When the lesson ends, the card shows the next one by itself.
 - **Needs attention** — unmarked lessons (mark them in «Schedule»), work to review, students' requests and failed deliveries of notifications.
 - **Finance** — income of the month and students' debts.
 
@@ -65,7 +65,7 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
     body: `
 ## Add a student
 
-1. Open «Students» and click «Add student».
+1. Click «Create» → «Student» (on a phone — «Students» → «Add student»).
 2. Enter the name. Email and phone are optional, you and the student see them; the note is seen only by you.
 3. The portal shows an invitation link. Copy it and send it to the student.
 
@@ -131,7 +131,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
     body: `
 ## Plan a lesson
 
-- **One-off:** «Schedule» → «Lesson». Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
+- **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
 
 **Default topic.** If a student or a group has a default topic (in the «Edit» window of the student or group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
@@ -247,7 +247,7 @@ The «Boards» section keeps all boards in one place; each card («Boards in the
 
 ## Create a board
 
-1. «Boards» → «New board».
+1. «Create» → «Board» (on a phone — «Boards» → «New board»).
 2. Choose the kind and enter the title. For an external board paste the link and open the board by link in its service.
 3. Choose students and groups — as many as you like. All students of a group see its board; a student who left the group no longer sees it.
 
@@ -295,7 +295,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
     body: `
 ## Give homework
 
-1. «Homework» → «New homework» — the homework editor opens.
+1. «Create» → «Homework» (on a phone — «Homework» → «New homework») — the homework editor opens.
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
 3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
 4. Bind textbooks and add files right here — they show as cards; click a name to open the textbook or the file (PDF files and pictures open in a new tab).
@@ -395,7 +395,7 @@ Students in «Payments» are a list, a line per student: photo, name, lesson pri
 
 ## Record a payment
 
-«Payments» → «Payment» (or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
+«Create» → «Payment» (on a phone — «Payments» → «Payment»; or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
 
 ## Payment receipt
 
@@ -440,7 +440,7 @@ The «Students» card shows who has a messenger connected and whether deliveries
 
 ## Message to students
 
-The «Messages to students» card → «Write to students» → write the text and choose the recipients (everyone, separate students or a group).
+«Create» → «Message» (or the «Messages to students» card → «Write to students») → write the text and choose the recipients (everyone, separate students or a group).
 
 ## What to send
 
@@ -555,7 +555,7 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 - **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
 - **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Calls», «Textbooks», «Boards», «Notifications», «AI assistant»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
 
-The top of the sections panel holds the portal's logo and name, its bottom — «Settings» and «Help».
+The top of the sections panel holds the portal's logo and name with «Create» under them, its bottom — «Settings» and «Help». «Create» is the only such button on the screen: on a computer and a tablet the sections have no «Add…» buttons in their headers, they stay only on a phone.
 
 Icons are Material Symbols, as in Android; the chosen section's icon is filled, the others are outlined.
 
@@ -569,7 +569,7 @@ Input fields have their label on the outline, as in Material 3; in focus the out
 
 ## Button colours
 
-- **The portal colour** — the main action of a section or a window: «Lesson», «Add student», «Save», «Accept», «Held». There is one such button on a screen.
+- **The portal colour** — the main action of a section or a window: «Create», «Save», «Accept», «Held». There is one such button on a screen.
 - **Calm tonal and text buttons** — the other actions, «Missed», «Return for rework» and «Cancel lesson…» included: the status of the lesson or the homework shows what happened. «Cancel» in a window just closes it.
 - **Red** — deleting only: the bin or «×» in a list row, «Delete…» in a menu and the button that confirms deleting in a window.
 - Green and yellow are colours of statuses («Held», «Accepted», «To review»), not of buttons.
