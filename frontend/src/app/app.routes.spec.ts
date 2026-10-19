@@ -248,7 +248,7 @@ describe('app routes', { timeout: 20_000 }, () => {
   it.each([
     ['/teacher/notifications', '/teacher', 'inbox'],
     ['/teacher/notifications?tab=inbox', '/teacher', 'inbox'],
-    ['/teacher/notifications?create=message', '/teacher?create=message', 'sent'],
+    ['/teacher/notifications?from=mail', '/teacher?from=mail', 'inbox'],
   ])('leads %s to the home page with the bell’s sheet open: %s, %s', async (from, to, tab) => {
     auth.acceptSession(authResponse('TEACHER'));
 

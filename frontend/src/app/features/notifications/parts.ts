@@ -5,6 +5,7 @@
 export { NotificationsApi } from './data-access/notifications-api';
 export type { TeacherNotificationsSummary } from './data-access/notifications.models';
 export { NotificationsSheetContent } from './sheet/notifications-sheet-content';
+export { NewMessageDialog } from './teacher/new-message-dialog';
 export { ChannelsPanel } from './channels/channels-panel';
 export { ConnectMessengerCard } from './student/connect-messenger-card';
 export { PreferencesPanel } from './preferences/preferences-panel';

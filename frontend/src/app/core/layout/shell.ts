@@ -18,6 +18,7 @@ import { Menu } from 'primeng/menu';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
+import { NewMessage } from '@core/notifications/new-message';
 import { NotificationsSheet } from '@core/notifications/notifications-sheet';
 import { openOnNotificationsParam } from '@core/notifications/notifications-sheet-state';
 import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
@@ -54,6 +55,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     ButtonDirective,
     ButtonIcon,
     CreateMenu,
+    NewMessage,
     Drawer,
     ModalDrawer,
     Menu,
@@ -137,6 +139,10 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
       @if (notifications()) {
         <!-- the bell's sheet: the third pane on extra-large, the modal side sheet below (spec §10.3) -->
         <tb-notifications-sheet [docked]="size() === 'extra-large'" />
+      }
+      @if (create()) {
+        <!-- «Создать › Сообщение» on any page, the rail's or the phone's home FAB menu -->
+        <tb-new-message />
       }
     </div>
     @if (compact()) {

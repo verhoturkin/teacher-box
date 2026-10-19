@@ -49,7 +49,7 @@ export function notificationsTab(value: string): NotificationsTab {
 /**
  * Opens the sheet when an address asks for it (`?notifications=…`) — on arrival and on later navigations —
  * and drops the parameter (replacing the address), so a reload or «Назад» does not open it again. Other
- * parameters stay (e.g. `?create=message` for the sent tab). Call it in an injection context of the frame.
+ * parameters stay. Call it in an injection context of the frame.
  */
 export function openOnNotificationsParam(): void {
   const router = inject(Router);

@@ -3,18 +3,19 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { CORE_T } from '@core/i18n/texts';
+import { NewMessageState } from '@core/notifications/new-message';
 import { CREATE_PARAM, CreateKind } from '@core/routing/create-param';
 import { FabMenu, FabMenuItem } from '@shared/ui/fab-menu';
 
 const T = CORE_T.create;
 
-/** What «Создать» makes and the section whose form makes it (spec §4: one home per function). */
-interface CreateAction {
-  readonly kind: CreateKind;
-  readonly label: string;
-  readonly icon: string;
-  readonly section: string;
-}
+/**
+ * What «Создать» makes and the section whose form makes it (spec §4: one home per function); a message to
+ * students has no section: its dialog opens over the page (redesign 235.3).
+ */
+type CreateAction = { readonly label: string; readonly icon: string } & (
+  { readonly kind: CreateKind; readonly section: string } | { readonly kind: 'message' }
+);
 
 /** The six items of the menu (M3 FAB menu: up to six) in their usual order. */
 export const CREATE_ACTIONS: readonly CreateAction[] = [
@@ -33,37 +34,49 @@ export const CREATE_ACTIONS: readonly CreateAction[] = [
   },
   { kind: 'student', label: T.student, icon: 'tb-i-person_add', section: '/teacher/students' },
   { kind: 'board', label: T.board, icon: 'tb-i-co_present', section: '/teacher/boards' },
-  {
-    kind: 'message',
-    label: T.message,
-    icon: 'tb-i-send',
-    section: '/teacher/notifications',
-  },
+  { kind: 'message', label: T.message, icon: 'tb-i-send' },
 ];
 
-/** The items for the page at `url`: the current section's item first, the others in their order. */
-export function createItems(url: string): FabMenuItem[] {
+/**
+ * The items for the page at `url`: the current section's item first, the others in their order; «Сообщение»
+ * calls `message` (it opens the dialog of a new message over the page).
+ */
+export function createItems(url: string, message: () => void): FabMenuItem[] {
   const path = url.split(/[?#]/)[0] ?? '';
   const current = CREATE_ACTIONS.find(
-    (action) => path === action.section || path.startsWith(`${action.section}/`),
+    (action) =>
+      'section' in action && (path === action.section || path.startsWith(`${action.section}/`)),
   );
   const ordered =
     current === undefined
       ? CREATE_ACTIONS
       : [current, ...CREATE_ACTIONS.filter((action) => action !== current)];
-  return ordered.map((action) => ({
-    label: action.label,
-    icon: action.icon,
-    link: action.section,
-    queryParams: { [CREATE_PARAM]: action.kind },
-  }));
+  return ordered.map((action) =>
+    'section' in action
+      ? {
+          label: action.label,
+          icon: action.icon,
+          link: action.section,
+          queryParams: { [CREATE_PARAM]: action.kind },
+        }
+      : { label: action.label, icon: action.icon, run: message },
+  );
+}
+
+/** {@link createItems} with «Сообщение» opening the frame's dialog; call it in an injection context. */
+export function injectCreateItems(): (url: string) => FabMenuItem[] {
+  const newMessage = inject(NewMessageState);
+  return (url) =>
+    createItems(url, () => {
+      newMessage.show();
+    });
 }
 
 /**
  * The teacher's global «Создать» at the top of the rail (ADR-0048, spec §3.1, §4): the small extended FAB in
  * the expanded rail, the FAB in the collapsed one, at elevation 0 as nested in the rail; it opens the FAB
  * menu of six items. An item leads to its section with `?create=<kind>`: the section opens its form and
- * drops the parameter (`openOnCreate`).
+ * drops the parameter (`openOnCreate`); «Сообщение» opens the dialog of a new message over the page.
  */
 @Component({
   selector: 'tb-create-menu',
@@ -91,6 +104,7 @@ export function createItems(url: string): FabMenuItem[] {
 })
 export class CreateMenu {
   private readonly router = inject(Router);
+  private readonly createItems = injectCreateItems();
 
   /** The small extended FAB (the expanded rail) instead of the FAB (the collapsed one). */
   readonly extended = input(false);
@@ -103,5 +117,5 @@ export class CreateMenu {
     ),
     { initialValue: this.router.url },
   );
-  protected readonly items = computed(() => createItems(this.url()));
+  protected readonly items = computed(() => this.createItems(this.url()));
 }

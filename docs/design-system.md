@@ -308,7 +308,10 @@ component that shows one adds it to `PRIME`).
   current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
   one global entry point instead of a create button per section (ADR-0048). An item opens
   `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
-  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. From 600 px it is the screen's only
+  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. «Сообщение» has no section: it is
+  a `button` item (`FabMenuItem.run`) that opens the broadcast dialog over the current page (`NewMessageState`,
+  the feature's dialog through `NEW_MESSAGE_DIALOG`, focus back on the FAB); a message sent refreshes
+  «Отправленные» of the bell's sheet (235.3). From 600 px it is the screen's only
   FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
   (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
   as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
@@ -512,8 +515,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
   2 dp, 1 dp outline-variant divider. `?notifications=inbox|sent` opens the sheet on any page and is dropped
-  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=…` (with `?create=message` — the sent
-  tab, other parameters kept). The frame gets the feature's content through `NOTIFICATIONS_SHEET_CONTENT`
+  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=inbox` (other parameters kept). The frame gets the feature's content through `NOTIFICATIONS_SHEET_CONTENT`
   (provided in `app.config.ts`), so core/ imports no feature.
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.

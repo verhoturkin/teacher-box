@@ -1,4 +1,5 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { create } from './create';
 import { todayThereAt } from './this-week';
 
 /**
@@ -135,4 +136,29 @@ test('no divider above «Прочитанные» in the inbox', async ({ page }
   const read = page.locator('.tb-inbox-read');
   await expect(read).toBeVisible();
   expect(await read.evaluate((node) => getComputedStyle(node).borderTopWidth)).toBe('0px');
+});
+
+test('«Создать › Сообщение» writes from any page; the open «Отправленные» shows the message', async ({
+  page,
+}) => {
+  // extra-large: the bell's sheet is the third pane and stays open beside the page (235.1, 235.3)
+  await signIn(page, 1920);
+  await page.goto('/teacher/students?notifications=sent');
+  const sheet = page.locator('#tb-notifications-sheet');
+  await expect(sheet.getByRole('button', { name: 'Написать ученикам' })).toBeVisible();
+
+  await create(page, 'Сообщение');
+  const dialog = page.getByRole('dialog', { name: 'Сообщение ученикам' });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/teacher\/students$/);
+  await dialog.locator('p-multiselect').click();
+  await page.getByRole('option', { name: STUDENT }).click();
+  await page.keyboard.press('Escape');
+  const subject = `Перенос ${RUN}`;
+  await dialog.getByLabel('Тема').fill(subject);
+  await dialog.getByRole('button', { name: 'Отправить' }).click();
+
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText('Сообщение отправлено, получателей: 1')).toBeVisible();
+  await expect(sheet.getByText(subject)).toBeVisible();
 });

@@ -2,11 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { hostElement, requireElement } from '@testing/dom';
 import { testProvidersWithRouter } from '@testing/setup';
+import { FabMenuItem } from '@shared/ui/fab-menu';
+import { NewMessageState } from '@core/notifications/new-message';
 import { CREATE_ACTIONS, CreateMenu, createItems } from './create-menu';
 
 describe('createItems', () => {
+  const write = vi.fn();
+
   it('puts the current section’s item first, the others in their order', () => {
-    const labels = (url: string): string[] => createItems(url).map((item) => item.label);
+    const labels = (url: string): string[] => createItems(url, write).map((item) => item.label);
     const usual = ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Сообщение'];
 
     expect(labels('/teacher')).toEqual(usual);
@@ -20,21 +24,26 @@ describe('createItems', () => {
       'Сообщение',
     ]);
     expect(labels('/teacher/homework/a-1/edit')[0]).toBe('Задание');
-    expect(labels('/teacher/notifications#messages')[0]).toBe('Сообщение');
     // a section whose link only starts the same way is another one
     expect(labels('/teacher/boardsmith')).toEqual(usual);
   });
 
-  it('leads each item to its section with ?create=<kind> (M3: up to six)', () => {
+  it('leads each item to its section with ?create=<kind>, «Сообщение» opens over the page (M3: up to six)', () => {
     expect(CREATE_ACTIONS.length).toBeLessThanOrEqual(6);
-    expect(createItems('/teacher').map((item) => [item.link, item.queryParams])).toEqual([
+    const target = (item: FabMenuItem): unknown =>
+      'link' in item ? [item.link, item.queryParams] : 'run';
+    const items = createItems('/teacher', write);
+    expect(items.map(target)).toEqual([
       ['/teacher/schedule', { create: 'lesson' }],
       ['/teacher/homework', { create: 'assignment' }],
       ['/teacher/billing', { create: 'payment' }],
       ['/teacher/students', { create: 'student' }],
       ['/teacher/boards', { create: 'board' }],
-      ['/teacher/notifications', { create: 'message' }],
+      'run',
     ]);
+    const message = items[5];
+    if (message !== undefined && 'run' in message) message.run();
+    expect(write).toHaveBeenCalledOnce();
   });
 });
 
@@ -122,5 +131,21 @@ describe('CreateMenu', () => {
 
     expect(host.querySelector('a')).toBeNull();
     expect(TestBed.inject(Router).url).toBe('/teacher/billing?create=payment');
+  });
+
+  it('opens the dialog of a new message over the page, without leaving it', async () => {
+    await render(false, '/teacher/students');
+    await toggle();
+
+    expect(host.querySelectorAll('button.tb-fab-menu__item')).toHaveLength(1);
+    const message = requireElement(host, 'button.tb-fab-menu__item', HTMLButtonElement);
+    expect(message.textContent.trim()).toBe('Сообщение');
+    message.click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(NewMessageState).open()).toBe(true);
+    expect(host.querySelector('.tb-fab-menu__item')).toBeNull();
+    expect(document.activeElement).toBe(fab());
+    expect(TestBed.inject(Router).url).toBe('/teacher/students');
   });
 });

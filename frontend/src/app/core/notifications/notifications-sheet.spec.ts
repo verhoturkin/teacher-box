@@ -72,7 +72,7 @@ describe('openOnNotificationsParam', () => {
 
   it('opens the sheet on arrival and drops only its parameter', async () => {
     const router = TestBed.inject(Router);
-    await router.navigateByUrl('/teacher?notifications=sent&create=message');
+    await router.navigateByUrl('/teacher?notifications=sent&create=lesson');
     const fixture = TestBed.createComponent(Frame);
     await fixture.whenStable();
 
@@ -80,7 +80,7 @@ describe('openOnNotificationsParam', () => {
     expect(state.open()).toBe(true);
     expect(state.tab()).toBe('sent');
     await vi.waitFor(() => {
-      expect(router.url).toBe('/teacher?create=message');
+      expect(router.url).toBe('/teacher?create=lesson');
     });
     fixture.destroy();
   });
@@ -180,7 +180,7 @@ describe('NotificationsSheet', () => {
     it('closes when a notification leads to another page, not when only the query changes', async () => {
       await open();
 
-      await router.navigateByUrl('/teacher?create=message');
+      await router.navigateByUrl('/teacher?create=lesson');
       expect(state.open()).toBe(true);
 
       await router.navigateByUrl('/teacher/homework');

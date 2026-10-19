@@ -28,6 +28,7 @@ import { Language, language, locale } from '@core/i18n/language';
 import { languageInterceptor } from '@core/i18n/language.interceptor';
 import { PRIMENG_EN } from '@core/i18n/primeng-en';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
+import { NEW_MESSAGE_DIALOG } from '@core/notifications/new-message';
 import { NOTIFICATIONS_SHEET_CONTENT } from '@core/notifications/notifications-sheet-state';
 import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
@@ -73,6 +74,11 @@ export const appConfig: ApplicationConfig = {
       provide: NOTIFICATIONS_SHEET_CONTENT,
       useValue: () =>
         import('@features/notifications/parts').then((m) => m.NotificationsSheetContent),
+    },
+    // the teacher's new message to students over any page («Создать › Сообщение»), loaded when asked for
+    {
+      provide: NEW_MESSAGE_DIALOG,
+      useValue: () => import('@features/notifications/parts').then((m) => m.NewMessageDialog),
     },
     { provide: LOCALE_ID, useFactory: locale },
     { provide: TitleStrategy, useClass: AppTitleStrategy },

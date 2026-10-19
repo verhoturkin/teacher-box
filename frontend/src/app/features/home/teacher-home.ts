@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { CORE_T } from '@core/i18n/texts';
-import { createItems } from '@core/layout/create-menu';
+import { injectCreateItems } from '@core/layout/create-menu';
 import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
@@ -76,7 +76,7 @@ import { T } from './i18n/texts';
 export class TeacherHome implements OnInit {
   protected readonly t = T.teacherHome;
   protected readonly mobile = injectMobile();
-  protected readonly createItems = createItems('/teacher');
+  protected readonly createItems = injectCreateItems()('/teacher');
   protected readonly createLabel = CORE_T.create.title;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
