@@ -14,7 +14,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { MultiSelect } from 'primeng/multiselect';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { GroupPicker, IdentityApi } from '@features/identity/parts';
+import { ChipColors, GroupPicker, IdentityApi } from '@features/identity/parts';
 import { Busy } from '@shared/ui/busy';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -26,7 +26,7 @@ import { StudentOption } from './assignment-editor-page';
 /** «Выдать ещё ученикам»: students and groups side by side; students who have the assignment are not offered. */
 @Component({
   selector: 'tb-assign-more-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, MultiSelect, GroupPicker, SubmitFor],
+  imports: [ReactiveFormsModule, Button, Dialog, MultiSelect, ChipColors, GroupPicker, SubmitFor],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -49,6 +49,7 @@ import { StudentOption } from './assignment-editor-page';
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />

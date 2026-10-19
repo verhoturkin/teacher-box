@@ -37,6 +37,7 @@ import {
   requestKindLabel,
 } from '../schedule-labels';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { AttendanceDialog } from './attendance-dialog';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -146,6 +147,7 @@ import { SHARED_T } from '@shared/i18n/texts';
                   <tb-avatar
                     [name]="participant.studentName ?? c.student"
                     [photo]="participant.studentAvatar"
+                    [color]="colors.student(participant.studentId)"
                   />
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ participant.studentName ?? c.student }}</span>
@@ -362,6 +364,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 export class LessonDetailsDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.details;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);

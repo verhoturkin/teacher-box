@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { BillingSummary } from '../data-access/billing.models';
 import { T } from '../i18n/texts';
 import { locale } from '@core/i18n/language';
@@ -36,7 +37,11 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
         <ul class="tb-list tb-debtors">
           @for (debtor of finance.topDebtors; track debtor.studentId) {
             <li>
-              <tb-avatar [name]="debtor.displayName" [photo]="debtor.avatar" />
+              <tb-avatar
+                [name]="debtor.displayName"
+                [photo]="debtor.avatar"
+                [color]="colors.student(debtor.studentId)"
+              />
               <div class="tb-list__text">
                 <a
                   [routerLink]="['/teacher/billing/students', debtor.studentId]"
@@ -88,6 +93,7 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
 })
 export class FinanceWidget {
   protected readonly t = T.finance;
+  protected readonly colors = inject(TeacherColors);
   readonly summary = input.required<BillingSummary>();
 
   /** Name of the month, e.g. «сентябрь». */

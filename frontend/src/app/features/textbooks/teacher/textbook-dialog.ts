@@ -21,6 +21,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
+import { ChipColors } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
 import { describeError } from '@core/http/error-messages';
 import { formatFileSize } from '@shared/files/file-size';
@@ -57,6 +58,7 @@ export interface MemberOption {
     InputText,
     Message,
     MultiSelect,
+    ChipColors,
     SelectButton,
     FieldErrors,
     SubmitFor,
@@ -164,6 +166,7 @@ export interface MemberOption {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />
@@ -181,6 +184,7 @@ export interface MemberOption {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="group"
             appendTo="body"
             [fluid]="true"
           />

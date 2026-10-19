@@ -1209,7 +1209,8 @@ p-button.tb-list__stretched .p-button {
 @each $label in 'red', 'orange', 'yellow', 'lime', 'green', 'cyan', 'blue', 'violet', 'purple',
   'pink'
 {
-  [data-tb-label='#{$label}'] {
+  [data-tb-label='#{$label}'],
+  .tb-label--#{$label} {
     --tb-label: var(--p-md-label-#{$label});
     --tb-on-label: var(--p-md-on-label-#{$label});
     --tb-label-container: var(--p-md-label-#{$label}-container);
@@ -1926,6 +1927,20 @@ a.p-menu-item-link:hover {
   --fc-classic-event: var(--p-md-surface-container-highest);
   --fc-classic-event-contrast: var(--p-md-on-surface-variant);
   text-decoration: line-through;
+}
+
+/*
+ * The colour of the student or the group (the teacher's calendar): a planned lesson takes the container of the
+ * colour; a conducted, missed or cancelled one keeps the container of its status and gets a 4 px stripe of the
+ * colour at its start, so the status stays readable (our decision, not in M3).
+ */
+.tb-lesson--scheduled.tb-label {
+  --fc-classic-event: var(--tb-label-container);
+  --fc-classic-event-contrast: var(--tb-on-label-container);
+}
+
+.tb-label:not(.tb-lesson--scheduled) {
+  box-shadow: inset 4px 0 0 var(--tb-label);
 }
 
 /* A request waits for an answer: the outline of the warning role, 3:1 to the card */

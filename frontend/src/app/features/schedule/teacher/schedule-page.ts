@@ -61,6 +61,7 @@ import { RequestAnswerDialog } from './request-answer-dialog';
 import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
@@ -148,6 +149,7 @@ const ALL_DAY_START_HOUR = 10;
                 <tb-avatar
                   [name]="request.studentName ?? c.student"
                   [photo]="request.studentAvatar"
+                  [color]="colors.student(request.studentId)"
                 />
                 <div class="tb-list__text">
                   <span class="tb-list__title">
@@ -183,7 +185,11 @@ const ALL_DAY_START_HOUR = 10;
           <ul class="tb-list">
             @for (lesson of unmarked(); track lesson.id) {
               <li [class.tb-list__item--link]="mobile()">
-                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
+                <tb-avatar
+                  [name]="with(lesson)"
+                  [photo]="lesson.studentAvatar"
+                  [color]="colors.owner(lesson.studentId, lesson.groupId)"
+                />
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ with(lesson) }}</span>
                   <span class="tb-list__supporting">{{ time(lesson) }}</span>
@@ -470,6 +476,7 @@ const ALL_DAY_START_HOUR = 10;
 export class SchedulePage implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.page;
+  protected readonly colors = inject(TeacherColors);
   protected readonly marks = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);

@@ -17,6 +17,7 @@ import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: submitted tasks waiting for review, oldest first — a card per work. */
@@ -35,7 +36,11 @@ import { T } from '../i18n/texts';
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (item of items(); track item.taskId) {
               <li>
-                <tb-avatar [name]="item.studentName" [photo]="item.studentAvatar" />
+                <tb-avatar
+                  [name]="item.studentName"
+                  [photo]="item.studentAvatar"
+                  [color]="colors.student(item.studentId)"
+                />
                 <div class="tb-list__text">
                   <a
                     class="tb-list__title tb-link"
@@ -57,6 +62,7 @@ import { T } from '../i18n/texts';
 })
 export class ReviewQueuePage implements OnInit {
   protected readonly t = T.queue;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(HomeworkApi);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 

@@ -26,6 +26,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: income and lessons of a month. */
@@ -152,7 +153,11 @@ import { T } from '../i18n/texts';
                   <td [attr.data-label]="t.date">{{ entry.lesson.date | date: 'dd.MM.yyyy' }}</td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
+                      <tb-avatar
+                        [name]="entry.studentName"
+                        [photo]="entry.studentAvatar"
+                        [color]="colors.student(entry.lesson.studentId)"
+                      />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>
@@ -204,7 +209,11 @@ import { T } from '../i18n/texts';
                   </td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar [name]="entry.studentName" [photo]="entry.studentAvatar" />
+                      <tb-avatar
+                        [name]="entry.studentName"
+                        [photo]="entry.studentAvatar"
+                        [color]="colors.student(entry.payment.studentId)"
+                      />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ entry.studentName }}</span>
                       </div>
@@ -232,6 +241,7 @@ import { T } from '../i18n/texts';
 })
 export class MonthlyReportPage implements OnInit {
   protected readonly t = T.report;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);
   private readonly destroyRef = inject(DestroyRef);
 

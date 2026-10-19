@@ -28,6 +28,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { formatMoney } from '@shared/money/money';
 import { T } from '../i18n/texts';
@@ -117,7 +118,11 @@ import { T } from '../i18n/texts';
             <ul class="tb-list" [attr.aria-label]="t.balances">
               @for (row of rows(); track row.studentId) {
                 <li>
-                  <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                  <tb-avatar
+                    [name]="row.displayName"
+                    [photo]="row.avatar"
+                    [color]="colors.student(row.studentId)"
+                  />
                   <div class="tb-list__text">
                     <a [routerLink]="['students', row.studentId]" class="tb-list__title tb-link">{{
                       row.displayName
@@ -167,6 +172,7 @@ import { T } from '../i18n/texts';
 })
 export class BillingOverviewPage implements OnInit {
   protected readonly t = T.overview;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);

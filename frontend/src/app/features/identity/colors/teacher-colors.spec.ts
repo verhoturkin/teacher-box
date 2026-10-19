@@ -42,6 +42,8 @@ describe('TeacherColors', () => {
     expect(colors.owner('s-1', null)).toBe('RED');
     expect(colors.owner('s-1', 'g-1')).toBe('PURPLE');
     expect([...colors.all('group').keys()]).toEqual(['g-1']);
+    expect(colors.groupLabel('g-1')).toBe('purple');
+    expect(colors.groupLabel('g-2')).toBeNull();
   });
 
   it('remembers a colour saved in a dialog', () => {

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { LabelColor } from '@core/theme/label-colors';
+import { LabelColor, labelKey } from '@core/theme/label-colors';
 import { IdentityApi } from '../data-access/identity-api';
 
 type Colors = ReadonlyMap<string, LabelColor>;
@@ -47,6 +47,12 @@ export class TeacherColors {
   /** The colour of a group; `null`: none. */
   group(id: string | null | undefined): LabelColor | null {
     return id == null ? null : (this.groups().get(id) ?? null);
+  }
+
+  /** `data-tb-label` of a group's lead (the group icon in a list); `null`: none. */
+  groupLabel(id: string): string | null {
+    const color = this.group(id);
+    return color === null ? null : labelKey(color);
   }
 
   /** The colours of all students or all groups by id. */

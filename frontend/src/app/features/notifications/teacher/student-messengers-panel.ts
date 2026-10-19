@@ -19,6 +19,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: which students connected a messenger, delivery problems and a reminder to connect. */
@@ -67,7 +68,11 @@ import { T } from '../i18n/texts';
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                      <tb-avatar
+                        [name]="row.displayName"
+                        [photo]="row.avatar"
+                        [color]="colors.student(row.studentId)"
+                      />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ row.displayName }}</span>
                       </div>
@@ -131,6 +136,7 @@ import { T } from '../i18n/texts';
 })
 export class StudentMessengersPanel implements OnInit {
   protected readonly t = T.students;
+  protected readonly colors = inject(TeacherColors);
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
 

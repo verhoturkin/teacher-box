@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Card } from 'primeng/card';
 import { BoardLinks } from '@features/boards/parts';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { lessonWith } from '../schedule-labels';
 import { LessonTimeTile } from '../ui/lesson-time-tile';
@@ -28,7 +29,12 @@ import { T } from '../i18n/texts';
         }
         <div class="tb-lesson-event__info">
           <div class="tb-lesson-event__who">
-            <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" size="2rem" />
+            <tb-avatar
+              [name]="with(next)"
+              [photo]="next.studentAvatar"
+              [color]="colors.owner(next.studentId, next.groupId)"
+              size="2rem"
+            />
             <strong>{{ with(next) }}</strong>
           </div>
           @if (next.topic !== null) {
@@ -111,6 +117,7 @@ import { T } from '../i18n/texts';
 })
 export class UpcomingLessonWidget {
   protected readonly t = T.upcoming;
+  protected readonly colors = inject(TeacherColors);
   readonly lesson = input.required<ScheduledLesson>();
   /** The lesson is over: the home page loads the next one. */
   readonly over = output();

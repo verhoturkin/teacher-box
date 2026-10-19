@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   linkedSignal,
   output,
@@ -26,6 +27,8 @@ import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import enGbLocale from 'fullcalendar/locales/en-gb';
 import ruLocale from 'fullcalendar/locales/ru';
 import { injectMobile } from '@core/layout/mobile';
+import { labelKey } from '@core/theme/label-colors';
+import { TeacherColors } from '@features/identity/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { BusyTime, OffTimePeriod, ScheduledLesson } from '../data-access/schedule.models';
 import { Language, language } from '@core/i18n/language';
@@ -106,6 +109,7 @@ export class ScheduleCalendar {
   readonly lessonMove = output<LessonMove>();
 
   private readonly mobile = injectMobile();
+  private readonly colors = inject(TeacherColors);
 
   /** The dropped lesson waiting for confirmation; new lessons (a reload after saving) drop it. */
   private readonly pending = linkedSignal<readonly ScheduledLesson[], PendingMove | null>({
@@ -232,6 +236,11 @@ export class ScheduleCalendar {
     const pending = this.pending();
     const moved = pending?.lesson.id === lesson.id ? pending : null;
     const classes = lessonClasses(lesson);
+    // the colour of the student or the group (the teacher's calendar)
+    const color = this.colors.owner(lesson.studentId, lesson.groupId);
+    if (color !== null) {
+      classes.push('tb-label', `tb-label--${labelKey(color)}`);
+    }
     if (moved !== null) {
       classes.push('tb-lesson--moving');
     }

@@ -16,7 +16,7 @@ import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
-import { GroupPicker } from '@features/identity/parts';
+import { ChipColors, GroupPicker } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
@@ -40,6 +40,7 @@ export interface Recipient {
     InputText,
     Message,
     MultiSelect,
+    ChipColors,
     Textarea,
     FieldErrors,
     SubmitFor,
@@ -73,6 +74,7 @@ export interface Recipient {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />

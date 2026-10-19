@@ -43,6 +43,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { Avatar } from '@shared/ui/avatar';
+import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /** Teacher: one assignment — text, materials and progress of every student. */
@@ -176,7 +177,11 @@ import { T } from '../i18n/texts';
             <ul class="tb-list" [attr.aria-label]="t.students">
               @for (task of assignment.tasks; track task.taskId) {
                 <li>
-                  <tb-avatar [name]="task.studentName" [photo]="task.studentAvatar" />
+                  <tb-avatar
+                    [name]="task.studentName"
+                    [photo]="task.studentAvatar"
+                    [color]="colors.student(task.studentId)"
+                  />
                   <div class="tb-list__text">
                     <a
                       class="tb-list__title tb-link"
@@ -241,6 +246,7 @@ import { T } from '../i18n/texts';
 })
 export class AssignmentPage implements OnInit {
   protected readonly t = T.page;
+  protected readonly colors = inject(TeacherColors);
   protected readonly tv = T.videos;
   protected readonly r = T.remove;
   private readonly api = inject(HomeworkApi);

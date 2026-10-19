@@ -21,6 +21,7 @@ import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
+import { ChipColors } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
 import { describeError } from '@core/http/error-messages';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -58,6 +59,7 @@ export interface BoardDefaults {
     InputText,
     Message,
     MultiSelect,
+    ChipColors,
     SelectButton,
     FieldErrors,
     SubmitFor,
@@ -124,6 +126,7 @@ export interface BoardDefaults {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="student"
             appendTo="body"
             [fluid]="true"
           />
@@ -141,6 +144,7 @@ export interface BoardDefaults {
             [filterPlaceHolder]="t.search"
             [ariaFilterLabel]="t.search"
             display="chip"
+            tbChipColors="group"
             appendTo="body"
             [fluid]="true"
           />
