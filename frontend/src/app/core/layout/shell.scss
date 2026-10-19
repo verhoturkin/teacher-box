@@ -23,7 +23,7 @@
     background: var(--p-md-surface);
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     padding-left: var(--tb-space-4);
   }
 
@@ -52,7 +52,7 @@
     text-overflow: ellipsis;
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     font: var(--tb-type-title-m);
   }
 }
@@ -98,7 +98,7 @@
   padding: var(--tb-space-2) var(--tb-space-6) var(--tb-space-8);
   box-sizing: border-box;
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     padding: var(--tb-space-4) var(--tb-space-3);
   }
 }

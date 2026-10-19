@@ -8,7 +8,7 @@ import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
 import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
 import { Shell } from './shell';
-import { tabletScreen, testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
 
 describe('Shell', () => {
@@ -17,7 +17,7 @@ describe('Shell', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: testProviders(),
+      providers: testProviders(screenWidth(1600)),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
@@ -68,7 +68,7 @@ describe('Shell', () => {
     expect(button()?.textContent).toContain('Ника');
   });
 
-  it('puts the sections in the expanded rail on a wide screen', () => {
+  it('puts the sections in the expanded rail on an extra-large screen (D5)', () => {
     const nav = hostElement(fixture).querySelector('tb-side-nav');
     expect(nav?.classList).not.toContain('tb-side-nav--rail');
     expect(nav?.textContent).toContain('Ученики');
@@ -162,25 +162,44 @@ describe('Shell', () => {
   });
 });
 
-describe('Shell on a tablet', () => {
-  it('puts the sections in the rail', async () => {
+describe('Shell by the M3 breakpoint (ADR-0048)', () => {
+  async function render(width: number): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
-      providers: testProviders(tabletScreen()),
+      providers: testProviders(screenWidth(width)),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     const fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
     fixture.componentRef.setInput('homeLink', '/teacher');
     await fixture.whenStable();
+    return hostElement(fixture);
+  }
 
-    const host = hostElement(fixture);
-    expect(host.querySelector('tb-side-nav')?.classList).toContain('tb-side-nav--rail');
-    expect(host.querySelector('nav.tb-bottom-nav')).toBeNull();
+  it.each([
+    [599, 'bar'],
+    [600, 'rail'],
+    [839, 'rail'],
+    [840, 'rail'],
+    [1199, 'rail'],
+    [1200, 'rail'],
+    [1599, 'rail'],
+    [1600, 'expanded rail'],
+  ])('at %i px shows the %s', async (width, navigation) => {
+    const host = await render(width);
+
+    const nav = host.querySelector('tb-side-nav');
+    expect(host.querySelector('nav.tb-bottom-nav') !== null).toBe(navigation === 'bar');
+    expect(nav !== null).toBe(navigation !== 'bar');
+    expect(nav?.classList.contains('tb-side-nav--rail') ?? false).toBe(navigation === 'rail');
+  });
+
+  it('keeps the name on the user button from medium', async () => {
+    const host = await render(600);
+
     const user = requireElement(host, '.tb-shell__user-button', HTMLButtonElement);
     expect(user.textContent).toContain('Анна');
     // the visible name is the start of the accessible one (WCAG 2.5.3)
     expect(user.getAttribute('aria-label')).toMatch(/^Анна.*: меню пользователя$/);
-    fixture.destroy();
   });
 });

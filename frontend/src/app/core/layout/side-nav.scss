@@ -1,5 +1,5 @@
 /*
- * The expanded navigation rail (M3 Expressive, ADR-0019): 280 px, items 56 px high and 4 px apart,
+ * The expanded navigation rail (M3 Expressive, ADR-0019) from extra-large, 1600 px (ADR-0048, D5): 280 px, items 56 px high and 4 px apart,
  * the pill indicator of the active section springs out from its middle. The state layer of hover
  * and focus lies over the indicator, the focus ring is around the item (ADR-0024).
  */
@@ -101,7 +101,7 @@
   }
 }
 
-/* The collapsed rail (M3E, ADR-0044): 96 px, the label under the icon, the 56x32 indicator around the icon */
+/* The collapsed rail (M3E, ADR-0044) from medium to large, 600–1599 px: 96 px, the label under the icon, the 56x32 indicator around the icon */
 :host(.tb-side-nav--rail) {
   width: 96px;
   padding: var(--tb-space-2) 0;

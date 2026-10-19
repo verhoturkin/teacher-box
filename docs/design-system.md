@@ -272,14 +272,19 @@ component that shows one adds it to `PRIME`).
 
 ## 4. Layout and navigation
 
-- **Breakpoints** (em ranges, same in CSS and `mobile.ts`, no gaps):
+- **Breakpoints** — M3 (600 / 840 / 1200 / 1600 px, ADR-0048); em ranges, same in CSS and `mobile.ts`
+  (`BREAKPOINT_QUERIES`, `injectWindowSize()`), no gaps:
 
   | Window | Query | Navigation | Main action |
   |---|---|---|---|
-  | compact (phone) | `width <= 48em` | bottom bar: four sections + «Ещё» | extended FAB above the bar |
-  | medium | `48em < width < 75em` | navigation rail 96 px (icon + label) | button in page header |
-  | expanded | `width >= 75em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
+  | compact (phone) | `width < 37.5em` | bottom bar: four sections + «Ещё» | extended FAB above the bar |
+  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | button in page header |
+  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | button in page header |
+  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | button in page header |
+  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | button in page header |
 
+  Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
+  keeps 13rem from large. Panes, regions and «Создать» by breakpoint — redesign spec §3 (230.2–231).
   No other breakpoints (480 px is gone). Below 30em height the top bar is not sticky.
 - **Bottom bar:** four sections of the role (`NAV_ITEMS` in `shell.ts`) — «Главная», «Расписание», «Доски» («Мои доски»), «Оплаты»
   (`TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV`; the rail keeps the menu order), then «Ещё» (other sections,
@@ -468,7 +473,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     one, e.g. 96 px in the «Мой аккаунт» hero; 0.9.2: the teacher has a photo too), an icon for things;
     0.15.2: a list whose icon only decorates (tasks, boards, textbooks, calls, notifications, requests, lessons
     of the student, recurring lessons and days off, payments, AI requests and prompts) takes `tb-list--no-phone-lead`:
-    on the phone (≤ 48em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
+    on the phone (< 37.5em) the icon goes and the text starts at the tile's edge; lists of people keep avatars;
     0.15.3: notifications (the home card and the inbox) have no icon at all — `tb-list--no-lead`; on the phone an
     unread one is marked read by a swipe sideways (`tbSwipe`, `@shared/ui/swipe`: follows the finger and fades,
     ≥ 30 % of the width marks it, otherwise it comes back; vertical moves stay the scroll); 0.15.4: on the phone

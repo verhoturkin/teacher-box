@@ -535,7 +535,7 @@ textarea.p-textarea {
   margin: 0 0 var(--tb-space-4);
   font: var(--tb-type-headline-m-emphasized);
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     font: var(--tb-type-headline-s-emphasized);
   }
 }
@@ -920,7 +920,7 @@ textarea.p-textarea {
   justify-content: flex-end;
   gap: var(--tb-space-2);
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     > p-button,
     > .p-button {
       flex: 1 1 auto;
@@ -1060,7 +1060,7 @@ textarea.p-textarea {
  * phone the icon goes away and the text takes its place, so the title gets the width. Avatars of
  * people stay — such lists do not take the modifier.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .tb-list--no-phone-lead {
     grid-template-columns: minmax(0, 1fr) auto;
 
@@ -1357,7 +1357,7 @@ p-button.tb-list__stretched .p-button {
   cursor: pointer;
 }
 
-/* The main column of a list (a name, a title) is not squeezed by the others on a computer */
+/* The main column of a list (a name, a title) is not squeezed by the others from large (M3, 1200 px) */
 @media (width >= 75em) {
   .tb-col-main {
     min-width: 13rem;
@@ -1597,7 +1597,7 @@ a.p-menu-item-link:hover {
     min-width: 16rem;
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     flex-direction: column;
     align-items: stretch;
 
@@ -2311,7 +2311,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * a line "column: value" (the label comes from data-label), the first cell is the title and the
  * action buttons are at the bottom of the card.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   /* Search fills the width of the toolbar */
   .tb-toolbar > tb-search-field {
     width: 100%;
@@ -2341,8 +2341,8 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-/* Tables on a tablet: narrower cell padding leaves room for the columns next to the rail */
-@media (48em < width < 75em) {
+/* Tables on medium and expanded: narrower cell padding leaves room for the columns next to the rail */
+@media (37.5em <= width < 75em) {
   .p-datatable .p-datatable-thead > tr > th,
   .p-datatable .p-datatable-tbody > tr > td {
     padding-inline: var(--tb-space-2);
@@ -2363,7 +2363,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
  * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   p-button.tb-page-fab {
     position: fixed;
     right: var(--tb-space-4);
@@ -2425,7 +2425,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
  */
 .p-toast.p-toast-bottom-center {
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2)
     ) !important;
@@ -2433,7 +2433,7 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-@media (width <= 48em) {
+@media (width < 37.5em) {
   body:has(p-button.tb-page-fab, tb-fab-menu) .p-toast.p-toast-bottom-center {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
@@ -2523,7 +2523,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
  * or none: a password, a link) stay ordinary windows in the middle of the screen.
  */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
     width: 100vw !important;
     max-width: 100vw;
@@ -2571,7 +2571,7 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* Page headers and key figures on a phone (ADR-0015): buttons fill the width, figures are smaller */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   /*
    * A section page has no title line on a phone (0.9.2): the navigation names the section, the room
    * goes to the content. The title stays for screen readers; its «?» is in the user menu («Справка»).
@@ -2881,7 +2881,7 @@ full-calendar :has(> .tb-lesson--moving) {
     padding: 0 var(--tb-space-6) var(--tb-space-6);
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     inset: 0;
     width: 100vw;
     border-radius: 0;
@@ -2989,7 +2989,7 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* On a phone the titles of the lessons are cut with an ellipsis, not in the middle of a word */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .fc .fc-event-title,
   .fc .fc-list-event-title {
     overflow: hidden;
@@ -3206,7 +3206,7 @@ full-calendar :has(> .tb-lesson--moving) {
     color: var(--p-md-on-surface-variant);
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     &--screen {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr auto;
@@ -3274,7 +3274,7 @@ full-calendar :has(> .tb-lesson--moving) {
     outline-offset: 2px;
   }
 
-  @media (width <= 48em) {
+  @media (width < 37.5em) {
     width: 7rem;
     aspect-ratio: 3 / 4;
   }
@@ -3416,7 +3416,7 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
-@media (width <= 48em) {
+@media (width < 37.5em) {
   .p-button.tb-call-button.tb-call-button {
     --tb-call-button-selected-shape: var(--tb-shape-md);
     --tb-call-button-pressed-shape: var(--tb-shape-sm);
@@ -3574,7 +3574,7 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /* On a phone the bar of a call sits where the FAB was: the FAB moves above it */
-@media (width <= 48em) {
+@media (width < 37.5em) {
   :root:has(.tb-call-mini--bar) p-button.tb-page-fab {
     bottom: calc(
       var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 4rem

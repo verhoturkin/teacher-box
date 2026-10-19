@@ -4,7 +4,7 @@ import { MenuItem } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { bodyText, hostElement, requireElement } from '@testing/dom';
-import { phoneScreen, testProvidersWithRouter } from '@testing/setup';
+import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { Shell } from './shell';
 import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
 import { TEACHER_BOTTOM_NAV, TEACHER_MENU } from './teacher-layout';
@@ -20,7 +20,7 @@ describe('Shell on a phone', () => {
       imports: [Shell],
       providers: testProvidersWithRouter(
         provideRouter([{ path: '**', children: [] }]),
-        phoneScreen(),
+        screenWidth(599),
       ),
     });
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));

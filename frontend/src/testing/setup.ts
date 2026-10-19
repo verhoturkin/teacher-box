@@ -6,7 +6,6 @@ import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { of } from 'rxjs';
-import { MEDIUM_QUERY } from '@core/layout/mobile';
 
 type TestProvider = Provider | EnvironmentProviders;
 
@@ -41,12 +40,47 @@ export function phoneScreen(): Provider {
   };
 }
 
-/** A tablet's screen: the navigation rail instead of the drawer (ADR-0017). */
-export function tabletScreen(): Provider {
+/** One bound of a media query in px: `width < 37.5em`, `52.5em <= width`, `width >= 100em`. */
+function bound(width: number, condition: string): boolean {
+  const left = /^([\d.]+)em (<=?) width$/.exec(condition);
+  if (left) {
+    const px = Number(left[1]) * 16;
+    return left[2] === '<' ? px < width : px <= width;
+  }
+  const right = /^width (<=?|>=?) ([\d.]+)em$/.exec(condition);
+  if (!right) {
+    return false;
+  }
+  const px = Number(right[2]) * 16;
+  switch (right[1]) {
+    case '<':
+      return width < px;
+    case '<=':
+      return width <= px;
+    case '>':
+      return width > px;
+    default:
+      return width >= px;
+  }
+}
+
+/** Whether a width query (`(37.5em <= width < 52.5em)`, `(width >= 100em)`) holds at `width` px and 16 px em. */
+function matchesWidth(query: string, width: number): boolean {
+  const range = /^\(([\d.]+em <=? )?width( [<>]=? [\d.]+em)?\)$/.exec(query);
+  if (!range || (!range[1] && !range[2])) {
+    return false;
+  }
+  const from = range[1] ? bound(width, `${range[1]}width`) : true;
+  const to = range[2] ? bound(width, `width${range[2]}`) : true;
+  return from && to;
+}
+
+/** A window `width` px wide at the usual font (16 px em): every width query is answered for it (ADR-0048). */
+export function screenWidth(width: number): Provider {
   return {
     provide: BreakpointObserver,
     useValue: {
-      observe: (query: string) => of({ matches: query === MEDIUM_QUERY, breakpoints: {} }),
+      observe: (query: string) => of({ matches: matchesWidth(query, width), breakpoints: {} }),
     },
   };
 }

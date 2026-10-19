@@ -4,9 +4,9 @@ import { MenuItem } from 'primeng/api';
 import { CORE_T } from '@core/i18n/texts';
 
 /**
- * The sections of the role on a wide screen (ADR-0017, ADR-0019, ADR-0024): the expanded
- * navigation rail with icons and labels in a row, or the narrow navigation rail with the label under
- * the icon. It is a list of links (not a menu): Tab goes through the sections, the current one is
+ * The sections of the role from medium (ADR-0017, ADR-0019, ADR-0024): the expanded navigation rail
+ * with icons and labels in a row from extra-large, the collapsed rail with the label under the icon
+ * below it (ADR-0048, D5). It is a list of links (not a menu): Tab goes through the sections, the current one is
  * `aria-current="page"` and has the pill indicator.
  */
 @Component({

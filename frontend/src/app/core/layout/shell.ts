@@ -40,8 +40,9 @@ const NAV_ITEMS = 4;
 
 /**
  * Application frame (ADR-0017, ADR-0019): the top app bar (kept at the top) with the portal, the
- * bell and the user menu; the sections of the role in the expanded navigation rail on a wide
- * screen, in the rail on a tablet and in the bottom navigation on a phone; the routed content.
+ * bell and the user menu; the sections of the role in the expanded navigation rail from extra-large,
+ * in the collapsed rail from medium to large (ADR-0048, D5) and in the bottom navigation on compact;
+ * the routed content.
  */
 /** An item of a choice in a menu (the theme, the language) and the chosen one. */
 const CHOICE = 'tb-menu-item--choice';
@@ -112,7 +113,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [rail]="size() === 'medium'" />
+        <tb-side-nav [items]="items()" [rail]="size() !== 'extra-large'" />
       }
       <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
         <router-outlet />
