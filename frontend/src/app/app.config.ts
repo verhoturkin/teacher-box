@@ -28,6 +28,7 @@ import { Language, language, locale } from '@core/i18n/language';
 import { languageInterceptor } from '@core/i18n/language.interceptor';
 import { PRIMENG_EN } from '@core/i18n/primeng-en';
 import { PRIMENG_RU } from '@core/i18n/primeng-ru';
+import { NOTIFICATIONS_SHEET_CONTENT } from '@core/notifications/notifications-sheet-state';
 import { Portal } from '@core/portal/portal';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
@@ -67,6 +68,12 @@ export const appConfig: ApplicationConfig = {
       ripple: true,
     }),
     MessageService,
+    // the bell's sheet in the frame shows the tabs of the notifications feature, loaded when it opens
+    {
+      provide: NOTIFICATIONS_SHEET_CONTENT,
+      useValue: () =>
+        import('@features/notifications/parts').then((m) => m.NotificationsSheetContent),
+    },
     { provide: LOCALE_ID, useFactory: locale },
     { provide: TitleStrategy, useClass: AppTitleStrategy },
   ],

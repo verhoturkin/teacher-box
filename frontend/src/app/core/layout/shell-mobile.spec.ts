@@ -51,7 +51,12 @@ describe('Shell on a phone', () => {
     button.click();
     await fixture.whenStable();
     // jsdom runs no animation: the drawer is shown as when its animation ends
-    fixture.debugElement.query(By.directive(Drawer)).injector.get(Drawer).show();
+    // (the other drawer of the frame is the bell's sheet)
+    fixture.debugElement
+      .queryAll(By.directive(Drawer))
+      .map((element) => element.injector.get(Drawer))
+      .find((drawer) => drawer.styleClass === 'tb-modal-rail')
+      ?.show();
     return requireElement(document.body, '.p-drawer.tb-modal-rail', HTMLElement);
   }
 

@@ -91,6 +91,10 @@ export const en: Translation<typeof ru> = {
     noRead: 'No read notifications',
     readList: 'Read notifications',
   },
+  sheet: {
+    inbox: 'Inbox',
+    sent: 'Sent',
+  },
   page: {
     title: 'Notifications',
     inbox: 'Inbox',

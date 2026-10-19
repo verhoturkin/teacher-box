@@ -150,11 +150,12 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
   const student = await studentPage(browser);
   await student
     .locator('tb-notification-bell')
-    .getByRole('link', { name: /^Уведомления/ })
+    .getByRole('button', { name: /^Уведомления/ })
     .click();
-  await expect(student).toHaveURL(/\/cabinet\/notifications$/);
-  await expect(student.getByText('Получена оплата 3 000 ₽')).toBeVisible({ timeout: 20_000 });
-  await expect(student.getByText(`Новое задание: «${HOMEWORK_TITLE}»`)).toBeVisible();
+  // the bell opens its side sheet with the inbox (0.22.0)
+  const sheet = student.getByRole('dialog', { name: 'Уведомления' });
+  await expect(sheet.getByText('Получена оплата 3 000 ₽')).toBeVisible({ timeout: 20_000 });
+  await expect(sheet.getByText(`Новое задание: «${HOMEWORK_TITLE}»`)).toBeVisible();
 });
 
 test('a lesson marked in the schedule is charged', async ({ page }) => {

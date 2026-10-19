@@ -15,7 +15,6 @@ const PAGES = [
   '/teacher/schedule',
   '/teacher/homework',
   '/teacher/billing',
-  '/teacher/notifications',
   '/teacher/settings',
   '/teacher/account',
 ];

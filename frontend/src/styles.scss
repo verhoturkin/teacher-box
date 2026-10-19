@@ -2893,6 +2893,85 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
+/* The bell's sheet (redesign spec §10.3): M3 side sheet at most 400 dp */
+.p-drawer.tb-side-sheet--narrow {
+  width: min(25rem, calc(100vw - 2 * var(--tb-space-4)));
+
+  @media (width < 37.5em) {
+    width: 100vw;
+  }
+}
+
+/*
+ * M3 primary tabs (the bell's sheet): equal sections 48 dp high over a 1 dp outline-variant divider; the
+ * label in Title Small, primary when active, on-surface-variant otherwise; the active indicator is 3 dp of
+ * primary with 3 dp top corners, inset 2 dp on each side. The badge sits 4 dp after the label.
+ */
+.tb-tabs {
+  display: block;
+
+  .p-tablist-tab-list {
+    position: relative;
+    border-bottom: 1px solid var(--p-md-outline-variant);
+    background: transparent;
+  }
+
+  .p-tab {
+    display: inline-flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    gap: var(--tb-space-1);
+    box-sizing: border-box;
+    min-height: 3rem;
+    margin: 0;
+    padding: 0 var(--tb-space-4);
+    border: none;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-title-s);
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--p-md-secondary);
+      outline-offset: -2px;
+    }
+  }
+
+  .p-tab-active {
+    color: var(--p-md-primary);
+  }
+
+  .p-tablist-active-bar {
+    bottom: 0;
+    box-sizing: border-box;
+    height: 3px;
+    /* inset 2 dp inside the width PrimeNG gives the bar */
+    border-inline: 2px solid transparent;
+    border-radius: 5px 5px 0 0;
+    background: var(--p-md-primary) padding-box;
+  }
+
+  .p-tablist-prev-button,
+  .p-tablist-next-button {
+    display: none;
+  }
+
+  .p-tabpanels {
+    padding: var(--tb-space-4) 0 0;
+    background: transparent;
+  }
+
+  .p-tabpanel:focus-visible {
+    outline: 2px solid var(--p-md-secondary);
+    outline-offset: 2px;
+  }
+}
+
 .tb-side-sheet__head {
   display: flex;
   flex: 1;

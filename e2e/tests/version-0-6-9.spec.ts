@@ -1,8 +1,8 @@
 import { type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.6.9: fixes of 0.6.8 (ADR-0021) — the notifications and the help are as wide as the
- * other sections and the contents of the help mark the current article.
+ * Version 0.6.9: fixes of 0.6.8 (ADR-0021) — the contents of the help mark the current article. (The
+ * notifications page went into the bell's sheet in 0.22.0, the help became list-detail in 0.21.0.)
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -15,21 +15,6 @@ async function signIn(page: Page, login: string, password: string, width: number
   await page.getByRole('button', { name: 'Войти' }).click();
   await expect(page).not.toHaveURL(/\/login/);
 }
-
-async function widthOfFirstCard(page: Page, path: string): Promise<number> {
-  await page.goto(path);
-  const card = page.locator('main .p-card, main tb-fold-card').first();
-  await expect(card).toBeVisible();
-  return Math.round((await card.boundingBox())?.width ?? 0);
-}
-
-test('the notifications and the help are as wide as the other sections', async ({ page }) => {
-  await signIn(page, 'teacher', TEACHER_PASSWORD, 1440);
-  const schedule = await widthOfFirstCard(page, '/teacher/schedule');
-
-  expect(await widthOfFirstCard(page, '/teacher/notifications')).toBe(schedule);
-  // the help is list-detail from 0.21.0: version-0-21-0.spec.ts checks its panes
-});
 
 test('the contents of the help mark the article and lead to another one', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1440);

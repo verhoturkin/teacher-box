@@ -18,7 +18,6 @@ const PAGES = [
   '/teacher/homework/new',
   '/teacher/billing',
   '/teacher/billing/report',
-  '/teacher/notifications',
   '/teacher/settings',
   '/teacher/account',
 ];

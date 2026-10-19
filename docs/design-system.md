@@ -339,7 +339,7 @@ component that shows one adds it to `PRIME`).
   category's detail is a stack of `p-card`s, no fold cards. Integrations live only here (ADR-0048): there are no
   Calls or AI sections. The old addresses redirect to their category: `?open=<fold>`, `?google=` (→
   calendar), `?drive=` (→ data), `/teacher/account`, `/teacher/calls`, `/teacher/ai` and the messenger tabs of
-  «Уведомления» (`?open=` / `?tab=` → messengers).
+  «Уведомления» (`?open=` / `?tab=` → messengers); its other addresses open the bell's sheet (§8).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
   Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
@@ -380,8 +380,8 @@ component that shows one adds it to `PRIME`).
   (name — value, table columns, row buttons, filter fields).
 - **Foldable sections** `tb-fold-card` (not tabs): header is a button with chevron and a line of explanation;
   content loads on first open; open sections in the URL (`?open=`). Still used by the administrator's
-  «Настройки» (`admin/settings`, until 247.2) and the teacher's «Уведомления» (inbox and broadcasts,
-  non-collapsible, until 235). The teacher's settings are list-detail (§ panes above), not fold cards.
+  «Настройки» (`admin/settings`, until 247.2). The teacher's settings are list-detail (§ panes above) and the
+  teacher's notifications are in the bell's sheet (§8), not fold cards.
 
 ## 5. Page anatomy
 
@@ -503,6 +503,18 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
   (Title Large) and «×». A link of a help article to another one opens it in the sheet («←» returns); other links
   close the sheet and open their page. On a phone — the whole screen, no corners.
+- **Notifications sheet of the bell** (235.1, redesign spec §10.3): the bell (`core/notifications`) is a button
+  that opens and closes `tb-notifications-sheet` (`aria-expanded`). On extra-large it is the **non-modal** M3
+  standard side sheet, the third pane of the frame (≤ 400 dp, surface container low, 28 dp corners and 24 dp
+  margins like `tb-pane kind="sheet"` — *ours*); it takes the focus when it opens, «×» or Esc closes it and gives
+  the focus back, and it stays open across pages. Below it is the modal `tb-side-sheet tb-side-sheet--narrow`
+  (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
+  teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
+  inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
+  2 dp, 1 dp outline-variant divider. `?notifications=inbox|sent` opens the sheet on any page and is dropped
+  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=…` (with `?create=message` — the sent
+  tab, other parameters kept). The frame gets the feature's content through `NOTIFICATIONS_SHEET_CONTENT`
+  (provided in `app.config.ts`), so core/ imports no feature.
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
 - **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and

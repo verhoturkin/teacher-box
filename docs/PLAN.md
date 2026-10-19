@@ -52,14 +52,15 @@ navigation; notifications live in the bell's side sheet. ADR: none (0048).
 
 ### 235. Notifications in the bell (F)
 
-- [ ] 235.1 **F** Spec §10.3 «Bell»: `core/notifications/notification-bell.ts` opens a side sheet (pattern of
+- [x] 235.1 **F** Spec §10.3 «Bell»: `core/notifications/notification-bell.ts` opens a side sheet (pattern of
   `help/help-button.ts`; non-modal third pane on extra-large) with tabs «Входящие» (`notifications/inbox/inbox-panel.ts`)
-  and «Отправленные» (`teacher/broadcasts-panel.ts`); compact — full screen. `/teacher/notifications` and
-  `/cabinet/notifications` redirect to the home page with the sheet open (check `Portal.link(` targets in the
-  backend).
+  and «Отправленные» (`teacher/broadcasts-panel.ts`); compact — full screen. `/teacher/notifications` redirects to
+  the home page with the sheet open (`?notifications=inbox|sent`; backend `Portal.link(` targets checked).
 - [ ] 235.2 **F** Remove «Уведомления» from `TEACHER_MENU` and `STUDENT_MENU`, `notifications/home/latest-notifications-widget.ts`
   from both home pages, `notifications-page.ts`; the student's messenger linking and preferences move to the
-  student's «Мой аккаунт» (`account-page.ts`, spec §10.4).
+  student's «Мой аккаунт» (`account-page.ts`, spec §10.4); `/cabinet/notifications` redirects to the home page with
+  the sheet open, and `connect-messenger-card.ts` and the backend «connect» reminder
+  (`NotificationService.remindToConnect`) point to «Мой аккаунт».
 - [ ] 235.3 **F** «Создать › Сообщение» opens `broadcast-dialog.ts` directly (replaces the 232.1 route).
 - [ ] 235.4 **D** design-system, help (ru, en), wiki (notifications, bots).
 

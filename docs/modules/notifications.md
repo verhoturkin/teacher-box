@@ -65,8 +65,10 @@ ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink
 
 ## Frontend
 
-`features/notifications/`: `notifications-page` (teacher: inbox and messages to students; 0.22.0 the old
-`?open=` / `?tab=` messenger addresses redirect to `/teacher/settings/messengers`), `teacher/messengers-settings-panel.ts`
+`features/notifications/`: `notifications-page` (the student: inbox, messengers, what to send — until 235.2),
+`sheet/notifications-sheet-content.ts` (the bell's side sheet, 235.1: the teacher's tabs «Входящие» / «Отправленные»,
+the student's inbox; `/teacher/notifications` leads to `/teacher?notifications=inbox|sent`, the old `?open=` /
+`?tab=` messenger addresses to `/teacher/settings/messengers`), `teacher/messengers-settings-panel.ts`
 = the settings category «Мессенджеры» (bots, own messengers, bot abilities, students' messengers, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
 opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `channels/`, `preferences/`, `teacher/` (broadcast, bot wizard), `student/`,
-`home/` widget (only unread notifications: ✓ each, «Прочитать все» in the title), `notification-labels.ts`; bell in the top bar.
+`home/` widget (only unread notifications: ✓ each, «Прочитать все» in the title), `notification-labels.ts`; the bell in the top bar (`core/notifications`) opens the sheet.

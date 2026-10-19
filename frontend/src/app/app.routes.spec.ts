@@ -5,6 +5,7 @@ import { Router, TitleStrategy, provideRouter, withComponentInputBinding } from 
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { AuthService } from '@core/auth/auth.service';
+import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
 import { portalSettings } from '@testing/portal-fixtures';
@@ -219,21 +220,35 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(text()).toContain('Мой аккаунт');
   });
 
-  it('opens the notifications page in both areas', async () => {
+  it('opens the student’s notifications page', async () => {
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/notifications');
     expect(title()).toBe('Уведомления — Teacher Box');
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
 
+  it.each([
+    ['/teacher/notifications', '/teacher', 'inbox'],
+    ['/teacher/notifications?tab=inbox', '/teacher', 'inbox'],
+    ['/teacher/notifications?create=message', '/teacher?create=message', 'sent'],
+  ])('leads %s to the home page with the bell’s sheet open: %s, %s', async (from, to, tab) => {
     auth.acceptSession(authResponse('TEACHER'));
-    await harness.navigateByUrl('/teacher/notifications');
-    expect(title()).toBe('Уведомления — Teacher Box');
+
+    await harness.navigateByUrl(from);
+
+    await vi.waitFor(() => {
+      expect(TestBed.inject(Router).url).toBe(to);
+    });
+    const sheet = TestBed.inject(NotificationsSheetState);
+    expect(sheet.open()).toBe(true);
+    expect(sheet.tab()).toBe(tab);
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it.each([
     ['/teacher/notifications?open=messengers', '/teacher/settings/messengers'],
     ['/teacher/notifications?open=unknown,students', '/teacher/settings/messengers'],
     ['/teacher/notifications?tab=preferences', '/teacher/settings/messengers'],
-    ['/teacher/notifications?tab=inbox', '/teacher/notifications?tab=inbox'],
   ])('leads the old links to the messengers into the settings: %s → %s', async (from, to) => {
     auth.acceptSession(authResponse('TEACHER'));
 

@@ -105,7 +105,8 @@ test('the move buttons lie in the middle of a dragged lesson card', async ({ pag
 
 test('a chosen student chip is removed with «×»', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/notifications');
+  // 0.22.0: the messages are the tab «Отправленные» of the bell's sheet (235.1)
+  await page.goto('/teacher?notifications=sent');
   await page.getByRole('button', { name: 'Написать ученикам' }).click();
   const dialog = page.getByRole('dialog', { name: 'Сообщение ученикам' });
   await dialog.locator('p-multiselect').click();
@@ -130,7 +131,7 @@ test('a chosen student chip is removed with «×»', async ({ page }) => {
 
 test('no divider above «Прочитанные» in the inbox', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/notifications');
+  await page.goto('/teacher?notifications=inbox');
   const read = page.locator('.tb-inbox-read');
   await expect(read).toBeVisible();
   expect(await read.evaluate((node) => getComputedStyle(node).borderTopWidth)).toBe('0px');

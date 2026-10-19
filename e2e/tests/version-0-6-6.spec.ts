@@ -35,15 +35,19 @@ function style(page: Page, selector: string, property: string): Promise<string> 
     .evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
 }
 
-test('the teacher notifications are cards: the inbox and the messages; the messengers are in the settings', async ({
+test('the teacher notifications are in the bell: the inbox and the messages; the messengers are in the settings', async ({
   page,
 }) => {
   await signIn(page);
+  // 0.22.0: the old page leads home with the bell's sheet open, its tabs «Входящие» and «Отправленные» (235.1)
   await page.goto('/teacher/notifications');
-
-  await expect(page.getByRole('tab')).toHaveCount(0);
-  await expect(page.locator('#notifications-inbox')).toContainText('Входящие');
-  await expect(page.locator('#notifications-messages')).toContainText('Написать ученикам');
+  await expect(page).toHaveURL(/\/teacher$/);
+  await expect(page.getByRole('tab', { name: /^Входящие/ })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await page.getByRole('tab', { name: 'Отправленные' }).click();
+  await expect(page.getByRole('button', { name: 'Написать ученикам' })).toBeVisible();
   await expect(page.getByText('Мои мессенджеры')).toHaveCount(0);
 
   // 0.22.0: links of the former tabs and folded sections lead to the category «Мессенджеры» (234.3)
