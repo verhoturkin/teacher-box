@@ -4,7 +4,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -67,6 +66,7 @@ import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
@@ -529,9 +529,6 @@ export class SchedulePage implements OnInit {
   protected readonly menuFor = signal<string | null>(null);
   protected readonly menuItems = signal<MenuItem[]>([]);
 
-  /** `?create=...` from the quick actions of the home page: opens the form at once. */
-  readonly create = input<string>();
-
   protected readonly calendarState = new LoadState();
   protected readonly attentionState = new LoadState();
   protected readonly seriesState = new LoadState();
@@ -539,6 +536,12 @@ export class SchedulePage implements OnInit {
 
   private range: CalendarRange | null = null;
   private busyEnabled = false;
+
+  constructor() {
+    openOnCreate('lesson', () => {
+      this.newLesson();
+    });
+  }
 
   ngOnInit(): void {
     this.api.settings().subscribe((settings) => {
@@ -563,9 +566,6 @@ export class SchedulePage implements OnInit {
       );
     });
     this.loadSidePanels();
-    if (this.create() === 'lesson') {
-      this.newLesson();
-    }
     this.api.googleStatus().subscribe((status) => {
       this.busyEnabled = status.status === 'CONNECTED' && status.busyEnabled;
       this.loadBusy();

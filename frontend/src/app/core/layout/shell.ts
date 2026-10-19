@@ -22,6 +22,7 @@ import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
 import { CORE_T } from '@core/i18n/texts';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { CreateMenu } from './create-menu';
 import { SideNav } from './side-nav';
 
 const T = CORE_T.shell;
@@ -50,6 +51,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   imports: [
     ButtonDirective,
     ButtonIcon,
+    CreateMenu,
     Drawer,
     ModalDrawer,
     Menu,
@@ -120,7 +122,11 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'" />
+        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'">
+          @if (create()) {
+            <tb-create-menu [extended]="size() === 'extra-large'" />
+          }
+        </tb-side-nav>
       }
       <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
         <router-outlet />
@@ -194,6 +200,11 @@ export class Shell {
   readonly homeLink = input.required<string>();
   /** Links at the bottom of the rail before «Справка» (the settings of the area). */
   readonly footerLinks = input<MenuItem[]>([]);
+  /**
+   * «Создать» at the top of the rail (the teacher only, ADR-0048); on compact the sections keep their own
+   * create actions (spec §3.1).
+   */
+  readonly create = input(false);
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
   /**

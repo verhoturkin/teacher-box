@@ -4,7 +4,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -14,6 +13,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -120,14 +120,19 @@ export class AssignmentsPage implements OnInit {
   );
   /** Every task of the assignment is accepted («Принято»). */
   protected readonly done = computed(() => this.assignments().filter(isDone));
-  /** `?create=...` from the quick actions of the home page: opens the editor at once. */
-  readonly create = input<string>();
+
+  constructor() {
+    // the editor is a route of its own: it takes the place of the list in the history
+    openOnCreate(
+      'assignment',
+      () => {
+        void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
+      },
+      false,
+    );
+  }
 
   ngOnInit(): void {
-    if (this.create() === 'assignment') {
-      void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
-      return;
-    }
     this.load();
   }
 

@@ -66,7 +66,7 @@ ADR: **0048** «Панели и навигация по задачам» (refine
 
 ### 232. Global «Создать» (F)
 
-- [ ] 232.1 **F** Spec §4 row «Create»: `core/layout/create-menu.ts` — small extended FAB at the top of the
+- [x] 232.1 **F** Spec §4 row «Create»: `core/layout/create-menu.ts` — small extended FAB at the top of the
   expanded rail, FAB in the collapsed rail, `shared/ui/fab-menu.ts` popup (≤ 6: Занятие, Задание, Оплата, Ученик,
   Доска, Сообщение; the current section's item first). An item navigates to its section with `?create=<kind>`; the
   section page opens its existing dialog / route and drops the parameter: `schedule-page.ts` (`lesson-dialog`),

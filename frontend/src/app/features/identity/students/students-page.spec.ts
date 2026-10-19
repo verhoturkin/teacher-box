@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService } from 'primeng/api';
 import { Tooltip } from 'primeng/tooltip';
@@ -164,15 +165,15 @@ describe('StudentsPage', () => {
     expect(rowsText().join()).toContain('Отключён');
   });
 
-  it('opens the form of a new student from the home page', async () => {
-    const fromHome = TestBed.createComponent(StudentsPage);
-    fromHome.componentRef.setInput('create', 'student');
-    await fromHome.whenStable();
+  it('opens the form of a new student from «Создать» and drops ?create', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?create=student');
+    await fixture.whenStable();
     flushEverything();
-    await fromHome.whenStable();
+    await fixture.whenStable();
 
     expect(bodyText()).toContain('Новый ученик');
-    fromHome.destroy();
+    expect(router.url).toBe('/');
   });
 
   it('invites the first student', async () => {

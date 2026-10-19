@@ -34,7 +34,7 @@ describe('The rail of each role (spec §3.2)', () => {
       ['/admin/settings', '/admin/help'],
     ],
   ])(
-    'of the %s: the brand, the sections, then the settings and the help',
+    'of the %s: the brand, «Создать» of the teacher, the sections, then the settings and the help',
     async (_, layout, role, sections, footer) => {
       TestBed.configureTestingModule({
         imports: [layout],
@@ -49,6 +49,10 @@ describe('The rail of each role (spec §3.2)', () => {
       const nav = requireElement(hostElement(fixture), 'tb-side-nav', HTMLElement);
 
       expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
+      // the global «Создать» right under the brand, the teacher's only (ADR-0048)
+      const create = nav.querySelector('.tb-side-nav__brand + tb-create-menu');
+      expect(create !== null).toBe(role === 'TEACHER');
+      expect(nav.querySelectorAll('tb-create-menu')).toHaveLength(role === 'TEACHER' ? 1 : 0);
       const main = Array.from(nav.querySelectorAll('ul:not(.tb-side-nav__footer) a'));
       expect(main.map((a) => a.textContent.trim())).toEqual(sections);
       const bottom = Array.from(nav.querySelectorAll('ul.tb-side-nav__footer a'));
@@ -107,6 +111,8 @@ describe('The phone navigation of each role (spec §3.1, D2)', () => {
       await fixture.whenStable();
       const modal = requireElement(document.body, '.tb-modal-rail', HTMLElement);
       expect(texts(modal, 'tb-side-nav a')).toEqual(rail);
+      // on a phone the sections keep their own create actions: no «Создать» in the modal rail
+      expect(document.body.querySelector('tb-create-menu')).toBeNull();
       fixture.destroy();
     },
   );

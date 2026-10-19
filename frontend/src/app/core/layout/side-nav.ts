@@ -9,7 +9,8 @@ import { PortalLogo } from '@core/portal/portal-logo';
  * The sections of the role from medium (ADR-0017, ADR-0019, ADR-0024): the expanded navigation rail
  * with icons and labels in a row from extra-large, the collapsed rail with the label under the icon
  * below it (ADR-0048, D5). Top to bottom (spec §3.2): the brand (the portal's logo and name, not a
- * button — M3 warns against logos mistaken for actions), the sections, a spacer, the bottom group
+ * button — M3 warns against logos mistaken for actions), the projected main action (the teacher's «Создать»,
+ * `tb-create-menu`), the sections, a spacer, the bottom group
  * (Настройки, Справка). It is a list of links (not a menu): Tab goes through the sections, the current
  * one is `aria-current="page"` and has the pill indicator. On compact the shell opens it as the modal
  * expanded rail from ☰ (`modal`), with the sections that are not in the bottom bar.
@@ -30,6 +31,8 @@ import { PortalLogo } from '@core/portal/portal-logo';
       <!-- the 96 px rail shows the logo alone; the name stays for screen readers -->
       <span class="tb-side-nav__brand-name" [class.tb-sr-only]="rail()">{{ portalName() }}</span>
     </div>
+    <!-- the main action of the area under the brand: the teacher's «Создать» (ADR-0048) -->
+    <ng-content />
     @for (group of groups(); track group.footer) {
       <ul class="tb-side-nav__list" [class.tb-side-nav__footer]="group.footer">
         @for (item of group.items; track item.label) {

@@ -21,6 +21,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
+import { openOnCreate } from '@core/routing/create-param';
 import { HelpButton } from '@features/help/parts';
 import { IdentityApi } from '@features/identity/parts';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -301,6 +302,9 @@ export class BoardsPage implements OnInit {
   }));
 
   constructor() {
+    openOnCreate('board', () => {
+      this.openCreate();
+    });
     effect(() => {
       this.filter();
       untracked(() => {

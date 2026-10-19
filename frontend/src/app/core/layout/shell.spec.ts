@@ -251,6 +251,37 @@ describe('Shell by the M3 breakpoint (ADR-0048)', () => {
     expect(nav?.classList.contains('tb-side-nav--rail') ?? false).toBe(navigation === 'rail');
   });
 
+  it.each([
+    [599, 'nothing'],
+    [600, 'the FAB'],
+    [1599, 'the FAB'],
+    [1600, 'the small extended FAB'],
+  ])('at %i px «Создать» is %s', async (width, kind) => {
+    TestBed.configureTestingModule({
+      imports: [Shell],
+      providers: testProviders(screenWidth(width)),
+    });
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    fixture = TestBed.createComponent(Shell);
+    fixture.componentRef.setInput('items', [{ label: 'Ученики', routerLink: '/teacher/students' }]);
+    fixture.componentRef.setInput('homeLink', '/teacher');
+    fixture.componentRef.setInput('create', true);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    const menu = host.querySelector('tb-side-nav tb-fab-menu');
+    expect(menu !== null).toBe(kind !== 'nothing');
+    expect(menu?.classList.contains('tb-fab-menu--extended') ?? false).toBe(
+      kind === 'the small extended FAB',
+    );
+  });
+
+  it('has no «Создать» unless the area asks for it', async () => {
+    const host = await render(1600);
+
+    expect(host.querySelector('tb-create-menu')).toBeNull();
+  });
+
   it.each([599, 600, 1600])('shows the avatar alone on the user button at %i px', async (width) => {
     const host = await render(width);
 

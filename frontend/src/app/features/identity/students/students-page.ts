@@ -5,7 +5,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -36,6 +35,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Avatar } from '@shared/ui/avatar';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
@@ -177,9 +177,6 @@ export class StudentsPage implements OnInit {
   protected readonly statusSeverities = STATUS_SEVERITIES;
   protected readonly labelKey = labelKey;
 
-  /** `?create=...` from the quick actions of the home page: opens the form at once. */
-  readonly create = input<string>();
-
   protected readonly students = signal<Student[]>([]);
 
   protected readonly state = new LoadState();
@@ -213,10 +210,13 @@ export class StudentsPage implements OnInit {
   protected readonly invite = signal<IssuedInvite | null>(null);
   protected readonly inviteStudentName = signal('');
 
-  ngOnInit(): void {
-    if (this.create() === 'student') {
+  constructor() {
+    openOnCreate('student', () => {
       this.openCreate();
-    }
+    });
+  }
+
+  ngOnInit(): void {
     this.loadStudents();
   }
 

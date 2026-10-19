@@ -55,6 +55,7 @@ export const TEACHER_FOOTER_LINKS: MenuItem[] = [
     [items]="menu"
     [bottomNav]="bottomNav"
     [footerLinks]="footerLinks"
+    [create]="true"
     homeLink="/teacher"
   />`,
 })

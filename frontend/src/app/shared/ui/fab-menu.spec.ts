@@ -98,4 +98,73 @@ describe('FabMenu', () => {
     expect(navigate).toHaveBeenCalled();
     expect(host.querySelector('.tb-fab-menu__list')).toBeNull();
   });
+
+  it('moves between the actions with the arrows, Home and End', async () => {
+    await toggle();
+    const links = Array.from(host.querySelectorAll('a'));
+    const press = (key: string): void => {
+      document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    };
+
+    press('ArrowDown');
+    expect(document.activeElement).toBe(links[1]);
+    press('ArrowDown');
+    expect(document.activeElement).toBe(links[0]);
+    press('ArrowUp');
+    expect(document.activeElement).toBe(links[1]);
+    press('Home');
+    expect(document.activeElement).toBe(links[0]);
+    press('ArrowUp');
+    expect(document.activeElement).toBe(links[1]);
+    press('End');
+    expect(document.activeElement).toBe(links[1]);
+    press('Tab');
+    expect(document.activeElement).toBe(links[1]);
+  });
+
+  it('closes when the focus leaves it, not when it moves inside', async () => {
+    await toggle();
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+
+    host
+      .querySelector('a')
+      ?.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: button() }));
+    fixture.detectChanges();
+    expect(host.querySelector('.tb-fab-menu__list')).not.toBeNull();
+
+    host
+      .querySelector('a')
+      ?.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    fixture.detectChanges();
+    expect(host.querySelector('.tb-fab-menu__list')).toBeNull();
+    outside.remove();
+  });
+
+  it('in the rail opens the list under the FAB; the extended FAB keeps its label as the name', async () => {
+    fixture.componentRef.setInput('variant', 'extended');
+    await fixture.whenStable();
+    vi.spyOn(button(), 'getBoundingClientRect').mockReturnValue(
+      DOMRect.fromRect({ x: 12, y: 80, width: 120, height: 56 }),
+    );
+    expect(host.classList).toContain('tb-fab-menu--rail');
+    expect(button().hasAttribute('aria-label')).toBe(false);
+    expect(button().textContent.trim()).toBe('Быстрые действия');
+
+    await toggle();
+    const list = host.querySelector<HTMLElement>('.tb-fab-menu__list');
+    expect(list?.style.top).toBe('144px');
+    expect(list?.style.left).toBe('12px');
+    expect(button().getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement?.textContent.trim()).toBe('Занятие');
+
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+    expect(host.querySelector('.tb-fab-menu__list')).toBeNull();
+
+    fixture.componentRef.setInput('variant', 'rail');
+    await fixture.whenStable();
+    expect(host.classList).not.toContain('tb-fab-menu--extended');
+    expect(button().getAttribute('aria-label')).toBe('Быстрые действия');
+  });
 });

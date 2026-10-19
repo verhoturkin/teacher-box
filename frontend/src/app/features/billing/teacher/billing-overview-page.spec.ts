@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
 import { overview, payment, studentBalance } from '@testing/billing-fixtures';
@@ -105,20 +106,15 @@ describe('BillingOverviewPage', () => {
     failing.destroy();
   });
 
-  it('opens the payment dialog from the home page', async () => {
-    const fromHome = TestBed.createComponent(BillingOverviewPage);
-    fromHome.componentRef.setInput('create', 'payment');
-    await fromHome.whenStable();
-    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN]));
-    await fromHome.whenStable();
+  it('opens the payment dialog from «Создать» on the open page and drops ?create', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?create=payment');
+    await fixture.whenStable();
 
     expect(
-      fromHome.debugElement
-        .query(By.directive(PaymentDialog))
-        .injector.get(PaymentDialog)
-        .visible(),
+      fixture.debugElement.query(By.directive(PaymentDialog)).injector.get(PaymentDialog).visible(),
     ).toBe(true);
-    fromHome.destroy();
+    expect(router.url).toBe('/');
   });
 
   it('opens the payment dialog from the toolbar and for a student', async () => {

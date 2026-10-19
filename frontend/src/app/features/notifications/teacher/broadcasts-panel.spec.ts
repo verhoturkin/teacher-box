@@ -1,6 +1,7 @@
 import { formatDate } from '@angular/common';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
 import { broadcastItem } from '@testing/notification-fixtures';
@@ -12,12 +13,13 @@ describe('BroadcastsPanel', () => {
   let fixture: ComponentFixture<BroadcastsPanel>;
   let backend: HttpTestingController;
 
-  async function render(history: BroadcastItem[]): Promise<void> {
+  async function render(history: BroadcastItem[], url?: string): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BroadcastsPanel],
       providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
+    if (url) await TestBed.inject(Router).navigateByUrl(url);
     fixture = TestBed.createComponent(BroadcastsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/notifications/broadcasts').flush(history);
@@ -46,6 +48,17 @@ describe('BroadcastsPanel', () => {
     const sent = formatDate('2026-09-24T10:00:00Z', 'dd.MM.yyyy HH:mm', 'en-US');
     expect(text).toContain(`Каникулы Занятий не будет до 10 января ${sent} · получателей: 3`);
     expect(text).toContain('Без текста');
+  });
+
+  it('opens the message from «Создать» (?create=message) and drops the parameter', async () => {
+    await render([], '/?create=message');
+    backend.expectOne('/api/teacher/students').flush([]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/groups').flush([]);
+
+    expect(bodyText()).toContain('Сообщение ученикам');
+    expect(TestBed.inject(Router).url).toBe('/');
   });
 
   it('writes to current students and refreshes the history', async () => {

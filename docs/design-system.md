@@ -278,10 +278,10 @@ component that shows one adds it to `PRIME`).
   | Window | Query | Navigation | Panes | Main action |
   |---|---|---|---|---|
   | compact (phone) | `width < 37.5em` | bottom bar: five sections; ☰ → modal expanded rail | 1 | extended FAB above the bar |
-  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | button in page header |
-  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | button in page header |
-  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | button in page header |
-  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | button in page header |
+  | medium | `37.5em <= width < 52.5em` | collapsed rail 96 px (icon + label) | 1 | teacher: FAB «Создать» atop the rail; button in page header |
+  | expanded | `52.5em <= width < 75em` | collapsed rail 96 px | 2: fixed 360 + flexible | teacher: FAB «Создать» atop the rail; button in page header |
+  | large | `75em <= width < 100em` | collapsed rail 96 px (*ours*, D5) | 2: fixed 412 + flexible | teacher: FAB «Создать» atop the rail; button in page header |
+  | extra-large | `width >= 100em` | expanded rail 280 px, items 56 px, 4 px gap | 2–3: 412 + flexible + sheet ≤ 400 | teacher: small extended FAB «Создать» atop the rail; button in page header |
 
   Narrow table cells next to the rail — medium and expanded (`37.5em <= width < 75em`); the main list column
   keeps 13rem from large. Regions and «Создать» by breakpoint — redesign spec §3 (231).
@@ -289,7 +289,8 @@ component that shows one adds it to `PRIME`).
 - **Regions** (**M3**): the window and the navigation region (rail, top bar, bottom bar) are surface-container;
   page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The page title
   is the `tb-page-header` of the first pane (or of the page without panes), never a band of its own.
-- **Rail** (`side-nav.ts`, 231.1, redesign spec §3.2): brand · sections · spacer · bottom group. **Brand** —
+- **Rail** (`side-nav.ts`, 231.1, redesign spec §3.2): brand · «Создать» (teacher, 232.1) · sections · spacer ·
+  bottom group. **Brand** —
   the portal logo (`tb-portal-logo round`) and name, plain text, not a link or button (**M3**: a logo in the
   rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
   the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
@@ -298,6 +299,17 @@ component that shows one adds it to `PRIME`).
   (`/<area>/help`), same items as the sections. **Expanded item** (**M3E** expanded rail): the target spans
   the rail's width, the 56 px pill indicator hugs icon + label — 16 dp before and after, 8 dp between — in
   secondary-container; state layer and focus ring on the indicator.
+- **«Создать»** (`core/layout/create-menu.ts`, 232.1, ADR-0048): the teacher's global create action, projected
+  into the rail under the brand (`Shell` input `create`; student and admin have none; none on compact). Small
+  extended FAB in the expanded rail (56 px, corner large, 16/8/16, Title Medium — **M3**), FAB 56 px centred in
+  the collapsed rail (**M3**: collapsed rail → FAB, expanded → extended FAB); elevation 0 as nested in the rail
+  (**M3**), primary-container, hover = state layer; 16 px to the destinations (*ours*). It opens `tb-fab-menu`
+  (variant `extended` / `rail`) with six items — Занятие, Задание, Оплата, Ученик, Доска, Сообщение — the
+  current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
+  one global entry point instead of a create button per section (ADR-0048). An item opens
+  `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
+  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. The header `tb-page-fab` buttons
+  and the home quick actions stay until 232.2.
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -370,8 +382,10 @@ component that shows one adds it to `PRIME`).
 - **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's quick actions on a phone instead of
   the row of buttons. The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
-  and turns into the round «Закрыть» (primary). Esc, a tap outside or an item close it; the focus goes to the first
-  item and back to the FAB.
+  and turns into the round «Закрыть» (primary). Esc, a tap outside, the focus leaving or an item close it; the focus
+  goes to the first item and back to the FAB; ↓ ↑ Home End move between items. In the rail (`variant` `rail` /
+  `extended`, 232.1) the list opens 8 px under the FAB, start-aligned, fixed over the page (*ours*), and the FAB
+  keeps its shape with the close icon.
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.

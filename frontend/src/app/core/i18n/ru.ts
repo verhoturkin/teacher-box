@@ -46,6 +46,15 @@ export const ru = {
     systemTheme: 'Тема как в системе',
     signOut: 'Выйти',
   },
+  create: {
+    title: 'Создать',
+    lesson: 'Занятие',
+    assignment: 'Задание',
+    payment: 'Оплата',
+    student: 'Ученик',
+    board: 'Доска',
+    message: 'Сообщение',
+  },
   close: 'Закрыть',
   notFound: {
     title: 'Страница не найдена',

@@ -181,15 +181,19 @@ describe('AssignmentsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
 
-  it('opens the editor of a new assignment from the home page', async () => {
+  it('opens the editor of a new assignment from «Создать» (?create=assignment)', async () => {
     const { backend } = configure();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?create=assignment');
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
-    fixture.componentRef.setInput('create', 'assignment');
     await fixture.whenStable();
 
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], { replaceUrl: true });
-    backend.expectNone('/api/teacher/homework/assignments');
+    // the editor takes the place of the list in the history; the parameter leaves with the list
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/teacher/homework/new'], {
+      replaceUrl: true,
+    });
+    backend.match('/api/teacher/homework/assignments');
     fixture.destroy();
   });
 });

@@ -2,6 +2,7 @@ import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { BehaviorSubject } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
@@ -315,9 +316,12 @@ describe('SchedulePage', () => {
     expect(dialog.form.controls.startsAt.value).toEqual(new Date(2026, 9, 2, 10));
   });
 
-  it('opens a new lesson from the home page', async () => {
-    fixture.componentRef.setInput('create', 'lesson');
+  it('opens a new lesson from «Создать» and drops ?create', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?create=lesson');
     await render();
+    await fixture.whenStable();
+    expect(router.url).toBe('/');
 
     expect(
       fixture.debugElement.query(By.directive(LessonDialog)).injector.get(LessonDialog).visible(),

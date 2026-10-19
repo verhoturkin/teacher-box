@@ -48,6 +48,15 @@ export const en: Translation<typeof ru> = {
     systemTheme: 'System theme',
     signOut: 'Sign out',
   },
+  create: {
+    title: 'Create',
+    lesson: 'Lesson',
+    assignment: 'Homework',
+    payment: 'Payment',
+    student: 'Student',
+    board: 'Board',
+    message: 'Message',
+  },
   close: 'Close',
   notFound: {
     title: 'Page not found',

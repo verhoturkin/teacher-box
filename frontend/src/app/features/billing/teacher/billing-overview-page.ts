@@ -5,7 +5,6 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -29,6 +28,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Avatar } from '@shared/ui/avatar';
 import { TeacherColors } from '@features/identity/parts';
+import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { formatMoney } from '@shared/money/money';
 import { T } from '../i18n/texts';
@@ -188,14 +188,15 @@ export class BillingOverviewPage implements OnInit {
 
   protected readonly selectedStudent = signal<string | null>(null);
   protected readonly paymentVisible = signal(false);
-  /** `?create=...` from the quick actions of the home page: opens the form at once. */
-  readonly create = input<string>();
+
+  constructor() {
+    openOnCreate('payment', () => {
+      this.openPayment(null);
+    });
+  }
 
   ngOnInit(): void {
     this.load();
-    if (this.create() === 'payment') {
-      this.openPayment(null);
-    }
   }
 
   protected openPayment(studentId: string | null): void {
