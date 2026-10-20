@@ -51,7 +51,7 @@ pane; an agenda on a phone. ADR: none.
   dashed, off-time hatched; marking from the event's dialog; the «Отметьте прошедшие занятия» card goes.
 - [x] 240.3 **F** Compact agenda: week strip, day list, unmarked group under the row, «⋮» screens Неделя / Месяц /
   Регулярные / Нерабочее время (`schedule-page-mobile.spec.ts`).
-- [ ] 240.4 **D** design-system (calendar), help «Расписание» (ru, en), wiki «Расписание».
+- [x] 240.4 **D** design-system (calendar), help «Расписание» (ru, en), wiki «Расписание».
 
 ### 241. Release 0.24.0 (D)
 

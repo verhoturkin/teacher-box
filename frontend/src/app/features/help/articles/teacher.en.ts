@@ -158,6 +158,8 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 
 **Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
+**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and the «Recurring» and «Time off» tabs. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month», «Recurring» and «Time off» are in the «⋮» menu.
+
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
 In the month view, click a day to plan a lesson on it: it starts at 10:00 and lasts the default duration — change them in the form.
@@ -169,7 +171,7 @@ Mark the time you do not work: «Schedule» → «Time off».
 - **Once** — from when to when, e.g. a holiday from Monday to Friday or a visit to the doctor.
 - **Every week** — days of the week and hours, e.g. lunch from 13:00 to 14:00 or a day off on Saturday (00:00–00:00 is the whole day). You can set from which date and until which it applies.
 
-Time off is hatched in the calendar, and listed in the «Time off» card, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
+Time off is hatched in the calendar, and listed in the «Time off» tab, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
 
 Students see this time as «Busy» and cannot ask to move a lesson to it. You can still put a lesson in your time off — the portal does not stop you.
 
@@ -179,7 +181,7 @@ Click the lesson and choose «Held» or «Missed». For a group — «Mark atten
 
 If you made a mistake — «Remove the mark», the charge is undone.
 
-Past lessons without a mark are collected in «Mark the past lessons» (the home page shows their number in «Needs attention»). Each has the «Held» and «Missed» buttons, a group — «Mark». On a phone tap the lesson — the buttons open in a panel at the bottom.
+A past lesson without a mark is outlined in red in the calendar; open it and mark the result. Their number is also on the home page, in «To do». On a phone such lessons sit in the agenda under the row — each has the «Held» and «Missed» buttons, a group — «Mark»; the «Lessons not marked» link above the list leads to them.
 
 ## Cancel, delete, restore
 
@@ -695,7 +697,7 @@ Open the lesson and click «Remove the mark» — the charge is undone.
 Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.
 
 **How to move all recurring lessons to another time?**
-«Schedule» → the «Recurring lessons» card → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.
+«Schedule» → the «Recurring» tab → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.
 
 **Where to download all the data?**
 «Settings» → «Data» → «Backups» → «Back up now» → download the file.

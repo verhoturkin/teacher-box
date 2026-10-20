@@ -440,6 +440,20 @@ component that shows one adds it to `PRIME`).
   - «Занятия сегодня»: rows with the time (Label L, tabular figures), who and the status tag; the nearest unfinished
     lesson is the selected row (secondary container). «Неделя»: four name — value rows (held lessons, absences,
     homework given, handed in on time) for the current Monday–Sunday week.
+- **Schedule** (teacher, 0.24.0, spec §7; `features/schedule/teacher/schedule-page.ts`): the calendar is the main
+  pane (`FullCalendar`: week / month, toolbar with filter chips by owner and the time-zone chip «Часовой пояс
+  портала»), the supporting pane beside it holds the mini-month (`ui/mini-month.ts`, M3 date picker, docked: weeks from
+  Monday, a dot under a day with lessons, the shown day filled; *our decision:* no input — a click on a day only moves
+  the calendar), «Запросы учеников» and the tabs «Регулярные» / «Нерабочее время» (button «Регулярное занятие»).
+  Lesson states in the grid (`styles.scss`): planned — filled, held / missed — tonal, cancelled — struck through;
+  **unmarked** past lesson — a 2 px solid `error` outline (`tb-lesson--unmarked`); **requested change** — a 2 px dashed
+  `outline` (`tb-lesson--request`, 3:1 to the card; it was `warning` before); off time — hatched. A lesson is
+  marked from its dialog; the «Отметьте прошедшие занятия» card stays on a phone only.
+  - Compact (240.3, `ui/schedule-agenda.ts`): the screens «Повестка» / «Неделя» / «Месяц» (a connected button group; the
+    «⋮» menu also leads to «Регулярные» and «Нерабочее время», each a screen of its own with a back arrow); the agenda is a
+    week strip (seven days, ‹ ›, today and the chosen day marked) over the day's list; a row is one line (time, who,
+    status tag), unmarked lessons sit in a group under the row with «Проведено» / «Пропуск», a jump chip «Не отмечено
+    занятий: N» leads to them.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Search field** — always `tb-search-field` (`@shared/ui`, a form control; 0.15.0): the M3 docked search bar, 56 px,
