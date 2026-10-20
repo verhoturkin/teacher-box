@@ -105,9 +105,9 @@ export const routes: Routes = [
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
       },
       {
+        // the queue is the «На проверку» filter of the list (242.1)
         path: 'homework/review',
-        title: N.reviewQueue,
-        loadComponent: () => import('@features/homework').then((m) => m.ReviewQueuePage),
+        redirectTo: 'homework',
       },
       {
         path: 'homework/tasks/:taskId',

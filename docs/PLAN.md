@@ -32,7 +32,7 @@ ADR: none.
 
 ### 242. Homework (F)
 
-- [ ] 242.1 **F** Spec §9: list pane from `homework/teacher/assignments-page.ts` + `review-queue-page.ts`
+- [x] 242.1 **F** Spec §9: list pane from `homework/teacher/assignments-page.ts` + `review-queue-page.ts`
   (connected group, drafts under the filter, one filter field); `/teacher/homework/review` redirects.
 - [ ] 242.2 **F** Detail: `task-review-page.ts` (work) and `assignment-page.ts` (assignment with students) as
   detail panes; `/teacher/homework/tasks/:taskId` and `/:assignmentId` keep working as deep links.

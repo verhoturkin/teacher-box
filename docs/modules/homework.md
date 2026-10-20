@@ -73,7 +73,7 @@ zone, for the Today page, 239.1),
 
 ## Frontend
 
-`features/homework/`: `teacher/` (assignments, assignment page, editor, review queue), `student/` (my tasks, task
+`features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
 the download button saves them under `boundTextbookFilename`; 0.14.5: the teacher's tap on the title opens the whole
@@ -96,12 +96,14 @@ there is one, «Удалить…» (danger confirmation); materials — `ui/att
 (type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
 picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
-and groups side by side). The list (`teacher/assignments-page.ts`) — two `teacher/assignment-list.ts` cards: «Активные» (not every task accepted,
-incl. not given) and «Выполненные» (`isDone`: every task accepted); each with a search by the title or a student's name
-and pages of 10 (`p-paginator`, a new search or filter starts at the first page); «Активные» has the «На проверку»
-toggle next to the search (`aria-pressed`, only `submitted > 0`). No «На проверку» link in the header: the review queue
-opens from «⋮» → «Проверить работы» and from the home page. A row: title, «кому · до …», the progress badge
-(`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
+and groups side by side). The list (`teacher/assignments-page.ts`, 242.1) — the list pane of a list-detail (`tb-panes`, fixed pane; the detail pane
+waits for 242.2): the connected group «На проверку · Активные · Готовые» with counts (`@shared/ui/segment-group`), the
+filter button of the header opens one search by the title or a student's name. «На проверку» (the default while there is
+work to review, else «Активные») — the works of `review-queue` (avatar, student, «задание · сдано dd.MM HH:mm», the
+«Просрочено» tag when handed in after the due date), then «Ждут сдачи» — assignments somebody still has to hand in
+(«N из M», or «Просрочено»); «Активные» — assignments given and not every task accepted, then «Не выдано» (drafts);
+«Готовые» — `isDone`. A row of an assignment: title, «кому · до …», the progress badge, «⋮» (open, edit, «Проверить
+работы» — switches to «На проверку», open the board, «Удалить…»). `/teacher/homework/review` redirects to the list. The student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
 with a search by the title and pages of 10, as the teacher's) are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows
 «Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»

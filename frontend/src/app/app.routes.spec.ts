@@ -227,11 +227,13 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/teacher/homework');
     backend.expectOne('/api/teacher/homework/assignments');
+    backend.expectOne('/api/teacher/homework/review-queue');
     expect(title()).toBe('Задания — Teacher Box');
 
+    // the queue is the «На проверку» filter of the list
     await harness.navigateByUrl('/teacher/homework/review');
-    backend.expectOne('/api/teacher/homework/review-queue');
-    expect(title()).toBe('На проверку — Teacher Box');
+    expect(TestBed.inject(Router).url).toBe('/teacher/homework');
+    expect(title()).toBe('Задания — Teacher Box');
 
     await harness.navigateByUrl('/teacher/homework/tasks/t-1');
     backend.expectOne('/api/teacher/homework/tasks/t-1');

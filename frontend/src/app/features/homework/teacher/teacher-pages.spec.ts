@@ -16,14 +16,20 @@ import {
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  menuItemByText,
+  readableText,
+  requireElement,
+} from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
-import { ReviewQueuePage } from './review-queue-page';
 import { TaskReviewPage } from './task-review-page';
 import { testProviders } from '@testing/setup';
 
@@ -56,55 +62,175 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
   return { backend: TestBed.inject(HttpTestingController), saved };
 }
 
+const QUEUE = '/api/teacher/homework/review-queue';
+const ASSIGNMENTS = '/api/teacher/homework/assignments';
+
 describe('AssignmentsPage', () => {
-  it('lists active and done assignments in two cards', async () => {
+  async function render(assignments = [assignmentSummary()], queue = [reviewQueueItem()]) {
     const { backend } = configure();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/homework/assignments').flush([
-      assignmentSummary(),
-      assignmentSummary({
-        id: 'a-2',
-        title: 'Без срока',
-        dueAt: null,
-        students: ['А', 'Б', 'В', 'Г', 'Д'],
-        totalTasks: 5,
-        submitted: 0,
-        accepted: 2,
-        boardId: 'board-1',
-      }),
-      assignmentSummary({
-        id: 'a-3',
-        title: 'Черновик',
-        students: [],
-        totalTasks: 0,
-        submitted: 0,
-      }),
-      assignmentSummary({ id: 'a-4', title: 'Готово', totalTasks: 2, submitted: 0, accepted: 2 }),
-      assignmentSummary({ id: 'a-5', title: 'Свежее', totalTasks: 1, submitted: 0 }),
-    ]);
+    backend.expectOne(ASSIGNMENTS).flush(assignments);
+    backend.expectOne(QUEUE).flush(queue);
     await fixture.whenStable();
-    const host = hostElement(fixture);
-    const cards = [...host.querySelectorAll('.tb-list > li')].map((card) => readableText(card));
+    return { backend, fixture, navigate, host: hostElement(fixture) };
+  }
 
-    expect(readableText(host)).toContain('На проверку 1');
+  function rows(host: HTMLElement): string[] {
+    return [...host.querySelectorAll('.tb-list > li')].map((row) => readableText(row));
+  }
+
+  function segment(host: HTMLElement, label: string): HTMLButtonElement {
+    return buttonByText(host, label);
+  }
+
+  it('shows the works to review first, then the assignments that wait for hand-in', async () => {
+    const { host } = await render(
+      [
+        assignmentSummary({
+          assigned: 1,
+          submitted: 0,
+          totalTasks: 2,
+          accepted: 1,
+          dueAt: '2099-01-01T10:00:00Z',
+        }),
+        assignmentSummary({ id: 'a-late', title: 'Давнее', dueAt: '2020-01-01T10:00:00Z' }),
+      ],
+      [
+        reviewQueueItem({ studentAvatar: '/api/public/avatars/anna' }),
+        reviewQueueItem({
+          taskId: 't-2',
+          studentId: 's-2',
+          studentName: 'Борис',
+          dueAt: '2026-09-01T10:00:00Z',
+        }),
+      ],
+    );
+
+    const list = rows(host);
+    expect(readableText(host)).toContain('На проверку 2');
+    expect(segment(host, 'На проверку').getAttribute('aria-pressed')).toBe('true');
     expect(host.querySelector('table')).toBeNull();
-    expect(cards[0]).toContain('Дроби Анна, Борис · до 10.09.2026');
-    expect(cards[0]).toContain('На проверке: 1');
-    expect(cards[1]).toContain('А, Б, В и ещё 2 · без срока');
-    expect(cards[1]).toContain('Принято 2 из 5');
-    expect(cards[2]).toContain('Ещё никому не выдано');
-    expect(cards[2]).toContain('Не выдано');
-    expect(cards[3]).toContain('Свежее');
-    expect(cards[3]).toContain('Выдано');
-    // every task accepted: in «Выполненные»
-    const [active, done] = [...host.querySelectorAll('tb-assignment-list')];
-    expect(readableText(active ?? host)).toContain('Активные');
-    expect(readableText(active ?? host)).not.toContain('Готово');
-    expect(readableText(done ?? host)).toContain('Выполненные Готово');
-    expect(cards[4]).toContain('Принято');
+    expect(list[0]).toMatch(/^Анна Дроби · сдано 05\.09 \d\d:\d\d$/);
+    expect(list[1]).toContain('Борис');
+    expect(list[1]).toContain('Просрочено');
+    expect(host.querySelectorAll('tb-avatar img')).toHaveLength(1);
+    expect(host.querySelectorAll('a[href="/teacher/homework/tasks/t-1"]')).toHaveLength(1);
+    expect(readableText(host)).toContain('Ждут сдачи');
+    expect(list[2]).toContain('Дроби');
+    expect(list[2]).toContain('1 из 2');
+    expect(list[3]).toContain('Давнее');
+    expect(list[3]).toContain('Просрочено');
+  });
 
+  it('lists the active assignments and, under them, the drafts', async () => {
+    const { host, fixture } = await render(
+      [
+        assignmentSummary({ id: 'a-1', title: 'Дроби' }),
+        assignmentSummary({
+          id: 'a-2',
+          title: 'Без срока',
+          dueAt: null,
+          students: ['А', 'Б', 'В', 'Г', 'Д'],
+          totalTasks: 5,
+          submitted: 0,
+          accepted: 2,
+        }),
+        assignmentSummary({
+          id: 'a-3',
+          title: 'Черновик',
+          students: [],
+          totalTasks: 0,
+          submitted: 0,
+        }),
+        assignmentSummary({ id: 'a-4', title: 'Готово', totalTasks: 2, submitted: 0, accepted: 2 }),
+        assignmentSummary({ id: 'a-5', title: 'Свежее', totalTasks: 1, submitted: 0 }),
+      ],
+      [],
+    );
+    // nothing to review: the list opens on «Активные»
+    expect(segment(host, 'Активные').getAttribute('aria-pressed')).toBe('true');
+    expect(readableText(host)).toContain('Активные 4');
+    expect(readableText(host)).toContain('Готовые 1');
+    const list = rows(host);
+    expect(list[0]).toContain('Дроби Анна, Борис · до 10.09.2026');
+    expect(list[0]).toContain('На проверке: 1');
+    expect(list[1]).toContain('А, Б, В и ещё 2 · без срока');
+    expect(list[1]).toContain('Принято 2 из 5');
+    expect(list[2]).toContain('Свежее');
+    expect(list[2]).toContain('Выдано');
+    expect(readableText(host)).toContain('Не выдано');
+    expect(list[3]).toContain('Ещё никому не выдано');
+    expect(readableText(host)).not.toContain('Готово Анна');
+
+    segment(host, 'Готовые').click();
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(1);
+    expect(rows(host)[0]).toContain('Готово');
+    expect(rows(host)[0]).toContain('Принято');
+  });
+
+  it('searches the title or a student under the filter button', async () => {
+    const { host, fixture } = await render(
+      [assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Корни', students: ['Вера'] })],
+      [],
+    );
+    expect(host.querySelector('input[type="search"]')).toBeNull();
+
+    buttonByText(host, 'Поиск').click();
+    await fixture.whenStable();
+    const field = requireElement(host, 'input[type="search"]', HTMLInputElement);
+    field.value = 'вера';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(1);
+    expect(rows(host)[0]).toContain('Корни');
+
+    field.value = 'нет такого';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Ничего не найдено');
+
+    buttonByText(host, 'Скрыть поиск').click();
+    await fixture.whenStable();
+    expect(host.querySelector('input[type="search"]')).toBeNull();
+    expect(rows(host)).toHaveLength(2);
+  });
+
+  it('says what is empty in each filter', async () => {
+    const { host, fixture } = await render(
+      [assignmentSummary({ totalTasks: 2, submitted: 0, accepted: 2 })],
+      [],
+    );
+    expect(readableText(host)).toContain('Активных заданий нет');
+    segment(host, 'Готовые').click();
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(1);
+    segment(host, 'На проверку').click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Всё проверено');
+  });
+
+  it('finds nothing among the works either', async () => {
+    const { host, fixture } = await render([], [reviewQueueItem()]);
+    buttonByText(host, 'Поиск').click();
+    await fixture.whenStable();
+    const field = requireElement(host, 'input[type="search"]', HTMLInputElement);
+    field.value = 'нет такого';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Ничего не найдено');
+  });
+
+  it('acts on an assignment from its «⋮» menu', async () => {
+    const { host, fixture, navigate } = await render(
+      [
+        assignmentSummary(),
+        assignmentSummary({ id: 'a-2', title: 'Без срока', boardId: 'board-1', submitted: 0 }),
+      ],
+      [],
+    );
     async function act(title: string, item: string): Promise<void> {
       buttonByText(host, `Действия: ${title}`).click();
       await fixture.whenStable();
@@ -123,10 +249,10 @@ describe('AssignmentsPage', () => {
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
     await act('Без срока', 'Открыть доску');
     expect(navigate).toHaveBeenCalledWith(['/teacher/boards', 'board-1']);
-    await act('Дроби', 'Проверить работы');
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/review']);
 
-    fixture.destroy();
+    // «Проверить работы» shows the works to review in this very list
+    await act('Дроби', 'Проверить работы');
+    expect(segment(host, 'На проверку').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('deletes an assignment from its «⋮» menu after a confirmation', async () => {
@@ -136,6 +262,7 @@ describe('AssignmentsPage', () => {
     backend
       .expectOne('/api/teacher/homework/assignments')
       .flush([assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Лишнее' })]);
+    backend.expectOne(QUEUE).flush([]);
     await fixture.whenStable();
     const host = hostElement(fixture);
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);
@@ -168,12 +295,14 @@ describe('AssignmentsPage', () => {
     backend
       .expectOne('/api/teacher/homework/assignments')
       .flush(null, { status: 500, statusText: 'Error' });
+    backend.match(QUEUE);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить задания');
 
     buttonByText(hostElement(fixture), 'Повторить').click();
     backend.expectOne('/api/teacher/homework/assignments').flush([]);
+    backend.expectOne(QUEUE).flush([]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
@@ -192,6 +321,7 @@ describe('AssignmentsPage', () => {
       replaceUrl: true,
     });
     backend.match('/api/teacher/homework/assignments');
+    backend.match(QUEUE);
     fixture.destroy();
   });
 });
@@ -508,55 +638,6 @@ describe('AssignmentPage', () => {
 
     expect(buttonByText(host, 'На доску').disabled).toBe(true);
     fixture.destroy();
-  });
-});
-
-describe('ReviewQueuePage', () => {
-  it('lists submitted tasks', async () => {
-    const { backend } = configure();
-    const fixture = TestBed.createComponent(ReviewQueuePage);
-    await fixture.whenStable();
-    backend
-      .expectOne('/api/teacher/homework/review-queue')
-      .flush([
-        reviewQueueItem({ studentAvatar: '/api/public/avatars/anna' }),
-        reviewQueueItem({ taskId: 't-2', submittedAt: null, dueAt: '2026-09-10T15:00:00Z' }),
-      ]);
-    await fixture.whenStable();
-
-    const cards = [...hostElement(fixture).querySelectorAll('.tb-list > li')].map((card) =>
-      readableText(card),
-    );
-    expect(hostElement(fixture).querySelector('table')).toBeNull();
-    expect(cards[0]).toMatch(/^Анна Дроби · сдано 05\.09\.2026 \d\d:\d\d$/);
-    expect(cards[1]).toMatch(/^А Анна Дроби · срок 10\.09\.2026 \d\d:\d\d$/);
-    expect(hostElement(fixture).querySelectorAll('tb-avatar img')).toHaveLength(1);
-    expect(
-      hostElement(fixture).querySelectorAll('a[href="/teacher/homework/tasks/t-1"]'),
-    ).toHaveLength(1);
-  });
-
-  it('shows that everything is reviewed', async () => {
-    const { backend } = configure();
-    const fixture = TestBed.createComponent(ReviewQueuePage);
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
-    await fixture.whenStable();
-
-    expect(readableText(hostElement(fixture))).toContain('Всё проверено');
-  });
-
-  it('shows a failed load of the queue with «Повторить»', async () => {
-    const { backend } = configure();
-    const fixture = TestBed.createComponent(ReviewQueuePage);
-    await fixture.whenStable();
-    backend
-      .expectOne('/api/teacher/homework/review-queue')
-      .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-
-    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить работы на проверку');
-    expect(readableText(hostElement(fixture))).not.toContain('Всё проверено');
   });
 });
 

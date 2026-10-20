@@ -4,5 +4,4 @@ export { MyTaskPage } from './student/my-task-page';
 export { AssignmentEditorPage } from './teacher/assignment-editor-page';
 export { AssignmentPage } from './teacher/assignment-page';
 export { AssignmentsPage } from './teacher/assignments-page';
-export { ReviewQueuePage } from './teacher/review-queue-page';
 export { TaskReviewPage } from './teacher/task-review-page';

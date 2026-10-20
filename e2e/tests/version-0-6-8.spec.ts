@@ -161,14 +161,12 @@ test('the actions of the page header are at one height on every page', async ({
   expect(created.ok()).toBe(true);
   await signIn(page);
   await page.goto('/teacher/homework');
-  // from 0.21.0 the list has no header action on a desktop («Создать» in the rail): the titles line up
+  // 242.1: the list is a pane; the assignment page keeps the window until its own stage (242.2)
   await expect(page.locator('h1.tb-page-title')).toHaveText('Задания');
-  const list = await page.locator('h1.tb-page-title').boundingBox();
+  await page.getByRole('button', { name: /^Активные/ }).click();
   await page.getByRole('link', { name: 'Колонка 0.6.8' }).click();
   await expect(page.locator('h1.tb-page-title')).toHaveText('Колонка 0.6.8');
-  const nested = await page.locator('h1.tb-page-title').boundingBox();
   await expect(page.locator('.tb-page-header > .tb-actions p-button').first()).toBeVisible();
-  expect(Math.round(nested?.y ?? 0)).toBe(Math.round(list?.y ?? -1));
 });
 
 test('students are list rows with the status on the right, «⋮» in the card, words are whole', async ({

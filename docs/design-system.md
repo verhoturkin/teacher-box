@@ -756,6 +756,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   set wraps (no horizontal scroll), 8 dp gaps, a 48 dp target over each chip, a count after the label in label
   large emphasized when it is not zero.
 
+- **Segment group** (`@shared/ui/segment-group`, 242.1): a single-select M3 Expressive connected button group over
+  a list (`role="group"` with a name, buttons with `aria-pressed`, a count after the label). **M3:** 40 dp, 2 dp
+  between buttons, inner corners 8 dp (pressed 4 dp), outer corners round; the chosen one `primary` and fully round,
+  the others `secondary container`. *Ours:* the group takes the whole width, the buttons share it by their content.
+
 ## 10. Fields
 
 - M3 outlined text field, 56 px: outline; hover on-surface; focus 2 px primary; error — error colour.
