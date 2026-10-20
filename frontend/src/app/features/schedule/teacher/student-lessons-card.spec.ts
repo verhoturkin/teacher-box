@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { toIsoDate } from '@shared/dates/iso-date';
@@ -26,7 +26,7 @@ describe('StudentLessonsCard', () => {
     TestBed.configureTestingModule({ imports: [StudentLessonsCard], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(StudentLessonsCard);
-    fixture.componentRef.setInput('studentId', 's-1');
+    fixture.componentRef.setInput('of', { studentId: 's-1' });
     await fixture.whenStable();
   }
 
@@ -100,5 +100,21 @@ describe('StudentLessonsCard', () => {
     answer([]);
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Занятий не запланировано');
+  });
+
+  it('reads the lessons of a group and leaves its name out of the rows', async () => {
+    await render();
+    answer([]);
+    fixture.componentRef.setInput('of', { groupId: 'g-1' });
+    await fixture.whenStable();
+    const group = groupLesson({ id: 'group', ...inHours(24), topic: 'Дроби' });
+    const request = backend.expectOne((r) => r.url === '/api/teacher/schedule/lessons');
+    expect(request.request.params.get('groupId')).toBe('g-1');
+    request.flush([group]);
+    await fixture.whenStable();
+
+    expect(readableText(requireElement(hostElement(fixture), 'li', HTMLLIElement))).toBe(
+      `${formatLessonTime(group.startsAt, group.endsAt)} Дроби`,
+    );
   });
 });

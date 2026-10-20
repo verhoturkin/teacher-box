@@ -598,8 +598,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2): the
     actions (one popup `p-menu`, `aria-haspopup` + `aria-expanded`) are a «⋮» in the card's header. The row of the open card (from expanded) is `tb-list__item--current`:
     secondary-container, title weight 500 (M3 selected list item), also over a student's colour. With
-    nothing open beside the list — «Выберите ученика или группу»; a group's card is still the members line
-    (237.6).
+    nothing open beside the list — «Выберите ученика или группу».
   - Student's card (237.3, `identity/students/student-card.ts`) — header: the 72 px avatar in the student's
     colour (label container, *ours*), the name (h2, Headline Small; on one pane the page header carries it and
     «⋮»), «с сентября 2025» (Body Medium, on-surface-variant), tags — the status (not for an active student),
@@ -627,12 +626,26 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     `tb-form-actions` with the tonal «Сохранить», off until a field differs from the saved profile, and the text
     «Отмена» shown only then, which brings the saved values back; a saved profile updates the list row),
     «Цена занятия» (`tb-student-price-card` of billing — the one place a student's price is changed, the same
-    field + tonal «Сохранить»), «Видеовстреча» (`tb-room-panel [card]`, every action saved at once) and «Вход в
+    field + tonal «Сохранить»), «Видеовстреча» (`tb-room-panel`, a card since 237.6, every action saved at once) and «Вход в
     кабинет» (the read-only login, until when the issued link works, tonal «Новое приглашение» / «Сбросить
     пароль» — the same action as in «⋮»). *Our decision (M3 publishes no in-place edit pattern):* fields stay
     editable instead of a read view with a pencil, as the account's sections. The dialog «Новый ученик» asks only
     the name and the contacts; after it the card opens on Профиль with the invitation link over it. «⋮» has no
     «Изменить» any more.
+    The header is one part for both cards (`tb-card-head`, `card-head.ts`: the avatar and the actions projected).
+  - Group's card (237.6, `identity/groups/group-card.ts`) — the same header: a 72 px tile with the group icon in
+    the group's colour (secondary container without one, *ours*), «3 участника · с сентября 2025», the tag «В
+    архиве»; tonal «Написать» (`tb-broadcast-dialog [toGroup]` — the current members, no picker; hidden without
+    them) and filled «Занятие» (`tb-lesson-dialog [groupId]`), «⋮» — «В архив…» / «Вернуть из архива»; an
+    archived group has neither action. Tabs (`GROUP_TABS`): Обзор («Ближайшие занятия» of the group, «Связь»
+    with the room link), Занятия (`tb-student-lessons-tab [of]="{groupId}"`), Задания (`tb-student-tasks-tab
+    [members]` — the tasks of every member, the name first in the supporting line), Участники
+    (`tb-group-members-tab`: members by name — avatar or initials in the student's colour, a link to the card,
+    the status tag, an icon button «Убрать из группы: имя» saved at once; under the list a multiselect of the
+    current students not in the group and the tonal «Добавить»), Профиль (`tb-group-profile-tab`: «Данные
+    группы» — name *, default topic, colour with the same tonal «Сохранить» / «Отмена»; «Цена занятия» —
+    `tb-student-price-card [groupId]`; «Видеовстреча» — `tb-room-panel`, not for an archived group). The
+    dialog «Новая группа» asks only the name and the students («Создать»); after it the card opens on Профиль.
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,

@@ -13,7 +13,6 @@ import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { PaymentDialog, StudentBalanceCard, StudentPaymentsTab } from '@features/billing/parts';
 import { StudentTasksCard, StudentTasksTab } from '@features/homework/parts';
@@ -31,20 +30,13 @@ import { labelKey } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { Avatar } from '@shared/ui/avatar';
-import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { T } from '../i18n/texts';
-import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab } from './card-tabs';
+import { CardHead, HeaderTag } from './card-head';
+import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab, showTab } from './card-tabs';
 import { StudentRow } from './roster';
 import { STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { StudentProfileTab } from './student-profile-tab';
 import { Student } from '../data-access/identity.models';
-
-/** A tag of the header: the status, the messenger, the balance. */
-interface HeaderTag {
-  readonly value: string;
-  readonly severity: 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null;
-  readonly icon?: string;
-}
 
 /**
  * The card of a student (redesign spec §8): the header — the 72 px avatar, the name, «с сентября 2025», the
@@ -59,8 +51,8 @@ interface HeaderTag {
     Avatar,
     BroadcastDialog,
     Button,
-    ButtonAttributes,
     Card,
+    CardHead,
     LessonDialog,
     PaymentDialog,
     RoomLink,
@@ -77,78 +69,55 @@ interface HeaderTag {
     TabPanel,
     TabPanels,
     Tabs,
-    Tag,
     Tooltip,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let row = student();
-    <header class="tb-student-card__head">
+    <tb-card-head
+      [name]="row.name"
+      [line]="since()"
+      [tags]="tags()"
+      [single]="single()"
+      [actionsLabel]="actionsLabel()"
+      [busy]="busy()"
+      [menuOpen]="menuOpen()"
+      (more)="more.emit($event)"
+    >
       <tb-avatar
+        avatar
         class="tb-student-card__avatar"
         [attr.data-tb-label]="color()"
         [name]="row.name"
         [photo]="row.student.avatar"
         size="4.5rem"
       />
-      <div class="tb-student-card__text">
-        @if (!single()) {
-          <h2 class="tb-student-card__name">{{ row.name }}</h2>
-        }
-        <span class="tb-student-card__since">{{ since() }}</span>
-        @if (tags().length > 0) {
-          <div class="tb-student-card__tags">
-            @for (tag of tags(); track tag.value) {
-              <p-tag [value]="tag.value" [severity]="tag.severity" [icon]="tag.icon ?? ''" />
-            }
-          </div>
-        }
-      </div>
-      <div class="tb-student-card__actions">
-        @if (current()) {
-          <p-button
-            [label]="t.write"
-            icon="tb-i tb-i-chat"
-            severity="secondary"
-            (onClick)="writeVisible.set(true)"
-          />
-        }
+      @if (current()) {
         <p-button
-          [label]="t.payment"
-          icon="tb-i tb-i-payments"
+          [label]="t.write"
+          icon="tb-i tb-i-chat"
           severity="secondary"
-          [pTooltip]="t.paymentHint"
-          (onClick)="paymentVisible.set(true)"
+          (onClick)="writeVisible.set(true)"
         />
-        @if (current()) {
-          <p-button
-            [label]="t.lesson"
-            icon="tb-i tb-i-event"
-            [severity]="mobile() ? 'secondary' : 'primary'"
-            [loading]="lessonPending()"
-            (onClick)="openLesson()"
-          />
-        }
-        @if (!single()) {
-          <p-button
-            class="tb-student-card__more"
-            icon="tb-i tb-i-more_vert"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [pTooltip]="actionsLabel()"
-            [ariaLabel]="actionsLabel()"
-            [loading]="busy()"
-            [tbAttributes]="{
-              'aria-haspopup': 'menu',
-              'aria-expanded': menuOpen() ? 'true' : 'false',
-            }"
-            (onClick)="more.emit($event)"
-          />
-        }
-      </div>
-    </header>
+      }
+      <p-button
+        [label]="t.payment"
+        icon="tb-i tb-i-payments"
+        severity="secondary"
+        [pTooltip]="t.paymentHint"
+        (onClick)="paymentVisible.set(true)"
+      />
+      @if (current()) {
+        <p-button
+          [label]="t.lesson"
+          icon="tb-i tb-i-event"
+          [severity]="mobile() ? 'secondary' : 'primary'"
+          [loading]="lessonPending()"
+          (onClick)="openLesson()"
+        />
+      }
+    </tb-card-head>
 
     <p-tabs
       class="tb-tabs tb-tabs--start"
@@ -165,7 +134,7 @@ interface HeaderTag {
         <p-tabpanel value="overview">
           @if (tab() === 'overview') {
             <div class="tb-student-card__overview">
-              <tb-student-lessons-card [studentId]="row.id" [revision]="revision()" />
+              <tb-student-lessons-card [of]="lessonsOf()" [revision]="revision()" />
               <tb-student-tasks-card [studentId]="row.id" />
               <tb-student-balance-card [studentId]="row.id" [revision]="revision()" />
               <p-card [header]="t.connection">
@@ -228,65 +197,10 @@ interface HeaderTag {
       display: block;
     }
 
-    .tb-student-card__head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-4);
-      margin-block-end: var(--tb-space-4);
-    }
-
     /* the avatar in the student's colour (our decision; the rows tint their tile instead) */
     .tb-student-card__avatar[data-tb-label] {
       background: var(--tb-label-container);
       color: var(--tb-on-label-container);
-    }
-
-    .tb-student-card__text {
-      display: flex;
-      flex: 1 1 12rem;
-      flex-direction: column;
-      gap: var(--tb-space-1);
-      min-width: 0;
-    }
-
-    .tb-student-card__name {
-      margin: 0;
-      font: var(--tb-type-headline-s);
-      overflow-wrap: anywhere;
-    }
-
-    .tb-student-card__since {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
-    }
-
-    .tb-student-card__tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
-      margin-block-start: var(--tb-space-1);
-    }
-
-    .tb-student-card__actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-2);
-    }
-
-    /* compact: the actions under the name, equal width across the card (spec §8) */
-    @media (width < 37.5em) {
-      .tb-student-card__actions {
-        display: grid;
-        flex-basis: 100%;
-        grid-auto-columns: 1fr;
-        grid-auto-flow: column;
-
-        ::ng-deep .p-button {
-          width: 100%;
-        }
-      }
     }
 
     .tb-student-card__overview {
@@ -395,13 +309,7 @@ export class StudentCard {
 
   /** A tab chosen: `?tab=` names it, Обзор (the first) leaves the address without it. */
   protected choose(value: string | number | undefined): void {
-    const tab = cardTab(String(value));
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { tab: CARD_TABS.indexOf(tab) === 0 ? null : tab },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    showTab(this.router, this.route, cardTab(String(value)));
   }
 
   /** «Занятие»: the dialog opens once the length of a new lesson is known (60 min if it cannot be read). */

@@ -183,6 +183,7 @@ export const ru = {
   broadcast: {
     title: 'Сообщение ученикам',
     to: 'Кому',
+    group: (name: string) => `Группа «${name}»`,
     everyone: 'Всем ученикам',
     search: 'Поиск',
     hint: 'Если никого не выбрать, сообщение получат все ученики.',

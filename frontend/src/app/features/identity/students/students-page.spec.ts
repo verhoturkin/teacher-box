@@ -59,9 +59,9 @@ const SUMMER = aGroup({
 /** In two hours, so the nearest lesson is «сегодня» or «завтра» whatever the time of the run. */
 const SOON = new Date(Date.now() + 2 * 3_600_000);
 
-/** What the Обзор tab of a student's card reads. */
+/** What the tabs of a student's or a group's card read. */
 const OVERVIEW_READS =
-  /schedule\/lessons\?.*studentId=|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)/;
+  /schedule\/lessons\?.*(studentId|groupId)=|homework\/students\/|billing\/(students\/|groups$)|notifications\/students\/|meetings\/(rooms|calls)/;
 
 interface Extras {
   readonly balances?: Record<string, number>;
@@ -98,7 +98,7 @@ describe('StudentsPage', () => {
     backend.verify();
   });
 
-  /** Answers the reads of balances, messengers, lessons and group prices. */
+  /** Answers the reads of balances, messengers and lessons. */
   function flushExtras(students: readonly Student[], extras: Extras = {}): void {
     const balances = extras.balances ?? {};
     backend
@@ -123,12 +123,11 @@ describe('StudentsPage', () => {
     backend
       .expectOne(
         (request) =>
-          request.url === '/api/teacher/schedule/lessons' && !request.params.has('studentId'),
+          request.url === '/api/teacher/schedule/lessons' &&
+          !request.params.has('studentId') &&
+          !request.params.has('groupId'),
       )
       .flush(extras.lessons ?? []);
-    backend
-      .expectOne('/api/teacher/billing/groups')
-      .flush({ currency: 'RUB', prices: [{ groupId: 'g', lessonPrice: 80_000 }] });
   }
 
   async function load(
@@ -521,8 +520,9 @@ describe('StudentsPage', () => {
       await create();
     });
 
-    it('creates a group and keeps its new price', async () => {
+    it('creates a group and opens its card on Профиль', async () => {
       await load([MARIA]);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       buttonByText(host, 'Создать группу').click();
       await fixture.whenStable();
       expect(bodyText()).toContain('Новая группа');
@@ -531,24 +531,37 @@ describe('StudentsPage', () => {
         .query(By.directive(GroupFormDialog))
         .injector.get(GroupFormDialog);
       expect(dialog.students()).toEqual([MARIA]);
-      dialog.saved.emit({ group: aGroup({ id: 'g3', name: 'Английский' }), lessonPrice: 50_000 });
+      dialog.created.emit(aGroup({ id: 'g3', name: 'Английский' }));
       await fixture.whenStable();
 
       expect(rows()[1]).toContain('Английский');
-      await act('Английский', 'Изменить');
-      flushRoom();
-      await fixture.whenStable();
-      expect(requireElement(document.body, '#group-price', HTMLInputElement).value).toMatch(/500/);
+      expect(navigate).toHaveBeenCalledWith(['/teacher/groups', 'g3'], {
+        queryParams: { tab: 'profile' },
+      });
     });
 
-    it('edits a group with its price', async () => {
+    it('has no «Изменить» in the group menu: the card has the tabs for it', async () => {
       await load([MARIA], [OGE]);
 
-      await act('ОГЭ 9 класс', 'Изменить');
-      flushRoom();
+      await openCard('ОГЭ 9 класс');
+      buttonByText(host, 'Действия: ОГЭ 9 класс').click();
       await fixture.whenStable();
-      expect(requireElement(document.body, '#group-price', HTMLInputElement).value).toMatch(/800/);
-      expect(() => menuItemByText('Доски')).toThrow();
+      expect(() => menuItemByText('Изменить')).toThrow();
+      expect(menuItemByText('В архив')).toBeTruthy();
+    });
+
+    it('puts the group saved by its card in the list', async () => {
+      await load([MARIA, BORIS], [OGE]);
+      fixture.componentRef.setInput('tab', 'members');
+      await openCard('ОГЭ 9 класс');
+
+      buttonByText(host, 'Убрать из группы: Борис').click();
+      backend
+        .expectOne({ method: 'PUT', url: '/api/teacher/groups/g' })
+        .flush({ ...OGE, members: [OGE.members[0]], version: 1 });
+      await fixture.whenStable();
+
+      expect(rows().find((row) => row.includes('ОГЭ'))).toContain('Мария · нет занятий');
     });
 
     it('archives after confirmation and restores under «Отключённые»', async () => {
@@ -615,9 +628,12 @@ describe('StudentsPage', () => {
       await load([MARIA], [OGE]);
 
       expect(panes()).toEqual(['Список учеников', 'ОГЭ 9 класс']);
-      expect(readableText(requireElement(host, '.tb-roster__card', HTMLElement))).toContain(
-        'Мария, Борис',
+      expect(host.querySelector('tb-group-card h2')?.textContent).toBe('ОГЭ 9 класс');
+      expect(readableText(requireElement(host, 'tb-group-card header', HTMLElement))).toContain(
+        '2 участника',
       );
+      expect(buttonByText(host, 'Действия: ОГЭ 9 класс').closest('tb-group-card')).not.toBeNull();
+      expect(host.querySelector('tb-group-card tb-student-lessons-card')).not.toBeNull();
     });
 
     it('asks to choose a row when nothing is open', async () => {

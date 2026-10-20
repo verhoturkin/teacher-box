@@ -58,7 +58,10 @@ student or group. ADR: none.
   colour, price, `meetings/rooms/room-panel.ts`, invite link); the dialog stays only for creating (name +
   contact), then opens the card. *The price is changed only on Профиль (`billing` part `tb-student-price-card`);
   Оплаты shows it read-only. «⋮» lost «Изменить»; the card opens on `?tab=profile` after creating.*
-- [ ] 237.6 **F** Group card (Обзор, Занятия, Задания, Участники, Профиль) from `group-form-dialog.ts`.
+- [x] 237.6 **F** Group card (Обзор, Занятия, Задания, Участники, Профиль) from `group-form-dialog.ts`.
+  *The header is shared with the student's card (`tb-card-head`); Задания of a group are the tasks of its
+  members (the one-student read of 237.1 per member — `homework` has no groups); the dialog creates only (name,
+  students), the card opens on Профиль; the group price is edited by billing's `tb-student-price-card [groupId]`.*
 - [ ] 237.7 **D** design-system (list-detail, card anatomy), `docs/modules/identity.md`, help (students, groups,
   payments of a student; ru, en), wiki.
 

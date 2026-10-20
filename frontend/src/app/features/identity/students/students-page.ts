@@ -50,7 +50,8 @@ import {
   Student,
   StudentGroup,
 } from '../data-access/identity.models';
-import { GroupFormDialog, SavedGroup } from '../groups/group-form-dialog';
+import { GroupCard } from '../groups/group-card';
+import { GroupFormDialog } from '../groups/group-form-dialog';
 import { T } from '../i18n/texts';
 import { InviteLinkDialog } from './invite-link-dialog';
 import {
@@ -64,7 +65,7 @@ import {
   lessonWhen,
   rosterRows,
 } from './roster';
-import { cardTab } from './card-tabs';
+import { cardTab, groupTab } from './card-tabs';
 import { StudentCard, channelNames } from './student-card';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
@@ -81,7 +82,6 @@ interface Extras {
   /** The connected messengers by student (`ChannelType` names). */
   readonly channels: ReadonlyMap<string, readonly string[]> | null;
   readonly lessons: readonly ScheduledLesson[] | null;
-  readonly groupPrices: ReadonlyMap<string, number>;
 }
 
 function orNull<T>(source: Observable<T>): Observable<T | null> {
@@ -111,6 +111,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     Tag,
     Tooltip,
     ButtonAttributes,
+    GroupCard,
     GroupFormDialog,
     InviteLinkDialog,
     StudentCard,
@@ -250,11 +251,6 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
             <tb-page-header [title]="detailTitle()" back="/teacher/students" [backLabel]="t.all">
               <ng-container [ngTemplateOutlet]="actions" />
             </tb-page-header>
-          } @else if (selected()?.kind === 'group') {
-            <div class="tb-roster__head">
-              <h2 class="tb-roster__heading">{{ detailTitle() }}</h2>
-              <ng-container [ngTemplateOutlet]="actions" />
-            </div>
           }
           @if (selected(); as row) {
             @if (row.kind === 'student') {
@@ -272,10 +268,17 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 (invite)="reissueInvite(row.student)"
               />
             } @else {
-              <!-- the group's card comes in 237.6 -->
-              <div class="tb-roster__card">
-                <p class="tb-muted">{{ supporting(row) }}</p>
-              </div>
+              <tb-group-card
+                [group]="row.group"
+                [students]="students()"
+                [tab]="groupCardTab()"
+                [single]="layout.single()"
+                [busy]="busy.is(row.id)"
+                [menuOpen]="menuFor() === row"
+                (more)="openMenu(row, $event)"
+                (changed)="loadExtras()"
+                (saved)="onGroupSaved($event)"
+              />
             }
           } @else if (state.ready()) {
             @if (open()) {
@@ -307,11 +310,8 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     />
     <tb-group-form-dialog
       [(visible)]="groupFormVisible"
-      [group]="editedGroup()"
       [students]="students()"
-      [lessonPrice]="editedGroupPrice()"
-      [currency]="extras().currency"
-      (saved)="onGroupSaved($event)"
+      (created)="onGroupCreated($event)"
     />
     <p-confirmdialog />
   `,
@@ -341,23 +341,6 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       color: var(--p-md-error);
       font: var(--tb-type-title-m);
       white-space: nowrap;
-    }
-
-    .tb-roster__head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--tb-space-2);
-      margin-block-end: var(--tb-space-4);
-    }
-
-    .tb-roster__heading {
-      margin: 0;
-      font: var(--tb-type-headline-s-emphasized);
-    }
-
-    .tb-roster__card p {
-      margin: 0;
     }
   `,
 })
@@ -395,7 +378,6 @@ export class StudentsPage implements OnInit {
     messengers: null,
     channels: null,
     lessons: null,
-    groupPrices: new Map(),
   });
   /** The moment the lessons were read: the nearest lesson is the nearest from it. */
   private readonly now = signal(Date.now());
@@ -457,6 +439,7 @@ export class StudentsPage implements OnInit {
     );
   });
   protected readonly cardTab = computed(() => cardTab(this.tab()));
+  protected readonly groupCardTab = computed(() => groupTab(this.tab()));
   /** The messengers of the open student's card; a student missing from the read has none. */
   protected readonly selectedChannels = computed(() => {
     const row = this.selected();
@@ -480,11 +463,6 @@ export class StudentsPage implements OnInit {
   protected readonly invite = signal<IssuedInvite | null>(null);
   protected readonly inviteStudentName = signal('');
   protected readonly groupFormVisible = signal(false);
-  protected readonly editedGroup = signal<StudentGroup | null>(null);
-  protected readonly editedGroupPrice = computed(() => {
-    const group = this.editedGroup();
-    return group === null ? null : (this.extras().groupPrices.get(group.id) ?? null);
-  });
 
   constructor() {
     openOnCreate('student', () => {
@@ -522,15 +500,14 @@ export class StudentsPage implements OnInit {
           toIsoDate(new Date(today.getTime() + LESSON_DAYS * DAY_MS)),
         ),
       ),
-      prices: orNull(this.billing.groupPrices(quietContext())),
-    }).subscribe(({ overview, messengers, lessons, prices }) => {
+    }).subscribe(({ overview, messengers, lessons }) => {
       this.now.set(Date.now());
       this.extras.set({
         balances:
           overview === null
             ? null
             : new Map(overview.students.map((student) => [student.studentId, student.balance])),
-        currency: overview?.currency ?? prices?.currency ?? 'RUB',
+        currency: overview?.currency ?? 'RUB',
         messengers:
           messengers === null
             ? null
@@ -549,9 +526,6 @@ export class StudentsPage implements OnInit {
                 ]),
               ),
         lessons,
-        groupPrices: new Map(
-          (prices?.prices ?? []).map((price) => [price.groupId, price.lessonPrice]),
-        ),
       });
     });
   }
@@ -636,7 +610,6 @@ export class StudentsPage implements OnInit {
   }
 
   protected openCreateGroup(): void {
-    this.editedGroup.set(null);
     this.groupFormVisible.set(true);
   }
 
@@ -656,16 +629,18 @@ export class StudentsPage implements OnInit {
     this.snackbar.success(this.t.saved(student.displayName));
   }
 
-  protected onGroupSaved({ group, lessonPrice }: SavedGroup): void {
-    this.snackbar.success(this.tg.saved);
-    this.groups.update((groups) => [...groups.filter((item) => item.id !== group.id), group]);
+  /** A new group: its card opens on Профиль to set the price and the rest. */
+  protected onGroupCreated(group: StudentGroup): void {
+    this.groups.update((groups) => [...groups, group]);
     this.colors.rememberGroup(group);
-    if (lessonPrice !== null) {
-      this.extras.update((extras) => ({
-        ...extras,
-        groupPrices: new Map(extras.groupPrices).set(group.id, lessonPrice),
-      }));
-    }
+    this.snackbar.success(this.tg.saved);
+    void this.router.navigate(['/teacher/groups', group.id], { queryParams: { tab: 'profile' } });
+  }
+
+  /** The card saved the members or the profile of the group. */
+  protected onGroupSaved(group: StudentGroup): void {
+    this.replaceGroup(group);
+    this.colors.rememberGroup(group);
   }
 
   protected reissueInvite(student: Student): void {
@@ -756,14 +731,6 @@ export class StudentsPage implements OnInit {
 
   private groupActions(group: StudentGroup): MenuItem[] {
     return [
-      {
-        label: this.tg.edit,
-        icon: 'tb-i tb-i-edit',
-        command: () => {
-          this.editedGroup.set(group);
-          this.groupFormVisible.set(true);
-        },
-      },
       group.archivedAt === null
         ? {
             label: this.tg.archiveItem,

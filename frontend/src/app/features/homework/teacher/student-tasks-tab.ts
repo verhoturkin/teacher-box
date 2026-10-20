@@ -10,6 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Observable, forkJoin, map, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
@@ -25,6 +26,15 @@ import { byUrgency } from './student-tasks-card';
 /** Rows shown at first and added by «Показать ещё». */
 export const TASKS_PAGE = 20;
 
+/** A member of the group whose tasks the tab lists. */
+interface TaskMember {
+  readonly id: string;
+  readonly displayName: string;
+}
+
+/** A task with the name of its student — on a group's card. */
+type Row = MyTask & { readonly who: string | null };
+
 /** Open tasks as on Обзор, then the accepted ones, the latest reviewed first. */
 function inOrder(a: MyTask, b: MyTask): number {
   const accepted = Number(a.status === 'ACCEPTED') - Number(b.status === 'ACCEPTED');
@@ -38,7 +48,8 @@ function inOrder(a: MyTask, b: MyTask): number {
 
 /**
  * The Задания tab of a student's card (redesign spec §8): every task of the student with its status — the
- * open ones first, as on Обзор, then the accepted ones with the grade — each a link to the task.
+ * open ones first, as on Обзор, then the accepted ones with the grade — each a link to the task. On a group's
+ * card (`members`) the tasks of every member, each with the member's name.
  */
 @Component({
   selector: 'tb-student-tasks-tab',
@@ -51,7 +62,7 @@ function inOrder(a: MyTask, b: MyTask): number {
           <tb-empty-state [compact]="true" icon="tb-i-assignment" [title]="t.nothing" />
         } @else {
           <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-            @for (task of visible(); track task.taskId) {
+            @for (task of visible(); track task.taskId + (task.who ?? '')) {
               <li>
                 <span
                   class="tb-list__lead"
@@ -66,6 +77,9 @@ function inOrder(a: MyTask, b: MyTask): number {
                     >{{ task.title }}</a
                   >
                   <span class="tb-list__supporting">
+                    @if (task.who !== null) {
+                      {{ task.who }} ·
+                    }
                     @if (task.status === 'ACCEPTED') {
                       @if (task.reviewedAt !== null) {
                         {{ t.reviewed((task.reviewedAt | date: 'dd.MM.yyyy') ?? '') }}
@@ -111,16 +125,20 @@ export class StudentTasksTab {
   protected readonly statusSeverities = TASK_STATUS_SEVERITIES;
   private readonly api = inject(HomeworkApi);
 
-  readonly studentId = input.required<string>();
+  /** The student whose tasks the tab lists; or else `members`. */
+  readonly studentId = input<string | null>(null);
+  /** The members of a group: the tasks of each of them. */
+  readonly members = input<readonly TaskMember[] | null>(null);
 
   protected readonly state = new LoadState();
-  protected readonly tasks = signal<readonly MyTask[]>([]);
+  protected readonly tasks = signal<readonly Row[]>([]);
   private readonly shown = signal(TASKS_PAGE);
   protected readonly visible = computed(() => this.tasks().slice(0, this.shown()));
 
   constructor() {
     effect(() => {
       this.studentId();
+      this.members();
       untracked(() => {
         this.load();
       });
@@ -129,12 +147,30 @@ export class StudentTasksTab {
 
   protected load(): void {
     this.shown.set(TASKS_PAGE);
-    this.api
-      .studentTasks(this.studentId())
+    this.read()
       .pipe(this.state.track())
       .subscribe((tasks) => {
         this.tasks.set([...tasks].sort(inOrder));
       });
+  }
+
+  private read(): Observable<Row[]> {
+    const members = this.members();
+    if (members === null) {
+      return this.api
+        .studentTasks(this.studentId() ?? '')
+        .pipe(map((tasks) => tasks.map((task) => ({ ...task, who: null }))));
+    }
+    if (members.length === 0) {
+      return of([]);
+    }
+    return forkJoin(
+      members.map((member) =>
+        this.api
+          .studentTasks(member.id)
+          .pipe(map((tasks) => tasks.map((task) => ({ ...task, who: member.displayName })))),
+      ),
+    ).pipe(map((lists) => lists.flat()));
   }
 
   protected showMore(): void {

@@ -169,7 +169,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
 
       <tb-student-price-card [studentId]="row.id" />
 
-      <tb-room-panel [owner]="roomOwner()" [card]="true" />
+      <tb-room-panel [owner]="roomOwner()" />
 
       <p-card [header]="t.access">
         <div class="tb-form">

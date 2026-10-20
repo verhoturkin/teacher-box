@@ -13,7 +13,7 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { ScheduleApi } from '../data-access/schedule-api';
+import { LessonsOf, ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
 import { T } from '../i18n/texts';
@@ -25,8 +25,8 @@ const SHOWN = 3;
 const DAY_MS = 86_400_000;
 
 /**
- * Overview of a student's card (redesign spec §8): the next planned lessons of the student — alone or in
- * a group — with the time, the group and the topic.
+ * Overview of a student's or a group's card (redesign spec §8): the next planned lessons of the student —
+ * alone or in a group — or of the group, with the time, the group and the topic.
  */
 @Component({
   selector: 'tb-student-lessons-card',
@@ -72,7 +72,8 @@ export class StudentLessonsCard {
   protected readonly t = T.studentLessons;
   private readonly api = inject(ScheduleApi);
 
-  readonly studentId = input.required<string>();
+  /** Whose lessons: a student's (with their group lessons) or a group's. */
+  readonly of = input.required<LessonsOf>();
   /** Changed by the card when it planned a lesson: the list is read again. */
   readonly revision = input(0);
 
@@ -90,7 +91,7 @@ export class StudentLessonsCard {
   constructor() {
     effect(() => {
       this.revision();
-      this.studentId();
+      this.of();
       untracked(() => {
         this.load();
       });
@@ -100,9 +101,7 @@ export class StudentLessonsCard {
   protected load(): void {
     const today = new Date();
     this.api
-      .lessons(toIsoDate(today), toIsoDate(new Date(today.getTime() + DAYS * DAY_MS)), {
-        studentId: this.studentId(),
-      })
+      .lessons(toIsoDate(today), toIsoDate(new Date(today.getTime() + DAYS * DAY_MS)), this.of())
       .pipe(this.state.track())
       .subscribe((lessons) => {
         this.lessons.set(lessons);
@@ -116,7 +115,7 @@ export class StudentLessonsCard {
   /** «Группа «ОГЭ» · Теорема Виета · регулярное». */
   protected details(lesson: ScheduledLesson): string {
     return [
-      lesson.groupId === null ? null : lessonWith(lesson),
+      lesson.groupId === null || 'groupId' in this.of() ? null : lessonWith(lesson),
       lesson.topic ?? this.t.noTopic,
       lesson.seriesId === null ? null : this.t.recurring,
     ]

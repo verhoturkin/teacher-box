@@ -184,6 +184,8 @@ export class LessonDialog {
   readonly defaultDuration = input(60);
   /** A new lesson with this student only (the student's card): «with whom» is set and fixed. */
   readonly studentId = input<string | null>(null);
+  /** A new lesson with this group only (the group's card): «with whom» is set and fixed. */
+  readonly groupId = input<string | null>(null);
   readonly saved = output<ScheduledLesson>();
 
   protected readonly ownerOptions = computed(() => ownerOptions(this.students(), this.groups()));
@@ -267,13 +269,22 @@ export class LessonDialog {
     });
   }
 
+  /** The owner a card fixes: its student or its group. */
+  private preset(): OwnerValue | null {
+    const studentId = this.studentId();
+    const groupId = this.groupId();
+    if (studentId !== null) {
+      return `student:${studentId}`;
+    }
+    return groupId === null ? null : `group:${groupId}`;
+  }
+
   private reset(): void {
     this.error.set(null);
     this.overlap.set(false);
     const lesson = this.lesson();
     const slot = this.slot();
-    const studentId = this.studentId();
-    const preset: OwnerValue | null = studentId === null ? null : `student:${studentId}`;
+    const preset = this.preset();
     this.form.reset({
       owner: lesson === null ? preset : ownerValue(lesson),
       startsAt: lesson === null ? (slot?.start ?? null) : new Date(lesson.startsAt),

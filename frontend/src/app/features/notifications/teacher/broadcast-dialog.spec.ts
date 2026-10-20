@@ -64,6 +64,33 @@ describe('BroadcastDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
+  it('writes to the members of the group of the card', async () => {
+    fixture.componentRef.setInput('toGroup', {
+      name: 'ОГЭ',
+      members: [
+        { id: 's-2', displayName: 'Борис' },
+        { id: 's-3', displayName: 'Вера' },
+      ],
+    });
+    await fixture.whenStable();
+    expect(document.body.querySelector<HTMLInputElement>('#broadcast-to')?.value).toBe(
+      'Группа «ОГЭ»',
+    );
+    expect(document.body.querySelector('#broadcast-to-hint')?.textContent).toContain('Борис, Вера');
+    expect(document.body.querySelector('#broadcast-students')).toBeNull();
+    fixture.componentInstance.form.patchValue({ title: 'Перенос' });
+
+    fixture.componentInstance.send();
+
+    const request = backend.expectOne('/api/teacher/notifications/broadcast');
+    expect(request.request.body).toEqual({
+      title: 'Перенос',
+      body: null,
+      studentIds: ['s-2', 's-3'],
+    });
+    request.flush({ recipients: 2 });
+  });
+
   it('writes to the one student of the card', async () => {
     fixture.componentRef.setInput('to', { id: 's-2', displayName: 'Борис' });
     await fixture.whenStable();

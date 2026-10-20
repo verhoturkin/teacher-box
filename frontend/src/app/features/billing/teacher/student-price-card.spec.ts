@@ -112,4 +112,46 @@ describe('StudentPriceCard', () => {
 
     expect(field()).toBeTruthy();
   });
+
+  describe('of a group', () => {
+    beforeEach(async () => {
+      await loaded();
+      fixture.componentRef.setInput('studentId', null);
+      fixture.componentRef.setInput('groupId', 'g-1');
+      await fixture.whenStable();
+    });
+
+    it('shows the group price with the group hint and saves a new one', async () => {
+      backend.expectOne('/api/teacher/billing/groups').flush({
+        currency: 'RUB',
+        prices: [{ groupId: 'g-1', lessonPrice: 120_000 }],
+      });
+      await fixture.whenStable();
+
+      expect(field().value.replace(/\s/g, ' ')).toContain('1 200');
+      expect(readableText(host)).toContain('Спишется с каждого');
+      fixture.componentInstance.price.setValue(1300);
+      await fixture.whenStable();
+      buttonByText(host, 'Сохранить').click();
+
+      const request = backend.expectOne('/api/teacher/billing/groups/g-1/price');
+      expect(request.request.body).toEqual({ lessonPrice: 130_000 });
+      request.flush({ groupId: 'g-1', lessonPrice: 130_000 });
+      await fixture.whenStable();
+      expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+    });
+
+    it('leaves the field empty for a group without a price yet', async () => {
+      backend.expectOne('/api/teacher/billing/groups').flush({ currency: 'RUB', prices: [] });
+      await fixture.whenStable();
+
+      expect(field().value).toBe('');
+      expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+      fixture.componentInstance.price.setValue(900);
+      await fixture.whenStable();
+      buttonByText(host, 'Отмена').click();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.price.value).toBeNull();
+    });
+  });
 });

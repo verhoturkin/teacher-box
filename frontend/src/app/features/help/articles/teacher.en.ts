@@ -113,11 +113,22 @@ A group is students who study together. A group has its own lesson price: it is 
 ## Create a group
 
 1. «Students» → the «Create group» button next to the title.
-2. Enter the name, tick the students and set the price of one lesson for each. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
+2. Enter the name, tick the students and click «Create».
+3. The group's card opens on the «Profile» tab: set the price of one lesson for each member. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
 
 ## Groups in the list
 
-Groups are rows of the students' list with a group icon: the name, the students and the nearest lesson; the «Groups» filter keeps only them. The «⋮» button in the group's card opens the menu: «Edit» (name, students, lesson price, default topic, colour and video meeting) and «Archive». Archived groups are under the «Turned off» filter, marked «Archived», with «Restore from archive».
+Groups are rows of the students' list with a group icon: the name, the students and the nearest lesson; the «Groups» filter keeps only them. Archived groups are under the «Turned off» filter, marked «Archived».
+
+## The group's card
+
+Click a group's row to open its card, built as a student's. At the top — the name, the number of members and the month the group started; the buttons «Write» (a message to every member), «Lesson» (a new lesson with the group) and «⋮» with «Archive» («Restore from archive» for an archived group). The tabs:
+
+- **Overview** — the group's next lessons and the link to its room.
+- **Lessons** — every lesson of the group: upcoming and past with the outcome.
+- **Homework** — the tasks of every member with the status; the student's name next to each task.
+- **Members** — the students of the group; a name opens the student's card. The «remove» icon in a row takes the student out of the group; below, choose students and click «Add».
+- **Profile** — the name, the default topic and the colour («Save» under the fields), the lesson price for each member and the video meeting.
 
 ## Group lessons
 
@@ -127,7 +138,7 @@ After the lesson mark the attendance: who came, who missed. The lesson is charge
 
 ## If the members change
 
-Edit the group — new members appear in future lessons, those who left disappear from them. Past lessons do not change.
+Change the members on the «Members» tab — new members appear in future lessons, those who left disappear from them. Past lessons do not change.
 
 Archive a group you no longer teach: its future lessons are cancelled, the history stays.
 `,
@@ -141,7 +152,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 - **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
 
-**Default topic.** If a student or a group has a default topic (on the student's «Profile» tab or in the group's «Edit» window), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -209,7 +220,7 @@ On a phone a minimized call is a bar above the bottom menu.
 
 ## External link
 
-If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student → the «Profile» tab → «Video meeting» (for a group — «⋮» → «Edit» → «Video meeting»).
+If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student → the «Profile» tab → «Video meeting» (for a group — the same, on the «Profile» tab of its card).
 
 The administrator turns calls in the portal on (a call server is needed). If they are off, the section says so.
 `,
@@ -222,7 +233,7 @@ If calls in the portal are on, lessons are held in the portal room — see [Call
 
 ## Set the link
 
-«Students» → the student → the «Profile» tab of their card → «Video meeting»; for a group — «⋮» in the card → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
+«Students» → the student → the «Profile» tab of their card → «Video meeting»; for a group — the same, the «Profile» tab of its card. Actions in this block are saved at once, without «Save».
 
 Create a meeting in Telemost, Zoom or another service, paste the link and click «Add link».
 

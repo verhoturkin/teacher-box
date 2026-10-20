@@ -138,6 +138,7 @@ export const en: Translation<typeof ru> = {
     lessonPrice: 'Lesson price',
     what: 'the lesson price',
     hint: 'Charged for each lesson of the student; a group lesson costs the group price',
+    groupHint: 'Charged to everyone who came to the lesson or missed it without notice',
     changed: 'Lesson price changed',
   },
   studentLedger: {

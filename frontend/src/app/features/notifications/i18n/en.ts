@@ -184,6 +184,7 @@ export const en: Translation<typeof ru> = {
   broadcast: {
     title: 'Message to students',
     to: 'To',
+    group: (name: string) => `Group “${name}”`,
     everyone: 'All students',
     search: 'Search',
     hint: 'If nobody is chosen, all students get the message.',

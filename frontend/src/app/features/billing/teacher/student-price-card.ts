@@ -23,8 +23,8 @@ import { BillingApi } from '../data-access/billing-api';
 import { T } from '../i18n/texts';
 
 /**
- * The lesson price of one student on the Профиль tab of the card (redesign spec §8), the one place it is
- * changed: the field under its label across the card, saved in place by the tonal «Сохранить» under it;
+ * The lesson price of one student — or of one group — on the Профиль tab of the card (redesign spec §8), the
+ * one place it is changed: the field under its label across the card, saved in place by the tonal «Сохранить» under it;
  * «Отмена» brings back the saved price.
  */
 @Component({
@@ -47,7 +47,7 @@ import { T } from '../i18n/texts';
               [min]="0"
               [fluid]="true"
             />
-            <small class="tb-hint">{{ t.hint }}</small>
+            <small class="tb-hint">{{ groupId() === null ? t.hint : t.groupHint }}</small>
           </div>
           <div class="tb-form-actions">
             @if (changed()) {
@@ -79,10 +79,13 @@ export class StudentPriceCard {
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
 
-  readonly studentId = input.required<string>();
+  /** The student whose price it is; or else `groupId`. */
+  readonly studentId = input<string | null>(null);
+  /** The group whose price it is. */
+  readonly groupId = input<string | null>(null);
 
   protected readonly state = new LoadState();
-  /** The saved price, minor units; `null` until it is read. */
+  /** The saved price, minor units; `null` until it is read (a new group may have none yet). */
   protected readonly saved = signal<number | null>(null);
   protected readonly currency = signal('RUB');
   protected readonly pending = signal(false);
@@ -93,12 +96,13 @@ export class StudentPriceCard {
   protected readonly changed = computed(() => {
     const saved = this.saved();
     const value = this.value();
-    return saved !== null && value !== null && toMinorUnits(value, this.currency()) !== saved;
+    return this.state.ready() && value !== null && toMinorUnits(value, this.currency()) !== saved;
   });
 
   constructor() {
     effect(() => {
       this.studentId();
+      this.groupId();
       untracked(() => {
         this.load();
       });
@@ -106,8 +110,19 @@ export class StudentPriceCard {
   }
 
   protected load(): void {
+    const groupId = this.groupId();
+    if (groupId !== null) {
+      this.api
+        .groupPrices()
+        .pipe(this.state.track())
+        .subscribe((prices) => {
+          this.currency.set(prices.currency);
+          this.show(prices.prices.find((price) => price.groupId === groupId)?.lessonPrice ?? null);
+        });
+      return;
+    }
     this.api
-      .ledger(this.studentId())
+      .ledger(this.studentId() ?? '')
       .pipe(this.state.track())
       .subscribe((ledger) => {
         this.currency.set(ledger.currency);
@@ -120,8 +135,13 @@ export class StudentPriceCard {
     if (value === null || this.price.invalid || !this.changed() || this.pending()) {
       return;
     }
+    const minor = toMinorUnits(value, this.currency());
+    const groupId = this.groupId();
     this.pending.set(true);
-    this.api.changeLessonPrice(this.studentId(), toMinorUnits(value, this.currency())).subscribe({
+    (groupId === null
+      ? this.api.changeLessonPrice(this.studentId() ?? '', minor)
+      : this.api.changeGroupPrice(groupId, minor)
+    ).subscribe({
       next: (saved) => {
         this.pending.set(false);
         this.show(saved);
@@ -134,14 +154,11 @@ export class StudentPriceCard {
   }
 
   protected cancel(): void {
-    const saved = this.saved();
-    if (saved !== null) {
-      this.show(saved);
-    }
+    this.show(this.saved());
   }
 
-  private show(price: number): void {
+  private show(price: number | null): void {
     this.saved.set(price);
-    this.price.setValue(toMajorUnits(price, this.currency()));
+    this.price.setValue(price === null ? null : toMajorUnits(price, this.currency()));
   }
 }

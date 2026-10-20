@@ -87,4 +87,30 @@ describe('StudentTasksTab', () => {
 
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
+
+  it('lists the tasks of every member of a group with their names', async () => {
+    await render([]);
+    fixture.componentRef.setInput('studentId', null);
+    fixture.componentRef.setInput('members', [
+      { id: 's-1', displayName: 'Вера' },
+      { id: 's-2', displayName: 'Глеб' },
+    ]);
+    await fixture.whenStable();
+    backend.expectOne(TASKS).flush([myTask({ taskId: 't-1', title: 'Дроби', dueAt: null })]);
+    backend
+      .expectOne('/api/teacher/homework/students/s-2/tasks')
+      .flush([myTask({ taskId: 't-1', title: 'Дроби', dueAt: null })]);
+    await fixture.whenStable();
+
+    expect(rows()).toEqual(['Дроби Вера · без срока Выдано', 'Дроби Глеб · без срока Выдано']);
+  });
+
+  it('has nothing to read for a group without members', async () => {
+    await render([]);
+    fixture.componentRef.setInput('members', []);
+    await fixture.whenStable();
+
+    expect(rows()).toEqual([]);
+    expect(readableText(hostElement(fixture))).toContain('Заданий');
+  });
 });

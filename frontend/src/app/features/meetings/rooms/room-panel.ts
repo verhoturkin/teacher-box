@@ -19,10 +19,9 @@ import { T } from '../i18n/texts';
 const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
 
 /**
- * The call of a student or a group — a card of the student's Профиль tab (`card`), or a section inside the
- * dialog that edits a group (a dialog never opens another one, ADR-0026): the room of the portal by default
- * (ADR-0030) or an external call link — paste it, copy it, send it to the students, remove it. Every action
- * is saved at once.
+ * The call of a student or a group — a card of the Профиль tab of their card: the room of the portal by
+ * default (ADR-0030) or an external call link — paste it, copy it, send it to the students, remove it. Every
+ * action is saved at once.
  */
 @Component({
   selector: 'tb-room-panel',
@@ -30,16 +29,9 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (owner() !== null) {
-      @if (card()) {
-        <p-card [header]="t.title">
-          <div class="tb-form"><ng-container [ngTemplateOutlet]="body" /></div>
-        </p-card>
-      } @else {
-        <section class="tb-form" aria-labelledby="room-panel-title">
-          <h3 id="room-panel-title" class="tb-subtitle">{{ t.title }}</h3>
-          <ng-container [ngTemplateOutlet]="body" />
-        </section>
-      }
+      <p-card [header]="t.title">
+        <div class="tb-form"><ng-container [ngTemplateOutlet]="body" /></div>
+      </p-card>
     }
     <ng-template #body>
       @if (owner(); as owner) {
@@ -124,17 +116,6 @@ const ROOM_LINK_PATTERN = /^\s*https?:\/\/\S+\s*$/;
     </ng-template>
   `,
   styles: `
-    /* under the form of the dialog, apart from its fields */
-    section {
-      margin-top: var(--tb-space-6);
-      padding-top: var(--tb-space-4);
-      border-top: 1px solid var(--p-md-outline-variant);
-    }
-
-    .tb-subtitle {
-      margin: 0;
-    }
-
     .tb-room-link {
       display: flex;
       align-items: center;
@@ -154,8 +135,6 @@ export class RoomPanel {
 
   /** The student or the group whose room it is. */
   readonly owner = input<RoomOwnerRef | null>(null);
-  /** A card of its own (the Профиль tab) instead of a section under the fields of a dialog. */
-  readonly card = input(false);
 
   protected readonly room = signal<MeetingRoom | null>(null);
   /** Built-in calls are set up: without a link the room of the portal is used (ADR-0030). */
