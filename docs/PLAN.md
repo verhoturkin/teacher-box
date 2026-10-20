@@ -62,7 +62,7 @@ student or group. ADR: none.
   *The header is shared with the student's card (`tb-card-head`); Задания of a group are the tasks of its
   members (the one-student read of 237.1 per member — `homework` has no groups); the dialog creates only (name,
   students), the card opens on Профиль; the group price is edited by billing's `tb-student-price-card [groupId]`.*
-- [ ] 237.7 **D** design-system (list-detail, card anatomy), `docs/modules/identity.md`, help (students, groups,
+- [x] 237.7 **D** design-system (list-detail, card anatomy), `docs/modules/identity.md`, help (students, groups,
   payments of a student; ru, en), wiki.
 
 ### 238. Release 0.23.0 (D)

@@ -405,11 +405,11 @@ Students in «Payments» are a list, a line per student: photo, name, lesson pri
 
 ## Record a payment
 
-«Create» → «Payment» (on a phone — «Payments» → «Payment»; or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
+«Create» → «Payment» (on a phone — «Payments» → «Payment»; or the «Payment» button in the student's card) → amount, date and comment. A wrong payment can be voided on the «Payments» tab of the student's card.
 
 ## Payment receipt
 
-A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the student's history — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
+A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the history on the «Payments» tab of the student's card — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
 
 The easiest way is to forward the receipt to the bot: send a photo or a PDF, the bot asks who paid and how much and records the payment with the receipt ([What the bot can do](/teacher/help/bot)).
 
@@ -607,7 +607,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 
 - The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New homework», «Payment».
 - Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card with the «⋮» menu.
-- On nested pages (homework, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
+- On nested pages (homework, a student's work, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
 - Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
 - The portal's messages («Saved», errors) appear at the bottom of the screen.

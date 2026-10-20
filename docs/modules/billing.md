@@ -44,7 +44,7 @@ lesson, the student's payments.
 
 ## Frontend
 
-`features/billing/`: `teacher/` (payments page, student ledger, monthly report; the payment dialog takes an
+`features/billing/`: `teacher/` (payments page, `student-payments-tab.ts` — the Payments tab of the student card since 0.23.0, its price lives in `student-price-card.ts` on the Profile tab; monthly report; the payment dialog takes an
 optional receipt), `student/` (own payments), `ledger/` (the receipt opens from its payment row; the teacher
 attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
 (the settings category «Оплаты», `/teacher/settings/payments`), `billing-labels.ts`.
