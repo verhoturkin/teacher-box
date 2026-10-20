@@ -210,7 +210,7 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
 
 test('the home pages sum up the day', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await expect(page.getByText('Требует внимания')).toBeVisible();
+  await expect(page.getByText('Нужно сделать')).toBeVisible();
   await expect(page.getByText(/Поступило за/)).toBeVisible();
 
   const student = await studentPage(browser);

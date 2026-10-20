@@ -3,7 +3,7 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { HomeworkApi } from './data-access/homework-api';
-export type { HomeworkSummary, MyHomeworkSummary } from './data-access/homework.models';
+export type { MyHomeworkSummary, ReviewQueueItem } from './data-access/homework.models';
 export { MyDeadlinesWidget } from './home/my-deadlines-widget';
 export { StudentTasksCard } from './teacher/student-tasks-card';
 export { StudentTasksTab } from './teacher/student-tasks-tab';

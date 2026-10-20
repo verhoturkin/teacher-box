@@ -13,35 +13,31 @@ import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
-import { HomeworkApi } from '@features/homework/parts';
-import type { HomeworkSummary } from '@features/homework/parts';
 import { NotificationsApi } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
 import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
-import { AttentionCard } from './attention-card';
-import { FirstRunChecklist, SetupProgress } from './first-run-checklist';
 import { FabMenu } from '@shared/ui/fab-menu';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { T } from './i18n/texts';
+import { SetupProgress, TodoQueue } from './todo-queue';
 
 /**
  * Teacher dashboard: the next lesson on top, then the widgets of the modules one under
- * another (ADR-0021): what needs attention, finance; the notifications are in the bell.
+ * another (ADR-0021): what is to do, finance; the notifications are in the bell.
  */
 @Component({
   selector: 'tb-teacher-home',
   imports: [
     HelpButton,
-    AttentionCard,
     FabMenu,
     FinanceWidget,
-    FirstRunChecklist,
     UpcomingLessonWidget,
     LoadStateView,
     PageHeader,
+    TodoQueue,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -55,12 +51,12 @@ import { T } from './i18n/texts';
       @if (schedule()?.next; as next) {
         <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
       }
-      <tb-first-run-checklist [progress]="progress()" />
-      @if (schedule() !== null && homework() !== null && notifications() !== null) {
-        <tb-attention-card
-          [schedule]="schedule()"
-          [homework]="homework()"
-          [notifications]="notifications()"
+      @if (billing(); as billing) {
+        <tb-todo-queue
+          [progress]="progress()"
+          [debtors]="billing.topDebtors"
+          [currency]="billing.currency"
+          (marked)="loadSchedule()"
         />
       }
       @if (billing(); as billing) {
@@ -79,12 +75,10 @@ export class TeacherHome implements OnInit {
   protected readonly createItems = injectCreateItems()('/teacher');
   protected readonly createLabel = CORE_T.create.title;
   private readonly scheduleApi = inject(ScheduleApi);
-  private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);
   private readonly notificationsApi = inject(NotificationsApi);
 
   protected readonly schedule = signal<ScheduleSummary | null>(null);
-  protected readonly homework = signal<HomeworkSummary | null>(null);
   protected readonly billing = signal<BillingSummary | null>(null);
   protected readonly notifications = signal<TeacherNotificationsSummary | null>(null);
   protected readonly progress = computed<SetupProgress>(() => {
@@ -106,14 +100,12 @@ export class TeacherHome implements OnInit {
   protected load(): void {
     forkJoin({
       schedule: this.scheduleApi.summary(),
-      homework: this.homeworkApi.summary(),
       billing: this.billingApi.summary(),
       notifications: this.notificationsApi.summary(),
     })
       .pipe(this.state.track())
-      .subscribe(({ schedule, homework, billing, notifications }) => {
+      .subscribe(({ schedule, billing, notifications }) => {
         this.schedule.set(schedule);
-        this.homework.set(homework);
         this.billing.set(billing);
         this.notifications.set(notifications);
       });

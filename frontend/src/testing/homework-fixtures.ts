@@ -3,7 +3,6 @@ import {
   AssignmentSummary,
   Attachment,
   BoundTextbook,
-  HomeworkSummary,
   MyHomeworkSummary,
   MyTask,
   ReviewQueueItem,
@@ -154,18 +153,6 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
     overdue: false,
     assignedAt: '2026-09-01T10:00:00Z',
     reviewedAt: null,
-    ...overrides,
-  };
-}
-
-export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): HomeworkSummary {
-  return {
-    toReview: 0,
-    overdue: 0,
-    dueSoon: 0,
-    oldestToReview: [],
-    weekAssigned: 0,
-    weekOnTime: 0,
     ...overrides,
   };
 }

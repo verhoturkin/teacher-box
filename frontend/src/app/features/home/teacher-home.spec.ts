@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NewMessageState } from '@core/notifications/new-message';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { billingSummary } from '@testing/billing-fixtures';
-import { homeworkSummary } from '@testing/homework-fixtures';
+import { reviewQueueItem } from '@testing/homework-fixtures';
 import { teacherNotificationsSummary } from '@testing/notification-fixtures';
 import { at, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { TeacherHome } from './teacher-home';
@@ -43,12 +43,14 @@ describe('TeacherHome', () => {
         hasLessons: false,
       }),
     );
-    backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary({ toReview: 2 }));
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary({ income: 300_000 }));
     backend
       .expectOne('/api/teacher/notifications/summary')
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([scheduledLesson()]);
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/homework/review-queue').flush([reviewQueueItem()]);
     backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -59,8 +61,8 @@ describe('TeacherHome', () => {
     expect(text).toContain('С чего начать');
     expect(text).toContain('Сделано 1 из 4');
     expect(text).toContain('Иван Петров');
-    expect(text).toContain('Отметьте прошедшие занятия 1');
-    expect(text).toContain('Работы на проверку 2');
+    expect(text).toContain('Нужно сделать');
+    expect(text).toContain('Проверить: Дроби');
     expect(text).toContain('Поступило за сентябрь 3 000 ₽');
     expect(text).not.toContain('Сегодня занятий нет');
     // one column (ADR-0021): the widgets one under another, no «Сегодня»
@@ -68,17 +70,11 @@ describe('TeacherHome', () => {
       hostElement(fixture).querySelectorAll(':scope > .tb-stack > *'),
       (widget) => widget.tagName.toLowerCase(),
     );
-    expect(widgets).toEqual([
-      'tb-upcoming-lesson-widget',
-      'tb-first-run-checklist',
-      'tb-attention-card',
-      'tb-finance-widget',
-    ]);
+    expect(widgets).toEqual(['tb-upcoming-lesson-widget', 'tb-todo-queue', 'tb-finance-widget']);
   });
 
   it('shows a failed load once with «Повторить» instead of the widgets', async () => {
     fixture.detectChanges();
-    backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     backend
@@ -89,23 +85,25 @@ describe('TeacherHome', () => {
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Не удалось загрузить занятия, задания, уведомления и финансы');
-    expect(text).not.toContain('Требует внимания');
+    expect(text).not.toContain('Нужно сделать');
   });
 
   it('reloads the schedule counters', async () => {
     fixture.detectChanges();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary({ unmarked: 1 }));
-    backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary());
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Срочных дел нет');
+    expect(readableText(hostElement(fixture))).toContain('Нужно сделать');
   });
 });
 

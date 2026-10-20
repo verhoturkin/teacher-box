@@ -35,7 +35,7 @@ pane; an agenda on a phone. ADR: none.
 - [x] 239.1 **B** Week figures for spec §6 column 3: lessons and absences of the current week in
   `GET /api/teacher/schedule/summary`, assignments given and handed in on time in `GET /api/teacher/homework/summary`
   (skip fields that already exist). Tests, module docs.
-- [ ] 239.2 **F** `features/home/todo-queue.ts` — «Нужно сделать» from `attention-card.ts` +
+- [x] 239.2 **F** `features/home/todo-queue.ts` — «Нужно сделать» from `attention-card.ts` +
   `first-run-checklist.ts` (sources in spec §6), actions in place; both old components go.
 - [ ] 239.3 **F** `features/home/teacher-home.ts` → feed in three / two / one columns; «Занятия сегодня» list under
   the hero; month (`billing/home/finance-widget.ts`) and week figures; header with the summary line; nav label
