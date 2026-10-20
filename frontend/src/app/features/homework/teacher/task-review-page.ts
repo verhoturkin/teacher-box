@@ -119,7 +119,9 @@ import { MaterialOpener } from './material-opener';
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </section>
 
-        @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
+        @if (sheet() && (task.status === 'SUBMITTED' || task.status === 'ACCEPTED')) {
+          <!-- the review is in the side sheet beside the work (extra-large) -->
+        } @else if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
           <section>
             <h2 class="tb-task__label">{{ t.review }}</h2>
             <form tbFieldErrors class="tb-form" [formGroup]="form">
@@ -293,8 +295,14 @@ export class TaskReviewPage {
   readonly taskId = input.required<string>();
   /** One pane at a time: the header has «back» to the list. */
   readonly single = input(false);
+  /** The review is in the side sheet beside the work (extra-large): the page shows no form. */
+  readonly sheet = input(false);
+  /** The work as the sheet changed it (a decision): the page shows it. */
+  readonly update = input<TaskDetails | null>(null);
   /** The work was reviewed: the list beside it changes. */
   readonly changed = output();
+  /** The work is read (or changed): the side sheet reviews it. */
+  readonly loaded = output<TaskDetails>();
   protected readonly statementOpen = signal(false);
   protected readonly noDueDate = T.noDueDate;
 
@@ -308,6 +316,14 @@ export class TaskReviewPage {
       untracked(() => {
         this.task.set(null);
         this.load();
+      });
+    });
+    effect(() => {
+      const update = this.update();
+      untracked(() => {
+        if (update !== null && update.taskId === this.taskId()) {
+          this.show(update);
+        }
       });
     });
   }
@@ -421,6 +437,7 @@ export class TaskReviewPage {
 
   private show(task: TaskDetails): void {
     this.task.set(task);
+    this.loaded.emit(task);
     this.suggestion.set(null);
     this.form.reset({ grade: task.grade ?? '', comment: task.teacherComment ?? '' });
   }

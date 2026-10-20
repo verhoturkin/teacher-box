@@ -21,7 +21,8 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { injectMobile } from '@core/layout/mobile';
+import { injectMobile, injectWindowSize } from '@core/layout/mobile';
+import { collapseRail } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
@@ -37,9 +38,10 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AssignmentPage } from './assignment-page';
+import { NextWork, ReviewSheet } from './review-sheet';
 import { TaskReviewPage } from './task-review-page';
 import { HomeworkApi } from '../data-access/homework-api';
-import { AssignmentSummary, ReviewQueueItem } from '../data-access/homework.models';
+import { AssignmentSummary, ReviewQueueItem, TaskDetails } from '../data-access/homework.models';
 import { assignmentProgress, isDone } from '../homework-labels';
 import { T } from '../i18n/texts';
 
@@ -75,6 +77,7 @@ type Filter = 'review' | 'active' | 'done';
     PageHeader,
     Panes,
     ReactiveFormsModule,
+    ReviewSheet,
     RouterLink,
     SearchField,
     SegmentGroup,
@@ -207,7 +210,14 @@ type Filter = 'review' | 'active' | 'done';
       @if (layout.detail()) {
         <tb-pane [label]="t.pickTitle">
           @if (taskId(); as id) {
-            <tb-task-review-page [taskId]="id" [single]="layout.single()" (changed)="refresh()" />
+            <tb-task-review-page
+              [taskId]="id"
+              [single]="layout.single()"
+              [sheet]="sheetOpen()"
+              [update]="decided()"
+              (loaded)="current.set($event)"
+              (changed)="refresh()"
+            />
           } @else if (assignmentId(); as id) {
             <tb-assignment-page
               [assignmentId]="id"
@@ -217,6 +227,19 @@ type Filter = 'review' | 'active' | 'done';
           } @else {
             <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
           }
+        </tb-pane>
+      }
+      @if (sheetOpen() && reviewing(); as task) {
+        <tb-pane kind="sheet" [label]="t.reviewSheet">
+          <tb-review-sheet
+            [task]="task"
+            [place]="place()"
+            [total]="queue().length"
+            [next]="next()"
+            (reviewed)="decide($event)"
+            (opened)="openWork($event)"
+            (closed)="closeReview()"
+          />
         </tb-pane>
       }
     </tb-panes>
@@ -347,6 +370,36 @@ export class AssignmentsPage implements OnInit {
   private readonly dates = new DatePipe(inject(LOCALE_ID));
   private readonly menu = viewChild.required<Menu>('menu');
 
+  private readonly size = injectWindowSize();
+  /** The work the detail pane has read: the side sheet reviews it. */
+  protected readonly current = signal<TaskDetails | null>(null);
+  /** The work as a decision of the sheet left it: the detail pane shows it. */
+  protected readonly decided = signal<TaskDetails | null>(null);
+  /** The work open beside the list, once it is read and can be reviewed. */
+  protected readonly reviewing = computed(() => {
+    const task = this.current();
+    return task !== null &&
+      task.taskId === this.taskId() &&
+      (task.status === 'SUBMITTED' || task.status === 'ACCEPTED')
+      ? task
+      : null;
+  });
+  /** The review is the third pane of the extra-large window (spec §9); the rail gives it room. */
+  protected readonly sheetOpen = computed(
+    () => this.size() === 'extra-large' && this.reviewing() !== null,
+  );
+  /** «1 из 3»: the place of the open work in the queue (0: it is not in it). */
+  protected readonly place = computed(
+    () => this.queue().findIndex((work) => work.taskId === this.taskId()) + 1,
+  );
+  /** The work after the open one (the first one when it is the last); none when it is the only one. */
+  protected readonly next = computed<NextWork | null>(() => {
+    const queue = this.queue();
+    const index = queue.findIndex((work) => work.taskId === this.taskId());
+    const work = queue[index + 1] ?? queue.find((other) => other.taskId !== this.taskId());
+    return work === undefined ? null : { taskId: work.taskId, studentName: work.studentName };
+  });
+
   protected readonly assignments = signal<AssignmentSummary[]>([]);
   protected readonly queue = signal<ReviewQueueItem[]>([]);
   protected readonly state = new LoadState();
@@ -417,6 +470,7 @@ export class AssignmentsPage implements OnInit {
   ]);
 
   constructor() {
+    collapseRail(() => this.sheetOpen());
     // the editor is a route of its own: it takes the place of the list in the history
     openOnCreate(
       'assignment',
@@ -429,6 +483,26 @@ export class AssignmentsPage implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  protected openWork(taskId: string): void {
+    void this.router.navigate(['/teacher/homework/tasks', taskId]);
+  }
+
+  protected closeReview(): void {
+    void this.router.navigate(['/teacher/homework']);
+  }
+
+  /** A decision: the next work of the queue opens; with none left (or the work was not in the queue) the list stays. */
+  protected decide(task: TaskDetails): void {
+    const next = this.place() > 0 ? this.next() : null;
+    this.decided.set(task);
+    this.refresh();
+    if (next !== null) {
+      this.openWork(next.taskId);
+    } else if (this.place() > 0) {
+      this.closeReview();
+    }
   }
 
   protected openCreate(): void {

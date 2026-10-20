@@ -26,6 +26,7 @@ import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
 import { SideNav } from './side-nav';
 import { NavItem, injectUrl, isNavActive } from './nav-item';
+import { RailState } from './rail-state';
 
 const T = CORE_T.shell;
 
@@ -68,7 +69,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.tb-shell--rail]': '!compact()',
-    '[class.tb-shell--wide]': 'size() === "extra-large"',
+    '[class.tb-shell--wide]': 'expanded()',
   },
   template: `
     <header class="tb-shell__header">
@@ -129,9 +130,9 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'">
+        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="!expanded()">
           @if (create()) {
-            <tb-create-menu [extended]="size() === 'extra-large'" />
+            <tb-create-menu [extended]="expanded()" />
           }
         </tb-side-nav>
       }
@@ -209,6 +210,11 @@ export class Shell {
   protected readonly close = CORE_T.close;
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
+  private readonly railState = inject(RailState);
+  /** The expanded rail: extra-large, unless the page collapses it (the review of a work, spec §9). */
+  protected readonly expanded = computed(
+    () => this.size() === 'extra-large' && !this.railState.collapsed(),
+  );
 
   constructor() {
     // `?notifications=…` (old links to the notifications page) opens the bell's sheet

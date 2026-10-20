@@ -110,7 +110,7 @@ second pane (the row is `tb-list__item--current`, `aria-current`); on compact an
 «back» (`single` input) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
 changes and emit `changed` (reviewed, given to more students, deleted), so the list reads itself again. The work: title =
 the assignment, the line «student · срок · status · попытка N», «Открыть на доске» (the assignment's board), the collapsible
-«Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form moves to the third pane in 242.3); blocks lie
+«Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below); blocks lie
 on the pane's surface under uppercase labels, no cards. The student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
 with a search by the title and pages of 10, as the teacher's) are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows

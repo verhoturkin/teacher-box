@@ -36,7 +36,7 @@ ADR: none.
   (connected group, drafts under the filter, one filter field); `/teacher/homework/review` redirects.
 - [x] 242.2 **F** Detail: `task-review-page.ts` (work) and `assignment-page.ts` (assignment with students) as
   detail panes; `/teacher/homework/tasks/:taskId` and `/:assignmentId` keep working as deep links.
-- [ ] 242.3 **F** Extra-large: review side sheet (AI draft from `ai/homework-ai-panel.ts`, comment, chips,
+- [x] 242.3 **F** Extra-large: review side sheet (AI draft from `ai/homework-ai-panel.ts`, comment, chips,
   decision), «Дальше» opens the next work; collapsed rail on this route.
 - [ ] 242.4 **F** Compact: floating toolbar (spec §9), comment in a bottom sheet, bottom bar hidden.
 - [ ] 242.5 **D** design-system (three panes, floating toolbar), help (homework review; ru, en), wiki.

@@ -31,7 +31,8 @@ import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { TaskReviewPage } from './task-review-page';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
+import { RailState } from '@core/layout/rail-state';
 
 const STUDENTS = [
   { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
@@ -931,5 +932,156 @@ describe('AssignmentsPage with a detail', () => {
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('На проверку 0');
+  });
+});
+
+describe('AssignmentsPage with the review side sheet (extra-large)', () => {
+  const QUEUE_OF_THREE = [
+    reviewQueueItem(),
+    reviewQueueItem({ taskId: 't-2', studentId: 's-2', studentName: 'Борис' }),
+    reviewQueueItem({ taskId: 't-3', studentId: 's-3', studentName: 'Вера' }),
+  ];
+
+  async function render(queue = QUEUE_OF_THREE, aiEnabled = false) {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(1700)) });
+    vi.spyOn(TestBed.inject(MessageService), 'add');
+    const backend = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    await fixture.whenStable();
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush(queue);
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
+    backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+    return { backend, fixture, host: hostElement(fixture), navigate };
+  }
+
+  it('takes the review out of the work into a third pane and collapses the rail', async () => {
+    const { fixture, host } = await render();
+
+    expect(host.querySelector('tb-review-sheet')).not.toBeNull();
+    expect(host.querySelector('tb-task-review-page form')).toBeNull();
+    expect(readableText(host)).toContain('1 из 3');
+    expect(TestBed.inject(RailState).collapsed()).toBe(true);
+    fixture.destroy();
+    expect(TestBed.inject(RailState).collapsed()).toBe(false);
+  });
+
+  it('names the next work and opens it', async () => {
+    const { host, navigate, fixture } = await render();
+
+    buttonByText(host, 'Дальше: Борис').click();
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/tasks', 't-2']);
+  });
+
+  it('closes the review back to the list', async () => {
+    const { host, navigate } = await render();
+
+    requireElement(
+      host,
+      'tb-review-sheet button[aria-label="Закрыть проверку"]',
+      HTMLElement,
+    ).click();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
+  });
+
+  it('takes the quick phrases into the comment', async () => {
+    const { host, fixture } = await render();
+
+    buttonByText(host, 'Отлично').click();
+    buttonByText(host, 'Есть ошибка').click();
+    await fixture.whenStable();
+
+    expect(requireElement(host, '#sheet-comment', HTMLTextAreaElement).value).toBe(
+      'Отлично!\nЕсть ошибка: ',
+    );
+  });
+
+  it('accepts the work and opens the next one of the queue', async () => {
+    const { backend, host, navigate, fixture } = await render();
+
+    buttonByText(host, 'Принять').click();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush(taskDetails({ status: 'ACCEPTED' }));
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush(QUEUE_OF_THREE.slice(1));
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/tasks', 't-2']);
+  });
+
+  it('returns the work for rework and goes back to the list when it was the last one', async () => {
+    const { backend, host, navigate, fixture } = await render([reviewQueueItem()]);
+
+    expect(host.querySelector('.tb-sheet__next')).toBeNull();
+    buttonByText(host, 'На доработку').click();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush(taskDetails({ status: 'RETURNED' }));
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
+  });
+
+  it('keeps the sheet on a failed decision', async () => {
+    const { backend, host, navigate, fixture } = await render();
+
+    buttonByText(host, 'Принять').click();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush({ title: 'x' }, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(host.querySelector('tb-review-sheet')).not.toBeNull();
+  });
+
+  it('shows the AI draft in its own block and «Вставить» takes it', async () => {
+    const { backend, host, fixture } = await render(QUEUE_OF_THREE, true);
+
+    buttonByText(host, 'Черновик ИИ').click();
+    backend
+      .expectOne('/api/teacher/ai/review-draft')
+      .flush({ comment: 'Почти верно', grade: '4', accept: true });
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('ИИ предлагает принять работу');
+    buttonByText(host, 'Вставить').click();
+    await fixture.whenStable();
+    expect(requireElement(host, '#sheet-comment', HTMLTextAreaElement).value).toBe('Почти верно');
+    expect(requireElement(host, '#sheet-grade', HTMLInputElement).value).toBe('4');
+  });
+
+  it('keeps the form when the AI draft fails', async () => {
+    const { backend, host, fixture } = await render(QUEUE_OF_THREE, true);
+
+    buttonByText(host, 'Черновик ИИ').click();
+    backend
+      .expectOne('/api/teacher/ai/review-draft')
+      .flush({ title: 'x' }, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-sheet__draft')).toBeNull();
+    expect(buttonByText(host, 'Черновик ИИ')).not.toBeNull();
+  });
+
+  it('puts the review on a board', async () => {
+    const { host, fixture } = await render();
+
+    buttonByText(host, 'Отлично').click();
+    await fixture.whenStable();
+    buttonByText(host, 'На доску').click();
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.query(By.directive(ToBoardDialog))).not.toBeNull();
   });
 });
