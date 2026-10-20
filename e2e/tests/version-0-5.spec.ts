@@ -88,7 +88,7 @@ test('sections lie on the page and the phone navigation has five sections', asyn
   const nav = phone.locator('nav.tb-bottom-nav');
   // 0.21.0: five sections, no «Ещё» (D2)
   await expect(nav.getByRole('link')).toHaveText([
-    'Главная',
+    'Сегодня',
     'Расписание',
     'Задания',
     'Ученики',

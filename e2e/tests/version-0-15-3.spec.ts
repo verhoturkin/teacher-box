@@ -184,30 +184,23 @@ test('the teacher’s home has no «Сегодня»', async ({ page }) => {
   await expect(page.locator('tb-today-lessons-widget')).toHaveCount(0);
 });
 
-test('past lessons have labelled buttons, recurring lessons a «⋮» menu', async ({ page }) => {
+test('a past lesson is outlined, recurring lessons have a «⋮» menu', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
+  // 0.24.0: a past lesson is outlined in the calendar (the queue of Today shows only the first rows)
   await page.goto('/teacher/schedule');
-  const past = page
-    .locator('p-card')
-    .filter({ hasText: 'Отметьте прошедшие занятия' })
-    .locator('li', { hasText: STUDENT });
-  await expect(past.getByRole('button', { name: `Проведено: ${STUDENT}` })).toHaveText('Проведено');
-  await expect(past.getByRole('button', { name: `Пропуск: ${STUDENT}` })).toHaveText('Пропуск');
-
+  await expect(page.locator('.tb-lesson--unmarked', { hasText: STUDENT })).toBeVisible();
   await page.getByRole('button', { name: `Действия: ${STUDENT}` }).click();
   await expect(page.getByRole('menuitem', { name: 'Изменить' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Завершить…' })).toBeVisible();
   await page.keyboard.press('Escape');
 });
 
-test('on a phone a past lesson opens its buttons in a bottom sheet', async ({ page }) => {
+test('on a phone a past lesson has its buttons under the row of the agenda', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, PHONE);
   await page.goto('/teacher/schedule');
-  await page.getByRole('button', { name: `Отметить занятие: ${STUDENT}` }).click();
-  const sheet = page.getByRole('dialog', { name: STUDENT });
-  await sheet.getByRole('button', { name: `Проведено: ${STUDENT}` }).click();
-  await expect(sheet).toBeHidden();
-  await expect(page.getByRole('button', { name: `Отметить занятие: ${STUDENT}` })).toHaveCount(0);
+  // 0.24.0: the agenda marks the lesson under its row, no bottom sheet
+  await page.getByRole('button', { name: `Проведено: ${STUDENT}` }).click();
+  await expect(page.getByRole('button', { name: `Проведено: ${STUDENT}` })).toHaveCount(0);
 });
 
 test('the teacher’s boards are in two cards', async ({ page }) => {

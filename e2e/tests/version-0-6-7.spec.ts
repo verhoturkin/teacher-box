@@ -62,7 +62,9 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
   await signIn(page);
   await page.goto('/teacher/schedule');
 
-  const card = page.locator('p-card').filter({ hasText: 'Нерабочее время' }).last();
+  // 0.24.0: off time is a tab of the side pane of the schedule
+  await page.getByRole('tab', { name: 'Нерабочее время' }).click();
+  const card = page.locator('.tb-schedule-side').getByRole('tabpanel');
   const rows = card.locator('ul.tb-list > li');
   await expect(rows.filter({ hasText: 'Обед 0.6.7' }).first()).toBeVisible();
   await expect(rows.first().locator('.tb-list__lead .tb-i-dark_mode')).toHaveCount(1);

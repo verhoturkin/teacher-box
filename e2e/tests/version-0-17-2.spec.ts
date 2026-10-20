@@ -53,7 +53,7 @@ test('the active section has a filled icon, the others are outlined', async ({ p
   await page.goto('/teacher/schedule');
 
   await expect.poll(() => fill(page, 'Расписание')).toContain('"FILL" 1');
-  await expect.poll(() => fill(page, 'Главная')).toContain('"FILL" 0');
+  await expect.poll(() => fill(page, 'Сегодня')).toContain('"FILL" 0');
   await expect(
     page.getByRole('navigation').getByRole('link', { name: 'Расписание' }).locator('.tb-i'),
   ).toHaveClass(/tb-i-calendar_month/);

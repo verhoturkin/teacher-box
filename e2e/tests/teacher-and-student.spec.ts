@@ -162,8 +162,14 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await planLesson(page, -1, 10, 'Повторение');
 
-  await page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` }).click();
-  await expect(page.getByRole('button', { name: `Проведено: ${STUDENT_NAME}` })).toBeHidden();
+  // 0.24.0: the lesson waits for a mark in the queue of Today
+  await page.goto('/teacher');
+  const row = page
+    .locator('ul.tb-queue li')
+    .filter({ hasText: STUDENT_NAME })
+    .filter({ hasText: 'отметить итог' });
+  await row.getByRole('button', { name: 'Проведено' }).click();
+  await expect(row).toHaveCount(0);
 
   await page
     .getByRole('navigation', { name: 'Разделы' })
@@ -198,9 +204,9 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();
 
   await page.reload();
-  await page.getByRole('button', { name: 'Ответить' }).click();
+  await page.getByRole('button', { name: `Ответить: ${STUDENT_NAME}` }).click();
   await page.getByRole('button', { name: 'Согласовать' }).click();
-  await expect(page.getByRole('button', { name: 'Ответить' })).toBeHidden();
+  await expect(page.getByRole('button', { name: `Ответить: ${STUDENT_NAME}` })).toBeHidden();
 
   await student.reload();
   // 0.15.1: an answered request is under «Решённые»

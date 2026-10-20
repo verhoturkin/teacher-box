@@ -92,7 +92,7 @@ test.describe('on a phone', () => {
     const nav = page.locator('nav.tb-bottom-nav');
     // 0.21.0: five sections in the bar (D2), the rest in the modal rail under ☰ (no «Ещё»)
     await expect(nav.getByRole('link')).toHaveText([
-      'Главная',
+      'Сегодня',
       'Расписание',
       'Задания',
       'Ученики',
@@ -140,10 +140,8 @@ test.describe('on a phone', () => {
   test('the schedule is a day list with the FAB for a new lesson', async ({ page }) => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
     await page.locator('nav.tb-bottom-nav').getByRole('link', { name: 'Расписание' }).click();
-    await expect(page.getByRole('tab', { name: 'Список' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    // 0.24.0: the phone shows the agenda — a week strip and the list of the chosen day
+    await expect(page.getByRole('group', { name: 'Дни недели' })).toBeVisible();
     await expectNoSideScroll(page);
 
     // The main action is the extended FAB «Занятие» (ADR-0018)

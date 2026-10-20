@@ -11,7 +11,7 @@ const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:8091';
 const PHONE = { width: 390, height: 844 };
 const TABLET = { width: 900, height: 1000 };
 const SECTIONS = [
-  'Главная',
+  'Сегодня',
   'Расписание',
   // 0.22.0: no «Звонки» — a category of the settings
   'Ученики',
