@@ -1,8 +1,11 @@
 package ru.teacherbox.billing.application;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,10 +27,14 @@ import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.MonthlyReport;
 import ru.teacherbox.billing.application.BillingViews.MonthlyStudentRow;
 import ru.teacherbox.billing.application.BillingViews.MyBillingSummary;
+import ru.teacherbox.billing.application.BillingViews.Operation;
+import ru.teacherbox.billing.application.BillingViews.OperationKind;
+import ru.teacherbox.billing.application.BillingViews.Operations;
 import ru.teacherbox.billing.application.BillingViews.Overview;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentBalance;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
+import ru.teacherbox.billing.application.BillingViews.WeekTotal;
 import ru.teacherbox.billing.domain.BalanceTotals;
 import ru.teacherbox.billing.domain.BillingCurrency;
 import ru.teacherbox.billing.domain.Lesson;
@@ -98,7 +105,8 @@ public class BillingQueryService {
         return new Overview(currency.code(), defaultPrice, properties.defaultLessonDuration(), debt, prepaid, rows);
     }
 
-    public BillingSummary summary() {
+    /** @param requested the month to total; {@code null}: the current one */
+    public BillingSummary summary(@Nullable YearMonth requested) {
         Overview overview = overview();
         List<Debtor> debtors = overview.students().stream()
                 .filter(student -> student.balance() < 0)
@@ -106,15 +114,86 @@ public class BillingQueryService {
                 .map(student -> new Debtor(student.studentId(), student.displayName(), student.avatar(),
                         student.balance()))
                 .toList();
-        YearMonth month = YearMonth.from(timeZone.today(clock));
-        long income = payments.findBetween(month.atDay(1), month.atEndOfMonth()).stream()
+        YearMonth month = requested == null ? currentMonth() : requested;
+        List<Payment> monthPayments = payments.findBetween(month.atDay(1), month.atEndOfMonth()).stream()
                 .filter(payment -> !payment.isVoided())
-                .mapToLong(payment -> payment.amount().amountMinor())
-                .sum();
+                .toList();
+        List<Lesson> monthLessons = lessons.findBetween(month.atDay(1), month.atEndOfMonth());
+        long income = monthPayments.stream().mapToLong(payment -> payment.amount().amountMinor()).sum();
         boolean priceSet = overview.defaultLessonPrice() > 0
                 || overview.students().stream().anyMatch(student -> student.lessonPrice() > 0);
         return new BillingSummary(overview.currency(), overview.totalDebt(), debtors.size(),
-                debtors.stream().limit(TOP_DEBTORS).toList(), income, month.toString(), priceSet);
+                debtors.stream().limit(TOP_DEBTORS).toList(), income, month.toString(), priceSet,
+                weeks(month, monthPayments, monthLessons));
+    }
+
+    /** The current month in the instance time zone. */
+    public YearMonth currentMonth() {
+        return YearMonth.from(timeZone.today(clock));
+    }
+
+    /** Mondays-to-Sundays of a month, clipped to its first and last day. */
+    private static List<WeekTotal> weeks(YearMonth month, List<Payment> monthPayments, List<Lesson> monthLessons) {
+        List<WeekTotal> weeks = new ArrayList<>();
+        LocalDate last = month.atEndOfMonth();
+        for (LocalDate from = month.atDay(1); !from.isAfter(last);) {
+            LocalDate start = from;
+            LocalDate end = from.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+            LocalDate to = end.isAfter(last) ? last : end;
+            long income = monthPayments.stream()
+                    .filter(payment -> !payment.paidOn().isBefore(start) && !payment.paidOn().isAfter(to))
+                    .mapToLong(payment -> payment.amount().amountMinor())
+                    .sum();
+            long charged = monthLessons.stream()
+                    .filter(lesson -> !lesson.date().isBefore(start) && !lesson.date().isAfter(to))
+                    .mapToLong(lesson -> lesson.charge().amountMinor())
+                    .sum();
+            weeks.add(new WeekTotal(start, to, income, charged));
+            from = to.plusDays(1);
+        }
+        return weeks;
+    }
+
+    /**
+     * Payments, lessons and absences of a month, newest first.
+     *
+     * @param kind      {@code null}: all kinds
+     * @param studentId {@code null}: all students
+     */
+    public Operations operations(YearMonth month, @Nullable OperationKind kind, @Nullable UUID studentId) {
+        LocalDate from = month.atDay(1);
+        LocalDate to = month.atEndOfMonth();
+        List<Lesson> monthLessons = lessons.findBetween(from, to).stream()
+                .filter(lesson -> studentId == null || lesson.studentId().equals(studentId))
+                .toList();
+        List<Payment> monthPayments = payments.findBetween(from, to).stream()
+                .filter(payment -> studentId == null || payment.studentId().equals(studentId))
+                .toList();
+        Map<UUID, StudentSummary> students = studentsOf(Stream.concat(
+                monthLessons.stream().map(Lesson::studentId), monthPayments.stream().map(Payment::studentId))
+                .collect(Collectors.toSet()));
+
+        List<Operation> rows = Stream.concat(
+                monthLessons.stream().map(lesson -> operationOf(lesson, students)),
+                monthPayments.stream().map(payment -> operationOf(payment, students)))
+                .filter(operation -> kind == null || operation.kind() == kind)
+                .sorted(Comparator.comparing(Operation::date).thenComparing(Operation::createdAt).reversed())
+                .toList();
+        return new Operations(month.toString(), currency.code(), rows);
+    }
+
+    private static Operation operationOf(Lesson lesson, Map<UUID, StudentSummary> students) {
+        OperationKind kind = lesson.status() == LessonStatus.CONDUCTED ? OperationKind.LESSON : OperationKind.ABSENCE;
+        return new Operation(kind, lesson.id(), lesson.studentId(), nameOf(students, lesson.studentId()),
+                avatarOf(students, lesson.studentId()), lesson.date(), -lesson.charge().amountMinor(), lesson.status(),
+                lesson.topic(), lesson.status() == LessonStatus.CANCELLED, lesson.createdAt());
+    }
+
+    private static Operation operationOf(Payment payment, Map<UUID, StudentSummary> students) {
+        return new Operation(OperationKind.PAYMENT, payment.id(), payment.studentId(),
+                nameOf(students, payment.studentId()), avatarOf(students, payment.studentId()), payment.paidOn(),
+                payment.isVoided() ? 0 : payment.amount().amountMinor(), null, payment.comment(), payment.isVoided(),
+                payment.createdAt());
     }
 
     public MyBillingSummary studentSummary(UUID studentId) {

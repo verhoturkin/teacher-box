@@ -4,6 +4,8 @@ import {
   Lesson,
   MonthlyReport,
   MyBillingSummary,
+  Operation,
+  Operations,
   Payment,
   StudentBalance,
   StudentLedger,
@@ -131,10 +133,32 @@ export function billingSummary(overrides: Partial<BillingSummary> = {}): Billing
     income: 0,
     month: '2026-09',
     priceSet: true,
+    weeks: [],
     ...overrides,
   };
 }
 
 export function myBillingSummary(overrides: Partial<MyBillingSummary> = {}): MyBillingSummary {
   return { currency: 'RUB', balance: 0, lessonPrice: 150_000, lastPayment: null, ...overrides };
+}
+
+export function operation(overrides: Partial<Operation> = {}): Operation {
+  return {
+    kind: 'LESSON',
+    id: 'o-1',
+    studentId: 's-1',
+    studentName: 'Иван Петров',
+    studentAvatar: null,
+    date: '2026-09-19',
+    amount: -150_000,
+    status: 'CONDUCTED',
+    note: null,
+    voided: false,
+    createdAt: '2026-09-19T10:00:00Z',
+    ...overrides,
+  };
+}
+
+export function operations(rows: Operation[], month = '2026-09'): Operations {
+  return { month, currency: 'RUB', operations: rows };
 }

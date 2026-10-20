@@ -98,11 +98,11 @@ test('the payments are a list like the students, its rows are tiles with the ini
   page,
 }) => {
   await signIn(page);
-  // 0.9.3: the payments are a segmented list (tb-list) like the students, not a table
-  await page.goto('/teacher/billing');
+  // 0.9.3: the students are a segmented list (tb-list), not a table (243.2: the balances list left the payments)
+  await page.goto('/teacher/students');
 
   const row = page
-    .locator('ul.tb-list[aria-label="Балансы учеников"] > li')
+    .locator('ul.tb-list[aria-label="Ученики"] > li')
     .filter({ hasText: 'Плитка Проверкина' })
     .first();
   await expect(row.locator('.tb-avatar')).toHaveText('ПП');

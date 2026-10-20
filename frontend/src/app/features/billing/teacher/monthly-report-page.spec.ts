@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { monthlyReport, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
@@ -30,6 +31,18 @@ describe('MonthlyReportPage', () => {
   function text(): string {
     return readableText(host);
   }
+
+  it('opens the month the report was asked for', async () => {
+    backend
+      .expectOne(`/api/teacher/billing/reports/monthly?month=${toIsoMonth(new Date())}`)
+      .flush(monthlyReport());
+    await TestBed.inject(Router).navigateByUrl('/?month=2026-07');
+    const requested = TestBed.createComponent(MonthlyReportPage);
+    await requested.whenStable();
+
+    backend.expectOne('/api/teacher/billing/reports/monthly?month=2026-07').flush(monthlyReport());
+    requested.destroy();
+  });
 
   it('loads the current month', async () => {
     backend.expectOne(`/api/teacher/billing/reports/monthly?month=${toIsoMonth(new Date())}`).flush(

@@ -142,10 +142,15 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await page.getByRole('button', { name: `Записать оплату: ${STUDENT_NAME}` }).click();
+  // 243.2: «Создать › Оплата» opens the dialog, the journal of the month shows the payment
+  await create(page, 'Оплата');
+  await page.locator('#payment-student').click();
+  await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.locator('#payment-amount').pressSequentially('3000');
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('3 000');
+  await expect(
+    page.locator('.tb-ops__list > li').filter({ hasText: STUDENT_NAME }).first(),
+  ).toContainText('+3 000');
 
   const student = await studentPage(browser);
   await student
@@ -175,8 +180,11 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('1 500');
-  await page.getByRole('link', { name: STUDENT_NAME }).click();
+  // 0.25.0: the page is the month's journal; the lesson is a row of it
+  await expect(
+    page.getByRole('listitem').filter({ hasText: `Занятие · ${STUDENT_NAME}` }),
+  ).toContainText('1 500');
+  await page.getByRole('link', { name: STUDENT_NAME }).first().click();
   // 0.23.0: the history is the Оплаты tab of the student's card
   await expect(page).toHaveURL(/\/teacher\/students\/[^/?]+\?tab=payments$/);
   await expect(

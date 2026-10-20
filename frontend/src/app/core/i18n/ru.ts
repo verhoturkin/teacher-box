@@ -24,8 +24,6 @@ export const ru = {
     invite: 'Приглашение',
     board: 'Доска',
     setup: 'Первоначальная настройка',
-    reviewQueue: 'На проверку',
-    taskReview: 'Проверка работы',
     assignment: 'Задание',
     newAssignment: 'Новое задание',
     editAssignment: 'Изменить задание',

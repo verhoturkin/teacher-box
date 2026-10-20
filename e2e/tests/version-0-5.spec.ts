@@ -121,12 +121,16 @@ test('a student signs up and a payment is recorded without a method', async ({ p
   await student.context().close();
 
   await page.goto('/teacher/billing');
-  await page.getByRole('button', { name: `Записать оплату: ${STUDENT}` }).click();
+  await create(page, 'Оплата');
+  await page.locator('#payment-student').click();
+  await page.getByRole('option', { name: STUDENT }).click();
   const dialog = page.getByRole('dialog', { name: 'Оплата' });
   await expect(dialog).not.toContainText('Способ');
   await page.locator('#payment-amount').pressSequentially('2000');
   await dialog.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('listitem').filter({ hasText: STUDENT })).toContainText('2 000');
+  await expect(
+    page.locator('.tb-ops__list > li').filter({ hasText: STUDENT }).first(),
+  ).toContainText('+2 000');
 });
 
 test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {

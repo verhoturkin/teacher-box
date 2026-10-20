@@ -721,13 +721,46 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     «задание · сдано · срок»), files of assignments and answers (type icon; name button that downloads + size; the
     red «×» of the textbooks; the teacher's name button opens a PDF or a picture in a tab, the download is an icon
     button; picked files not sent yet are the same cards). The teacher opens a bound textbook by its title. «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-tb-board`.
+- Homework of the teacher (0.25.0, spec §9; `features/homework/teacher/`) — three panes of one route
+  (`/teacher/homework[/tasks/:taskId | /:assignmentId]`): the **list** in the fixed pane (the connected group
+  «На проверку · Активные · Готовые» with counts, the filter button of the header opens one search; tonal rows, no
+  cards: a work — avatar, student, «задание · сдано …», the «Просрочено» tag; «Ждут сдачи» under them), the **work or
+  the assignment** in the flexible pane (blocks on the pane's surface under uppercase labels; the chosen row is
+  `tb-list__item--current`), and from **extra-large** the **review side sheet** as the third pane (`review-sheet.ts`,
+  standard side sheet ≤ 400 dp: the AI draft with the tertiary tag «Черновик ИИ» and «Вставить», the comment, the
+  quick phrases as chips, «На доработку» tonal + «Принять» filled, «Дальше: <student>»); the rail collapses to
+  96 dp on this route (`RailState`). On medium and compact the route shows the list or the detail (back arrow); the
+  review form sits under the answer on medium.
+  - **Floating toolbar** (compact, **M3** floating toolbar; the sizes are *ours*): a pill of surface container high,
+    64 dp high, 16 dp from the screen edges (plus the safe area), elevation 2, above the content; it holds the AI
+    button, the comment button, «На доработку» and «Принять». The comment, the draft, the quick phrases and the grade
+    live in a bottom sheet opened by the comment button; the bottom navigation bar is hidden on this screen
+    (`RailState.bottomBarHidden`) so the toolbar takes its place. The toolbar replaces a bottom bar, never sits over
+    one.
 - AI requests (0.14.7) — the teacher's «Последние запросы» is a `tb-list` of cards, not a table: feature icon
   (`pi-file-edit` / `pi-check-square`); feature + status `p-tag`; «dd.MM.yyyy HH:mm · model · N с», the error under it
   (`tb-negative`); trail `--amount` — tokens; 10 rows, then «Показать ещё».
-- Billing (0.9.3) — `tb-list`s like the students, also on the phone: balances (avatar; name link +
-  «цена за занятие · N занятий · последнее дата»; trail — balance and the wallet button) and a student's
-  history (`tb-ledger-list`: calendar / wallet icon; operation + status tag; «date · topic or comment»; trail —
-  the amount and «×» for the teacher; 20 rows, then «Показать ещё»).
+- Payments of the teacher (0.25.0, spec §10.2; `features/billing/teacher/billing-overview-page.ts`) — the flexible
+  pane and a supporting pane «По ученикам» (`tb-panes`; the supporting pane only from medium). Header: the month
+  title with the ‹ › icon buttons and the tonal «Отчёт за месяц» (`monthly-report-page.ts` stays a nested route).
+  **Figures** — `tb-ops-figures`, four tonal tiles on the pane's surface: «Поступило», «Начислено за занятия»,
+  «Долг» (error container, `--debt`), «Авансы»; a note under each («11 оплат», «1 ученик»). **«Операции»** — the
+  title on the surface, the connected button group `tb-filter-chips` «Все · Оплаты · Занятия · Пропуски» and the
+  «Ученик» select (`p-select`); the journal is a `tb-list` of tonal rows (first/last radius 16, middle 4, no card):
+  kind icon, student avatar, «Занятие · Анна Смирнова» + «date, time · status», the amount in the trail (`+` payment
+  in `tb-positive`, `−` charge, `0 ₽` absence without a charge). The student's name links to the Payments tab of the
+  card (`PAYMENTS_TAB`). **Supporting pane** — «Должники» (the debt in `tb-negative`, the tonal «Напомнить»),
+  «Авансы заканчиваются» (≤ 2 lessons left — ours; 5 rows), «По неделям» (bars, the week of today lighter) and the
+  link «Все в Учениках». The balances list and the default price are not on the page any more (Students ›
+  «Должники»; Settings › «Оплаты»).
+  - **Compact:** the page gives the phone's top app bar its own title and actions (`compactBar()` of
+    `core/layout/rail-state.ts`): «☰ Октябрь ‹ ⋮» with the next month and the report under «⋮»; the figures scroll
+    sideways as tiles, the chips stand in one row, journal rows are avatar + two lines + the amount (the student
+    goes under the title); the supporting pane and the student filter are hidden; the extended FAB «Оплата»
+    (`tb-page-fab`) records a payment.
+- Billing of a student (0.9.3) — the history on the Payments tab of the card (`tb-ledger-list`: calendar / wallet
+  icon; operation + status tag; «date · topic or comment»; trail — the amount and «×» for the teacher; 20 rows,
+  then «Показать ещё»).
   `tb-list__trail--amount`: on the phone the amount (`tb-list__amount`) goes under the text and the icon
   button stays on the right, so the name keeps its width.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
@@ -755,6 +788,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   on-surface-variant; selected — secondary-container without the outline, a leading 18 dp check. *Ours:* the
   set wraps (no horizontal scroll), 8 dp gaps, a 48 dp target over each chip, a count after the label in label
   large emphasized when it is not zero.
+
+- **Segment group** (`@shared/ui/segment-group`, 242.1): a single-select M3 Expressive connected button group over
+  a list (`role="group"` with a name, buttons with `aria-pressed`, a count after the label). **M3:** 40 dp, 2 dp
+  between buttons, inner corners 8 dp (pressed 4 dp), outer corners round; the chosen one `primary` and fully round,
+  the others `secondary container`. *Ours:* the group takes the whole width, the buttons share it by their content.
 
 ## 10. Fields
 

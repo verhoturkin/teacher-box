@@ -33,6 +33,27 @@ const studentsMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
     : null;
 };
 
+/**
+ * `/teacher/homework`, `/teacher/homework/tasks/:taskId` and `/teacher/homework/:assignmentId` are one route: the
+ * list stays, the work or the assignment beside it changes (redesign spec §9). `new` and the editor are routes
+ * of their own.
+ */
+const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
+  const [section, first, second, ...rest] = segments;
+  if (section?.path !== 'homework' || rest.length > 0) {
+    return null;
+  }
+  if (first === undefined) {
+    return { consumed: segments };
+  }
+  if (first.path === 'tasks') {
+    return second === undefined ? null : { consumed: segments, posParams: { taskId: second } };
+  }
+  return second !== undefined || first.path === 'new' || first.path === 'review'
+    ? null
+    : { consumed: segments, posParams: { assignmentId: first } };
+};
+
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -100,19 +121,14 @@ export const routes: Routes = [
         loadComponent: () => import('@features/schedule').then((m) => m.SchedulePage),
       },
       {
-        path: 'homework',
+        matcher: homeworkMatcher,
         title: NAV.homework,
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentsPage),
       },
       {
+        // the queue is the «На проверку» filter of the list (242.1)
         path: 'homework/review',
-        title: N.reviewQueue,
-        loadComponent: () => import('@features/homework').then((m) => m.ReviewQueuePage),
-      },
-      {
-        path: 'homework/tasks/:taskId',
-        title: N.taskReview,
-        loadComponent: () => import('@features/homework').then((m) => m.TaskReviewPage),
+        redirectTo: 'homework',
       },
       {
         path: 'homework/new',
@@ -125,11 +141,6 @@ export const routes: Routes = [
         title: N.editAssignment,
         loadComponent: () => import('@features/homework').then((m) => m.AssignmentEditorPage),
         canDeactivate: [canLeaveGuard],
-      },
-      {
-        path: 'homework/:assignmentId',
-        title: N.assignment,
-        loadComponent: () => import('@features/homework').then((m) => m.AssignmentPage),
       },
       {
         path: 'textbooks',

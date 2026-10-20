@@ -125,14 +125,16 @@ test('the help is a side sheet: a linked article opens in it and «Назад» 
   await expect(page.getByRole('dialog', { name: 'Первые шаги' })).toBeVisible();
 });
 
-test('assignments are active and done, with a search to clear', async ({ page }) => {
+test('assignments are filtered by a connected group, with a search to clear', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/homework');
-  await expect(page.getByText('Активные', { exact: true })).toBeVisible();
-  await expect(page.getByText('Выполненные', { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'На проверку' })).toHaveCount(0);
+  const filters = page.getByRole('group', { name: 'Что показать' });
+  await expect(filters.getByRole('button', { name: /^На проверку/ })).toBeVisible();
+  await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
+  await filters.getByRole('button', { name: /^Активные/ }).click();
 
-  const search = page.getByRole('searchbox', { name: 'Поиск: Активные' });
+  await page.getByRole('button', { name: 'Поиск', exact: true }).click();
+  const search = page.getByRole('searchbox', { name: 'Название или ученик' });
   await search.fill(STUDENT);
   await expect(page.getByRole('link', { name: ASSIGNMENT })).toBeVisible();
   await search.fill(`нет такого ${RUN}`);

@@ -378,6 +378,21 @@ body {
   font: var(--tb-type-headline-s);
 }
 
+/* The student filter of the payments journal sits among the chips: a chip's height and corner (ours) */
+.p-select.tb-ops__student {
+  min-width: 9rem;
+  height: 2rem;
+  border-color: var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-sm);
+  background: transparent;
+
+  .p-select-label {
+    padding-block: 0;
+    align-self: center;
+    font: var(--tb-type-label-l);
+  }
+}
+
 /*
  * Scrollbars inside rounded shapes (panes, dialogs, sheets): the scrolling area lies inside its
  * clipped, rounded container, the scrollbar is thin, its track stays 16 px away from the corners and the thumb is

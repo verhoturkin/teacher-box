@@ -73,7 +73,7 @@ zone, for the Today page, 239.1),
 
 ## Frontend
 
-`features/homework/`: `teacher/` (assignments, assignment page, editor, review queue), `student/` (my tasks, task
+`features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
 the download button saves them under `boundTextbookFilename`; 0.14.5: the teacher's tap on the title opens the whole
@@ -96,12 +96,22 @@ there is one, «Удалить…» (danger confirmation); materials — `ui/att
 (type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
 picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
-and groups side by side). The list (`teacher/assignments-page.ts`) — two `teacher/assignment-list.ts` cards: «Активные» (not every task accepted,
-incl. not given) and «Выполненные» (`isDone`: every task accepted); each with a search by the title or a student's name
-and pages of 10 (`p-paginator`, a new search or filter starts at the first page); «Активные» has the «На проверку»
-toggle next to the search (`aria-pressed`, only `submitted > 0`). No «На проверку» link in the header: the review queue
-opens from «⋮» → «Проверить работы» and from the home page. A row: title, «кому · до …», the progress badge
-(`assignmentProgress`), «⋮» (… «Удалить…»). The review queue and the student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
+and groups side by side). The list (`teacher/assignments-page.ts`, 242.1) — the list pane of a list-detail (`tb-panes`, fixed pane; the detail pane is
+`task-review-page.ts` or `assignment-page.ts`, see below): the connected group «На проверку · Активные · Готовые» with counts (`@shared/ui/segment-group`), the
+filter button of the header opens one search by the title or a student's name. «На проверку» (the default while there is
+work to review, else «Активные») — the works of `review-queue` (avatar, student, «задание · сдано dd.MM HH:mm», the
+«Просрочено» tag when handed in after the due date), then «Ждут сдачи» — assignments somebody still has to hand in
+(«N из M», or «Просрочено»); «Активные» — assignments given and not every task accepted, then «Не выдано» (drafts);
+«Готовые» — `isDone`. A row of an assignment: title, «кому · до …», the progress badge, «⋮» (open, edit, «Проверить
+работы» — switches to «На проверку», open the board, «Удалить…»). `/teacher/homework/review` redirects to the list.
+Detail (242.2): `/teacher/homework`, `/teacher/homework/tasks/:taskId` and `/teacher/homework/:assignmentId` are one route
+(`homeworkMatcher` in `app.routes.ts`, as the students'): the list stays and the work or the assignment opens in the
+second pane (the row is `tb-list__item--current`, `aria-current`); on compact and medium the route shows one of them and
+«back» (`single` input) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
+changes and emit `changed` (reviewed, given to more students, deleted), so the list reads itself again. The work: title =
+the assignment, the line «student · срок · status · попытка N», «Открыть на доске» (the assignment's board), the collapsible
+«Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below; on a phone (< 600) the M3 floating toolbar — AI, comment, «На доработку», «Принять» — with the comment, the draft, the quick phrases and the grade in a bottom sheet, and the bottom navigation bar hidden: `RailState.bottomBarHidden`, `ReviewSheet [compact]`); blocks lie
+on the pane's surface under uppercase labels, no cards. The student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
 with a search by the title and pages of 10, as the teacher's) are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows
 «Перейти на доску» (`MyBoardButton` from `@features/boards/parts`) when the assignment has a board of theirs. «На доску»

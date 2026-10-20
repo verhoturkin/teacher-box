@@ -30,6 +30,8 @@ import ru.teacherbox.billing.application.GroupPriceService.GroupPriceView;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.BillingSummary;
 import ru.teacherbox.billing.application.BillingViews.MonthlyReport;
+import ru.teacherbox.billing.application.BillingViews.OperationKind;
+import ru.teacherbox.billing.application.BillingViews.Operations;
 import ru.teacherbox.billing.application.BillingViews.Overview;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
@@ -87,8 +89,20 @@ class TeacherBillingController {
     }
 
     @GetMapping("/summary")
-    BillingSummary summary() {
-        return queries.summary();
+    BillingSummary summary(@RequestParam(required = false) @Nullable YearMonth month) {
+        return queries.summary(month);
+    }
+
+    /**
+     * The journal of a month: payments, lessons and absences, newest first.
+     *
+     * @param month {@code yyyy-MM}; default: the current month
+     */
+    @GetMapping("/operations")
+    Operations operations(@RequestParam(required = false) @Nullable YearMonth month,
+            @RequestParam(required = false) @Nullable OperationKind kind,
+            @RequestParam(required = false) @Nullable UUID studentId) {
+        return queries.operations(month == null ? queries.currentMonth() : month, kind, studentId);
     }
 
     @GetMapping("/students/{studentId}")

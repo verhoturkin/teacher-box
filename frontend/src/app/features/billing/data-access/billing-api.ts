@@ -9,6 +9,8 @@ import {
   Lesson,
   MonthlyReport,
   MyBillingSummary,
+  OperationKind,
+  Operations,
   Payment,
   RecordPaymentRequest,
   StudentLedger,
@@ -102,9 +104,26 @@ export class BillingApi {
     });
   }
 
-  summary(): Observable<BillingSummary> {
+  /** @param month `yyyy-MM`; none — the current month */
+  summary(month?: string): Observable<BillingSummary> {
     return this.http.get<BillingSummary>('/api/teacher/billing/summary', {
       context: quietContext(),
+      params: month === undefined ? undefined : new HttpParams().set('month', month),
+    });
+  }
+
+  /** The journal of a month, newest first; `kind` and `studentId` narrow it. @param month `yyyy-MM` */
+  operations(month: string, kind?: OperationKind, studentId?: string): Observable<Operations> {
+    let params = new HttpParams().set('month', month);
+    if (kind !== undefined) {
+      params = params.set('kind', kind);
+    }
+    if (studentId !== undefined) {
+      params = params.set('studentId', studentId);
+    }
+    return this.http.get<Operations>('/api/teacher/billing/operations', {
+      context: quietContext(),
+      params,
     });
   }
 

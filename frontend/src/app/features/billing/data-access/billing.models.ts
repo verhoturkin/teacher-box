@@ -141,6 +141,50 @@ export interface BillingSummary {
   readonly month: string;
   /** A lesson price is set (by default or for a student). */
   readonly priceSet: boolean;
+  /** Weeks of the month (Monday to Sunday, clipped to the month) with their totals. */
+  readonly weeks: WeekTotal[];
+}
+
+/** Mirrors `WeekTotal`: totals of one week of a month. */
+export interface WeekTotal {
+  /** `yyyy-MM-dd`, first day of the week within the month. */
+  readonly from: string;
+  readonly to: string;
+  /** Valid payments dated in the week. */
+  readonly income: number;
+  /** Charged lessons dated in the week. */
+  readonly charged: number;
+}
+
+/** Mirrors `OperationKind`: what a journal row is. */
+export type OperationKind = 'PAYMENT' | 'LESSON' | 'ABSENCE';
+
+/** Mirrors `Operation`: a row of the month journal. */
+export interface Operation {
+  readonly kind: OperationKind;
+  readonly id: string;
+  readonly studentId: string;
+  readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
+  /** `yyyy-MM-dd`. */
+  readonly date: string;
+  /** Signed minor units: a payment is positive, a charge negative, a free absence and a voided payment zero. */
+  readonly amount: number;
+  /** Lesson status; `null` for a payment. */
+  readonly status: LessonStatus | null;
+  /** Lesson topic or payment comment. */
+  readonly note: string | null;
+  /** A voided payment or a cancelled lesson. */
+  readonly voided: boolean;
+  readonly createdAt: string;
+}
+
+/** Mirrors `Operations`: the journal of a month, newest first. */
+export interface Operations {
+  readonly month: string;
+  readonly currency: string;
+  readonly operations: Operation[];
 }
 
 /** Mirrors `MyBillingSummary`. */

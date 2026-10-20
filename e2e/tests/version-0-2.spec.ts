@@ -232,8 +232,11 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await expect(page.getByRole('listitem').filter({ hasText: ANNA })).toContainText('800');
-  await expect(page.getByRole('listitem').filter({ hasText: BORIS })).toContainText('800');
+  // 0.25.0: the journal of the month lists the charges and absences
+  await expect(page.getByRole('listitem').filter({ hasText: `Занятие · ${ANNA}` })).toContainText(
+    '800',
+  );
+  await expect(page.getByRole('listitem').filter({ hasText: BORIS }).first()).toContainText('800');
 });
 
 test('a Telemost room and a board reach the student', async ({ page, browser, request }) => {

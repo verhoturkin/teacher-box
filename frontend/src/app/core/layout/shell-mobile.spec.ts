@@ -7,6 +7,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
+import { RailState } from './rail-state';
 import { Shell } from './shell';
 import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
 import { TEACHER_BOTTOM_NAV, TEACHER_FOOTER_LINKS, TEACHER_MENU } from './teacher-layout';
@@ -198,5 +199,43 @@ describe('Shell on a phone', () => {
     const rail = await openRail(host);
     expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
     expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
+  });
+
+  it('hides the bottom bar while a page asks for it (the review of a work, spec §9)', async () => {
+    const host = await render(TEACHER_MENU);
+    expect(host.querySelector('nav.tb-bottom-nav')).not.toBeNull();
+
+    TestBed.inject(RailState).bottomBarHidden.set(true);
+    await fixture.whenStable();
+    expect(host.querySelector('nav.tb-bottom-nav')).toBeNull();
+    expect(host.querySelector('.tb-shell__content--nav')).toBeNull();
+
+    TestBed.inject(RailState).bottomBarHidden.set(false);
+    await fixture.whenStable();
+    expect(host.querySelector('nav.tb-bottom-nav')).not.toBeNull();
+  });
+
+  it('shows the top app bar of the page in place of the bell and the account (spec §10.2)', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher/billing');
+    const command = vi.fn();
+    TestBed.inject(RailState).compactBar.set({
+      title: 'Октябрь',
+      menuLabel: 'Ещё',
+      actions: [{ icon: 'chevron_left', label: 'Назад', command }],
+      menu: [{ label: 'Отчёт' }],
+    });
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Октябрь');
+    expect(host.querySelector('.tb-shell__user-button[aria-haspopup="menu"]')).toBeNull();
+    requireElement(host, '.tb-shell__header button[aria-label="Назад"]', HTMLButtonElement).click();
+    expect(command).toHaveBeenCalledOnce();
+    requireElement(host, '.tb-shell__header button[aria-label="Ещё"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(document.body.textContent).toContain('Отчёт');
+
+    TestBed.inject(RailState).compactBar.set(null);
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Оплаты');
   });
 });

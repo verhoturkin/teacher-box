@@ -26,6 +26,7 @@ import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
 import { SideNav } from './side-nav';
 import { NavItem, injectUrl, isNavActive } from './nav-item';
+import { RailState } from './rail-state';
 
 const T = CORE_T.shell;
 
@@ -68,7 +69,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.tb-shell--rail]': '!compact()',
-    '[class.tb-shell--wide]': 'size() === "extra-large"',
+    '[class.tb-shell--wide]': 'expanded()',
   },
   template: `
     <header class="tb-shell__header">
@@ -88,54 +89,91 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
         >
           <i pButtonIcon class="tb-i tb-i-menu" aria-hidden="true"></i>
         </button>
-        <span class="tb-shell__title">{{ title() }}</span>
+        <span class="tb-shell__title">{{ pageBar()?.title ?? title() }}</span>
       }
-      <div class="tb-shell__user">
-        @if (notifications()) {
-          <tb-notification-bell />
-        }
-        <!-- the visible name is the start of the accessible one (WCAG 2.5.3, ADR-0024) -->
-        <button
-          pButton
-          type="button"
-          class="tb-shell__user-button tb-shell__user-button--round"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          [attr.aria-label]="t.userMenuOf(userName())"
-          aria-haspopup="menu"
-          [attr.aria-expanded]="userOpen()"
-          (click)="userMenu.toggle($event)"
-        >
-          @if (userAvatar(); as photo) {
-            <tb-avatar class="tb-shell__avatar" [name]="userName()" [photo]="photo" size="2rem" />
-          } @else {
-            <i
-              pButtonIcon
-              class="tb-i tb-i-account_circle tb-shell__avatar-icon"
-              aria-hidden="true"
-            ></i>
+      @if (pageBar(); as bar) {
+        <!-- the page's own actions in place of the bell and the account (spec §10.2) -->
+        <div class="tb-shell__user">
+          @for (action of bar.actions; track action.label) {
+            <button
+              pButton
+              type="button"
+              class="tb-shell__user-button--round"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [attr.aria-label]="action.label"
+              [disabled]="action.disabled ?? false"
+              (click)="action.command()"
+            >
+              <i pButtonIcon class="tb-i tb-i-{{ action.icon }}" aria-hidden="true"></i>
+            </button>
           }
-        </button>
-        <p-menu
-          #userMenu
-          [model]="userItems()"
-          [popup]="true"
-          appendTo="body"
-          (onShow)="userOpen.set(true); markChoices()"
-          (onHide)="userOpen.set(false)"
-        />
-      </div>
+          @if (bar.menu.length > 0) {
+            <button
+              pButton
+              type="button"
+              class="tb-shell__user-button--round"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [attr.aria-label]="bar.menuLabel"
+              aria-haspopup="menu"
+              (click)="pageMenu.toggle($event)"
+            >
+              <i pButtonIcon class="tb-i tb-i-more_vert" aria-hidden="true"></i>
+            </button>
+            <p-menu #pageMenu [model]="bar.menu" [popup]="true" appendTo="body" />
+          }
+        </div>
+      } @else {
+        <div class="tb-shell__user">
+          @if (notifications()) {
+            <tb-notification-bell />
+          }
+          <!-- the visible name is the start of the accessible one (WCAG 2.5.3, ADR-0024) -->
+          <button
+            pButton
+            type="button"
+            class="tb-shell__user-button tb-shell__user-button--round"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [attr.aria-label]="t.userMenuOf(userName())"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="userOpen()"
+            (click)="userMenu.toggle($event)"
+          >
+            @if (userAvatar(); as photo) {
+              <tb-avatar class="tb-shell__avatar" [name]="userName()" [photo]="photo" size="2rem" />
+            } @else {
+              <i
+                pButtonIcon
+                class="tb-i tb-i-account_circle tb-shell__avatar-icon"
+                aria-hidden="true"
+              ></i>
+            }
+          </button>
+          <p-menu
+            #userMenu
+            [model]="userItems()"
+            [popup]="true"
+            appendTo="body"
+            (onShow)="userOpen.set(true); markChoices()"
+            (onHide)="userOpen.set(false)"
+          />
+        </div>
+      }
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {
-        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="size() !== 'extra-large'">
+        <tb-side-nav [items]="items()" [footer]="footer()" [rail]="!expanded()">
           @if (create()) {
-            <tb-create-menu [extended]="size() === 'extra-large'" />
+            <tb-create-menu [extended]="expanded()" />
           }
         </tb-side-nav>
       }
-      <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
+      <main class="tb-shell__content" [class.tb-shell__content--nav]="bar()">
         <router-outlet />
       </main>
       @if (notifications()) {
@@ -148,19 +186,23 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
       }
     </div>
     @if (compact()) {
-      <nav class="tb-bottom-nav" [attr.aria-label]="sections">
-        @for (item of barItems(); track item.label) {
-          <a
-            class="tb-bottom-nav__item"
-            [routerLink]="item.routerLink"
-            [class.tb-bottom-nav__item--active]="isActive(item)"
-            [attr.aria-current]="isActive(item) ? 'page' : null"
-          >
-            <span class="tb-bottom-nav__icon"><i [class]="item.icon" aria-hidden="true"></i></span>
-            <span class="tb-bottom-nav__label">{{ item.label }}</span>
-          </a>
-        }
-      </nav>
+      @if (bar()) {
+        <nav class="tb-bottom-nav" [attr.aria-label]="sections">
+          @for (item of barItems(); track item.label) {
+            <a
+              class="tb-bottom-nav__item"
+              [routerLink]="item.routerLink"
+              [class.tb-bottom-nav__item--active]="isActive(item)"
+              [attr.aria-current]="isActive(item) ? 'page' : null"
+            >
+              <span class="tb-bottom-nav__icon"
+                ><i [class]="item.icon" aria-hidden="true"></i
+              ></span>
+              <span class="tb-bottom-nav__label">{{ item.label }}</span>
+            </a>
+          }
+        </nav>
+      }
       <!-- the modal expanded rail (M3E): the scrim, the focus trap and the focus back to ☰ come with
            tbModalDrawer; Esc in the rail closes it as the drawer's own Esc does -->
       <p-drawer
@@ -209,6 +251,17 @@ export class Shell {
   protected readonly close = CORE_T.close;
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
+  private readonly railState = inject(RailState);
+  /** The top app bar the page asks for (compact only). */
+  protected readonly pageBar = computed(() =>
+    this.compact() ? this.railState.compactBar() : null,
+  );
+  /** The bottom navigation bar: a phone's, unless the page hides it (the review of a work, spec §9). */
+  protected readonly bar = computed(() => this.compact() && !this.railState.bottomBarHidden());
+  /** The expanded rail: extra-large, unless the page collapses it (the review of a work, spec §9). */
+  protected readonly expanded = computed(
+    () => this.size() === 'extra-large' && !this.railState.collapsed(),
+  );
 
   constructor() {
     // `?notifications=…` (old links to the notifications page) opens the bell's sheet

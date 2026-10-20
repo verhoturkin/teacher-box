@@ -26,8 +26,6 @@ export const en: Translation<typeof ru> = {
     invite: 'Invitation',
     board: 'Board',
     setup: 'Initial setup',
-    reviewQueue: 'To review',
-    taskReview: 'Reviewing work',
     assignment: 'Homework',
     newAssignment: 'New homework',
     editAssignment: 'Edit homework',

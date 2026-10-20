@@ -57,9 +57,9 @@ test.beforeAll(async ({ request }) => {
   expect(photo.ok()).toBe(true);
 });
 
-test('the teacher sees the student photo in «Оплаты»', async ({ page }) => {
+test('the teacher sees the student photo in the list of students', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/billing');
+  await page.goto('/teacher/students');
   const row = page.locator('.tb-list > li').filter({ hasText: STUDENT });
   await expect(row.locator('tb-avatar img')).toBeVisible();
 });
