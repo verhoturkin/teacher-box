@@ -41,7 +41,7 @@ pane; an agenda on a phone. ADR: none.
   the hero; month (`billing/home/finance-widget.ts`) and week figures; header with the summary line; nav label
   «Сегодня».
 - [x] 239.4 **F** Compact: queue rows with a chevron, bottom sheet for two or more actions (`tbModalDrawer`).
-- [ ] 239.5 **D** design-system (Today), help «Первые шаги» (ru, en), wiki.
+- [x] 239.5 **D** design-system (Today), help «Первые шаги» (ru, en), wiki.
 
 ### 240. Schedule (F)
 

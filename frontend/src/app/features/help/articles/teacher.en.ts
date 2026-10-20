@@ -18,14 +18,18 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
-The home page has the «Getting started» list — only the steps not done yet stay in it, and the bar shows how many are done.
+On the «Today» page the «Getting started» list sits at the end of the «To do» card — only the steps not done yet stay in it, and the bar shows how many are done.
 
-## Home page
+## The «Today» page
 
-- **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section, and «Message» opens the new message window right over the page; the item of the section you are in comes first. On a phone the home page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
+This is the teacher's home page. At the top — how many lessons, works to review and requests there are today. On a wide screen the cards go in three columns, on a medium one in two, on a phone one under another.
+
+- **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section, and «Message» opens the new message window right over the page; the item of the section you are in comes first. On a phone this page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
 - **Next lesson** — the first card of the home page. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs) — the largest button of the portal. When the lesson ends, the card shows the next one by itself.
-- **Needs attention** — unmarked lessons (mark them in «Schedule»), work to review, students' requests and failed deliveries of notifications.
+- **Lessons today** — a list under the next-lesson card: the time, with whom and the status; the nearest lesson is highlighted. There is no list on a phone.
+- **To do** — unmarked lessons («Held» or «Missed» right in the row), students' requests, work to review and debts. A row opens the section or does the action; if one group has more than five items, the rest are counted («3 more»). On a phone a row is one line with an arrow: a tap does the action, and for an unmarked lesson it opens a window with two buttons.
 - **Finance** — income of the month and students' debts.
+- **Week** — lessons held, absences, homework given and handed in on time for the current week (Monday to Sunday).
 
 What else to read: [Students and invitations](/teacher/help/students), [Schedule and requests](/teacher/help/schedule), [Payments](/teacher/help/billing).
 `,
