@@ -75,6 +75,8 @@ const SHEET_WIDTH = '25rem';
       /* the margins at the trailing edge and the bottom (M3); the rail and the top bar take the others */
       padding: 0 var(--tb-panes-margin) var(--tb-panes-margin) 0;
       block-size: calc(100dvh - var(--tb-header-height));
+      /* a pane that slides in (24 dp) never widens the window */
+      overflow-x: clip;
     }
 
     :host(.tb-panes--single) {
@@ -138,6 +140,8 @@ export class Panes {
       overscroll-behavior: contain;
       border-radius: var(--tb-shape-xl);
       background: var(--p-md-surface);
+      /* nested corners of a list in the pane (ADR-0044): 28 − 24 = 4 px, on compact 28 − 16 = 12 px */
+      --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-xl) - var(--tb-space-6)));
     }
 
     :host(.tb-pane--sheet) {
@@ -151,6 +155,7 @@ export class Panes {
     @media (width < 37.5em) {
       :host {
         padding: var(--tb-space-4);
+        --tb-list-outer: calc(var(--tb-shape-xl) - var(--tb-space-4));
       }
     }
 

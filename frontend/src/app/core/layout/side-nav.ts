@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { RouterLink } from '@angular/router';
 import { CORE_T } from '@core/i18n/texts';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { NavItem, injectUrl, isNavActive } from './nav-item';
 
 /**
  * The sections of the role from medium (ADR-0017, ADR-0019, ADR-0024): the expanded navigation rail
@@ -17,7 +17,7 @@ import { PortalLogo } from '@core/portal/portal-logo';
  */
 @Component({
   selector: 'tb-side-nav',
-  imports: [RouterLink, RouterLinkActive, PortalLogo],
+  imports: [RouterLink, PortalLogo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'navigation',
@@ -40,9 +40,8 @@ import { PortalLogo } from '@core/portal/portal-logo';
             <a
               class="tb-side-nav__item"
               [routerLink]="item.routerLink"
-              routerLinkActive="tb-side-nav__item--active"
-              ariaCurrentWhenActive="page"
-              [routerLinkActiveOptions]="item.routerLinkActiveOptions ?? { exact: false }"
+              [class.tb-side-nav__item--active]="isActive(item)"
+              [attr.aria-current]="isActive(item) ? 'page' : null"
               (click)="navigate.emit()"
             >
               <span class="tb-side-nav__indicator">
@@ -60,9 +59,9 @@ import { PortalLogo } from '@core/portal/portal-logo';
   styleUrl: './side-nav.scss',
 })
 export class SideNav {
-  readonly items = input.required<MenuItem[]>();
+  readonly items = input.required<NavItem[]>();
   /** The bottom group after the spacer: the settings and the help of the area. */
-  readonly footer = input<MenuItem[]>([]);
+  readonly footer = input<NavItem[]>([]);
   /** The narrow rail instead of the expanded one. */
   readonly rail = input(false);
   /** The modal expanded rail under ☰ on compact: it fills its sheet instead of standing by the page. */
@@ -79,4 +78,10 @@ export class SideNav {
       { footer: true, items: this.footer() },
     ].filter((group) => group.items.length > 0),
   );
+  private readonly url = injectUrl();
+
+  /** The destination of the current page (`isNavActive`). */
+  protected isActive(item: NavItem): boolean {
+    return isNavActive(item, this.url());
+  }
 }

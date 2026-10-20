@@ -1,3 +1,5 @@
+import { countOf } from '@shared/text/plural';
+
 import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
 
@@ -86,15 +88,12 @@ export const en: Translation<typeof ru> = {
   groups: {
     title: 'Groups',
     create: 'Create group',
-    showArchived: 'Show archive',
     what: 'the groups',
     nobody: 'Nobody yet',
     archived: 'Archived',
     actions: (name: string) => `Actions: ${name}`,
     emptyTitle: 'No groups yet',
     emptyHint: 'Click «Create group» if you teach several students at once',
-    allArchivedTitle: 'All groups are archived',
-    allArchivedHint: 'Turn on «Show archive»: a group is restored from its «⋮» menu',
     saved: 'Group saved',
     archiveHeader: 'Archive the group?',
     archiveMessage: (name: string) =>
@@ -146,13 +145,36 @@ export const en: Translation<typeof ru> = {
     add: 'Add student',
     list: 'List of students',
     search: 'Search by name',
-    showDeactivated: 'Show turned off',
     what: 'the students',
     actions: (name: string) => `Actions: ${name}`,
     emptyTitle: 'No students yet',
     emptyHint: 'Click «Add student» and send them the invitation link',
     notFoundTitle: 'Nobody found',
-    notFoundHint: 'Change the search or show the students whose access is off',
+    notFoundHint: 'Change the search or choose another filter',
+    filters: 'List filter',
+    summary: (students: number, groups: number) =>
+      `${countOf(students, 'student', 'students', 'students')} · ${countOf(groups, 'group', 'groups', 'groups')}`,
+    chips: {
+      all: 'All',
+      groups: 'Groups',
+      debtors: 'In debt',
+      noMessenger: 'No messenger',
+      deactivated: 'Turned off',
+    },
+    createGroup: 'Create group',
+    today: 'today',
+    tomorrow: 'tomorrow',
+    noLessons: 'no lessons',
+    prepaid: (amount: string) => `prepaid ${amount}`,
+    debt: (amount: string) => `Debt ${amount}`,
+    all: 'All students',
+    pickTitle: 'Choose a student or a group',
+    pickHint: 'The card opens here',
+    missingStudent: 'Student not found',
+    missingGroup: 'Group not found',
+    missingHint: 'Choose another one in the list',
+    email: (email: string) => `E-mail: ${email}`,
+    phone: (phone: string) => `Phone: ${phone}`,
     login: (login: string) => `Login: ${login}`,
     note: (note: string) => `Note: ${note}`,
     inviteUntil: (purpose: string, date: string) => `${purpose} until ${date}`,

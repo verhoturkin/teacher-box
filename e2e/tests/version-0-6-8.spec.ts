@@ -169,7 +169,7 @@ test('the actions of the page header are at one height on every page', async ({
   expect(Math.round(nested?.y ?? 0)).toBe(Math.round(list?.y ?? -1));
 });
 
-test('students are list rows with the status and «⋮» on the line of the name, words are whole', async ({
+test('students are list rows with the status on the right, «⋮» in the card, words are whole', async ({
   page,
 }) => {
   await signIn(page);
@@ -181,20 +181,37 @@ test('students are list rows with the status and «⋮» on the line of the name
     .first();
   await expect(card).toBeVisible();
   const cardBox = await card.boundingBox();
-  // 0.7.3: a row is the name (and the phone), the status and «⋮» on the right
-  expect(cardBox?.height ?? 0).toBeLessThan(90);
-  const edit = await card.getByRole('button', { name: `Действия: ${LONG_NAME}` }).boundingBox();
-  const name = await card.locator('.tb-list__title').boundingBox();
-  // the button is inside the card, on the line of the name
-  expect((edit?.x ?? 0) + (edit?.width ?? 0)).toBeLessThanOrEqual(
+  // 0.7.3: a row is the name, a supporting line and the status on the right; 0.23.0: in the 412 px
+  // list pane the long name wraps at its hyphen, «⋮» moved from the row to the card
+  expect(cardBox?.height ?? 0).toBeLessThan(140);
+  await expect(card.getByRole('button')).toHaveCount(0);
+  const tag = await card.locator('p-tag').boundingBox();
+  expect((tag?.x ?? 0) + (tag?.width ?? 0)).toBeLessThanOrEqual(
     (cardBox?.x ?? 0) + (cardBox?.width ?? 0),
   );
-  expect(edit?.y ?? 0).toBeLessThan((name?.y ?? 0) + (name?.height ?? 0));
-  // the long name takes one line: it is not broken in the middle of a word
+  await card.locator('.tb-list__title').click();
+  await expect(page.getByRole('button', { name: `Действия: ${LONG_NAME}` })).toBeVisible();
+  // the long name is not broken in the middle of a word: each line ends at a space or the hyphen
   expect(
-    await card
-      .locator('.tb-list__title')
-      .evaluate((title) => title.getClientRects().length === 1 && title.clientHeight < 40),
+    await card.locator('.tb-list__title').evaluate((title) => {
+      const text = title.firstChild;
+      if (text === null || text.textContent === null) {
+        return false;
+      }
+      const range = document.createRange();
+      const tops: number[] = [];
+      for (let index = 0; index < text.textContent.length; index++) {
+        range.setStart(text, index);
+        range.setEnd(text, index + 1);
+        tops.push(Math.round(range.getBoundingClientRect().top));
+      }
+      return tops.every(
+        (top, index) =>
+          index === 0 ||
+          top === tops[index - 1] ||
+          /[\s-]/.test(text.textContent?.[index - 1] ?? ''),
+      );
+    }),
   ).toBe(true);
   expect(
     await page.evaluate(

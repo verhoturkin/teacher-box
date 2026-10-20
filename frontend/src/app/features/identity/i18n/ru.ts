@@ -1,3 +1,5 @@
+import { countOf } from '@shared/text/plural';
+
 /** Texts of `identity`: sign-in, invitations, the account, students and groups (ADR-0035). */
 export const ru = {
   login: {
@@ -84,15 +86,12 @@ export const ru = {
   groups: {
     title: 'Группы',
     create: 'Создать группу',
-    showArchived: 'Показывать архив',
     what: 'группы',
     nobody: 'Пока никого',
     archived: 'В архиве',
     actions: (name: string) => `Действия: ${name}`,
     emptyTitle: 'Групп пока нет',
     emptyHint: 'Нажмите «Создать группу», если занимаетесь с несколькими учениками сразу',
-    allArchivedTitle: 'Все группы в архиве',
-    allArchivedHint: 'Включите «Показывать архив»: вернуть группу можно в её меню «⋮»',
     saved: 'Группа сохранена',
     archiveHeader: 'Убрать группу в архив?',
     archiveMessage: (name: string) =>
@@ -144,13 +143,36 @@ export const ru = {
     add: 'Добавить ученика',
     list: 'Список учеников',
     search: 'Поиск по имени',
-    showDeactivated: 'Показывать отключённых',
     what: 'учеников',
     actions: (name: string) => `Действия: ${name}`,
     emptyTitle: 'Учеников пока нет',
     emptyHint: 'Нажмите «Добавить ученика» и отправьте ему ссылку-приглашение',
     notFoundTitle: 'Никого не найдено',
-    notFoundHint: 'Измените запрос или включите показ отключённых учеников',
+    notFoundHint: 'Измените запрос или выберите другой фильтр',
+    filters: 'Фильтр списка',
+    summary: (students: number, groups: number) =>
+      `${countOf(students, 'ученик', 'ученика', 'учеников')} · ${countOf(groups, 'группа', 'группы', 'групп')}`,
+    chips: {
+      all: 'Все',
+      groups: 'Группы',
+      debtors: 'Должники',
+      noMessenger: 'Без мессенджера',
+      deactivated: 'Отключённые',
+    },
+    createGroup: 'Создать группу',
+    today: 'сегодня',
+    tomorrow: 'завтра',
+    noLessons: 'нет занятий',
+    prepaid: (amount: string) => `аванс ${amount}`,
+    debt: (amount: string) => `Долг ${amount}`,
+    all: 'Все ученики',
+    pickTitle: 'Выберите ученика или группу',
+    pickHint: 'Карточка откроется здесь',
+    missingStudent: 'Ученик не найден',
+    missingGroup: 'Группа не найдена',
+    missingHint: 'Выберите другого в списке',
+    email: (email: string) => `E-mail: ${email}`,
+    phone: (phone: string) => `Телефон: ${phone}`,
     login: (login: string) => `Логин: ${login}`,
     note: (note: string) => `Заметка: ${note}`,
     inviteUntil: (purpose: string, date: string) => `${purpose} до ${date}`,

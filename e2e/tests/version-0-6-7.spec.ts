@@ -110,12 +110,12 @@ test('the payments are a list like the students, its rows are tiles with the ini
   await expect(page.locator('.p-datatable')).toHaveCount(0);
 });
 
-test('on a phone the card around a list stays and the rows are tiles on it', async ({ page }) => {
+test('on a phone the pane around a list stays and the rows are tiles on it', async ({ page }) => {
   await signIn(page, 390);
   await page.goto('/teacher/students');
 
-  // 0.7.3: the students are a segmented list (tb-list), not a table
-  const card = page.locator('.p-card:has(ul.tb-list[aria-label="Ученики"])').first();
+  // 0.7.3: the students are a segmented list (tb-list), not a table; 0.23.0: in the list pane
+  const card = page.locator('tb-pane:has(ul.tb-list[aria-label="Ученики"])').first();
   expect(await card.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
     'rgba(0, 0, 0, 0)',
   );

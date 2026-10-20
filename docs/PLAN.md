@@ -37,9 +37,12 @@ student or group. ADR: none.
   `homework` tasks of one student (`TeacherHomeworkController`), the messenger status of one student
   (`notifications`, the source of `student-messengers-panel.ts`). Controller tests with roles (student → 403),
   `docs/modules/{schedule,homework,notifications}.md`.
-- [ ] 237.2 **F** List pane: `identity/students/students-page.ts` + `groups/groups-panel.ts` → one list on
+- [x] 237.2 **F** List pane: `identity/students/students-page.ts` + `groups/groups-panel.ts` → one list on
   `tb-panes`; chips «Все · Группы · Должники · Без мессенджера · Отключённые» (balances from
   `GET /api/teacher/billing/overview`); row supporting line; routes `/teacher/students/:id`, `/teacher/groups/:id`.
+  *Messengers for the chip come from the list read `GET /api/teacher/notifications/students` (current students),
+  not the one-student read of 237.1; until 237.3 the detail pane is a minimal card (name, status, contacts)
+  with the «⋮» menu that left the rows (teacher, 2026-10-20); from expanded only the list scrolls.*
 - [ ] 237.3 **F** Card header (avatar 72, tags, «Написать» → `broadcast-dialog` for one, «Оплата» →
   `payment-dialog` preset, «Занятие» → `lesson-dialog` preset, «⋮») and the Обзор tab, composed from
   `@features/{schedule,homework,billing,meetings,notifications}/parts`.

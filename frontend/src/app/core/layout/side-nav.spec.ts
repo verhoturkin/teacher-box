@@ -48,6 +48,22 @@ describe('SideNav', () => {
     expect(host.classList).not.toContain('tb-side-nav--rail');
   });
 
+  it('marks «Ученики» on the card of a group too', async () => {
+    const host = await render(false, '/teacher/groups/g-1?tab=lessons');
+
+    const current = host.querySelectorAll('a[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]?.textContent).toContain('Ученики');
+    expect(current[0]?.classList).toContain('tb-side-nav__item--active');
+  });
+
+  it('marks no section on a page of none', async () => {
+    const host = await render(false, '/teacher/groupsx');
+
+    expect(host.querySelector('a[aria-current]')).toBeNull();
+    expect(host.querySelector('.tb-side-nav__item--active')).toBeNull();
+  });
+
   it('becomes the narrow rail', async () => {
     const host = await render(true);
 

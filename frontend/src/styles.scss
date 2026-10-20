@@ -1258,6 +1258,26 @@ p-button.tb-list__stretched .p-button {
   --tb-list-item: var(--tb-label-surface-container-lowest);
 }
 
+/*
+ * The row of the open detail in a list-detail (`tb-list__item--current`, the students): secondary-container
+ * and the emphasized title (M3: a selected list item), over the colour of a student or a group too.
+ */
+/* the class twice: above the dark rule of a coloured row (`:root.tb-dark … [data-tb-label]`) */
+:root .tb-list > li.tb-list__item--current.tb-list__item--current {
+  --tb-list-item: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+
+  .tb-list__title {
+    color: var(--p-md-on-secondary-container);
+    /* M3 body large emphasized: the same size, weight 500 */
+    font-weight: 500;
+  }
+
+  .tb-list__supporting {
+    color: var(--p-md-on-secondary-container);
+  }
+}
+
 /* A chip of a student or a group (multiselects): the container of the colour */
 .p-chip[data-tb-label] {
   background: var(--tb-label-container);

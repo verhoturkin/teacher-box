@@ -251,7 +251,9 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
-  // 0.7.3: the room is set up in the edit dialog, opened from the «⋮» menu of the student
+  // 0.7.3: the room is set up in the edit dialog, opened from the «⋮» menu of the student (0.23.0: in
+  // the student's card)
+  await page.getByRole('link', { name: ANNA, exact: true }).click();
   await page.getByRole('button', { name: `Действия: ${ANNA}` }).click();
   await page.getByRole('menuitem', { name: 'Изменить' }).click();
   const edit = page.getByRole('dialog', { name: 'Изменить ученика' });

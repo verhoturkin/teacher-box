@@ -71,24 +71,28 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 
 The student opens the link, chooses a login and a password and gets to their cabinet. The link is valid for a few days — if it is out of date, issue a new one.
 
-## Student card
+## List of students and groups
 
-The list shows the photo (if the student uploaded one, otherwise the initials), the name and phone, and on the right the status: «Invited», «Active» or «Turned off». Hover over an invited student's status to see until when the link is valid. Hover over the name to see the login and the note.
+Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows its students and the nearest lesson.
+
+Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
+
+Click a row — the card of the student or the group opens on the right with the contacts, the login and the note (on a phone the card replaces the list, the «back» arrow returns to it).
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
 Email, phone, note, login (the student chooses it, so it is read-only) and the **video meeting** are in the «Edit» window ([Video meetings](/teacher/help/meetings)).
 
-The student's groups are in the «Groups» card under the students ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
+The student's groups are rows of the same list ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
 
 ## Links and access
 
-The «⋮» button right of the status opens the menu:
+The «⋮» button in the student's card (right of the name) opens the menu:
 
 - **Edit** — name, contacts, note, default topic, colour and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and homework stays.
-- **Give access back** — for students whose access is off (turn on «Show turned off»).
+- **Give access back** — for students whose access is off (the «Turned off» filter).
 
 ## Student colour
 
@@ -105,12 +109,12 @@ A group is students who study together. A group has its own lesson price: it is 
 
 ## Create a group
 
-1. «Students» → the «Groups» card under the list of students → «Create group».
+1. «Students» → the «Create group» button next to the title.
 2. Enter the name, tick the students and set the price of one lesson for each. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
 
-## Group card
+## Groups in the list
 
-The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price, default topic, colour and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
+Groups are rows of the students' list with a group icon: the name, the students and the nearest lesson; the «Groups» filter keeps only them. The «⋮» button in the group's card opens the menu: «Edit» (name, students, lesson price, default topic, colour and video meeting) and «Archive». Archived groups are under the «Turned off» filter, marked «Archived», with «Restore from archive».
 
 ## Group lessons
 
@@ -202,7 +206,7 @@ On a phone a minimized call is a bar above the bottom menu.
 
 ## External link
 
-If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → «⋮» → «Edit» → «Video meeting».
+If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student or the group → «⋮» → «Edit» → «Video meeting».
 
 The administrator turns calls in the portal on (a call server is needed). If they are off, the section says so.
 `,
@@ -215,7 +219,7 @@ If calls in the portal are on, lessons are held in the portal room — see [Call
 
 ## Set the link
 
-«Students» → «⋮» next to a student or a group → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
+«Students» → the student or the group → «⋮» in the card → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
 
 Create a meeting in Telemost, Zoom or another service, paste the link and click «Add link».
 
@@ -588,7 +592,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 ## From a phone
 
 - The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New homework», «Payment».
-- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the status and the «⋮» menu on the right.
+- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card with the «⋮» menu.
 - On nested pages (homework, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
 - Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
@@ -658,7 +662,7 @@ Check the portal address: «Settings» → «Portal». The address must open fro
 Restore a backup: «Settings» → «Data» → «Backups» ([more](/teacher/help/backups)).
 
 **A student cannot sign in.**
-Check that their access is not turned off. Issue a password reset link: «Students» → «⋮» next to the student → «Reset password».
+Check that their access is not turned off. Issue a password reset link: «Students» → the student → «⋮» in the card → «Reset password».
 
 **The invitation link is out of date.**
 Issue a new one in the same place — the old one stops working.

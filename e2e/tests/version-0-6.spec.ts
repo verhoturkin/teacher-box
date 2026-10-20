@@ -52,11 +52,11 @@ test('on a computer the sections are in the drawer and the current one is marked
   await drawer.getByRole('link', { name: 'Ученики' }).click();
   await expect(page).toHaveURL(/\/teacher\/students$/);
   await expect(drawer.locator('a[aria-current="page"]')).toHaveText('Ученики');
-  // The page is a container and the cards lie on it lighter (M3 surfaces).
+  // The page is a container and the panes (0.23.0, the students' list) lie on it lighter (M3 surfaces).
   const [page_, card] = await Promise.all([
     page.evaluate(() => getComputedStyle(document.body).backgroundColor),
     page
-      .locator('.p-card')
+      .locator('tb-pane')
       .first()
       .evaluate((element) => getComputedStyle(element).backgroundColor),
   ]);

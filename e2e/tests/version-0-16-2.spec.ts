@@ -53,7 +53,7 @@ test.beforeAll(async ({ request }) => {
   expect(response.ok()).toBe(true);
 });
 
-test('a list nests its corners in its card: 4 px on a computer, 8 px on a phone', async ({
+test('a list nests its corners in its pane: 4 px on a computer, 12 px on a phone', async ({
   page,
 }) => {
   await signIn(page, 1280);
@@ -62,8 +62,9 @@ test('a list nests its corners in its card: 4 px on a computer, 8 px on a phone'
   await expect(first).toBeVisible();
   expect(await firstCorner(first)).toBe('4px');
 
+  // 0.23.0: the students are in a pane (28 px corners): 28 − 24 on a computer, 28 − 16 on a phone
   await page.setViewportSize({ width: 360, height: 800 });
-  await expect.poll(() => firstCorner(first)).toBe('8px');
+  await expect.poll(() => firstCorner(first)).toBe('12px');
 });
 
 test('a dialog is surface-container-high', async ({ page }) => {

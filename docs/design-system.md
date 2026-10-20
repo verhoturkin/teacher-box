@@ -325,7 +325,8 @@ component that shows one adds it to `PRIME`).
   follow one another and the window scrolls. Focus order = template order = visual order (nothing reorders
   panes); `label` makes a pane a named region. A pane that appears after the page enters on
   `--tb-spring-default-spatial` (opacity on the effects spring), panes of a new page don't, no stagger
-  (*ours*). The shell drops its own content padding for a page of panes. **List-detail:**
+  (*ours*). The shell drops its own content padding for a page of panes. A list right in a pane nests its
+  corners: 28 − 24 = 4 px, on compact 28 − 16 = 12 px (`--tb-list-outer`, ADR-0044). **List-detail:**
   `injectListDetail(() => routeHasDetail)` — from expanded both panes, on compact and medium only the list or
   the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
@@ -581,11 +582,23 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
     `tb-list__trail--icons` keeps a status and icon buttons on the right.
-  - Students and groups (0.7.3) — a `tb-list`, not a table: initials / icon; name + one supporting line (a
-    student's phone, a group's members); trail — status `p-tag` and «⋮» (one popup `p-menu` per list, items
-    for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
-    (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
-    (`tb-tooltip-lines`, focusable).
+  - Students and groups (237.2, redesign spec §8) — **one** `tb-list` in the fixed pane of a list-detail
+    (`/teacher/students[/:studentId]`, `/teacher/groups/:groupId` — one route, the page stays; «Ученики» in the
+    rail and the bar is active on both, `NavItem.alsoActive`): the header «Ученики» + «N учеников · M групп»
+    (current ones) and the icon button «Создать группу»; the search; filter chips «Все · Группы · Должники N ·
+    Без мессенджера N · Отключённые» (`tb-filter-chips`, below; «Отключённые» — students without access and
+    archived groups, they replace the old toggles). From expanded the header, the search and the chips stay and
+    only the list scrolls (*ours*); on one pane the window scrolls. Students by name, then groups (group icon in the lead).
+    Row: avatar / icon; the name is the row's link (`tb-list__link`) to the card; supporting «nearest lesson ·
+    аванс N» (a group: its members · nearest lesson; «нет занятий» when the schedule has none in 4 weeks;
+    balances from the billing overview, messengers from notifications, lessons from schedule — a failed read
+    only drops its part); trail — one status: the debt in `error` (Title Medium; read out «Долг N»), or else the tag
+    «Приглашён» / «Отключён» / «В архиве» (none for an active student; the trail column is shared by the
+    subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2): the
+    actions (one popup `p-menu`, `aria-haspopup` + `aria-expanded`) are a «⋮» in the card's header. The row of the open card (from expanded) is `tb-list__item--current`:
+    secondary-container, title weight 500 (M3 selected list item), also over a student's colour. Until the
+    card (237.3) the detail pane shows the name, the status, the contacts, the login and the note; with
+    nothing open beside the list — «Выберите ученика или группу».
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,
@@ -625,6 +638,12 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - Not data lists: wizard steps, help items, checklists, bot capability lists, files picked before upload — plain text
   lists.
 - No custom row markup for data in cards or dialogs.
+- **Filter chips** (`@shared/ui/filter-chips`, 237.2): a single-select set over a list (M3: an alternative to
+  segmented buttons when viewing a list), `role="group"` with a name, each chip a `button` with
+  `aria-pressed`. **M3:** 32 dp high, 8 dp corners, label large; unselected — 1 dp outline-variant,
+  on-surface-variant; selected — secondary-container without the outline, a leading 18 dp check. *Ours:* the
+  set wraps (no horizontal scroll), 8 dp gaps, a 48 dp target over each chip, a count after the label in label
+  large emphasized when it is not zero.
 
 ## 10. Fields
 

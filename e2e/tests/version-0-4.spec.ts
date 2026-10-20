@@ -123,10 +123,12 @@ test.describe('on a phone', () => {
     inviteLink = await link.inputValue();
     await page.keyboard.press('Escape');
 
-    // 0.7.3: a student is a row of the list — the name, the status and «⋮» on the right
+    // 0.7.3: a student is a row of the list — the name and the status on the right; 0.23.0: «⋮» is in
+    // the card, which replaces the list on a phone
     const card = page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT });
     await expect(card.locator('p-tag')).toHaveText('Приглашён');
-    await expect(card.getByRole('button', { name: `Действия: ${STUDENT}` })).toBeVisible();
+    await card.getByRole('link', { name: STUDENT }).click();
+    await expect(page.getByRole('button', { name: `Действия: ${STUDENT}` })).toBeVisible();
     await expectNoSideScroll(page);
   });
 

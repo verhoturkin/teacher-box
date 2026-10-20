@@ -76,9 +76,9 @@ test('confirming buttons are primary, cancelling neutral, and the dialog stands 
   const cancel = dialog.getByRole('button', { name: 'Отмена' });
   await expect(cancel).toHaveClass(/p-button-secondary/);
   await expect(cancel).toHaveClass(/p-button-text/);
-  // 0.16.2: a dialog is surface-container-high (M3), no longer the colour of a card
+  // 0.16.2: a dialog is surface-container-high (M3), no longer the colour of a card (0.23.0: the pane)
   expect(await style(page, '.p-dialog', 'background-color')).not.toBe(
-    await style(page, 'main .p-card', 'background-color'),
+    await style(page, 'main tb-pane', 'background-color'),
   );
   await cancel.click();
   await expect(dialog).toBeHidden();
@@ -102,6 +102,9 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   // the name of the portal at the top of the rail (231.1; other scenarios rename it)
   await expect(page.locator('tb-side-nav .tb-side-nav__brand')).not.toBeEmpty();
 
+  // 0.23.0: the students are panes (28 px), the cards of the schedule keep 20 px
+  expect(await style(page, 'main tb-pane', 'border-radius')).toBe('28px');
+  await page.goto('/teacher/schedule');
   expect(await style(page, 'main .p-card', 'border-radius')).toBe('20px');
   // the main action of a section outside «Создать» (232.2): the header button of the textbooks
   await page.goto('/teacher/textbooks');

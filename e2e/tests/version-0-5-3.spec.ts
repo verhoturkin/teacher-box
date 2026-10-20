@@ -52,7 +52,7 @@ async function studentPage(browser: Browser): Promise<Page> {
   return page;
 }
 
-test('the groups are under the students, without tabs', async ({ page, browser }) => {
+test('the groups are in the list of students, without tabs', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/students');
   await create(page, 'Ученик');
@@ -64,10 +64,9 @@ test('the groups are under the students, without tabs', async ({ page, browser }
   await page.keyboard.press('Escape');
 
   await expect(page.getByRole('tab')).toHaveCount(0);
-  const groups = page.locator('p-card', {
-    has: page.locator('.p-card-title', { hasText: 'Группы' }),
-  });
-  await expect(groups.getByRole('button', { name: /Создать группу$/ }).first()).toBeVisible();
+  // 0.23.0: groups are rows of the same list, the chip «Группы» filters them
+  await expect(page.getByRole('button', { name: 'Создать группу' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Фильтр списка' })).toContainText('Группы');
   await expect(
     page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT }),
   ).toBeVisible();
