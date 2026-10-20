@@ -77,6 +77,14 @@ export const ru = {
     until: (date: string) => `до ${date}`,
     more: (count: number) => `Ещё открытых: ${String(count)}`,
   },
+  tasksTab: {
+    title: 'Все задания',
+    what: 'задания',
+    nothing: 'Заданий пока нет',
+    until: (date: string) => `до ${date}`,
+    reviewed: (date: string) => `проверено ${date}`,
+    showMore: 'Показать ещё',
+  },
   deadlines: {
     title: 'Домашние задания',
     nothing: 'Открытых заданий нет',

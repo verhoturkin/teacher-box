@@ -14,7 +14,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 ## Four steps
 
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
-2. **Check the lesson price.** «Payments» → click the student's name → the «Lesson price» field. Debts and prepayments are counted from it.
+2. **Check the lesson price.** «Payments» → click the student's name → the «Payments» tab of their card → the «Lesson price» field. Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
@@ -80,6 +80,8 @@ Above the list are the search by name and the filters: **All**, **Groups**, **In
 Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
 
 The top of a student's card shows the photo, the name, since which month they study with you and the tags: the messenger (or «No messenger»), the prepayment or the debt. Next to them are three buttons: **Write** — a message to this student only, **Payment** — record their payment, **Lesson** — plan a lesson with them (the default topic is filled in). The **Overview** tab gathers the main things: the next lessons, the open homework (each opens by its title), the balance with the last operations and «Contact» — the connected messengers (with none, «Remind» sends the student a link to connect one) and the video meeting link.
+
+The **Lessons** tab lists all the student's lessons, group ones too: «Upcoming» (nearest first) and «Past» (latest first) with the outcome — conducted, missed, cancelled; for a group lesson — whether this student was there. Half a year back and ahead is shown, «Show earlier» adds the year before. **Homework** — every task of the student with its status: the open ones first, then the accepted ones with the grade; the title opens the task. **Payments** — the balance, charged and paid in total, the lesson price and the history (see [Payments](/teacher/help/billing)).
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
@@ -407,7 +409,7 @@ Lessons are charged when you mark them in the schedule. If a lesson took place b
 
 ## Price and history
 
-Click a student's name to open their history: lessons, payments and the lesson price (it can be changed; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
+Click a student's name to open the «Payments» tab of their card in «Students»: lessons, payments and the lesson price (it can be changed; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
 
 ## Monthly report
 
@@ -676,7 +678,7 @@ Check «Settings» → «Messengers»: the bot must be connected. The student mu
 Open the lesson and click «Remove the mark» — the charge is undone.
 
 **The student paid, but the debt stayed.**
-Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History».
+Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.
 
 **How to move all recurring lessons to another time?**
 «Schedule» → the «Recurring lessons» card → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.

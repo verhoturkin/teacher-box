@@ -79,6 +79,14 @@ export const en: Translation<typeof ru> = {
     until: (date: string) => `until ${date}`,
     more: (count: number) => `${String(count)} more open`,
   },
+  tasksTab: {
+    title: 'All homework',
+    what: 'homework',
+    nothing: 'No homework yet',
+    until: (date: string) => `until ${date}`,
+    reviewed: (date: string) => `reviewed ${date}`,
+    showMore: 'Show more',
+  },
   deadlines: {
     title: 'Homework',
     nothing: 'No open homework',

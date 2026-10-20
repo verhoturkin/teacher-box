@@ -49,8 +49,11 @@ student or group. ADR: none.
   *Обзор has no attendance figures nor boards and textbooks yet (no one-student read for them); tabs are
   `CARD_TABS` in `identity/students/card-tabs.ts` — 237.4/237.5 add theirs there; the room line says the link
   is set in «Изменить» until the Профиль tab (237.5).*
-- [ ] 237.4 **F** Tabs Занятия, Задания, Оплаты (`billing/ledger/ledger-list.ts`); `billing/teacher/student-ledger-page.ts`
+- [x] 237.4 **F** Tabs Занятия, Задания, Оплаты (`billing/ledger/ledger-list.ts`); `billing/teacher/student-ledger-page.ts`
   goes, `/teacher/billing/students/:id` redirects to `/teacher/students/:id?tab=payments`.
+  *The ledger page became `billing/teacher/student-payments-tab.ts` (figures, price in place, history; the
+  payment is the header's «Оплата»); Занятия read half a year back and ahead + «Показать ранее» (the backend
+  allows 400 days). No backend `Portal.link` pointed at the old page; billing links now open the tab.*
 - [ ] 237.5 **F** Профиль tab: inline fields of `student-form-dialog.ts` (name, contacts, note, default topic,
   colour, price, `meetings/rooms/room-panel.ts`, invite link); the dialog stays only for creating (name +
   contact), then opens the card.

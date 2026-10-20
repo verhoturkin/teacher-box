@@ -209,9 +209,11 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.expectOne((request) => request.url === '/api/teacher/billing/reports/monthly');
     expect(title()).toBe('Отчёт за месяц — Teacher Box');
 
+    // the history of a student's payments is the Оплаты tab of the card (237.4)
     await harness.navigateByUrl('/teacher/billing/students/s-1');
-    backend.expectOne('/api/teacher/billing/students/s-1');
-    expect(title()).toBe('История оплат — Teacher Box');
+    expect(TestBed.inject(Router).url).toBe('/teacher/students/s-1?tab=payments');
+    expect(title()).toBe('Ученики — Teacher Box');
+    backend.match(() => true);
 
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/billing');

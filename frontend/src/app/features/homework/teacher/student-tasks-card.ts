@@ -24,7 +24,7 @@ import { T } from '../i18n/texts';
 const SHOWN = 5;
 
 /** Works waiting for the teacher first, then by the deadline (none last). */
-function byUrgency(a: MyTask, b: MyTask): number {
+export function byUrgency(a: MyTask, b: MyTask): number {
   const review = Number(b.status === 'SUBMITTED') - Number(a.status === 'SUBMITTED');
   if (review !== 0) {
     return review;

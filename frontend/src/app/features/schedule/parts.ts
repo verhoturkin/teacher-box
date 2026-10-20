@@ -12,5 +12,6 @@ export { NextLessonWidget } from './home/next-lesson-widget';
 export { UpcomingLessonWidget } from './home/upcoming-lesson-widget';
 export { LessonDialog } from './teacher/lesson-dialog';
 export { StudentLessonsCard } from './teacher/student-lessons-card';
+export { StudentLessonsTab } from './teacher/student-lessons-tab';
 export { GoogleCalendarPanel } from './teacher/google-calendar-panel';
 export { CalendarFeedPanel } from './ui/calendar-feed-panel';

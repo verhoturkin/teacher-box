@@ -9,3 +9,4 @@ export { FinanceWidget } from './home/finance-widget';
 export { MyBalanceWidget } from './home/my-balance-widget';
 export { PaymentDialog } from './teacher/payment-dialog';
 export { StudentBalanceCard } from './teacher/student-balance-card';
+export { StudentPaymentsTab } from './teacher/student-payments-tab';

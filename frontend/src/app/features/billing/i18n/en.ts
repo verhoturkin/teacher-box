@@ -135,10 +135,7 @@ export const en: Translation<typeof ru> = {
       'The payment is recorded, but the receipt was not attached. Attach it in the student history.',
   },
   studentLedger: {
-    student: 'Student',
-    back: 'Payments',
     what: 'the payment history',
-    payment: 'Payment',
     balance: 'Balance',
     charged: 'Charged in total',
     paid: 'Paid in total',

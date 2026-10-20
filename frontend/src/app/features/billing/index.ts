@@ -2,4 +2,3 @@
 export { MyBillingPage } from './student/my-billing-page';
 export { BillingOverviewPage } from './teacher/billing-overview-page';
 export { MonthlyReportPage } from './teacher/monthly-report-page';
-export { StudentLedgerPage } from './teacher/student-ledger-page';

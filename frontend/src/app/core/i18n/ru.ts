@@ -29,7 +29,6 @@ export const ru = {
     newAssignment: 'Новое задание',
     editAssignment: 'Изменить задание',
     monthlyReport: 'Отчёт за месяц',
-    ledger: 'История оплат',
     help: 'Справка',
     account: 'Мой аккаунт',
     notFound: 'Страница не найдена',

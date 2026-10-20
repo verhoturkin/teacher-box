@@ -147,7 +147,7 @@ export const ru = {
     noMessenger: 'Без мессенджера',
     prepaid: (amount: string) => `Аванс ${amount}`,
     debt: (amount: string) => `Долг ${amount}`,
-    tabNames: { overview: 'Обзор' },
+    tabNames: { overview: 'Обзор', lessons: 'Занятия', homework: 'Задания', payments: 'Оплаты' },
     connection: 'Связь',
     sent: 'Сообщение отправлено',
     paid: 'Оплата сохранена',

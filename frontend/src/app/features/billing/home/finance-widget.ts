@@ -7,6 +7,7 @@ import { TeacherColors } from '@features/identity/parts';
 import { BillingSummary } from '../data-access/billing.models';
 import { T } from '../i18n/texts';
 import { locale } from '@core/i18n/language';
+import { PAYMENTS_TAB } from '../card-link';
 
 const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC' });
 
@@ -40,7 +41,8 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
               <tb-avatar [name]="debtor.displayName" [photo]="debtor.avatar" />
               <div class="tb-list__text">
                 <a
-                  [routerLink]="['/teacher/billing/students', debtor.studentId]"
+                  [routerLink]="['/teacher/students', debtor.studentId]"
+                  [queryParams]="paymentsTab"
                   class="tb-list__title tb-link"
                   >{{ debtor.displayName }}</a
                 >
@@ -88,6 +90,7 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
   `,
 })
 export class FinanceWidget {
+  protected readonly paymentsTab = PAYMENTS_TAB;
   protected readonly t = T.finance;
   protected readonly colors = inject(TeacherColors);
   readonly summary = input.required<BillingSummary>();

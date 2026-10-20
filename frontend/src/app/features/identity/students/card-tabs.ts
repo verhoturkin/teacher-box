@@ -1,8 +1,8 @@
 /**
  * The tabs of a student's card (redesign spec §8), named in the address as `?tab=`; Обзор is the default and
- * is left out of the address. 237.4–237.5 add Занятия, Задания, Оплаты and Профиль.
+ * is left out of the address. 237.5 adds Профиль.
  */
-export const CARD_TABS = ['overview'] as const;
+export const CARD_TABS = ['overview', 'lessons', 'homework', 'payments'] as const;
 
 export type CardTab = (typeof CARD_TABS)[number];
 

@@ -15,11 +15,16 @@ import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { PaymentDialog, StudentBalanceCard } from '@features/billing/parts';
-import { StudentTasksCard } from '@features/homework/parts';
+import { PaymentDialog, StudentBalanceCard, StudentPaymentsTab } from '@features/billing/parts';
+import { StudentTasksCard, StudentTasksTab } from '@features/homework/parts';
 import { RoomLink } from '@features/meetings/parts';
 import { BroadcastDialog, StudentChannels } from '@features/notifications/parts';
-import { LessonDialog, ScheduleApi, StudentLessonsCard } from '@features/schedule/parts';
+import {
+  LessonDialog,
+  ScheduleApi,
+  StudentLessonsCard,
+  StudentLessonsTab,
+} from '@features/schedule/parts';
 import { injectMobile } from '@core/layout/mobile';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { labelKey } from '@core/theme/label-colors';
@@ -43,7 +48,8 @@ interface HeaderTag {
  * The card of a student (redesign spec §8): the header — the 72 px avatar, the name, «с сентября 2025», the
  * tags of the status, the messenger and the balance, the actions «Написать», «Оплата», «Занятие» and «⋮» — and
  * the tabs named by `?tab=`. Обзор puts together the parts of the other features: the next lessons, the open
- * homework, the balance, the messengers and the video meeting.
+ * homework, the balance, the messengers and the video meeting; Занятия, Задания and Оплаты are the full lists of
+ * those features — all the lessons, every task, the ledger.
  */
 @Component({
   selector: 'tb-student-card',
@@ -59,7 +65,10 @@ interface HeaderTag {
     StudentBalanceCard,
     StudentChannels,
     StudentLessonsCard,
+    StudentLessonsTab,
+    StudentPaymentsTab,
     StudentTasksCard,
+    StudentTasksTab,
     Tab,
     TabList,
     TabPanel,
@@ -161,6 +170,25 @@ interface HeaderTag {
                 <tb-room-link [owner]="roomOwner()" />
               </p-card>
             </div>
+          }
+        </p-tabpanel>
+        <p-tabpanel value="lessons">
+          @if (tab() === 'lessons') {
+            <tb-student-lessons-tab [of]="lessonsOf()" [revision]="revision()" />
+          }
+        </p-tabpanel>
+        <p-tabpanel value="homework">
+          @if (tab() === 'homework') {
+            <tb-student-tasks-tab [studentId]="row.id" />
+          }
+        </p-tabpanel>
+        <p-tabpanel value="payments">
+          @if (tab() === 'payments') {
+            <tb-student-payments-tab
+              [studentId]="row.id"
+              [revision]="revision()"
+              (changed)="changed.emit()"
+            />
           }
         </p-tabpanel>
       </p-tabpanels>
@@ -341,6 +369,7 @@ export class StudentCard {
       defaultTopic: this.student().student.defaultTopic,
     },
   ]);
+  protected readonly lessonsOf = computed(() => ({ studentId: this.student().id }));
   protected readonly roomOwner = computed(() => ({
     type: 'STUDENT' as const,
     id: this.student().id,

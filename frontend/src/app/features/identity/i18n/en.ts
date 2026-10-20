@@ -149,7 +149,12 @@ export const en: Translation<typeof ru> = {
     noMessenger: 'No messenger',
     prepaid: (amount: string) => `Prepaid ${amount}`,
     debt: (amount: string) => `Debt ${amount}`,
-    tabNames: { overview: 'Overview' },
+    tabNames: {
+      overview: 'Overview',
+      lessons: 'Lessons',
+      homework: 'Homework',
+      payments: 'Payments',
+    },
     connection: 'Contact',
     sent: 'Message sent',
     paid: 'Payment saved',

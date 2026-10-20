@@ -94,7 +94,8 @@ test('the balances are a list, the balance goes under the name on a phone', asyn
 
 test('a student history is a list with amounts', async ({ page }) => {
   await signIn(page);
-  await page.goto(`/teacher/billing/students/${studentId}`);
+  // 0.23.0: the history is the Оплаты tab of the student's card
+  await page.goto(`/teacher/students/${studentId}?tab=payments`);
   const rows = page.locator('ul.tb-list[aria-label="История"] > li');
   await expect(rows).toHaveCount(2);
   await expect(rows.first()).toContainText('+2 000 ₽');

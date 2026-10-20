@@ -137,6 +137,16 @@ export const en: Translation<typeof ru> = {
     recurring: 'recurring',
     more: (count: number) => `${String(count)} more planned`,
   },
+  lessonsTab: {
+    what: 'lessons',
+    upcoming: 'Upcoming',
+    past: 'Past',
+    noUpcoming: 'No lessons planned',
+    noPast: 'No past lessons',
+    earlier: 'Show earlier',
+    noTopic: 'No topic',
+    recurring: 'recurring',
+  },
   attendanceDialog: {
     title: 'Who came to the lesson',
     of: (name: string) => `Attendance: ${name}`,

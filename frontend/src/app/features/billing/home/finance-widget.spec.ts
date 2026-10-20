@@ -53,8 +53,8 @@ describe('FinanceWidget', () => {
       a.getAttribute('href'),
     );
     expect(links).toEqual([
-      '/teacher/billing/students/s-1',
-      '/teacher/billing/students/s-2',
+      '/teacher/students/s-1?tab=payments',
+      '/teacher/students/s-2?tab=payments',
       '/teacher/billing',
     ]);
   });

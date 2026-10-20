@@ -32,6 +32,7 @@ import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { formatMoney } from '@shared/money/money';
 import { T } from '../i18n/texts';
+import { PAYMENTS_TAB } from '../card-link';
 
 /** Teacher: balances of all students and quick recording of payments. */
 @Component({
@@ -117,9 +118,12 @@ import { T } from '../i18n/texts';
                 <li [attr.data-tb-label]="colors.studentLabel(row.studentId)">
                   <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
                   <div class="tb-list__text">
-                    <a [routerLink]="['students', row.studentId]" class="tb-list__title tb-link">{{
-                      row.displayName
-                    }}</a>
+                    <a
+                      [routerLink]="['/teacher/students', row.studentId]"
+                      [queryParams]="paymentsTab"
+                      class="tb-list__title tb-link"
+                      >{{ row.displayName }}</a
+                    >
                     <span class="tb-list__supporting">{{ details(row, overview.currency) }}</span>
                   </div>
                   <div class="tb-list__trail tb-list__trail--icons tb-list__trail--amount">
@@ -164,6 +168,7 @@ import { T } from '../i18n/texts';
   `,
 })
 export class BillingOverviewPage implements OnInit {
+  protected readonly paymentsTab = PAYMENTS_TAB;
   protected readonly mobile = injectMobile();
   protected readonly t = T.overview;
   protected readonly colors = inject(TeacherColors);

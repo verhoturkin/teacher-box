@@ -614,6 +614,14 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     counted operations), «Связь» (`tb-student-channels` — connected messengers, failed deliveries, «Напомнить»
     without one; `tb-room-link` — the external link with copy, the portal room, or no link). A payment or a
     lesson from the header reads the balance and the lessons again, and the list's balances too.
+    Занятия, Задания, Оплаты (237.4) — the full lists, each a part of its feature: «Предстоящие» (nearest first)
+    and «Прошедшие» (latest first) cards of `tb-student-lessons-tab` (half a year back and ahead, «Показать
+    ранее» reads the year before; a past lesson's tag is its status, a group lesson the student attended or
+    missed — the student's own attendance; cancelled rows are inactive); «Все задания» of `tb-student-tasks-tab`
+    (open ones as on Обзор, then the accepted ones, the latest reviewed first, with the grade; 20 + «Показать
+    ещё»); `tb-student-payments-tab` — the figures (balance, totals, lesson price edited in place) and the
+    ledger card «История» (`tb-ledger-list`). The old page `/teacher/billing/students/:id` redirects to
+    `/teacher/students/:id?tab=payments`; billing links to a student open that tab.
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,

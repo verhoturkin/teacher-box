@@ -171,7 +171,11 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
     .click();
   await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('1 500');
   await page.getByRole('link', { name: STUDENT_NAME }).click();
-  await expect(page.getByText('Повторение')).toBeVisible();
+  // 0.23.0: the history is the Оплаты tab of the student's card
+  await expect(page).toHaveURL(/\/teacher\/students\/[^/?]+\?tab=payments$/);
+  await expect(
+    page.locator('ul.tb-list[aria-label="История"]').getByText('Повторение'),
+  ).toBeVisible();
 });
 
 test('the student moves a lesson when the teacher agrees', async ({ page, browser }) => {

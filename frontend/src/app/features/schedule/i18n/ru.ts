@@ -134,6 +134,16 @@ export const ru = {
     recurring: 'регулярное',
     more: (count: number) => `Ещё запланировано: ${String(count)}`,
   },
+  lessonsTab: {
+    what: 'занятия',
+    upcoming: 'Предстоящие',
+    past: 'Прошедшие',
+    noUpcoming: 'Занятий не запланировано',
+    noPast: 'Прошедших занятий нет',
+    earlier: 'Показать ранее',
+    noTopic: 'Тема не задана',
+    recurring: 'регулярное',
+  },
   attendanceDialog: {
     title: 'Кто был на занятии',
     of: (name: string) => `Посещаемость: ${name}`,

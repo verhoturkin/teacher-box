@@ -146,10 +146,10 @@ export const routes: Routes = [
         title: N.monthlyReport,
         loadComponent: () => import('@features/billing').then((m) => m.MonthlyReportPage),
       },
+      // the history of a student's payments is the Оплаты tab of the card (237.4)
       {
         path: 'billing/students/:studentId',
-        title: N.ledger,
-        loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
+        redirectTo: '/teacher/students/:studentId?tab=payments',
       },
       {
         path: 'boards',

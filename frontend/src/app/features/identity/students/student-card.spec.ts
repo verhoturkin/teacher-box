@@ -13,7 +13,7 @@ import { phoneScreen, testProviders } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { BroadcastDialog } from '@features/notifications/parts';
 import { LessonDialog } from '@features/schedule/parts';
-import { PaymentDialog } from '@features/billing/parts';
+import { PaymentDialog, StudentPaymentsTab } from '@features/billing/parts';
 import { Student } from '../data-access/identity.models';
 import { StudentRow } from './roster';
 import { StudentCard, channelNames } from './student-card';
@@ -140,7 +140,7 @@ describe('StudentCard', () => {
     const tabs = Array.from(host.querySelectorAll('[role="tab"]')).map((tab) =>
       tab.textContent.trim(),
     );
-    expect(tabs).toEqual(['Обзор']);
+    expect(tabs).toEqual(['Обзор', 'Занятия', 'Задания', 'Оплаты']);
     for (const part of [
       'tb-student-lessons-card',
       'tb-student-tasks-card',
@@ -157,6 +157,44 @@ describe('StudentCard', () => {
       [],
       expect.objectContaining({ queryParams: { tab: null }, replaceUrl: true }),
     );
+  });
+
+  it('names the other tabs in the address and shows the full lists of the features', async () => {
+    await render(row());
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    fixture.debugElement.query(By.directive(Tabs)).injector.get(Tabs).value.set('payments');
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { tab: 'payments' }, replaceUrl: true }),
+    );
+
+    for (const [tab, part] of [
+      ['lessons', 'tb-student-lessons-tab'],
+      ['homework', 'tb-student-tasks-tab'],
+      ['payments', 'tb-student-payments-tab'],
+    ] as const) {
+      fixture.componentRef.setInput('tab', tab);
+      await fixture.whenStable();
+      expect(host.querySelector(part)).not.toBeNull();
+      expect(host.querySelector('.tb-student-card__overview')).toBeNull();
+    }
+  });
+
+  it('passes a payment recorded in the header to Оплаты, and a correction there to the list', async () => {
+    await render(row());
+    fixture.componentRef.setInput('tab', 'payments');
+    await fixture.whenStable();
+    const changed = vi.fn();
+    fixture.componentInstance.changed.subscribe(changed);
+
+    part(PaymentDialog).saved.emit(payment());
+    await fixture.whenStable();
+    expect(part(StudentPaymentsTab).revision()).toBe(1);
+    expect(changed).toHaveBeenCalledTimes(1);
+
+    part(StudentPaymentsTab).changed.emit();
+    expect(changed).toHaveBeenCalledTimes(2);
   });
 
   it('writes to the student alone', async () => {
