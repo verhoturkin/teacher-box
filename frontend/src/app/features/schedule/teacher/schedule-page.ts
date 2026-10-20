@@ -164,7 +164,8 @@ const ALL_DAY_START_HOUR = 10;
               />
             </p-card>
           }
-          @if (unmarked().length > 0) {
+          <!-- expanded: unmarked lessons are outlined in the grid and marked from the lesson's dialog -->
+          @if (mobile() && unmarked().length > 0) {
             <p-card [header]="t.unmarked">
               <ul class="tb-list">
                 @for (lesson of unmarked(); track lesson.id) {
@@ -250,6 +251,7 @@ const ALL_DAY_START_HOUR = 10;
             [lessons]="shownLessons()"
             [busy]="busy()"
             [offTime]="offTimePeriods()"
+            [unmarked]="unmarked()"
             [loaded]="calendarState.ready()"
             [editable]="true"
             [focusDate]="focusDate()"

@@ -109,6 +109,8 @@ export class ScheduleCalendar {
   readonly loaded = input(true);
   /** A day to go to (`yyyy-MM-dd`), e.g. from the mini-month; the calendar moves when it changes. */
   readonly focusDate = input<string | null>(null);
+  /** Past lessons without a mark (`GET /schedule/unmarked`): outlined in the grid, marked from the lesson's dialog. */
+  readonly unmarked = input<readonly ScheduledLesson[]>([]);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -133,6 +135,10 @@ export class ScheduleCalendar {
       }
     });
   }
+
+  private readonly unmarkedIds = computed(
+    () => new Set(this.unmarked().map((lesson) => lesson.id)),
+  );
 
   private readonly byId = computed(
     () => new Map(this.lessons().map((lesson) => [lesson.id, lesson])),
@@ -261,6 +267,9 @@ export class ScheduleCalendar {
     const color = this.showStudent() ? this.colors.owner(lesson.studentId, lesson.groupId) : null;
     if (color !== null) {
       classes.push('tb-label', `tb-label--${labelKey(color)}`);
+    }
+    if (this.unmarkedIds().has(lesson.id)) {
+      classes.push('tb-lesson--unmarked');
     }
     if (moved !== null) {
       classes.push('tb-lesson--moving');

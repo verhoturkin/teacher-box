@@ -217,6 +217,22 @@ describe('ScheduleCalendar', () => {
   });
 });
 
+describe('ScheduleCalendar unmarked lessons', () => {
+  it('outlines the unmarked past lessons of the list', async () => {
+    TestBed.configureTestingModule({ imports: [ScheduleCalendar] });
+    const fixture = TestBed.createComponent(ScheduleCalendar);
+    fixture.componentRef.setInput('initialView', 'listWeek');
+    fixture.componentRef.setInput('initialDate', '2026-10-01');
+    const lesson = scheduledLesson({ id: 'l-9' });
+    fixture.componentRef.setInput('lessons', [lesson, scheduledLesson({ id: 'l-2' })]);
+    fixture.componentRef.setInput('unmarked', [lesson]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('.tb-lesson--unmarked')).toHaveLength(1);
+  });
+});
+
 describe('lessonClasses', () => {
   it('marks lessons by status and open requests', () => {
     expect(lessonClasses(scheduledLesson({ status: 'CANCELLED' }))).toEqual([

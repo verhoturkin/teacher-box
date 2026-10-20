@@ -47,7 +47,7 @@ pane; an agenda on a phone. ADR: none.
 
 - [x] 240.1 **F** Spec §7: `schedule/teacher/schedule-page.ts` → supporting pane (mini-month, requests, tabs
   Регулярные / Нерабочее время, «+ Регулярное занятие»); toolbar with the time-zone chip and filter chips.
-- [ ] 240.2 **F** `schedule/ui/schedule-calendar.ts`: unmarked outline (`GET /schedule/unmarked`), requested change
+- [x] 240.2 **F** `schedule/ui/schedule-calendar.ts`: unmarked outline (`GET /schedule/unmarked`), requested change
   dashed, off-time hatched; marking from the event's dialog; the «Отметьте прошедшие занятия» card goes.
 - [ ] 240.3 **F** Compact agenda: week strip, day list, unmarked group under the row, «⋮» screens Неделя / Месяц /
   Регулярные / Нерабочее время (`schedule-page-mobile.spec.ts`).

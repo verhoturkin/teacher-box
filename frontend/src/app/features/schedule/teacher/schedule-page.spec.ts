@@ -121,15 +121,21 @@ describe('SchedulePage', () => {
     return { lesson: scheduledLesson(), startsAt: new Date(2026, 9, 2, 17), revert };
   }
 
-  it('shows requests, lessons to mark and regular series', async () => {
+  it('shows requests and regular series; unmarked lessons are outlined in the grid, not in a card', async () => {
     const text = await render(scheduleSettings(), [
       scheduledLesson({ id: 'l-9', studentName: 'Мария' }),
     ]);
 
     expect(text).toContain('Запросы учеников');
     expect(text).toContain('Перенос');
-    expect(text).toContain('Отметьте прошедшие занятия');
-    expect(text).toContain('Мария');
+    expect(text).not.toContain('Отметьте прошедшие занятия');
+    expect(text).not.toContain('Мария');
+    expect(
+      fixture.debugElement
+        .query(By.directive(ScheduleCalendar))
+        .injector.get(ScheduleCalendar)
+        .unmarked(),
+    ).toHaveLength(1);
     expect(text).toContain('Регулярные');
     expect(text).toContain('Вт, Чт в 18:00');
     expect(text).not.toContain('часовому поясу этого устройства');
@@ -179,7 +185,8 @@ describe('SchedulePage', () => {
     expect(calendar.loaded()).toBe(true);
   });
 
-  it('offers groups with students and marks a group lesson in its card', async () => {
+  it('offers groups with students and marks a group lesson on a phone', async () => {
+    phone.next({ matches: true, breakpoints: {} });
     const text = await render(scheduleSettings(), [
       groupLesson({ id: 'gl-9', startsAt: at(2026, 9, 1, 18), endsAt: at(2026, 9, 1, 19, 30) }),
     ]);
@@ -189,7 +196,9 @@ describe('SchedulePage', () => {
 
     expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ', defaultTopic: null }]);
     expect(text).toContain('Группа «ОГЭ»');
-    buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').click();
+    buttonByText(hostElement(fixture), 'Отметить занятие: Группа «ОГЭ»').click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Отметить посещаемость: Группа «ОГЭ»').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Кто был на занятии');
     expect(bodyText()).toContain('Мария');
@@ -456,37 +465,6 @@ describe('SchedulePage', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ detail: 'Занятие уже проведено или отменено' }),
     );
-  });
-
-  it('marks past lessons from the list', async () => {
-    await render(scheduleSettings(), [scheduledLesson({ id: 'l-9' })]);
-
-    buttonByText(hostElement(fixture), 'Проведено: Иван Петров').click();
-    const request = backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome');
-    expect(request.request.body).toEqual({ outcome: 'CONDUCTED' });
-    request.flush(scheduledLesson({ status: 'CONDUCTED' }));
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Занятие отмечено' }),
-    );
-    await flushReload([scheduledLesson({ id: 'l-9' })]);
-
-    buttonByText(hostElement(fixture), 'Пропуск: Иван Петров').click();
-    expect(backend.expectOne('/api/teacher/schedule/lessons/l-9/outcome').request.body).toEqual({
-      outcome: 'MISSED',
-    });
-  });
-
-  it('labels the buttons of a past lesson', async () => {
-    await render(scheduleSettings(), [scheduledLesson({ id: 'l-9' }), groupLesson()]);
-
-    const row = buttonByText(hostElement(fixture), 'Проведено: Иван Петров').closest('li');
-    expect(readableText(row ?? document.createElement('li'))).toContain('Проведено Пропуск');
-    expect(buttonByText(hostElement(fixture), 'Проведено: Иван Петров').textContent).toContain(
-      'Проведено',
-    );
-    expect(
-      buttonByText(hostElement(fixture), 'Отметить посещаемость: Группа «ОГЭ»').textContent,
-    ).toContain('Отметить');
   });
 
   it('tells that a lesson was saved: the new lesson may be out of the screen', async () => {
