@@ -32,7 +32,7 @@ pane; an agenda on a phone. ADR: none.
 
 ### 239. Today (B, F)
 
-- [ ] 239.1 **B** Week figures for spec §6 column 3: lessons and absences of the current week in
+- [x] 239.1 **B** Week figures for spec §6 column 3: lessons and absences of the current week in
   `GET /api/teacher/schedule/summary`, assignments given and handed in on time in `GET /api/teacher/homework/summary`
   (skip fields that already exist). Tests, module docs.
 - [ ] 239.2 **F** `features/home/todo-queue.ts` — «Нужно сделать» from `attention-card.ts` +

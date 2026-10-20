@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -131,6 +132,27 @@ public class TaskRepository {
                 """)
                 .query((rs, rowNum) -> new OpenDeadline(rs.getObject("student_id", UUID.class),
                         rs.getObject("due_at", Instant.class)))
+                .list();
+    }
+
+    /** A task with the moments that count for the week figures. */
+    public record WeekTask(UUID assignmentId, UUID studentId, Instant assignedAt, @Nullable Instant submittedAt,
+            @Nullable Instant dueAt) {
+    }
+
+    /** Tasks assigned or handed in during {@code [from, to)}. */
+    public List<WeekTask> findActiveBetween(Instant from, Instant to) {
+        return jdbc.sql("""
+                select t.assignment_id, t.student_id, t.assigned_at, t.submitted_at, a.due_at
+                from homework.tasks t
+                join homework.assignments a on a.id = t.assignment_id
+                where (t.assigned_at >= :from and t.assigned_at < :to)
+                   or (t.submitted_at >= :from and t.submitted_at < :to)
+                """)
+                .param("from", from).param("to", to)
+                .query((rs, rowNum) -> new WeekTask(rs.getObject("assignment_id", UUID.class),
+                        rs.getObject("student_id", UUID.class), rs.getObject("assigned_at", Instant.class),
+                        rs.getObject("submitted_at", Instant.class), rs.getObject("due_at", Instant.class)))
                 .list();
     }
 

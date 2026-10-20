@@ -159,7 +159,15 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
 }
 
 export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): HomeworkSummary {
-  return { toReview: 0, overdue: 0, dueSoon: 0, oldestToReview: [], ...overrides };
+  return {
+    toReview: 0,
+    overdue: 0,
+    dueSoon: 0,
+    oldestToReview: [],
+    weekAssigned: 0,
+    weekOnTime: 0,
+    ...overrides,
+  };
 }
 
 export function myHomeworkSummary(overrides: Partial<MyHomeworkSummary> = {}): MyHomeworkSummary {

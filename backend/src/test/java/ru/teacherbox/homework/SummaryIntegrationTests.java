@@ -64,6 +64,42 @@ class SummaryIntegrationTests {
     }
 
     @Test
+    void theTeacherSeesWeekFigures() throws UnsupportedEncodingException {
+        String before = summary();
+        UUID student = directory.addStudent("Неделя заданий");
+        UUID gone = directory.addStudent("Ушёл за неделю");
+        Instant now = clock.instant();
+        AssignmentDetails inTime = assign("В срок", now.plus(Duration.ofDays(1)), student, gone);
+        AssignmentDetails late = assign("С опозданием", now.plus(Duration.ofHours(1)), student);
+        AssignmentDetails noDate = assign("Без срока", null, student);
+        studentHomework.submit(student, inTime.tasks().getFirst().taskId(), "Готово", List.of());
+        studentHomework.submit(student, noDate.tasks().getFirst().taskId(), "Готово", List.of());
+        clock.advance(Duration.ofHours(2));
+        studentHomework.submit(student, late.tasks().getFirst().taskId(), "Готово", List.of());
+        directory.setStatus(gone, StudentStatus.DEACTIVATED);
+
+        String after = summary();
+
+        assertThat(count(after, "$.weekAssigned")).isEqualTo(count(before, "$.weekAssigned") + 3);
+        assertThat(count(after, "$.weekOnTime")).isEqualTo(count(before, "$.weekOnTime") + 2);
+    }
+
+    @Test
+    void weekFiguresIgnoreOtherWeeks() throws UnsupportedEncodingException {
+        UUID student = directory.addStudent("Прошлая неделя");
+        AssignmentDetails old = assign("Старое", null, student);
+        studentHomework.submit(student, old.tasks().getFirst().taskId(), "Готово", List.of());
+        String before = summary();
+
+        clock.advance(Duration.ofDays(8));
+        String after = summary();
+
+        assertThat(count(after, "$.weekAssigned")).isEqualTo(0);
+        assertThat(count(after, "$.weekOnTime")).isEqualTo(0);
+        assertThat(count(before, "$.weekAssigned")).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
     void aStudentSeesOpenTasksByDeadline() {
         UUID student = directory.addStudent("Мои сроки");
         Instant now = clock.instant();

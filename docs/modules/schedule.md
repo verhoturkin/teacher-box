@@ -56,7 +56,9 @@ Lesson events carry `groupId` and participants. Consumers: `billing` (completion
 
 ## REST and bot
 
-`/api/teacher/schedule/**` (lessons, series, requests, unmarked, summary, `off-times`, `google`;
+`/api/teacher/schedule/**` (lessons, series, requests, unmarked, summary — besides today's counters it has
+`weekConducted` and `weekMissed`, lessons marked as held / missed in the current Monday–Sunday week of the instance
+time zone, for the Today page (239.1); `off-times`, `google`;
 `GET lessons?from&to` takes `studentId` — the student's lessons, group lessons included — or `groupId` for the
 student card (237.1); both at once → `schedule.filter-invalid`, an unknown id → an empty list),
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.

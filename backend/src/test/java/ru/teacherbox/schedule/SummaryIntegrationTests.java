@@ -63,6 +63,24 @@ class SummaryIntegrationTests {
     }
 
     @Test
+    void theTeacherSeesWeekFigures() throws UnsupportedEncodingException {
+        String before = summary();
+        UUID student = directory.addStudent("Итоги недели");
+        Instant now = clock.instant().truncatedTo(ChronoUnit.SECONDS);
+        for (String outcome : List.of("CONDUCTED", "CONDUCTED", "MISSED")) {
+            String id = id(plan(lesson(student, now.minus(Duration.ofMinutes(100)), 60, true)));
+            assertThat(mvc.put().uri("/api/teacher/schedule/lessons/{id}/outcome", id).with(teacher())
+                    .contentType(MediaType.APPLICATION_JSON).content("{\"outcome\":\"" + outcome + "\"}"))
+                    .hasStatusOk();
+        }
+
+        String after = summary();
+
+        assertThat(count(after, "$.weekConducted")).isEqualTo(count(before, "$.weekConducted") + 2);
+        assertThat(count(after, "$.weekMissed")).isEqualTo(count(before, "$.weekMissed") + 1);
+    }
+
+    @Test
     void aStudentSeesTheNearestLesson() throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Ближайшее");
         assertThat(mvc.get().uri("/api/me/schedule/summary").with(TestUsers.student(student)))

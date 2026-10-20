@@ -153,6 +153,8 @@ export function scheduleSummary(overrides: Partial<ScheduleSummary> = {}): Sched
     next: null,
     weekLessons: 0,
     unmarked: 0,
+    weekConducted: 0,
+    weekMissed: 0,
     pendingRequests: 0,
     hasLessons: true,
     ...overrides,
