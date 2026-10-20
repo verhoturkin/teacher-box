@@ -8,6 +8,19 @@ import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class RailState {
   readonly collapsed = signal(false);
+  /** Whether the page hides the bottom navigation bar of a phone (the work under review, spec §9). */
+  readonly bottomBarHidden = signal(false);
+}
+
+/** Hides the bottom navigation bar of a phone while the page lives and `hidden` is true: call it in the constructor. */
+export function hideBottomBar(hidden: () => boolean): void {
+  const state = inject(RailState);
+  effect(() => {
+    state.bottomBarHidden.set(hidden());
+  });
+  inject(DestroyRef).onDestroy(() => {
+    state.bottomBarHidden.set(false);
+  });
 }
 
 /** Collapses the rail while the page lives and `collapsed` is true: call it in the constructor of the page. */

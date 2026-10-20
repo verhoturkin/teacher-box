@@ -136,7 +136,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           }
         </tb-side-nav>
       }
-      <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
+      <main class="tb-shell__content" [class.tb-shell__content--nav]="bar()">
         <router-outlet />
       </main>
       @if (notifications()) {
@@ -149,19 +149,23 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
       }
     </div>
     @if (compact()) {
-      <nav class="tb-bottom-nav" [attr.aria-label]="sections">
-        @for (item of barItems(); track item.label) {
-          <a
-            class="tb-bottom-nav__item"
-            [routerLink]="item.routerLink"
-            [class.tb-bottom-nav__item--active]="isActive(item)"
-            [attr.aria-current]="isActive(item) ? 'page' : null"
-          >
-            <span class="tb-bottom-nav__icon"><i [class]="item.icon" aria-hidden="true"></i></span>
-            <span class="tb-bottom-nav__label">{{ item.label }}</span>
-          </a>
-        }
-      </nav>
+      @if (bar()) {
+        <nav class="tb-bottom-nav" [attr.aria-label]="sections">
+          @for (item of barItems(); track item.label) {
+            <a
+              class="tb-bottom-nav__item"
+              [routerLink]="item.routerLink"
+              [class.tb-bottom-nav__item--active]="isActive(item)"
+              [attr.aria-current]="isActive(item) ? 'page' : null"
+            >
+              <span class="tb-bottom-nav__icon"
+                ><i [class]="item.icon" aria-hidden="true"></i
+              ></span>
+              <span class="tb-bottom-nav__label">{{ item.label }}</span>
+            </a>
+          }
+        </nav>
+      }
       <!-- the modal expanded rail (M3E): the scrim, the focus trap and the focus back to ☰ come with
            tbModalDrawer; Esc in the rail closes it as the drawer's own Esc does -->
       <p-drawer
@@ -211,6 +215,8 @@ export class Shell {
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
   private readonly railState = inject(RailState);
+  /** The bottom navigation bar: a phone's, unless the page hides it (the review of a work, spec §9). */
+  protected readonly bar = computed(() => this.compact() && !this.railState.bottomBarHidden());
   /** The expanded rail: extra-large, unless the page collapses it (the review of a work, spec §9). */
   protected readonly expanded = computed(
     () => this.size() === 'extra-large' && !this.railState.collapsed(),

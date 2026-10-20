@@ -277,6 +277,7 @@ export const ru = {
     sheetTitle: 'Проверка',
     position: (n: number, total: number) => `${String(n)} из ${String(total)}`,
     closeReview: 'Закрыть проверку',
+    done: 'Готово',
     aiDraft: 'Черновик ИИ',
     askAi: 'Черновик ИИ',
     insert: 'Вставить',

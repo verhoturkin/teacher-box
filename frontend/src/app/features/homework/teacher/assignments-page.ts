@@ -22,7 +22,7 @@ import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
-import { collapseRail } from '@core/layout/rail-state';
+import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
@@ -213,7 +213,8 @@ type Filter = 'review' | 'active' | 'done';
             <tb-task-review-page
               [taskId]="id"
               [single]="layout.single()"
-              [sheet]="sheetOpen()"
+              [sheet]="sheetOpen() || phoneReview()"
+              [toolbar]="phoneReview()"
               [update]="decided()"
               (loaded)="current.set($event)"
               (changed)="refresh()"
@@ -243,6 +244,19 @@ type Filter = 'review' | 'active' | 'done';
         </tb-pane>
       }
     </tb-panes>
+    @if (phoneReview() && reviewing(); as task) {
+      <!-- a phone: the floating toolbar and the comment in a bottom sheet, no bottom bar (spec §9) -->
+      <tb-review-sheet
+        [compact]="true"
+        [task]="task"
+        [place]="place()"
+        [total]="queue().length"
+        [next]="next()"
+        (reviewed)="decide($event)"
+        (opened)="openWork($event)"
+        (closed)="closeReview()"
+      />
+    }
 
     <ng-template #assignmentRows let-rows="rows" let-label="label">
       <ul class="tb-list" [attr.aria-label]="label">
@@ -388,6 +402,10 @@ export class AssignmentsPage implements OnInit {
   protected readonly sheetOpen = computed(
     () => this.size() === 'extra-large' && this.reviewing() !== null,
   );
+  /** The work of the review on a phone (compact, one pane): the floating toolbar, no bottom bar (spec §9). */
+  protected readonly phoneReview = computed(
+    () => this.size() === 'compact' && this.layout.single() && this.reviewing() !== null,
+  );
   /** «1 из 3»: the place of the open work in the queue (0: it is not in it). */
   protected readonly place = computed(
     () => this.queue().findIndex((work) => work.taskId === this.taskId()) + 1,
@@ -471,6 +489,7 @@ export class AssignmentsPage implements OnInit {
 
   constructor() {
     collapseRail(() => this.sheetOpen());
+    hideBottomBar(() => this.phoneReview());
     // the editor is a route of its own: it takes the place of the list in the history
     openOnCreate(
       'assignment',

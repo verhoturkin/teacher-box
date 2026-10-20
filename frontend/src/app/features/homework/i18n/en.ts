@@ -280,6 +280,7 @@ export const en: Translation<typeof ru> = {
     sheetTitle: 'Review',
     position: (n: number, total: number) => `${String(n)} of ${String(total)}`,
     closeReview: 'Close the review',
+    done: 'Done',
     aiDraft: 'AI draft',
     askAi: 'AI draft',
     insert: 'Insert',

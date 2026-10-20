@@ -84,7 +84,7 @@ import { MaterialOpener } from './material-opener';
         }
       </tb-page-header>
 
-      <div class="tb-stack">
+      <div class="tb-stack" [class.tb-task__room]="toolbar()">
         <section class="tb-task__statement" [class.tb-task__statement--open]="statementOpen()">
           <button
             type="button"
@@ -219,6 +219,11 @@ import { MaterialOpener } from './material-opener';
       text-transform: uppercase;
     }
 
+    /* the floating toolbar: 64 dp and the 16 dp margins under it, and the same over it */
+    .tb-task__room {
+      padding-block-end: calc(5rem + var(--tb-space-4) + env(safe-area-inset-bottom));
+    }
+
     .tb-task__meta {
       display: inline-flex;
       flex-wrap: wrap;
@@ -297,6 +302,8 @@ export class TaskReviewPage {
   readonly single = input(false);
   /** The review is in the side sheet beside the work (extra-large): the page shows no form. */
   readonly sheet = input(false);
+  /** A phone's floating toolbar lies over the foot of the page: it leaves room for it. */
+  readonly toolbar = input(false);
   /** The work as the sheet changed it (a decision): the page shows it. */
   readonly update = input<TaskDetails | null>(null);
   /** The work was reviewed: the list beside it changes. */

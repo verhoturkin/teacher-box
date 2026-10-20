@@ -9,15 +9,19 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
+import { Drawer } from 'primeng/drawer';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { AiApi } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
+import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewDecision, TaskDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -45,7 +49,10 @@ export interface NextWork {
 @Component({
   selector: 'tb-review-sheet',
   imports: [
+    NgTemplateOutlet,
     ReactiveFormsModule,
+    Drawer,
+    ModalDrawer,
     Button,
     ButtonDirective,
     ButtonIcon,
@@ -56,111 +63,181 @@ export interface NextWork {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-sheet__head">
-      <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
-      @if (total() > 0 && place() > 0) {
-        <span class="tb-sheet__place">{{ t.position(place(), total()) }}</span>
-      }
-      <button
-        pButton
-        type="button"
-        [text]="true"
-        [rounded]="true"
-        severity="secondary"
-        [attr.aria-label]="t.closeReview"
-        (click)="closed.emit()"
-      >
-        <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <form tbFieldErrors class="tb-sheet__form" [formGroup]="form">
-      @if (draft(); as draft) {
-        <section class="tb-sheet__draft" [attr.aria-label]="t.aiDraft">
-          <div class="tb-sheet__draft-head">
-            <span class="tb-sheet__tag">
-              <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>{{ t.aiDraft }}
-            </span>
-            <button type="button" class="tb-sheet__insert" (click)="insert(draft)">
-              {{ t.insert }}
-            </button>
-          </div>
-          <p class="tb-sheet__draft-text">{{ draft.comment }}</p>
-          <p class="tb-sheet__hint">
-            {{ draft.decision === 'ACCEPT' ? t.suggestsAccept : t.suggestsReturn }}
-          </p>
-        </section>
-      } @else if (aiAvailable()) {
-        <div>
+    @if (compact()) {
+      <!-- M3 floating toolbar (spec §9): 64 dp, 16 dp margins; the comment is in a bottom sheet -->
+      <div class="tb-toolbar" role="toolbar" [attr.aria-label]="t.sheetTitle">
+        @if (aiAvailable() || draft() !== null) {
+          <button
+            type="button"
+            class="tb-toolbar__icon"
+            [class.tb-toolbar__icon--busy]="drafting()"
+            [disabled]="drafting()"
+            [attr.aria-label]="t.askAi"
+            (click)="aiAction()"
+          >
+            <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>
+          </button>
+        }
+        <button
+          type="button"
+          class="tb-toolbar__icon"
+          [class.tb-toolbar__icon--on]="commentValue().trim() !== ''"
+          aria-haspopup="dialog"
+          [attr.aria-label]="t.commentToStudent"
+          (click)="commentOpen.set(true)"
+        >
+          <i class="tb-i tb-i-comment" aria-hidden="true"></i>
+        </button>
+        <p-button
+          class="tb-toolbar__action"
+          [label]="t.rework"
+          severity="secondary"
+          [loading]="pending()"
+          (onClick)="review('RETURN')"
+        />
+        @if (task().status === 'SUBMITTED') {
           <p-button
-            [label]="t.askAi"
-            icon="tb-i tb-i-auto_awesome"
+            class="tb-toolbar__action"
+            [label]="t.accept"
+            [loading]="pending()"
+            (onClick)="review('ACCEPT')"
+          />
+        }
+      </div>
+
+      <p-drawer
+        tbModalDrawer
+        [blockScroll]="true"
+        [ariaCloseLabel]="c.close"
+        [(visible)]="commentOpen"
+        position="bottom"
+        styleClass="tb-sheet"
+        [header]="t.commentToStudent"
+      >
+        <ng-container [ngTemplateOutlet]="fields" />
+        <div class="tb-sheet__decision">
+          <p-button
+            [label]="t.toBoard"
+            icon="tb-i tb-i-co_present"
             severity="secondary"
-            [loading]="drafting()"
-            (onClick)="askAi()"
+            [disabled]="commentValue().trim() === ''"
+            (onClick)="boardVisible.set(true)"
+          />
+          <p-button [label]="t.done" (onClick)="commentOpen.set(false)" />
+        </div>
+      </p-drawer>
+    } @else {
+      <div class="tb-sheet__head">
+        <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
+        @if (total() > 0 && place() > 0) {
+          <span class="tb-sheet__place">{{ t.position(place(), total()) }}</span>
+        }
+        <button
+          pButton
+          type="button"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          [attr.aria-label]="t.closeReview"
+          (click)="closed.emit()"
+        >
+          <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <ng-container [ngTemplateOutlet]="fields" />
+
+      <div class="tb-sheet__decision">
+        <p-button
+          [label]="t.rework"
+          severity="secondary"
+          [loading]="pending()"
+          (onClick)="review('RETURN')"
+        />
+        @if (task().status === 'SUBMITTED') {
+          <p-button
+            [label]="t.accept"
+            icon="tb-i tb-i-check"
+            [loading]="pending()"
+            (onClick)="review('ACCEPT')"
+          />
+        }
+      </div>
+      <div class="tb-sheet__foot">
+        @if (next(); as next) {
+          <button type="button" class="tb-sheet__next" (click)="opened.emit(next.taskId)">
+            <i class="tb-i tb-i-arrow_forward" aria-hidden="true"></i>{{ t.next(next.studentName) }}
+          </button>
+        }
+        <p-button
+          [label]="t.toBoard"
+          icon="tb-i tb-i-co_present"
+          [text]="true"
+          [disabled]="commentValue().trim() === ''"
+          (onClick)="boardVisible.set(true)"
+        />
+      </div>
+    }
+
+    <!-- the AI draft, the comment, the quick phrases and the grade: in the sheet and in the phone's bottom sheet -->
+    <ng-template #fields>
+      <form tbFieldErrors class="tb-sheet__form" [formGroup]="form">
+        @if (draft(); as draft) {
+          <section class="tb-sheet__draft" [attr.aria-label]="t.aiDraft">
+            <div class="tb-sheet__draft-head">
+              <span class="tb-sheet__tag">
+                <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>{{ t.aiDraft }}
+              </span>
+              <button type="button" class="tb-sheet__insert" (click)="insert(draft)">
+                {{ t.insert }}
+              </button>
+            </div>
+            <p class="tb-sheet__draft-text">{{ draft.comment }}</p>
+            <p class="tb-sheet__hint">
+              {{ draft.decision === 'ACCEPT' ? t.suggestsAccept : t.suggestsReturn }}
+            </p>
+          </section>
+        } @else if (aiAvailable()) {
+          <div>
+            <p-button
+              [label]="t.askAi"
+              icon="tb-i tb-i-auto_awesome"
+              severity="secondary"
+              [loading]="drafting()"
+              (onClick)="askAi()"
+            />
+          </div>
+        }
+
+        <div class="tb-sheet__field">
+          <label for="sheet-comment">{{ t.commentToStudent }}</label>
+          <textarea pTextarea id="sheet-comment" formControlName="comment" rows="6"></textarea>
+        </div>
+
+        <div class="tb-sheet__chips" role="group" [attr.aria-label]="t.quick">
+          <button type="button" class="tb-sheet__chip" (click)="phrase(t.greatText)">
+            {{ t.great }}
+          </button>
+          <button type="button" class="tb-sheet__chip" (click)="phrase(t.mistakeText)">
+            {{ t.mistake }}
+          </button>
+          <button type="button" class="tb-sheet__chip" (click)="phrase(t.recheckText)">
+            {{ t.recheck }}
+          </button>
+        </div>
+
+        <div class="tb-sheet__field">
+          <label for="sheet-grade">{{ t.grade }}</label>
+          <input
+            pInputText
+            id="sheet-grade"
+            formControlName="grade"
+            autocomplete="off"
+            [placeholder]="t.gradePlaceholder"
           />
         </div>
-      }
-
-      <div class="tb-sheet__field">
-        <label for="sheet-comment">{{ t.commentToStudent }}</label>
-        <textarea pTextarea id="sheet-comment" formControlName="comment" rows="6"></textarea>
-      </div>
-
-      <div class="tb-sheet__chips" role="group" [attr.aria-label]="t.quick">
-        <button type="button" class="tb-sheet__chip" (click)="phrase(t.greatText)">
-          {{ t.great }}
-        </button>
-        <button type="button" class="tb-sheet__chip" (click)="phrase(t.mistakeText)">
-          {{ t.mistake }}
-        </button>
-        <button type="button" class="tb-sheet__chip" (click)="phrase(t.recheckText)">
-          {{ t.recheck }}
-        </button>
-      </div>
-
-      <div class="tb-sheet__field">
-        <label for="sheet-grade">{{ t.grade }}</label>
-        <input
-          pInputText
-          id="sheet-grade"
-          formControlName="grade"
-          autocomplete="off"
-          [placeholder]="t.gradePlaceholder"
-        />
-      </div>
-    </form>
-
-    <div class="tb-sheet__decision">
-      <p-button
-        [label]="t.rework"
-        severity="secondary"
-        [loading]="pending()"
-        (onClick)="review('RETURN')"
-      />
-      @if (task().status === 'SUBMITTED') {
-        <p-button
-          [label]="t.accept"
-          icon="tb-i tb-i-check"
-          [loading]="pending()"
-          (onClick)="review('ACCEPT')"
-        />
-      }
-    </div>
-    <div class="tb-sheet__foot">
-      @if (next(); as next) {
-        <button type="button" class="tb-sheet__next" (click)="opened.emit(next.taskId)">
-          <i class="tb-i tb-i-arrow_forward" aria-hidden="true"></i>{{ t.next(next.studentName) }}
-        </button>
-      }
-      <p-button
-        [label]="t.toBoard"
-        icon="tb-i tb-i-co_present"
-        [text]="true"
-        [disabled]="commentValue().trim() === ''"
-        (onClick)="boardVisible.set(true)"
-      />
-    </div>
+      </form>
+    </ng-template>
 
     <tb-to-board-dialog
       [(visible)]="boardVisible"
@@ -175,6 +252,68 @@ export interface NextWork {
       flex-direction: column;
       gap: var(--tb-space-4);
       min-block-size: 100%;
+    }
+
+    /* M3 floating toolbar: a pill of surface container high, 64 dp, 16 dp from the edges, elevation 2 (ours:
+       two icon buttons and the decision) */
+    .tb-toolbar {
+      position: fixed;
+      z-index: 10;
+      inset-inline: var(--tb-space-4);
+      inset-block-end: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+      block-size: 4rem;
+      box-sizing: border-box;
+      padding-inline: var(--tb-space-2);
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-surface-container-high);
+      box-shadow: var(--tb-elevation-2);
+    }
+
+    .tb-toolbar__icon {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      inline-size: 3rem;
+      block-size: 3rem;
+      padding: 0;
+      border: 0;
+      border-radius: var(--tb-shape-full);
+      background: transparent;
+      color: var(--p-md-on-surface-variant);
+      cursor: pointer;
+    }
+
+    .tb-toolbar__icon--on {
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-toolbar__icon--busy {
+      opacity: 0.5;
+    }
+
+    .tb-toolbar__icon:focus-visible {
+      outline: 3px solid var(--p-md-secondary);
+    }
+
+    .tb-toolbar__action {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .tb-toolbar__action:first-of-type {
+      flex-grow: 1;
+    }
+
+    .tb-toolbar__action ::ng-deep .p-button {
+      inline-size: 100%;
+      padding-inline: var(--tb-space-3);
+      white-space: nowrap;
     }
 
     .tb-sheet__head {
@@ -350,6 +489,7 @@ export interface NextWork {
 })
 export class ReviewSheet {
   protected readonly t = T.review;
+  protected readonly c = SHARED_T.common;
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
   private readonly snackbar = inject(Snackbar);
@@ -366,6 +506,10 @@ export class ReviewSheet {
   /** The teacher opens the next work. */
   readonly opened = output<string>();
   readonly closed = output();
+  /** A phone (compact, spec §9): the floating toolbar and the comment in a bottom sheet instead of the side sheet. */
+  readonly compact = input(false);
+  /** The comment sheet of the phone is open. */
+  protected readonly commentOpen = signal(false);
 
   protected readonly pending = signal(false);
   protected readonly drafting = signal(false);
@@ -411,6 +555,15 @@ export class ReviewSheet {
     });
   }
 
+  /** The toolbar's AI button: the draft comes into the comment sheet; one that is here is shown again. */
+  protected aiAction(): void {
+    if (this.draft() === null) {
+      this.askAi();
+    } else {
+      this.commentOpen.set(true);
+    }
+  }
+
   protected askAi(): void {
     const answer = this.answer();
     if (answer === null || this.drafting()) {
@@ -432,6 +585,7 @@ export class ReviewSheet {
             grade: draft.grade,
             decision: draft.accept ? 'ACCEPT' : 'RETURN',
           });
+          this.commentOpen.set(this.compact());
         },
         error: () => {
           this.drafting.set(false);
@@ -454,7 +608,12 @@ export class ReviewSheet {
 
   protected review(decision: ReviewDecision): void {
     const task = this.task();
-    if (!revealErrors(this.form) || this.pending()) {
+    if (!revealErrors(this.form)) {
+      // the wrong field is in the bottom sheet of a phone
+      this.commentOpen.set(this.compact());
+      return;
+    }
+    if (this.pending()) {
       return;
     }
     const { grade, comment } = this.form.getRawValue();

@@ -1085,3 +1085,106 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
     expect(fixture.debugElement.query(By.directive(ToBoardDialog))).not.toBeNull();
   });
 });
+
+describe('AssignmentsPage with the review on a phone (compact)', () => {
+  async function render(aiEnabled = false) {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(390)) });
+    vi.spyOn(TestBed.inject(MessageService), 'add');
+    const backend = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    await fixture.whenStable();
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend
+      .expectOne(QUEUE)
+      .flush([
+        reviewQueueItem(),
+        reviewQueueItem({ taskId: 't-2', studentId: 's-2', studentName: 'Борис' }),
+      ]);
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
+    backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+    return { backend, fixture, host: hostElement(fixture), navigate };
+  }
+
+  const toolbarButton = (host: HTMLElement, label: string): HTMLElement =>
+    requireElement(host, `.tb-toolbar [aria-label="${label}"]`, HTMLElement);
+
+  it('shows the floating toolbar, no form and no bottom bar', async () => {
+    const { fixture, host } = await render();
+
+    expect(requireElement(host, '.tb-toolbar', HTMLElement).getAttribute('role')).toBe('toolbar');
+    expect(host.querySelector('tb-task-review-page form')).toBeNull();
+    expect(host.querySelector('.tb-sheet__head')).toBeNull();
+    expect(TestBed.inject(RailState).bottomBarHidden()).toBe(true);
+    fixture.destroy();
+    expect(TestBed.inject(RailState).bottomBarHidden()).toBe(false);
+  });
+
+  it('takes the comment in a bottom sheet and accepts with it', async () => {
+    const { backend, fixture, host } = await render();
+
+    toolbarButton(host, 'Комментарий ученику').click();
+    await fixture.whenStable();
+    const comment = requireElement(document.body, '#sheet-comment', HTMLTextAreaElement);
+    comment.value = 'Хорошо';
+    comment.dispatchEvent(new Event('input'));
+    buttonByText(document.body, 'Готово').click();
+    buttonByText(host, 'Принять').click();
+
+    const request = backend.expectOne('/api/teacher/homework/tasks/t-1/review');
+    expect(request.request.body).toMatchObject({ decision: 'ACCEPT', comment: 'Хорошо' });
+    request.flush(taskDetails({ status: 'ACCEPTED' }));
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+  });
+
+  it('returns the work for rework from the toolbar', async () => {
+    const { backend, fixture, host } = await render();
+
+    buttonByText(host, 'На доработку').click();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush(taskDetails({ status: 'RETURNED' }));
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+  });
+
+  it('opens the sheet with the draft of the AI', async () => {
+    const { backend, fixture, host } = await render(true);
+
+    toolbarButton(host, 'Черновик ИИ').click();
+    backend
+      .expectOne('/api/teacher/ai/review-draft')
+      .flush({ comment: 'Почти верно', grade: '4', accept: true });
+    await fixture.whenStable();
+
+    expect(readableText(document.body)).toContain('ИИ предлагает принять работу');
+    buttonByText(document.body, 'Вставить').click();
+    await fixture.whenStable();
+    expect(requireElement(document.body, '#sheet-comment', HTMLTextAreaElement).value).toBe(
+      'Почти верно',
+    );
+    toolbarButton(host, 'Черновик ИИ').click();
+  });
+
+  it('opens the sheet when the grade is wrong', async () => {
+    const { fixture, host } = await render();
+
+    toolbarButton(host, 'Комментарий ученику').click();
+    await fixture.whenStable();
+    const grade = requireElement(document.body, '#sheet-grade', HTMLInputElement);
+    grade.value = 'x'.repeat(21);
+    grade.dispatchEvent(new Event('input'));
+    buttonByText(document.body, 'Готово').click();
+    await fixture.whenStable();
+    buttonByText(host, 'Принять').click();
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('#sheet-grade')).not.toBeNull();
+  });
+});
