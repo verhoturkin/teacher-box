@@ -70,9 +70,9 @@ If the teacher has set a link to another video service (e.g. Telemost), the butt
 
 ## Boards
 
-The boards the teacher opened to you or your group are in «My boards», in the «Boards in the portal» and «External boards» cards. Tap a board to open it. The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
+The boards the teacher opened to you or your group are in «Materials», the «Boards» tab: cards with the board's picture, the filters «All», «In the portal», «External» and a search by title. Tap a card to open the board. The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
 
-- **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← My boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
+- **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← Boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
 - **An external board** (e.g. Holst) opens in a new tab.
 
 The links to the lesson and the boards are in the bot too: «Join lesson» and «My boards».
@@ -107,7 +107,7 @@ If the teacher put the homework on your board, it has «Go to the board» at the
     title: 'Textbooks',
     summary: 'Textbooks and workbooks from the teacher',
     body: `
-«Textbooks» holds the textbooks, workbooks and other materials the teacher opened to you or your group. Under the title — the kind, the course, the file and the number of pages; a group's textbook shows the group's name.
+Textbooks are a tab of the «Materials» section (next to «Boards»): the textbooks, workbooks and other materials the teacher opened to you or your group. Each is a card with a cover (the first page) and the title; the filters are «All», «Textbooks», «Workbooks», «Other»; a group's textbook shows the group's name.
 
 Click the title to open the textbook in a new tab (a Word file is downloaded), and the arrow button downloads it. The «Search by title» field helps to find a textbook. A textbook disappears from the list if the teacher closes it to you or you leave the group.
 `,
@@ -170,7 +170,7 @@ Send the bot /stop or disconnect the messenger in «My account» (your photo at 
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
 
-- The sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «My boards», «Payments»; the ☰ button at the top left opens «Textbooks» and «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled.
+- The sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «Materials», «Payments»; the ☰ button at the top left opens «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled.
 - The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
 - The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
 - Lists are shown as cards, forms open full screen.

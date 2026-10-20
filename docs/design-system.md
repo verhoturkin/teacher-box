@@ -764,14 +764,14 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   then «Показать ещё»).
   `tb-list__trail--amount`: on the phone the amount (`tb-list__amount`) goes under the text and the icon
   button stays on the right, so the name keeps its width.
-- **Materials** (245.2, spec §10.1; the student's page — 245.3): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
+- **Materials** (245.2–245.3, spec §10.1): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
   `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
   connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), `tb-search-field`,
   `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»; for textbooks «Все · Учебники · Рабочие
   тетради · Другое · Ученик или группа»), the sort menu «Сначала изменённые / По названию / Сначала новые», then the
   feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
   between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
-  `surface container low`, the preview on top (a board's PNG, a textbook's first page: `tb-blob-image` fetches it with the
+  `surface container low`, the preview on top (a board's PNG exported by the editor on save, a textbook's cover — the first page of a PDF, an image itself, none for a Word file (245.1): `tb-blob-image` fetches it with the
   HTTP client as a blob; the icon of the kind while there is none), a tonal tile with the icon and the tag of the
   service («Холст», «Miro») for an external board, the title (`title medium`) and «кому · дата» under the preview,
   «⋮» at the end. The title link is stretched over the whole card, «⋮» stays above it. «Ученик или группа» shows a
@@ -782,7 +782,10 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   `BoardsFeed` (`@features/boards/parts`) and `TextbooksFeed` (`@features/textbooks/parts`): each owns its API, cards,
   «⋮» menu and dialogs, and takes the search text, the filter, the sort, the member and the students/groups as inputs;
   a feature never imports another's internals. Both feeds stay mounted (the inactive one `hidden`), so both
-  numbers of the group are known.
+  numbers of the group are known. The student's page (`/cabinet/materials`, `MyMaterialsPage`) is the same feed
+  without the actions: `MyBoardsFeed` / `MyTextbooksFeed`, no «⋮» (`tb-material-card` shows it only when it has an
+  actions label), no member select, no create; chips «Все · На портале · Внешние» / by kind; `/cabinet/boards` and
+  `/cabinet/textbooks` redirect to the tabs; «Материалы» is the fourth destination of the bottom bar.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
   cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the

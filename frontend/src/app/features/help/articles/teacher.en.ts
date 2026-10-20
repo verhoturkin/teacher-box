@@ -91,7 +91,7 @@ The name in the list is the one you gave: the student can choose how the portal 
 
 The **Profile** tab is everything you know about the student, changed right there. «Student details»: the name, email, phone, note (only you see it), default topic and colour — change the fields and press «Save» under them («Cancel» brings back the saved ones). Below are the lesson price (with its own «Save»), the **video meeting** (actions in it are saved at once, [Video meetings](/teacher/help/meetings)) and «Cabinet sign-in»: the login (the student chooses it, so it is read-only), until when the link works and the button for a new link — «New invitation» or «Reset password».
 
-The student's groups are rows of the same list ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
+The student's groups are rows of the same list ([Groups](/teacher/help/groups)), their boards in «Materials», the «Boards» tab ([Boards](/teacher/help/boards)).
 
 ## Links and access
 
@@ -256,20 +256,20 @@ One lesson can have another link — in the lesson window.
     title: 'Boards',
     summary: 'Excalidraw boards and external boards of students and groups',
     body: `
-The «Boards» section keeps all boards in one place; each card («Boards in the portal», «External boards») has its own search that finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
+Boards are a tab of the «Materials» section (next to the «Textbooks» tab, [Textbooks](/teacher/help/textbooks)): all boards in one place, as cards with the board's picture. The search above the cards finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
 
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.
 
 ## Create a board
 
-1. «Create» → «Board» (on a phone — «Boards» → «New board»).
+1. «Create» → «Board» (on a phone — «Materials» → «New board»).
 2. Choose the kind and enter the title. For an external board paste the link and open the board by link in its service.
 3. Choose students and groups — as many as you like. All students of a group see its board; a student who left the group no longer sees it.
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
-Boards are in two cards: «Boards in the portal» (Excalidraw) and «External boards» (by link). A line per board: the title, who it is open to and when it changed; tap the line to open the board. To change the title, the link or the students — «⋮» in the board's row → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
+Each board is a card: a picture on top (an Excalidraw board's latest view, refreshed when it saves; an external board has a tile with the service's icon and name), under it the title, who it is open to and when it changed. The filters above the cards are «All», «In the portal», «External» and «Student or group» (pick a student or a group to keep their boards); the sort button changes the order. Tap a card to open the board. To change the title, the link or the students — «⋮» in the card → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
 
 ## Draw together
 
@@ -289,7 +289,7 @@ Save the shapes you need often to the library: select them, right click → «Ad
 
 ## Board backups
 
-Once a day the portal backs up every changed board (the last 7 daily backups are kept). Before big changes make your own backup: «⋮» in the board's row → «Backups», or «Backups» in the board's menu (☰) → «Make a backup» (up to 20 per board).
+Once a day the portal backs up every changed board (the last 7 daily backups are kept). Before big changes make your own backup: «⋮» in the board's card → «Backups», or «Backups» in the board's menu (☰) → «Make a backup» (up to 20 per board).
 
 «Restore» brings back the backup's drawing; the current drawing is saved as a backup first, so the restore can be undone. Boards open at students' are updated by themselves.
 
@@ -302,7 +302,7 @@ The «To a board» button is on the homework's page, in the homework editor and 
 
 An Excalidraw board opens in a new tab with the material already at the centre. Homework (from its page or with «Assign and put on a board» in the editor) goes into a frame named after it and today's date: the text first, then the pictures among its files and the pages of its textbooks, left to right (PDF and Word files stay in the homework). For an external board the material is copied and the board opens in a new tab — press Ctrl+V there (Cmd+V on a Mac); a picture can be copied this way only when the portal is open at a secure address (https).
 
-Pages of a textbook can be put on a board too — from «Textbooks» or from a textbook of the homework ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
+Pages of a textbook can be put on a board too — from the «Textbooks» tab or from a textbook of the homework ([Textbooks](/teacher/help/textbooks)): they go in a row inside a frame. Only an Excalidraw board takes such pages.
 `,
   },
   homework: {
@@ -354,11 +354,11 @@ If the AI assistant is on, «AI draft» suggests a comment and a grade — check
     title: 'Textbooks',
     summary: 'Textbooks and workbooks: files, access for students, pages',
     body: `
-«Textbooks» holds textbooks, workbooks and other materials, one file each. A file is a PDF, a Word file (DOC, DOCX) or a picture, up to 100 MB.
+Textbooks are a tab of the «Materials» section (next to the «Boards» tab, [Boards](/teacher/help/boards)): textbooks, workbooks and other materials, one file each. A file is a PDF, a Word file (DOC, DOCX) or a picture, up to 100 MB.
 
 ## Add a textbook
 
-1. «Textbooks» → «New textbook».
+1. «Create» → «Textbook» (or «Materials» → the «Textbooks» tab → «New textbook»).
 2. «Choose file». The title is taken from the file name — correct it.
 3. Choose the kind — «Textbook», «Workbook» or «Other» — and the course (e.g. «English, grade 5»): the portal suggests the courses of other textbooks.
 4. The portal counts the pages of a PDF itself; a picture is one page. For a Word file enter the number of pages yourself (optional).
@@ -374,7 +374,7 @@ A line per textbook: the kind's icon, the title, the kind, the course, the file 
 - **Replace file** — choose a new file (e.g. a corrected scan); the PDF pages are recounted;
 - **Delete…** — the textbook is deleted with its file and disappears from homework.
 
-A student sees the textbooks open to them in their «Textbooks» section and can download them.
+A student sees the textbooks open to them in their «Materials» section and can download them.
 `,
   },
   ai: {
@@ -593,7 +593,7 @@ In Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «In
 
 - **Wide screen** (from 1600 pixels) — the sections panel on the left: the icon and the label on one line, the chosen section highlighted.
 - **Computer and tablet** — a narrow panel on the left: the section's icon with the label under it.
-- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Textbooks», «Boards»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
+- **Phone** — the bottom bar: «Home», «Schedule», «Homework», «Students», «Payments». The ☰ button at the top left opens a panel with the other sections («Materials»), «Settings» and «Help»; it closes when you pick a section, with the button in its corner, a tap beside it or Esc.
 
 The top of the sections panel holds the portal's logo and name with «Create» under them, its bottom — «Settings» and «Help». «Create» is the only such button on the screen: on a computer and a tablet the sections have no «Add…» buttons in their headers, they stay only on a phone.
 

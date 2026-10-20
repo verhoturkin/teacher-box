@@ -45,7 +45,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
   modules (design-system «Materials»); the rail «Создать» menu has seven items — «Доска» and «Учебник» both.*
 - [x] 245.3 **F** Student: `boards/student/my-boards-page.ts` + `textbooks/student/my-textbooks-page.ts` → one
   «Материалы» page.
-- [ ] 245.4 **D** design-system (feed), help (boards, textbooks; ru, en), wiki.
+- [x] 245.4 **D** design-system (feed), help (boards, textbooks; ru, en), wiki.
 
 ### 246. Student cabinet (F)
 
