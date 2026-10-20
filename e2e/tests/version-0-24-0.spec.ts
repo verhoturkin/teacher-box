@@ -67,7 +67,12 @@ test.beforeAll(async ({ request }) => {
   const { accessToken } = (await login.json()) as { accessToken: string };
   const headers = { Authorization: `Bearer ${accessToken}` };
   await lessonFor(request, headers, QUEUED, new Date(Date.now() - 300 * DAY));
-  outlinedLessonId = await lessonFor(request, headers, OUTLINED, new Date(Date.now() - 2 * 3_600_000));
+  outlinedLessonId = await lessonFor(
+    request,
+    headers,
+    OUTLINED,
+    new Date(Date.now() - 2 * 3_600_000),
+  );
 });
 
 test('the queue marks a lesson in place', async ({ page }) => {

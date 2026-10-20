@@ -114,7 +114,9 @@ test('the schedule keeps requests and recurring lessons in a pane beside the cal
   await expect(side).toBeVisible();
   const sideBox = await side.boundingBox();
   const calendarBox = await calendar.boundingBox();
-  expect(sideBox?.x ?? 0).toBeGreaterThanOrEqual((calendarBox?.x ?? 0) + (calendarBox?.width ?? 0) - 1);
+  expect(sideBox?.x ?? 0).toBeGreaterThanOrEqual(
+    (calendarBox?.x ?? 0) + (calendarBox?.width ?? 0) - 1,
+  );
 });
 
 test('the buttons of the rows of a list stand on one line', async ({ page, request }) => {
