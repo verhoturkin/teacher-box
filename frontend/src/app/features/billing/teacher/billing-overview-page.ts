@@ -18,6 +18,7 @@ import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { locale } from '@core/i18n/language';
 import { injectMobile } from '@core/layout/mobile';
+import { compactBar } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
@@ -116,29 +117,31 @@ const NUMBER = new Intl.NumberFormat(locale());
       <tb-pane [label]="t.title">
         <tb-page-header [title]="monthTitle()">
           <tb-help-button help topic="teacher/billing" />
-          <p-button
-            icon="tb-i tb-i-chevron_left"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [pTooltip]="t.previousMonth"
-            [ariaLabel]="t.previousMonth"
-            (onClick)="shift(-1)"
-          />
-          <p-button
-            icon="tb-i tb-i-chevron_right"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [pTooltip]="t.nextMonth"
-            [ariaLabel]="t.nextMonth"
-            [disabled]="isCurrentMonth()"
-            (onClick)="shift(1)"
-          />
-          <a pButton routerLink="report" [queryParams]="{ month: month() }" severity="secondary">
-            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
-            <span pButtonLabel>{{ t.report }}</span>
-          </a>
+          @if (!mobile()) {
+            <p-button
+              icon="tb-i tb-i-chevron_left"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [pTooltip]="t.previousMonth"
+              [ariaLabel]="t.previousMonth"
+              (onClick)="shift(-1)"
+            />
+            <p-button
+              icon="tb-i tb-i-chevron_right"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [pTooltip]="t.nextMonth"
+              [ariaLabel]="t.nextMonth"
+              [disabled]="isCurrentMonth()"
+              (onClick)="shift(1)"
+            />
+            <a pButton routerLink="report" [queryParams]="{ month: month() }" severity="secondary">
+              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
+              <span pButtonLabel>{{ t.report }}</span>
+            </a>
+          }
           <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
           @if (mobile()) {
             <p-button
@@ -225,9 +228,13 @@ const NUMBER = new Intl.NumberFormat(locale());
                           [routerLink]="['/teacher/students', operation.studentId]"
                           [queryParams]="paymentsTab"
                           class="tb-list__title tb-list__link"
-                          >{{ title(operation) }} · {{ operation.studentName }}</a
+                          >{{ title(operation)
+                          }}<span class="tb-ops__who"> · {{ operation.studentName }}</span></a
                         >
-                        <span class="tb-list__supporting">{{ details(operation) }}</span>
+                        <span class="tb-list__supporting"
+                          ><span class="tb-ops__who-compact">{{ operation.studentName }} · </span
+                          >{{ details(operation) }}</span
+                        >
                       </div>
                       <div class="tb-list__trail">
                         <span
@@ -248,92 +255,94 @@ const NUMBER = new Intl.NumberFormat(locale());
         </tb-load-state>
       </tb-pane>
 
-      <tb-pane kind="fixed" [label]="t.byStudents">
-        <div class="tb-ops__bar tb-ops__bar--pane">
-          <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
-          <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
-        </div>
-        @if (overview(); as overview) {
-          <section class="tb-ops">
-            <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
-            @if (debtors().length > 0) {
-              <ul class="tb-list tb-ops__people">
-                @for (row of debtors(); track row.studentId) {
-                  <li [attr.data-tb-label]="colors.studentLabel(row.studentId)">
-                    <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
-                    <div class="tb-list__text">
-                      <a
-                        [routerLink]="['/teacher/students', row.studentId]"
-                        [queryParams]="paymentsTab"
-                        class="tb-list__title tb-list__link"
-                        >{{ row.displayName }}</a
-                      >
-                      <span class="tb-list__supporting">{{ owedText(row) }}</span>
-                    </div>
-                    <div class="tb-list__trail">
-                      <span class="tb-negative tb-ops__amount">{{
-                        row.balance | money: overview.currency
-                      }}</span>
-                    </div>
-                  </li>
-                }
-              </ul>
-              <p-button
-                class="tb-ops__remind"
-                icon="tb-i tb-i-send"
-                [label]="t.remind"
-                severity="secondary"
-                (onClick)="remindVisible.set(true)"
-              />
-            } @else {
-              <p class="tb-muted">{{ t.noDebtors }}</p>
-            }
-          </section>
-
-          @if (runningOut().length > 0) {
+      @if (!mobile()) {
+        <tb-pane kind="fixed" [label]="t.byStudents">
+          <div class="tb-ops__bar tb-ops__bar--pane">
+            <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
+            <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
+          </div>
+          @if (overview(); as overview) {
             <section class="tb-ops">
-              <h3 class="tb-ops__overline">{{ t.running }}</h3>
-              <ul class="tb-list tb-ops__people">
-                @for (row of runningOut(); track row.student.studentId) {
-                  <li [attr.data-tb-label]="colors.studentLabel(row.student.studentId)">
-                    <tb-avatar [name]="row.student.displayName" [photo]="row.student.avatar" />
-                    <div class="tb-list__text">
-                      <a
-                        [routerLink]="['/teacher/students', row.student.studentId]"
-                        [queryParams]="paymentsTab"
-                        class="tb-list__title tb-list__link"
-                        >{{ row.student.displayName }}</a
-                      >
-                      <span class="tb-list__supporting">{{ t.lastsFor(row.lessons) }}</span>
-                    </div>
-                    <div class="tb-list__trail">
-                      <span class="tb-ops__amount">{{
-                        row.student.balance | money: overview.currency
-                      }}</span>
-                    </div>
+              <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
+              @if (debtors().length > 0) {
+                <ul class="tb-list tb-ops__people">
+                  @for (row of debtors(); track row.studentId) {
+                    <li [attr.data-tb-label]="colors.studentLabel(row.studentId)">
+                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                      <div class="tb-list__text">
+                        <a
+                          [routerLink]="['/teacher/students', row.studentId]"
+                          [queryParams]="paymentsTab"
+                          class="tb-list__title tb-list__link"
+                          >{{ row.displayName }}</a
+                        >
+                        <span class="tb-list__supporting">{{ owedText(row) }}</span>
+                      </div>
+                      <div class="tb-list__trail">
+                        <span class="tb-negative tb-ops__amount">{{
+                          row.balance | money: overview.currency
+                        }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+                <p-button
+                  class="tb-ops__remind"
+                  icon="tb-i tb-i-send"
+                  [label]="t.remind"
+                  severity="secondary"
+                  (onClick)="remindVisible.set(true)"
+                />
+              } @else {
+                <p class="tb-muted">{{ t.noDebtors }}</p>
+              }
+            </section>
+
+            @if (runningOut().length > 0) {
+              <section class="tb-ops">
+                <h3 class="tb-ops__overline">{{ t.running }}</h3>
+                <ul class="tb-list tb-ops__people">
+                  @for (row of runningOut(); track row.student.studentId) {
+                    <li [attr.data-tb-label]="colors.studentLabel(row.student.studentId)">
+                      <tb-avatar [name]="row.student.displayName" [photo]="row.student.avatar" />
+                      <div class="tb-list__text">
+                        <a
+                          [routerLink]="['/teacher/students', row.student.studentId]"
+                          [queryParams]="paymentsTab"
+                          class="tb-list__title tb-list__link"
+                          >{{ row.student.displayName }}</a
+                        >
+                        <span class="tb-list__supporting">{{ t.lastsFor(row.lessons) }}</span>
+                      </div>
+                      <div class="tb-list__trail">
+                        <span class="tb-ops__amount">{{
+                          row.student.balance | money: overview.currency
+                        }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+          }
+
+          @if (bars().length > 0) {
+            <section class="tb-ops">
+              <h3 class="tb-ops__overline">{{ t.byWeeks }}</h3>
+              <ol class="tb-ops__weeks">
+                @for (bar of bars(); track bar.key) {
+                  <li class="tb-ops__week" [class.tb-ops__week--current]="bar.current">
+                    <span class="tb-ops__week-value">{{ bar.value }}</span>
+                    <span class="tb-ops__week-bar" [style.height.%]="bar.height"></span>
+                    <span class="tb-ops__week-label">{{ bar.label }}</span>
+                    <span class="tb-sr-only">{{ bar.amount }}</span>
                   </li>
                 }
-              </ul>
+              </ol>
             </section>
           }
-        }
-
-        @if (bars().length > 0) {
-          <section class="tb-ops">
-            <h3 class="tb-ops__overline">{{ t.byWeeks }}</h3>
-            <ol class="tb-ops__weeks">
-              @for (bar of bars(); track bar.key) {
-                <li class="tb-ops__week" [class.tb-ops__week--current]="bar.current">
-                  <span class="tb-ops__week-value">{{ bar.value }}</span>
-                  <span class="tb-ops__week-bar" [style.height.%]="bar.height"></span>
-                  <span class="tb-ops__week-label">{{ bar.label }}</span>
-                  <span class="tb-sr-only">{{ bar.amount }}</span>
-                </li>
-              }
-            </ol>
-          </section>
-        }
-      </tb-pane>
+        </tb-pane>
+      }
     </tb-panes>
 
     @if (overview(); as overview) {
@@ -510,9 +519,82 @@ const NUMBER = new Intl.NumberFormat(locale());
       margin-block-end: var(--tb-space-6);
     }
 
+    .tb-ops__who-compact {
+      display: none;
+    }
+
     @media (width < 50em) {
       .tb-ops-figures {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /*
+     * A phone (spec §10.2, sketch): the figures are a strip that scrolls sideways to the edge of the screen, tiles
+     * of label and value; the chips stand in one row; the journal rows show the kind, then «name · day» under it, and
+     * the avatar alone leads. The section title and the student filter stay for the wider windows (ours).
+     */
+    @media (width < 37.5em) {
+      .tb-ops-figures {
+        display: flex;
+        gap: var(--tb-space-3);
+        margin: 0 calc(-1 * var(--tb-space-4)) var(--tb-space-4);
+        padding-inline: var(--tb-space-4);
+        overflow-x: auto;
+        scroll-padding-inline: var(--tb-space-4);
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+      }
+
+      .tb-ops-figure {
+        flex: none;
+        min-inline-size: 9.5rem;
+        scroll-snap-align: start;
+        white-space: nowrap;
+      }
+
+      .tb-ops-figure__note {
+        display: none;
+      }
+
+      .tb-ops__title,
+      .tb-ops__filters p-select {
+        display: none;
+      }
+
+      .tb-ops__filters tb-filter-chips {
+        flex-wrap: nowrap;
+        margin: 0 calc(-1 * var(--tb-space-4));
+        padding-inline: var(--tb-space-4);
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .tb-ops__filters {
+        flex-wrap: nowrap;
+        inline-size: 100%;
+      }
+
+      .tb-ops__lead .tb-list__lead {
+        display: none;
+      }
+
+      .tb-ops__who {
+        display: none;
+      }
+
+      .tb-ops__list .tb-list__text {
+        min-width: 0;
+      }
+
+      .tb-ops__list .tb-list__supporting {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tb-ops__who-compact {
+        display: inline;
       }
     }
   `,
@@ -547,6 +629,12 @@ export class BillingOverviewPage implements OnInit {
   protected readonly monthTitle = computed(() => {
     const label = monthLabel(this.month());
     return label.charAt(0).toUpperCase() + label.slice(1);
+  });
+  /** The title of the top app bar of a phone: the month, with the year only when it is not the current one. */
+  private readonly barTitle = computed(() => {
+    const [year] = this.month().split('-');
+    const name = this.monthTitle().split(' ')[0] ?? '';
+    return year === String(new Date().getFullYear()) ? name : `${name} ${year ?? ''}`;
   });
   protected readonly isCurrentMonth = computed(() => this.month() >= toIsoMonth(new Date()));
 
@@ -619,6 +707,40 @@ export class BillingOverviewPage implements OnInit {
   });
 
   constructor() {
+    // a phone: the top app bar says the month with «‹» and «⋮» (the next month, the report; spec §10.2)
+    compactBar(() =>
+      this.mobile()
+        ? {
+            title: this.barTitle(),
+            menuLabel: this.t.moreActions,
+            actions: [
+              {
+                icon: 'chevron_left',
+                label: this.t.previousMonth,
+                command: () => {
+                  this.shift(-1);
+                },
+              },
+            ],
+            menu: [
+              {
+                label: this.t.nextMonth,
+                icon: 'tb-i tb-i-chevron_right',
+                disabled: this.isCurrentMonth(),
+                command: () => {
+                  this.shift(1);
+                },
+              },
+              {
+                label: this.t.report,
+                icon: 'tb-i tb-i-download',
+                routerLink: 'report',
+                queryParams: { month: this.month() },
+              },
+            ],
+          }
+        : null,
+    );
     openOnCreate('payment', () => {
       this.openPayment();
     });

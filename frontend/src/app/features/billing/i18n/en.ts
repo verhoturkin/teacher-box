@@ -66,6 +66,7 @@ export const en: Translation<typeof ru> = {
     what: 'the payments',
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
+    moreActions: 'More',
     income: 'Received',
     charged: 'Charged for lessons',
     debt: 'Debt',

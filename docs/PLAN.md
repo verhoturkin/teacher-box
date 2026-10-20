@@ -48,7 +48,7 @@ ADR: none.
 - [x] 243.2 **F** Spec §10.2: `billing/teacher/billing-overview-page.ts` → month header, four figures, journal with
   chips, supporting pane (debtors, advances running out, weekly bars); `monthly-report-page.ts` reachable from
   «Отчёт за месяц»; the balances list goes (Students › «Должники»).
-- [ ] 243.3 **F** Compact: strip of figures, chips, journal, extended FAB «Оплата».
+- [x] 243.3 **F** Compact: strip of figures, chips, journal, extended FAB «Оплата».
 - [ ] 243.4 **D** design-system, help «Оплаты» (ru, en), wiki.
 
 ### 244. Release 0.25.0 (D)

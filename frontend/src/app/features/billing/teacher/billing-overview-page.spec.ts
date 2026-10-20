@@ -13,8 +13,9 @@ import {
   studentBalance,
 } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { BroadcastDialog } from '@features/notifications/parts';
+import { RailState } from '@core/layout/rail-state';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { BillingOverviewPage } from './billing-overview-page';
 import { PaymentDialog } from './payment-dialog';
@@ -270,5 +271,73 @@ describe('BillingOverviewPage', () => {
     await fixture.whenStable();
 
     expect(text()).toContain('Должников нет');
+  });
+});
+
+describe('BillingOverviewPage on a phone', () => {
+  let fixture: ComponentFixture<BillingOverviewPage>;
+  let backend: HttpTestingController;
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [BillingOverviewPage],
+      providers: testProviders(screenWidth(599)),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(BillingOverviewPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN, MARIA]));
+    backend
+      .expectOne(matching('/api/teacher/billing/summary', { month: MONTH }))
+      .flush(billingSummary({ month: MONTH }));
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: MONTH }))
+      .flush(operations([LESSON, PAID], MONTH));
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    backend.verify();
+    fixture.destroy();
+  });
+
+  it('gives the top app bar the month, «‹» and «⋮» with the next month and the report', () => {
+    const bar = TestBed.inject(RailState).compactBar();
+
+    expect(bar?.title).toMatch(/^[А-ЯЁ][а-яё]+$/);
+    expect(bar?.actions.map((action) => action.label)).toEqual(['Предыдущий месяц']);
+    expect(bar?.menu.map((item) => item.label)).toEqual(['Следующий месяц', 'Отчёт за месяц']);
+    expect(bar?.menu[0]?.disabled).toBe(true);
+    expect(bar?.menu[1]?.queryParams).toEqual({ month: MONTH });
+  });
+
+  it('moves to the previous month with «‹» of the top app bar', async () => {
+    TestBed.inject(RailState).compactBar()?.actions[0]?.command();
+    const [year, month] = MONTH.split('-').map(Number);
+    const previous = toIsoMonth(new Date(year ?? 0, (month ?? 1) - 2, 1));
+    backend
+      .expectOne(matching('/api/teacher/billing/summary', { month: previous }))
+      .flush(billingSummary({ month: previous }));
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: previous }))
+      .flush(operations([], previous));
+    await fixture.whenStable();
+
+    expect(TestBed.inject(RailState).compactBar()?.menu[0]?.disabled).toBe(false);
+  });
+
+  it('keeps the month actions and the supporting pane out of the page and shows the FAB', () => {
+    const host = hostElement(fixture);
+
+    expect(host.querySelector('button[aria-label="Предыдущий месяц"]')).toBeNull();
+    expect(host.querySelector('a[href*="report"]')).toBeNull();
+    expect(readableText(host)).not.toContain('По ученикам');
+    expect(host.querySelector('p-button.tb-page-fab')).not.toBeNull();
+  });
+
+  it('releases the top app bar when the page goes', () => {
+    fixture.destroy();
+
+    expect(TestBed.inject(RailState).compactBar()).toBeNull();
   });
 });
