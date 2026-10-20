@@ -144,7 +144,8 @@ test('the actions of the page header are at one height on every page', async ({
   await expect(page.locator('h1.tb-page-title')).toHaveText('Задания');
   await page.getByRole('button', { name: /^Активные/ }).click();
   await page.getByRole('link', { name: 'Колонка 0.6.8' }).click();
-  await expect(page.locator('h1.tb-page-title')).toHaveText('Колонка 0.6.8');
+  // 0.25.0: the list pane keeps its own title beside the assignment
+  await expect(page.locator('h1.tb-page-title', { hasText: 'Колонка 0.6.8' })).toBeVisible();
   await expect(page.locator('.tb-page-header > .tb-actions p-button').first()).toBeVisible();
 });
 

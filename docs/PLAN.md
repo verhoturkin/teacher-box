@@ -25,36 +25,6 @@ spec §0–§2 and the § it names, load the `m3-expressive` skill for UI work, 
 the substep changed, help articles (ru, en) and `docs/wiki/` for what users see. Releases go in order; a later
 release may start only after the previous one is merged to `main`.
 
-## v0.25.0 — Homework and Payments
-
-Review in one place with the next work at hand; Payments about the month and the movement of money.
-ADR: none.
-
-### 242. Homework (F)
-
-- [x] 242.1 **F** Spec §9: list pane from `homework/teacher/assignments-page.ts` + `review-queue-page.ts`
-  (connected group, drafts under the filter, one filter field); `/teacher/homework/review` redirects.
-- [x] 242.2 **F** Detail: `task-review-page.ts` (work) and `assignment-page.ts` (assignment with students) as
-  detail panes; `/teacher/homework/tasks/:taskId` and `/:assignmentId` keep working as deep links.
-- [x] 242.3 **F** Extra-large: review side sheet (AI draft from `ai/homework-ai-panel.ts`, comment, chips,
-  decision), «Дальше» opens the next work; collapsed rail on this route.
-- [x] 242.4 **F** Compact: floating toolbar (spec §9), comment in a bottom sheet, bottom bar hidden.
-- [x] 242.5 **D** design-system (three panes, floating toolbar), help (homework review; ru, en), wiki.
-
-### 243. Payments (B, F)
-
-- [x] 243.1 **B** `GET /api/teacher/billing/operations?month=&kind=&studentId=` (payments, charges, absences of a
-  month) and weekly totals in `GET /api/teacher/billing/summary`. Tests, `docs/modules/billing.md`.
-- [x] 243.2 **F** Spec §10.2: `billing/teacher/billing-overview-page.ts` → month header, four figures, journal with
-  chips, supporting pane (debtors, advances running out, weekly bars); `monthly-report-page.ts` reachable from
-  «Отчёт за месяц»; the balances list goes (Students › «Должники»).
-- [x] 243.3 **F** Compact: strip of figures, chips, journal, extended FAB «Оплата».
-- [x] 243.4 **D** design-system, help «Оплаты» (ru, en), wiki.
-
-### 244. Release 0.25.0 (D)
-
-- [ ] 244.1 **D** Skill `release`; E2E: accept a work and land on the next; journal filters.
-
 ## v0.26.0 — Materials, cabinet, admin, search
 
 Boards and textbooks in one feed with previews; the student's five destinations; the admin's five; global

@@ -76,19 +76,16 @@ test('the interface font is Google Sans', async ({ page }) => {
     .toBe(true);
 });
 
-test('the balances are a list, the balance goes under the name on a phone', async ({ page }) => {
+test('the payment journal is a list with amounts, nothing overflows on a phone', async ({
+  page,
+}) => {
   await signIn(page, 390);
   await page.goto('/teacher/billing');
   await expect(page.locator('.p-datatable')).toHaveCount(0);
-  const row = page
-    .locator('ul.tb-list[aria-label="Балансы учеников"] > li')
-    .filter({ hasText: STUDENT });
-  await expect(row).toContainText('аванс 3 000 ₽');
-  await expect(row).toContainText('за занятие');
-
-  const name = await row.locator('.tb-list__title').boundingBox();
-  const balance = await row.locator('.tb-list__amount').boundingBox();
-  expect(balance?.y ?? 0).toBeGreaterThan((name?.y ?? 0) + (name?.height ?? 0) - 1);
+  // 0.25.0: the balances list went to Students; the page is the journal of the month
+  const row = page.getByRole('listitem').filter({ hasText: STUDENT }).first();
+  await expect(row).toContainText('Оплата');
+  await expect(row).toContainText('+2 000 ₽');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 

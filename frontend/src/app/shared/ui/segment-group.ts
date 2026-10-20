@@ -126,7 +126,6 @@ export interface Segment<T extends string> {
 
     .tb-segment__count {
       font: var(--tb-type-label-l-emphasized);
-      opacity: 0.8;
     }
   `,
 })
