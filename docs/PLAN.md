@@ -25,20 +25,6 @@ spec §0–§2 and the § it names, load the `m3-expressive` skill for UI work, 
 the substep changed, help articles (ru, en) and `docs/wiki/` for what users see. Releases go in order; a later
 release may start only after the previous one is merged to `main`.
 
-## v0.24.1 — UI fixes after 0.24.0
-
-Product-owner review of the built UI against the sketches (`redesign/report.html`) and M3. ADR: none.
-
-- [x] UI-1 **F** Rail brand sits in the top strip row (as in the sketch); the rail is no longer shifted down.
-- [x] UI-2 **F** FAB / extended FAB / FAB menu: M3 state layers and spring motion (press, hover, expand, menu open).
-- [x] UI-3 **F** No large white cards wrapping tonal lists: section titles on the pane surface, tonal rows below; lists
-  keep the large corner of the M3 list (16 px); on a phone the page lies on the window (no pane card).
-- [x] UI-4 **F** M3 primary tabs everywhere (no container, active indicator, divider under the bar).
-- [x] UI-5 **F** Scrollbars stay inside the rounded corners of panes and cards.
-- [x] UI-6 **F** Today page matches the sketches (header, hero, today rows, «Нужно сделать», «Октябрь», «Неделя»);
-  also settings list, notifications sheet and the student overview. *Not done (needs backend fields): plan and
-  advances of the month, attendance, tab counters; the schedule page by sketch 8 — next release.*
-
 ## v0.25.0 — Homework and Payments
 
 Review in one place with the next work at hand; Payments about the month and the movement of money.
