@@ -6,7 +6,7 @@ import { Shell } from './shell';
 
 export const TEACHER_MENU: NavItem[] = [
   {
-    label: CORE_T.nav.home,
+    label: CORE_T.nav.today,
     icon: 'tb-i tb-i-home',
     routerLink: '/teacher',
     routerLinkActiveOptions: { exact: true },

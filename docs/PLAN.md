@@ -37,7 +37,7 @@ pane; an agenda on a phone. ADR: none.
   (skip fields that already exist). Tests, module docs.
 - [x] 239.2 **F** `features/home/todo-queue.ts` — «Нужно сделать» from `attention-card.ts` +
   `first-run-checklist.ts` (sources in spec §6), actions in place; both old components go.
-- [ ] 239.3 **F** `features/home/teacher-home.ts` → feed in three / two / one columns; «Занятия сегодня» list under
+- [x] 239.3 **F** `features/home/teacher-home.ts` → feed in three / two / one columns; «Занятия сегодня» list under
   the hero; month (`billing/home/finance-widget.ts`) and week figures; header with the summary line; nav label
   «Сегодня».
 - [ ] 239.4 **F** Compact: queue rows with a chevron, bottom sheet for two or more actions (`tbModalDrawer`).

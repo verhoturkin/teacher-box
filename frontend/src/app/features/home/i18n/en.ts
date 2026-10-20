@@ -1,3 +1,4 @@
+import { countOf } from '@shared/text/plural';
 import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
 
@@ -47,7 +48,21 @@ export const en: Translation<typeof ru> = {
     ok: 'Got it',
   },
   teacherHome: {
-    title: 'Home',
+    title: 'Today',
     what: 'the lessons, homework, notifications and finance',
+    lessons: (n: number) => countOf(n, 'lesson', 'lessons', 'lessons'),
+    reviews: (n: number) => `${countOf(n, 'work', 'works', 'works')} to review`,
+    requests: (n: number) => countOf(n, 'request', 'requests', 'requests'),
+  },
+  todayLessons: {
+    title: 'Lessons today',
+    next: 'Next',
+  },
+  week: {
+    title: 'Week',
+    lessons: 'Lessons held',
+    missed: 'Absences',
+    assigned: 'Assignments given',
+    onTime: 'Handed in on time',
   },
 };

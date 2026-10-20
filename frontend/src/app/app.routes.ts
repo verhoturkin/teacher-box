@@ -84,7 +84,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        title: NAV.home,
+        title: NAV.today,
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {

@@ -1,3 +1,5 @@
+import { countOf } from '@shared/text/plural';
+
 /** Texts of the home pages of the teacher and the student (ADR-0035). */
 export const ru = {
   queue: {
@@ -45,7 +47,21 @@ export const ru = {
     ok: 'Понятно',
   },
   teacherHome: {
-    title: 'Главная',
+    title: 'Сегодня',
     what: 'занятия, задания, уведомления и финансы',
+    lessons: (n: number) => countOf(n, 'занятие', 'занятия', 'занятий'),
+    reviews: (n: number) => `${countOf(n, 'работа', 'работы', 'работ')} на проверку`,
+    requests: (n: number) => countOf(n, 'запрос', 'запроса', 'запросов'),
+  },
+  todayLessons: {
+    title: 'Занятия сегодня',
+    next: 'Следующее',
+  },
+  week: {
+    title: 'Неделя',
+    lessons: 'Проведено занятий',
+    missed: 'Пропусков',
+    assigned: 'Выдано заданий',
+    onTime: 'Сдано в срок',
   },
 };
