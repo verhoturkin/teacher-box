@@ -13,14 +13,14 @@ const TABLET = { width: 900, height: 1000 };
 const SECTIONS = [
   'Главная',
   'Расписание',
-  'Звонки',
+  // 0.22.0: no «Звонки» — a category of the settings
   'Ученики',
   'Задания',
   'Учебники',
   'Оплаты',
   'Доски',
-  'Уведомления',
-  'ИИ-помощник',
+  // 0.22.0: no «Уведомления» — the bell's sheet
+  // 0.22.0: no «ИИ-помощник» — a category of the settings
   // the bottom group of the rail (0.21.0)
   'Настройки',
   'Справка',

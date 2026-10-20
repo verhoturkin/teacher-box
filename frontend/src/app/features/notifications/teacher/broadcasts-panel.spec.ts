@@ -1,9 +1,8 @@
 import { formatDate } from '@angular/common';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { NewMessageState } from '@core/notifications/new-message';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { broadcastItem } from '@testing/notification-fixtures';
 import { BroadcastItem } from '../data-access/notifications.models';
 import { BroadcastsPanel } from './broadcasts-panel';
@@ -13,13 +12,12 @@ describe('BroadcastsPanel', () => {
   let fixture: ComponentFixture<BroadcastsPanel>;
   let backend: HttpTestingController;
 
-  async function render(history: BroadcastItem[], url?: string): Promise<void> {
+  async function render(history: BroadcastItem[]): Promise<void> {
     TestBed.configureTestingModule({
       imports: [BroadcastsPanel],
       providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
-    if (url) await TestBed.inject(Router).navigateByUrl(url);
     fixture = TestBed.createComponent(BroadcastsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/notifications/broadcasts').flush(history);
@@ -50,38 +48,18 @@ describe('BroadcastsPanel', () => {
     expect(text).toContain('Без текста');
   });
 
-  it('opens the message from «Создать» (?create=message) and drops the parameter', async () => {
-    await render([], '/?create=message');
-    backend.expectOne('/api/teacher/students').flush([]);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/groups').flush([]);
-
-    expect(bodyText()).toContain('Сообщение ученикам');
-    expect(TestBed.inject(Router).url).toBe('/');
-  });
-
-  it('writes to current students and refreshes the history', async () => {
+  it('opens the frame’s dialog of a new message and refreshes when one is sent', async () => {
     await render([]);
-    const messages = vi.spyOn(TestBed.inject(MessageService), 'add');
+    const state = TestBed.inject(NewMessageState);
 
     buttonByText(hostElement(fixture), 'Написать ученикам').click();
-    backend.expectOne('/api/teacher/students').flush([
-      { id: 's-1', displayName: 'Мария', status: 'ACTIVE' },
-      { id: 's-2', displayName: 'Бывший', status: 'DEACTIVATED' },
-    ]);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/groups').flush([]);
-    expect(bodyText()).toContain('Сообщение ученикам');
+    expect(state.open()).toBe(true);
 
-    fixture.componentInstance.onBroadcast(1);
+    state.markSent();
+    await fixture.whenStable();
     backend.expectOne('/api/teacher/notifications/broadcasts').flush([broadcastItem()]);
     await fixture.whenStable();
 
-    expect(messages).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Сообщение отправлено, получателей: 1' }),
-    );
     expect(readableText(hostElement(fixture))).toContain('Каникулы');
   });
 });

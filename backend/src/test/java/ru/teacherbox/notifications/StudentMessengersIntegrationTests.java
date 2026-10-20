@@ -117,7 +117,7 @@ class StudentMessengersIntegrationTests {
 
         assertThat(inbox.findPage(silent, 0, 10)).singleElement().satisfies(notification -> {
             assertThat(notification.title()).isEqualTo("Подключите мессенджер");
-            assertThat(notification.link()).isEqualTo("/cabinet/notifications");
+            assertThat(notification.link()).isEqualTo("/cabinet/account");
         });
         assertThat(inbox.findPage(connected, 0, 10)).isEmpty();
         assertThat(mvc.post().uri("/api/teacher/notifications/remind-connect").with(teacher())

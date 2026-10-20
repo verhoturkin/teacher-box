@@ -66,17 +66,6 @@ export const ru = {
     unlinked: (name: string) => `${name} отключён`,
     connected: (name: string) => `${name} подключён`,
   },
-  latest: {
-    title: 'Уведомления',
-    readAll: 'Прочитать все',
-    what: 'уведомления',
-    nothing: 'Новых уведомлений нет',
-    unreadList: 'Непрочитанные уведомления',
-    markRead: 'Отметить прочитанным',
-    markReadOf: (title: string) => `Отметить прочитанным: ${title}`,
-    unread: (count: number) => `Непрочитанных: ${String(count)}`,
-    all: 'Все уведомления',
-  },
   inbox: {
     what: 'уведомления',
     nothing: 'Новых уведомлений нет',
@@ -89,17 +78,12 @@ export const ru = {
     noRead: 'Прочитанных уведомлений нет',
     readList: 'Прочитанные уведомления',
   },
-  page: {
-    title: 'Уведомления',
+  sheet: {
     inbox: 'Входящие',
-    messages: 'Сообщения ученикам',
-    messengers: 'Мессенджеры',
-    messengersSummary: 'Боты портала, ваши мессенджеры и что умеет бот',
+    sent: 'Отправленные',
+  },
+  page: {
     myMessengers: 'Мои мессенджеры',
-    students: 'Ученики',
-    studentsSummary: 'Кто из учеников подключил мессенджер, напоминание подключить',
-    preferences: 'Что присылать',
-    preferencesSummary: 'Какие уведомления дублировать в мессенджеры',
   },
   preferences: {
     title: 'Что присылать в мессенджеры',

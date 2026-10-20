@@ -13,14 +13,18 @@ import {
 import { RouterLink } from '@angular/router';
 import { SHARED_T } from '@shared/i18n/texts';
 
-/** An item of a FAB menu: a link to a page, e.g. the form of a new lesson. */
-export interface FabMenuItem {
+/**
+ * An item of a FAB menu: a link to a page (e.g. the form of a new lesson) or an action on the page itself
+ * (`run`, e.g. a dialog over it).
+ */
+export type FabMenuItem = {
   readonly label: string;
   /** Icon class without `tb-i`, e.g. `tb-i-account_balance_wallet`. */
   readonly icon: string;
-  readonly link: string;
-  readonly queryParams?: Readonly<Record<string, string>>;
-}
+} & (
+  | { readonly link: string; readonly queryParams?: Readonly<Record<string, string>> }
+  | { readonly run: () => void }
+);
 
 /**
  * Where the FAB stands: `phone` — fixed above the bottom navigation, the list over it; `rail` — the FAB at
@@ -78,15 +82,22 @@ let nextId = 0;
       >
         @for (item of items(); track item.label; let index = $index) {
           <li [style.--tb-fab-index]="variant() === 'phone' ? items().length - 1 - index : index">
-            <a
-              class="tb-fab-menu__item"
-              [routerLink]="item.link"
-              [queryParams]="item.queryParams"
-              (click)="close(false)"
-            >
-              <i class="tb-i {{ item.icon }}" aria-hidden="true"></i>
-              <span>{{ item.label }}</span>
-            </a>
+            @if ('link' in item) {
+              <a
+                class="tb-fab-menu__item"
+                [routerLink]="item.link"
+                [queryParams]="item.queryParams"
+                (click)="close(false)"
+              >
+                <i class="tb-i {{ item.icon }}" aria-hidden="true"></i>
+                <span>{{ item.label }}</span>
+              </a>
+            } @else {
+              <button type="button" class="tb-fab-menu__item" (click)="close(true); item.run()">
+                <i class="tb-i {{ item.icon }}" aria-hidden="true"></i>
+                <span>{{ item.label }}</span>
+              </button>
+            }
           </li>
         }
       </ul>
@@ -128,6 +139,9 @@ let nextId = 0;
       letter-spacing: var(--tb-tracking-title-m);
       text-decoration: none;
       white-space: nowrap;
+      /* an action item is a button that looks like the links */
+      border: 0;
+      cursor: pointer;
       animation: tb-fab-item-in var(--tb-spring-fast-spatial) both;
       animation-delay: calc(var(--tb-fab-index, 0) * 30ms);
 
@@ -285,7 +299,10 @@ export class FabMenu {
     );
   }
 
-  /** `refocus`: the focus goes back to the FAB (Esc, «Закрыть»), not when an item leads away. */
+  /**
+   * `refocus`: the focus goes back to the FAB (Esc, «Закрыть», an action over the page), not when an item
+   * leads away.
+   */
   close(refocus: boolean): void {
     if (!this.open()) {
       return;
@@ -296,7 +313,7 @@ export class FabMenu {
     }
   }
 
-  /** ↓ ↑ Home End between the items of the open list (a list of links: Tab works as well). */
+  /** ↓ ↑ Home End between the items of the open list (links and buttons: Tab works as well). */
   protected move(event: KeyboardEvent): void {
     const links = Array.from(
       this.host.nativeElement.querySelectorAll<HTMLElement>('.tb-fab-menu__item'),

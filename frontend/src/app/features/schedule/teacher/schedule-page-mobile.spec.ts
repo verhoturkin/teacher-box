@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, hostElement, readableText, requireElement } from '@testing/dom';
-import { calendarFeed, scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
+import { scheduleSettings, scheduledLesson } from '@testing/schedule-fixtures';
 import { phoneScreen, testProviders } from '@testing/setup';
 import { SchedulePage } from './schedule-page';
 
@@ -32,7 +32,6 @@ describe('SchedulePage on a phone', () => {
     backend.expectOne('/api/teacher/schedule/requests').flush([]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     backend.expectOne('/api/teacher/schedule/series').flush([]);
-    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
     backend
       .expectOne('/api/teacher/schedule/google')
       .flush({ status: 'NOT_CONNECTED', busyEnabled: false });

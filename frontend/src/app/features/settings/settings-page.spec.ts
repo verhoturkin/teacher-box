@@ -1,12 +1,17 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { PageDetail } from '@core/routing/page-detail';
+import { hostElement, readableText, requireElement } from '@testing/dom';
+import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
+import { overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
+import { channelSetup, preferences, studentMessengers } from '@testing/notification-fixtures';
+import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
+import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
-import { testProviders } from '@testing/setup';
+import { SettingsCategory } from './settings-categories';
 
 const BACKUP: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
@@ -47,60 +52,101 @@ describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
   let backend: HttpTestingController;
 
+  /** Answers what the panels of a category ask for. */
+  function flushCategory(category: SettingsCategory): void {
+    switch (category) {
+      case 'account':
+        backend.expectOne('/api/me');
+        break;
+      case 'portal':
+        backend.expectOne('/api/teacher/portal').flush(portalSettings());
+        break;
+      case 'calendar':
+        backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+        backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+        backend.expectOne('/api/teacher/schedule/google').flush({
+          clientConfigured: false,
+          clientFromEnvironment: false,
+          clientId: null,
+          status: 'NOT_CONNECTED',
+          busyEnabled: false,
+          lastError: null,
+          lastSyncAt: null,
+          connectedAt: null,
+          callbackPath: '/api/public/schedule/google/callback',
+        });
+        break;
+      case 'calls':
+        backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
+        break;
+      case 'messengers':
+        backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
+        backend.expectOne('/api/me/channels').flush([]);
+        backend
+          .expectOne('/api/teacher/notifications/bot')
+          .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
+        backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
+        backend.expectOne('/api/me/notifications/preferences').flush(preferences());
+        break;
+      case 'payments':
+        backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
+        break;
+      case 'ai':
+        backend.expectOne('/api/teacher/ai/status').flush(aiStatus());
+        backend.expectOne('/api/teacher/ai/usage').flush(usageReport());
+        break;
+      case 'data':
+        backend.expectOne('/api/teacher/backups').flush([BACKUP]);
+        backend.expectOne('/api/teacher/backups/google').flush({
+          clientConfigured: false,
+          clientFromEnvironment: false,
+          clientId: null,
+          connected: false,
+          account: null,
+          connectedAt: null,
+          lastUploadAt: null,
+          lastUploadName: null,
+          lastError: null,
+          running: null,
+          callbackPath: '/api/public/backups/google/callback',
+        });
+        break;
+    }
+  }
+
+  /** The page at `width` px; `shown` — the category whose panels are on the screen, if any. */
   async function render(
+    width: number,
+    category: SettingsCategory | undefined,
+    shown: SettingsCategory | null = category ?? null,
     status = STATUS,
-    inputs: { open?: string; google?: string; drive?: string } = {},
-    backups: BackupInfo[] = [BACKUP],
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
-      providers: testProviders(),
+      providers: [...testProviders(), screenWidth(width)],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
     fixture = TestBed.createComponent(SettingsPage);
-    for (const [name, value] of Object.entries(inputs)) {
-      fixture.componentRef.setInput(name, value);
+    if (category !== undefined) {
+      fixture.componentRef.setInput('category', category);
     }
     fixture.detectChanges();
     backend.expectOne('/api/teacher/notifications/status').flush(status);
     await fixture.whenStable();
-    const open = new Set((inputs.open ?? '').split(','));
-    if (open.has('portal')) {
-      backend.expectOne('/api/teacher/portal').flush(portalSettings());
-    }
-    if (open.has('calendar') || inputs.google !== undefined) {
-      backend.expectOne('/api/teacher/schedule/google').flush({
-        clientConfigured: false,
-        clientFromEnvironment: false,
-        clientId: null,
-        status: 'NOT_CONNECTED',
-        busyEnabled: false,
-        lastError: null,
-        lastSyncAt: null,
-        connectedAt: null,
-        callbackPath: '/api/public/schedule/google/callback',
-      });
-      backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
-    }
-    if (open.has('data') || inputs.drive !== undefined) {
-      backend.expectOne('/api/teacher/backups').flush(backups);
-      backend.expectOne('/api/teacher/backups/google').flush({
-        clientConfigured: false,
-        clientFromEnvironment: false,
-        clientId: null,
-        connected: false,
-        account: null,
-        connectedAt: null,
-        lastUploadAt: null,
-        lastUploadName: null,
-        lastError: null,
-        running: null,
-        callbackPath: '/api/public/backups/google/callback',
-      });
+    if (shown !== null) {
+      flushCategory(shown);
     }
     await fixture.whenStable();
     return hostElement(fixture);
+  }
+
+  function panes(host: HTMLElement): HTMLElement[] {
+    return Array.from(host.querySelectorAll<HTMLElement>('tb-pane'));
+  }
+
+  function current(host: HTMLElement): string | undefined {
+    return host.querySelector('[aria-current="page"] .tb-settings__title')?.textContent.trim();
   }
 
   afterEach(() => {
@@ -108,72 +154,168 @@ describe('SettingsPage', () => {
     fixture.destroy();
   });
 
-  it('shows the sections folded, without integrations, the failed deliveries counted', async () => {
-    const host = await render();
+  it('lists the categories with what they hold, the failed deliveries counted', async () => {
+    const host = await render(1200, undefined, 'account');
 
-    const text = readableText(host);
-    expect(text).toContain('Портал Название, логотип и цвет портала');
-    expect(text).toContain('Календарь и звонки');
-    expect(text).toContain('Неудачные доставки 2');
-    expect(text).toContain('Данные');
-    expect(text).not.toContain('Профиль');
-    expect(text).not.toContain('Интеграции');
-    expect(text).not.toContain('ИИ-помощник');
-    expect(host.querySelector('#portal')).toBeNull();
+    const list = readableText(requireElement(host, 'nav', HTMLElement));
+    expect(list).toContain('Мой аккаунт Фото, имя и пароль');
+    expect(list).toContain('Портал Название, логотип и цвет портала');
+    expect(list).toContain(
+      'Расписание и календарь Часовой пояс, Google Календарь и подписка на расписание',
+    );
+    expect(list).toContain('Звонки Звонки в портале и внешние видеовстречи');
+    expect(list).toContain('Мессенджеры Боты, ваши мессенджеры, ученики и что присылать 2');
+    expect(list).toContain('Оплаты Цена занятия для новых учеников и групп');
+    expect(list).toContain('ИИ-помощник Модель, расход токенов, библиотека и системные промты');
+    expect(list).toContain('Данные');
+    expect(list).not.toContain('Интеграции');
+    const links = Array.from(host.querySelectorAll('nav a')).map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(links).toEqual([
+      '/teacher/settings/account',
+      '/teacher/settings/portal',
+      '/teacher/settings/calendar',
+      '/teacher/settings/calls',
+      '/teacher/settings/messengers',
+      '/teacher/settings/payments',
+      '/teacher/settings/ai',
+      '/teacher/settings/data',
+    ]);
   });
 
-  it('shows every open section', async () => {
-    const host = await render(STATUS, { open: 'portal,calendar,deliveries,data' });
+  it('shows the account beside the list of /teacher/settings from expanded', async () => {
+    const host = await render(1200, undefined, 'account');
 
-    const text = readableText(host);
+    expect(panes(host)).toHaveLength(2);
+    expect(host.querySelector('h1')?.textContent).toContain('Настройки');
+    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain('Мой аккаунт');
+    expect(host.querySelector('tb-account-panel')).not.toBeNull();
+    expect(current(host)).toBe('Мой аккаунт');
+    expect(TestBed.inject(PageDetail).value()).toBe('Мой аккаунт');
+  });
+
+  it.each([840, 1200])('keeps the list in the fixed pane at %i px', async (width) => {
+    const host = await render(width, 'portal');
+
+    const [list, detail] = panes(host);
+    expect(list?.style.flexBasis).toBe(width === 840 ? '22.5rem' : '25.75rem');
+    expect(detail?.style.flexGrow).toBe('1');
     expect(host.querySelector('#portal')).not.toBeNull();
-    expect(host.querySelector('#google')).not.toBeNull();
-    expect(host.querySelector('#meetings')).not.toBeNull();
-    expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
-    expect(text).toContain('Вы MAX —');
+    expect(current(host)).toBe('Портал');
+  });
+
+  it.each([600, 839])('gives the list and the category 50 % each at %i px', async (width) => {
+    const host = await render(width, 'portal');
+
+    const all = panes(host);
+    expect(all).toHaveLength(2);
+    for (const pane of all) {
+      expect(pane.style.flexBasis).toBe('0%');
+      expect(pane.style.flexGrow).toBe('1');
+    }
+    expect(host.querySelector('tb-panes')?.classList).not.toContain('tb-panes--single');
+    expect(host.querySelector('.tb-page-header__back')).toBeNull();
+  });
+
+  it('shows only the list of /teacher/settings at 599 px', async () => {
+    const host = await render(599, undefined, null);
+
+    expect(panes(host)).toHaveLength(1);
+    expect(host.querySelector('nav')).not.toBeNull();
+    expect(current(host)).toBeUndefined();
+    expect(host.querySelector('tb-account-panel')).toBeNull();
+    expect(TestBed.inject(PageDetail).value()).toBeNull();
+  });
+
+  it('shows only the category at 599 px, «back» leads to the list', async () => {
+    const host = await render(599, 'data');
+
+    expect(panes(host)).toHaveLength(1);
+    expect(host.querySelector('nav')).toBeNull();
+    expect(host.querySelector('h1')?.textContent).toContain('Данные');
+    const back = requireElement(host, '.tb-page-header__back', HTMLElement);
+    expect(back.getAttribute('href')).toBe('/teacher/settings');
+    expect(back.getAttribute('aria-label')).toBe('Все настройки');
     expect(host.querySelector('#backups')).not.toBeNull();
     expect(host.querySelector('#drive')).not.toBeNull();
     expect(host.querySelector('#reset')).not.toBeNull();
   });
 
-  it('opens the data after Google sends the teacher back from the Drive', async () => {
-    const host = await render(STATUS, { drive: 'connected' });
+  it('shows the time zone, Google Calendar and the subscription in the schedule and calendar', async () => {
+    const host = await render(1200, 'calendar');
 
-    expect(host.querySelector('#drive')).not.toBeNull();
-    expect(host.querySelector('#google')).toBeNull();
-  });
-
-  it('opens the calendar after Google sends the teacher back', async () => {
-    const host = await render(STATUS, { google: 'connected' });
-
+    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain(
+      'Расписание и календарь',
+    );
+    expect(host.querySelector('#time-zone')).not.toBeNull();
     expect(host.querySelector('#google')).not.toBeNull();
-    expect(host.querySelector('#portal')).toBeNull();
+    expect(host.querySelector('tb-calendar-feed-panel')).not.toBeNull();
+    expect(host.querySelector('#meetings')).toBeNull();
   });
 
-  it('keeps the open sections in the address', async () => {
-    const host = await render(STATUS, { open: 'deliveries' });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+  it('shows the video meetings in the calls', async () => {
+    const host = await render(1200, 'calls');
 
-    buttonByText(host, 'Портал').click();
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { open: 'portal,deliveries' },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
-    buttonByText(host, 'Неудачные доставки').click();
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { open: null },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
-    backend.match('/api/teacher/portal').forEach((request) => {
-      request.flush(portalSettings());
-    });
+    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain('Звонки');
+    expect(host.querySelector('#meetings')).not.toBeNull();
+    expect(host.querySelector('#google')).toBeNull();
+    expect(current(host)).toBe('Звонки');
   });
 
-  it('says when every notification was delivered', async () => {
-    const host = await render({ channels: [], failedDeliveries: [] }, { open: 'deliveries' });
+  it('shows the price for new students in the payments', async () => {
+    const host = await render(1200, 'payments');
 
-    expect(readableText(host)).toContain('Все уведомления доставлены');
+    expect(readableText(host)).toContain('Цена для новых учеников 1 500 ₽');
+    expect(host.querySelector('#default-price')).not.toBeNull();
+    expect(current(host)).toBe('Оплаты');
+  });
+
+  it('shows the model, the usage and the prompts in the AI assistant', async () => {
+    const host = await render(1200, 'ai');
+    for (const request of backend.match('/api/teacher/ai/prompts')) {
+      request.flush([]);
+    }
+    for (const request of backend.match('/api/teacher/ai/system-prompts')) {
+      request.flush([systemPrompt()]);
+    }
+    await fixture.whenStable();
+
+    const text = readableText(host);
+    expect(text).toContain('Модель');
+    expect(host.querySelector('#prompt-library')).not.toBeNull();
+    expect(host.querySelector('#system-prompts')).not.toBeNull();
+    expect(host.querySelector('tb-ai-settings-panel tb-page-header')).toBeNull();
+    expect(current(host)).toBe('ИИ-помощник');
+  });
+
+  it('shows the failed deliveries first in the messengers, then the bots and the students', async () => {
+    const host = await render(1200, 'messengers');
+
+    const text = readableText(host);
+    expect(text).toContain('Неудачные доставки');
+    expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
+    expect(text).toContain('Вы MAX —');
+    expect(text.indexOf('Неудачные доставки')).toBeLessThan(text.indexOf('Мои мессенджеры'));
+    expect(text).toContain('Что умеет бот');
+    expect(text).toContain('Подключили мессенджер');
+    expect(text).toContain('Что присылать в мессенджеры');
+    expect(readableText(requireElement(host, '[aria-current="page"]', HTMLElement))).toContain(
+      'Мессенджеры',
+    );
+  });
+
+  it('says last when every notification was delivered, without a badge', async () => {
+    const host = await render(1200, 'messengers', 'messengers', {
+      channels: [],
+      failedDeliveries: [],
+    });
+
+    const text = readableText(host);
+    expect(text).toContain('Все уведомления доставлены');
+    expect(text.indexOf('Все уведомления доставлены')).toBeGreaterThan(
+      text.indexOf('Что присылать в мессенджеры'),
+    );
+    expect(host.querySelector('p-badge')).toBeNull();
   });
 });

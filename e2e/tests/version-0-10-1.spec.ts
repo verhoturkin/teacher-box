@@ -149,7 +149,7 @@ test('the sections have their icons and the phone bar leads with the daily ones'
   ]);
   await page.getByRole('button', { name: 'Разделы' }).click();
   const rail = page.getByRole('dialog', { name: 'Разделы' });
-  for (const section of ['Звонки', 'Учебники', 'Доски']) {
+  for (const section of ['Учебники', 'Доски']) {
     await expect(rail.getByRole('link', { name: section })).toBeVisible();
   }
 });

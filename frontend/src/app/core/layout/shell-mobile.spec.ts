@@ -51,7 +51,12 @@ describe('Shell on a phone', () => {
     button.click();
     await fixture.whenStable();
     // jsdom runs no animation: the drawer is shown as when its animation ends
-    fixture.debugElement.query(By.directive(Drawer)).injector.get(Drawer).show();
+    // (the other drawer of the frame is the bell's sheet)
+    fixture.debugElement
+      .queryAll(By.directive(Drawer))
+      .map((element) => element.injector.get(Drawer))
+      .find((drawer) => drawer.styleClass === 'tb-modal-rail')
+      ?.show();
     return requireElement(document.body, '.p-drawer.tb-modal-rail', HTMLElement);
   }
 
@@ -111,13 +116,7 @@ describe('Shell on a phone', () => {
     const nav = requireElement(rail, 'tb-side-nav', HTMLElement);
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
-    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual([
-      'Звонки',
-      'Учебники',
-      'Доски',
-      'Уведомления',
-      'ИИ-помощник',
-    ]);
+    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники', 'Доски']);
     expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
     // the focus goes into the rail
     expect(rail.contains(document.activeElement)).toBe(true);
@@ -176,9 +175,9 @@ describe('Shell on a phone', () => {
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
       'Главная',
       'Расписание',
-      'Звонки',
       'Ученики',
       'Задания',
+      'Учебники',
     ]);
   });
 

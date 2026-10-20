@@ -1,12 +1,14 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { hostElement, readableText } from '@testing/dom';
+import { Router } from '@angular/router';
+import { NewMessageState } from '@core/notifications/new-message';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { billingSummary } from '@testing/billing-fixtures';
 import { homeworkSummary } from '@testing/homework-fixtures';
-import { notificationPage, teacherNotificationsSummary } from '@testing/notification-fixtures';
+import { teacherNotificationsSummary } from '@testing/notification-fixtures';
 import { at, scheduleSummary, scheduledLesson } from '@testing/schedule-fixtures';
 import { TeacherHome } from './teacher-home';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 
 describe('TeacherHome', () => {
   let fixture: ComponentFixture<TeacherHome>;
@@ -47,7 +49,6 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/notifications/summary')
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -61,7 +62,6 @@ describe('TeacherHome', () => {
     expect(text).toContain('Отметьте прошедшие занятия 1');
     expect(text).toContain('Работы на проверку 2');
     expect(text).toContain('Поступило за сентябрь 3 000 ₽');
-    expect(text).toContain('Новых уведомлений нет');
     expect(text).not.toContain('Сегодня занятий нет');
     // one column (ADR-0021): the widgets one under another, no «Сегодня»
     const widgets = Array.from(
@@ -72,7 +72,6 @@ describe('TeacherHome', () => {
       'tb-upcoming-lesson-widget',
       'tb-first-run-checklist',
       'tb-attention-card',
-      'tb-latest-notifications-widget',
       'tb-finance-widget',
     ]);
   });
@@ -86,7 +85,6 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/schedule/summary')
       .flush(null, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     await fixture.whenStable();
 
     const text = readableText(hostElement(fixture));
@@ -101,7 +99,6 @@ describe('TeacherHome', () => {
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary());
@@ -109,5 +106,27 @@ describe('TeacherHome', () => {
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Срочных дел нет');
+  });
+});
+
+describe('TeacherHome on a phone', () => {
+  it('«Создать › Сообщение» of the home page’s FAB menu opens the dialog of a new message', async () => {
+    TestBed.configureTestingModule({
+      imports: [TeacherHome],
+      providers: testProviders(screenWidth(599)),
+    });
+    const fixture = TestBed.createComponent(TeacherHome);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    requireElement(host, 'tb-fab-menu .tb-fab-menu__button', HTMLButtonElement).click();
+    await fixture.whenStable();
+    buttonByText(host, 'Сообщение').click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(NewMessageState).open()).toBe(true);
+    expect(TestBed.inject(Router).url).toBe('/');
+    TestBed.inject(HttpTestingController).match(() => true);
+    fixture.destroy();
   });
 });

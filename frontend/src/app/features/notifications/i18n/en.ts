@@ -68,17 +68,6 @@ export const en: Translation<typeof ru> = {
     unlinked: (name: string) => `${name} disconnected`,
     connected: (name: string) => `${name} connected`,
   },
-  latest: {
-    title: 'Notifications',
-    readAll: 'Mark all read',
-    what: 'the notifications',
-    nothing: 'No new notifications',
-    unreadList: 'Unread notifications',
-    markRead: 'Mark as read',
-    markReadOf: (title: string) => `Mark as read: ${title}`,
-    unread: (count: number) => `Unread: ${String(count)}`,
-    all: 'All notifications',
-  },
   inbox: {
     what: 'the notifications',
     nothing: 'No new notifications',
@@ -91,17 +80,12 @@ export const en: Translation<typeof ru> = {
     noRead: 'No read notifications',
     readList: 'Read notifications',
   },
-  page: {
-    title: 'Notifications',
+  sheet: {
     inbox: 'Inbox',
-    messages: 'Messages to students',
-    messengers: 'Messengers',
-    messengersSummary: 'The portal’s bots, your messengers and what the bot can do',
+    sent: 'Sent',
+  },
+  page: {
     myMessengers: 'My messengers',
-    students: 'Students',
-    studentsSummary: 'Which students connected a messenger, a reminder to connect',
-    preferences: 'What to send',
-    preferencesSummary: 'Which notifications also go to messengers',
   },
   preferences: {
     title: 'What to send to messengers',

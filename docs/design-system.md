@@ -308,7 +308,10 @@ component that shows one adds it to `PRIME`).
   current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
   one global entry point instead of a create button per section (ADR-0048). An item opens
   `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
-  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. From 600 px it is the screen's only
+  (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. «Сообщение» has no section: it is
+  a `button` item (`FabMenuItem.run`) that opens the broadcast dialog over the current page (`NewMessageState`,
+  the feature's dialog through `NEW_MESSAGE_DIALOG`, focus back on the FAB); a message sent refreshes
+  «Отправленные» of the bell's sheet (235.3). From 600 px it is the screen's only
   FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
   (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
   as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
@@ -327,6 +330,19 @@ component that shows one adds it to `PRIME`).
   the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
   the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
+  `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 % each
+  (redesign spec §3.1: Settings only, *ours*). **Settings** (`/teacher/settings[/:category]`, 234,
+  `features/settings/settings-categories.ts`): the categories as two-line list items (icon, name, what it holds)
+  in the fixed pane, the chosen one beside it (from expanded `/teacher/settings` shows the first, «Мой
+  аккаунт»). Categories in list order: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и
+  календарь» (`calendar`: time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры»
+  (`messengers`: failed deliveries first when there are any — the item carries their count as a badge — then
+  bots, own messengers, bot abilities, students' messengers, what to send), «Оплаты» (`payments`: default
+  lesson price), «ИИ-помощник» (`ai`: model, usage, prompt library, system prompts), «Данные» (`data`). A
+  category's detail is a stack of `p-card`s, no fold cards. Integrations live only here (ADR-0048): there are no
+  Calls or AI sections. The old addresses redirect to their category: `?open=<fold>`, `?google=` (→
+  calendar), `?drive=` (→ data), `/teacher/account`, `/teacher/calls`, `/teacher/ai` and the messenger tabs of
+  «Уведомления» (`?open=` / `?tab=` → messengers); its other addresses open the bell's sheet (§8).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
   Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
@@ -365,10 +381,10 @@ component that shows one adds it to `PRIME`).
   readable width inside its card (`tb-form--narrow`); «Мой аккаунт» puts its forms in cards side by side — they
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
-- **Long settings pages** use foldable sections `tb-fold-card` (not tabs): header is a button with chevron and
-  a line of explanation; content loads on first open; open sections in the URL (`?open=`). Pages: the
-  administrator's and the teacher's «Настройки» (portal · calendar and calls · failed deliveries with a
-  counter · data), «Уведомления».
+- **Foldable sections** `tb-fold-card` (not tabs): header is a button with chevron and a line of explanation;
+  content loads on first open; open sections in the URL (`?open=`). Still used by the administrator's
+  «Настройки» (`admin/settings`, until 247.2). The teacher's settings are list-detail (§ panes above) and the
+  teacher's notifications are in the bell's sheet (§8), not fold cards.
 
 ## 5. Page anatomy
 
@@ -490,6 +506,28 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
   (Title Large) and «×». A link of a help article to another one opens it in the sheet («←» returns); other links
   close the sheet and open their page. On a phone — the whole screen, no corners.
+- **Notifications sheet of the bell** (235.1, redesign spec §10.3): the bell (`core/notifications`) is a button
+  that opens and closes `tb-notifications-sheet` (`aria-expanded`). On extra-large it is the **non-modal** M3
+  standard side sheet, the third pane of the frame (≤ 400 dp, surface container low, 28 dp corners and 24 dp
+  margins like `tb-pane kind="sheet"` — *ours*); it takes the focus when it opens, «×» or Esc closes it and gives
+  the focus back, and it stays open across pages. Below it is the modal `tb-side-sheet tb-side-sheet--narrow`
+  (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
+  teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
+  inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
+  2 dp, 1 dp outline-variant divider. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
+  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (`tb-list--no-lead`,
+  «Прочитать все», «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
+  explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
+  §4) and the sent messages (title, text, time · recipients). The bell's badge (`p-overlaybadge`, danger) is the
+  unread count, hidden at zero. `?notifications=inbox|sent` opens the sheet on any page and is dropped
+  (`replaceUrl`); `/teacher/notifications` leads to `/teacher?notifications=inbox` (other parameters kept),
+  `/cabinet/notifications` to `/cabinet?notifications=inbox`. The frame gets the feature's content through
+  `NOTIFICATIONS_SHEET_CONTENT` (provided in `app.config.ts`), so core/ imports no feature. **There is no
+  Notifications section** (235.2, ADR-0048): no «Уведомления» in the menus, no home card of the latest
+  notifications. The student's messengers and «Что присылать в мессенджеры» are cards of «Мой аккаунт»
+  (`/cabinet/account`: account, then «Мессенджеры», then the preferences, one `tb-stack`); the «connect»
+  card on the student's home and the «connect» reminder lead there. The teacher's are in Settings ›
+  «Мессенджеры» (§4).
 - **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
   never closer than 1 rem to the screen edge.
 - **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and

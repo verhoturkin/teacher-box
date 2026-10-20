@@ -53,7 +53,7 @@ describe('AttentionCard', () => {
       '/teacher/schedule',
       '/teacher/homework/review',
       '/teacher/homework',
-      '/teacher/notifications?tab=students',
+      '/teacher/settings/messengers',
     ]);
   });
 });

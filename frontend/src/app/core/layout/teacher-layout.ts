@@ -11,7 +11,6 @@ export const TEACHER_MENU: MenuItem[] = [
     routerLinkActiveOptions: { exact: true },
   },
   { label: CORE_T.nav.schedule, icon: 'tb-i tb-i-calendar_month', routerLink: '/teacher/schedule' },
-  { label: CORE_T.nav.calls, icon: 'tb-i tb-i-videocam', routerLink: '/teacher/calls' },
   { label: CORE_T.nav.students, icon: 'tb-i tb-i-group', routerLink: '/teacher/students' },
   { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/teacher/homework' },
   { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/teacher/textbooks' },
@@ -21,12 +20,6 @@ export const TEACHER_MENU: MenuItem[] = [
     routerLink: '/teacher/billing',
   },
   { label: CORE_T.nav.boards, icon: 'tb-i tb-i-co_present', routerLink: '/teacher/boards' },
-  {
-    label: CORE_T.nav.notifications,
-    icon: 'tb-i tb-i-notifications',
-    routerLink: '/teacher/notifications',
-  },
-  { label: CORE_T.nav.ai, icon: 'tb-i tb-i-auto_awesome', routerLink: '/teacher/ai' },
 ];
 
 /**

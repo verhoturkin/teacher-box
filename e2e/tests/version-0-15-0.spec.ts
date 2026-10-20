@@ -88,11 +88,20 @@ test('on a phone «Создать» of the home page is a FAB menu', async ({ pa
   await fab.click();
   const close = page.getByRole('button', { name: 'Закрыть' });
   await expect(close).toHaveAttribute('aria-expanded', 'true');
-  for (const action of ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Сообщение']) {
+  for (const action of ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска']) {
     await expect(page.locator('tb-fab-menu').getByRole('link', { name: action })).toBeVisible();
   }
   await page.keyboard.press('Escape');
   await expect(fab).toBeFocused();
+
+  // 235.3: «Сообщение» opens the dialog of a new message over the home page
+  await fab.click();
+  await page.locator('tb-fab-menu').getByRole('button', { name: 'Сообщение' }).click();
+  const message = page.getByRole('dialog', { name: 'Сообщение ученикам' });
+  await expect(message).toBeVisible();
+  await expect(page).toHaveURL(/\/teacher$/);
+  await message.getByRole('button', { name: 'Отмена' }).click();
+  await expect(message).toBeHidden();
 
   await fab.click();
   await page.locator('tb-fab-menu').getByRole('link', { name: 'Оплата' }).click();

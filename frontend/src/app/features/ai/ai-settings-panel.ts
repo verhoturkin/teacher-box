@@ -11,7 +11,6 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { Tag } from 'primeng/tag';
-import { HelpButton } from '@features/help/parts';
 import { AiApi } from './data-access/ai-api';
 import {
   AiFeature,
@@ -21,7 +20,6 @@ import {
   UsageReport,
 } from './data-access/ai.models';
 import { EmptyState } from '@shared/ui/empty-state';
-import { PageHeader } from '@shared/ui/page-header';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
 import { monthLabel } from '@shared/dates/iso-date';
 import { T } from './i18n/texts';
@@ -54,18 +52,20 @@ const STATUS_LABELS: Record<
   REFUSED: { label: T.statuses.REFUSED, severity: 'warn' },
 };
 
-/** Teacher: whether the AI assistant is configured and how many tokens it used this month. */
+/**
+ * The settings category «ИИ-помощник» (redesign spec §10.3): whether the assistant is configured, how many
+ * tokens it used this month, the library of prompts (the editor's «Промты» menu leads here) and the system
+ * prompts.
+ */
 @Component({
-  selector: 'tb-ai-usage-page',
+  selector: 'tb-ai-settings-panel',
   imports: [
-    HelpButton,
     DatePipe,
     DecimalPipe,
     Button,
     Card,
     ProgressBar,
     Tag,
-    PageHeader,
     EmptyState,
     ProgressLabel,
     PromptLibraryCard,
@@ -73,9 +73,6 @@ const STATUS_LABELS: Record<
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.title">
-      <tb-help-button help topic="teacher/ai" />
-    </tb-page-header>
     @if (status(); as status) {
       @if (!status.enabled) {
         <p-card>
@@ -191,7 +188,7 @@ const STATUS_LABELS: Record<
     }
   `,
 })
-export class AiUsagePage implements OnInit {
+export class AiSettingsPanel implements OnInit {
   protected readonly t = T.usage;
   private readonly api = inject(AiApi);
 

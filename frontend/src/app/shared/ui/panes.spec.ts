@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth } from '@testing/setup';
-import { Pane, Panes, PaneKind, injectListDetail } from './panes';
+import { MediumPanes, Pane, Panes, PaneKind, injectListDetail } from './panes';
 
 @Component({
   selector: 'tb-panes-host',
   imports: [Panes, Pane],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-panes>
+    <tb-panes [medium]="medium()">
       <tb-pane [kind]="first()" label="Список"><button type="button">Первая</button></tb-pane>
       <tb-pane><button type="button">Вторая</button></tb-pane>
       @if (sheet()) {
@@ -21,6 +21,7 @@ import { Pane, Panes, PaneKind, injectListDetail } from './panes';
 class PanesHost {
   readonly first = signal<PaneKind>('fixed');
   readonly sheet = signal(true);
+  readonly medium = signal<MediumPanes>('one');
 }
 
 @Component({
@@ -33,10 +34,21 @@ class ListDetailHost {
   readonly layout = injectListDetail(() => this.open());
 }
 
+@Component({
+  selector: 'tb-two-on-medium-host',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '',
+})
+class TwoOnMediumHost {
+  readonly open = signal(false);
+  readonly layout = injectListDetail(() => this.open(), 'two');
+}
+
 describe('Panes', () => {
-  async function render(width: number) {
+  async function render(width: number, medium: MediumPanes = 'one') {
     TestBed.configureTestingModule({ providers: [screenWidth(width)] });
     const fixture = TestBed.createComponent(PanesHost);
+    fixture.componentInstance.medium.set(medium);
     await fixture.whenStable();
     const host = hostElement(fixture);
     const panes = Array.from(host.querySelectorAll<HTMLElement>('tb-pane'));
@@ -79,6 +91,30 @@ describe('Panes', () => {
       expect(pane.style.flexGrow).toBe('');
       expect(pane.style.maxWidth).toBe('');
     }
+  });
+
+  it.each([600, 839])(
+    'gives every pane an equal share at %i px with two panes on medium',
+    async (width) => {
+      const { host, panes } = await render(width, 'two');
+
+      expect(requireElement(host, 'tb-panes', HTMLElement).classList).not.toContain(
+        'tb-panes--single',
+      );
+      for (const pane of panes) {
+        expect(pane.style.flexBasis).toBe('0%');
+        expect(pane.style.flexGrow).toBe('1');
+      }
+    },
+  );
+
+  it.each([
+    [599, ''],
+    [840, '22.5rem'],
+  ])('keeps the other breakpoints with two panes on medium at %i px', async (width, basis) => {
+    const { panes } = await render(width, 'two');
+
+    expect(panes[0]?.style.flexBasis).toBe(basis);
   });
 
   it('keeps the focus order of the visual order: the template order, no reordering', async () => {
@@ -149,5 +185,28 @@ describe('injectListDetail', () => {
     host.open.set(true);
 
     expect([host.layout.list(), host.layout.detail()]).toEqual([true, true]);
+  });
+
+  it('shows the list or the detail at 599 px and both at 600 and 839 px with two panes on medium', () => {
+    TestBed.configureTestingModule({ providers: [screenWidth(599)] });
+    const compact = TestBed.createComponent(TwoOnMediumHost).componentInstance;
+    expect([compact.layout.single(), compact.layout.list(), compact.layout.detail()]).toEqual([
+      true,
+      true,
+      false,
+    ]);
+    compact.open.set(true);
+    expect([compact.layout.list(), compact.layout.detail()]).toEqual([false, true]);
+  });
+
+  it.each([600, 839])('shows both at %i px with two panes on medium', (width) => {
+    TestBed.configureTestingModule({ providers: [screenWidth(width)] });
+    const host = TestBed.createComponent(TwoOnMediumHost).componentInstance;
+
+    expect([host.layout.single(), host.layout.list(), host.layout.detail()]).toEqual([
+      false,
+      true,
+      true,
+    ]);
   });
 });

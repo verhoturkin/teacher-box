@@ -164,3 +164,16 @@ test('the account fields take the width of their cards', async ({ page }) => {
   // only the card's padding is left at the sides
   expect((cardBox?.width ?? 0) - (fieldBox?.width ?? 0)).toBeLessThan(64);
 });
+
+test('the student’s messengers and what to send are in «Мой аккаунт» (0.22.0)', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto('/cabinet/account');
+  await expect(page.locator('tb-channels-panel')).toContainText('Мессенджеры');
+  await expect(page.locator('tb-preferences-panel')).toContainText('Что присылать в мессенджеры');
+  // the rail has no «Уведомления»: the notifications are in the bell
+  await expect(
+    page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Уведомления' }),
+  ).toHaveCount(0);
+});

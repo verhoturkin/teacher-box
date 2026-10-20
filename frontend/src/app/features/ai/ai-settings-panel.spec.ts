@@ -3,20 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { AiStatus, UsageReport } from './data-access/ai.models';
-import { AiUsagePage } from './ai-usage-page';
+import { AiSettingsPanel } from './ai-settings-panel';
 import { testProviders } from '@testing/setup';
 
-describe('AiUsagePage', () => {
-  let fixture: ComponentFixture<AiUsagePage>;
+describe('AiSettingsPanel', () => {
+  let fixture: ComponentFixture<AiSettingsPanel>;
   let backend: HttpTestingController;
 
   async function render(status: AiStatus, report?: UsageReport): Promise<string> {
     TestBed.configureTestingModule({
-      imports: [AiUsagePage],
+      imports: [AiSettingsPanel],
       providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
-    fixture = TestBed.createComponent(AiUsagePage);
+    fixture = TestBed.createComponent(AiSettingsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/ai/status').flush(status);
     if (report !== undefined) {

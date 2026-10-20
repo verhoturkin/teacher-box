@@ -2,6 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
+import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { Portal } from '@core/portal/portal';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
@@ -290,5 +291,33 @@ describe('Shell by the M3 breakpoint (ADR-0048)', () => {
     // a circle around the photo or the icon, named after the user
     expect(user.classList).toContain('tb-shell__user-button--round');
     expect(user.getAttribute('aria-label')).toBe('Анна Сергеевна: меню пользователя');
+  });
+
+  it.each([
+    [599, 'the whole-screen modal sheet'],
+    [600, 'the modal sheet'],
+    [1599, 'the modal sheet'],
+    [1600, 'the third pane'],
+  ])('at %i px the bell opens %s (spec §10.3)', async (width, kind) => {
+    const host = await render(width);
+
+    TestBed.inject(NotificationsSheetState).show();
+    await fixture.whenStable();
+
+    const pane = host.querySelector('.tb-shell__body > tb-notifications-sheet aside');
+    const drawer = document.body.querySelector('.p-drawer.tb-side-sheet--narrow');
+    expect(pane !== null).toBe(kind === 'the third pane');
+    expect(drawer !== null).toBe(kind !== 'the third pane');
+    TestBed.inject(NotificationsSheetState).close();
+    await fixture.whenStable();
+  });
+
+  it('has no sheet of notifications for the administrator', async () => {
+    await render(1600);
+    fixture.componentRef.setInput('notifications', false);
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('tb-notifications-sheet')).toBeNull();
+    expect(hostElement(fixture).querySelector('tb-notification-bell')).toBeNull();
   });
 });

@@ -78,7 +78,7 @@ export const en: Translation<typeof ru> = {
     label: 'Price for new students',
     hint: 'The price of each student is changed in their payment history',
     edit: 'Change the price for new students',
-    rowHint: 'the price of each student is changed in their row',
+    what: 'the price for new students',
     saved: 'New students and groups get this price',
   },
   report: {

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { ToggleSwitch } from 'primeng/toggleswitch';
@@ -17,7 +16,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-meetings-settings-panel',
-  imports: [HelpButton, FormsModule, RouterLink, Card, Message, ToggleSwitch],
+  imports: [HelpButton, FormsModule, Card, Message, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="meetings">
@@ -30,11 +29,7 @@ import { T } from '../i18n/texts';
       </ng-template>
       @switch (calls()) {
         @case ('OK') {
-          <p>
-            {{ t.onBefore }}
-            <a class="tb-link" routerLink="/teacher/calls">{{ t.onLink }}</a
-            >.
-          </p>
+          <p>{{ t.on }}</p>
         }
         @case ('UNREACHABLE') {
           <p-message severity="warn" styleClass="tb-form-message">{{ t.unreachable }}</p-message>

@@ -99,6 +99,24 @@ describe('FabMenu', () => {
     expect(host.querySelector('.tb-fab-menu__list')).toBeNull();
   });
 
+  it('runs an action over the page and gives the focus back to the FAB', async () => {
+    const run = vi.fn();
+    fixture.componentRef.setInput('items', [
+      ...items,
+      { label: 'Сообщение', icon: 'tb-i-send', run },
+    ]);
+    await toggle();
+
+    const action = host.querySelector<HTMLButtonElement>('button.tb-fab-menu__item');
+    expect(action?.textContent.trim()).toBe('Сообщение');
+    action?.click();
+    fixture.detectChanges();
+
+    expect(run).toHaveBeenCalledOnce();
+    expect(host.querySelector('.tb-fab-menu__list')).toBeNull();
+    expect(document.activeElement).toBe(button());
+  });
+
   it('moves between the actions with the arrows, Home and End', async () => {
     await toggle();
     const links = Array.from(host.querySelectorAll('a'));

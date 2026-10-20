@@ -36,7 +36,8 @@ test('the portal has its name and gives out links with its address', async ({ pa
   await card.locator('#portal-name').fill(PORTAL_NAME);
   await card.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.locator('.tb-side-nav__brand')).toContainText(PORTAL_NAME);
-  await expect(page).toHaveTitle(`Настройки — ${PORTAL_NAME}`);
+  // 234.1: the category is part of the title
+  await expect(page).toHaveTitle(`Портал — Настройки — ${PORTAL_NAME}`);
 
   await page.goto('/teacher/students');
   await create(page, 'Ученик');

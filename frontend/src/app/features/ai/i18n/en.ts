@@ -14,7 +14,6 @@ export const en: Translation<typeof ru> = {
     REFUSED: 'Refused by the model',
   },
   usage: {
-    title: 'AI assistant',
     notConfigured: 'The AI assistant is not set up',
     notConfiguredHint:
       'The portal administrator sets it up. Ask them to connect the AI assistant to get drafts of homework and reviews.',

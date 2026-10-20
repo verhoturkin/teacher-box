@@ -186,31 +186,15 @@ const STEPS: readonly Step[] = [
             <p>{{ t.doneText }}</p>
             <ul class="tb-setup-later">
               <li>
-                <a
-                  routerLink="/teacher/notifications"
-                  [queryParams]="{ open: 'messengers' }"
-                  fragment="notifications-messengers"
-                >
-                  {{ t.messengers }}
-                </a>
+                <a routerLink="/teacher/settings/messengers">{{ t.messengers }}</a>
                 {{ t.messengersText }}
               </li>
               <li>
-                <a
-                  routerLink="/teacher/settings"
-                  [queryParams]="{ open: 'calendar' }"
-                  fragment="settings-calendar"
-                  >{{ t.meetings }}</a
-                >
+                <a routerLink="/teacher/settings/calendar">{{ t.meetings }}</a>
                 {{ t.meetingsText }}
               </li>
               <li>
-                <a
-                  routerLink="/teacher/settings"
-                  [queryParams]="{ open: 'calendar' }"
-                  fragment="settings-calendar"
-                  >{{ t.google }}</a
-                >
+                <a routerLink="/teacher/settings/calendar">{{ t.google }}</a>
                 {{ t.googleText }}
               </li>
               <li>

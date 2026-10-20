@@ -44,7 +44,6 @@ import {
   requestKindLabel,
   widen,
 } from '../schedule-labels';
-import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import {
   CalendarRange,
   LessonMove,
@@ -101,7 +100,6 @@ const ALL_DAY_START_HOUR = 10;
     ModalDrawer,
     RowType,
     Tag,
-    CalendarFeedPanel,
     LessonDetailsDialog,
     AttendanceDialog,
     LessonDialog,
@@ -391,8 +389,6 @@ const ALL_DAY_START_HOUR = 10;
           }
         </tb-load-state>
       </p-card>
-
-      <tb-calendar-feed-panel />
     </div>
 
     <!-- «⋮» of a row of recurring lessons or days off: one popup menu serves every row -->

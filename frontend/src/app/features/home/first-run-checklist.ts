@@ -24,8 +24,6 @@ interface Step {
   readonly hint: string;
   readonly link: string;
   readonly query?: Readonly<Record<string, string>>;
-  /** The section of the page to show, e.g. a folded card of notifications. */
-  readonly fragment?: string;
 }
 
 /** Teacher's home: the steps left after installation and the progress, until they are done or hidden. */
@@ -47,13 +45,9 @@ interface Step {
             <li>
               <i class="tb-i tb-i-radio_button_unchecked" aria-hidden="true"></i>
               <div>
-                <a
-                  [routerLink]="step.link"
-                  [queryParams]="step.query"
-                  [fragment]="step.fragment"
-                  class="tb-link"
-                  >{{ step.title }}</a
-                >
+                <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
+                  step.title
+                }}</a>
                 <small class="tb-muted">{{ step.hint }}</small>
               </div>
             </li>
@@ -124,9 +118,7 @@ export class FirstRunChecklist {
         done: progress.messengerConfigured === true,
         title: T.checklist.messenger,
         hint: T.checklist.messengerHint,
-        link: '/teacher/notifications',
-        query: { open: 'messengers' },
-        fragment: 'notifications-messengers',
+        link: '/teacher/settings/messengers',
       },
       {
         done: progress.hasLessons === true,

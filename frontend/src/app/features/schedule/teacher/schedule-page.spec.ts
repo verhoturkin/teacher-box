@@ -9,7 +9,6 @@ import { bodyText, buttonByText, hostElement, menuItemByText, readableText } fro
 import { aGroup } from '@testing/identity-fixtures';
 import {
   at,
-  calendarFeed,
   changeRequest,
   groupLesson,
   lessonSeries,
@@ -95,7 +94,6 @@ describe('SchedulePage', () => {
         aGroup({ id: 'g-3', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
       ]);
     flushSidePanels(unmarked, offTimes);
-    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
     backend.expectOne('/api/teacher/schedule/google').flush(google);
     await fixture.whenStable();
     lessonsRequest().flush([scheduledLesson()]);
@@ -147,7 +145,6 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     backend.expectOne('/api/teacher/schedule/requests').flush(null, failure);
     backend.expectOne('/api/teacher/schedule/series').flush(null, failure);
-    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
     backend
       .expectOne('/api/teacher/schedule/google')
       .flush({ status: 'NOT_CONNECTED', busyEnabled: false });

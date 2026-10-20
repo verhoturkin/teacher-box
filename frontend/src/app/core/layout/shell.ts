@@ -18,6 +18,9 @@ import { Menu } from 'primeng/menu';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
+import { NewMessage } from '@core/notifications/new-message';
+import { NotificationsSheet } from '@core/notifications/notifications-sheet';
+import { openOnNotificationsParam } from '@core/notifications/notifications-sheet-state';
 import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
 import { CORE_T } from '@core/i18n/texts';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
@@ -52,10 +55,12 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     ButtonDirective,
     ButtonIcon,
     CreateMenu,
+    NewMessage,
     Drawer,
     ModalDrawer,
     Menu,
     NotificationBell,
+    NotificationsSheet,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -85,7 +90,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
       }
       <div class="tb-shell__user">
         @if (notifications()) {
-          <tb-notification-bell [link]="homeLink() + '/notifications'" />
+          <tb-notification-bell />
         }
         <!-- the visible name is the start of the accessible one (WCAG 2.5.3, ADR-0024) -->
         <button
@@ -131,6 +136,14 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
       <main class="tb-shell__content" [class.tb-shell__content--nav]="compact()">
         <router-outlet />
       </main>
+      @if (notifications()) {
+        <!-- the bell's sheet: the third pane on extra-large, the modal side sheet below (spec §10.3) -->
+        <tb-notifications-sheet [docked]="size() === 'extra-large'" />
+      }
+      @if (create()) {
+        <!-- «Создать › Сообщение» on any page, the rail's or the phone's home FAB menu -->
+        <tb-new-message />
+      }
     </div>
     @if (compact()) {
       <nav class="tb-bottom-nav" [attr.aria-label]="sections">
@@ -195,6 +208,11 @@ export class Shell {
   protected readonly close = CORE_T.close;
   protected readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
+
+  constructor() {
+    // `?notifications=…` (old links to the notifications page) opens the bell's sheet
+    openOnNotificationsParam();
+  }
 
   readonly items = input.required<MenuItem[]>();
   readonly homeLink = input.required<string>();

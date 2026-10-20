@@ -8,14 +8,14 @@ import {
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { CORE_T } from '@core/i18n/texts';
-import { createItems } from '@core/layout/create-menu';
+import { injectCreateItems } from '@core/layout/create-menu';
 import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
-import { LatestNotificationsWidget, NotificationsApi } from '@features/notifications/parts';
+import { NotificationsApi } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
 import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
@@ -29,7 +29,7 @@ import { T } from './i18n/texts';
 
 /**
  * Teacher dashboard: the next lesson on top, then the widgets of the modules one under
- * another (ADR-0021): what needs attention, notifications, finance.
+ * another (ADR-0021): what needs attention, finance; the notifications are in the bell.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -39,7 +39,6 @@ import { T } from './i18n/texts';
     FabMenu,
     FinanceWidget,
     FirstRunChecklist,
-    LatestNotificationsWidget,
     UpcomingLessonWidget,
     LoadStateView,
     PageHeader,
@@ -64,7 +63,6 @@ import { T } from './i18n/texts';
           [notifications]="notifications()"
         />
       }
-      <tb-latest-notifications-widget link="/teacher/notifications" />
       @if (billing(); as billing) {
         <tb-finance-widget [summary]="billing" />
       }
@@ -78,7 +76,7 @@ import { T } from './i18n/texts';
 export class TeacherHome implements OnInit {
   protected readonly t = T.teacherHome;
   protected readonly mobile = injectMobile();
-  protected readonly createItems = createItems('/teacher');
+  protected readonly createItems = injectCreateItems()('/teacher');
   protected readonly createLabel = CORE_T.create.title;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);

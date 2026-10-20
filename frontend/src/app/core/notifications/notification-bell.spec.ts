@@ -7,6 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { hostElement, requireElement } from '@testing/dom';
 import { NotificationBell, UNREAD_POLL_INTERVAL_MS } from './notification-bell';
+import { NotificationsSheetState } from './notifications-sheet-state';
 import { UnreadNotifications } from './unread-notifications';
 
 describe('NotificationBell', () => {
@@ -27,7 +28,6 @@ describe('NotificationBell', () => {
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(NotificationBell);
-    fixture.componentRef.setInput('link', '/cabinet/notifications');
   });
 
   afterEach(() => {
@@ -37,7 +37,7 @@ describe('NotificationBell', () => {
   });
 
   function bell(label: string): Element | null {
-    return hostElement(fixture).querySelector(`a[aria-label="${label}"]`);
+    return hostElement(fixture).querySelector(`button[aria-label="${label}"]`);
   }
 
   async function tick(ms: number): Promise<void> {
@@ -80,13 +80,22 @@ describe('NotificationBell', () => {
     expect(messages).not.toHaveBeenCalled();
   });
 
-  it('is a link to the notifications page', async () => {
+  it('opens and closes the notifications sheet', async () => {
     await tick(0);
     backend.expectOne('/api/me/notifications/unread-count').flush({ count: 0 });
+    const sheet = TestBed.inject(NotificationsSheetState);
+    const button = requireElement(hostElement(fixture), 'button', HTMLButtonElement);
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(button.getAttribute('aria-controls')).toBe('tb-notifications-sheet');
 
-    expect(requireElement(hostElement(fixture), 'a', HTMLAnchorElement).getAttribute('href')).toBe(
-      '/cabinet/notifications',
-    );
+    button.click();
+    await tick(0);
+    expect(sheet.open()).toBe(true);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+
+    button.click();
+    await tick(0);
+    expect(sheet.open()).toBe(false);
   });
 
   it('never shows a negative counter', () => {

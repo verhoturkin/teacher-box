@@ -12,7 +12,6 @@ interface AttentionItem {
   readonly text: string;
   readonly count: number;
   readonly link: string;
-  readonly query?: Readonly<Record<string, string>>;
 }
 
 /** Teacher's home: what is waiting for the teacher across the modules. */
@@ -30,12 +29,7 @@ interface AttentionItem {
             <li>
               <span class="tb-list__lead" aria-hidden="true"><i [class]="item.icon"></i></span>
               <span class="tb-list__text">
-                <a
-                  [routerLink]="item.link"
-                  [queryParams]="item.query"
-                  class="tb-list__title tb-link"
-                  >{{ item.text }}</a
-                >
+                <a [routerLink]="item.link" class="tb-list__title tb-link">{{ item.text }}</a>
               </span>
               <span class="tb-list__trail"
                 ><span class="tb-attention__count">{{ item.count }}</span></span
@@ -97,8 +91,7 @@ export class AttentionCard {
         icon: 'tb-i tb-i-warning',
         text: T.attention.failedDeliveries,
         count: notifications?.failedDeliveries ?? 0,
-        link: '/teacher/notifications',
-        query: { tab: 'students' },
+        link: '/teacher/settings/messengers',
       },
     ];
     return items.filter((item) => item.count > 0);

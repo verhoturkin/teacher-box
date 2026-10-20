@@ -137,25 +137,20 @@ export const routes: Routes = [
         title: NAV.boards,
         loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
+      // the rooms are in the cards and the lessons; «Звонки» is a category of the settings (234.2)
+      { path: 'calls', redirectTo: 'settings/calls' },
       {
-        path: 'calls',
-        title: NAV.calls,
-        loadComponent: () => import('@features/meetings').then((m) => m.CallsPage),
-      },
-      {
+        // `/teacher/settings[/:category]`: list-detail of the categories (redesign spec §10.3)
         path: 'settings',
-        title: NAV.settings,
-        loadComponent: () => import('@features/settings').then((m) => m.SettingsPage),
+        loadChildren: () => import('@features/settings').then((m) => m.SETTINGS_ROUTES),
       },
+      // the AI assistant is a category of the settings (234.4)
+      { path: 'ai', redirectTo: 'settings/ai' },
       {
-        path: 'ai',
-        title: NAV.ai,
-        loadComponent: () => import('@features/ai').then((m) => m.AiUsagePage),
-      },
-      {
+        // the inbox and the messages; old links to the bots and messengers lead to the settings (234.3)
         path: 'notifications',
-        title: NAV.notifications,
-        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
+        loadChildren: () =>
+          import('@features/notifications').then((m) => m.TEACHER_NOTIFICATIONS_ROUTES),
       },
       {
         path: 'help',
@@ -169,11 +164,8 @@ export const routes: Routes = [
         data: { area: 'teacher' },
         loadComponent: () => import('@features/help').then((m) => m.HelpPage),
       },
-      {
-        path: 'account',
-        title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
-      },
+      // the teacher's «Мой аккаунт» is a category of the settings (234.1)
+      { path: 'account', redirectTo: 'settings/account' },
       {
         path: '**',
         title: N.notFound,
@@ -222,9 +214,10 @@ export const routes: Routes = [
         loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
+        // the inbox is in the bell's sheet, the messengers in «Мой аккаунт» (235.2)
         path: 'notifications',
-        title: NAV.notifications,
-        loadComponent: () => import('@features/notifications').then((m) => m.NotificationsPage),
+        loadChildren: () =>
+          import('@features/notifications').then((m) => m.STUDENT_NOTIFICATIONS_ROUTES),
       },
       {
         path: 'help',

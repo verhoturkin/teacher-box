@@ -5,6 +5,7 @@ import { Router, TitleStrategy, provideRouter, withComponentInputBinding } from 
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { AuthService } from '@core/auth/auth.service';
+import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
 import { portalSettings } from '@testing/portal-fixtures';
@@ -209,32 +210,80 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(title()).toBe('Задание — Teacher Box');
   });
 
-  it('opens the teacher account page', async () => {
+  it('leads the teacher from the account page to its category of the settings', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
     await harness.navigateByUrl('/teacher/account');
 
+    expect(TestBed.inject(Router).url).toBe('/teacher/settings/account');
     TestBed.inject(HttpTestingController).expectOne('/api/me');
-    expect(title()).toBe('Мой аккаунт — Teacher Box');
+    expect(text()).toContain('Мой аккаунт');
   });
 
-  it('opens the notifications page in both areas', async () => {
+  it('leads the student’s notifications page to the home page with the bell’s sheet open', async () => {
     auth.acceptSession(authResponse('STUDENT'));
-    await harness.navigateByUrl('/cabinet/notifications');
-    expect(title()).toBe('Уведомления — Teacher Box');
 
-    auth.acceptSession(authResponse('TEACHER'));
-    await harness.navigateByUrl('/teacher/notifications');
-    expect(title()).toBe('Уведомления — Teacher Box');
+    await harness.navigateByUrl('/cabinet/notifications?from=bot');
+
+    await vi.waitFor(() => {
+      expect(TestBed.inject(Router).url).toBe('/cabinet?from=bot');
+    });
+    const sheet = TestBed.inject(NotificationsSheetState);
+    expect(sheet.open()).toBe(true);
+    expect(sheet.tab()).toBe('inbox');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
-  it('opens the AI assistant page for the teacher', async () => {
+  it('opens the student’s account with the messengers and what to send', async () => {
+    auth.acceptSession(authResponse('STUDENT'));
+
+    await harness.navigateByUrl('/cabinet/account');
+
+    expect(title()).toBe('Мой аккаунт — Teacher Box');
+    expect(harness.routeNativeElement?.querySelector('tb-channels-panel')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('tb-preferences-panel')).not.toBeNull();
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it.each([
+    ['/teacher/notifications', '/teacher', 'inbox'],
+    ['/teacher/notifications?tab=inbox', '/teacher', 'inbox'],
+    ['/teacher/notifications?from=mail', '/teacher?from=mail', 'inbox'],
+  ])('leads %s to the home page with the bell’s sheet open: %s, %s', async (from, to, tab) => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl(from);
+
+    await vi.waitFor(() => {
+      expect(TestBed.inject(Router).url).toBe(to);
+    });
+    const sheet = TestBed.inject(NotificationsSheetState);
+    expect(sheet.open()).toBe(true);
+    expect(sheet.tab()).toBe(tab);
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it.each([
+    ['/teacher/notifications?open=messengers', '/teacher/settings/messengers'],
+    ['/teacher/notifications?open=unknown,students', '/teacher/settings/messengers'],
+    ['/teacher/notifications?tab=preferences', '/teacher/settings/messengers'],
+  ])('leads the old links to the messengers into the settings: %s → %s', async (from, to) => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl(from);
+
+    expect(TestBed.inject(Router).url).toBe(to);
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it('leads the AI assistant page to its category of the settings', async () => {
     auth.acceptSession(authResponse('TEACHER'));
 
     await harness.navigateByUrl('/teacher/ai');
 
-    TestBed.inject(HttpTestingController).expectOne('/api/teacher/ai/status');
-    expect(title()).toBe('ИИ-помощник — Teacher Box');
+    expect(TestBed.inject(Router).url).toBe('/teacher/settings/ai');
+    expect(title()).toBe('ИИ-помощник — Настройки — Teacher Box');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it('opens the settings page for the teacher', async () => {
@@ -243,7 +292,43 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.navigateByUrl('/teacher/settings');
 
     TestBed.inject(HttpTestingController).expectOne('/api/teacher/notifications/status');
-    expect(title()).toBe('Настройки — Teacher Box');
+    // beside the list from expanded: the first category
+    expect(title()).toBe('Мой аккаунт — Настройки — Teacher Box');
+    TestBed.inject(HttpTestingController).expectOne('/api/me');
+  });
+
+  it.each([
+    ['/teacher/settings/portal', '/teacher/settings/portal'],
+    ['/teacher/settings?open=portal', '/teacher/settings/portal'],
+    ['/teacher/settings?open=calendar', '/teacher/settings/calendar'],
+    ['/teacher/settings?open=unknown,deliveries,data', '/teacher/settings/messengers'],
+    ['/teacher/settings?open=data', '/teacher/settings/data'],
+    ['/teacher/settings?open=unknown', '/teacher/settings?open=unknown'],
+    ['/teacher/settings?google=connected', '/teacher/settings/calendar?google=connected'],
+    ['/teacher/settings?drive=denied&open=portal', '/teacher/settings/data?drive=denied'],
+    ['/teacher/settings/calendar?google=failed', '/teacher/settings/calendar?google=failed'],
+    ['/teacher/settings/no-such-category', '/teacher/settings'],
+    ['/teacher/settings/calls', '/teacher/settings/calls'],
+    ['/teacher/calls', '/teacher/settings/calls'],
+    ['/teacher/settings/payments', '/teacher/settings/payments'],
+    ['/teacher/settings?open=ai', '/teacher/settings/ai'],
+  ])('leads the old and unknown addresses of the settings: %s → %s', async (from, to) => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl(from);
+
+    expect(TestBed.inject(Router).url).toBe(to);
+    expect(title()).toContain('Настройки');
+    TestBed.inject(HttpTestingController).match(() => true);
+  });
+
+  it('has no addresses under a category of the settings', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+
+    await harness.navigateByUrl('/teacher/settings/portal/extra');
+
+    expect(text()).toContain('Такой страницы нет');
+    TestBed.inject(HttpTestingController).match(() => true);
   });
 
   it('opens invitation links without signing in', async () => {

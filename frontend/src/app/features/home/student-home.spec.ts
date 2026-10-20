@@ -4,7 +4,7 @@ import { hostElement, readableText } from '@testing/dom';
 import { aMyBoard } from '@testing/boards-fixtures';
 import { myBillingSummary } from '@testing/billing-fixtures';
 import { myHomeworkSummary, myTask } from '@testing/homework-fixtures';
-import { channel, notificationPage } from '@testing/notification-fixtures';
+import { channel } from '@testing/notification-fixtures';
 import {
   at,
   myScheduleSummary,
@@ -48,7 +48,6 @@ describe('StudentHome', () => {
       .flush(myHomeworkSummary({ open: 1, upcoming: [myTask()] }));
     backend.expectOne('/api/me/billing/summary').flush(myBillingSummary({ balance: 150_000 }));
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/boards').flush([aMyBoard({ title: 'Доска по алгебре' })]);
     fixture.detectChanges();
@@ -58,7 +57,6 @@ describe('StudentHome', () => {
     expect(text).toContain('Получайте уведомления в мессенджере');
     expect(text).toContain('Дроби');
     expect(text).toContain('аванс 1 500 ₽');
-    expect(text).toContain('Новых уведомлений нет');
     expect(text).toContain('Доска по алгебре');
     expect(text).not.toContain('Учитель уже в звонке');
     // one column (ADR-0021): the widgets one under another
@@ -72,7 +70,6 @@ describe('StudentHome', () => {
       'tb-connect-messenger-card',
       'tb-my-deadlines-widget',
       'tb-my-balance-widget',
-      'tb-latest-notifications-widget',
     ]);
 
     fixture.componentInstance.loadSchedule();
@@ -91,7 +88,6 @@ describe('StudentHome', () => {
       .expectOne('/api/me/schedule/summary')
       .flush(null, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
-    backend.expectOne('/api/me/notifications?page=0&size=5&read=false').flush(notificationPage([]));
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain(

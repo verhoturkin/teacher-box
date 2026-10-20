@@ -38,7 +38,7 @@ import { T } from './i18n/texts';
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card id="prompt-library" [header]="t.title">
       @if (prompts().length === 0) {
         <tb-empty-state
           [compact]="true"

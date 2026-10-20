@@ -86,7 +86,10 @@ test('pressing the badge of the bell opens the notifications', async ({ page }) 
     (box?.x ?? 0) + (box?.width ?? 0) / 2,
     (box?.y ?? 0) + (box?.height ?? 0) / 2,
   );
-  await expect(page).toHaveURL(/\/cabinet\/notifications$/);
+  // 0.22.0: the bell opens its side sheet with the inbox (235.1)
+  const sheet = page.getByRole('dialog', { name: 'Уведомления' });
+  await expect(sheet).toContainText(HOMEWORK);
+  await expect(page).toHaveURL(/\/cabinet$/);
 });
 
 test('on a phone the tasks have no icon at the start, on a computer they do', async ({ page }) => {

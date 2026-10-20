@@ -1,20 +1,20 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { IdentityApi } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BroadcastItem } from '../data-access/notifications.models';
-import { BroadcastDialog, Recipient } from './broadcast-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
-import { openOnCreate } from '@core/routing/create-param';
-import { Snackbar } from '@core/snackbar/snackbar';
+import { NewMessageState } from '@core/notifications/new-message';
 import { T } from '../i18n/texts';
 
-/** Teacher: writes to students and sees what was sent. */
+/**
+ * Teacher: the messages sent to students (the tab «Отправленные» of the bell's sheet); «Написать ученикам»
+ * opens the frame's dialog of a new message, the list refreshes when one is sent.
+ */
 @Component({
   selector: 'tb-broadcasts-panel',
-  imports: [DatePipe, Button, Card, BroadcastDialog, EmptyState],
+  imports: [DatePipe, Button, Card, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -51,12 +51,6 @@ import { T } from '../i18n/texts';
         }
       }
     </p-card>
-
-    <tb-broadcast-dialog
-      [(visible)]="broadcastVisible"
-      [students]="students()"
-      (sent)="onBroadcast($event)"
-    />
   `,
   styles: `
     .tb-broadcasts-header {
@@ -86,41 +80,23 @@ import { T } from '../i18n/texts';
     }
   `,
 })
-export class BroadcastsPanel implements OnInit {
+export class BroadcastsPanel {
   protected readonly t = T.broadcasts;
   private readonly api = inject(NotificationsApi);
-  private readonly identity = inject(IdentityApi);
-  private readonly snackbar = inject(Snackbar);
+  private readonly newMessage = inject(NewMessageState);
 
   protected readonly history = signal<BroadcastItem[] | null>(null);
-  protected readonly broadcastVisible = signal(false);
-  protected readonly students = signal<Recipient[]>([]);
 
   constructor() {
-    // «Создать › Сообщение» (spec §4) until the bell's «Отправленные» (235.3)
-    openOnCreate('message', () => {
-      this.openBroadcast();
+    // on arrival and after each message sent (from here or from «Создать › Сообщение»)
+    effect(() => {
+      this.newMessage.sent();
+      this.reload();
     });
-  }
-
-  ngOnInit(): void {
-    this.reload();
   }
 
   openBroadcast(): void {
-    this.identity.listStudents().subscribe((students) => {
-      this.students.set(
-        students
-          .filter((student) => student.status !== 'DEACTIVATED')
-          .map((student) => ({ id: student.id, displayName: student.displayName })),
-      );
-      this.broadcastVisible.set(true);
-    });
-  }
-
-  onBroadcast(recipients: number): void {
-    this.snackbar.success(T.broadcasts.sent(recipients));
-    this.reload();
+    this.newMessage.show();
   }
 
   private reload(): void {

@@ -17,8 +17,19 @@ import { WindowSize, injectWindowSize } from '@core/layout/mobile';
  */
 export type PaneKind = 'fixed' | 'flexible' | 'sheet';
 
-/** Breakpoints with one pane (M3: compact and medium); the panes follow one another there. */
-const SINGLE: readonly WindowSize[] = ['compact', 'medium'];
+/**
+ * The panes of medium: `one` — one at a time (M3 default), `two` — two panes of 50 % each (redesign spec §3.1:
+ * Settings only).
+ */
+export type MediumPanes = 'one' | 'two';
+
+/**
+ * Whether a breakpoint shows one pane at a time (M3: compact and medium); the panes follow one another
+ * there.
+ */
+function isSingle(size: WindowSize, medium: MediumPanes): boolean {
+  return size === 'compact' || (size === 'medium' && medium === 'one');
+}
 
 /** M3 default width of a fixed pane: 360 dp on expanded, 412 dp on large and extra-large. */
 const FIXED_WIDTH: Partial<Record<WindowSize, string>> = {
@@ -34,7 +45,8 @@ const SHEET_WIDTH = '25rem';
  * Panes of a page (M3 canonical layouts, ADR-0048): sheets with 28 dp corners on the `surface container`
  * of the window, 24 dp margins at the trailing edge and the bottom (16 dp at the sides on compact) and the
  * 24 dp spacer between them. From expanded they stand side by side and each scrolls on its own; on
- * compact and medium they follow one another and the window scrolls. The order of the panes in the
+ * compact and medium they follow one another and the window scrolls (`medium="two"`: two panes of 50 % on
+ * medium as from expanded). The order of the panes in the
  * template is their visual order and the focus order: nothing reorders them.
  *
  * ```html
@@ -81,8 +93,10 @@ const SHEET_WIDTH = '25rem';
 export class Panes {
   /** The breakpoint of the window. */
   readonly size = injectWindowSize();
-  /** One pane at a time (compact and medium): the panes follow one another. */
-  readonly single = computed(() => SINGLE.includes(this.size()));
+  /** The panes of medium: one at a time or two of 50 %. */
+  readonly medium = input<MediumPanes>('one');
+  /** One pane at a time (compact, medium with `one`): the panes follow one another. */
+  readonly single = computed(() => isSingle(this.size(), this.medium()));
   /** After the first render panes that appear enter with motion; the panes of a new page don't. */
   readonly settled = signal(false);
 
@@ -167,6 +181,9 @@ export class Pane {
     if (this.panes.single()) {
       return null;
     }
+    if (this.panes.size() === 'medium') {
+      return '0%';
+    }
     switch (this.kind()) {
       case 'fixed':
         return FIXED_WIDTH[this.panes.size()] ?? null;
@@ -176,8 +193,11 @@ export class Pane {
         return '0%';
     }
   });
+  /** The flexible pane takes the rest; on medium with two panes each takes half. */
   protected readonly grow = computed(() =>
-    !this.panes.single() && this.kind() === 'flexible' ? '1' : null,
+    !this.panes.single() && (this.kind() === 'flexible' || this.panes.size() === 'medium')
+      ? '1'
+      : null,
   );
   protected readonly maxWidth = computed(() =>
     !this.panes.single() && this.kind() === 'sheet' ? SHEET_WIDTH : null,
@@ -189,23 +209,23 @@ export class Pane {
 
 /** Which panes of a list-detail layout are shown (redesign spec §3.3). */
 export interface ListDetail {
-  /** One pane at a time (compact and medium). */
+  /** One pane at a time (compact, medium with `one`). */
   readonly single: Signal<boolean>;
-  /** The list is shown: always from expanded, on compact and medium while no detail is open. */
+  /** The list is shown: always beside the detail, on one pane while no detail is open. */
   readonly list: Signal<boolean>;
-  /** The detail is shown: always from expanded, on compact and medium when it is open. */
+  /** The detail is shown: always beside the list, on one pane when it is open. */
   readonly detail: Signal<boolean>;
 }
 
 /**
  * The list-detail layout (M3 canonical layout): from expanded the list and the detail side by side, on
  * compact and medium only one of them, chosen by the route — `open` says whether the route has a detail
- * (`/teacher/students/:id`). «Back» of the detail on one pane leads to the list's route. Call in an
- * injection context.
+ * (`/teacher/students/:id`). «Back» of the detail on one pane leads to the list's route. `medium` must be
+ * the same as the `medium` of the page's `tb-panes`. Call in an injection context.
  */
-export function injectListDetail(open: () => boolean): ListDetail {
+export function injectListDetail(open: () => boolean, medium: MediumPanes = 'one'): ListDetail {
   const size = injectWindowSize();
-  const single = computed(() => SINGLE.includes(size()));
+  const single = computed(() => isSingle(size(), medium));
   return {
     single,
     list: computed(() => !single() || !open()),
