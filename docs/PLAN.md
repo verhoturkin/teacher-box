@@ -40,7 +40,7 @@ pane; an agenda on a phone. ADR: none.
 - [x] 239.3 **F** `features/home/teacher-home.ts` → feed in three / two / one columns; «Занятия сегодня» list under
   the hero; month (`billing/home/finance-widget.ts`) and week figures; header with the summary line; nav label
   «Сегодня».
-- [ ] 239.4 **F** Compact: queue rows with a chevron, bottom sheet for two or more actions (`tbModalDrawer`).
+- [x] 239.4 **F** Compact: queue rows with a chevron, bottom sheet for two or more actions (`tbModalDrawer`).
 - [ ] 239.5 **D** design-system (Today), help «Первые шаги» (ru, en), wiki.
 
 ### 240. Schedule (F)

@@ -8,10 +8,11 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Drawer } from 'primeng/drawer';
 import { ProgressBar } from 'primeng/progressbar';
 import type { Debtor } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
@@ -23,11 +24,14 @@ import {
   requestKindLabel,
 } from '@features/schedule/parts';
 import type { ChangeRequest, ScheduledLesson } from '@features/schedule/parts';
+import { injectMobile } from '@core/layout/mobile';
+import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
 import { T } from './i18n/texts';
 
@@ -73,7 +77,17 @@ interface Row {
  */
 @Component({
   selector: 'tb-todo-queue',
-  imports: [Avatar, Button, Card, EmptyState, ProgressBar, ProgressLabel, RouterLink],
+  imports: [
+    Avatar,
+    Button,
+    Card,
+    Drawer,
+    EmptyState,
+    ModalDrawer,
+    ProgressBar,
+    ProgressLabel,
+    RouterLink,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -89,27 +103,46 @@ interface Row {
                 <span class="tb-list__title">{{ row.name }}</span>
                 <small class="tb-muted">{{ row.text }}</small>
               </span>
-              <span class="tb-list__trail tb-queue__actions">
-                @if (row.lessonId; as lessonId) {
+              @if (mobile()) {
+                <!-- a phone: the row stays one line; its action is the whole row, two actions open a sheet -->
+                <span class="tb-list__trail tb-list__trail--icons">
                   <p-button
-                    [label]="t.held"
-                    severity="secondary"
-                    [loading]="busy.is(lessonId + 'CONDUCTED')"
-                    (onClick)="mark(lessonId, 'CONDUCTED')"
-                  />
-                  <p-button
-                    [label]="t.missed"
+                    class="tb-list__stretched"
+                    icon="tb-i tb-i-chevron_right"
                     severity="secondary"
                     [text]="true"
-                    [loading]="busy.is(lessonId + 'MISSED')"
-                    (onClick)="mark(lessonId, 'MISSED')"
+                    [rounded]="true"
+                    [ariaLabel]="
+                      row.name +
+                      ': ' +
+                      (row.lessonId ? t.held + ' | ' + t.missed : actionLabel(row))
+                    "
+                    (onClick)="open(row)"
                   />
-                } @else {
-                  <a class="tb-link" [routerLink]="row.link" [queryParams]="row.query">{{
-                    actionLabel(row)
-                  }}</a>
-                }
-              </span>
+                </span>
+              } @else {
+                <span class="tb-list__trail tb-queue__actions">
+                  @if (row.lessonId; as lessonId) {
+                    <p-button
+                      [label]="t.held"
+                      severity="secondary"
+                      [loading]="busy.is(lessonId + 'CONDUCTED')"
+                      (onClick)="mark(lessonId, 'CONDUCTED')"
+                    />
+                    <p-button
+                      [label]="t.missed"
+                      severity="secondary"
+                      [text]="true"
+                      [loading]="busy.is(lessonId + 'MISSED')"
+                      (onClick)="mark(lessonId, 'MISSED')"
+                    />
+                  } @else {
+                    <a class="tb-link" [routerLink]="row.link" [queryParams]="row.query">{{
+                      actionLabel(row)
+                    }}</a>
+                  }
+                </span>
+              }
             </li>
           }
         </ul>
@@ -146,8 +179,43 @@ interface Row {
         </section>
       }
     </p-card>
+
+    <p-drawer
+      tbModalDrawer
+      [blockScroll]="true"
+      [ariaCloseLabel]="c.close"
+      [visible]="sheet() !== null"
+      (visibleChange)="$event || sheet.set(null)"
+      position="bottom"
+      styleClass="tb-sheet"
+      [header]="sheet()?.name ?? ''"
+    >
+      @if (sheet(); as row) {
+        <p class="tb-muted">{{ row.text }}</p>
+        <div class="tb-queue__sheet-actions">
+          <p-button
+            [label]="t.held"
+            [loading]="busy.is(row.lessonId + 'CONDUCTED')"
+            (onClick)="markFromSheet(row, 'CONDUCTED')"
+          />
+          <p-button
+            [label]="t.missed"
+            severity="secondary"
+            [loading]="busy.is(row.lessonId + 'MISSED')"
+            (onClick)="markFromSheet(row, 'MISSED')"
+          />
+        </div>
+      }
+    </p-drawer>
   `,
   styles: `
+    /* the bottom sheet of a lesson to mark: its buttons one under another, across the width */
+    .tb-queue__sheet-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-2);
+    }
+
     .tb-queue__actions {
       display: flex;
       flex-wrap: wrap;
@@ -200,7 +268,12 @@ export class TodoQueue implements OnInit {
   protected readonly t = T.queue;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
+  private readonly router = inject(Router);
   protected readonly busy = new Busy();
+  protected readonly c = SHARED_T.common;
+  protected readonly mobile = injectMobile();
+  /** The lesson row whose «Проведено | Пропуск» sheet is open (phone). */
+  protected readonly sheet = signal<Row | null>(null);
 
   readonly progress = input.required<SetupProgress>();
   readonly debtors = input<readonly Debtor[]>([]);
@@ -324,10 +397,27 @@ export class TodoQueue implements OnInit {
     }
   }
 
+  /** A phone: a row with two actions opens the sheet, any other goes to its page. */
+  protected open(row: Row): void {
+    if (row.lessonId === undefined) {
+      void this.router.navigate([row.link], { queryParams: row.query });
+    } else {
+      this.sheet.set(row);
+    }
+  }
+
+  protected markFromSheet(row: Row, outcome: 'CONDUCTED' | 'MISSED'): void {
+    if (row.lessonId === undefined) {
+      return;
+    }
+    this.mark(row.lessonId, outcome);
+  }
+
   protected mark(lessonId: string, outcome: 'CONDUCTED' | 'MISSED'): void {
     this.busy
       .guard(lessonId + outcome, this.scheduleApi.setOutcome(lessonId, outcome))
       .subscribe(() => {
+        this.sheet.set(null);
         this.lessons.update((lessons) => lessons.filter((lesson) => lesson.id !== lessonId));
         this.marked.emit();
       });

@@ -1,9 +1,10 @@
+import { Router } from '@angular/router';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { reviewQueueItem } from '@testing/homework-fixtures';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import { testProviders } from '@testing/setup';
+import { phoneScreen, testProviders } from '@testing/setup';
 import { CHECKLIST_DISMISSED_KEY, SetupProgress, TodoQueue } from './todo-queue';
 
 describe('TodoQueue', () => {
@@ -25,8 +26,12 @@ describe('TodoQueue', () => {
       reviews?: unknown[];
     } = {},
     debtors: { studentId: string; displayName: string; avatar: null; balance: number }[] = [],
+    phone = false,
   ): Promise<void> {
-    TestBed.configureTestingModule({ imports: [TodoQueue], providers: testProviders() });
+    TestBed.configureTestingModule({
+      imports: [TodoQueue],
+      providers: testProviders(phone ? [phoneScreen()] : []),
+    });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TodoQueue);
     fixture.componentRef.setInput('progress', progress);
@@ -133,5 +138,53 @@ describe('TodoQueue', () => {
     await render({ ...done, priceSet: null, hasLessons: false });
 
     expect(text()).not.toContain('С чего начать');
+  });
+
+  describe('on a phone', () => {
+    it('keeps rows to one line with a chevron instead of the buttons', async () => {
+      await render(
+        done,
+        { lessons: [scheduledLesson()], reviews: [reviewQueueItem({ title: 'Дроби' })] },
+        [],
+        true,
+      );
+
+      const host = hostElement(fixture);
+      expect(host.querySelectorAll('.tb-list__stretched')).toHaveLength(2);
+      expect(readableText(host)).not.toContain('Проведено');
+      expect(host.querySelector('a')).toBeNull();
+    });
+
+    it('opens a sheet for a lesson and marks it from there', async () => {
+      await render(done, { lessons: [scheduledLesson({ id: 'l-3' })] }, [], true);
+
+      hostElement(fixture).querySelector<HTMLElement>('.tb-list__stretched button')?.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const sheet = document.querySelector('.tb-sheet');
+      expect(sheet).not.toBeNull();
+      const held = Array.from(sheet?.querySelectorAll('button') ?? []).find((b) =>
+        b.textContent.includes('Проведено'),
+      );
+      held?.click();
+
+      const request = backend.expectOne('/api/teacher/schedule/lessons/l-3/outcome');
+      expect(request.request.body).toEqual({ outcome: 'CONDUCTED' });
+      request.flush(scheduledLesson({ id: 'l-3', status: 'CONDUCTED' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(text()).toContain('Срочных дел нет');
+    });
+
+    it('goes to the page of a row with one action', async () => {
+      await render(done, { reviews: [reviewQueueItem({ title: 'Дроби' })] }, [], true);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      hostElement(fixture).querySelector<HTMLElement>('.tb-list__stretched button')?.click();
+
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/review'], {
+        queryParams: undefined,
+      });
+    });
   });
 });
