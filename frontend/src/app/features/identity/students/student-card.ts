@@ -119,15 +119,12 @@ import { Student } from '../data-access/identity.models';
       }
     </tb-card-head>
 
-    <p-tabs
-      class="tb-tabs tb-tabs--start"
-      [value]="tab()"
-      [scrollable]="true"
-      (valueChange)="choose($event)"
-    >
+    <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
       <p-tablist>
         @for (item of tabs; track item) {
-          <p-tab [value]="item">{{ t.tabNames[item] }}</p-tab>
+          <p-tab [value]="item"
+            ><span class="tb-tab-label">{{ t.tabNames[item] }}</span></p-tab
+          >
         }
       </p-tablist>
       <p-tabpanels>
@@ -195,6 +192,7 @@ import { Student } from '../data-access/identity.models';
   styles: `
     :host {
       display: block;
+      container-type: inline-size;
     }
 
     /* the avatar in the student's colour (our decision; the rows tint their tile instead) */
@@ -203,10 +201,25 @@ import { Student } from '../data-access/identity.models';
       color: var(--tb-on-label-container);
     }
 
+    /* the sketches: the overview in three columns when the pane is wide (lessons | tasks | balance, the
+       connection under the balance), one column below (ours: a container query, the pane's width decides) */
     .tb-student-card__overview {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-4);
+      gap: var(--tb-space-6);
+    }
+
+    @container (min-width: 56rem) {
+      .tb-student-card__overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: start;
+
+        > :nth-child(4) {
+          grid-column: 3;
+          grid-row: 2;
+        }
+      }
     }
   `,
 })

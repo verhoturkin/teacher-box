@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { Button } from 'primeng/button';
+import { Button, ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Drawer } from 'primeng/drawer';
 import { ProgressBar } from 'primeng/progressbar';
@@ -28,7 +28,6 @@ import { injectMobile } from '@core/layout/mobile';
 import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
-import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
@@ -61,9 +60,11 @@ interface Step {
 interface Row {
   readonly key: string;
   readonly kind: 'lesson' | 'request' | 'review' | 'debt';
-  readonly name: string;
-  readonly photo: string | null;
-  readonly text: string;
+  /** What is to do («Проверьте работу»), the name stays in the detail. */
+  readonly title: string;
+  /** Who and what: «Вера Орлова · ОГЭ: задание 20». */
+  readonly detail: string;
+  readonly icon: string;
   readonly link: string;
   readonly query?: Readonly<Record<string, string>>;
   /** A lesson with one student: «Проведено | Пропуск» in place. */
@@ -78,8 +79,8 @@ interface Row {
 @Component({
   selector: 'tb-todo-queue',
   imports: [
-    Avatar,
     Button,
+    ButtonDirective,
     Card,
     Drawer,
     EmptyState,
@@ -90,7 +91,13 @@ interface Row {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card>
+      <ng-template #title>
+        {{ t.title }}
+        @if (count() > 0) {
+          <span class="tb-queue__count" [attr.aria-label]="t.count(count())">{{ count() }}</span>
+        }
+      </ng-template>
       @if (loaded() && rows().length === 0 && !setupVisible()) {
         <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.nothing" />
       }
@@ -98,10 +105,12 @@ interface Row {
         <ul class="tb-list tb-queue">
           @for (row of rows(); track row.key) {
             <li>
-              <tb-avatar [name]="row.name" [photo]="row.photo" />
+              <span class="tb-queue__icon" [class.tb-queue__icon--debt]="row.kind === 'debt'">
+                <i class="tb-i {{ row.icon }}" aria-hidden="true"></i>
+              </span>
               <span class="tb-list__text">
-                <span class="tb-list__title">{{ row.name }}</span>
-                <small class="tb-muted">{{ row.text }}</small>
+                <span class="tb-list__title">{{ row.title }}</span>
+                <small class="tb-muted">{{ row.detail }}</small>
               </span>
               @if (mobile()) {
                 <!-- a phone: the row stays one line; its action is the whole row, two actions open a sheet -->
@@ -113,7 +122,7 @@ interface Row {
                     [text]="true"
                     [rounded]="true"
                     [ariaLabel]="
-                      row.name +
+                      row.title +
                       ': ' +
                       (row.lessonId ? t.held + ' | ' + t.missed : actionLabel(row))
                     "
@@ -137,9 +146,13 @@ interface Row {
                       (onClick)="mark(lessonId, 'MISSED')"
                     />
                   } @else {
-                    <a class="tb-link" [routerLink]="row.link" [queryParams]="row.query">{{
-                      actionLabel(row)
-                    }}</a>
+                    <a
+                      pButton
+                      severity="secondary"
+                      [routerLink]="row.link"
+                      [queryParams]="row.query"
+                      >{{ actionLabel(row) }}</a
+                    >
                   }
                 </span>
               }
@@ -188,10 +201,10 @@ interface Row {
       (visibleChange)="$event || sheet.set(null)"
       position="bottom"
       styleClass="tb-sheet"
-      [header]="sheet()?.name ?? ''"
+      [header]="sheet()?.title ?? ''"
     >
       @if (sheet(); as row) {
-        <p class="tb-muted">{{ row.text }}</p>
+        <p class="tb-muted">{{ row.detail }}</p>
         <div class="tb-queue__sheet-actions">
           <p-button
             [label]="t.held"
@@ -214,6 +227,40 @@ interface Row {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-2);
+    }
+
+    /* M3 large badge: error, Label Small, 16 dp high; ours: it stands after the title of the section */
+    .tb-queue__count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1rem;
+      height: 1rem;
+      box-sizing: border-box;
+      margin-inline-start: var(--tb-space-1);
+      padding: 0 var(--tb-space-1);
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-error);
+      color: var(--p-md-on-error);
+      font: var(--tb-type-label-s);
+      vertical-align: middle;
+    }
+
+    /* the tonal icon of a row (ours: 40 dp circle, secondary container; a debt — error container) */
+    .tb-queue__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-queue__icon--debt {
+      background: var(--p-md-error-container);
+      color: var(--p-md-on-error-container);
     }
 
     .tb-queue__actions {
@@ -291,39 +338,41 @@ export class TodoQueue implements OnInit {
     this.lessons().map((lesson) => ({
       key: `lesson-${lesson.id}`,
       kind: 'lesson',
-      name: lessonWith(lesson),
-      photo: lesson.studentAvatar,
-      text: T.queue.lesson(formatLessonStart(lesson.startsAt)),
+      title: T.queue.lessonTitle,
+      detail: `${lessonWith(lesson)} · ${formatLessonStart(lesson.startsAt)}`,
+      icon: 'tb-i-fact_check',
       link: '/teacher/schedule',
       ...(lesson.groupId === null ? { lessonId: lesson.id } : {}),
     })),
     this.requests().map((request) => ({
       key: `request-${request.id}`,
       kind: 'request',
-      name: request.groupName ?? request.studentName ?? '',
-      photo: request.studentAvatar,
-      text: T.queue.request(requestKindLabel(request)),
+      title: T.queue.request(requestKindLabel(request)),
+      detail: request.groupName ?? request.studentName ?? '',
+      icon: 'tb-i-swap_horiz',
       link: '/teacher/schedule',
     })),
     this.reviews().map((item) => ({
       key: `review-${item.taskId}-${item.assignmentId}`,
       kind: 'review',
-      name: item.studentName,
-      photo: item.studentAvatar,
-      text: T.queue.review(item.title),
+      title: T.queue.reviewTitle,
+      detail: `${item.studentName} · ${item.title}`,
+      icon: 'tb-i-rate_review',
       link: '/teacher/homework/review',
     })),
     this.debtors().map((debtor) => ({
       key: `debt-${debtor.studentId}`,
       kind: 'debt',
-      name: debtor.displayName,
-      photo: debtor.avatar,
-      text: T.queue.debt(formatMoney(-debtor.balance, this.currency())),
+      title: T.queue.debt(formatMoney(-debtor.balance, this.currency())),
+      detail: debtor.displayName,
+      icon: 'tb-i-account_balance_wallet',
       link: `/teacher/students/${debtor.studentId}`,
       query: { tab: 'payments' },
     })),
   ]);
   protected readonly rows = computed(() => this.all().flatMap((rows) => rows.slice(0, PER_SOURCE)));
+  /** What waits: the badge of the title (M3 large badge, error). */
+  protected readonly count = computed(() => this.rows().length + this.more());
   protected readonly more = computed(() =>
     this.all().reduce((sum, rows) => sum + Math.max(0, rows.length - PER_SOURCE), 0),
   );

@@ -85,9 +85,13 @@ const SHEET_WIDTH = '25rem';
       padding-inline-start: var(--tb-panes-margin);
     }
 
+    /* a phone: the page lies on the window and the pane's own 16 px are the only room at the sides (the margin
+       of the panes would double it to 32 px) */
     @media (width < 37.5em) {
-      :host {
+      :host,
+      :host(.tb-panes--single) {
         --tb-panes-margin: var(--tb-space-4);
+        padding: 0;
       }
     }
   `,
@@ -128,34 +132,54 @@ export class Panes {
     '[animate.enter]': 'enter()',
     '[animate.leave]': 'leave()',
   },
-  template: `<ng-content />`,
+  template: `<div class="tb-pane__scroll"><ng-content /></div>`,
   styles: `
+    /*
+     * The pane clips to its rounded corners and the scrolling area lies inside it, so the scrollbar never sticks
+     * out past the corners: its track is inset by the corner radius (ours, \`tb-scrollbar\` in styles.scss)
+     */
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
       flex-shrink: 0;
       min-width: 0;
+      box-sizing: border-box;
+      overflow: clip;
+      border-radius: var(--tb-shape-xl);
+      background: var(--p-md-surface);
+      /* a list lies right on the pane's surface: its group keeps the M3 list container corner, large (16 px) —
+         the first and the last rows round their outer corners by it, the rows between by 4 px */
+      --tb-list-outer: var(--tb-shape-lg);
+    }
+
+    .tb-pane__scroll {
+      flex: 1;
+      min-height: 0;
       box-sizing: border-box;
       padding: var(--tb-space-6);
       overflow-y: auto;
       overscroll-behavior: contain;
-      border-radius: var(--tb-shape-xl);
-      background: var(--p-md-surface);
-      /* nested corners of a list in the pane (ADR-0044): 28 − 24 = 4 px, on compact 28 − 16 = 12 px */
-      --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-xl) - var(--tb-space-6)));
     }
 
     :host(.tb-pane--sheet) {
       background: var(--p-md-surface-container-low);
     }
 
-    :host-context(.tb-panes--single) {
+    :host-context(.tb-panes--single) .tb-pane__scroll {
       overflow-y: visible;
     }
 
     @media (width < 37.5em) {
-      :host {
+      .tb-pane__scroll {
         padding: var(--tb-space-4);
-        --tb-list-outer: calc(var(--tb-shape-xl) - var(--tb-space-4));
+      }
+
+      /* the sketches: on a phone the page lies right on the window (no big card on the background): the pane has
+         neither its own surface nor corners; the window takes the surface tone (styles.scss) */
+      :host,
+      :host(.tb-pane--sheet) {
+        border-radius: 0;
+        background: transparent;
       }
     }
 

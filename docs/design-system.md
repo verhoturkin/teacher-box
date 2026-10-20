@@ -290,7 +290,10 @@ component that shows one adds it to `PRIME`).
   page content lives on `surface` — in panes, or in the cards of a page that has no panes yet. The page title
   is the `tb-page-header` of the first pane (or of the page without panes), never a band of its own.
 - **Rail** (`side-nav.ts`, 231.1, redesign spec §3.2): brand · «Создать» (teacher, 232.1) · sections · spacer ·
-  bottom group. **Brand** —
+  bottom group. From medium the rail runs the full window height (sticky at `top: 0`, `z-index` 1001 so the open
+  «Создать» list paints over the page) and its brand stands in the row of the top strip, as in the sketches: the
+  strip starts where the rail ends (`--tb-rail-width` 96 / 280 px on the shell), the body is pulled up under it and
+  the content pushed back down by the strip's height (*ours*). **Brand** —
   the portal logo (`tb-portal-logo round`) and name, plain text, not a link or button (**M3**: a logo in the
   rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
   the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
@@ -333,7 +336,10 @@ component that shows one adds it to `PRIME`).
   the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
   `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 % each
   (redesign spec §3.1: Settings only, *ours*). **Settings** (`/teacher/settings[/:category]`, 234,
-  `features/settings/settings-categories.ts`): the categories as two-line list items (icon, name, what it holds)
+  `features/settings/settings-categories.ts`): the categories as a segmented list of tonal two-line rows (a 40 px
+  tonal icon circle, name, a short «what it holds»; hover — the 8 % state layer; the chosen row — secondary container,
+  emphasized name, the icon circle on the surface; the group's outer corners 16 px, the rows between 4 px, 2 px apart;
+  every `tb-list` row has the same hover state layer and no underlined names, 0.24.1)
   in the fixed pane, the chosen one beside it (from expanded `/teacher/settings` shows the first, «Мой
   аккаунт»). Categories in list order: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и
   календарь» (`calendar`: time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры»
@@ -403,10 +409,25 @@ component that shows one adds it to `PRIME`).
 - **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the six
   items of the rail menu, 232.2). The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
-  and turns into the round «Закрыть» (primary). Esc, a tap outside, the focus leaving or an item close it; the focus
+  and turns into the round «Закрыть» (primary). Motion (**M3E**): the FAB and the items have a state layer (hover 8 %,
+  focus and pressed 10 %); pressed, the FAB's corner morphs from large to medium and it shrinks to 96 % on
+  `--tb-spring-fast-spatial` (hover: elevation 4); the icon turns 90° on the swap; the list enters item by item
+  (30 ms apart, *ours*) and leaves on an effects spring (`animate.leave`); the phone's `tb-page-fab` morphs the
+  same way. Reduced motion: no animation. Esc, a tap outside, the focus leaving or an item close it; the focus
   goes to the first item and back to the FAB; ↓ ↑ Home End move between items. In the rail (`variant` `rail` /
   `extended`, 232.1) the list opens 8 px under the FAB, start-aligned, fixed over the page (*ours*), and the FAB
   keeps its shape with the close icon.
+- **No wrapping cards in a pane** (0.24.1, sketches): inside `tb-pane` a `p-card` has no surface, corner or padding —
+  the title of the section stands on the pane (Title Medium emphasized), the tonal rows or blocks (`tb-list`,
+  `tb-figures`) lie under it, 12 px apart (*ours*), the list group's outer corner is 16 px. The one container left is
+  the filled `tb-hero`. A page without panes (not redesigned yet) keeps its cards. **On a phone** (below 37.5em) a
+  page of panes lies right on the window (sketches): the pane has no surface and no corners, the window and the top
+  bar take `surface` (`SystemBars` paints the status bar the same way), the panes add no margin — the pane's own 16 px
+  are the room at the sides; the bottom bar keeps `surface container`. Tabs on a phone keep the width of their label
+  and scroll.
+- **Key figures** `tb-figures` (Today: the month, the week): one tonal block (`--tb-list-item`, corner 16), two
+  columns, each figure `tb-figure__label` — an overline (Label Small, upper case) over `tb-figure__value`
+  (Headline Small); `tb-figure--wide` takes both columns (*ours*).
 - **Sections** — `p-card` with a title (h2, Title Large); help as «?» next to the title; section actions —
   tonal, in the title row (`tb-card-title__actions`). In a `tb-fold-card` (its header is a button) the action
   goes in the first body row, right. A card holding the page's only list gets a hidden `h2.tb-sr-only`.
@@ -423,14 +444,19 @@ component that shows one adds it to `PRIME`).
   topic and «Занятий на неделе» next to the tile). No «Расписание» link: the schedule is in the
   navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
   visible title (`h2.tb-sr-only` «Следующее занятие»): it is the first card and the tile says what it is.
-- **Today** (teacher home, 0.24.0, spec §6; `features/home/teacher-home.ts`): the page is «Сегодня» (nav label too);
+- **Today** (teacher home, 0.24.0, spec §6; `features/home/teacher-home.ts`): one flexible pane (`tb-panes`);
+  the page's title is the date («Понедельник, 19 октября»; the nav label is «Сегодня»);
   the header carries a muted summary line (lessons today · works to review · requests; empty parts left out). A feed
   of three stacks with a fixed order that is also the reading order: lead (hero + `today-lessons.ts` «Занятия сегодня»),
   queue (`todo-queue.ts` «Нужно сделать»), figures (`billing` month card + `week-figures.ts` «Неделя»). Columns by
   window size: extra-large 3 (1.25 : 1 : 0.8), large 2 (the figures go under the queue, the lead spans both rows),
   otherwise 1; the empty stack is hidden. On compact the lessons list and week figures are not shown (hero, queue,
   month only) and «Создать» is the FAB.
-  - «Нужно сделать» is one `tb-list` card: rows (avatar, who, what is to do, action in place) from four sources —
+  - 0.24.1: the sections have no cards (above). «Нужно сделать» carries an error badge with the count (M3 large
+    badge); a row is a 40 px tonal icon circle (lesson, review, request; a debt — error container), what is to do
+    in the first line and «who · detail» under it, the action a tonal button. The month block is titled with the
+    month («Октябрь»): «Поступило» and «Долг» (plan and advances wait for the backend); the week is a 2 × 2 grid.
+  - «Нужно сделать» is one `tb-list`: rows (icon, what is to do, who, action in place) from four sources —
     unmarked lessons («Проведено» / «Пропуск»), student requests («Ответить»), works to review («Проверить»), debts
     («Открыть»); at most 5 per source, the rest as «Ещё N». The first-run steps («С чего начать», progress bar,
     «Скрыть») sit at the end of the same card until done or hidden. Nothing to do — a compact empty state.
@@ -545,11 +571,13 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   the focus back, and it stays open across pages. Below it is the modal `tb-side-sheet tb-side-sheet--narrow`
   (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
-  inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
-  2 dp, 1 dp outline-variant divider; `tb-tabs--start` (a card's tabs) — leading-aligned, each as wide as
-  its label (*ours*), scrollable. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
-  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (`tb-list--no-lead`,
-  «Прочитать все», «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
+  inbox only. Primary tabs `tb-tabs` (**M3**, every tab bar, 0.24.1): no container, 48 dp, Title Small, the label primary when
+  active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the label (the `::after` of `tb-tab-label`,
+  the span every tab wraps its label in), one 1 dp outline-variant divider under the whole bar; the tabs share the
+  bar's width equally with the label centred (M3 fixed tabs). Anatomy, top to bottom: the header (headline «Уведомления»,
+  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (a dot for the unread, the title
+  opens the notification, a tick, no «Открыть» button; «Прочитать все» is an icon button `done_all` at the end of the
+  first row; the docked pane is `surface` like the other panes and starts below the top strip), «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
   explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
   §4) and the sent messages (title, text, time · recipients). The bell's badge (`p-overlaybadge`, danger) is the
   unread count, hidden at zero. `?notifications=inbox|sent` opens the sheet on any page and is dropped
@@ -596,6 +624,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 
 ## 9. Lists and tables
 
+- **Scrollbars** (0.24.1, *ours* — M3 publishes none): a pane is a clipped, rounded shell (`overflow: clip`) with the
+  scrolling area `tb-pane__scroll` inside it, so the scrollbar never sticks out past a corner; the bar is thin, its
+  track keeps 16 px from the corners and the thumb is a rounded outline-variant bar (dialogs and sheets the same,
+  Firefox gets `scrollbar-width: thin`).
+
 - **Every list of data inside a card or dialog is a segmented list** `ul.tb-list` (CSS subgrid: lead, text,
   trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px gap, inner corners 4 px,
   outer `--tb-list-outer` — nested in its container (§1: 4 px in a card on a computer and in dialogs, 8 px in a
@@ -637,7 +670,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     «Написать» (`tb-broadcast-dialog [to]`, one recipient, no picker) and «Оплата» (`tb-payment-dialog` with the
     student), filled «Занятие» (`tb-lesson-dialog [studentId]`: «with whom» fixed, the default topic and the
     length from the schedule settings), «⋮»; a deactivated student keeps only «Оплата». On compact the three
-    are tonal, equal width across the card. Tabs `tb-tabs tb-tabs--start` named by `?tab=` (`card-tabs.ts`;
+    are tonal, equal width across the card. Tabs `tb-tabs` named by `?tab=` (`card-tabs.ts`;
     Обзор, the default, is left out of the address). Обзор — cards one under another, each a part of its
     feature: «Ближайшие занятия» (3 of 60 days, «Ещё запланировано: N»), «Задания» (open ones, works to review
     first, then by the deadline; 5 + «Ещё открытых: N»), «Баланс» (the figure, the lesson price, the last 3

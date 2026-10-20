@@ -53,18 +53,18 @@ test.beforeAll(async ({ request }) => {
   expect(response.ok()).toBe(true);
 });
 
-test('a list nests its corners in its pane: 4 px on a computer, 12 px on a phone', async ({
+test('a list on its pane keeps the large corner of the M3 list: 16 px on a computer and on a phone', async ({
   page,
 }) => {
   await signIn(page, 1280);
   await page.goto('/teacher/students');
   const first = page.locator('main .tb-list > li').first();
   await expect(first).toBeVisible();
-  expect(await firstCorner(first)).toBe('4px');
+  expect(await firstCorner(first)).toBe('16px');
 
-  // 0.23.0: the students are in a pane (28 px corners): 28 − 24 on a computer, 28 − 16 on a phone
+  // 0.24.1: a list lies right on the pane (no card around it): the group keeps the 16 px of the M3 list
   await page.setViewportSize({ width: 360, height: 800 });
-  await expect.poll(() => firstCorner(first)).toBe('12px');
+  await expect.poll(() => firstCorner(first)).toBe('16px');
 });
 
 test('a dialog is surface-container-high', async ({ page }) => {

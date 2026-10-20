@@ -75,6 +75,7 @@ let nextId = 0;
     @if (open()) {
       <ul
         class="tb-fab-menu__list"
+        animate.leave="tb-fab-menu__list--leave"
         [id]="listId"
         role="list"
         [style.top.px]="position()?.top"
@@ -149,6 +150,10 @@ let nextId = 0;
         font-size: 1.5rem;
       }
 
+      transition:
+        transform var(--tb-spring-fast-spatial),
+        background var(--tb-spring-fast-effects);
+
       &:hover {
         background: color-mix(
           in srgb,
@@ -156,9 +161,29 @@ let nextId = 0;
           var(--p-md-primary-container)
         );
       }
+
+      &:focus-visible,
+      &:active {
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) var(--tb-state-pressed),
+          var(--p-md-primary-container)
+        );
+      }
+
+      &:active {
+        transform: scale(0.96);
+      }
     }
 
+    /*
+     * M3E FAB motion: the corner, the size and the elevation move on spatial springs (pressed: the corner
+     * morphs from large to medium and the button shrinks to 96 %; hovered: elevation 4), the state layer (hover 8 %,
+     * focus and pressed 10 %) and colours on effects springs. The icon turns on a spatial spring when it swaps.
+     */
     .tb-fab-menu__button {
+      position: relative;
+      isolation: isolate;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -172,13 +197,49 @@ let nextId = 0;
       cursor: pointer;
       transition:
         border-radius var(--tb-spring-fast-spatial),
+        transform var(--tb-spring-fast-spatial),
+        box-shadow var(--tb-spring-fast-effects),
         background var(--tb-spring-fast-effects),
         color var(--tb-spring-fast-effects);
+
+      /* the state layer */
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        background: currentColor;
+        opacity: 0;
+        transition: opacity var(--tb-spring-fast-effects);
+      }
+
+      &:hover::before {
+        opacity: var(--tb-state-hover);
+      }
+
+      &:focus-visible::before,
+      &:active::before {
+        opacity: var(--tb-state-pressed);
+      }
+
+      &:hover {
+        box-shadow: var(--tb-elevation-4);
+      }
+
+      &:active {
+        border-radius: var(--tb-shape-md);
+        transform: scale(0.96);
+      }
 
       .tb-i {
         font-size: 1.5rem;
         transition: transform var(--tb-spring-fast-spatial);
       }
+    }
+
+    :host(.tb-fab-menu--open) .tb-fab-menu__button .tb-i {
+      transform: rotate(90deg);
     }
 
     :host(.tb-fab-menu--open:not(.tb-fab-menu--rail)) .tb-fab-menu__button {
@@ -188,7 +249,6 @@ let nextId = 0;
 
       .tb-i {
         font-size: 1.25rem;
-        transform: rotate(90deg);
       }
     }
 
@@ -209,16 +269,9 @@ let nextId = 0;
       flex-direction: column;
       align-items: flex-start;
 
-      .tb-fab-menu__button {
+      .tb-fab-menu__button,
+      .tb-fab-menu__button:hover {
         box-shadow: none;
-
-        &:hover {
-          background: color-mix(
-            in srgb,
-            var(--p-md-on-primary-container) var(--tb-state-hover),
-            var(--p-md-primary-container)
-          );
-        }
       }
 
       .tb-fab-menu__list {
@@ -240,6 +293,25 @@ let nextId = 0;
       letter-spacing: var(--tb-tracking-title-m);
     }
 
+    /* the list leaves on an effects spring and a short spatial move toward the button */
+    .tb-fab-menu__list--leave {
+      animation:
+        tb-fab-list-out var(--tb-spring-fast-effects) forwards,
+        tb-fab-list-shrink var(--tb-spring-fast-spatial) forwards;
+    }
+
+    @keyframes tb-fab-list-out {
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes tb-fab-list-shrink {
+      to {
+        transform: translateY(0.5rem) scale(0.9);
+      }
+    }
+
     @keyframes tb-fab-item-down {
       from {
         opacity: 0;
@@ -256,7 +328,9 @@ let nextId = 0;
 
     @media (prefers-reduced-motion: reduce) {
       .tb-fab-menu__item,
+      .tb-fab-menu__list,
       .tb-fab-menu__button,
+      .tb-fab-menu__button::before,
       .tb-fab-menu__button .tb-i {
         animation: none;
         transition: none;

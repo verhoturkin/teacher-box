@@ -5,7 +5,6 @@ import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduledLesson } from '../data-access/schedule.models';
-import { formatLessonTime } from '../schedule-labels';
 import { StudentLessonsCard } from './student-lessons-card';
 
 const HOUR = 3_600_000;
@@ -57,10 +56,9 @@ describe('StudentLessonsCard', () => {
     const rows = Array.from(hostElement(fixture).querySelectorAll('li')).map((row) =>
       readableText(row),
     );
-    expect(rows).toEqual([
-      `${formatLessonTime(group.startsAt, group.endsAt)} Группа «ОГЭ» · Тема не задана · регулярное`,
-      `${formatLessonTime(later.startsAt, later.endsAt)} Теорема Виета`,
-    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toContain('Тема не задана Группа «ОГЭ» · 60 мин · регулярное');
+    expect(rows[1]).toContain('Теорема Виета 60 мин');
   });
 
   it('shows three and counts the rest', async () => {
@@ -113,8 +111,8 @@ describe('StudentLessonsCard', () => {
     request.flush([group]);
     await fixture.whenStable();
 
-    expect(readableText(requireElement(hostElement(fixture), 'li', HTMLLIElement))).toBe(
-      `${formatLessonTime(group.startsAt, group.endsAt)} Дроби`,
+    expect(readableText(requireElement(hostElement(fixture), 'li', HTMLLIElement))).toContain(
+      'Дроби 60 мин',
     );
   });
 });

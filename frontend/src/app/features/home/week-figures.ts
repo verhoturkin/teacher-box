@@ -17,49 +17,25 @@ export interface WeekFigures {
   template: `
     @let f = figures();
     <p-card [header]="t.title">
-      <dl class="tb-week">
-        <div class="tb-week__row">
-          <dt>{{ t.lessons }}</dt>
-          <dd>{{ f.conducted }}</dd>
+      <dl class="tb-figures">
+        <div class="tb-figure">
+          <dt class="tb-figure__label">{{ t.lessons }}</dt>
+          <dd class="tb-figure__value">{{ f.conducted }}</dd>
         </div>
-        <div class="tb-week__row">
-          <dt>{{ t.missed }}</dt>
-          <dd>{{ f.missed }}</dd>
+        <div class="tb-figure">
+          <dt class="tb-figure__label">{{ t.missed }}</dt>
+          <dd class="tb-figure__value">{{ f.missed }}</dd>
         </div>
-        <div class="tb-week__row">
-          <dt>{{ t.assigned }}</dt>
-          <dd>{{ f.assigned }}</dd>
+        <div class="tb-figure">
+          <dt class="tb-figure__label">{{ t.assigned }}</dt>
+          <dd class="tb-figure__value">{{ f.assigned }}</dd>
         </div>
-        <div class="tb-week__row">
-          <dt>{{ t.onTime }}</dt>
-          <dd>{{ f.onTime }}</dd>
+        <div class="tb-figure">
+          <dt class="tb-figure__label">{{ t.onTime }}</dt>
+          <dd class="tb-figure__value">{{ f.onTime }}</dd>
         </div>
       </dl>
     </p-card>
-  `,
-  styles: `
-    .tb-week {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: 0;
-    }
-
-    .tb-week__row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: baseline;
-      column-gap: var(--tb-space-4);
-
-      dt {
-        font: var(--tb-type-body-l);
-      }
-
-      dd {
-        margin: 0;
-        font: var(--tb-type-title-m);
-      }
-    }
   `,
 })
 export class WeekFiguresCard {

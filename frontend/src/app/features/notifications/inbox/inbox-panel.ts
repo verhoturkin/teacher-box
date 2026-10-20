@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Tooltip } from 'primeng/tooltip';
 import { HttpErrorResponse } from '@angular/common/http';
 import { errorMessage } from '@core/http/error-messages';
 import { UnreadNotifications } from '@core/notifications/unread-notifications';
@@ -30,7 +31,7 @@ interface InboxPart {
  */
 @Component({
   selector: 'tb-inbox-panel',
-  imports: [EmptyState, Button, Card, ButtonAttributes, LoadStateView, NotificationList],
+  imports: [EmptyState, Button, Card, ButtonAttributes, LoadStateView, NotificationList, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -40,11 +41,13 @@ interface InboxPart {
             <tb-empty-state icon="tb-i-notifications" [title]="t.nothing" />
           } @else {
             <div class="tb-inbox-header">
-              <span class="tb-muted">{{ t.unread(unread()) }}</span>
               <p-button
-                [label]="t.readAll"
-                icon="tb-i tb-i-check"
+                icon="tb-i tb-i-done_all"
+                [text]="true"
+                [rounded]="true"
                 severity="secondary"
+                [ariaLabel]="t.readAll"
+                [pTooltip]="t.readAll"
                 [loading]="busy.is('all')"
                 (onClick)="markAllRead()"
               />
@@ -116,12 +119,10 @@ interface InboxPart {
     </p-card>
   `,
   styles: `
+    /* «Прочитать все» is an icon button at the end of the row (the sketch puts it in the sheet's header) */
     .tb-inbox-header {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--tb-space-4);
+      justify-content: flex-end;
       margin-bottom: var(--tb-space-2);
     }
 

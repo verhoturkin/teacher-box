@@ -64,7 +64,8 @@ test('the teacher sets up Google Drive for the backups', async ({ page }) => {
   await expect(drive.getByRole('button', { name: 'Подключить Google Диск' })).toBeVisible();
 
   await page.goto('/api/public/backups/google/callback?state=stale&code=x');
-  await expect(page).toHaveURL(/\/teacher\/settings\?drive=expired/);
+  // the settings open the category of the data (0.24.0): the address may already be the category's
+  await expect(page).toHaveURL(/\/teacher\/settings(\/data)?\?drive=expired/);
   await expect(page.locator('#drive').getByText('Ссылка подключения устарела')).toBeVisible();
 });
 

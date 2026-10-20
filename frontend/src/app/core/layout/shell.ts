@@ -66,6 +66,10 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     Avatar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.tb-shell--rail]': '!compact()',
+    '[class.tb-shell--wide]': 'size() === "extra-large"',
+  },
   template: `
     <header class="tb-shell__header">
       @if (compact()) {

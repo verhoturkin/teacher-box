@@ -1,102 +1,48 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Card } from 'primeng/card';
+import { locale } from '@core/i18n/language';
 import { MoneyPipe } from '@shared/money/money.pipe';
-import { Avatar } from '@shared/ui/avatar';
-import { TeacherColors } from '@features/identity/parts';
 import { BillingSummary } from '../data-access/billing.models';
 import { T } from '../i18n/texts';
-import { locale } from '@core/i18n/language';
-import { PAYMENTS_TAB } from '../card-link';
 
 const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC' });
 
-/** Teacher's home: debts and the income of the month. */
+/**
+ * Teacher's home, the month (spec §6, the sketches): the title is the month, then one tonal block — «Поступило»
+ * with the sum large and under it «Долг» (the debtors in the queue have their own rows).
+ */
 @Component({
   selector: 'tb-finance-widget',
-  imports: [RouterLink, Card, Avatar, MoneyPipe],
+  imports: [Card, MoneyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let finance = summary();
-    <p-card [header]="t.title">
-      <div class="tb-finance">
-        <div class="tb-stat">
-          <span class="tb-muted">{{ t.income(monthName()) }}</span>
-          <span class="tb-stat__value">{{ finance.income | money: finance.currency }}</span>
+    <p-card [header]="monthName()">
+      <div class="tb-figures">
+        <div class="tb-figure tb-figure--wide">
+          <span class="tb-figure__label">{{ t.income }}</span>
+          <span class="tb-figure__value">{{ finance.income | money: finance.currency }}</span>
         </div>
-        <div class="tb-stat">
-          <span class="tb-muted">{{ t.totalDebt }}</span>
-          <span class="tb-stat__value" [class.tb-negative]="finance.totalDebt > 0">
-            {{ finance.totalDebt | money: finance.currency }}
-          </span>
+        <div class="tb-figure">
+          <span class="tb-figure__label">{{ t.totalDebt }}</span>
+          <span class="tb-figure__value" [class.tb-negative]="finance.totalDebt > 0">{{
+            finance.totalDebt | money: finance.currency
+          }}</span>
           @if (finance.debtors > 0) {
             <small class="tb-muted">{{ t.debtors(finance.debtors) }}</small>
           }
         </div>
       </div>
-      @if (finance.topDebtors.length > 0) {
-        <ul class="tb-list tb-debtors">
-          @for (debtor of finance.topDebtors; track debtor.studentId) {
-            <li [attr.data-tb-label]="colors.studentLabel(debtor.studentId)">
-              <tb-avatar [name]="debtor.displayName" [photo]="debtor.avatar" />
-              <div class="tb-list__text">
-                <a
-                  [routerLink]="['/teacher/students', debtor.studentId]"
-                  [queryParams]="paymentsTab"
-                  class="tb-list__title tb-link"
-                  >{{ debtor.displayName }}</a
-                >
-                <span class="tb-list__supporting">{{ t.debt }}</span>
-              </div>
-              <span class="tb-list__trail tb-negative">{{
-                -debtor.balance | money: finance.currency
-              }}</span>
-            </li>
-          }
-        </ul>
-      }
-      <div class="tb-widget-footer">
-        <span></span>
-        <a routerLink="/teacher/billing">{{ t.billing }}</a>
-      </div>
     </p-card>
-  `,
-  styles: `
-    /* one figure under another (ADR-0021): the name on the left, the sum on the right */
-    .tb-finance {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-
-      .tb-stat {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: baseline;
-        column-gap: var(--tb-space-4);
-
-        > :first-child {
-          font: var(--tb-type-body-l);
-        }
-
-        > small {
-          grid-column: 1 / -1;
-        }
-      }
-    }
-
-    .tb-debtors {
-      margin-top: var(--tb-space-4);
-    }
   `,
 })
 export class FinanceWidget {
-  protected readonly paymentsTab = PAYMENTS_TAB;
   protected readonly t = T.finance;
-  protected readonly colors = inject(TeacherColors);
   readonly summary = input.required<BillingSummary>();
 
-  /** Name of the month, e.g. «сентябрь». */
-  protected readonly monthName = computed(() =>
-    MONTH.format(new Date(`${this.summary().month}-01T00:00:00Z`)),
-  );
+  /** The month as the title: «Октябрь». */
+  protected readonly monthName = computed(() => {
+    const name = MONTH.format(new Date(`${this.summary().month}-01T00:00:00Z`));
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  });
 }

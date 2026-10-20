@@ -36,12 +36,12 @@ test('the language chosen in the interface goes to the account', async ({ page, 
   await page.goto('/login');
   await page.getByRole('button', { name: 'English' }).click();
   await signIn(page, 'Sign in');
-  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
   await expect.poll(() => accountLanguage(request)).toBe('en');
 
   await page.getByRole('button', { name: /user menu/ }).click();
   await page.getByRole('menuitemradio', { name: 'Русский' }).click();
-  await expect(page.getByRole('heading', { name: 'Сегодня', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
   await expect.poll(() => accountLanguage(request)).toBe('ru');
 });
 

@@ -82,8 +82,8 @@ test('rows of a list in a card are tiles with an icon, 2 px apart', async ({ pag
   });
   expect(tile.background).not.toBe(cardBackground);
   expect(tile.background).not.toBe('rgba(0, 0, 0, 0)');
-  // 0.16.2: the outer corner nests in the card (20 − 20 px of room → 4 px), as the inner ones
-  expect(tile.top).toBe('4px');
+  // 0.24.1: no card around the list: the group's outer corner is the large 16 px, the inner ones 4 px
+  expect(tile.top).toBe('16px');
   expect(await styleOf(page, 'ul.tb-list', 'row-gap')).toBe('2px');
 
   const count = await rows.count();
@@ -112,22 +112,23 @@ test('the payments are a list like the students, its rows are tiles with the ini
   await expect(page.locator('.p-datatable')).toHaveCount(0);
 });
 
-test('on a phone the pane around a list stays and the rows are tiles on it', async ({ page }) => {
+test('on a phone the page lies on the window and the rows are tiles on it', async ({ page }) => {
   await signIn(page, 390);
   await page.goto('/teacher/students');
 
-  // 0.7.3: the students are a segmented list (tb-list), not a table; 0.23.0: in the list pane
-  const card = page.locator('tb-pane:has(ul.tb-list[aria-label="Ученики"])').first();
-  expect(await card.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
+  // 0.7.3: the students are a segmented list (tb-list), not a table; 0.24.1: on a phone the list's pane is not a card
+  // on the background: it has no surface of its own, the window is the surface
+  const pane = page.locator('tb-pane:has(ul.tb-list[aria-label="Ученики"])').first();
+  await expect(pane).toBeVisible();
+  expect(await pane.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
     'rgba(0, 0, 0, 0)',
   );
+  const window = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const row = page
     .locator('ul.tb-list[aria-label="Ученики"] > li')
     .filter({ hasText: 'Плитка Проверкина' })
     .first();
   const background = await row.evaluate((element) => getComputedStyle(element).backgroundColor);
   expect(background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(background).not.toBe(
-    await card.evaluate((element) => getComputedStyle(element).backgroundColor),
-  );
+  expect(background).not.toBe(window);
 });

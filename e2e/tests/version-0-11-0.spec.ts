@@ -33,12 +33,12 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   await expect(page.getByRole('heading', { name: /^Sign in to/ })).toBeVisible();
   await signIn(page, 'Sign in');
 
-  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Schedule' }).first()).toBeVisible();
 
   // kept on the device: a reload keeps English
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: /user menu/ }).click();
   // 0.15.0: the chosen language is a checked radio item, without «(selected)»
@@ -47,7 +47,7 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
     'true',
   );
   await page.getByRole('menuitemradio', { name: 'Русский' }).click();
-  await expect(page.getByRole('heading', { name: 'Сегодня', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
 });
 
 test('a task put on a board as text stays on the board', async ({ page, request }) => {
