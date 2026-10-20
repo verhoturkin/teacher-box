@@ -203,6 +203,16 @@ public class NotificationService {
                 .toList();
     }
 
+    /** The messengers of one student, current or deactivated; an unknown student is not found. */
+    @Transactional(readOnly = true)
+    public StudentChannels studentChannels(UUID studentId) {
+        StudentSummary student = users.findStudent(studentId)
+                .orElseThrow(() -> new NotFoundException("notifications.student-not-found", "Student not found"));
+        return new StudentChannels(student.id(), student.displayName(), student.avatar(),
+                links.findByRecipient(studentId).stream().map(ChannelView::of).toList(),
+                deliveries.failedCountsSince(clock.instant().minus(PROBLEMS_WINDOW)).getOrDefault(studentId, 0L));
+    }
+
     @Transactional(readOnly = true)
     public TeacherNotificationsSummary teacherSummary() {
         List<StudentChannels> students = studentChannels();

@@ -29,10 +29,12 @@ import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
+import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.application.ReviewService;
+import ru.teacherbox.homework.application.StudentHomeworkService;
 import ru.teacherbox.homework.application.VideoCaptions;
 import ru.teacherbox.homework.application.VideoTranscripts;
 import ru.teacherbox.homework.domain.AssignmentVideo;
@@ -116,13 +118,15 @@ class TeacherHomeworkController {
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
     private final VideoTranscripts transcripts;
+    private final StudentHomeworkService students;
 
     TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
-            HomeworkSummaryService summaries, VideoTranscripts transcripts) {
+            HomeworkSummaryService summaries, VideoTranscripts transcripts, StudentHomeworkService students) {
         this.assignments = assignments;
         this.reviews = reviews;
         this.summaries = summaries;
         this.transcripts = transcripts;
+        this.students = students;
     }
 
     /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks of the video to choose from. */
@@ -145,6 +149,12 @@ class TeacherHomeworkController {
     @GetMapping("/assignments")
     List<AssignmentSummary> list() {
         return assignments.list();
+    }
+
+    /** The tasks of one student, as the student's own list shows them; an unknown student has none. */
+    @GetMapping("/students/{studentId}/tasks")
+    List<MyTask> studentTasks(@PathVariable UUID studentId) {
+        return students.tasks(studentId);
     }
 
     @PostMapping("/assignments")

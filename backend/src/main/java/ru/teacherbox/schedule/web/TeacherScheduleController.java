@@ -119,10 +119,15 @@ class TeacherScheduleController {
         this.queries = queries;
     }
 
-    /** Lessons that start on days {@code [from, to)}. */
+    /**
+     * Lessons that start on days {@code [from, to)}: all, or of one student (group lessons included) or of one
+     * group.
+     */
     @GetMapping("/lessons")
-    List<LessonView> lessons(@RequestParam LocalDate from, @RequestParam LocalDate to) {
-        return queries.lessons(from, to);
+    List<LessonView> lessons(@RequestParam LocalDate from, @RequestParam LocalDate to,
+            @RequestParam(required = false) @Nullable UUID studentId,
+            @RequestParam(required = false) @Nullable UUID groupId) {
+        return queries.lessons(from, to, studentId, groupId);
     }
 
     @GetMapping("/lessons/{lessonId}")

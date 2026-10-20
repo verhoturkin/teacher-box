@@ -368,6 +368,42 @@ class GroupLessonsIntegrationTests {
         assertThat(calendar(teacher())).contains("SUMMARY:Урок: Биология");
     }
 
+    @Test
+    void theTeacherReadsTheLessonsOfOneStudentOrGroup() throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна с карточкой");
+        UUID boris = directory.addStudent("Борис с карточкой");
+        UUID group = groups.addGroup("Карточка", anna, boris);
+        String alone = id(post("/api/teacher/schedule/lessons",
+                LessonsIntegrationTests.lesson(anna, Slots.next(clock), 60, true)));
+        String other = id(post("/api/teacher/schedule/lessons",
+                LessonsIntegrationTests.lesson(boris, Slots.next(clock), 60, true)));
+        String together = id(post("/api/teacher/schedule/lessons", groupLesson(group, Slots.next(clock))));
+        LocalDate from = LocalDate.ofInstant(clock.instant(), MOSCOW).minusDays(1);
+        LocalDate to = from.plusDays(400);
+        String uri = "/api/teacher/schedule/lessons?from={from}&to={to}&";
+
+        assertThat(mvc.get().uri(uri + "studentId={id}", from, to, anna).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$[*].id").asArray().containsExactly(alone, together);
+        assertThat(mvc.get().uri(uri + "groupId={id}", from, to, group).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$[*].id").asArray().containsExactly(together);
+                    assertThat(json).extractingPath("$[0].participants[*].studentName").asArray()
+                            .as("the teacher sees every member").containsExactly("Анна с карточкой",
+                                    "Борис с карточкой");
+                });
+        assertThat(mvc.get().uri(uri + "studentId={id}", from, to, UUID.randomUUID()).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri(uri + "studentId={s}&groupId={g}", from, to, anna, group).with(teacher()))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("schedule.filter-invalid");
+        assertThat(mvc.get().uri(uri + "studentId={id}", from, to, anna).with(TestUsers.student(anna)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(other).isNotBlank();
+    }
+
     private String calendar(RequestPostProcessor user) throws UnsupportedEncodingException {
         MvcTestResult created = mvc.post().uri("/api/me/schedule/feed").with(user).exchange();
         String path = JsonPath.read(body(created), "$.path");

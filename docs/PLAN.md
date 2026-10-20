@@ -32,7 +32,7 @@ student or group. ADR: none.
 
 ### 237. Student card (B, F)
 
-- [ ] 237.1 **B** Spec §8 «Data»: teacher reads for one student / group — `schedule` lessons by student or group
+- [x] 237.1 **B** Spec §8 «Data»: teacher reads for one student / group — `schedule` lessons by student or group
   over a period (`TeacherScheduleController` `GET /lessons` + `studentId` / `groupId`, group lessons included),
   `homework` tasks of one student (`TeacherHomeworkController`), the messenger status of one student
   (`notifications`, the source of `student-messengers-panel.ts`). Controller tests with roles (student → 403),

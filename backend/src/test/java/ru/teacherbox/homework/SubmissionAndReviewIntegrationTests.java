@@ -225,6 +225,33 @@ class SubmissionAndReviewIntegrationTests {
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    void theTeacherReadsTheTasksOfOneStudent() {
+        UUID student = directory.addStudent("Ученик с карточкой");
+        UUID other = directory.addStudent("Другой ученик");
+        String first = assignment("Диктант", student).tasks().getFirst().taskId().toString();
+        assignments.create("Чужое задание", null, null, List.of(other));
+        String second = assignments.create("Изложение", null, null, List.of(student, other)).tasks().stream()
+                .filter(task -> task.studentId().equals(student))
+                .findFirst().orElseThrow().taskId().toString();
+        String uri = "/api/teacher/homework/students/{studentId}/tasks";
+
+        assertThat(mvc.get().uri(uri, student).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$[*].taskId").asArray()
+                            .containsExactlyInAnyOrder(first, second);
+                    assertThat(json).extractingPath("$[*].title").asArray()
+                            .containsExactlyInAnyOrder("Диктант", "Изложение");
+                    assertThat(json).extractingPath("$[*].status").asArray().containsOnly("ASSIGNED");
+                });
+        assertThat(mvc.get().uri(uri, UUID.randomUUID()).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri(uri, student).with(TestUsers.student(student)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
     private AssignmentDetails assignment(String title, UUID student) {
         AssignmentDetails details = assignments.create(title, "Описание", null, List.of(student));
         assignments.addAttachments(details.id(), List.of(new UploadedFile("задание.txt", 12,

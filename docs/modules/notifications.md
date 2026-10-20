@@ -60,7 +60,9 @@ No `api` package: nothing depends on `notifications`.
 
 `/api/me/notifications/**` (inbox — newest first, `?read=true|false` filters it and `total` counts the filtered
 ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink),
-`/api/teacher/notifications/**` (status, summary, students, broadcast, remind-connect, `channels`, `bot`),
+`/api/teacher/notifications/**` (status, summary, students, `students/{studentId}` — one student's messengers and
+failed deliveries for the student card, deactivated included, unknown → 404 (237.1), broadcast, remind-connect,
+`channels`, `bot`),
 `/api/admin/notifications/deliveries` (failed deliveries without texts, retry).
 
 ## Frontend
