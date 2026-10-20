@@ -337,16 +337,13 @@ describe('AssignmentPage', () => {
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
-  /** «Добавить» in the «Ученики» card: the dialog loads the students and the groups. */
+  /** «Добавить» in the «Ученики» header: the dialog loads the students and the groups. */
   async function openAssignMore(
     fixture: Awaited<ReturnType<typeof render>>['fixture'],
     backend: HttpTestingController,
   ): Promise<AssignMoreDialog> {
-    // «Добавить» at the top right of the «Ученики» card (not «Добавить файлы»)
-    buttonByText(
-      hostElement(fixture).querySelector('.tb-card-title__actions')!,
-      'Добавить',
-    ).click();
+    // «Добавить» at the top right of the «Ученики» header (not «Добавить файлы»)
+    buttonByText(hostElement(fixture).querySelector('.tb-asg__head')!, 'Добавить').click();
     await fixture.whenStable();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
@@ -817,5 +814,122 @@ describe('TaskReviewPage', () => {
     const { host } = await render(taskDetails(), false);
 
     expect(host.textContent).not.toContain('Черновик проверки');
+  });
+});
+
+describe('TaskReviewPage as a detail pane', () => {
+  async function render(single: boolean, details = taskDetails()) {
+    const context = configure();
+    const fixture = TestBed.createComponent(TaskReviewPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    fixture.componentRef.setInput('single', single);
+    context.backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    await fixture.whenStable();
+    context.backend.expectOne('/api/teacher/homework/tasks/t-1').flush(details);
+    await fixture.whenStable();
+    return { ...context, fixture, host: hostElement(fixture) };
+  }
+
+  it('titles the work with the assignment and the line «student · due · status · attempt»', async () => {
+    const { host } = await render(false);
+
+    expect(host.querySelector('h1')?.textContent).toBe('Дроби');
+    expect(readableText(host.querySelector('.tb-task__meta')!)).toMatch(
+      /^Анна · срок 10\.09\.2026 \d\d:\d\d .*попытка 1$/,
+    );
+    expect(host.querySelector('.tb-page-header__back')).toBeNull();
+  });
+
+  it('has «back» to the list only on one pane', async () => {
+    const { host } = await render(true);
+
+    expect(host.querySelector('.tb-page-header__back')).not.toBeNull();
+  });
+
+  it('collapses the statement and opens it on a click', async () => {
+    const { host, fixture } = await render(false);
+    const head = host.querySelector<HTMLButtonElement>('.tb-task__statement-head')!;
+
+    expect(head.getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('tb-markdown')).toBeNull();
+
+    head.click();
+    await fixture.whenStable();
+
+    expect(head.getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelector('tb-markdown')).not.toBeNull();
+  });
+
+  it('links «Открыть на доске» when the assignment is on a board', async () => {
+    const base = taskDetails();
+    const { host } = await render(false, {
+      ...base,
+      assignment: { ...base.assignment, boardId: 'b-1' },
+    });
+
+    expect(host.querySelector('a[href="/teacher/boards/b-1"]')).not.toBeNull();
+  });
+
+  it('loads another work when the list opens it', async () => {
+    const { fixture, backend } = await render(false);
+
+    fixture.componentRef.setInput('taskId', 't-2');
+    await fixture.whenStable();
+
+    backend.expectOne('/api/teacher/homework/tasks/t-2').flush(taskDetails({ taskId: 't-2' }));
+    await fixture.whenStable();
+    expect(fixture.componentRef.instance.taskId()).toBe('t-2');
+  });
+});
+
+describe('AssignmentsPage with a detail', () => {
+  async function render(input: 'taskId' | 'assignmentId', id: string) {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    fixture.componentRef.setInput(input, id);
+    await fixture.whenStable();
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([reviewQueueItem()]);
+    await fixture.whenStable();
+    return { backend, fixture, host: hostElement(fixture) };
+  }
+
+  it('opens the work beside the list and marks its row', async () => {
+    const { backend, fixture, host } = await render('taskId', 't-1');
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+
+    expect(host.querySelector('tb-task-review-page')).not.toBeNull();
+    expect(host.querySelector('.tb-list__item--current')).not.toBeNull();
+    expect(
+      host.querySelector('a[href="/teacher/homework/tasks/t-1"]')?.getAttribute('aria-current'),
+    ).toBe('page');
+  });
+
+  it('opens the assignment beside the list and marks its row', async () => {
+    const { backend, fixture, host } = await render('assignmentId', 'a-1');
+    backend.expectOne('/api/teacher/homework/assignments/a-1').flush(assignmentDetails());
+    await fixture.whenStable();
+
+    expect(host.querySelector('tb-assignment-page')).not.toBeNull();
+    expect(host.querySelector('tb-assignment-page h1')?.textContent).toBe('Дроби');
+  });
+
+  it('reads the lists again after a work is reviewed', async () => {
+    const { backend, fixture, host } = await render('taskId', 't-1');
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+
+    buttonByText(host, 'Принять').click();
+    backend
+      .expectOne('/api/teacher/homework/tasks/t-1/review')
+      .flush(taskDetails({ status: 'ACCEPTED' }));
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('На проверку 0');
   });
 });

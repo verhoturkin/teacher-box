@@ -2,16 +2,19 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
+  LOCALE_ID,
   computed,
   inject,
+  effect,
   input,
+  output,
   signal,
+  untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
+import { RouterLink } from '@angular/router';
+import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
@@ -41,7 +44,10 @@ import { MaterialOpener } from './material-opener';
     DatePipe,
     ReactiveFormsModule,
     Button,
-    Card,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
+    RouterLink,
     InputText,
     Message,
     Textarea,
@@ -59,21 +65,63 @@ import { MaterialOpener } from './material-opener';
   template: `
     @if (task(); as task) {
       <tb-page-header
-        [title]="task.studentName"
-        [back]="['/teacher/homework', task.assignment.id]"
-        [backLabel]="task.assignment.title"
+        [title]="task.assignment.title"
+        [back]="single() ? '/teacher/homework' : null"
+        [backLabel]="t.back"
       >
         <tb-help-button help topic="teacher/homework" />
-        <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+        <span meta class="tb-task__meta">
+          {{ task.studentName }} ·
+          {{ task.assignment.dueAt ? t.due(date(task.assignment.dueAt)) : noDueDate }}
+          <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+          · {{ t.attempt(task.submissions.length) }}
+        </span>
+        @if (task.assignment.boardId; as boardId) {
+          <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
+            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
+            <span pButtonLabel>{{ t.openBoard }}</span>
+          </a>
+        }
       </tb-page-header>
 
       <div class="tb-stack">
-        <p-card [header]="t.answers">
+        <section class="tb-task__statement" [class.tb-task__statement--open]="statementOpen()">
+          <button
+            type="button"
+            class="tb-task__statement-head"
+            [attr.aria-expanded]="statementOpen()"
+            (click)="statementOpen.set(!statementOpen())"
+          >
+            <i class="tb-i tb-i-draft" aria-hidden="true"></i>
+            <span class="tb-task__statement-title">
+              <span class="tb-task__label">{{ t.statement }}</span>
+              @if (!statementOpen()) {
+                <span class="tb-task__preview">{{ preview(task) }}</span>
+              }
+            </span>
+            <i class="tb-i tb-i-expand_more tb-task__chevron" aria-hidden="true"></i>
+          </button>
+          @if (statementOpen()) {
+            <div class="tb-task__statement-body">
+              <tb-markdown [text]="task.assignment.description" />
+              <tb-attachment-list
+                [attachments]="task.assignment.attachments"
+                [openable]="true"
+                (opened)="materials.file($event)"
+                (download)="download($event)"
+              />
+            </div>
+          }
+        </section>
+
+        <section>
+          <h2 class="tb-task__label">{{ t.answer }}</h2>
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
-        </p-card>
+        </section>
 
         @if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
-          <p-card [header]="t.review">
+          <section>
+            <h2 class="tb-task__label">{{ t.review }}</h2>
             <form tbFieldErrors class="tb-form" [formGroup]="form">
               @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
                 <div>
@@ -135,23 +183,14 @@ import { MaterialOpener } from './material-opener';
                 />
               </div>
             </form>
-          </p-card>
+          </section>
         } @else if (task.teacherComment) {
-          <p-card [header]="t.yourComment">
+          <section>
+            <h2 class="tb-task__label">{{ t.yourComment }}</h2>
             <p class="tb-pre">{{ task.teacherComment }}</p>
             <small class="tb-muted">{{ task.reviewedAt | date: 'dd.MM.yyyy HH:mm' }}</small>
-          </p-card>
+          </section>
         }
-
-        <p-card [header]="t.assignment(task.assignment.title)">
-          <tb-markdown [text]="task.assignment.description" />
-          <tb-attachment-list
-            [attachments]="task.assignment.attachments"
-            [openable]="true"
-            (opened)="materials.file($event)"
-            (download)="download($event)"
-          />
-        </p-card>
       </div>
       <tb-to-board-dialog
         [(visible)]="boardVisible"
@@ -160,26 +199,117 @@ import { MaterialOpener } from './material-opener';
         [students]="[task.studentId]"
       />
     } @else {
-      <tb-page-header [title]="t.title" back="/teacher/homework/review" [backLabel]="t.back" />
+      <tb-page-header
+        [title]="t.title"
+        [back]="single() ? '/teacher/homework' : null"
+        [backLabel]="t.back"
+      />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,
+  styles: `
+    /* a label over a block on the pane's surface (M3 label medium, as «Ждут сдачи» in the list) */
+    .tb-task__label {
+      margin: 0 0 var(--tb-space-2);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tb-task__meta {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-1) var(--tb-space-2);
+    }
+
+    /* the statement: a tonal block, collapsed to its first line (our decision: the sketch's «Задание») */
+    .tb-task__statement {
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-surface-container);
+    }
+
+    .tb-task__statement-head {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+      inline-size: 100%;
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border: 0;
+      border-radius: inherit;
+      background: none;
+      color: var(--p-md-on-surface);
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .tb-task__statement-head:focus-visible {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: -3px;
+    }
+
+    .tb-task__statement-title {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-inline-size: 0;
+    }
+
+    .tb-task__statement-title .tb-task__label {
+      margin: 0;
+    }
+
+    .tb-task__preview {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tb-task__chevron {
+      transition: rotate 200ms;
+    }
+
+    .tb-task__statement--open .tb-task__chevron {
+      rotate: 180deg;
+    }
+
+    .tb-task__statement-body {
+      padding: 0 var(--tb-space-4) var(--tb-space-4);
+    }
+  `,
 })
-export class TaskReviewPage implements OnInit {
+export class TaskReviewPage {
   protected readonly t = T.review;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly ai = inject(AiApi);
+  private readonly dates = new DatePipe(inject(LOCALE_ID));
   protected readonly materials = inject(MaterialOpener);
 
   /** Route parameter. */
   readonly taskId = input.required<string>();
+  /** One pane at a time: the header has «back» to the list. */
+  readonly single = input(false);
+  /** The work was reviewed: the list beside it changes. */
+  readonly changed = output();
+  protected readonly statementOpen = signal(false);
+  protected readonly noDueDate = T.noDueDate;
 
   protected readonly task = signal<TaskDetails | null>(null);
 
   constructor() {
     pageDetail(() => this.task()?.studentName);
+    // the page stays when the list opens another work
+    effect(() => {
+      this.taskId();
+      untracked(() => {
+        this.task.set(null);
+        this.load();
+      });
+    });
   }
   protected readonly pending = signal(false);
   protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
@@ -206,10 +336,6 @@ export class TaskReviewPage implements OnInit {
   });
 
   protected readonly state = new LoadState();
-
-  ngOnInit(): void {
-    this.load();
-  }
 
   protected load(): void {
     this.api
@@ -238,6 +364,7 @@ export class TaskReviewPage implements OnInit {
         next: (reviewed) => {
           this.pending.set(false);
           this.show(reviewed);
+          this.changed.emit();
           this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
         },
         error: () => {
@@ -280,6 +407,16 @@ export class TaskReviewPage implements OnInit {
     this.api.teacherFile(file.id).subscribe((blob) => {
       this.fileSaver.save(blob, file.filename);
     });
+  }
+
+  protected date(value: string): string {
+    return this.dates.transform(value, 'dd.MM.yyyy HH:mm') ?? '';
+  }
+
+  /** The first line of the statement under «Задание» while it is collapsed. */
+  protected preview(task: TaskDetails): string {
+    const text = (task.assignment.description ?? '').replace(/[#*_`>-]/g, '').trim();
+    return text.split('\n')[0] ?? '';
   }
 
   private show(task: TaskDetails): void {

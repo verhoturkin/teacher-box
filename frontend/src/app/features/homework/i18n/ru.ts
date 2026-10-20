@@ -273,6 +273,11 @@ export const ru = {
     beyond: 'Таких страниц в учебнике нет',
   },
   review: {
+    statement: 'Задание',
+    answer: 'Ответ ученика',
+    openBoard: 'Открыть на доске',
+    due: (date: string) => `срок ${date}`,
+    attempt: (n: number) => `попытка ${String(n)}`,
     answers: 'Ответы ученика',
     review: 'Проверка',
     draft: 'Черновик проверки',

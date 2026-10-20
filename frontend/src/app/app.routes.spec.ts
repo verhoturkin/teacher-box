@@ -237,11 +237,12 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/teacher/homework/tasks/t-1');
     backend.expectOne('/api/teacher/homework/tasks/t-1');
-    expect(title()).toBe('Проверка работы — Teacher Box');
+    // the work and the assignment open beside the list: the route's title is the list's
+    expect(title()).toBe('Задания — Teacher Box');
 
     await harness.navigateByUrl('/teacher/homework/a-1');
     backend.expectOne('/api/teacher/homework/assignments/a-1');
-    expect(title()).toBe('Задание — Teacher Box');
+    expect(title()).toBe('Задания — Teacher Box');
 
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/homework');

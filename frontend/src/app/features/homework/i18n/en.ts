@@ -276,6 +276,11 @@ export const en: Translation<typeof ru> = {
     beyond: 'The textbook has no such pages',
   },
   review: {
+    statement: 'Task',
+    answer: "Student's answer",
+    openBoard: 'Open on the board',
+    due: (date: string) => `due ${date}`,
+    attempt: (n: number) => `attempt ${String(n)}`,
     answers: 'Student’s answers',
     review: 'Review',
     draft: 'Review draft',

@@ -3,16 +3,17 @@ import {
   ChangeDetectionStrategy,
   Component,
   LOCALE_ID,
-  OnInit,
   computed,
   inject,
+  effect,
   input,
+  output,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
@@ -58,7 +59,6 @@ import { T } from '../i18n/texts';
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
-    Card,
     ConfirmDialog,
     MarkdownView,
     AttachmentList,
@@ -77,7 +77,11 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
-      <tb-page-header [title]="assignment.title" back="/teacher/homework" [backLabel]="t.back">
+      <tb-page-header
+        [title]="assignment.title"
+        [back]="single() ? '/teacher/homework' : null"
+        [backLabel]="t.back"
+      >
         <tb-help-button help topic="teacher/homework" />
         <span meta>
           {{ assignment.dueAt ? t.due(date(assignment.dueAt)) : t.noDueDate }}
@@ -95,7 +99,7 @@ import { T } from '../i18n/texts';
           [disabled]="!hasBoardMaterial()"
           (onClick)="boardVisible.set(true)"
         />
-        <a pButton severity="secondary" routerLink="edit">
+        <a pButton severity="secondary" [routerLink]="['/teacher/homework', assignment.id, 'edit']">
           <i pButtonIcon aria-hidden="true" class="tb-i tb-i-edit"></i>
           <span pButtonLabel>{{ t.edit }}</span>
         </a>
@@ -109,7 +113,8 @@ import { T } from '../i18n/texts';
       </tb-page-header>
 
       <div class="tb-stack">
-        <p-card [header]="t.assignment">
+        <section>
+          <h2 class="tb-asg__label">{{ t.assignment }}</h2>
           @if (assignment.description) {
             <tb-markdown [text]="assignment.description" />
           } @else {
@@ -157,22 +162,18 @@ import { T } from '../i18n/texts';
               (onClick)="openBind(null)"
             />
           </div>
-        </p-card>
+        </section>
 
-        <p-card>
-          <ng-template #title>
-            <div class="tb-card-title">
-              <span class="tb-card-title__text">{{ t.students }}</span>
-              <div class="tb-card-title__actions">
-                <p-button
-                  [label]="t.add"
-                  icon="tb-i tb-i-add"
-                  severity="secondary"
-                  (onClick)="assignMore.open()"
-                />
-              </div>
-            </div>
-          </ng-template>
+        <section>
+          <div class="tb-asg__head">
+            <h2 class="tb-asg__label">{{ t.students }}</h2>
+            <p-button
+              [label]="t.add"
+              icon="tb-i tb-i-add"
+              severity="secondary"
+              (onClick)="assignMore.open()"
+            />
+          </div>
           @if (assignment.tasks.length > 0) {
             <ul class="tb-list" [attr.aria-label]="t.students">
               @for (task of assignment.tasks; track task.taskId) {
@@ -202,7 +203,7 @@ import { T } from '../i18n/texts';
           } @else {
             <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
           }
-        </p-card>
+        </section>
       </div>
 
       <tb-assign-more-dialog
@@ -234,13 +235,39 @@ import { T } from '../i18n/texts';
         (placed)="rememberBoard(assignment.id, $event)"
       />
     } @else {
-      <tb-page-header [title]="t.assignment" back="/teacher/homework" [backLabel]="t.back" />
+      <tb-page-header
+        [title]="t.assignment"
+        [back]="single() ? '/teacher/homework' : null"
+        [backLabel]="t.back"
+      />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
     <p-confirmdialog />
   `,
+  styles: `
+    /* a label over a block on the pane's surface (M3 label medium, as «Ждут сдачи» in the list) */
+    .tb-asg__label {
+      margin: 0 0 var(--tb-space-2);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tb-asg__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-3);
+      margin-block-end: var(--tb-space-2);
+
+      .tb-asg__label {
+        margin: 0;
+      }
+    }
+  `,
 })
-export class AssignmentPage implements OnInit {
+export class AssignmentPage {
   protected readonly t = T.page;
   protected readonly colors = inject(TeacherColors);
   protected readonly tv = T.videos;
@@ -255,6 +282,10 @@ export class AssignmentPage implements OnInit {
 
   /** Route parameter. */
   readonly assignmentId = input.required<string>();
+  /** One pane at a time: the header has «back» to the list. */
+  readonly single = input(false);
+  /** The assignment changed (given to more students, deleted): the list beside it changes. */
+  readonly changed = output();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
   /** The students of the assignment: «На доску» offers only their boards. */
@@ -264,6 +295,14 @@ export class AssignmentPage implements OnInit {
 
   constructor() {
     pageDetail(() => this.details()?.title);
+    // the page stays when the list opens another assignment
+    effect(() => {
+      this.assignmentId();
+      untracked(() => {
+        this.details.set(null);
+        this.load();
+      });
+    });
   }
   protected readonly boardVisible = signal(false);
   /** A text, a picture or a textbook page to put on a board. */
@@ -291,10 +330,6 @@ export class AssignmentPage implements OnInit {
   protected readonly uploading = signal(false);
 
   protected readonly state = new LoadState();
-
-  ngOnInit(): void {
-    this.load();
-  }
 
   protected load(): void {
     this.api
@@ -372,6 +407,7 @@ export class AssignmentPage implements OnInit {
         accept: () => {
           this.api.deleteAssignment(assignment.id).subscribe(() => {
             this.snackbar.success(T.remove.deleted(assignment.title));
+            this.changed.emit();
             void this.router.navigate(['/teacher/homework']);
           });
         },
@@ -416,6 +452,7 @@ export class AssignmentPage implements OnInit {
 
   protected assigned(updated: AssignmentDetails): void {
     this.details.set(updated);
+    this.changed.emit();
     this.snackbar.success(T.page.assigned);
   }
 }

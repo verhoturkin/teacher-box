@@ -6,6 +6,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   linkedSignal,
   signal,
   viewChild,
@@ -35,6 +36,8 @@ import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
+import { AssignmentPage } from './assignment-page';
+import { TaskReviewPage } from './task-review-page';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary, ReviewQueueItem } from '../data-access/homework.models';
 import { assignmentProgress, isDone } from '../homework-labels';
@@ -52,12 +55,14 @@ type Filter = 'review' | 'active' | 'done';
  * rows on the pane's surface. «На проверку» lists the works handed in (then «Ждут сдачи»: the assignments
  * somebody still has to hand in), «Активные» the assignments in progress (then «Не выдано»: the drafts),
  * «Готовые» those with every work accepted. A row opens the work or the assignment; «⋮» of an assignment —
- * its actions. The detail pane waits for the stage 242.2 (until then it only invites to choose).
+ * its actions. The detail pane is the work (`/teacher/homework/tasks/:taskId`) or the assignment with its
+ * students (`/teacher/homework/:assignmentId`); on one pane the route decides what is shown, «back» leads to the list.
  */
 @Component({
   selector: 'tb-assignments-page',
   imports: [
     NgTemplateOutlet,
+    AssignmentPage,
     Avatar,
     Button,
     ButtonAttributes,
@@ -74,127 +79,144 @@ type Filter = 'review' | 'active' | 'done';
     SearchField,
     SegmentGroup,
     Tag,
+    TaskReviewPage,
     Tooltip,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes>
-      <tb-pane kind="fixed" [label]="t.title" [class.tb-hw__pane]="!layout.single()">
-        <tb-page-header [title]="t.title">
-          <tb-help-button help topic="teacher/homework" />
-          <p-button
-            icon="tb-i tb-i-filter_list"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
-            [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
-            [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
-            (onClick)="toggleSearch()"
-          />
-          <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
-          @if (mobile()) {
+      @if (layout.list()) {
+        <tb-pane kind="fixed" [label]="t.title" [class.tb-hw__pane]="!layout.single()">
+          <tb-page-header [title]="t.title">
+            <tb-help-button help topic="teacher/homework" />
             <p-button
-              class="tb-page-fab"
-              [label]="t.create"
-              icon="tb-i tb-i-add"
-              (onClick)="openCreate()"
+              icon="tb-i tb-i-filter_list"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
+              [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
+              [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
+              (onClick)="toggleSearch()"
             />
-          }
-        </tb-page-header>
-
-        <div class="tb-hw__filters">
-          <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
-          @if (searchOpen()) {
-            <tb-search-field [formControl]="search" [label]="t.search" />
-          }
-        </div>
-
-        <!-- beside the detail only the list scrolls: the header, the group and the search stay -->
-        <div class="tb-hw__scroll">
-          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-            @switch (filter()) {
-              @case ('review') {
-                @if (works().length > 0) {
-                  <ul class="tb-list" [attr.aria-label]="t.toReview">
-                    @for (work of works(); track work.taskId) {
-                      <li [attr.data-tb-label]="colors.studentLabel(work.studentId)">
-                        <tb-avatar [name]="work.studentName" [photo]="work.studentAvatar" />
-                        <div class="tb-list__text">
-                          <a
-                            class="tb-list__title tb-list__link"
-                            [routerLink]="['/teacher/homework/tasks', work.taskId]"
-                            [attr.aria-label]="t.reviewOf(work.studentName, work.title)"
-                            >{{ work.studentName }}</a
-                          >
-                          <span class="tb-list__supporting">{{ handedIn(work) }}</span>
-                        </div>
-                        @if (isLate(work)) {
-                          <div class="tb-list__trail">
-                            <p-tag [value]="t.late" severity="danger" />
-                          </div>
-                        }
-                      </li>
-                    }
-                  </ul>
-                } @else if (!searching() && waiting().length === 0) {
-                  <tb-empty-state
-                    icon="tb-i-check_circle"
-                    [title]="t.allReviewedTitle"
-                    [hint]="t.allReviewedHint"
-                  />
-                } @else if (searching()) {
-                  <ng-container [ngTemplateOutlet]="notFound" />
-                }
-                @if (waiting().length > 0) {
-                  <h2 class="tb-hw__section">{{ t.waiting }}</h2>
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: waiting(), label: t.waiting }"
-                  />
-                }
-              }
-              @case ('active') {
-                @if (given().length > 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: given(), label: t.active }"
-                  />
-                } @else if (drafts().length === 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="empty"
-                    [ngTemplateOutletContext]="{ done: false }"
-                  />
-                }
-                @if (drafts().length > 0) {
-                  <h2 class="tb-hw__section">{{ t.drafts }}</h2>
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: drafts(), label: t.drafts }"
-                  />
-                }
-              }
-              @case ('done') {
-                @if (finished().length > 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: finished(), label: t.done }"
-                  />
-                } @else {
-                  <ng-container
-                    [ngTemplateOutlet]="empty"
-                    [ngTemplateOutletContext]="{ done: true }"
-                  />
-                }
-              }
+            <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+            @if (mobile()) {
+              <p-button
+                class="tb-page-fab"
+                [label]="t.create"
+                icon="tb-i tb-i-add"
+                (onClick)="openCreate()"
+              />
             }
-          </tb-load-state>
-        </div>
-      </tb-pane>
-      @if (!layout.single()) {
+          </tb-page-header>
+
+          <div class="tb-hw__filters">
+            <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
+            @if (searchOpen()) {
+              <tb-search-field [formControl]="search" [label]="t.search" />
+            }
+          </div>
+
+          <!-- beside the detail only the list scrolls: the header, the group and the search stay -->
+          <div class="tb-hw__scroll">
+            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+              @switch (filter()) {
+                @case ('review') {
+                  @if (works().length > 0) {
+                    <ul class="tb-list" [attr.aria-label]="t.toReview">
+                      @for (work of works(); track work.taskId) {
+                        <li
+                          [attr.data-tb-label]="colors.studentLabel(work.studentId)"
+                          [class.tb-list__item--current]="taskId() === work.taskId"
+                        >
+                          <tb-avatar [name]="work.studentName" [photo]="work.studentAvatar" />
+                          <div class="tb-list__text">
+                            <a
+                              class="tb-list__title tb-list__link"
+                              [routerLink]="['/teacher/homework/tasks', work.taskId]"
+                              [attr.aria-current]="taskId() === work.taskId ? 'page' : null"
+                              [attr.aria-label]="t.reviewOf(work.studentName, work.title)"
+                              >{{ work.studentName }}</a
+                            >
+                            <span class="tb-list__supporting">{{ handedIn(work) }}</span>
+                          </div>
+                          @if (isLate(work)) {
+                            <div class="tb-list__trail">
+                              <p-tag [value]="t.late" severity="danger" />
+                            </div>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  } @else if (!searching() && waiting().length === 0) {
+                    <tb-empty-state
+                      icon="tb-i-check_circle"
+                      [title]="t.allReviewedTitle"
+                      [hint]="t.allReviewedHint"
+                    />
+                  } @else if (searching()) {
+                    <ng-container [ngTemplateOutlet]="notFound" />
+                  }
+                  @if (waiting().length > 0) {
+                    <h2 class="tb-hw__section">{{ t.waiting }}</h2>
+                    <ng-container
+                      [ngTemplateOutlet]="assignmentRows"
+                      [ngTemplateOutletContext]="{ rows: waiting(), label: t.waiting }"
+                    />
+                  }
+                }
+                @case ('active') {
+                  @if (given().length > 0) {
+                    <ng-container
+                      [ngTemplateOutlet]="assignmentRows"
+                      [ngTemplateOutletContext]="{ rows: given(), label: t.active }"
+                    />
+                  } @else if (drafts().length === 0) {
+                    <ng-container
+                      [ngTemplateOutlet]="empty"
+                      [ngTemplateOutletContext]="{ done: false }"
+                    />
+                  }
+                  @if (drafts().length > 0) {
+                    <h2 class="tb-hw__section">{{ t.drafts }}</h2>
+                    <ng-container
+                      [ngTemplateOutlet]="assignmentRows"
+                      [ngTemplateOutletContext]="{ rows: drafts(), label: t.drafts }"
+                    />
+                  }
+                }
+                @case ('done') {
+                  @if (finished().length > 0) {
+                    <ng-container
+                      [ngTemplateOutlet]="assignmentRows"
+                      [ngTemplateOutletContext]="{ rows: finished(), label: t.done }"
+                    />
+                  } @else {
+                    <ng-container
+                      [ngTemplateOutlet]="empty"
+                      [ngTemplateOutletContext]="{ done: true }"
+                    />
+                  }
+                }
+              }
+            </tb-load-state>
+          </div>
+        </tb-pane>
+      }
+      @if (layout.detail()) {
         <tb-pane [label]="t.pickTitle">
-          <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
+          @if (taskId(); as id) {
+            <tb-task-review-page [taskId]="id" [single]="layout.single()" (changed)="refresh()" />
+          } @else if (assignmentId(); as id) {
+            <tb-assignment-page
+              [assignmentId]="id"
+              [single]="layout.single()"
+              (changed)="refresh()"
+            />
+          } @else {
+            <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
+          }
         </tb-pane>
       }
     </tb-panes>
@@ -202,7 +224,7 @@ type Filter = 'review' | 'active' | 'done';
     <ng-template #assignmentRows let-rows="rows" let-label="label">
       <ul class="tb-list" [attr.aria-label]="label">
         @for (assignment of rows; track assignment.id) {
-          <li>
+          <li [class.tb-list__item--current]="assignmentId() === assignment.id">
             <span class="tb-list__lead" aria-hidden="true"
               ><i
                 [class]="
@@ -214,6 +236,7 @@ type Filter = 'review' | 'active' | 'done';
               <a
                 class="tb-list__title tb-list__link"
                 [routerLink]="['/teacher/homework', assignment.id]"
+                [attr.aria-current]="assignmentId() === assignment.id ? 'page' : null"
                 >{{ assignment.title }}</a
               >
               <span class="tb-list__supporting">{{ details(assignment) }}</span>
@@ -311,8 +334,12 @@ export class AssignmentsPage implements OnInit {
   protected readonly t = T.list;
   protected readonly colors = inject(TeacherColors);
   protected readonly progress = assignmentProgress;
-  /** The list only: the detail panes come with the stage 242.2. */
-  protected readonly layout = injectListDetail(() => false);
+  /** Route parameters: the work or the assignment open beside the list. */
+  readonly taskId = input<string>();
+  readonly assignmentId = input<string>();
+  protected readonly layout = injectListDetail(
+    () => this.taskId() !== undefined || this.assignmentId() !== undefined,
+  );
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
   private readonly confirmation = inject(ConfirmationService);
@@ -413,6 +440,17 @@ export class AssignmentsPage implements OnInit {
       this.search.setValue('');
     }
     this.searchOpen.update((open) => !open);
+  }
+
+  /** A work was reviewed or an assignment changed: reads the lists again without the loading state. */
+  protected refresh(): void {
+    forkJoin({ assignments: this.api.assignments(), queue: this.api.reviewQueue() }).subscribe(
+      ({ assignments, queue }) => {
+        this.now.set(Date.now());
+        this.assignments.set(assignments);
+        this.queue.set(queue);
+      },
+    );
   }
 
   protected load(): void {
