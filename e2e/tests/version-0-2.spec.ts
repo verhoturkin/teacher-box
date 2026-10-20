@@ -284,7 +284,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   const student = await (await browser.newContext()).newPage();
   await signIn(student, ANNA_LOGIN, ANNA_PASSWORD);
   await expect(student).toHaveURL(/\/cabinet$/);
-  // 0.15.3: the boards are in «Мои доски», not on the home page
+  // the boards are in «Материалы» (0.26.0), not on the home page
   await student.goto('/cabinet/boards');
   await expect(student.getByRole('link', { name: /Алгебра/ })).toHaveAttribute(
     'href',

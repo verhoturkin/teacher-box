@@ -166,18 +166,18 @@ describe('Shell on a phone', () => {
     expect(menuButton(host).getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('puts five sections of the student in the bar and the textbooks under ☰', async () => {
+  it('puts the five sections of the student in the bar, none is left under ☰', async () => {
     const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV, '/cabinet');
 
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
       'Главная',
       'Расписание',
       'Задания',
-      'Мои доски',
+      'Материалы',
       'Оплаты',
     ]);
     const rail = await openRail(host);
-    expect(labels(rail, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники']);
+    expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
   });
 
   it('takes the first five sections without a bar order', async () => {

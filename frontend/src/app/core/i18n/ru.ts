@@ -11,7 +11,6 @@ export const ru = {
     billing: 'Оплаты',
     boards: 'Доски',
     materials: 'Материалы',
-    myBoards: 'Мои доски',
     settings: 'Настройки',
     log: 'Журнал',
     status: 'Состояние',

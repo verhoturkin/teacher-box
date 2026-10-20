@@ -16,6 +16,7 @@ export const ru = {
     OTHER: 'Другое',
   },
   search: 'Название, ученик или группа',
+  searchMine: 'Название',
   member: {
     label: 'Чьи материалы',
     placeholder: 'Выберите ученика или группу',

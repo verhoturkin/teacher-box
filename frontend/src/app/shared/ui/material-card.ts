@@ -53,21 +53,23 @@ import { BlobImage } from './blob-image';
         }
         <span class="tb-material-card__supporting">{{ supporting() }}</span>
       </div>
-      <p-button
-        class="tb-material-card__menu"
-        icon="tb-i tb-i-more_vert"
-        [text]="true"
-        [rounded]="true"
-        severity="secondary"
-        [pTooltip]="actionsLabel()"
-        [ariaLabel]="actionsLabel()"
-        [loading]="busy()"
-        [tbAttributes]="{
-          'aria-haspopup': 'menu',
-          'aria-expanded': menuOpen() ? 'true' : 'false',
-        }"
-        (onClick)="menu.emit($event)"
-      />
+      @if (actionsLabel(); as actions) {
+        <p-button
+          class="tb-material-card__menu"
+          icon="tb-i tb-i-more_vert"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          [pTooltip]="actions"
+          [ariaLabel]="actions"
+          [loading]="busy()"
+          [tbAttributes]="{
+            'aria-haspopup': 'menu',
+            'aria-expanded': menuOpen() ? 'true' : 'false',
+          }"
+          (onClick)="menu.emit($event)"
+        />
+      }
     </div>
   `,
   styles: `
@@ -134,6 +136,7 @@ import { BlobImage } from './blob-image';
       align-items: center;
       gap: var(--tb-space-1);
       padding: var(--tb-space-3) var(--tb-space-2) var(--tb-space-3) var(--tb-space-4);
+      min-block-size: 4.25rem;
     }
 
     .tb-material-card__text {
@@ -200,7 +203,8 @@ export class MaterialCard {
   readonly version = input<string | null>(null);
   /** The icon of the kind, shown while there is no picture: a `tb-i-<name>` class. */
   readonly icon = input.required<string>();
-  readonly actionsLabel = input.required<string>();
+  /** The name of «⋮»; none — the card has no actions (a student's). */
+  readonly actionsLabel = input<string | null>(null);
   readonly menuOpen = input(false);
   readonly busy = input(false);
 

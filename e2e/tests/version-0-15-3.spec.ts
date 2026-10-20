@@ -147,15 +147,17 @@ test('the student’s home: no calls and boards cards, the boards of the lesson 
   await expect(page).toHaveURL(new RegExp(`/cabinet/boards/${boardId}$`));
 });
 
-test('the student’s boards are in two cards, a tap on a row opens the board', async ({ page }) => {
+test('the student’s boards are cards of Materials, a tap on a card opens the board', async ({
+  page,
+}) => {
   await signIn(page, LOGIN, PASSWORD, PHONE);
   await page.goto('/cabinet/boards');
-  await expect(page.getByRole('list', { name: 'Внешние доски' })).toContainText(LINK_BOARD);
-  const row = page.getByRole('list', { name: 'Доски на портале' }).locator('li', {
-    hasText: BOARD,
-  });
-  // the far end of the row, away from the title
-  const box = await row.boundingBox();
+  await expect(page).toHaveURL(/\/cabinet\/materials\?tab=boards$/);
+  const cards = page.getByRole('list', { name: 'Список досок' });
+  await expect(cards).toContainText(LINK_BOARD);
+  const card = cards.locator('li', { hasText: BOARD });
+  // the far end of the card, away from the title
+  const box = await card.boundingBox();
   await page.mouse.click(
     (box?.x ?? 0) + (box?.width ?? 0) - 12,
     (box?.y ?? 0) + (box?.height ?? 0) - 8,

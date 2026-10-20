@@ -43,7 +43,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
   `/teacher/textbooks`; `TEACHER_MENU`.
   *Decision: own feature `features/materials` composing `BoardsFeed` / `TextbooksFeed` from the `parts.ts` of their
   modules (design-system «Materials»); the rail «Создать» menu has seven items — «Доска» and «Учебник» both.*
-- [ ] 245.3 **F** Student: `boards/student/my-boards-page.ts` + `textbooks/student/my-textbooks-page.ts` → one
+- [x] 245.3 **F** Student: `boards/student/my-boards-page.ts` + `textbooks/student/my-textbooks-page.ts` → one
   «Материалы» page.
 - [ ] 245.4 **D** design-system (feed), help (boards, textbooks; ru, en), wiki.
 

@@ -153,8 +153,8 @@ test('the student has the textbook and only the bound pages in the task', async 
   request,
 }) => {
   await signIn(page, 1280, LOGIN, PASSWORD);
-  await page.goto('/cabinet/textbooks');
-  await expect(page.getByRole('list', { name: 'Учебники' })).toContainText(TEXTBOOK);
+  await page.goto('/cabinet/materials?tab=textbooks');
+  await expect(page.getByRole('list', { name: 'Список учебников' })).toContainText(TEXTBOOK);
 
   await page.goto(`/cabinet/homework/${taskId}`);
   const textbooks = page.getByRole('list', { name: 'Учебники задания' });

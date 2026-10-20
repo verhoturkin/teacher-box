@@ -13,7 +13,6 @@ export const en: Translation<typeof ru> = {
     billing: 'Payments',
     boards: 'Boards',
     materials: 'Materials',
-    myBoards: 'My boards',
     settings: 'Settings',
     log: 'Log',
     status: 'Status',

@@ -61,10 +61,13 @@ const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
     : { consumed: segments, posParams: { assignmentId: first } };
 };
 
-/** Old `/teacher/boards` and `/teacher/textbooks`: the tab of Materials, the query (`?student=`, `?create=`…) stays. */
-function materialsTab(tab: 'boards' | 'textbooks'): RedirectFunction {
+/**
+ * Old `/teacher/boards`, `/teacher/textbooks` and the student's `/cabinet/boards`, `/cabinet/textbooks`: the tab of
+ * Materials, the query (`?student=`, `?create=`…) stays.
+ */
+function materialsTab(tab: 'boards' | 'textbooks', area = 'teacher'): RedirectFunction {
   return ({ queryParams }) =>
-    inject(Router).createUrlTree(['/teacher/materials'], { queryParams: { ...queryParams, tab } });
+    inject(Router).createUrlTree([`/${area}/materials`], { queryParams: { ...queryParams, tab } });
 }
 
 const N = CORE_T.titles;
@@ -240,19 +243,17 @@ export const routes: Routes = [
         loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
       },
       {
-        path: 'textbooks',
-        title: NAV.textbooks,
-        loadComponent: () => import('@features/textbooks').then((m) => m.MyTextbooksPage),
+        path: 'materials',
+        title: NAV.materials,
+        loadComponent: () => import('@features/materials').then((m) => m.MyMaterialsPage),
       },
+      // boards and textbooks are the two tabs of Materials (245.3)
+      { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards', 'cabinet') },
+      { path: 'textbooks', pathMatch: 'full', redirectTo: materialsTab('textbooks', 'cabinet') },
       {
         path: 'billing',
         title: NAV.billing,
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
-      },
-      {
-        path: 'boards',
-        title: NAV.myBoards,
-        loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
         // the inbox is in the bell's sheet, the messengers in «Мой аккаунт» (235.2)

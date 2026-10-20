@@ -12,24 +12,27 @@ export const STUDENT_MENU: MenuItem[] = [
   },
   { label: CORE_T.nav.schedule, icon: 'tb-i tb-i-calendar_month', routerLink: '/cabinet/schedule' },
   { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/cabinet/homework' },
-  { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/cabinet/textbooks' },
+  {
+    label: CORE_T.nav.materials,
+    icon: 'tb-i tb-i-library_books',
+    routerLink: '/cabinet/materials',
+  },
   {
     label: CORE_T.nav.billing,
     icon: 'tb-i tb-i-account_balance_wallet',
     routerLink: '/cabinet/billing',
   },
-  { label: CORE_T.nav.myBoards, icon: 'tb-i tb-i-co_present', routerLink: '/cabinet/boards' },
 ];
 
 /**
  * The five sections of the bottom bar on a phone (spec §5: Главная · Расписание · Задания · Материалы ·
- * Оплаты; «Мои доски» stand for «Материалы» until they ship); «Учебники» are under ☰.
+ * Оплаты).
  */
 export const STUDENT_BOTTOM_NAV: readonly string[] = [
   '/cabinet',
   '/cabinet/schedule',
   '/cabinet/homework',
-  '/cabinet/boards',
+  '/cabinet/materials',
   '/cabinet/billing',
 ];
 

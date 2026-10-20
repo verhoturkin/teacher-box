@@ -18,6 +18,7 @@ export const en: Translation<typeof ru> = {
     OTHER: 'Other',
   },
   search: 'Title, student or group',
+  searchMine: 'Title',
   member: {
     label: 'Whose materials',
     placeholder: 'Choose a student or a group',
