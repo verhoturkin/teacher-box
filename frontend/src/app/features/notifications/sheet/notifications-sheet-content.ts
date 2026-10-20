@@ -25,12 +25,16 @@ import { T } from '../i18n/texts';
       <p-tabs class="tb-tabs" [value]="state.tab()" (valueChange)="choose($event)">
         <p-tablist>
           <p-tab value="inbox">
-            {{ t.inbox }}
-            @if (badge(); as count) {
-              <p-badge [value]="count" />
-            }
+            <span class="tb-tab-label">
+              {{ t.inbox }}
+              @if (badge(); as count) {
+                <p-badge [value]="count" />
+              }
+            </span>
           </p-tab>
-          <p-tab value="sent">{{ t.sent }}</p-tab>
+          <p-tab value="sent"
+            ><span class="tb-tab-label">{{ t.sent }}</span></p-tab
+          >
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="inbox"><tb-inbox-panel /></p-tabpanel>

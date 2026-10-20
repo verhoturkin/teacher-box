@@ -12,12 +12,9 @@ export const en: Translation<typeof ru> = {
     MISSED: 'Missed (charged)',
   },
   finance: {
-    title: 'Finance',
-    income: (month: string) => `Received in ${month}`,
-    totalDebt: 'Students’ debt',
+    income: 'Received',
+    totalDebt: 'Debt',
     debtors: (count: number) => `debtors: ${String(count)}`,
-    debt: 'debt',
-    billing: 'Payments',
   },
   myBalance: {
     title: 'Balance',

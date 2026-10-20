@@ -167,7 +167,7 @@ test('a lesson marked in the schedule is charged', async ({ page }) => {
   const row = page
     .locator('ul.tb-queue li')
     .filter({ hasText: STUDENT_NAME })
-    .filter({ hasText: 'отметить итог' });
+    .filter({ hasText: 'Отметьте занятие' });
   await row.getByRole('button', { name: 'Проведено' }).click();
   await expect(row).toHaveCount(0);
 
@@ -217,7 +217,7 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
 test('the home pages sum up the day', async ({ page, browser }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await expect(page.getByText('Нужно сделать')).toBeVisible();
-  await expect(page.getByText(/Поступило за/)).toBeVisible();
+  await expect(page.getByText('Поступило', { exact: true })).toBeVisible();
 
   const student = await studentPage(browser);
   // 0.15.1: the title of the nearest lesson is for screen readers only

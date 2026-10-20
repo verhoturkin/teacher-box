@@ -9,15 +9,15 @@ import { NotificationItem } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
 
 /**
- * Notifications as a list without icons: title, text and time; «Открыть» and «Отметить прочитанным» (on a phone
- * a swipe sideways instead of the tick).
+ * Notifications as a list: a dot for the unread, the title (it opens the notification), text and time and
+ * «Отметить прочитанным» (on a phone a swipe sideways instead of the tick).
  */
 @Component({
   selector: 'tb-notification-list',
   imports: [DatePipe, Button, Swipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="tb-list tb-list--no-lead tb-notifications" [attr.aria-label]="label()">
+    <ul class="tb-list tb-notifications" [attr.aria-label]="label()">
       @for (item of items(); track item.id) {
         <li
           class="tb-notification"
@@ -25,22 +25,25 @@ import { T } from '../i18n/texts';
           [tbSwipe]="mobile() && !item.read"
           (tbSwiped)="markRead.emit(item)"
         >
+          <span class="tb-notification__dot" aria-hidden="true"></span>
           <div class="tb-list__text">
-            <span class="tb-list__title tb-notification__title">{{ item.title }}</span>
+            @if (item.link !== null) {
+              <button
+                type="button"
+                class="tb-list__title tb-notification__title tb-notification__open"
+                (click)="opened.emit(item)"
+              >
+                {{ item.title }}
+              </button>
+            } @else {
+              <span class="tb-list__title tb-notification__title">{{ item.title }}</span>
+            }
             @if (item.body !== null) {
               <span class="tb-list__supporting tb-notification__body">{{ item.body }}</span>
             }
             <span class="tb-list__supporting">{{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
           </div>
           <div class="tb-list__trail">
-            @if (item.link !== null) {
-              <p-button
-                [label]="t.open"
-                [text]="true"
-                [ariaLabel]="t.openOf(item.title)"
-                (onClick)="opened.emit(item)"
-              />
-            }
             <!-- a phone: a swipe marks it read, no tick -->
             @if (!item.read && !mobile()) {
               <p-button
@@ -70,6 +73,29 @@ import { T } from '../i18n/texts';
 
     .tb-notification--unread .tb-notification__title {
       font-weight: 500;
+    }
+
+    /* the sketch: a dot for an unread one (primary), the title opens the notification, no «Открыть» button */
+    .tb-notification__dot {
+      align-self: center;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: var(--tb-shape-full);
+      background: transparent;
+    }
+
+    .tb-notification--unread .tb-notification__dot {
+      background: var(--p-md-primary);
+    }
+
+    .tb-notification__open {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
     }
 
     /* the text may hold a link to a meeting: a long address breaks anywhere (ADR-0021) */

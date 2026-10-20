@@ -75,7 +75,8 @@ describe('TodoQueue', () => {
     expect(content).toContain('Иван Петров');
     expect(content).toContain('Группа «ОГЭ»');
     expect(content).toContain('Мария');
-    expect(content).toContain('Проверить: Дроби');
+    expect(content).toContain('Проверьте работу');
+    expect(content).toContain('Анна · Дроби');
     expect(content).toContain('Пётр');
     expect(content).toContain('Долг');
     const host = hostElement(fixture);

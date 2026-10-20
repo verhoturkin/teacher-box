@@ -1,5 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, computed, effect, inject } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { injectWindowSize } from '@core/layout/mobile';
 import { Portal } from '@core/portal/portal';
 import { ThemeMode } from './theme-mode';
 
@@ -17,10 +20,23 @@ export class SystemBars {
   private readonly theme = inject(ThemeMode);
   private readonly portal = inject(Portal);
 
-  /** The top bar: surface-container in the light theme, surface in the dark one (`shell.scss`). */
+  private readonly size = injectWindowSize();
+  private readonly router = inject(Router);
+  /** The page is made of panes (`tb-panes`): on a phone it lies right on the window and the top bar is surface. */
+  private readonly panes = signal(false);
+
+  /**
+   * The top bar: surface-container in the light theme, surface in the dark one (`shell.scss`); on a phone, over a
+   * page of panes, surface in both (styles.scss «A phone»).
+   */
   readonly color = computed(() => {
     const scheme = this.portal.scheme();
-    return this.theme.dark() ? scheme.dark.surface : scheme.light.surfaceContainer;
+    if (this.theme.dark()) {
+      return scheme.dark.surface;
+    }
+    return this.size() === 'compact' && this.panes()
+      ? scheme.light.surface
+      : scheme.light.surfaceContainer;
   });
   /** The page behind the content: the splash screen of the installed app. */
   readonly background = computed(() => {
@@ -29,6 +45,14 @@ export class SystemBars {
   });
 
   constructor() {
+    // after each navigation the new page is rendered: does it hold panes?
+    this.router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        setTimeout(() => {
+          this.panes.set(this.document.querySelector('tb-panes') !== null);
+        });
+      }
+    });
     effect(() => {
       this.element('meta', 'name', 'theme-color').setAttribute('content', this.color());
       const query = new URLSearchParams({ theme: this.color(), background: this.background() });

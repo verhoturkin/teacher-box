@@ -317,7 +317,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision) */
-    .tb-roster__pane {
+    .tb-roster__pane ::ng-deep .tb-pane__scroll {
       display: flex;
       flex-direction: column;
       overflow: hidden;

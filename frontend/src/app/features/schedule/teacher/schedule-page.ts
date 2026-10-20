@@ -177,7 +177,10 @@ const ALL_DAY_START_HOUR = 10;
                 {{ chip }}
               </span>
             }
-            <tb-filter-chips [label]="t.filters" [chips]="ownerChips()" [(value)]="ownerFilter" />
+            <!-- a phone (the sketches): the owner filter is hidden, the calendar shows everyone -->
+            @if (!mobile()) {
+              <tb-filter-chips [label]="t.filters" [chips]="ownerChips()" [(value)]="ownerFilter" />
+            }
           </div>
         }
         <div class="tb-stack">
@@ -283,11 +286,15 @@ const ALL_DAY_START_HOUR = 10;
           }
 
           @if (!mobile() || tabsScreen()) {
-            <p-tabs [(value)]="sideTab">
+            <p-tabs class="tb-tabs" [(value)]="sideTab">
               @if (!mobile()) {
                 <p-tablist>
-                  <p-tab value="regular">{{ t.regular }}</p-tab>
-                  <p-tab value="offTime">{{ t.offTime }}</p-tab>
+                  <p-tab value="regular"
+                    ><span class="tb-tab-label">{{ t.regular }}</span></p-tab
+                  >
+                  <p-tab value="offTime"
+                    ><span class="tb-tab-label">{{ t.offTime }}</span></p-tab
+                  >
                 </p-tablist>
               }
               <p-tabpanels>
@@ -337,6 +344,7 @@ const ALL_DAY_START_HOUR = 10;
                   </tb-load-state>
 
                   <p-button
+                    class="tb-schedule-side__add"
                     [label]="t.addRegular"
                     icon="tb-i tb-i-add"
                     severity="secondary"
@@ -391,6 +399,7 @@ const ALL_DAY_START_HOUR = 10;
                   </tb-load-state>
 
                   <p-button
+                    class="tb-schedule-side__add"
                     [label]="t.add"
                     icon="tb-i tb-i-add"
                     severity="secondary"
@@ -463,6 +472,23 @@ const ALL_DAY_START_HOUR = 10;
     /* the supporting pane: M3 side-sheet surface (spec §7) */
     :host ::ng-deep .tb-schedule-side {
       background: var(--p-md-surface-container-low);
+      /* M3 expressive segmented list on a tonal pane, the sketch's light rows: the items are lighter than the pane
+         (container lowest on container low; in the dark theme container high), 2 dp apart (SegmentedGap), the
+         group's outer corners large (16), the others extra small (4): tb-list does it */
+      --tb-list-item: var(--p-md-surface-container-lowest);
+    }
+
+    :host-context(.tb-dark) ::ng-deep .tb-schedule-side {
+      --tb-list-item: var(--p-md-surface-container-high);
+    }
+
+    /* 16 dp between the list and «Регулярное занятие», as between the other blocks of the pane */
+    :host ::ng-deep .tb-schedule-side__add {
+      display: block;
+      margin-top: var(--tb-space-4);
+    }
+
+    :host ::ng-deep .tb-schedule-side .tb-pane__scroll {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);

@@ -1,7 +1,29 @@
 :host {
+  --tb-rail-width: 96px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+:host(.tb-shell--wide) {
+  --tb-rail-width: 280px;
+}
+
+/* From medium the rail runs the full height and its brand stands in the row of the top strip (the sketches):
+   the strip begins where the rail ends, the body is pulled up under it and the page is pushed back down.
+   ours: the rail is not a part of the strip, so the page needs no extra shift on compact */
+:host(.tb-shell--rail) {
+  .tb-shell__header {
+    margin-inline-start: var(--tb-rail-width);
+  }
+
+  .tb-shell__body {
+    margin-top: calc(-1 * var(--tb-header-height));
+  }
+
+  .tb-shell__content {
+    margin-top: var(--tb-header-height);
+  }
 }
 
 /* The top app bar stays at the top while the page scrolls; it lies on the page's background and keeps its

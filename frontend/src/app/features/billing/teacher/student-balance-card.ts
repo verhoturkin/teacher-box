@@ -34,13 +34,15 @@ const SHOWN = 3;
     <p-card [header]="t.title">
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (ledger(); as ledger) {
-          <div class="tb-stat">
-            <span class="tb-stat__value"
-              ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
-            /></span>
-            <small class="tb-muted">{{
-              t.lessonPrice((ledger.lessonPrice | money: ledger.currency) ?? '')
-            }}</small>
+          <div class="tb-figures">
+            <div class="tb-figure tb-figure--wide">
+              <span class="tb-figure__value"
+                ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
+              /></span>
+              <small class="tb-muted">{{
+                t.lessonPrice((ledger.lessonPrice | money: ledger.currency) ?? '')
+              }}</small>
+            </div>
           </div>
           @if (last().length > 0) {
             <ul

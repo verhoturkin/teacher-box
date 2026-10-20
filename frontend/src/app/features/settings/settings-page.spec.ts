@@ -158,15 +158,13 @@ describe('SettingsPage', () => {
     const host = await render(1200, undefined, 'account');
 
     const list = readableText(requireElement(host, 'nav', HTMLElement));
-    expect(list).toContain('Мой аккаунт Фото, имя и пароль');
-    expect(list).toContain('Портал Название, логотип и цвет портала');
-    expect(list).toContain(
-      'Расписание и календарь Часовой пояс, Google Календарь и подписка на расписание',
-    );
-    expect(list).toContain('Звонки Звонки в портале и внешние видеовстречи');
-    expect(list).toContain('Мессенджеры Боты, ваши мессенджеры, ученики и что присылать 2');
-    expect(list).toContain('Оплаты Цена занятия для новых учеников и групп');
-    expect(list).toContain('ИИ-помощник Модель, расход токенов, библиотека и системные промты');
+    expect(list).toContain('Мой аккаунт Имя, фото, пароль');
+    expect(list).toContain('Портал Название, логотип, цвет');
+    expect(list).toContain('Расписание и календарь Пояс, Google, подписка');
+    expect(list).toContain('Звонки Телемост, ссылки');
+    expect(list).toContain('Мессенджеры Боты, что присылать 2');
+    expect(list).toContain('Оплаты Цена по умолчанию');
+    expect(list).toContain('ИИ-помощник Модель, расход, промты');
     expect(list).toContain('Данные');
     expect(list).not.toContain('Интеграции');
     const links = Array.from(host.querySelectorAll('nav a')).map((link) =>

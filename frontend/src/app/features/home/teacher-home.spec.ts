@@ -62,19 +62,21 @@ describe('TeacherHome', () => {
     await fixture.whenStable();
 
     const text = readableText(hostElement(fixture));
+    // the date is the title of the page («Четверг, 1 октября»)
+    expect(hostElement(fixture).querySelector('h1')?.textContent).toMatch(/\S+, \d+ \S+/);
     expect(text).toContain('Следующее занятие');
     expect(text).toContain('Степени');
     expect(text).toContain('С чего начать');
     expect(text).toContain('Сделано 1 из 4');
     expect(text).toContain('Иван Петров');
     expect(text).toContain('Нужно сделать');
-    expect(text).toContain('Проверить: Дроби');
-    expect(text).toContain('Поступило за сентябрь 3 000 ₽');
+    expect(text).toContain('Проверьте работу');
+    expect(text).toContain('Поступило 3 000 ₽');
     expect(text).toContain('Занятия сегодня');
     expect(text).toContain('1 занятие · 2 работы на проверку · 1 запрос');
-    expect(text).toContain('Проведено занятий 4');
+    expect(text).toContain('Занятий 4');
     expect(text).toContain('Выдано заданий 5');
-    expect(text).toContain('Сдано в срок 3');
+    expect(text).toContain('Сдано вовремя 3');
     // the hero and the lessons of today, the queue, the figures
     const widgets = Array.from(
       hostElement(fixture).querySelectorAll('.tb-feed > .tb-stack > *'),

@@ -157,7 +157,7 @@ import { T } from './i18n/texts';
     .tb-settings__list {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-1);
+      gap: 2px;
       margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
@@ -170,18 +170,42 @@ import { T } from './i18n/texts';
       min-block-size: 4.5rem;
       box-sizing: border-box;
       padding: var(--tb-space-2) var(--tb-space-4);
-      border-radius: var(--tb-shape-lg);
+      border-radius: var(--tb-list-inner);
+      background: var(--tb-list-item);
       color: var(--p-md-on-surface);
 
       &:hover {
-        background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-surface) var(--tb-state-hover),
+          var(--tb-list-item)
+        );
         text-decoration: none;
       }
     }
 
+    /* the segmented list (M3E): the group's outer corners are large, the rows between are 4 px */
+    li:first-child .tb-settings__item {
+      border-start-start-radius: var(--tb-list-outer);
+      border-start-end-radius: var(--tb-list-outer);
+    }
+
+    li:last-child .tb-settings__item {
+      border-end-start-radius: var(--tb-list-outer);
+      border-end-end-radius: var(--tb-list-outer);
+    }
+
+    /* the icon in a tonal circle (the sketch); ours: 40 px, secondary container */
     .tb-settings__icon {
+      display: inline-flex;
       flex-shrink: 0;
-      color: var(--p-md-on-surface-variant);
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
       font-size: 1.5rem;
     }
 
@@ -210,7 +234,10 @@ import { T } from './i18n/texts';
         font: var(--tb-type-title-m-emphasized);
       }
 
-      .tb-settings__icon,
+      .tb-settings__icon {
+        background: var(--p-md-surface);
+      }
+
       .tb-settings__summary {
         color: inherit;
       }

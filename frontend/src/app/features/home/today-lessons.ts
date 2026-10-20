@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Card } from 'primeng/card';
-import { Tag } from 'primeng/tag';
 import { locale } from '@core/i18n/language';
 import { STATUS_LABELS, lessonWith } from '@features/schedule/parts';
 import type { ScheduledLesson } from '@features/schedule/parts';
@@ -12,7 +11,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 /** Spec §6: «Занятия сегодня» under the hero — time, avatar, name, topic, status; the next one is selected. */
 @Component({
   selector: 'tb-today-lessons',
-  imports: [Card, Tag, Avatar],
+  imports: [Card, Avatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -30,12 +29,14 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
               }
             </div>
             @if (lesson.id === nextId()) {
-              <p-tag [value]="t.next" />
-            } @else {
-              <p-tag
-                [value]="status(lesson).label"
-                [severity]="status(lesson).severity ?? undefined"
-              />
+              <span class="tb-today-lesson__next">{{ t.next }}</span>
+            } @else if (lesson.status !== 'SCHEDULED') {
+              <span class="tb-today-lesson__status tb-today-lesson__status--{{ lesson.status }}">
+                @if (lesson.status === 'CONDUCTED') {
+                  <i class="tb-i tb-i-check" aria-hidden="true"></i>
+                }
+                {{ status(lesson).label }}
+              </span>
             }
           </li>
         }
@@ -47,13 +48,49 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
-      padding: var(--tb-space-2);
-      border-radius: var(--tb-shape-medium, 0.75rem);
+      padding: var(--tb-space-2) var(--tb-space-4);
+    }
+
+    /* the rows are a segmented list: the group's outer corners are rounder, the inner ones 4 px (tb-list) */
+    .tb-today-lesson__next {
+      color: var(--p-md-on-secondary-container);
+      font: var(--tb-type-label-m-emphasized);
+    }
+
+    /* the outcome as a tonal chip (ours: scheduled lessons say nothing, the sketch) */
+    .tb-today-lesson__status {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+      padding: 0 var(--tb-space-2);
+      border-radius: var(--tb-shape-sm);
+      background: var(--p-md-surface-container-highest);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      line-height: 1.5rem;
+    }
+
+    .tb-today-lesson__status--CONDUCTED {
+      background: var(--p-md-success-container);
+      color: var(--p-md-on-success-container);
+    }
+
+    .tb-today-lesson__status--MISSED {
+      background: var(--p-md-warning-container);
+      color: var(--p-md-on-warning-container);
+    }
+
+    .tb-today-lesson__status .tb-i {
+      font-size: 1rem;
     }
 
     .tb-today-lesson--next {
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-today-lesson--next tb-avatar {
+      background: var(--p-md-surface);
     }
 
     .tb-today-lesson__time {

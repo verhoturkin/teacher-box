@@ -98,15 +98,12 @@ import { GroupProfileTab } from './group-profile-tab';
       }
     </tb-card-head>
 
-    <p-tabs
-      class="tb-tabs tb-tabs--start"
-      [value]="tab()"
-      [scrollable]="true"
-      (valueChange)="choose($event)"
-    >
+    <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
       <p-tablist>
         @for (name of tabs; track name) {
-          <p-tab [value]="name">{{ c.tabNames[name] }}</p-tab>
+          <p-tab [value]="name"
+            ><span class="tb-tab-label">{{ c.tabNames[name] }}</span></p-tab
+          >
         }
       </p-tablist>
       <p-tabpanels>

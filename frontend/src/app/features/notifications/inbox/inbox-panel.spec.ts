@@ -60,7 +60,6 @@ describe('InboxPanel', () => {
   it('lists the unread notifications and keeps the read ones folded', async () => {
     await render(notificationPage([notification()]));
 
-    expect(text()).toContain('Непрочитанных: 1');
     expect(list('Непрочитанные')).toEqual([
       expect.stringContaining('Новое задание: «Дроби» Срок сдачи: 25.09.2026 18:30'),
     ]);
@@ -151,7 +150,7 @@ describe('InboxPanel', () => {
     await render(notificationPage([notification()]));
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    buttonByText(host(), 'Открыть').click();
+    buttonByText(host(), 'Новое задание').click();
     backend.expectOne('/api/me/notifications/n-1/read').flush(null);
     await fixture.whenStable();
 

@@ -11,12 +11,9 @@ export const ru = {
     MISSED: 'Пропуск (оплачивается)',
   },
   finance: {
-    title: 'Финансы',
-    income: (month: string) => `Поступило за ${month}`,
-    totalDebt: 'Долг учеников',
+    income: 'Поступило',
+    totalDebt: 'Долг',
     debtors: (count: number) => `должников: ${String(count)}`,
-    debt: 'долг',
-    billing: 'Оплаты',
   },
   myBalance: {
     title: 'Баланс',

@@ -227,6 +227,7 @@
   --tb-elevation-1: 0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%);
   --tb-elevation-2: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
   --tb-elevation-3: 0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%);
+  --tb-elevation-4: 0 2px 3px rgb(0 0 0 / 30%), 0 6px 10px 4px rgb(0 0 0 / 15%);
 
   /* State layers: the color of the content over the element */
   --tb-state-hover: 8%;
@@ -315,9 +316,139 @@ body {
   letter-spacing: var(--tb-tracking-body-l);
 }
 
+/* A phone (the sketches): a page of panes lies right on the window, so the window and the top bar take the surface
+   tone and the pane is not a card on a darker background (ours: the bottom bar keeps the container tone) */
+@media (width < 37.5em) {
+  body:has(tb-panes) {
+    background: var(--p-md-surface);
+  }
+
+  body:has(tb-panes) .tb-shell__header.tb-shell__header {
+    background: var(--p-md-surface);
+  }
+}
+
 /* The roles of the type that PrimeNG sets by size and weight only (no line height): ADR-0019 */
 .p-card-title {
   font: var(--tb-type-title-l-emphasized);
+}
+
+/* The modal side sheet is `surface container low`: its rows are one tone darker to show (light theme;
+   the dark theme's rows are already `container high`) */
+:root:not(.tb-dark) .tb-side-sheet {
+  --tb-list-item: var(--p-md-surface-container);
+}
+
+/*
+ * Key figures of a section (Today: the month, the week): one tonal block, a grid of two columns, each figure an
+ * overline (Label Small, upper case) over the figure in Headline Small; a wide figure takes both columns.
+ * Ours: the block is `surface-container-low` with the 16 px corner of a list group.
+ */
+.tb-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tb-space-4) var(--tb-space-4);
+  margin: 0;
+  padding: var(--tb-space-4);
+  border-radius: var(--tb-shape-lg);
+  background: var(--tb-list-item);
+}
+
+.tb-figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  margin: 0;
+}
+
+.tb-figure--wide {
+  grid-column: 1 / -1;
+}
+
+.tb-figure__label {
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-s);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tb-figure__value {
+  margin: 0;
+  font: var(--tb-type-headline-s);
+}
+
+/*
+ * Scrollbars inside rounded shapes (panes, dialogs, sheets): the scrolling area lies inside its
+ * clipped, rounded container, the scrollbar is thin, its track stays 16 px away from the corners and the thumb is
+ * a rounded outline-variant bar. Ours (M3 does not publish scrollbars). Firefox has no track margin: it
+ * gets the thin standard bar, which the clipped corner already hides.
+ */
+.tb-pane__scroll,
+.tb-notifications-pane,
+.tb-roster__scroll,
+.p-dialog-content,
+.p-drawer-content {
+  &::-webkit-scrollbar {
+    width: 0.75rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    margin-block: var(--tb-space-4);
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-outline-variant) padding-box;
+
+    &:hover {
+      background: var(--p-md-outline) padding-box;
+    }
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .tb-pane__scroll,
+  .tb-notifications-pane,
+  .tb-roster__scroll,
+  .p-dialog-content,
+  .p-drawer-content {
+    scrollbar-color: var(--p-md-outline-variant) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+/*
+ * No wrapping card inside a pane (redesign sketches, ADR-0048): the title of a section stands right on the
+ * pane's surface (Title Medium emphasized) and tonal rows or blocks lie under it. The filled hero card of the
+ * Today page (`tb-hero`) is the one container left. A list on the pane keeps the 16 px outer corner of the M3
+ * list (M3: the corner of a group on the page); ours: a 12 px gap between the title and its content.
+ */
+tb-pane .p-card:not(.tb-hero),
+.tb-notifications-pane .p-card,
+.tb-side-sheet .p-card {
+  background: transparent;
+  border-radius: 0;
+  color: inherit;
+
+  /* the body sets the nested corner of a card (20 − 20 = 4 px): without the card the list keeps the large corner */
+  > .p-card-body {
+    --tb-list-outer: var(--tb-shape-lg);
+    gap: var(--tb-space-3);
+    padding: 0;
+  }
+
+  /* separate lists or blocks of one section keep 8 px between them (they are groups of their own) */
+  > .p-card-body > .p-card-content {
+    display: grid;
+    gap: var(--tb-space-2);
+  }
+
+  .p-card-title {
+    font: var(--tb-type-title-m-emphasized);
+  }
 }
 
 .p-dialog .p-dialog-title {
@@ -1174,7 +1305,21 @@ p-button.tb-list__stretched .p-button {
   }
 }
 
-/* A row that opens as a whole: the state layer on hover */
+/*
+ * The state layer on hover for every row of a list, as in the list of the settings (the same 8 % of the content
+ * colour over the row's tone); a row that opens as a whole also shows the pointer
+ */
+.tb-list > li:hover {
+  background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), var(--tb-list-item));
+}
+
+/* the name in a row is never underlined, the row's state layer shows what is under the pointer */
+.tb-list > li :is(.tb-list__title, .tb-list__link, a.tb-link):is(a, button),
+.tb-list > li :is(.tb-list__title, .tb-list__link, a.tb-link):is(a, button):hover {
+  text-decoration: none;
+}
+
+/* A row that opens as a whole */
 .tb-list > li.tb-list__item--link {
   cursor: pointer;
 
@@ -1274,6 +1419,11 @@ p-button.tb-list__stretched .p-button {
 
   .tb-list__supporting {
     color: var(--p-md-on-secondary-container);
+  }
+
+  /* the icon or the avatar of the chosen row stands on the surface, as in the list of the settings */
+  > :is(.tb-list__lead, .tb-avatar) {
+    background: var(--p-md-surface);
   }
 }
 
@@ -2410,6 +2560,17 @@ full-calendar :has(> .tb-lesson--moving) {
       color: var(--p-md-on-primary-container);
       box-shadow: var(--tb-elevation-3);
       animation: tb-fab-in var(--tb-spring-default-spatial) both;
+      /* M3E: the FAB moves on spatial springs (the corner morphs and the button shrinks while pressed), its colour on effects */
+      transition:
+        border-radius var(--tb-spring-fast-spatial),
+        transform var(--tb-spring-fast-spatial),
+        box-shadow var(--tb-spring-fast-effects),
+        background var(--tb-spring-fast-effects);
+
+      &:not(:disabled):active {
+        border-radius: var(--tb-shape-md);
+        transform: scale(0.96);
+      }
 
       &:not(:disabled):hover {
         border-color: var(--p-md-primary-container);
@@ -2650,6 +2811,30 @@ full-calendar :has(> .tb-lesson--moving) {
 
       p-button .p-button {
         width: 100%;
+      }
+    }
+
+    /* an icon-only action («Новая группа») does not stand alone on a row of its own: it takes the end of the line
+       of the header's details (ours) */
+    &:not(:has(.tb-page-header__back)):has([meta], > .tb-actions .p-button-icon-only) {
+      flex-wrap: nowrap;
+      align-items: center;
+
+      > .tb-page-header__lead {
+        flex: 1 1 auto;
+      }
+    }
+
+    > .tb-actions:has(.p-button-icon-only):not(
+        :has(p-button:not(.tb-page-fab) .p-button:not(.p-button-icon-only))
+      ) {
+      width: auto;
+      flex: none;
+      justify-content: flex-end;
+      margin-inline-start: auto;
+
+      p-button:not(.tb-page-fab) .p-button {
+        width: 2.5rem;
       }
     }
   }
@@ -2928,12 +3113,19 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /*
- * M3 primary tabs (the bell's sheet): equal sections 48 dp high over a 1 dp outline-variant divider; the
- * label in Title Small, primary when active, on-surface-variant otherwise; the active indicator is 3 dp of
- * primary with 3 dp top corners, inset 2 dp on each side. The badge sits 4 dp after the label.
+ * M3 primary tabs (every tab bar: the student's and the group's card, the schedule's side pane, the bell's
+ * sheet): no container, 48 dp high over a 1 dp outline-variant divider under the whole bar; the label in Title
+ * Small, primary when active, on-surface-variant otherwise; the active indicator is 3 dp of primary with 3 dp top
+ * corners under the label (as wide as the label). The tabs share the width of the bar equally and centre their
+ * label (M3 fixed tabs); each label is wrapped in `tb-tab-label`, which carries the indicator. The badge sits 4 dp
+ * after the label.
  */
 .tb-tabs {
   display: block;
+
+  .p-tablist {
+    background: transparent;
+  }
 
   .p-tablist-tab-list {
     position: relative;
@@ -2967,18 +3159,38 @@ full-calendar :has(> .tb-lesson--moving) {
     }
   }
 
+  /* a phone (the sketches): the tabs keep the width of their label and scroll (M3 scrollable tabs) */
+  @media (width < 37.5em) {
+    .p-tab {
+      flex: 0 0 auto;
+    }
+  }
+
   .p-tab-active {
     color: var(--p-md-primary);
   }
 
+  /* the indicator is as wide as the label (M3 primary tabs): it is the ::after of the label, at the bottom of the tab,
+     with 3 dp top corners; the bar PrimeNG moves is not shown */
   .p-tablist-active-bar {
-    bottom: 0;
-    box-sizing: border-box;
+    display: none;
+  }
+
+  .tb-tab-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    gap: var(--tb-space-1);
+  }
+
+  .p-tab-active .tb-tab-label::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
     height: 3px;
-    /* inset 2 dp inside the width PrimeNG gives the bar */
-    border-inline: 2px solid transparent;
-    border-radius: 5px 5px 0 0;
-    background: var(--p-md-primary) padding-box;
+    border-radius: 3px 3px 0 0;
+    background: var(--p-md-primary);
   }
 
   .p-tablist-prev-button,
@@ -2995,15 +3207,6 @@ full-calendar :has(> .tb-lesson--moving) {
     outline: 2px solid var(--p-md-secondary);
     outline-offset: 2px;
   }
-}
-
-/*
- * Tabs of a card (the student's card, 237.3): M3 fixed tabs aligned to the leading edge of the pane; each tab
- * is as wide as its label (our decision: M3 sizes them by the widest), so a card with few tabs does not
- * stretch one tab across the pane. They scroll when they no longer fit (M3 scrollable tabs).
- */
-.tb-tabs--start .p-tab {
-  flex: 0 0 auto;
 }
 
 .tb-side-sheet__head {

@@ -86,7 +86,7 @@ function pathOf(url: string): string {
     }
   `,
   styles: `
-    /* M3 standard side sheet ≤ 400 dp, surface container low; ours: a pane of the frame with 28 dp corners,
+    /* M3 standard side sheet ≤ 400 dp; ours (the sketches): a pane of the frame on surface like the others, 28 dp corners,
        24 dp from the trailing edge and the bottom (as tb-pane kind="sheet") */
     .tb-notifications-pane {
       position: sticky;
@@ -95,12 +95,13 @@ function pathOf(url: string): string {
       box-sizing: border-box;
       max-width: 25rem;
       height: calc(100dvh - var(--tb-header-height) - var(--tb-space-6));
-      margin: 0 var(--tb-space-6) var(--tb-space-6) 0;
+      /* the rail runs up beside the top strip and the body is pulled up under it (shell.scss): the pane starts below the strip */
+      margin: var(--tb-header-height) var(--tb-space-6) var(--tb-space-6) 0;
       padding: 0 var(--tb-space-6) var(--tb-space-6);
       overflow-y: auto;
       overscroll-behavior: contain;
       border-radius: var(--tb-shape-xl);
-      background: var(--p-md-surface-container-low);
+      background: var(--p-md-surface);
       color: var(--p-md-on-surface);
       outline: none;
       animation:
@@ -120,7 +121,7 @@ function pathOf(url: string): string {
     .tb-notifications-pane__title {
       flex: 1;
       margin: 0;
-      font: var(--tb-type-title-l);
+      font: var(--tb-type-headline-s);
     }
   `,
 })

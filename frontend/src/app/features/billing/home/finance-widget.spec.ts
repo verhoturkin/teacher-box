@@ -24,46 +24,21 @@ describe('FinanceWidget', () => {
     fixture.destroy();
   });
 
-  it('shows the income of the month and the largest debts', async () => {
-    await render(
-      billingSummary({
-        income: 1_200_000,
-        totalDebt: 450_000,
-        debtors: 2,
-        topDebtors: [
-          {
-            studentId: 's-1',
-            displayName: 'Анна',
-            avatar: '/api/public/avatars/anna',
-            balance: -300_000,
-          },
-          { studentId: 's-2', displayName: 'Борис', avatar: null, balance: -150_000 },
-        ],
-      }),
-    );
+  it('shows the month as the title, the income and the debt', async () => {
+    await render(billingSummary({ income: 1_200_000, totalDebt: 450_000, debtors: 2 }));
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Поступило за сентябрь 12 000 ₽');
-    expect(text).toContain('Долг учеников 4 500 ₽ должников: 2');
-    expect(text).toContain('Анна долг 3 000 ₽ Б Борис долг 1 500 ₽');
-    expect(hostElement(fixture).querySelector('tb-avatar img')?.getAttribute('src')).toBe(
-      '/api/public/avatars/anna',
-    );
-    const links = Array.from(hostElement(fixture).querySelectorAll('a')).map((a) =>
-      a.getAttribute('href'),
-    );
-    expect(links).toEqual([
-      '/teacher/students/s-1?tab=payments',
-      '/teacher/students/s-2?tab=payments',
-      '/teacher/billing',
-    ]);
+    expect(text).toContain('Сентябрь');
+    expect(text).toContain('Поступило 12 000 ₽');
+    expect(text).toContain('Долг 4 500 ₽ должников: 2');
+    expect(hostElement(fixture).querySelector('a')).toBeNull();
   });
 
   it('shows no debtors when everything is paid', async () => {
     await render(billingSummary());
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Долг учеников 0 ₽');
+    expect(text).toContain('Долг 0 ₽');
     expect(text).not.toContain('должников');
   });
 });
