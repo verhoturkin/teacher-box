@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
+  viewChild,
 } from '@angular/core';
 import {
   ButtonGroupInfo,
@@ -17,6 +19,7 @@ import {
   EventDisplayInfo,
   EventDropInfo,
   EventInput,
+  FullCalendarComponent,
   FullCalendarModule,
 } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/angular/daygrid';
@@ -38,6 +41,8 @@ import { T } from '../i18n/texts';
 export interface CalendarRange {
   readonly from: string;
   readonly to: string;
+  /** The day the view is on (`yyyy-MM-dd`): the first day of the week or the month. */
+  readonly current: string;
 }
 
 /** A lesson moved to another time and confirmed; `revert` puts it back if the change is not saved. */
@@ -81,7 +86,7 @@ export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'listWeek' | 'timeG
   selector: 'tb-schedule-calendar',
   imports: [FullCalendarModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<full-calendar [options]="options()" />`,
+  template: `<full-calendar #calendar [options]="options()" />`,
 })
 export class ScheduleCalendar {
   readonly lessons = input.required<readonly ScheduledLesson[]>();
@@ -102,12 +107,15 @@ export class ScheduleCalendar {
   readonly offTime = input<readonly OffTimePeriod[]>([]);
   /** Whether the lessons are loaded: until then an empty week is not «Занятий нет» (ADR-0025). */
   readonly loaded = input(true);
+  /** A day to go to (`yyyy-MM-dd`), e.g. from the mini-month; the calendar moves when it changes. */
+  readonly focusDate = input<string | null>(null);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
   readonly slotSelect = output<SlotSelection>();
   readonly lessonMove = output<LessonMove>();
 
+  private readonly calendar = viewChild(FullCalendarComponent);
   private readonly mobile = injectMobile();
   private readonly colors = inject(TeacherColors);
 
@@ -116,6 +124,15 @@ export class ScheduleCalendar {
     source: this.lessons,
     computation: () => null,
   });
+
+  constructor() {
+    effect(() => {
+      const date = this.focusDate();
+      if (date !== null) {
+        this.calendar()?.getApi().gotoDate(date);
+      }
+    });
+  }
 
   private readonly byId = computed(
     () => new Map(this.lessons().map((lesson) => [lesson.id, lesson])),
@@ -179,7 +196,11 @@ export class ScheduleCalendar {
         ...this.offTime().map((period, index) => toOffTime(period, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
-        this.rangeChange.emit({ from: toIsoDate(info.start), to: toIsoDate(info.end) });
+        this.rangeChange.emit({
+          from: toIsoDate(info.start),
+          to: toIsoDate(info.end),
+          current: toIsoDate(info.view.currentStart),
+        });
       },
       eventClick: (info: EventClickInfo) => {
         this.handleClick(info.event.id);

@@ -130,7 +130,7 @@ describe('SchedulePage', () => {
     expect(text).toContain('Перенос');
     expect(text).toContain('Отметьте прошедшие занятия');
     expect(text).toContain('Мария');
-    expect(text).toContain('Регулярные занятия');
+    expect(text).toContain('Регулярные');
     expect(text).toContain('Вт, Чт в 18:00');
     expect(text).not.toContain('часовому поясу этого устройства');
   });
@@ -286,7 +286,64 @@ describe('SchedulePage', () => {
   it('explains times when the portal is in another time zone', async () => {
     const text = await render(scheduleSettings({ timeZone: 'Pacific/Chatham' }));
 
-    expect(text).toContain('расписание портала — Pacific/Chatham');
+    expect(text).toContain('Часовой пояс портала: Pacific/Chatham');
+    expect(hostElement(fixture).querySelector('.tb-assist-chip')?.getAttribute('title')).toContain(
+      'расписание портала — Pacific/Chatham',
+    );
+  });
+
+  it('filters the calendar by a student or a group and goes to a day of the mini-month', async () => {
+    await render();
+    const host = hostElement(fixture);
+    const calendar = fixture.debugElement
+      .query(By.directive(ScheduleCalendar))
+      .injector.get(ScheduleCalendar);
+    const chip = (name: string): HTMLButtonElement => {
+      const found = Array.from(
+        host.querySelectorAll<HTMLButtonElement>('tb-filter-chips button'),
+      ).find((button) => button.textContent.includes(name));
+      if (found === undefined) {
+        throw new Error(`No chip ${name}`);
+      }
+      return found;
+    };
+
+    expect(calendar.lessons()).toHaveLength(1);
+    chip('ОГЭ').click();
+    await fixture.whenStable();
+    expect(calendar.lessons()).toHaveLength(0);
+    chip('Иван Петров').click();
+    await fixture.whenStable();
+    expect(calendar.lessons()).toHaveLength(1);
+    chip('Все').click();
+    await fixture.whenStable();
+    expect(calendar.lessons()).toHaveLength(1);
+
+    host.querySelector<HTMLButtonElement>('tb-mini-month [data-date="2026-10-14"]')?.click();
+    await fixture.whenStable();
+    expect(calendar.focusDate()).toBe('2026-10-14');
+    // the calendar moved: the lessons of the new range are asked for
+    for (const request of backend.match(
+      (request) => request.url === '/api/teacher/schedule/lessons',
+    )) {
+      request.flush([]);
+    }
+  });
+
+  it('has no zone chip while the device is in the portal zone, and switches the tabs', async () => {
+    await render();
+    const host = hostElement(fixture);
+
+    expect(host.querySelector('.tb-assist-chip')).toBeNull();
+    const tab = Array.from(host.querySelectorAll<HTMLElement>('p-tab')).find((item) =>
+      item.textContent.includes('Нерабочее время'),
+    );
+    tab?.click();
+    await fixture.whenStable();
+    expect(tab?.getAttribute('aria-selected')).toBe('true');
+    buttonByText(host, 'Добавить нерабочее время').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Нерабочее время');
   });
 
   it('plans a lesson in a selected slot with the default or the selected duration', async () => {

@@ -351,6 +351,13 @@ export const en: Translation<typeof ru> = {
     deleted: 'Lesson deleted',
     attendanceSaved: 'Attendance saved',
     answered: 'Answer sent',
+    calendarPane: 'Calendar',
+    sidePane: 'Requests and repeats',
+    filters: 'Calendar filter',
+    allOwners: 'All',
+    zoneChip: (portal: string) => `Portal time zone: ${portal}`,
+    regular: 'Recurring',
+    addRegular: 'Recurring lesson',
     localTime: (browser: string, portal: string) =>
       `Times are shown in this device’s time zone (${browser}); the portal’s schedule is in ${portal}.`,
     moveFailed: 'Could not move the lesson',

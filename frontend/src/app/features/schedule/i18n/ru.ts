@@ -347,6 +347,13 @@ export const ru = {
     deleted: 'Занятие удалено',
     attendanceSaved: 'Посещаемость сохранена',
     answered: 'Ответ отправлен',
+    calendarPane: 'Календарь',
+    sidePane: 'Запросы и повторы',
+    filters: 'Фильтр календаря',
+    allOwners: 'Все',
+    zoneChip: (portal: string) => `Часовой пояс портала: ${portal}`,
+    regular: 'Регулярные',
+    addRegular: 'Регулярное занятие',
     localTime: (browser: string, portal: string) =>
       `Время показано по часовому поясу этого устройства (${browser}), расписание портала — ${portal}.`,
     moveFailed: 'Не удалось перенести занятие',
