@@ -52,7 +52,7 @@ list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-pre
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
 settings category «Звонки», `/teacher/settings/calls`) — never import them from `parts.ts` in the root, it pulls the
-help articles into the first load (0.15.3: no call card on the student's home — the student joins from the lesson). `rooms/` (`room-panel.ts` — the link inside the edit dialog of a student or a group, saved at
+help articles into the first load (0.15.3: no call card on the student's home — the student joins from the lesson). `rooms/` (`room-panel.ts` — the card «Видеовстреча» on the Профиль tab of a student's or a group's card, saved at
 once), `settings/` (`meetings-settings-panel.ts`: calls status and device setting, the category «Звонки» of the settings), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.
 

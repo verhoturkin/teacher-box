@@ -161,7 +161,11 @@ test('the teacher attaches a receipt and the student opens it', async ({ page, r
   });
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
+  // 0.23.0: the old address of the history opens the Оплаты tab of the card
   await page.goto(`/teacher/billing/students/${veraId}`);
+  await expect(page).toHaveURL(
+    (url) => url.pathname === `/teacher/students/${veraId}` && url.search === '?tab=payments',
+  );
   await page.getByRole('button', { name: /^Чек оплаты от / }).click();
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('menuitem', { name: 'Прикрепить чек' }).click();

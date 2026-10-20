@@ -25,37 +25,6 @@ spec §0–§2 and the § it names, load the `m3-expressive` skill for UI work, 
 the substep changed, help articles (ru, en) and `docs/wiki/` for what users see. Releases go in order; a later
 release may start only after the previous one is merged to `main`.
 
-## v0.23.0 — Student card
-
-Students become list-detail; the card holds lessons, homework, payments, connection and the profile of one
-student or group. ADR: none.
-
-### 237. Student card (B, F)
-
-- [ ] 237.1 **B** Spec §8 «Data»: teacher reads for one student / group — `schedule` lessons by student or group
-  over a period (`TeacherScheduleController` `GET /lessons` + `studentId` / `groupId`, group lessons included),
-  `homework` tasks of one student (`TeacherHomeworkController`), the messenger status of one student
-  (`notifications`, the source of `student-messengers-panel.ts`). Controller tests with roles (student → 403),
-  `docs/modules/{schedule,homework,notifications}.md`.
-- [ ] 237.2 **F** List pane: `identity/students/students-page.ts` + `groups/groups-panel.ts` → one list on
-  `tb-panes`; chips «Все · Группы · Должники · Без мессенджера · Отключённые» (balances from
-  `GET /api/teacher/billing/overview`); row supporting line; routes `/teacher/students/:id`, `/teacher/groups/:id`.
-- [ ] 237.3 **F** Card header (avatar 72, tags, «Написать» → `broadcast-dialog` for one, «Оплата» →
-  `payment-dialog` preset, «Занятие» → `lesson-dialog` preset, «⋮») and the Обзор tab, composed from
-  `@features/{schedule,homework,billing,meetings,notifications}/parts`.
-- [ ] 237.4 **F** Tabs Занятия, Задания, Оплаты (`billing/ledger/ledger-list.ts`); `billing/teacher/student-ledger-page.ts`
-  goes, `/teacher/billing/students/:id` redirects to `/teacher/students/:id?tab=payments`.
-- [ ] 237.5 **F** Профиль tab: inline fields of `student-form-dialog.ts` (name, contacts, note, default topic,
-  colour, price, `meetings/rooms/room-panel.ts`, invite link); the dialog stays only for creating (name +
-  contact), then opens the card.
-- [ ] 237.6 **F** Group card (Обзор, Занятия, Задания, Участники, Профиль) from `group-form-dialog.ts`.
-- [ ] 237.7 **D** design-system (list-detail, card anatomy), `docs/modules/identity.md`, help (students, groups,
-  payments of a student; ru, en), wiki.
-
-### 238. Release 0.23.0 (D)
-
-- [ ] 238.1 **D** Skill `release`; E2E: open a student, edit the profile inline, record a payment from the card.
-
 ## v0.24.0 — Today and Schedule
 
 One queue of what waits for the teacher; the schedule's calendar takes the space, the rest goes to a supporting

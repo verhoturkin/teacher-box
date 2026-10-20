@@ -184,6 +184,7 @@ export const en: Translation<typeof ru> = {
   broadcast: {
     title: 'Message to students',
     to: 'To',
+    group: (name: string) => `Group “${name}”`,
     everyone: 'All students',
     search: 'Search',
     hint: 'If nobody is chosen, all students get the message.',
@@ -191,6 +192,19 @@ export const en: Translation<typeof ru> = {
     text: 'Text',
     send: 'Send',
     failed: 'Could not send the message',
+  },
+  studentChannels: {
+    title: 'Student’s messengers',
+    what: 'the student’s messengers',
+    connected: (name: string) => `${name} connected`,
+    since: (date: string) => `since ${date}`,
+    paused: 'notifications paused',
+    none: 'No messenger connected',
+    noneHint: 'Notifications reach the student’s account only',
+    remind: 'Remind',
+    reminded: 'Reminder sent',
+    failed: (count: number) => `Not delivered: ${String(count)}`,
+    failedHint: 'Messages of the last 30 days the messenger did not accept',
   },
   students: {
     title: 'Students’ messengers',

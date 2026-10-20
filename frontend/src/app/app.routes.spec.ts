@@ -8,6 +8,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
+import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { testProvidersWithRouter } from '@testing/setup';
 
@@ -137,6 +138,44 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(text()).toContain('Учеников пока нет');
   });
 
+  it('opens the card of a student or a group beside the same list (237.2)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+
+    await harness.navigateByUrl('/teacher/students/s-1');
+    const page = harness.routeDebugElement?.componentInstance as unknown;
+    for (const request of backend.match(() => true)) {
+      const url = request.request.url;
+      if (url === '/api/teacher/students') {
+        request.flush([aStudent({ id: 's-1', displayName: 'Мария' })]);
+      } else if (url === '/api/teacher/groups') {
+        request.flush([aGroup({ id: 'g-1', name: 'ОГЭ' })]);
+      } else {
+        request.flush(null, { status: 500, statusText: 'Error' });
+      }
+    }
+    await harness.fixture.whenStable();
+    expect(title()).toBe('Мария — Ученики — Teacher Box');
+
+    // the page stays: the list is not read again, the card changes
+    await harness.navigateByUrl('/teacher/groups/g-1');
+    expect(harness.routeDebugElement?.componentInstance).toBe(page);
+    expect(backend.match('/api/teacher/students')).toEqual([]);
+    expect(backend.match('/api/teacher/groups')).toEqual([]);
+    expect(title()).toBe('ОГЭ — Ученики — Teacher Box');
+
+    await harness.navigateByUrl('/teacher/students');
+    expect(harness.routeDebugElement?.componentInstance).toBe(page);
+    expect(title()).toBe('Ученики — Teacher Box');
+
+    // the groups have no page of their own
+    await harness.navigateByUrl('/teacher/groups');
+    expect(router.url).toBe('/teacher/students');
+    await harness.navigateByUrl('/teacher/students/s-1/more');
+    expect(text()).toContain('Страница не найдена');
+  });
+
   it('leads a student to the personal area and account page', async () => {
     auth.acceptSession(authResponse('STUDENT'));
 
@@ -170,9 +209,11 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.expectOne((request) => request.url === '/api/teacher/billing/reports/monthly');
     expect(title()).toBe('Отчёт за месяц — Teacher Box');
 
+    // the history of a student's payments is the Оплаты tab of the card (237.4)
     await harness.navigateByUrl('/teacher/billing/students/s-1');
-    backend.expectOne('/api/teacher/billing/students/s-1');
-    expect(title()).toBe('История оплат — Teacher Box');
+    expect(TestBed.inject(Router).url).toBe('/teacher/students/s-1?tab=payments');
+    expect(title()).toBe('Ученики — Teacher Box');
+    backend.match(() => true);
 
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/billing');

@@ -1,5 +1,5 @@
 import { Injector, inject } from '@angular/core';
-import { CanActivateFn, Routes } from '@angular/router';
+import { CanActivateFn, Routes, UrlMatchResult, UrlMatcher } from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
@@ -14,6 +14,23 @@ const loadTeacherColors: CanActivateFn = async () => {
   const parts = await import('@features/identity/parts');
   injector.get(parts.TeacherColors).load();
   return true;
+};
+
+/**
+ * `/teacher/students`, `/teacher/students/:studentId` and `/teacher/groups/:groupId` are one route: the list
+ * stays, the card beside it changes (redesign spec §8).
+ */
+const studentsMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
+  const [section, id, ...rest] = segments;
+  if (rest.length > 0) {
+    return null;
+  }
+  if (section?.path === 'students') {
+    return { consumed: segments, posParams: id === undefined ? {} : { studentId: id } };
+  }
+  return section?.path === 'groups' && id !== undefined
+    ? { consumed: segments, posParams: { groupId: id } }
+    : null;
 };
 
 const N = CORE_T.titles;
@@ -71,10 +88,12 @@ export const routes: Routes = [
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {
-        path: 'students',
+        matcher: studentsMatcher,
         title: NAV.students,
         loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
       },
+      // the groups are rows of the students' list (237.2)
+      { path: 'groups', redirectTo: 'students' },
       {
         path: 'schedule',
         title: NAV.schedule,
@@ -127,10 +146,10 @@ export const routes: Routes = [
         title: N.monthlyReport,
         loadComponent: () => import('@features/billing').then((m) => m.MonthlyReportPage),
       },
+      // the history of a student's payments is the Оплаты tab of the card (237.4)
       {
         path: 'billing/students/:studentId',
-        title: N.ledger,
-        loadComponent: () => import('@features/billing').then((m) => m.StudentLedgerPage),
+        redirectTo: '/teacher/students/:studentId?tab=payments',
       },
       {
         path: 'boards',

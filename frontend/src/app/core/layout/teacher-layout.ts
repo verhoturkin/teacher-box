@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { CORE_T } from '@core/i18n/texts';
+import { NavItem } from './nav-item';
 import { Shell } from './shell';
 
-export const TEACHER_MENU: MenuItem[] = [
+export const TEACHER_MENU: NavItem[] = [
   {
     label: CORE_T.nav.home,
     icon: 'tb-i tb-i-home',
@@ -11,7 +12,13 @@ export const TEACHER_MENU: MenuItem[] = [
     routerLinkActiveOptions: { exact: true },
   },
   { label: CORE_T.nav.schedule, icon: 'tb-i tb-i-calendar_month', routerLink: '/teacher/schedule' },
-  { label: CORE_T.nav.students, icon: 'tb-i tb-i-group', routerLink: '/teacher/students' },
+  {
+    label: CORE_T.nav.students,
+    icon: 'tb-i tb-i-group',
+    routerLink: '/teacher/students',
+    // the group card belongs to «Ученики» (redesign spec §8)
+    alsoActive: ['/teacher/groups'],
+  },
   { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/teacher/homework' },
   { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/teacher/textbooks' },
   {

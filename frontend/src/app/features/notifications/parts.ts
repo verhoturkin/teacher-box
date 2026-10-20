@@ -10,3 +10,5 @@ export { ChannelsPanel } from './channels/channels-panel';
 export { ConnectMessengerCard } from './student/connect-messenger-card';
 export { PreferencesPanel } from './preferences/preferences-panel';
 export { MessengersSettingsPanel } from './teacher/messengers-settings-panel';
+export { BroadcastDialog } from './teacher/broadcast-dialog';
+export { StudentChannels } from './teacher/student-channels';

@@ -251,15 +251,15 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Ученики' })
     .click();
-  // 0.7.3: the room is set up in the edit dialog, opened from the «⋮» menu of the student
-  await page.getByRole('button', { name: `Действия: ${ANNA}` }).click();
-  await page.getByRole('menuitem', { name: 'Изменить' }).click();
-  const edit = page.getByRole('dialog', { name: 'Изменить ученика' });
+  // 0.7.3: the room is set up with the student's data (0.23.0: on the Профиль tab of the card, saved at once)
+  await page.getByRole('link', { name: ANNA, exact: true }).click();
+  await page.getByRole('tab', { name: 'Профиль' }).click();
+  await expect(page).toHaveURL(/\?tab=profile$/);
+  const room = page.locator('tb-room-panel');
   // 0.8.0: no Telemost API — the teacher pastes the link of the meeting
-  await edit.locator('#room-link').fill('https://telemost.yandex.ru/j/12000000000001');
-  await edit.getByRole('button', { name: 'Добавить ссылку' }).click();
-  await expect(edit.getByRole('link', { name: /telemost/ })).toBeVisible();
-  await edit.getByRole('button', { name: 'Отмена' }).click();
+  await room.locator('#room-link').fill('https://telemost.yandex.ru/j/12000000000001');
+  await room.getByRole('button', { name: 'Добавить ссылку' }).click();
+  await expect(room.getByRole('link', { name: /telemost/ })).toBeVisible();
 
   // 0.7.3: the students page links no boards; a board for Anna is made on «Доски»
   await page.goto('/teacher/boards');

@@ -14,7 +14,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 ## Four steps
 
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
-2. **Check the lesson price.** «Payments» → click the student's name → the «Lesson price» field. Debts and prepayments are counted from it.
+2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
@@ -66,33 +66,40 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 ## Add a student
 
 1. Click «Create» → «Student» (on a phone — «Students» → «Add student»).
-2. Enter the name. Email and phone are optional, you and the student see them; the note is seen only by you.
-3. The portal shows an invitation link. Copy it and send it to the student.
+2. Enter the name. Email and phone are optional, you and the student see them.
+3. The portal opens the student's card on the «Profile» tab and shows an invitation link. Copy it and send it to the student. Fill in the rest on «Profile»: the note, the default topic, the colour, the lesson price, the video meeting.
 
 The student opens the link, chooses a login and a password and gets to their cabinet. The link is valid for a few days — if it is out of date, issue a new one.
 
-## Student card
+## List of students and groups
 
-The list shows the photo (if the student uploaded one, otherwise the initials), the name and phone, and on the right the status: «Invited», «Active» or «Turned off». Hover over an invited student's status to see until when the link is valid. Hover over the name to see the login and the note.
+Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows its students and the nearest lesson.
+
+Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
+
+Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
+
+The top of a student's card shows the photo, the name, since which month they study with you and the tags: the messenger (or «No messenger»), the prepayment or the debt. Next to them are three buttons: **Write** — a message to this student only, **Payment** — record their payment, **Lesson** — plan a lesson with them (the default topic is filled in). The **Overview** tab gathers the main things: the next lessons, the open homework (each opens by its title), the balance with the last operations and «Contact» — the connected messengers (with none, «Remind» sends the student a link to connect one) and the video meeting link.
+
+The **Lessons** tab lists all the student's lessons, group ones too: «Upcoming» (nearest first) and «Past» (latest first) with the outcome — conducted, missed, cancelled; for a group lesson — whether this student was there. Half a year back and ahead is shown, «Show earlier» adds the year before. **Homework** — every task of the student with its status: the open ones first, then the accepted ones with the grade; the title opens the task. **Payments** — the balance, charged and paid in total, the lesson price and the history (see [Payments](/teacher/help/billing)).
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
-Email, phone, note, login (the student chooses it, so it is read-only) and the **video meeting** are in the «Edit» window ([Video meetings](/teacher/help/meetings)).
+The **Profile** tab is everything you know about the student, changed right there. «Student details»: the name, email, phone, note (only you see it), default topic and colour — change the fields and press «Save» under them («Cancel» brings back the saved ones). Below are the lesson price (with its own «Save»), the **video meeting** (actions in it are saved at once, [Video meetings](/teacher/help/meetings)) and «Cabinet sign-in»: the login (the student chooses it, so it is read-only), until when the link works and the button for a new link — «New invitation» or «Reset password».
 
-The student's groups are in the «Groups» card under the students ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
+The student's groups are rows of the same list ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
 
 ## Links and access
 
-The «⋮» button right of the status opens the menu:
+The «⋮» button in the student's card (right of the buttons, on a phone at the top next to the name) opens the menu:
 
-- **Edit** — name, contacts, note, default topic, colour and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and homework stays.
-- **Give access back** — for students whose access is off (turn on «Show turned off»).
+- **Give access back** — for students whose access is off (the «Turned off» filter).
 
 ## Student colour
 
-In the «Edit» window pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints the background of their row (the circle with initials keeps the portal colour) in every list — students, billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
+On the «Profile» tab pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints the background of their row (the circle with initials keeps the portal colour) in every list — students, billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
 
 In the calendar a planned lesson is filled with the colour. A conducted, missed or cancelled lesson keeps the colour of its status, with the student's colour as a stripe on the left.
 `,
@@ -105,12 +112,23 @@ A group is students who study together. A group has its own lesson price: it is 
 
 ## Create a group
 
-1. «Students» → the «Groups» card under the list of students → «Create group».
-2. Enter the name, tick the students and set the price of one lesson for each. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
+1. «Students» → the «Create group» button next to the title.
+2. Enter the name, tick the students and click «Create».
+3. The group's card opens on the «Profile» tab: set the price of one lesson for each member. A default topic and a colour are optional: the group's colour paints its rows in lists, its lessons in the calendar and its chip in the group pickers.
 
-## Group card
+## Groups in the list
 
-The list shows the group's name and its students. The «⋮» button on the right opens the menu: «Edit» (name, students, lesson price, default topic, colour and video meeting) and «Archive» («Restore from archive» for archived groups, which are marked «Archived» in the list).
+Groups are rows of the students' list with a group icon: the name, the students and the nearest lesson; the «Groups» filter keeps only them. Archived groups are under the «Turned off» filter, marked «Archived».
+
+## The group's card
+
+Click a group's row to open its card, built as a student's. At the top — the name, the number of members and the month the group started; the buttons «Write» (a message to every member), «Lesson» (a new lesson with the group) and «⋮» with «Archive» («Restore from archive» for an archived group). The tabs:
+
+- **Overview** — the group's next lessons and the link to its room.
+- **Lessons** — every lesson of the group: upcoming and past with the outcome.
+- **Homework** — the tasks of every member with the status; the student's name next to each task.
+- **Members** — the students of the group; a name opens the student's card. The «remove» icon in a row takes the student out of the group; below, choose students and click «Add».
+- **Profile** — the name, the default topic and the colour («Save» under the fields), the lesson price for each member and the video meeting.
 
 ## Group lessons
 
@@ -120,7 +138,7 @@ After the lesson mark the attendance: who came, who missed. The lesson is charge
 
 ## If the members change
 
-Edit the group — new members appear in future lessons, those who left disappear from them. Past lessons do not change.
+Change the members on the «Members» tab — new members appear in future lessons, those who left disappear from them. Past lessons do not change.
 
 Archive a group you no longer teach: its future lessons are cancelled, the history stays.
 `,
@@ -134,7 +152,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 - **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
 
-**Default topic.** If a student or a group has a default topic (in the «Edit» window of the student or group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -202,7 +220,7 @@ On a phone a minimized call is a bar above the bottom menu.
 
 ## External link
 
-If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → «⋮» → «Edit» → «Video meeting».
+If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student → the «Profile» tab → «Video meeting» (for a group — the same, on the «Profile» tab of its card).
 
 The administrator turns calls in the portal on (a call server is needed). If they are off, the section says so.
 `,
@@ -215,7 +233,7 @@ If calls in the portal are on, lessons are held in the portal room — see [Call
 
 ## Set the link
 
-«Students» → «⋮» next to a student or a group → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
+«Students» → the student → the «Profile» tab of their card → «Video meeting»; for a group — the same, the «Profile» tab of its card. Actions in this block are saved at once, without «Save».
 
 Create a meeting in Telemost, Zoom or another service, paste the link and click «Add link».
 
@@ -387,11 +405,11 @@ Students in «Payments» are a list, a line per student: photo, name, lesson pri
 
 ## Record a payment
 
-«Create» → «Payment» (on a phone — «Payments» → «Payment»; or the wallet button in the student's row) → amount, date and comment. A wrong payment can be voided on the student's page.
+«Create» → «Payment» (on a phone — «Payments» → «Payment»; or the «Payment» button in the student's card) → amount, date and comment. A wrong payment can be voided on the «Payments» tab of the student's card.
 
 ## Payment receipt
 
-A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the student's history — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
+A payment can have a receipt — a photo or a PDF up to 10 MB: in the «Payment» window («Choose a file») or later in the history on the «Payments» tab of the student's card — the paperclip button in the payment's row → «Attach a receipt» («Replace the receipt», «Remove the receipt»). The receipt button in the row opens it. The student sees the receipt in their payments and can open it.
 
 The easiest way is to forward the receipt to the bot: send a photo or a PDF, the bot asks who paid and how much and records the payment with the receipt ([What the bot can do](/teacher/help/bot)).
 
@@ -401,7 +419,7 @@ Lessons are charged when you mark them in the schedule. If a lesson took place b
 
 ## Price and history
 
-Click a student's name to open their history: lessons, payments and the lesson price (it can be changed; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
+Click a student's name to open the «Payments» tab of their card in «Students»: lessons, payments and the lesson price (it is changed on the «Profile» tab; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
 
 ## Monthly report
 
@@ -588,8 +606,8 @@ Before deleting, the portal asks again: the red button in the window does the ac
 ## From a phone
 
 - The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New homework», «Payment».
-- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the status and the «⋮» menu on the right.
-- On nested pages (homework, a student's work, a student's payments, the report) the «←» arrow left of the title goes back to the list.
+- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card with the «⋮» menu.
+- On nested pages (homework, a student's work, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
 - Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
 - The portal's messages («Saved», errors) appear at the bottom of the screen.
@@ -658,7 +676,7 @@ Check the portal address: «Settings» → «Portal». The address must open fro
 Restore a backup: «Settings» → «Data» → «Backups» ([more](/teacher/help/backups)).
 
 **A student cannot sign in.**
-Check that their access is not turned off. Issue a password reset link: «Students» → «⋮» next to the student → «Reset password».
+Check that their access is not turned off. Issue a password reset link: «Students» → the student → «⋮» in the card → «Reset password».
 
 **The invitation link is out of date.**
 Issue a new one in the same place — the old one stops working.
@@ -670,7 +688,7 @@ Check «Settings» → «Messengers»: the bot must be connected. The student mu
 Open the lesson and click «Remove the mark» — the charge is undone.
 
 **The student paid, but the debt stayed.**
-Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History».
+Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.
 
 **How to move all recurring lessons to another time?**
 «Schedule» → the «Recurring lessons» card → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.

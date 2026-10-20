@@ -46,7 +46,9 @@ describe('DefaultPriceCard', () => {
     expect(requireElement(host, '.tb-field > label', HTMLLabelElement).htmlFor).toBe(
       'default-price',
     );
-    expect(readableText(host)).toContain('Цена каждого ученика меняется в его истории оплат');
+    expect(readableText(host)).toContain(
+      'Цену каждого ученика меняют на вкладке «Профиль» его карточки',
+    );
     fixture.componentInstance.form.setValue({ price: 1800 });
     buttonByText(host, 'Сохранить').click();
 

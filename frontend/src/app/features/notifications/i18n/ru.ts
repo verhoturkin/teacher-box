@@ -183,6 +183,7 @@ export const ru = {
   broadcast: {
     title: 'Сообщение ученикам',
     to: 'Кому',
+    group: (name: string) => `Группа «${name}»`,
     everyone: 'Всем ученикам',
     search: 'Поиск',
     hint: 'Если никого не выбрать, сообщение получат все ученики.',
@@ -190,6 +191,19 @@ export const ru = {
     text: 'Текст',
     send: 'Отправить',
     failed: 'Не удалось отправить сообщение',
+  },
+  studentChannels: {
+    title: 'Мессенджеры ученика',
+    what: 'мессенджеры ученика',
+    connected: (name: string) => `${name} подключён`,
+    since: (date: string) => `с ${date}`,
+    paused: 'уведомления на паузе',
+    none: 'Мессенджер не подключён',
+    noneHint: 'Уведомления приходят только в личный кабинет',
+    remind: 'Напомнить',
+    reminded: 'Напоминание отправлено',
+    failed: (count: number) => `Не доставлено: ${String(count)}`,
+    failedHint: 'Сообщения за 30 дней, которые мессенджер не принял',
   },
   students: {
     title: 'Мессенджеры учеников',

@@ -161,6 +161,16 @@ public class LessonRepository {
                 .list());
     }
 
+    /** Lessons of the group that start in {@code [from, to)}. */
+    public List<Lesson> findStartingBetweenOfGroup(UUID groupId, Instant from, Instant to) {
+        return load(jdbc.sql(SELECT + " where starts_at >= :from and starts_at < :to and group_id = :groupId" + ORDER)
+                .param("groupId", groupId)
+                .param("from", from)
+                .param("to", to)
+                .query(LessonRepository::map)
+                .list());
+    }
+
     /** Planned lessons of a group that start after {@code after}. */
     public List<Lesson> findScheduledOfGroup(UUID groupId, Instant after) {
         return load(jdbc.sql(SELECT + " where group_id = :groupId and status = 'SCHEDULED' and starts_at > :after"

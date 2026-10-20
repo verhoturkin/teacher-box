@@ -23,15 +23,20 @@ test('the colour of a student tints their row, not the avatar', async ({ page })
 
   await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(student);
-  const dialog = page.getByRole('dialog');
-  await dialog.locator('tb-label-color-field .p-select').click();
-  await page.getByRole('option', { name: 'Красный' }).click();
   await page.getByRole('button', { name: 'Сохранить' }).click();
   const invite = page.getByRole('dialog', { name: `Ссылка для ученика: ${student}` });
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
+  // 0.23.0: the colour is chosen on the Профиль tab of the card, which opens after creating
+  const details = page.locator('p-card', { hasText: 'Данные ученика' });
+  await details.locator('tb-label-color-field .p-select').click();
+  await page.getByRole('option', { name: 'Красный' }).click();
+  await details.getByRole('button', { name: 'Сохранить' }).click();
 
   const row = page.locator('ul.tb-list > li', { hasText: student });
+  await expect(row).toHaveAttribute('data-tb-label', 'red');
+  // the row of the open card is marked as current: the tint is measured with no card open
+  await page.goto('/teacher/students');
   await expect(row).toHaveAttribute('data-tb-label', 'red');
   await expect(row.locator('tb-avatar')).not.toHaveAttribute('data-tb-label', /.*/);
 

@@ -52,7 +52,8 @@ test('a button: 40 px high, 16 px padding, a 20 px icon, 8 px corners while pres
   page,
 }) => {
   await signIn(page);
-  await page.goto('/teacher/students');
+  // 0.23.0: the students' page has no labelled button on a computer; the schedule's «Добавить»
+  await page.goto('/teacher/schedule');
 
   const button = page.locator('main .p-button:has(.p-button-label):has(.p-button-icon)').first();
   await expect(button).toBeVisible();

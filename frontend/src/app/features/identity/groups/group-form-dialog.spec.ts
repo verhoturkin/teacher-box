@@ -2,13 +2,14 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { bodyText } from '@testing/dom';
-import { GroupFormDialog, SavedGroup } from './group-form-dialog';
+import { StudentGroup } from '../data-access/identity.models';
+import { GroupFormDialog } from './group-form-dialog';
 import { testProviders } from '@testing/setup';
 
 describe('GroupFormDialog', () => {
   let fixture: ComponentFixture<GroupFormDialog>;
   let backend: HttpTestingController;
-  let saved: SavedGroup[];
+  let created: StudentGroup[];
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -17,8 +18,8 @@ describe('GroupFormDialog', () => {
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupFormDialog);
-    saved = [];
-    fixture.componentInstance.saved.subscribe((value) => saved.push(value));
+    created = [];
+    fixture.componentInstance.created.subscribe((group) => created.push(group));
     fixture.componentRef.setInput('students', [
       aStudent({ id: 'a', displayName: 'Анна' }),
       aStudent({ id: 'o', displayName: 'Олег', status: 'DEACTIVATED' }),
@@ -27,12 +28,6 @@ describe('GroupFormDialog', () => {
   });
 
   afterEach(() => {
-    // the room panel of an edited owner loads its room
-    for (const request of backend.match((request) =>
-      request.url.startsWith('/api/teacher/meetings/'),
-    )) {
-      request.flush([]);
-    }
     backend.verify();
     fixture.destroy();
   });
@@ -43,10 +38,12 @@ describe('GroupFormDialog', () => {
     return fixture.componentInstance;
   }
 
-  it('creates a group and sets its price', async () => {
+  it('creates a group of its name and students only', async () => {
     const dialog = await open();
     expect(bodyText()).toContain('Новая группа');
-    dialog.form.patchValue({ name: 'ОГЭ', memberIds: ['a'], price: 800 });
+    expect(document.body.querySelector('#group-price')).toBeNull();
+    expect(document.body.querySelector('#group-topic')).toBeNull();
+    dialog.form.patchValue({ name: ' ОГЭ ', memberIds: ['a'] });
 
     dialog.save();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/groups' });
@@ -57,110 +54,44 @@ describe('GroupFormDialog', () => {
       color: null,
     });
     create.flush(aGroup({ id: 'g', name: 'ОГЭ' }));
-    const price = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/groups/g/price' });
-    expect(price.request.body).toEqual({ lessonPrice: 80000 });
-    price.flush({ groupId: 'g', lessonPrice: 80000 });
+    await fixture.whenStable();
 
-    expect(saved).toEqual([{ group: aGroup({ id: 'g', name: 'ОГЭ' }), lessonPrice: 80000 }]);
+    expect(created.map((group) => group.id)).toEqual(['g']);
     expect(dialog.visible()).toBe(false);
   });
 
-  it('sets up the room of a current group, not of an archived one or a new one', async () => {
-    await open();
-    expect(bodyText()).not.toContain('Видеовстреча');
-    fixture.componentInstance.visible.set(false);
-
-    fixture.componentRef.setInput('group', aGroup({ id: 'g', archivedAt: '2026-09-02T10:00:00Z' }));
-    await open();
-    expect(bodyText()).not.toContain('Видеовстреча');
-    backend.expectNone('/api/teacher/meetings/rooms');
-    fixture.componentInstance.visible.set(false);
-
-    fixture.componentRef.setInput('group', aGroup({ id: 'g' }));
-    await open();
-    expect(bodyText()).toContain('Видеовстреча');
-    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
-  });
-
-  it('keeps the price when it did not change', async () => {
-    const group = aGroup({ id: 'g', version: 3, color: 'PINK' });
-    fixture.componentRef.setInput('group', group);
-    fixture.componentRef.setInput('lessonPrice', 90000);
+  it('offers the current students only', async () => {
     const dialog = await open();
-    expect(dialog.form.getRawValue()).toEqual({
-      name: 'ОГЭ 9 класс',
-      memberIds: ['student-1', 'student-2'],
-      price: 900,
-      defaultTopic: '',
-      color: 'PINK',
-    });
-    dialog.form.patchValue({ name: 'ОГЭ 9Б', defaultTopic: ' Алгебра ', color: null });
-
-    dialog.save();
-    const update = backend.expectOne({ method: 'PUT', url: '/api/teacher/groups/g' });
-    expect(update.request.body).toEqual({
-      name: 'ОГЭ 9Б',
-      memberIds: ['student-1', 'student-2'],
-      defaultTopic: 'Алгебра',
-      color: null,
-      version: 3,
-    });
-    update.flush({ ...group, name: 'ОГЭ 9Б', version: 4 });
-
-    expect(saved[0]?.lessonPrice).toBe(90000);
+    expect(dialog.memberOptions().map((student) => student.id)).toEqual(['a']);
   });
 
-  it('does not change the price when it is left empty', async () => {
-    const dialog = await open();
-    dialog.form.patchValue({ name: 'Без цены' });
-
-    dialog.save();
-    backend.expectOne('/api/teacher/groups').flush(aGroup({ id: 'g' }));
-
-    expect(saved[0]?.lessonPrice).toBeNull();
-  });
-
-  it('offers current students and keeps members who left', async () => {
-    fixture.componentRef.setInput(
-      'group',
-      aGroup({
-        members: [
-          { id: 'o', displayName: 'Олег', status: 'DEACTIVATED' },
-          { id: 'x', displayName: 'Ксения', status: 'DEACTIVATED' },
-        ],
-      }),
-    );
-    await open();
-
-    expect(fixture.componentInstance.memberOptions().map((option) => option.id)).toEqual([
-      'a',
-      'o',
-      'x',
-    ]);
-  });
-
-  it('shows why the group was not saved', async () => {
-    const dialog = await open();
-    dialog.form.patchValue({ name: 'Ошибка' });
-
-    dialog.save();
-    backend
-      .expectOne('/api/teacher/groups')
-      .flush(
-        { status: 422, code: 'group.member-invalid' },
-        { status: 422, statusText: 'Unprocessable' },
-      );
-    await fixture.whenStable();
-
-    expect(bodyText()).toContain('В группу можно добавить только учеников с доступом к порталу');
-    expect(dialog.visible()).toBe(true);
-    expect(saved).toEqual([]);
-  });
-
-  it('does not save an invalid form twice', async () => {
+  it('needs a name', async () => {
     const dialog = await open();
     dialog.save();
     backend.expectNone('/api/teacher/groups');
+    expect(dialog.form.controls.name.touched).toBe(true);
+  });
+
+  it('starts empty each time it opens', async () => {
+    const dialog = await open();
+    dialog.form.patchValue({ name: 'Черновик', memberIds: ['a'] });
+    dialog.visible.set(false);
+    await fixture.whenStable();
+    await open();
+    expect(dialog.form.getRawValue()).toEqual({ name: '', memberIds: [] });
+  });
+
+  it('shows why the group was not created and stays open', async () => {
+    const dialog = await open();
+    dialog.form.patchValue({ name: 'ОГЭ' });
+    dialog.save();
+    backend
+      .expectOne('/api/teacher/groups')
+      .flush({ status: 500 }, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Не удалось сохранить');
+    expect(dialog.visible()).toBe(true);
+    expect(created).toEqual([]);
   });
 });

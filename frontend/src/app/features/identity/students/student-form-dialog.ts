@@ -1,56 +1,38 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   inject,
-  input,
   model,
   output,
   signal,
   untracked,
 } from '@angular/core';
-import {
-  FormControl,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
-import { LabelColor } from '@core/theme/label-colors';
-import { LabelColorField } from '../colors/label-color-field';
-import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
 import { IdentityApi } from '../data-access/identity-api';
-import { CreatedStudent, Student, StudentProfileInput } from '../data-access/identity.models';
+import { CreatedStudent } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
-/** Creates a student (when `student` is null) or edits an existing one. */
+/**
+ * Creates a student: the name and a contact (redesign spec §8). The rest of the profile — the note, the
+ * default topic, the colour, the price, the video meeting — is filled in on the Профиль tab of the card,
+ * which the page opens after this dialog.
+ */
 @Component({
   selector: 'tb-student-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    InputText,
-    Message,
-    Textarea,
-    FieldErrors,
-    SubmitFor,
-    RoomPanel,
-    LabelColorField,
-  ],
+  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, FieldErrors, SubmitFor],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="title()"
+      [header]="t.newStudent"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -69,41 +51,10 @@ import { SHARED_T } from '@shared/i18n/texts';
           <label for="phone">{{ t.phone }}</label>
           <input pInputText id="phone" formControlName="phone" autocomplete="off" />
         </div>
-        <div class="tb-field">
-          <label for="note">{{ t.note }}</label>
-          <textarea pTextarea id="note" formControlName="note" rows="3"></textarea>
-        </div>
-        <div class="tb-field">
-          <label for="defaultTopic">{{ t.defaultTopic }}</label>
-          <input
-            pInputText
-            id="defaultTopic"
-            formControlName="defaultTopic"
-            autocomplete="off"
-            [placeholder]="t.defaultTopicPlaceholder"
-            aria-describedby="default-topic-hint"
-          />
-          <small id="default-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
-        </div>
-        <tb-label-color-field inputId="student-color" [control]="form.controls.color" />
-        @if (student(); as student) {
-          <div class="tb-field">
-            <label for="login">{{ t.login }}</label>
-            <input
-              pInputText
-              id="login"
-              readonly
-              [value]="student.login ?? t.noLogin"
-              aria-describedby="login-hint"
-            />
-            <small id="login-hint" class="tb-hint">{{ t.loginHint }}</small>
-          </div>
-        }
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
-      <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
           [label]="c.cancel"
@@ -122,21 +73,8 @@ export class StudentFormDialog {
   private readonly api = inject(IdentityApi);
 
   readonly visible = model(false);
-  /** Student to edit; `null` creates a new one. */
-  readonly student = input<Student | null>(null);
   readonly created = output<CreatedStudent>();
-  readonly updated = output<Student>();
 
-  protected readonly title = computed(() =>
-    this.student() === null ? T.studentForm.newStudent : T.studentForm.editStudent,
-  );
-  /** The room is set up for a saved student who still has access. */
-  protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
-    const student = this.student();
-    return student === null || student.status === 'DEACTIVATED' || !this.visible()
-      ? null
-      : { type: 'STUDENT', id: student.id, name: student.displayName };
-  });
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -144,27 +82,15 @@ export class StudentFormDialog {
     displayName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.email, Validators.maxLength(254)]],
     phone: ['', [Validators.maxLength(32)]],
-    note: ['', [Validators.maxLength(2000)]],
-    defaultTopic: ['', [Validators.maxLength(500)]],
-    color: new FormControl<LabelColor | null>(null),
   });
 
   constructor() {
-    // Fill the form whenever the dialog opens; untracked: the colour select reads its own signals when written,
-    // and choosing a colour must not fill the form again.
+    // an empty form whenever the dialog opens
     effect(() => {
       if (this.visible()) {
-        const student = this.student();
         untracked(() => {
           this.error.set(null);
-          this.form.reset({
-            displayName: student?.displayName ?? '',
-            email: student?.email ?? '',
-            phone: student?.phone ?? '',
-            note: student?.note ?? '',
-            defaultTopic: student?.defaultTopic ?? '',
-            color: student?.color ?? null,
-          });
+          this.form.reset();
         });
       }
     });
@@ -175,42 +101,27 @@ export class StudentFormDialog {
       return;
     }
     const value = this.form.getRawValue();
-    const profile: StudentProfileInput = {
-      displayName: value.displayName,
-      email: value.email === '' ? null : value.email,
-      phone: value.phone === '' ? null : value.phone,
-      note: value.note === '' ? null : value.note,
-      defaultTopic: value.defaultTopic.trim() === '' ? null : value.defaultTopic.trim(),
-      color: value.color,
-    };
-    const student = this.student();
     this.pending.set(true);
     this.error.set(null);
-    const onError = (error: unknown): void => {
-      this.pending.set(false);
-      this.error.set(describeError(error, T.studentForm.failed));
-    };
-    if (student === null) {
-      this.api.createStudent(profile).subscribe({
+    this.api
+      .createStudent({
+        displayName: value.displayName,
+        email: value.email === '' ? null : value.email,
+        phone: value.phone === '' ? null : value.phone,
+        note: null,
+        defaultTopic: null,
+        color: null,
+      })
+      .subscribe({
         next: (created) => {
-          this.finish();
+          this.pending.set(false);
+          this.visible.set(false);
           this.created.emit(created);
         },
-        error: onError,
-      });
-    } else {
-      this.api.updateStudent(student.id, profile, student.version).subscribe({
-        next: (saved) => {
-          this.finish();
-          this.updated.emit(saved);
+        error: (error: unknown) => {
+          this.pending.set(false);
+          this.error.set(describeError(error, T.studentForm.failed));
         },
-        error: onError,
       });
-    }
-  }
-
-  private finish(): void {
-    this.pending.set(false);
-    this.visible.set(false);
   }
 }

@@ -75,6 +75,16 @@ describe('Shell on a phone', () => {
     expect(host.querySelector('.tb-shell__content--nav')).not.toBeNull();
   });
 
+  it('keeps «Ученики» active and titled on the card of a group', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher/groups/g-1');
+
+    const current = host.querySelectorAll('nav.tb-bottom-nav a[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]?.textContent).toContain('Ученики');
+    expect(current[0]?.classList).toContain('tb-bottom-nav__item--active');
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Ученики');
+  });
+
   it('shows ☰, the title of the section, the bell and the avatar in the top app bar', async () => {
     const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher/schedule/week?day=1');
 

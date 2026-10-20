@@ -8,9 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
@@ -27,6 +25,7 @@ import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
 import { SideNav } from './side-nav';
+import { NavItem, injectUrl, isNavActive } from './nav-item';
 
 const T = CORE_T.shell;
 
@@ -63,7 +62,6 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     NotificationsSheet,
     RouterOutlet,
     RouterLink,
-    RouterLinkActive,
     SideNav,
     Avatar,
   ],
@@ -151,9 +149,8 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           <a
             class="tb-bottom-nav__item"
             [routerLink]="item.routerLink"
-            routerLinkActive="tb-bottom-nav__item--active"
-            ariaCurrentWhenActive="page"
-            [routerLinkActiveOptions]="item.routerLinkActiveOptions ?? { exact: false }"
+            [class.tb-bottom-nav__item--active]="isActive(item)"
+            [attr.aria-current]="isActive(item) ? 'page' : null"
           >
             <span class="tb-bottom-nav__icon"><i [class]="item.icon" aria-hidden="true"></i></span>
             <span class="tb-bottom-nav__label">{{ item.label }}</span>
@@ -214,10 +211,10 @@ export class Shell {
     openOnNotificationsParam();
   }
 
-  readonly items = input.required<MenuItem[]>();
+  readonly items = input.required<NavItem[]>();
   readonly homeLink = input.required<string>();
   /** Links at the bottom of the rail before «Справка» (the settings of the area). */
-  readonly footerLinks = input<MenuItem[]>([]);
+  readonly footerLinks = input<NavItem[]>([]);
   /**
    * «Создать» at the top of the rail (the teacher only, ADR-0048); on compact the sections keep their own
    * create actions (spec §3.1).
@@ -236,7 +233,7 @@ export class Shell {
     const items = this.items();
     const first = this.bottomNav()
       .map((link) => items.find((item) => item.routerLink === link))
-      .filter((item): item is MenuItem => item !== undefined);
+      .filter((item): item is NavItem => item !== undefined);
     return [...first, ...items.filter((item) => !first.includes(item))].slice(0, BAR_ITEMS);
   });
   /** The other sections: in the modal expanded rail under ☰, in the order of the rail. */
@@ -247,14 +244,7 @@ export class Shell {
   protected readonly railOpen = signal(false);
   private readonly document = inject(DOCUMENT);
   protected readonly userOpen = signal(false);
-  private readonly router = inject(Router);
-  private readonly url = toSignal(
-    this.router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      map(() => this.router.url),
-    ),
-    { initialValue: this.router.url },
-  );
+  private readonly url = injectUrl();
   /**
    * The title of the top app bar on compact (spec §3.2): the destination the page belongs to — the longest
    * link of the sections, the bottom group and «Мой аккаунт» that leads the address.
@@ -263,7 +253,10 @@ export class Shell {
     const url = this.url().split(/[?#]/)[0] ?? '';
     const home = this.homeLink();
     const destinations: MenuItem[] = [
-      ...this.items(),
+      ...this.items().flatMap((item) => [
+        item,
+        ...(item.alsoActive ?? []).map((link) => ({ label: item.label, routerLink: link })),
+      ]),
       ...this.footer(),
       { label: T.account, routerLink: `${home}/account` },
     ];
@@ -280,6 +273,10 @@ export class Shell {
     }
     return best.label;
   });
+  /** The destination of the current page (`isNavActive`). */
+  protected isActive(item: NavItem): boolean {
+    return isNavActive(item, this.url());
+  }
   protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
   /** The photo of a student or the teacher on the user button; without one, the person icon. */
   protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);

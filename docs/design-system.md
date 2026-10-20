@@ -325,7 +325,8 @@ component that shows one adds it to `PRIME`).
   follow one another and the window scrolls. Focus order = template order = visual order (nothing reorders
   panes); `label` makes a pane a named region. A pane that appears after the page enters on
   `--tb-spring-default-spatial` (opacity on the effects spring), panes of a new page don't, no stagger
-  (*ours*). The shell drops its own content padding for a page of panes. **List-detail:**
+  (*ours*). The shell drops its own content padding for a page of panes. A list right in a pane nests its
+  corners: 28 − 24 = 4 px, on compact 28 − 16 = 12 px (`--tb-list-outer`, ADR-0044). **List-detail:**
   `injectListDetail(() => routeHasDetail)` — from expanded both panes, on compact and medium only the list or
   the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
@@ -514,7 +515,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
-  2 dp, 1 dp outline-variant divider. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
+  2 dp, 1 dp outline-variant divider; `tb-tabs--start` (a card's tabs) — leading-aligned, each as wide as
+  its label (*ours*), scrollable. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
   «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (`tb-list--no-lead`,
   «Прочитать все», «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
   explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
@@ -581,11 +583,69 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   - `tb-list__trail` — amount (Title Medium), status or ≤ 3 actions.
   - On the phone (list < 26 rem) row buttons go under the text, full tile width, from the left;
     `tb-list__trail--icons` keeps a status and icon buttons on the right.
-  - Students and groups (0.7.3) — a `tb-list`, not a table: initials / icon; name + one supporting line (a
-    student's phone, a group's members); trail — status `p-tag` and «⋮» (one popup `p-menu` per list, items
-    for the clicked row, `aria-haspopup` + `aria-expanded`). Everything else lives in the edit dialog
-    (login read-only, the room — `tb-room-panel`); a student's login and note — tooltip on the name
-    (`tb-tooltip-lines`, focusable).
+  - Students and groups (237.2, redesign spec §8) — **one** `tb-list` in the fixed pane of a list-detail
+    (`/teacher/students[/:studentId]`, `/teacher/groups/:groupId` — one route, the page stays; «Ученики» in the
+    rail and the bar is active on both, `NavItem.alsoActive`): the header «Ученики» + «N учеников · M групп»
+    (current ones) and the icon button «Создать группу»; the search; filter chips «Все · Группы · Должники N ·
+    Без мессенджера N · Отключённые» (`tb-filter-chips`, below; «Отключённые» — students without access and
+    archived groups, they replace the old toggles). From expanded the header, the search and the chips stay and
+    only the list scrolls (*ours*); on one pane the window scrolls. Students by name, then groups (group icon in the lead).
+    Row: avatar / icon; the name is the row's link (`tb-list__link`) to the card; supporting «nearest lesson ·
+    аванс N» (a group: its members · nearest lesson; «нет занятий» when the schedule has none in 4 weeks;
+    balances from the billing overview, messengers from notifications, lessons from schedule — a failed read
+    only drops its part); trail — one status: the debt in `error` (Title Medium; read out «Долг N»), or else the tag
+    «Приглашён» / «Отключён» / «В архиве» (none for an active student; the trail column is shared by the
+    subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2): the
+    actions (one popup `p-menu`, `aria-haspopup` + `aria-expanded`) are a «⋮» in the card's header. The row of the open card (from expanded) is `tb-list__item--current`:
+    secondary-container, title weight 500 (M3 selected list item), also over a student's colour. With
+    nothing open beside the list — «Выберите ученика или группу».
+  - Student's card (237.3, `identity/students/student-card.ts`) — header: the 72 px avatar in the student's
+    colour (label container, *ours*), the name (h2, Headline Small; on one pane the page header carries it and
+    «⋮»), «с сентября 2025» (Body Medium, on-surface-variant), tags — the status (not for an active student),
+    the messengers or «Без мессенджера» (warn), «Аванс N» (success) / «Долг N» (danger); actions — tonal
+    «Написать» (`tb-broadcast-dialog [to]`, one recipient, no picker) and «Оплата» (`tb-payment-dialog` with the
+    student), filled «Занятие» (`tb-lesson-dialog [studentId]`: «with whom» fixed, the default topic and the
+    length from the schedule settings), «⋮»; a deactivated student keeps only «Оплата». On compact the three
+    are tonal, equal width across the card. Tabs `tb-tabs tb-tabs--start` named by `?tab=` (`card-tabs.ts`;
+    Обзор, the default, is left out of the address). Обзор — cards one under another, each a part of its
+    feature: «Ближайшие занятия» (3 of 60 days, «Ещё запланировано: N»), «Задания» (open ones, works to review
+    first, then by the deadline; 5 + «Ещё открытых: N»), «Баланс» (the figure, the lesson price, the last 3
+    counted operations), «Связь» (`tb-student-channels` — connected messengers, failed deliveries, «Напомнить»
+    without one; `tb-room-link` — the external link with copy, the portal room, or no link). A payment or a
+    lesson from the header reads the balance and the lessons again, and the list's balances too.
+    Занятия, Задания, Оплаты (237.4) — the full lists, each a part of its feature: «Предстоящие» (nearest first)
+    and «Прошедшие» (latest first) cards of `tb-student-lessons-tab` (half a year back and ahead, «Показать
+    ранее» reads the year before; a past lesson's tag is its status, a group lesson the student attended or
+    missed — the student's own attendance; cancelled rows are inactive); «Все задания» of `tb-student-tasks-tab`
+    (open ones as on Обзор, then the accepted ones, the latest reviewed first, with the grade; 20 + «Показать
+    ещё»); `tb-student-payments-tab` — the figures (balance, totals, lesson price — read-only since 237.5) and
+    the ledger card «История» (`tb-ledger-list`). The old page `/teacher/billing/students/:id` redirects to
+    `/teacher/students/:id?tab=payments`; billing links to a student open that tab.
+    Профиль (237.5, `tb-student-profile-tab`) — the student's data changed in place, cards one under another:
+    «Данные ученика» (name *, e-mail, phone, note, default topic, colour — always editable fields, under them
+    `tb-form-actions` with the tonal «Сохранить», off until a field differs from the saved profile, and the text
+    «Отмена» shown only then, which brings the saved values back; a saved profile updates the list row),
+    «Цена занятия» (`tb-student-price-card` of billing — the one place a student's price is changed, the same
+    field + tonal «Сохранить»), «Видеовстреча» (`tb-room-panel`, a card since 237.6, every action saved at once) and «Вход в
+    кабинет» (the read-only login, until when the issued link works, tonal «Новое приглашение» / «Сбросить
+    пароль» — the same action as in «⋮»). *Our decision (M3 publishes no in-place edit pattern):* fields stay
+    editable instead of a read view with a pencil, as the account's sections. The dialog «Новый ученик» asks only
+    the name and the contacts; after it the card opens on Профиль with the invitation link over it. «⋮» has no
+    «Изменить» any more.
+    The header is one part for both cards (`tb-card-head`, `card-head.ts`: the avatar and the actions projected).
+  - Group's card (237.6, `identity/groups/group-card.ts`) — the same header: a 72 px tile with the group icon in
+    the group's colour (secondary container without one, *ours*), «3 участника · с сентября 2025», the tag «В
+    архиве»; tonal «Написать» (`tb-broadcast-dialog [toGroup]` — the current members, no picker; hidden without
+    them) and filled «Занятие» (`tb-lesson-dialog [groupId]`), «⋮» — «В архив…» / «Вернуть из архива»; an
+    archived group has neither action. Tabs (`GROUP_TABS`): Обзор («Ближайшие занятия» of the group, «Связь»
+    with the room link), Занятия (`tb-student-lessons-tab [of]="{groupId}"`), Задания (`tb-student-tasks-tab
+    [members]` — the tasks of every member, the name first in the supporting line), Участники
+    (`tb-group-members-tab`: members by name — avatar or initials in the student's colour, a link to the card,
+    the status tag, an icon button «Убрать из группы: имя» saved at once; under the list a multiselect of the
+    current students not in the group and the tonal «Добавить»), Профиль (`tb-group-profile-tab`: «Данные
+    группы» — name *, default topic, colour with the same tonal «Сохранить» / «Отмена»; «Цена занятия» —
+    `tb-student-price-card [groupId]`; «Видеовстреча» — `tb-room-panel`, not for an archived group). The
+    dialog «Новая группа» asks only the name and the students («Создать»); after it the card opens on Профиль.
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,
@@ -625,6 +685,12 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - Not data lists: wizard steps, help items, checklists, bot capability lists, files picked before upload — plain text
   lists.
 - No custom row markup for data in cards or dialogs.
+- **Filter chips** (`@shared/ui/filter-chips`, 237.2): a single-select set over a list (M3: an alternative to
+  segmented buttons when viewing a list), `role="group"` with a name, each chip a `button` with
+  `aria-pressed`. **M3:** 32 dp high, 8 dp corners, label large; unselected — 1 dp outline-variant,
+  on-surface-variant; selected — secondary-container without the outline, a leading 18 dp check. *Ours:* the
+  set wraps (no horizontal scroll), 8 dp gaps, a 48 dp target over each chip, a count after the label in label
+  large emphasized when it is not zero.
 
 ## 10. Fields
 

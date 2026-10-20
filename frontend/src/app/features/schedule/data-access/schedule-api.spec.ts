@@ -44,6 +44,8 @@ describe('ScheduleApi', () => {
       allowOverlap: false,
     };
     api.lessons('2026-09-28', '2026-10-05').subscribe();
+    api.lessons('2026-09-28', '2026-10-05', { studentId: 's-1' }).subscribe();
+    api.lessons('2026-09-28', '2026-10-05', { groupId: 'g-1' }).subscribe();
     api.plan({ studentId: 's-1', groupId: null, ...details }).subscribe();
     api.edit('l-1', details).subscribe();
     api.cancel('l-1', { reason: null, byStudent: true, charge: false }).subscribe();
@@ -55,6 +57,8 @@ describe('ScheduleApi', () => {
       backend.expectOne('/api/teacher/schedule/lessons?from=2026-09-28&to=2026-10-05').request
         .method,
     ).toBe('GET');
+    backend.expectOne('/api/teacher/schedule/lessons?from=2026-09-28&to=2026-10-05&studentId=s-1');
+    backend.expectOne('/api/teacher/schedule/lessons?from=2026-09-28&to=2026-10-05&groupId=g-1');
     const plan = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/lessons' });
     expect(plan.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     const edit = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });

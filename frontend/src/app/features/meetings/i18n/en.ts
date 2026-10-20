@@ -138,6 +138,16 @@ export const en: Translation<typeof ru> = {
     label: 'Join lesson',
     inBrowser: 'Open in the browser',
   },
+  roomLink: {
+    title: 'Video meeting',
+    what: 'the video meeting',
+    external: 'Video meeting link',
+    copy: 'Copy the link',
+    portal: 'Portal room',
+    portalHint: 'Lessons take place in a portal call',
+    none: 'No video meeting link',
+    noneHint: 'It is set on the “Profile” tab',
+  },
   room: {
     title: 'Video meeting',
     copy: 'Copy link',

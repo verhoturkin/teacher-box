@@ -8,63 +8,43 @@ import {
   model,
   output,
   signal,
-  untracked,
 } from '@angular/core';
-import {
-  FormControl,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { Observable, map, of, switchMap } from 'rxjs';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
 import { describeError } from '@core/http/error-messages';
-import { LabelColor } from '@core/theme/label-colors';
 import { ChipColors } from '../colors/chip-colors';
-import { LabelColorField } from '../colors/label-color-field';
-import { BillingApi } from '@features/billing/parts';
-import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
-import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
-import { locale } from '@core/i18n/language';
 
-/** A saved group with its lesson price (minor units). */
-export interface SavedGroup {
-  readonly group: StudentGroup;
-  readonly lessonPrice: number | null;
-}
-
-/** Creates a group (when `group` is null) or edits one: name, members and lesson price. */
+/**
+ * Creates a group: its name and the students in it. The rest — the price, the default topic, the colour, the
+ * room — is on the Профиль tab of the group's card, which the page opens next (redesign spec §8).
+ */
 @Component({
   selector: 'tb-group-form-dialog',
   imports: [
     ReactiveFormsModule,
     Button,
     Dialog,
-    InputNumber,
     InputText,
     Message,
     MultiSelect,
     FieldErrors,
     SubmitFor,
-    RoomPanel,
-    LabelColorField,
     ChipColors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
-      [header]="title()"
+      [header]="t.newGroup"
       [(visible)]="visible"
       [modal]="true"
       styleClass="tb-dialog"
@@ -99,37 +79,10 @@ export interface SavedGroup {
             [fluid]="true"
           />
         </div>
-        <div class="tb-field">
-          <label for="group-price">{{ t.price }}</label>
-          <p-inputnumber
-            inputId="group-price"
-            formControlName="price"
-            mode="currency"
-            currencyDisplay="narrowSymbol"
-            [currency]="currency()"
-            [locale]="locale"
-            [min]="0"
-            [fluid]="true"
-          />
-          <small class="tb-hint">{{ t.priceHint }}</small>
-        </div>
-        <div class="tb-field">
-          <label for="group-topic">{{ t.defaultTopic }}</label>
-          <input
-            pInputText
-            id="group-topic"
-            formControlName="defaultTopic"
-            autocomplete="off"
-            aria-describedby="group-topic-hint"
-          />
-          <small id="group-topic-hint" class="tb-hint">{{ t.defaultTopicHint }}</small>
-        </div>
-        <tb-label-color-field inputId="group-color" [control]="form.controls.color" />
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
         }
       </form>
-      <tb-room-panel [owner]="roomOwner()" />
       <ng-template #footer>
         <p-button
           [label]="c.cancel"
@@ -137,76 +90,37 @@ export interface SavedGroup {
           [text]="true"
           (onClick)="visible.set(false)"
         />
-        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="group-form" />
+        <p-button [label]="t.create" [loading]="pending()" type="submit" tbSubmitFor="group-form" />
       </ng-template>
     </p-dialog>
   `,
 })
 export class GroupFormDialog {
-  protected readonly locale = locale();
   protected readonly c = SHARED_T.common;
   protected readonly t = T.groupForm;
   private readonly api = inject(IdentityApi);
-  private readonly billing = inject(BillingApi);
 
   readonly visible = model(false);
-  /** Group to edit; `null` creates a new one. */
-  readonly group = input<StudentGroup | null>(null);
   /** Students that can join (deactivated ones are skipped). */
   readonly students = input<readonly Student[]>([]);
-  /** Current lesson price of the edited group, minor units. */
-  readonly lessonPrice = input<number | null>(null);
-  readonly currency = input('RUB');
-  readonly saved = output<SavedGroup>();
+  readonly created = output<StudentGroup>();
 
-  protected readonly title = computed(() =>
-    this.group() === null ? T.groupForm.newGroup : T.groupForm.group,
-  );
-  /** The room is set up for a saved group that is not archived. */
-  protected readonly roomOwner = computed<RoomOwnerRef | null>(() => {
-    const group = this.group();
-    if (group === null || !this.visible()) {
-      return null;
-    }
-    return group.archivedAt === null ? { type: 'GROUP', id: group.id, name: group.name } : null;
-  });
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
-  readonly memberOptions = computed(() => {
-    const members = this.group()?.members ?? [];
-    const current = this.students().filter((student) => student.status !== 'DEACTIVATED');
-    const missing = members.filter(
-      (member) => !current.some((student) => student.id === member.id),
-    );
-    return [...current, ...missing];
-  });
+  readonly memberOptions = computed(() =>
+    this.students().filter((student) => student.status !== 'DEACTIVATED'),
+  );
 
   readonly form = inject(NonNullableFormBuilder).group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
     memberIds: [[] as string[]],
-    price: [null as number | null, [Validators.min(0)]],
-    defaultTopic: ['', [Validators.maxLength(500)]],
-    color: new FormControl<LabelColor | null>(null),
   });
 
   constructor() {
-    // Fill the form whenever the dialog opens; untracked: the colour select reads its own signals when written,
-    // and choosing a colour must not fill the form again.
     effect(() => {
       if (this.visible()) {
-        const group = this.group();
-        const lessonPrice = this.lessonPrice();
-        const price = lessonPrice === null ? null : toMajorUnits(lessonPrice, this.currency());
-        untracked(() => {
-          this.error.set(null);
-          this.form.reset({
-            name: group?.name ?? '',
-            memberIds: group?.members.map((member) => member.id) ?? [],
-            price,
-            defaultTopic: group?.defaultTopic ?? '',
-            color: group?.color ?? null,
-          });
-        });
+        this.error.set(null);
+        this.form.reset({ name: '', memberIds: [] });
       }
     });
   }
@@ -216,40 +130,25 @@ export class GroupFormDialog {
       return;
     }
     const value = this.form.getRawValue();
-    const topic = value.defaultTopic.trim();
-    const input = {
-      name: value.name,
-      memberIds: value.memberIds,
-      defaultTopic: topic === '' ? null : topic,
-      color: value.color,
-    };
-    const group = this.group();
-    const request =
-      group === null
-        ? this.api.createGroup(input)
-        : this.api.updateGroup(group.id, input, group.version);
     this.pending.set(true);
     this.error.set(null);
-    request.pipe(switchMap((saved) => this.savePrice(saved, value.price))).subscribe({
-      next: (result) => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.saved.emit(result);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.groupForm.failed));
-      },
-    });
-  }
-
-  private savePrice(group: StudentGroup, price: number | null): Observable<SavedGroup> {
-    const minor = price === null ? null : toMinorUnits(price, this.currency());
-    if (minor === null || minor === this.lessonPrice()) {
-      return of({ group, lessonPrice: this.lessonPrice() });
-    }
-    return this.billing
-      .changeGroupPrice(group.id, minor)
-      .pipe(map((lessonPrice) => ({ group, lessonPrice })));
+    this.api
+      .createGroup({
+        name: value.name.trim(),
+        memberIds: value.memberIds,
+        defaultTopic: null,
+        color: null,
+      })
+      .subscribe({
+        next: (group) => {
+          this.pending.set(false);
+          this.visible.set(false);
+          this.created.emit(group);
+        },
+        error: (error: unknown) => {
+          this.pending.set(false);
+          this.error.set(describeError(error, T.groupForm.failed));
+        },
+      });
   }
 }

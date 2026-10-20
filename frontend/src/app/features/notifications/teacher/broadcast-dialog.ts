@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -27,6 +28,12 @@ import { SHARED_T } from '@shared/i18n/texts';
 export interface Recipient {
   readonly id: string;
   readonly displayName: string;
+}
+
+/** A group the teacher writes to from its card: every member of it. */
+export interface RecipientGroup {
+  readonly name: string;
+  readonly members: readonly Recipient[];
 }
 
 /** The teacher writes a message to chosen students or to everybody. */
@@ -61,31 +68,52 @@ export interface Recipient {
         [formGroup]="form"
         (ngSubmit)="send()"
       >
-        <div class="tb-field">
-          <label for="broadcast-students">{{ t.to }}</label>
-          <p-multiselect
-            inputId="broadcast-students"
-            formControlName="studentIds"
-            [options]="students()"
-            optionLabel="displayName"
-            optionValue="id"
-            [placeholder]="t.everyone"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
-          />
-          <small class="tb-hint">{{ t.hint }}</small>
-        </div>
-        @if (visible()) {
-          <tb-group-picker
-            inputId="broadcast-group"
-            (picked)="addStudents($event)"
-            (dropped)="removeStudents($event)"
-          />
+        @if (to(); as recipient) {
+          <!-- the student's card writes to that student only -->
+          <div class="tb-field">
+            <label for="broadcast-to">{{ t.to }}</label>
+            <input pInputText id="broadcast-to" [value]="recipient.displayName" readonly />
+          </div>
+        } @else if (toGroup(); as group) {
+          <!-- the group's card writes to its members -->
+          <div class="tb-field">
+            <label for="broadcast-to">{{ t.to }}</label>
+            <input
+              pInputText
+              id="broadcast-to"
+              [value]="t.group(group.name)"
+              readonly
+              aria-describedby="broadcast-to-hint"
+            />
+            <small id="broadcast-to-hint" class="tb-hint">{{ memberNames() }}</small>
+          </div>
+        } @else {
+          <div class="tb-field">
+            <label for="broadcast-students">{{ t.to }}</label>
+            <p-multiselect
+              inputId="broadcast-students"
+              formControlName="studentIds"
+              [options]="students()"
+              optionLabel="displayName"
+              optionValue="id"
+              [placeholder]="t.everyone"
+              [filter]="true"
+              [filterPlaceHolder]="t.search"
+              [ariaFilterLabel]="t.search"
+              display="chip"
+              tbChipColors="student"
+              appendTo="body"
+              [fluid]="true"
+            />
+            <small class="tb-hint">{{ t.hint }}</small>
+          </div>
+          @if (visible()) {
+            <tb-group-picker
+              inputId="broadcast-group"
+              (picked)="addStudents($event)"
+              (dropped)="removeStudents($event)"
+            />
+          }
         }
         <div class="tb-field">
           <label for="broadcast-title">{{ t.subject }}</label>
@@ -124,6 +152,10 @@ export class BroadcastDialog {
 
   readonly visible = model(false);
   readonly students = input<Recipient[]>([]);
+  /** The one student to write to (their card): no choice of recipients. */
+  readonly to = input<Recipient | null>(null);
+  /** The group to write to (its card): its members, no choice of recipients. */
+  readonly toGroup = input<RecipientGroup | null>(null);
   /** Emits the number of recipients. */
   readonly sent = output<number>();
 
@@ -162,6 +194,20 @@ export class BroadcastDialog {
     control.setValue(control.value.filter((id) => !gone.has(id)));
   }
 
+  protected readonly memberNames = computed(() =>
+    (this.toGroup()?.members ?? []).map((member) => member.displayName).join(', '),
+  );
+
+  /** The chosen students, or those of the card (an empty list would mean everybody). */
+  private recipientIds(chosen: string[]): string[] {
+    const to = this.to();
+    const group = this.toGroup();
+    if (to !== null) {
+      return [to.id];
+    }
+    return group === null ? chosen : group.members.map((member) => member.id);
+  }
+
   send(): void {
     if (!revealErrors(this.form) || this.pending()) {
       return;
@@ -173,7 +219,7 @@ export class BroadcastDialog {
       .broadcast({
         title: value.title.trim(),
         body: value.body.trim() === '' ? null : value.body.trim(),
-        studentIds: value.studentIds,
+        studentIds: this.recipientIds(value.studentIds),
       })
       .subscribe({
         next: (recipients) => {

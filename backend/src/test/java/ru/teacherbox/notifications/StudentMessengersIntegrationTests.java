@@ -83,6 +83,34 @@ class StudentMessengersIntegrationTests {
     }
 
     @Test
+    void readsTheMessengersOfOneStudent() {
+        UUID connected = directory.addStudent("Карточка с Telegram");
+        links.save(new ChannelLink(Ids.newId(), connected, ChannelType.TELEGRAM, "6004", "@card", true,
+                clock.instant()));
+        telegram.failWith(new DeliveryException("Forbidden: bot was blocked by the user", true));
+        notifications.notify(connected, NotificationKind.MESSAGE, "Не дойдёт", null, null);
+        dispatcher.dispatch();
+        telegram.reset();
+        UUID gone = directory.addStudent("Отключённая карточка", StudentStatus.DEACTIVATED);
+        String uri = "/api/teacher/notifications/students/{studentId}";
+
+        assertThat(mvc.get().uri(uri, connected).with(teacher()))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.displayName").isEqualTo("Карточка с Telegram");
+                    assertThat(json).extractingPath("$.channels[0].channel").isEqualTo("TELEGRAM");
+                    assertThat(json).extractingPath("$.failedDeliveries").isEqualTo(1);
+                });
+        assertThat(mvc.get().uri(uri, gone).with(teacher()))
+                .as("a deactivated student keeps the card")
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.channels").asArray().isEmpty();
+        assertThat(mvc.get().uri(uri, UUID.randomUUID()).with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri(uri, connected).with(TestUsers.student(connected)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void summarizesMessengersForTheHomePage() throws UnsupportedEncodingException {
         String before = summary();
         UUID connected = directory.addStudent("Сводка с ботом");

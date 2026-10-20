@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
@@ -71,6 +72,25 @@ public class ScheduleQueries {
     /** All lessons that start on days {@code [from, to)} of the instance time zone. */
     public List<LessonView> lessons(LocalDate from, LocalDate to) {
         return views(lessons.findStartingBetween(start(from, to), start(to)));
+    }
+
+    /**
+     * The teacher's view of the lessons of one student (alone or in a group, whatever the attendance) or of one
+     * group that start on days {@code [from, to)}; without either — all lessons.
+     */
+    public List<LessonView> lessons(LocalDate from, LocalDate to, @Nullable UUID studentId,
+            @Nullable UUID groupId) {
+        if (studentId != null && groupId != null) {
+            throw new BusinessRuleException("schedule.filter-invalid", "Give a student or a group, not both");
+        }
+        Instant start = start(from, to);
+        if (studentId != null) {
+            return views(lessons.findStartingBetween(studentId, start, start(to)));
+        }
+        if (groupId != null) {
+            return views(lessons.findStartingBetweenOfGroup(groupId, start, start(to)));
+        }
+        return views(lessons.findStartingBetween(start, start(to)));
     }
 
     public List<LessonView> studentLessons(UUID studentId, LocalDate from, LocalDate to) {

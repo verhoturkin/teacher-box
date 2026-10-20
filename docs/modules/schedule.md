@@ -56,7 +56,9 @@ Lesson events carry `groupId` and participants. Consumers: `billing` (completion
 
 ## REST and bot
 
-`/api/teacher/schedule/**` (lessons, series, requests, unmarked, summary, `off-times`, `google`),
+`/api/teacher/schedule/**` (lessons, series, requests, unmarked, summary, `off-times`, `google`;
+`GET lessons?from&to` takes `studentId` — the student's lessons, group lessons included — or `groupId` for the
+student card (237.1); both at once → `schedule.filter-invalid`, an unknown id → an empty list),
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
 (student).

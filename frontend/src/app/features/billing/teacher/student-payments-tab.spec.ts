@@ -3,26 +3,25 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { hostElement, readableText, requireElement } from '@testing/dom';
 import { LedgerList } from '../ledger/ledger-list';
-import { PaymentDialog } from './payment-dialog';
-import { StudentLedgerPage } from './student-ledger-page';
+import { StudentPaymentsTab } from './student-payments-tab';
 import { testProviders } from '@testing/setup';
 
-describe('StudentLedgerPage', () => {
-  let fixture: ComponentFixture<StudentLedgerPage>;
+describe('StudentPaymentsTab', () => {
+  let fixture: ComponentFixture<StudentPaymentsTab>;
   let backend: HttpTestingController;
   let host: HTMLElement;
   let confirmation: ConfirmationService;
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      imports: [StudentLedgerPage],
+      imports: [StudentPaymentsTab],
       providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
-    fixture = TestBed.createComponent(StudentLedgerPage);
+    fixture = TestBed.createComponent(StudentPaymentsTab);
     fixture.componentRef.setInput('studentId', 's-1');
     host = hostElement(fixture);
     await fixture.whenStable();
@@ -45,53 +44,21 @@ describe('StudentLedgerPage', () => {
   }
 
   it('shows the student history and totals', () => {
-    expect(text()).toContain('Иван Петров');
     expect(text()).toContain('аванс 3 500 ₽');
     expect(text()).toContain('Начислено за всё время 1 500 ₽');
     expect(text()).toContain('Оплачено за всё время 5 000 ₽');
     expect(host.querySelectorAll('.tb-list > li')).toHaveLength(2);
   });
 
-  it('changes the lesson price in place: the field under its label, the buttons under it', async () => {
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
-    buttonByText(host, 'Изменить цену занятия').click();
-    await fixture.whenStable();
-    expect(
-      requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' '),
-    ).toContain('1 500');
-    expect(requireElement(host, '.tb-field > label', HTMLLabelElement).htmlFor).toBe(
-      'lesson-price-input',
-    );
-    expect(host.querySelector('.tb-form-actions')).not.toBeNull();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
-
-    fixture.componentInstance.price.setValue(2000);
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
-
-    const request = backend.expectOne('/api/teacher/billing/students/s-1/price');
-    expect(request.request.body).toEqual({ lessonPrice: 200_000 });
-    request.flush({ studentId: 's-1', lessonPrice: 200_000 });
-    await fixture.whenStable();
-
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
-    expect(text()).toContain('Цена занятия 2 000 ₽');
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
-  });
-
-  it('leaves the lesson price as it was when editing is cancelled', async () => {
-    buttonByText(host, 'Изменить цену занятия').click();
-    await fixture.whenStable();
-    fixture.componentInstance.price.setValue(2000);
-    buttonByText(host, 'Отмена').click();
-    await fixture.whenStable();
-
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
+  it('shows the lesson price without changing it: the price is changed on Профиль', () => {
     expect(text()).toContain('Цена занятия 1 500 ₽');
-    expect(fixture.componentInstance.price.value).toBe(1500);
+    expect(host.querySelector('#lesson-price-input')).toBeNull();
+    expect(host.querySelector('button[aria-label="Изменить цену занятия"]')).toBeNull();
   });
 
-  it('cancels a lesson after confirmation and reloads', async () => {
+  it('cancels a lesson after confirmation, reloads and tells the card', async () => {
+    const changed = vi.fn();
+    fixture.componentInstance.changed.subscribe(changed);
     requireElement(host, 'button[aria-label^="Снять начисление за "]', HTMLButtonElement).click();
 
     const request = backend.expectOne('/api/teacher/billing/lessons/l-1/cancel');
@@ -103,6 +70,7 @@ describe('StudentLedgerPage', () => {
     await fixture.whenStable();
 
     expect(host.querySelectorAll('.tb-list > li.tb-inactive')).toHaveLength(1);
+    expect(changed).toHaveBeenCalledOnce();
   });
 
   it('voids a payment after confirmation and reloads', async () => {
@@ -156,7 +124,7 @@ describe('StudentLedgerPage', () => {
     backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
   });
 
-  it('shows a failed load with «Повторить» and the way back', async () => {
+  it('shows a failed load with «Повторить»', async () => {
     fixture.componentInstance.reload();
     backend
       .expectOne('/api/teacher/billing/students/s-1')
@@ -166,21 +134,20 @@ describe('StudentLedgerPage', () => {
     expect(text()).toContain('Не удалось загрузить историю оплат Ученик не найден Повторить');
   });
 
-  it('records payments, not lessons, for this student', async () => {
-    expect(
-      Array.from(host.querySelectorAll('button')).map((button) => button.textContent.trim()),
-    ).not.toContain('Занятие');
-
-    buttonByText(host, 'Оплата').click();
+  it('reads the history again when the card recorded a payment or opened another student', async () => {
+    fixture.componentRef.setInput('revision', 1);
     await fixture.whenStable();
-    const paymentDialog = fixture.debugElement
-      .query(By.directive(PaymentDialog))
-      .injector.get(PaymentDialog);
-    expect(paymentDialog.visible()).toBe(true);
-    expect(paymentDialog.form.controls.studentId.value).toBe('s-1');
-    paymentDialog.form.patchValue({ amount: 100 });
-    paymentDialog.save();
-    backend.expectOne('/api/teacher/billing/payments').flush(payment());
     backend.expectOne('/api/teacher/billing/students/s-1').flush(ledger());
+
+    fixture.componentRef.setInput('studentId', 's-2');
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/billing/students/s-2').flush(ledger({ studentId: 's-2' }));
+  });
+
+  it('leaves recording a payment to the card', () => {
+    const labels = Array.from(host.querySelectorAll('button')).map((button) =>
+      button.textContent.trim(),
+    );
+    expect(labels).not.toContain('Оплата');
   });
 });

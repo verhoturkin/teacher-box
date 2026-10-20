@@ -31,7 +31,6 @@ export const en: Translation<typeof ru> = {
     newAssignment: 'New homework',
     editAssignment: 'Edit homework',
     monthlyReport: 'Monthly report',
-    ledger: 'Payment history',
     help: 'Help',
     account: 'My account',
     notFound: 'Page not found',

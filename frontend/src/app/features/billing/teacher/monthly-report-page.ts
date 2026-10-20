@@ -28,6 +28,7 @@ import { HelpButton } from '@features/help/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
+import { PAYMENTS_TAB } from '../card-link';
 
 /** Teacher: income and lessons of a month. */
 @Component({
@@ -108,7 +109,8 @@ import { T } from '../i18n/texts';
                 <tr>
                   <td [attr.data-label]="t.student">
                     <a
-                      [routerLink]="['/teacher/billing/students', row.studentId]"
+                      [routerLink]="['/teacher/students', row.studentId]"
+                      [queryParams]="paymentsTab"
                       class="tb-link"
                       >{{ row.displayName }}</a
                     >
@@ -238,6 +240,7 @@ import { T } from '../i18n/texts';
   `,
 })
 export class MonthlyReportPage implements OnInit {
+  protected readonly paymentsTab = PAYMENTS_TAB;
   protected readonly t = T.report;
   protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);

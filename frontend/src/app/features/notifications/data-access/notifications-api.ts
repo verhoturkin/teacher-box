@@ -118,6 +118,13 @@ export class NotificationsApi {
     });
   }
 
+  /** Teacher: the messengers of one student (a deactivated one too). */
+  studentChannels(studentId: string): Observable<StudentMessengers> {
+    return this.http.get<StudentMessengers>(`/api/teacher/notifications/students/${studentId}`, {
+      context: quietContext(),
+    });
+  }
+
   /**
    * Teacher: asks students without a messenger to connect one.
    *

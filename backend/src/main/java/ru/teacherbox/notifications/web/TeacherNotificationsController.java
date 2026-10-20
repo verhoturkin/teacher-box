@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +49,12 @@ class TeacherNotificationsController {
     @GetMapping("/students")
     List<StudentChannels> students() {
         return notifications.studentChannels();
+    }
+
+    /** The messengers of one student (deactivated included) and the deliveries that failed lately. */
+    @GetMapping("/students/{studentId}")
+    StudentChannels student(@PathVariable UUID studentId) {
+        return notifications.studentChannels(studentId);
     }
 
     /** Asks students without messengers (the given ones or all) to connect one. */
