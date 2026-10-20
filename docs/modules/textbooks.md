@@ -60,7 +60,7 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 
 `features/textbooks/` (pages in `index.ts`, types in `parts.ts`), labels in `textbooks-labels.ts`:
 
-- `teacher/textbooks-page.ts` — «Учебники» (`/teacher/textbooks`, menu item after «Задания»): one row per textbook
+- `teacher/textbooks-feed.ts` — the textbooks tab of «Материалы» (`features/materials`, `/teacher/materials?tab=textbooks`, 245.2; `/teacher/textbooks` redirects; cards with covers, `TextbooksFeed` in `parts.ts`; the rest of this item is the behaviour of the former page): one row per textbook
   (`tb-list`) under a «Поиск по названию» field (case-insensitive, «Ничего не найдено» when nothing matches):
   kind icon, the title (a tap opens it — `shared/files/file-opener.ts`: a PDF or a picture in a new tab, a Word
   file saved), «Учебник · course · PDF, 120 с., 4,2 МБ», members; row

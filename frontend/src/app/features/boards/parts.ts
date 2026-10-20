@@ -3,6 +3,7 @@
  * and «На доску». Pages are in index.ts.
  */
 export type { Board } from './data-access/boards.models';
+export { BoardsFeed, type BoardsFilter } from './teacher/boards-feed';
 export { BoardLinks } from './manage/board-links';
 export { MyBoardButton } from './student/my-board-button';
 export { MyBoardLinks } from './student/my-board-links';

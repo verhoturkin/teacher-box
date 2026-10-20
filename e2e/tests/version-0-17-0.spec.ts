@@ -49,9 +49,9 @@ test('a dialog submits with the portal colour, like the main action of the page'
   page,
 }) => {
   await signIn(page);
-  // the main action of a section outside «Создать» (232.2): the header button of the textbooks
-  await page.goto('/teacher/textbooks');
-  const main = page.locator('main').getByRole('button', { name: 'Новый учебник' }).first();
+  // 0.26.0: a primary button of the page — the open button of the group of «Материалы»
+  await page.goto('/teacher/materials');
+  const main = page.locator('main .tb-segment[aria-pressed="true"]');
   await expect(main).toBeVisible();
   const accent = await main.evaluate((node) => getComputedStyle(node).backgroundColor);
 

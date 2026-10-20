@@ -20,13 +20,16 @@ export const TEACHER_MENU: NavItem[] = [
     alsoActive: ['/teacher/groups'],
   },
   { label: CORE_T.nav.homework, icon: 'tb-i tb-i-assignment', routerLink: '/teacher/homework' },
-  { label: CORE_T.nav.textbooks, icon: 'tb-i tb-i-menu_book', routerLink: '/teacher/textbooks' },
+  {
+    label: CORE_T.nav.materials,
+    icon: 'tb-i tb-i-library_books',
+    routerLink: '/teacher/materials',
+  },
   {
     label: CORE_T.nav.billing,
     icon: 'tb-i tb-i-account_balance_wallet',
     routerLink: '/teacher/billing',
   },
-  { label: CORE_T.nav.boards, icon: 'tb-i tb-i-co_present', routerLink: '/teacher/boards' },
 ];
 
 /**

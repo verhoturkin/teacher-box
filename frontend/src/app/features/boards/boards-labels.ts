@@ -17,3 +17,28 @@ export function boardMembersText(board: Board): string {
 export function boardRoute(area: 'teacher' | 'cabinet', boardId: string): string {
   return `/${area}/boards/${boardId}`;
 }
+
+/** The names of the services whose boards teachers link (the host without «www.»). */
+const SERVICES: Readonly<Record<string, string>> = {
+  'holst.so': T.services.holst,
+  'miro.com': 'Miro',
+  'figma.com': 'Figma',
+  'excalidraw.com': 'Excalidraw',
+};
+
+/** The service of an external board by its link («Холст», «Miro»), else its host; `null` without a valid link. */
+export function boardServiceTag(url: string | null): string | null {
+  if (url === null) {
+    return null;
+  }
+  let host: string;
+  try {
+    host = new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+  const known = Object.entries(SERVICES).find(
+    ([name]) => host === name || host.endsWith(`.${name}`),
+  );
+  return known?.[1] ?? host;
+}

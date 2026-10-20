@@ -122,16 +122,19 @@ test('the teacher finds the textbook in «Учебники», its PDF pages are 
   page,
 }) => {
   await signIn(page);
+  // 0.26.0: «Учебники» are a tab of «Материалы»; the old address leads there
   await page.goto('/teacher/textbooks');
-  const list = page.getByRole('list', { name: 'Учебники' });
+  const feed = page.locator('tb-textbooks-feed');
+  const list = feed.getByRole('list', { name: 'Список учебников' });
   await expect(list.getByRole('listitem').filter({ hasText: TEXTBOOK })).toContainText(
     'Учебник · Английский · PDF, 5 с.',
   );
   await expect(list.getByRole('listitem').filter({ hasText: TEXTBOOK })).toContainText(STUDENT);
 
-  await page.getByRole('searchbox', { name: 'Поиск по названию' }).fill(`нет такого ${RUN}`);
-  await expect(page.getByText('Ничего не найдено')).toBeVisible();
-  await page.getByRole('searchbox', { name: 'Поиск по названию' }).fill(RUN);
+  const search = page.getByRole('searchbox', { name: 'Название, ученик или группа' });
+  await search.fill(`нет такого ${RUN}`);
+  await expect(feed.getByText('Ничего не найдено')).toBeVisible();
+  await search.fill(RUN);
   await expect(list.getByRole('listitem')).toHaveCount(1);
 });
 

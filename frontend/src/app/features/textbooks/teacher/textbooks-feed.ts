@@ -2,35 +2,29 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  OnInit,
   computed,
   inject,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ConfirmationService, MenuItem } from 'primeng/api';
-import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
-import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { HelpButton } from '@features/help/parts';
-import { IdentityApi } from '@features/identity/parts';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
-import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { PageHeader } from '@shared/ui/page-header';
+import { MaterialCard } from '@shared/ui/material-card';
+import { MaterialSort, sortMaterials } from '@shared/ui/material-sort';
 import { TextbooksApi } from '../data-access/textbooks-api';
-import { Textbook } from '../data-access/textbooks.models';
+import { Textbook, TextbookKind } from '../data-access/textbooks.models';
 import {
   TEXTBOOK_FILES,
   TEXTBOOK_KIND_ICONS,
@@ -41,96 +35,58 @@ import {
 import { MemberOption, TextbookDialog } from './textbook-dialog';
 import { TextbookToBoardDialog } from './textbook-to-board-dialog';
 import { T } from '../i18n/texts';
-import { SearchField } from '@shared/ui/search-field';
+
+/** Which textbooks the feed shows: all or one kind of them. */
+export type TextbooksFilter = 'all' | TextbookKind;
 
 /**
- * Teacher: «Учебники» (ADR-0033) — textbooks, workbooks and other materials, one per row: add, change,
- * replace the file, download, delete.
+ * Teacher: the textbooks of the Materials feed (ADR-0033, redesign spec §10.1) as cards — the cover is the
+ * first page of the file (a Word file has none: the icon of its kind). The page of Materials gives the
+ * search text, the filter, the sort and the student or the group; a card opens the file, «⋮» keeps
+ * change, replace the file, download, «На доску» and delete.
  */
 @Component({
-  selector: 'tb-textbooks-page',
+  selector: 'tb-textbooks-feed',
   imports: [
-    SearchField,
-    Button,
-    Card,
-    ReactiveFormsModule,
+    MaterialCard,
     ConfirmDialog,
     Menu,
-    Tooltip,
-    ButtonAttributes,
-    HelpButton,
     EmptyState,
     LoadStateView,
-    PageHeader,
     TextbookDialog,
     TextbookToBoardDialog,
   ],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.title">
-      <tb-help-button help topic="teacher/textbooks" />
-      <p-button
-        class="tb-page-fab"
-        [label]="t.create"
-        icon="tb-i tb-i-add"
-        (onClick)="openCreate()"
-      />
-    </tb-page-header>
-
-    <p-card>
-      <h2 class="tb-sr-only">{{ t.list }}</h2>
-      @if (textbooks().length > 0) {
-        <div class="tb-toolbar">
-          <tb-search-field [formControl]="search" [label]="t.search" />
-        </div>
+    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+      @if (shown().length > 0) {
+        <ul class="tb-material-grid" [attr.aria-label]="t.list">
+          @for (textbook of shown(); track textbook.id) {
+            <li>
+              <tb-material-card
+                [title]="textbook.title"
+                [supporting]="supportingOf(textbook)"
+                [openLabel]="t.open(textbook.title)"
+                [loader]="loadCover"
+                [ref]="textbook.hasCover ? textbook.id : null"
+                [version]="textbook.updatedAt"
+                [icon]="icons[textbook.kind]"
+                [actionsLabel]="t.actions(textbook.title)"
+                [menuOpen]="menuFor()?.id === textbook.id"
+                [busy]="replacing() === textbook.id"
+                (open)="open(textbook)"
+                (menu)="openMenu(textbook, $event)"
+              />
+            </li>
+          }
+        </ul>
+      } @else if (textbooks().length > 0) {
+        <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
+      } @else {
+        <tb-empty-state icon="tb-i-menu_book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
       }
-      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-        @if (shown().length > 0) {
-          <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-            @for (textbook of shown(); track textbook.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"
-                  ><i [class]="icons[textbook.kind]"></i
-                ></span>
-                <div class="tb-list__text">
-                  <button
-                    type="button"
-                    class="tb-list__title tb-link-button"
-                    [attr.aria-label]="t.open(textbook.title)"
-                    (click)="open(textbook)"
-                  >
-                    {{ textbook.title }}
-                  </button>
-                  <span class="tb-list__supporting">{{ details(textbook) }}</span>
-                  <span class="tb-list__supporting">{{ membersText(textbook) }}</span>
-                </div>
-                <div class="tb-list__trail tb-list__trail--icons">
-                  <p-button
-                    icon="tb-i tb-i-more_vert"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="secondary"
-                    [pTooltip]="t.actions(textbook.title)"
-                    [ariaLabel]="t.actions(textbook.title)"
-                    [tbAttributes]="{
-                      'aria-haspopup': 'menu',
-                      'aria-expanded': menuFor()?.id === textbook.id ? 'true' : 'false',
-                    }"
-                    [loading]="replacing() === textbook.id"
-                    (onClick)="openMenu(textbook, $event)"
-                  />
-                </div>
-              </li>
-            }
-          </ul>
-        } @else if (textbooks().length > 0) {
-          <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
-        } @else {
-          <tb-empty-state icon="tb-i-menu_book" [title]="t.emptyTitle" [hint]="t.emptyHint" />
-        }
-      </tb-load-state>
-    </p-card>
+    </tb-load-state>
 
     <input
       #replacement
@@ -160,34 +116,46 @@ import { SearchField } from '@shared/ui/search-field';
     <p-confirmdialog />
   `,
 })
-export class TextbooksPage implements OnInit {
+export class TextbooksFeed {
   protected readonly t = T.list;
   private readonly api = inject(TextbooksApi);
-  private readonly identity = inject(IdentityApi);
   private readonly confirmation = inject(ConfirmationService);
   private readonly fileSaver = inject(FileSaver);
   private readonly fileOpener = inject(FileOpener);
   private readonly snackbar = inject(Snackbar);
 
+  /** The search text of the page: the title, the course, a student's or a group's name. */
+  readonly query = input('');
+  readonly filter = input<TextbooksFilter>('all');
+  readonly sort = input<MaterialSort>('changed');
+  /** Only the textbooks open to this student or group (the id of a member); none — all. */
+  readonly member = input<string | undefined>();
+  /** The students and the groups the dialog offers. */
+  readonly students = input<readonly MemberOption[]>([]);
+  readonly groups = input<readonly MemberOption[]>([]);
+
   protected readonly icons = TEXTBOOK_KIND_ICONS;
   protected readonly accept = TEXTBOOK_FILES;
-  protected readonly details = textbookDetails;
-  protected readonly membersText = textbookMembersText;
   protected readonly state = new LoadState();
-  protected readonly search = new FormControl('', { nonNullable: true });
-  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
-  /** The textbooks whose title has the search text. */
-  protected readonly shown = computed(() => {
-    const query = this.query().trim().toLocaleLowerCase('ru');
-    return query === ''
-      ? this.textbooks()
-      : this.textbooks().filter((textbook) =>
-          textbook.title.toLocaleLowerCase('ru').includes(query),
-        );
-  });
   protected readonly textbooks = signal<Textbook[]>([]);
-  protected readonly students = signal<MemberOption[]>([]);
-  protected readonly groups = signal<MemberOption[]>([]);
+  /** How many textbooks there are (before the search, the filter and the sort). */
+  readonly total = computed(() => this.textbooks().length);
+  /** The textbooks of the filter, the member and the search, in the order of the sort. */
+  protected readonly shown = computed(() => {
+    const filter = this.filter();
+    const member = this.member();
+    const query = this.query().trim().toLocaleLowerCase('ru');
+    const matching = this.textbooks().filter(
+      (textbook) =>
+        (filter === 'all' || textbook.kind === filter) &&
+        (member === undefined || textbook.members.some((item) => item.id === member)) &&
+        (query === '' ||
+          textbook.title.toLocaleLowerCase('ru').includes(query) ||
+          (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false) ||
+          textbook.members.some((item) => item.name?.toLocaleLowerCase('ru').includes(query))),
+    );
+    return sortMaterials(matching, this.sort());
+  });
   protected readonly editing = signal<Textbook | null>(null);
   protected readonly dialogVisible = signal(false);
   protected readonly boardTextbook = signal<Textbook | null>(null);
@@ -198,7 +166,7 @@ export class TextbooksPage implements OnInit {
   private readonly menu = viewChild.required<Menu>('menu');
   private readonly replacement = viewChild.required<ElementRef<HTMLInputElement>>('replacement');
 
-  /** The textbook whose «⋮» menu is open: one popup menu serves every row. */
+  /** The textbook whose «⋮» menu is open: one popup menu serves every card. */
   protected readonly menuFor = signal<Textbook | null>(null);
   protected readonly menuItems = computed<MenuItem[]>(() => {
     const textbook = this.menuFor();
@@ -211,22 +179,11 @@ export class TextbooksPage implements OnInit {
     ),
   );
 
-  ngOnInit(): void {
+  /** The cover of a textbook (a stable function for `tb-blob-image`). */
+  protected readonly loadCover = (id: string): Observable<Blob> => this.api.cover(id);
+
+  constructor() {
     this.load();
-    this.identity.listStudents(quietContext()).subscribe((students) => {
-      this.students.set(
-        students
-          .filter((student) => student.status !== 'DEACTIVATED')
-          .map((student) => ({ id: student.id, name: student.displayName })),
-      );
-    });
-    this.identity.listGroups(quietContext()).subscribe((groups) => {
-      this.groups.set(
-        groups
-          .filter((group) => group.archivedAt === null)
-          .map((group) => ({ id: group.id, name: group.name })),
-      );
-    });
   }
 
   load(): void {
@@ -238,12 +195,18 @@ export class TextbooksPage implements OnInit {
       });
   }
 
+  /** «Учебник · Английский · PDF, 120 с., 4,2 МБ · Мария» for a card. */
+  protected supportingOf(textbook: Textbook): string {
+    return [textbookDetails(textbook), textbookMembersText(textbook)].join(' · ');
+  }
+
   protected openMenu(textbook: Textbook, event: Event): void {
     this.menuFor.set(textbook);
     this.menu().toggle(event);
   }
 
-  protected openCreate(): void {
+  /** The form of a new textbook («Создать» in the rail, the FAB of a phone). */
+  openCreate(): void {
     this.editing.set(null);
     this.dialogVisible.set(true);
   }

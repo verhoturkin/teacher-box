@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
  * What «Создать» in the rail makes on a section's page (spec §4): each kind has one home, the form of its
  * section (a message to students opens over any page, `create-menu.ts`).
  */
-export type CreateKind = 'lesson' | 'assignment' | 'payment' | 'student' | 'board';
+export type CreateKind = 'lesson' | 'assignment' | 'payment' | 'student' | 'board' | 'textbook';
 
 /** The query parameter that asks a section for the form of a new item: `?create=<kind>`. */
 export const CREATE_PARAM = 'create';

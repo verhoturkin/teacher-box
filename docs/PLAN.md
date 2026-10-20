@@ -37,10 +37,12 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
   first page on upload (`textbooks`; decide the PDF / Word renderer in the substep). Storage in each module's
   `FileStorage` namespace; tests; module docs. *Decision: PDFBox (already used) renders PDF covers and an image is
   its own cover; a Word file has no cover (`hasCover` false, the feed shows the format icon) — no heavy renderer.*
-- [ ] 245.2 **F** Spec §10.1: `features/materials` page (or inside `boards` with `textbooks/parts` — decide by the
+- [x] 245.2 **F** Spec §10.1: `features/materials` page (or inside `boards` with `textbooks/parts` — decide by the
   frontend isolation rule) from `boards/teacher/boards-page.ts` + `textbooks/teacher/textbooks-page.ts`; feed,
   connected group, chips, one filter; routes `/teacher/materials`, redirects from `/teacher/boards`,
   `/teacher/textbooks`; `TEACHER_MENU`.
+  *Decision: own feature `features/materials` composing `BoardsFeed` / `TextbooksFeed` from the `parts.ts` of their
+  modules (design-system «Materials»); the rail «Создать» menu has seven items — «Доска» and «Учебник» both.*
 - [ ] 245.3 **F** Student: `boards/student/my-boards-page.ts` + `textbooks/student/my-textbooks-page.ts` → one
   «Материалы» page.
 - [ ] 245.4 **D** design-system (feed), help (boards, textbooks; ru, en), wiki.

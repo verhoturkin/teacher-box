@@ -4,14 +4,14 @@ import { hostElement, requireElement } from '@testing/dom';
 import { testProvidersWithRouter } from '@testing/setup';
 import { FabMenuItem } from '@shared/ui/fab-menu';
 import { NewMessageState } from '@core/notifications/new-message';
-import { CREATE_ACTIONS, CreateMenu, createItems } from './create-menu';
+import { CreateMenu, createItems } from './create-menu';
 
 describe('createItems', () => {
   const write = vi.fn();
 
   it('puts the current section’s item first, the others in their order', () => {
     const labels = (url: string): string[] => createItems(url, write).map((item) => item.label);
-    const usual = ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Сообщение'];
+    const usual = ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Учебник', 'Сообщение'];
 
     expect(labels('/teacher')).toEqual(usual);
     expect(labels('/teacher/settings')).toEqual(usual);
@@ -21,15 +21,19 @@ describe('createItems', () => {
       'Задание',
       'Ученик',
       'Доска',
+      'Учебник',
       'Сообщение',
     ]);
+    // Materials has two tabs: the item of the open one first
+    expect(labels('/teacher/materials?tab=textbooks')[0]).toBe('Учебник');
+    expect(labels('/teacher/materials?tab=boards')[0]).toBe('Доска');
+    expect(labels('/teacher/materials')[0]).toBe('Доска');
     expect(labels('/teacher/homework/a-1/edit')[0]).toBe('Задание');
     // a section whose link only starts the same way is another one
-    expect(labels('/teacher/boardsmith')).toEqual(usual);
+    expect(labels('/teacher/materialsmith')).toEqual(usual);
   });
 
-  it('leads each item to its section with ?create=<kind>, «Сообщение» opens over the page (M3: up to six)', () => {
-    expect(CREATE_ACTIONS.length).toBeLessThanOrEqual(6);
+  it('leads each item to its section with ?create=<kind>, «Сообщение» opens over the page ', () => {
     const target = (item: FabMenuItem): unknown =>
       'link' in item ? [item.link, item.queryParams] : 'run';
     const items = createItems('/teacher', write);
@@ -38,10 +42,11 @@ describe('createItems', () => {
       ['/teacher/homework', { create: 'assignment' }],
       ['/teacher/billing', { create: 'payment' }],
       ['/teacher/students', { create: 'student' }],
-      ['/teacher/boards', { create: 'board' }],
+      ['/teacher/materials', { tab: 'boards', create: 'board' }],
+      ['/teacher/materials', { tab: 'textbooks', create: 'textbook' }],
       'run',
     ]);
-    const message = items[5];
+    const message = items[6];
     if (message !== undefined && 'run' in message) message.run();
     expect(write).toHaveBeenCalledOnce();
   });
@@ -114,7 +119,7 @@ describe('CreateMenu', () => {
     expect(host.querySelector('a')).toBeNull();
     expect(document.activeElement).toBe(fab());
 
-    await TestBed.inject(Router).navigateByUrl('/teacher/boards');
+    await TestBed.inject(Router).navigateByUrl('/teacher/materials');
     await toggle();
     expect(links()[0]).toBe('Доска');
   });

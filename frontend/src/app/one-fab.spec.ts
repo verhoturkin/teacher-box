@@ -1,12 +1,11 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BillingOverviewPage } from '@features/billing';
-import { BoardsPage } from '@features/boards';
 import { TeacherHome } from '@features/home';
 import { AssignmentsPage } from '@features/homework';
 import { StudentsPage } from '@features/identity';
+import { MaterialsPage } from '@features/materials';
 import { SchedulePage } from '@features/schedule';
-import { TextbooksPage } from '@features/textbooks';
 import { hostElement } from '@testing/dom';
 import { screenWidth, testProviders } from '@testing/setup';
 
@@ -17,7 +16,7 @@ const IN_CREATE_MENU: readonly [string, Type<unknown>][] = [
   ['AssignmentsPage', AssignmentsPage],
   ['BillingOverviewPage', BillingOverviewPage],
   ['StudentsPage', StudentsPage],
-  ['BoardsPage', BoardsPage],
+  ['MaterialsPage', MaterialsPage],
 ];
 
 /** The page's own FAB: the main action of the header (the extended FAB on a phone) or the FAB menu. */
@@ -40,10 +39,6 @@ describe('One FAB per screen', () => {
   ])('at %i px', (width, own) => {
     it.each(IN_CREATE_MENU)('%s: its create action only on a phone', (_name, page) => {
       expect(pageFabs(page, width)).toBe(own);
-    });
-
-    it('the textbooks keep their main action: «Создать» has no textbook', () => {
-      expect(pageFabs(TextbooksPage, width)).toBe(1);
     });
   });
 });

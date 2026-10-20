@@ -159,9 +159,9 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();
 
-  // 0.15.3: an Excalidraw board is in «Доски на портале», the card tells the kind
+  // 0.26.0: the board is a card of the feed of «Материалы»
   const row = page
-    .getByRole('list', { name: 'Доски на портале' })
+    .getByRole('list', { name: 'Список досок' })
     .getByRole('listitem')
     .filter({ hasText: BOARD });
   await expect(row).toContainText(VERA);

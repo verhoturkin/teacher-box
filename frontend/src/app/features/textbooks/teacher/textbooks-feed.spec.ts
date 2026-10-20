@@ -1,45 +1,38 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
-import { bodyText, buttonByText, hostElement, menuItemByText, typeInto } from '@testing/dom';
+import { Textbook } from '../data-access/textbooks.models';
+import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { TextbookDialog } from './textbook-dialog';
 import { TextbookToBoardDialog } from './textbook-to-board-dialog';
-import { TextbooksPage } from './textbooks-page';
+import { TextbooksFeed } from './textbooks-feed';
 
-describe('TextbooksPage', () => {
-  let fixture: ComponentFixture<TextbooksPage>;
+describe('TextbooksFeed', () => {
+  let fixture: ComponentFixture<TextbooksFeed>;
   let backend: HttpTestingController;
   let host: HTMLElement;
   let saved: string[];
 
-  async function render(textbooks = [aTextbook(), aWorkbook()]): Promise<void> {
-    TestBed.configureTestingModule({ imports: [TextbooksPage], providers: testProviders() });
+  /** Textbooks without a cover: the feed asks for none. */
+  const plain = (): Textbook[] => [aTextbook({ hasCover: false }), aWorkbook({ hasCover: false })];
+
+  async function render(textbooks = plain()): Promise<void> {
+    TestBed.configureTestingModule({ imports: [TextbooksFeed], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     saved = [];
     vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, name) => {
       saved.push(name);
     });
-    fixture = TestBed.createComponent(TextbooksPage);
+    fixture = TestBed.createComponent(TextbooksFeed);
+    fixture.componentRef.setInput('students', [{ id: 's-1', name: 'Мария' }]);
+    fixture.componentRef.setInput('groups', [{ id: 'g-1', name: 'ОГЭ' }]);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/textbooks').flush(textbooks);
-    backend
-      .expectOne('/api/teacher/students')
-      .flush([
-        aStudent({ id: 's-1', displayName: 'Мария' }),
-        aStudent({ id: 'gone', status: 'DEACTIVATED' }),
-      ]);
-    backend
-      .expectOne('/api/teacher/groups')
-      .flush([
-        aGroup({ id: 'g-1', name: 'ОГЭ' }),
-        aGroup({ id: 'old', archivedAt: '2026-01-01T00:00:00Z' }),
-      ]);
     await fixture.whenStable();
     host = hostElement(fixture);
   }
@@ -64,9 +57,11 @@ describe('TextbooksPage', () => {
     return button;
   }
 
-  it('lists textbooks one per row with their kind, course, file and members', async () => {
+  it('lists textbooks as cards with their kind, course, file and members', async () => {
     await render();
-    expect(host.querySelectorAll('ul.tb-list[aria-label="Учебники"] > li')).toHaveLength(2);
+    expect(
+      host.querySelectorAll('ul.tb-material-grid[aria-label="Список учебников"] > li'),
+    ).toHaveLength(2);
     const text = host.textContent;
     expect(text).toContain('Учебник · Английский · PDF, 120 с.');
     expect(text).toContain('Рабочая тетрадь · Word, 48 с.');
@@ -83,13 +78,11 @@ describe('TextbooksPage', () => {
 
   it('finds textbooks by title', async () => {
     await render();
-    const search = host.querySelector<HTMLInputElement>('input[aria-label="Поиск по названию"]');
-    if (search === null) throw new Error('No search');
-    typeInto(search, 'ТЕТРАД');
+    fixture.componentRef.setInput('query', 'ТЕТРАД');
     await fixture.whenStable();
-    expect(host.querySelectorAll('ul.tb-list > li')).toHaveLength(1);
+    expect(host.querySelectorAll('ul.tb-material-grid > li')).toHaveLength(1);
     expect(host.textContent).toContain('Рабочая тетрадь');
-    typeInto(search, 'алгебра');
+    fixture.componentRef.setInput('query', 'алгебра');
     await fixture.whenStable();
     expect(host.textContent).toContain('Ничего не найдено');
   });
@@ -97,7 +90,7 @@ describe('TextbooksPage', () => {
   it('adds a textbook with the current students, groups and courses', async () => {
     await render([]);
     expect(host.textContent).toContain('Учебников пока нет');
-    buttonByText(host, 'Новый учебник').click();
+    fixture.componentInstance.openCreate();
     await fixture.whenStable();
     expect(dialog().visible()).toBe(true);
     expect(dialog().textbook()).toBeNull();
@@ -107,7 +100,7 @@ describe('TextbooksPage', () => {
     dialog().saved.emit(aTextbook());
     backend
       .expectOne('/api/teacher/textbooks')
-      .flush([aTextbook(), aWorkbook({ course: 'Алгебра' })]);
+      .flush([aTextbook({ hasCover: false }), aWorkbook({ hasCover: false, course: 'Алгебра' })]);
     await fixture.whenStable();
     expect(dialog().courses()).toEqual(['Алгебра', 'Английский']);
   });
@@ -130,9 +123,9 @@ describe('TextbooksPage', () => {
     expect(bodyText()).toContain('удалится вместе с файлом и пропадёт из заданий');
     buttonByText(document.body, 'Удалить').click();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/textbooks/tb-1' }).flush(null);
-    backend.expectOne('/api/teacher/textbooks').flush([aWorkbook()]);
+    backend.expectOne('/api/teacher/textbooks').flush([aWorkbook({ hasCover: false })]);
     await fixture.whenStable();
-    expect(host.querySelectorAll('ul.tb-list > li')).toHaveLength(1);
+    expect(host.querySelectorAll('ul.tb-material-grid > li')).toHaveLength(1);
   });
 
   it('puts a textbook on a board, but not a Word file', async () => {
@@ -171,7 +164,7 @@ describe('TextbooksPage', () => {
     input.dispatchEvent(new Event('change'));
     const replace = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-1/file' });
     replace.flush(aTextbook({ format: 'IMAGE' }));
-    backend.expectOne('/api/teacher/textbooks').flush([aTextbook()]);
+    backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
     await fixture.whenStable();
     expect(success).toHaveBeenCalledWith('Файл учебника «Spotlight 5» заменён');
 
@@ -202,5 +195,54 @@ describe('TextbooksPage', () => {
     await fixture.whenStable();
     expect(error).toHaveBeenCalledWith('Файл больше 100 МБ — портал его не примет.');
     backend.expectNone('/api/teacher/textbooks/tb-1/file');
+  });
+
+  it('filters by kind, by student or group and by the search over the course, and sorts', async () => {
+    await render([
+      aTextbook({ hasCover: false }),
+      aWorkbook({
+        hasCover: false,
+        members: [],
+        title: 'Альфа',
+        updatedAt: '2026-10-05T10:00:00Z',
+      }),
+    ]);
+    const titles = (): string[] =>
+      [...host.querySelectorAll('.tb-material-card__title')].map((link) => link.textContent.trim());
+    // the latest change first
+    expect(titles()).toEqual(['Альфа', 'Spotlight 5']);
+
+    fixture.componentRef.setInput('sort', 'title');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Альфа', 'Spotlight 5']);
+    fixture.componentRef.setInput('sort', 'created');
+    await fixture.whenStable();
+    expect(titles()).toHaveLength(2);
+
+    fixture.componentRef.setInput('filter', 'WORKBOOK');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Альфа']);
+    fixture.componentRef.setInput('filter', 'all');
+    fixture.componentRef.setInput('member', 'g-1');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Spotlight 5']);
+    fixture.componentRef.setInput('member', undefined);
+    fixture.componentRef.setInput('query', 'английский');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Spotlight 5']);
+    fixture.componentRef.setInput('query', 'мария');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Spotlight 5']);
+    expect(fixture.componentInstance.total()).toBe(2);
+  });
+
+  it('shows the cover of a textbook that has one', async () => {
+    const created = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:cover');
+    await render([aTextbook()]);
+    backend.expectOne('/api/teacher/textbooks/tb-1/cover').flush(new Blob(['png']));
+    await fixture.whenStable();
+
+    expect(created).toHaveBeenCalled();
+    expect(host.querySelector('.tb-material-card img')?.getAttribute('src')).toBe('blob:cover');
   });
 });

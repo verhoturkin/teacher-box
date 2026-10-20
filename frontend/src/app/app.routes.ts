@@ -1,5 +1,12 @@
 import { Injector, inject } from '@angular/core';
-import { CanActivateFn, Routes, UrlMatchResult, UrlMatcher } from '@angular/router';
+import {
+  CanActivateFn,
+  RedirectFunction,
+  Router,
+  Routes,
+  UrlMatchResult,
+  UrlMatcher,
+} from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
@@ -53,6 +60,12 @@ const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
     ? null
     : { consumed: segments, posParams: { assignmentId: first } };
 };
+
+/** Old `/teacher/boards` and `/teacher/textbooks`: the tab of Materials, the query (`?student=`, `?create=`…) stays. */
+function materialsTab(tab: 'boards' | 'textbooks'): RedirectFunction {
+  return ({ queryParams }) =>
+    inject(Router).createUrlTree(['/teacher/materials'], { queryParams: { ...queryParams, tab } });
+}
 
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
@@ -143,10 +156,13 @@ export const routes: Routes = [
         canDeactivate: [canLeaveGuard],
       },
       {
-        path: 'textbooks',
-        title: NAV.textbooks,
-        loadComponent: () => import('@features/textbooks').then((m) => m.TextbooksPage),
+        path: 'materials',
+        title: NAV.materials,
+        loadComponent: () => import('@features/materials').then((m) => m.MaterialsPage),
       },
+      // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay
+      { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards') },
+      { path: 'textbooks', pathMatch: 'full', redirectTo: materialsTab('textbooks') },
       {
         path: 'billing',
         title: NAV.billing,
@@ -161,11 +177,6 @@ export const routes: Routes = [
       {
         path: 'billing/students/:studentId',
         redirectTo: '/teacher/students/:studentId?tab=payments',
-      },
-      {
-        path: 'boards',
-        title: NAV.boards,
-        loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
       // the rooms are in the cards and the lessons; «Звонки» is a category of the settings (234.2)
       { path: 'calls', redirectTo: 'settings/calls' },

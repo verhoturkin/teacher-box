@@ -307,8 +307,9 @@ component that shows one adds it to `PRIME`).
   extended FAB in the expanded rail (56 px, corner large, 16/8/16, Title Medium — **M3**), FAB 56 px centred in
   the collapsed rail (**M3**: collapsed rail → FAB, expanded → extended FAB); elevation 0 as nested in the rail
   (**M3**), primary-container, hover = state layer; 16 px to the destinations (*ours*). It opens `tb-fab-menu`
-  (variant `extended` / `rail`) with six items — Занятие, Задание, Оплата, Ученик, Доска, Сообщение — the
-  current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
+  (variant `extended` / `rail`) with seven items — Занятие, Задание, Оплата, Ученик, Доска, Учебник, Сообщение — the
+  current section's item first, on «Материалы» the item of the open tab (*ours*). *Ours, against M3* (a FAB menu
+  holds up to six): «Доска» and «Учебник» are two kinds of one section (245.2), merging them would hide a kind. *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
   one global entry point instead of a create button per section (ADR-0048). An item opens
   `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
   (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. «Сообщение» has no section: it is
@@ -316,9 +317,9 @@ component that shows one adds it to `PRIME`).
   the feature's dialog through `NEW_MESSAGE_DIALOG`, focus back on the FAB); a message sent refreshes
   «Отправленные» of the bell's sheet (235.3). From 600 px it is the screen's only
   FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
-  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
-  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
-  (textbooks), «Оплата» of one student (ledger, prefilled).
+  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same items
+  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Оплата» of one
+  student (ledger, prefilled).
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -406,7 +407,7 @@ component that shows one adds it to `PRIME`).
   232.2); on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
-- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the six
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the
   items of the rail menu, 232.2). The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
   and turns into the round «Закрыть» (primary). Motion (**M3E**): the FAB and the items have a state layer (hover 8 %,
@@ -763,6 +764,25 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   then «Показать ещё»).
   `tb-list__trail--amount`: on the phone the amount (`tb-list__amount`) goes under the text and the icon
   button stays on the right, so the name keeps its width.
+- **Materials** (245.2, spec §10.1; the student's page — 245.3): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
+  `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
+  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), `tb-search-field`,
+  `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»; for textbooks «Все · Учебники · Рабочие
+  тетради · Другое · Ученик или группа»), the sort menu «Сначала изменённые / По названию / Сначала новые», then the
+  feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
+  between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
+  `surface container low`, the preview on top (a board's PNG, a textbook's first page: `tb-blob-image` fetches it with the
+  HTTP client as a blob; the icon of the kind while there is none), a tonal tile with the icon and the tag of the
+  service («Холст», «Miro») for an external board, the title (`title medium`) and «кому · дата» under the preview,
+  «⋮» at the end. The title link is stretched over the whole card, «⋮» stays above it. «Ученик или группа» shows a
+  `p-select` of students and groups and keeps the choice in `?student=` / `?group=` (as the old boards page did);
+  the rail's «Создать» leads to `?tab=…&create=board|textbook`. The old `/teacher/boards` and `/teacher/textbooks`
+  redirect to the tabs with their query. *Isolation decision (frontend rule, AGENTS.md §4.2.6):* the page lives in its
+  own feature `features/materials` and only composes two parts that belong to their modules —
+  `BoardsFeed` (`@features/boards/parts`) and `TextbooksFeed` (`@features/textbooks/parts`): each owns its API, cards,
+  «⋮» menu and dialogs, and takes the search text, the filter, the sort, the member and the students/groups as inputs;
+  a feature never imports another's internals. Both feeds stay mounted (the inactive one `hidden`), so both
+  numbers of the group are known.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
   cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the

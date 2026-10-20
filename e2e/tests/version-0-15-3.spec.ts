@@ -203,16 +203,18 @@ test('on a phone a past lesson has its buttons under the row of the agenda', asy
   await expect(page.getByRole('button', { name: `Проведено: ${STUDENT}` })).toHaveCount(0);
 });
 
-test('the teacher’s boards are in two cards', async ({ page }) => {
+test('the teacher’s boards are cards, a tap anywhere on a card opens the board', async ({
+  page,
+}) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
+  // 0.26.0: «Материалы» — one feed of cards; the title link covers the card
   await page.goto('/teacher/boards');
-  await expect(page.getByRole('list', { name: 'Доски на портале' })).toContainText(BOARD);
-  await expect(page.getByRole('list', { name: 'Внешние доски' })).toContainText(LINK_BOARD);
-  // a tap on the supporting line, away from the title: the link covers the whole row
-  const supporting = page
-    .getByRole('list', { name: 'Доски на портале' })
+  const feed = page.getByRole('list', { name: 'Список досок' });
+  await expect(feed).toContainText(BOARD);
+  await expect(feed).toContainText(LINK_BOARD);
+  const supporting = feed
     .locator('li', { hasText: BOARD })
-    .locator('.tb-list__supporting');
+    .locator('.tb-material-card__supporting');
   const box = await supporting.boundingBox();
   await page.mouse.click((box?.x ?? 0) + 4, (box?.y ?? 0) + (box?.height ?? 0) / 2);
   await expect(page).toHaveURL(new RegExp(`/teacher/boards/${boardId}$`));

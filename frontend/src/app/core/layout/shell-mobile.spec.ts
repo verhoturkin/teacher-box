@@ -127,7 +127,7 @@ describe('Shell on a phone', () => {
     const nav = requireElement(rail, 'tb-side-nav', HTMLElement);
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
-    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники', 'Доски']);
+    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Материалы']);
     expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
     // the focus goes into the rail
     expect(rail.contains(document.activeElement)).toBe(true);
@@ -159,7 +159,7 @@ describe('Shell on a phone', () => {
 
     rail = await openRail(host);
     const boards = Array.from(rail.querySelectorAll('a')).find(
-      (link) => link.textContent.trim() === 'Доски',
+      (link) => link.textContent.trim() === 'Материалы',
     );
     boards?.click();
     await fixture.whenStable();
@@ -188,7 +188,7 @@ describe('Shell on a phone', () => {
       'Расписание',
       'Ученики',
       'Задания',
-      'Учебники',
+      'Материалы',
     ]);
   });
 

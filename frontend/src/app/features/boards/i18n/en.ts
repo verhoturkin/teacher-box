@@ -10,6 +10,9 @@ export const en: Translation<typeof ru> = {
     DAILY: 'Daily backup',
     MANUAL: 'Teacher’s backup',
   },
+  services: {
+    holst: 'Holst',
+  },
   group: (name: string) => `group «${name}»`,
   notOpened: 'not open to anyone',
   editor: {
