@@ -142,10 +142,15 @@ test('a payment reaches the student inbox', async ({ page, browser }) => {
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Оплаты' })
     .click();
-  await page.getByRole('button', { name: `Записать оплату: ${STUDENT_NAME}` }).click();
+  // 243.2: «Создать › Оплата» opens the dialog, the journal of the month shows the payment
+  await create(page, 'Оплата');
+  await page.locator('#payment-student').click();
+  await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.locator('#payment-amount').pressSequentially('3000');
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByRole('listitem').filter({ hasText: STUDENT_NAME })).toContainText('3 000');
+  await expect(
+    page.locator('.tb-ops__list > li').filter({ hasText: STUDENT_NAME }).first(),
+  ).toContainText('+3 000');
 
   const student = await studentPage(browser);
   await student

@@ -9,12 +9,12 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
-import { toIsoMonth } from '@shared/dates/iso-date';
+import { fromIsoMonth, toIsoMonth } from '@shared/dates/iso-date';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { RowType } from '@shared/ui/row-type.directive';
 import { LESSON_STATUS_HINTS, LESSON_STATUS_LABELS } from '../billing-labels';
@@ -248,7 +248,14 @@ export class MonthlyReportPage implements OnInit {
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
   protected readonly lessonStatusHints = LESSON_STATUS_HINTS;
-  readonly month = new FormControl<Date>(new Date(), { nonNullable: true });
+  private readonly requested = inject(ActivatedRoute).snapshot.queryParamMap.get('month');
+  /** The month of the report: the one «Отчёт за месяц» was opened from (`?month=yyyy-MM`), else this one. */
+  readonly month = new FormControl<Date>(
+    this.requested !== null && /^\d{4}-\d{2}$/.test(this.requested)
+      ? fromIsoMonth(this.requested)
+      : new Date(),
+    { nonNullable: true },
+  );
   protected readonly report = signal<MonthlyReport | null>(null);
   protected readonly state = new LoadState();
 

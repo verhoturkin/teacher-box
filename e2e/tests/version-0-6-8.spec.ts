@@ -82,27 +82,6 @@ async function expectOneColumn(page: Page): Promise<void> {
   }
 }
 
-test('the cards of every section are in one column', async ({ page }) => {
-  await signIn(page);
-  // the help is list-detail from 0.21.0 (version-0-21-0.spec.ts), not a column of cards
-  // 0.24.0: Today is a feed of columns and the schedule is panes — only the payments stay a column of cards
-  for (const path of ['/teacher/billing']) {
-    await page.goto(path);
-    await expect(page.locator('h1.tb-page-title')).toBeVisible();
-    await expect(sectionCards(page).nth(1)).toBeVisible();
-    await expectOneColumn(page);
-  }
-
-  // key figures are rows one under another: the name on the left, the figure on the right
-  await page.goto('/teacher/billing');
-  const figures = page.locator('.tb-stats .p-card');
-  await expect(figures.first()).toBeVisible();
-  const lefts = await figures.evaluateAll((cards) =>
-    cards.map((card) => Math.round(card.getBoundingClientRect().left)),
-  );
-  expect(new Set(lefts).size).toBe(1);
-});
-
 test('the schedule keeps requests and recurring lessons in a pane beside the calendar', async ({
   page,
 }) => {

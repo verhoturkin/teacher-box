@@ -156,6 +156,37 @@ export interface WeekTotal {
   readonly charged: number;
 }
 
+/** Mirrors `OperationKind`: what a journal row is. */
+export type OperationKind = 'PAYMENT' | 'LESSON' | 'ABSENCE';
+
+/** Mirrors `Operation`: a row of the month journal. */
+export interface Operation {
+  readonly kind: OperationKind;
+  readonly id: string;
+  readonly studentId: string;
+  readonly studentName: string;
+  /** Address of the student's photo; `null`: the initials. */
+  readonly studentAvatar: string | null;
+  /** `yyyy-MM-dd`. */
+  readonly date: string;
+  /** Signed minor units: a payment is positive, a charge negative, a free absence and a voided payment zero. */
+  readonly amount: number;
+  /** Lesson status; `null` for a payment. */
+  readonly status: LessonStatus | null;
+  /** Lesson topic or payment comment. */
+  readonly note: string | null;
+  /** A voided payment or a cancelled lesson. */
+  readonly voided: boolean;
+  readonly createdAt: string;
+}
+
+/** Mirrors `Operations`: the journal of a month, newest first. */
+export interface Operations {
+  readonly month: string;
+  readonly currency: string;
+  readonly operations: Operation[];
+}
+
 /** Mirrors `MyBillingSummary`. */
 export interface MyBillingSummary {
   readonly currency: string;

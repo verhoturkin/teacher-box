@@ -98,6 +98,31 @@ describe('BillingApi', () => {
     expect(saved).toBe(180_000);
   });
 
+  it('loads the summary and the journal of a month, narrowed by kind and student', () => {
+    api.summary('2026-09').subscribe();
+    api.operations('2026-09').subscribe();
+    api.operations('2026-09', 'PAYMENT', 's-1').subscribe();
+
+    expect(
+      backend.expectOne(
+        (r) => r.url === '/api/teacher/billing/summary' && r.params.get('month') === '2026-09',
+      ),
+    ).toBeTruthy();
+    backend.expectOne(
+      (r) =>
+        r.url === '/api/teacher/billing/operations' &&
+        r.params.get('month') === '2026-09' &&
+        !r.params.has('kind') &&
+        !r.params.has('studentId'),
+    );
+    backend.expectOne(
+      (r) =>
+        r.url === '/api/teacher/billing/operations' &&
+        r.params.get('kind') === 'PAYMENT' &&
+        r.params.get('studentId') === 's-1',
+    );
+  });
+
   it('loads the summaries of the home pages', () => {
     api.summary().subscribe();
     api.mySummary().subscribe();
