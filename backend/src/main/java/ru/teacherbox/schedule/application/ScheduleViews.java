@@ -182,9 +182,11 @@ public final class ScheduleViews {
      * @param unmarked        lessons that ended without an outcome
      * @param pendingRequests unanswered requests of students
      * @param hasLessons      at least one lesson was ever planned
+     * @param weekConducted   lessons marked as held in the current calendar week (Monday to Sunday, instance time zone)
+     * @param weekMissed      lessons marked as missed (absences) in the same week
      */
     public record ScheduleSummary(List<LessonView> today, @Nullable LessonView next, int weekLessons, int unmarked,
-            int pendingRequests, boolean hasLessons) {
+            int pendingRequests, boolean hasLessons, int weekConducted, int weekMissed) {
     }
 
     /**

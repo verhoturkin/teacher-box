@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
+  viewChild,
 } from '@angular/core';
 import {
   ButtonGroupInfo,
@@ -17,6 +19,7 @@ import {
   EventDisplayInfo,
   EventDropInfo,
   EventInput,
+  FullCalendarComponent,
   FullCalendarModule,
 } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/angular/daygrid';
@@ -38,6 +41,8 @@ import { T } from '../i18n/texts';
 export interface CalendarRange {
   readonly from: string;
   readonly to: string;
+  /** The day the view is on (`yyyy-MM-dd`): the first day of the week or the month. */
+  readonly current: string;
 }
 
 /** A lesson moved to another time and confirmed; `revert` puts it back if the change is not saved. */
@@ -81,7 +86,7 @@ export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'listWeek' | 'timeG
   selector: 'tb-schedule-calendar',
   imports: [FullCalendarModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<full-calendar [options]="options()" />`,
+  template: `<full-calendar #calendar [options]="options()" />`,
 })
 export class ScheduleCalendar {
   readonly lessons = input.required<readonly ScheduledLesson[]>();
@@ -102,12 +107,22 @@ export class ScheduleCalendar {
   readonly offTime = input<readonly OffTimePeriod[]>([]);
   /** Whether the lessons are loaded: until then an empty week is not «Занятий нет» (ADR-0025). */
   readonly loaded = input(true);
+  /** A day to go to (`yyyy-MM-dd`), e.g. from the mini-month; the calendar moves when it changes. */
+  readonly focusDate = input<string | null>(null);
+  /** Past lessons without a mark (`GET /schedule/unmarked`): outlined in the grid, marked from the lesson's dialog. */
+  readonly unmarked = input<readonly ScheduledLesson[]>([]);
+  /**
+   * A phone's own screen of the calendar (the teacher's «Неделя», «Месяц»): that view without the footer of
+   * views, which the «⋮» of the page replaces. Without it a phone shows the list with the footer.
+   */
+  readonly phoneView = input<CalendarView | null>(null);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
   readonly slotSelect = output<SlotSelection>();
   readonly lessonMove = output<LessonMove>();
 
+  private readonly calendar = viewChild(FullCalendarComponent);
   private readonly mobile = injectMobile();
   private readonly colors = inject(TeacherColors);
 
@@ -117,6 +132,19 @@ export class ScheduleCalendar {
     computation: () => null,
   });
 
+  constructor() {
+    effect(() => {
+      const date = this.focusDate();
+      if (date !== null) {
+        this.calendar()?.getApi().gotoDate(date);
+      }
+    });
+  }
+
+  private readonly unmarkedIds = computed(
+    () => new Set(this.unmarked().map((lesson) => lesson.id)),
+  );
+
   private readonly byId = computed(
     () => new Map(this.lessons().map((lesson) => [lesson.id, lesson])),
   );
@@ -124,16 +152,20 @@ export class ScheduleCalendar {
   protected readonly options = computed<CalendarOptions>(() => {
     const editable = this.editable();
     const mobile = this.mobile();
+    const phoneView = this.phoneView();
     return {
       plugins: [classicTheme, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
       locale: CALENDAR_LOCALES[language()],
-      initialView: mobile ? 'listWeek' : this.initialView(),
+      initialView: mobile ? (phoneView ?? 'listWeek') : this.initialView(),
       initialDate: this.initialDate() ?? undefined,
       ...(mobile
         ? {
             headerToolbar: { start: 'title', end: 'prev,next' },
             toolbarTitleClass: 'tb-calendar-title',
-            footerToolbar: { start: 'today', end: 'listWeek,timeGridDay,dayGridMonth' },
+            footerToolbar:
+              phoneView === null
+                ? { start: 'today', end: 'listWeek,timeGridDay,dayGridMonth' }
+                : { start: 'today' },
           }
         : {
             headerToolbar: {
@@ -179,7 +211,11 @@ export class ScheduleCalendar {
         ...this.offTime().map((period, index) => toOffTime(period, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
-        this.rangeChange.emit({ from: toIsoDate(info.start), to: toIsoDate(info.end) });
+        this.rangeChange.emit({
+          from: toIsoDate(info.start),
+          to: toIsoDate(info.end),
+          current: toIsoDate(info.view.currentStart),
+        });
       },
       eventClick: (info: EventClickInfo) => {
         this.handleClick(info.event.id);
@@ -240,6 +276,9 @@ export class ScheduleCalendar {
     const color = this.showStudent() ? this.colors.owner(lesson.studentId, lesson.groupId) : null;
     if (color !== null) {
       classes.push('tb-label', `tb-label--${labelKey(color)}`);
+    }
+    if (this.unmarkedIds().has(lesson.id)) {
+      classes.push('tb-lesson--unmarked');
     }
     if (moved !== null) {
       classes.push('tb-lesson--moving');

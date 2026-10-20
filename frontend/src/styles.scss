@@ -624,7 +624,6 @@ textarea.p-textarea {
       tb-my-boards-card,
       tb-student-welcome-card,
       tb-connect-messenger-card,
-      tb-first-run-checklist,
       tb-calendar-feed-panel
     ):empty {
     display: none;
@@ -1991,9 +1990,15 @@ a.p-menu-item-link:hover {
   box-shadow: inset 4px 0 0 var(--tb-label);
 }
 
-/* A request waits for an answer: the outline of the warning role, 3:1 to the card */
+/* A requested change waits for an answer: a dashed `outline` (spec §7), 3:1 to the card */
 .tb-lesson--request {
-  outline: 2px dashed var(--p-md-warning);
+  outline: 2px dashed var(--p-md-outline);
+  outline-offset: 1px;
+}
+
+/* A past lesson without a mark: a 2 px `error` outline (spec §7); it is marked from the lesson's dialog */
+.tb-lesson--unmarked {
+  outline: 2px solid var(--p-md-error);
   outline-offset: 1px;
 }
 

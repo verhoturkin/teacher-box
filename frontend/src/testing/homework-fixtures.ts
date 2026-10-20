@@ -1,9 +1,9 @@
 import {
   AssignmentDetails,
   AssignmentSummary,
+  HomeworkSummary,
   Attachment,
   BoundTextbook,
-  HomeworkSummary,
   MyHomeworkSummary,
   MyTask,
   ReviewQueueItem,
@@ -158,10 +158,18 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
   };
 }
 
-export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): HomeworkSummary {
-  return { toReview: 0, overdue: 0, dueSoon: 0, oldestToReview: [], ...overrides };
-}
-
 export function myHomeworkSummary(overrides: Partial<MyHomeworkSummary> = {}): MyHomeworkSummary {
   return { open: 0, overdue: 0, upcoming: [], ...overrides };
+}
+
+export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): HomeworkSummary {
+  return {
+    toReview: 0,
+    overdue: 0,
+    dueSoon: 0,
+    oldestToReview: [],
+    weekAssigned: 0,
+    weekOnTime: 0,
+    ...overrides,
+  };
 }

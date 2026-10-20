@@ -1,28 +1,33 @@
+import { countOf } from '@shared/text/plural';
 import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
-  attention: {
-    title: 'Needs attention',
+  queue: {
+    title: 'To do',
     nothing: 'Nothing urgent',
-    unmarked: 'Mark the past lessons',
-    requests: 'Requests to move or cancel',
-    toReview: 'Work to review',
-    overdue: 'Overdue homework',
-    failedDeliveries: 'Undelivered notifications',
-  },
-  checklist: {
-    title: 'Getting started',
+    more: (count: number) => `${String(count)} more`,
+    lesson: (when: string) => `Lesson ${when}: mark the outcome`,
+    held: 'Held',
+    missed: 'Missed',
+    mark: 'Mark',
+    request: (kind: string) => `Request: ${kind}`,
+    reply: 'Reply',
+    review: (title: string) => `Review: ${title}`,
+    check: 'Review',
+    debt: (amount: string) => `Debt ${amount}`,
+    open: 'Open',
+    setupTitle: 'Getting started',
     progress: (done: number, total: number) => `Done ${String(done)} of ${String(total)}`,
     hide: 'Hide',
     student: 'Add a student',
-    studentHint: 'and send them the invitation link',
+    studentHint: 'and send them an invitation link',
     price: 'Set the lesson price',
     priceHint: 'held lessons will be charged to the student’s balance',
     messenger: 'Connect a messenger',
     messengerHint: 'you and your students will get notifications in Telegram, VK or MAX',
-    lesson: 'Plan the first lesson',
-    lessonHint: 'one-off or recurring — reminders come by themselves',
+    lessonStep: 'Plan the first lesson',
+    lessonStepHint: 'one-off or recurring — reminders come by themselves',
   },
   studentHome: {
     title: 'Home',
@@ -43,7 +48,21 @@ export const en: Translation<typeof ru> = {
     ok: 'Got it',
   },
   teacherHome: {
-    title: 'Home',
+    title: 'Today',
     what: 'the lessons, homework, notifications and finance',
+    lessons: (n: number) => countOf(n, 'lesson', 'lessons', 'lessons'),
+    reviews: (n: number) => `${countOf(n, 'work', 'works', 'works')} to review`,
+    requests: (n: number) => countOf(n, 'request', 'requests', 'requests'),
+  },
+  todayLessons: {
+    title: 'Lessons today',
+    next: 'Next',
+  },
+  week: {
+    title: 'Week',
+    lessons: 'Lessons held',
+    missed: 'Absences',
+    assigned: 'Assignments given',
+    onTime: 'Handed in on time',
   },
 };

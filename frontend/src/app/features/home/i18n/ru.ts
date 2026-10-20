@@ -1,16 +1,22 @@
+import { countOf } from '@shared/text/plural';
+
 /** Texts of the home pages of the teacher and the student (ADR-0035). */
 export const ru = {
-  attention: {
-    title: 'Требует внимания',
+  queue: {
+    title: 'Нужно сделать',
     nothing: 'Срочных дел нет',
-    unmarked: 'Отметьте прошедшие занятия',
-    requests: 'Запросы на перенос и отмену',
-    toReview: 'Работы на проверку',
-    overdue: 'Просроченные задания',
-    failedDeliveries: 'Недоставленные уведомления',
-  },
-  checklist: {
-    title: 'С чего начать',
+    more: (count: number) => `Ещё ${String(count)}`,
+    lesson: (when: string) => `Занятие ${when}: отметить итог`,
+    held: 'Проведено',
+    missed: 'Пропуск',
+    mark: 'Отметить',
+    request: (kind: string) => `Запрос: ${kind}`,
+    reply: 'Ответить',
+    review: (title: string) => `Проверить: ${title}`,
+    check: 'Проверить',
+    debt: (amount: string) => `Долг ${amount}`,
+    open: 'Открыть',
+    setupTitle: 'С чего начать',
     progress: (done: number, total: number) => `Сделано ${String(done)} из ${String(total)}`,
     hide: 'Скрыть',
     student: 'Добавьте ученика',
@@ -19,8 +25,8 @@ export const ru = {
     priceHint: 'проведённые занятия будут списываться с баланса ученика',
     messenger: 'Подключите мессенджер',
     messengerHint: 'уведомления будут приходить вам и ученикам в Telegram, ВКонтакте или MAX',
-    lesson: 'Запланируйте первое занятие',
-    lessonHint: 'разовое или регулярное — напоминания придут сами',
+    lessonStep: 'Запланируйте первое занятие',
+    lessonStepHint: 'разовое или регулярное — напоминания придут сами',
   },
   studentHome: {
     title: 'Главная',
@@ -41,7 +47,21 @@ export const ru = {
     ok: 'Понятно',
   },
   teacherHome: {
-    title: 'Главная',
+    title: 'Сегодня',
     what: 'занятия, задания, уведомления и финансы',
+    lessons: (n: number) => countOf(n, 'занятие', 'занятия', 'занятий'),
+    reviews: (n: number) => `${countOf(n, 'работа', 'работы', 'работ')} на проверку`,
+    requests: (n: number) => countOf(n, 'запрос', 'запроса', 'запросов'),
+  },
+  todayLessons: {
+    title: 'Занятия сегодня',
+    next: 'Следующее',
+  },
+  week: {
+    title: 'Неделя',
+    lessons: 'Проведено занятий',
+    missed: 'Пропусков',
+    assigned: 'Выдано заданий',
+    onTime: 'Сдано в срок',
   },
 };

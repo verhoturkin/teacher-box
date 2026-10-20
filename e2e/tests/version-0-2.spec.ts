@@ -208,11 +208,12 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Расписание' })
     .click();
-  await expect(page.locator('p-card').filter({ hasText: 'Регулярные занятия' })).toContainText(
-    GROUP,
-  );
+  // 0.24.0: the recurring lessons are the first tab of the side pane
+  await expect(page.locator('.tb-schedule-side')).toContainText(GROUP);
   // the attendance opens at once, not through the details of the lesson (ADR-0026)
-  await page.getByRole('button', { name: new RegExp(`Отметить посещаемость: .*${GROUP}`) }).click();
+  // 0.24.0: the past lesson is outlined in the calendar, the attendance is marked from its dialog
+  await page.locator('.tb-lesson--unmarked', { hasText: GROUP }).click();
+  await page.getByRole('button', { name: 'Отметить посещаемость' }).click();
   const attendance = page.getByRole('dialog', { name: 'Кто был на занятии' });
   await attendance
     .locator('li')

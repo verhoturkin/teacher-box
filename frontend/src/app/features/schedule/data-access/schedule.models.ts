@@ -248,6 +248,10 @@ export interface ScheduleSummary {
   readonly weekLessons: number;
   /** Lessons that ended without an outcome. */
   readonly unmarked: number;
+  /** Lessons marked as held in the current calendar week (Monday to Sunday, instance time zone). */
+  readonly weekConducted: number;
+  /** Lessons marked as missed (absences) in the same week. */
+  readonly weekMissed: number;
   readonly pendingRequests: number;
   /** At least one lesson was ever planned. */
   readonly hasLessons: boolean;

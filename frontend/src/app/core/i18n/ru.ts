@@ -3,6 +3,7 @@ export const ru = {
   nav: {
     sections: 'Разделы',
     home: 'Главная',
+    today: 'Сегодня',
     schedule: 'Расписание',
     students: 'Ученики',
     homework: 'Задания',

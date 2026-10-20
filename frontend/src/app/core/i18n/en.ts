@@ -5,6 +5,7 @@ export const en: Translation<typeof ru> = {
   nav: {
     sections: 'Sections',
     home: 'Home',
+    today: 'Today',
     schedule: 'Schedule',
     students: 'Students',
     homework: 'Homework',

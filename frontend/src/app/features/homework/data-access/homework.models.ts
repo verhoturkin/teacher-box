@@ -197,6 +197,10 @@ export interface HomeworkSummary {
   readonly dueSoon: number;
   /** The works waiting longest. */
   readonly oldestToReview: ReviewQueueItem[];
+  /** Assignments given to current students in the current calendar week (Monday to Sunday). */
+  readonly weekAssigned: number;
+  /** Works of current students handed in this week not later than the due date. */
+  readonly weekOnTime: number;
 }
 
 /** Mirrors `MyHomeworkSummary`. */

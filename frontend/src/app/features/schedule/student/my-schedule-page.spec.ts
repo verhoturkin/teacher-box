@@ -170,7 +170,11 @@ describe('MySchedulePage', () => {
       .injector.get(ScheduleCalendar);
     expect(calendar.loaded()).toBe(true);
 
-    fixture.componentInstance.onRange({ from: '2026-10-05', to: '2026-10-12' });
+    fixture.componentInstance.onRange({
+      from: '2026-10-05',
+      to: '2026-10-12',
+      current: '2026-10-05',
+    });
     await fixture.whenStable();
     for (const request of busyRequests()) {
       request.flush([]);

@@ -423,6 +423,37 @@ component that shows one adds it to `PRIME`).
   topic and «Занятий на неделе» next to the tile). No «Расписание» link: the schedule is in the
   navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
   visible title (`h2.tb-sr-only` «Следующее занятие»): it is the first card and the tile says what it is.
+- **Today** (teacher home, 0.24.0, spec §6; `features/home/teacher-home.ts`): the page is «Сегодня» (nav label too);
+  the header carries a muted summary line (lessons today · works to review · requests; empty parts left out). A feed
+  of three stacks with a fixed order that is also the reading order: lead (hero + `today-lessons.ts` «Занятия сегодня»),
+  queue (`todo-queue.ts` «Нужно сделать»), figures (`billing` month card + `week-figures.ts` «Неделя»). Columns by
+  window size: extra-large 3 (1.25 : 1 : 0.8), large 2 (the figures go under the queue, the lead spans both rows),
+  otherwise 1; the empty stack is hidden. On compact the lessons list and week figures are not shown (hero, queue,
+  month only) and «Создать» is the FAB.
+  - «Нужно сделать» is one `tb-list` card: rows (avatar, who, what is to do, action in place) from four sources —
+    unmarked lessons («Проведено» / «Пропуск»), student requests («Ответить»), works to review («Проверить»), debts
+    («Открыть»); at most 5 per source, the rest as «Ещё N». The first-run steps («С чего начать», progress bar,
+    «Скрыть») sit at the end of the same card until done or hidden. Nothing to do — a compact empty state.
+  - Compact (239.4, our decision): a row stays one line with a chevron as its whole-row action; a row with one
+    action runs it, a row with two (unmarked lesson) opens a bottom sheet (`tbModalDrawer`, `tb-sheet`) with both
+    as buttons.
+  - «Занятия сегодня»: rows with the time (Label L, tabular figures), who and the status tag; the nearest unfinished
+    lesson is the selected row (secondary container). «Неделя»: four name — value rows (held lessons, absences,
+    homework given, handed in on time) for the current Monday–Sunday week.
+- **Schedule** (teacher, 0.24.0, spec §7; `features/schedule/teacher/schedule-page.ts`): the calendar is the main
+  pane (`FullCalendar`: week / month, toolbar with filter chips by owner and the time-zone chip «Часовой пояс
+  портала»), the supporting pane beside it holds the mini-month (`ui/mini-month.ts`, M3 date picker, docked: weeks from
+  Monday, a dot under a day with lessons, the shown day filled; *our decision:* no input — a click on a day only moves
+  the calendar), «Запросы учеников» and the tabs «Регулярные» / «Нерабочее время» (button «Регулярное занятие»).
+  Lesson states in the grid (`styles.scss`): planned — filled, held / missed — tonal, cancelled — struck through;
+  **unmarked** past lesson — a 2 px solid `error` outline (`tb-lesson--unmarked`); **requested change** — a 2 px dashed
+  `outline` (`tb-lesson--request`, 3:1 to the card; it was `warning` before); off time — hatched. A lesson is
+  marked from its dialog; the «Отметьте прошедшие занятия» card stays on a phone only.
+  - Compact (240.3, `ui/schedule-agenda.ts`): the screens «Повестка» / «Неделя» / «Месяц» (a connected button group; the
+    «⋮» menu also leads to «Регулярные» and «Нерабочее время», each a screen of its own with a back arrow); the agenda is a
+    week strip (seven days, ‹ ›, today and the chosen day marked) over the day's list; a row is one line (time, who,
+    status tag), unmarked lessons sit in a group under the row with «Проведено» / «Пропуск», a jump chip «Не отмечено
+    занятий: N» leads to them.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right; full width on the phone.
 - **Toolbar above a list** (`tb-toolbar`): search left, filters (labelled switch) and period right.
 - **Search field** — always `tb-search-field` (`@shared/ui`, a form control; 0.15.0): the M3 docked search bar, 56 px,

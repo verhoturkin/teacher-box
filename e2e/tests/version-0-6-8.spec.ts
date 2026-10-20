@@ -85,7 +85,8 @@ async function expectOneColumn(page: Page): Promise<void> {
 test('the cards of every section are in one column', async ({ page }) => {
   await signIn(page);
   // the help is list-detail from 0.21.0 (version-0-21-0.spec.ts), not a column of cards
-  for (const path of ['/teacher', '/teacher/schedule', '/teacher/billing']) {
+  // 0.24.0: Today is a feed of columns and the schedule is panes — only the payments stay a column of cards
+  for (const path of ['/teacher/billing']) {
     await page.goto(path);
     await expect(page.locator('h1.tb-page-title')).toBeVisible();
     await expect(sectionCards(page).nth(1)).toBeVisible();
@@ -102,17 +103,20 @@ test('the cards of every section are in one column', async ({ page }) => {
   expect(new Set(lefts).size).toBe(1);
 });
 
-test('the schedule puts what needs an answer above the calendar', async ({ page }) => {
+test('the schedule keeps requests and recurring lessons in a pane beside the calendar', async ({
+  page,
+}) => {
   await signIn(page);
   await page.goto('/teacher/schedule');
 
-  const series = page.locator('p-card').filter({ hasText: 'Регулярные занятия' }).last();
-  const calendar = page.locator('p-card:has(tb-schedule-calendar)');
-  await expect(series).toBeVisible();
-  const seriesBox = await series.boundingBox();
+  const side = page.locator('.tb-schedule-side');
+  const calendar = page.locator('tb-pane:has(tb-schedule-calendar)');
+  await expect(side).toBeVisible();
+  const sideBox = await side.boundingBox();
   const calendarBox = await calendar.boundingBox();
-  expect(seriesBox?.y ?? 0).toBeGreaterThan((calendarBox?.y ?? 0) + (calendarBox?.height ?? 0));
-  expect(Math.round(seriesBox?.x ?? 0)).toBe(Math.round(calendarBox?.x ?? 0));
+  expect(sideBox?.x ?? 0).toBeGreaterThanOrEqual(
+    (calendarBox?.x ?? 0) + (calendarBox?.width ?? 0) - 1,
+  );
 });
 
 test('the buttons of the rows of a list stand on one line', async ({ page, request }) => {
@@ -121,9 +125,7 @@ test('the buttons of the rows of a list stand on one line', async ({ page, reque
   await page.goto('/teacher/schedule');
 
   const rows = page
-    .locator('p-card')
-    .filter({ hasText: 'Регулярные занятия' })
-    .last()
+    .locator('.tb-schedule-side')
     .locator('ul.tb-list > li')
     .filter({ hasText: LONG_NAME });
   await expect(rows).toHaveCount(2);

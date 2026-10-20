@@ -93,6 +93,8 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   // Eight days ahead is always a later week.
   await planLesson(page, 8, 10, 'Дальняя');
 
+  // 0.24.0: off time is a tab of the schedule's side pane
+  await page.getByRole('tab', { name: 'Нерабочее время' }).click();
   await page.getByRole('button', { name: 'Добавить нерабочее время' }).click();
   const dialog = page.getByRole('dialog', { name: 'Нерабочее время' });
   await expect(dialog.getByRole('button', { name: 'Один раз' })).toHaveAttribute(
@@ -106,7 +108,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await page.locator('#off-time-note').fill('Врач');
   await dialog.getByRole('button', { name: 'Сохранить' }).click();
   await expect(dialog).toBeHidden();
-  const offTime = page.locator('p-card').filter({ hasText: 'Врач' });
+  const offTime = page.locator('.tb-schedule-side').filter({ hasText: 'Врач' });
   await expect(offTime).toBeVisible();
 
   const student = await studentPage(browser);
@@ -123,9 +125,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
 
   // 0.15.3: the actions of a day off are in «⋮»
   await page
-    .locator('p-card')
-    .filter({ hasText: 'Нерабочее время' })
-    .last()
+    .locator('.tb-schedule-side')
     .getByRole('button', { name: /^Действия: / })
     .first()
     .click();

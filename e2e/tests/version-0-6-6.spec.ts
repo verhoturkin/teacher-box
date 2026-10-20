@@ -104,8 +104,9 @@ test('the frame: room between the sections, no name of the area, Expressive shap
 
   // 0.23.0: the students are panes (28 px), the cards of the schedule keep 20 px
   expect(await style(page, 'main tb-pane', 'border-radius')).toBe('28px');
+  // 0.24.0: the schedule is panes too (28 px)
   await page.goto('/teacher/schedule');
-  expect(await style(page, 'main .p-card', 'border-radius')).toBe('20px');
+  expect(await style(page, 'main tb-pane', 'border-radius')).toBe('28px');
   // the main action of a section outside «Создать» (232.2): the header button of the textbooks
   await page.goto('/teacher/textbooks');
   expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');
@@ -145,7 +146,7 @@ test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
   await signIn(page);
   await page.goto('/teacher/schedule');
   // 0.15.3: the actions of recurring lessons are in «⋮»
-  await page.getByRole('button', { name: 'Действия: Ученик серии 0.6.6' }).click();
+  await page.getByRole('button', { name: 'Действия: Ученик серии 0.6.6' }).first().click();
   const end = page.getByRole('menuitem', { name: 'Завершить…' });
   await expect(end).toBeVisible();
   await expect(end.locator('xpath=ancestor-or-self::li')).toHaveClass(/tb-menu-item--danger/);

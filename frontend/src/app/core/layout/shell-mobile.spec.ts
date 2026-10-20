@@ -68,7 +68,7 @@ describe('Shell on a phone', () => {
     const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
 
     const nav = requireElement(host, 'nav.tb-bottom-nav', HTMLElement);
-    expect(labels(nav, 'a')).toEqual(['Главная', 'Расписание', 'Задания', 'Ученики', 'Оплаты']);
+    expect(labels(nav, 'a')).toEqual(['Сегодня', 'Расписание', 'Задания', 'Ученики', 'Оплаты']);
     expect(nav.querySelector('button')).toBeNull();
     expect(host.textContent).not.toContain('Ещё');
     expect(host.querySelector('tb-side-nav')).toBeNull();
@@ -107,7 +107,7 @@ describe('Shell on a phone', () => {
 
     await TestBed.inject(Router).navigateByUrl('/teacher');
     await fixture.whenStable();
-    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Главная');
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Сегодня');
 
     await TestBed.inject(Router).navigateByUrl('/teacher/account');
     await fixture.whenStable();
@@ -183,7 +183,7 @@ describe('Shell on a phone', () => {
     const host = await render(TEACHER_MENU);
 
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
-      'Главная',
+      'Сегодня',
       'Расписание',
       'Ученики',
       'Задания',

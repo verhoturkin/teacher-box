@@ -1,11 +1,13 @@
 package ru.teacherbox.schedule.application;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -142,13 +144,21 @@ public class ScheduleQueries {
                 .filter(lesson -> upcoming(lesson.status(), lesson.endsAt(), now))
                 .sorted(Comparator.comparing(LessonView::startsAt))
                 .toList();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        List<Lesson> calendarWeek = lessons.findStartingBetween(start(monday), start(monday.plusDays(WEEK_DAYS)));
         return new ScheduleSummary(
                 week.stream().filter(lesson -> lesson.startsAt().isBefore(tomorrow)).toList(),
                 upcoming.isEmpty() ? null : upcoming.getFirst(),
                 upcoming.size(),
                 lessons.findUnmarked(now).size(),
                 requests.findPending().size(),
-                lessons.exists());
+                lessons.exists(),
+                countStatus(calendarWeek, LessonStatus.CONDUCTED),
+                countStatus(calendarWeek, LessonStatus.MISSED));
+    }
+
+    private static int countStatus(List<Lesson> lessons, LessonStatus status) {
+        return Math.toIntExact(lessons.stream().filter(lesson -> lesson.status() == status).count());
     }
 
     public MyScheduleSummary studentSummary(UUID studentId) {

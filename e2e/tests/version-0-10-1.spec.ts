@@ -94,12 +94,16 @@ test('a dragged lesson waits for «Перенести» on its card', async ({ p
   // nothing is saved yet
   expect(await lessonStart(request)).toBe(startsAt);
 
-  await card.getByRole('button', { name: 'Отменить перенос' }).click();
+  // other lessons of the instance may cover the card: click through the event, not at the pixel
+  await card.getByRole('button', { name: 'Отменить перенос' }).dispatchEvent('click');
   await expect(page.locator('.tb-lesson--moving')).toHaveCount(0);
   expect(await lessonStart(request)).toBe(startsAt);
 
   await dragDown(page);
-  await page.locator('.tb-lesson--moving').getByRole('button', { name: 'Перенести' }).click();
+  await page
+    .locator('.tb-lesson--moving')
+    .getByRole('button', { name: 'Перенести' })
+    .dispatchEvent('click');
   // other lessons of the instance may stand at that time: the portal asks once more
   const overlap = page.getByRole('alertdialog', { name: 'Время занято' });
   await expect
@@ -120,8 +124,20 @@ test('the top bar keeps its tone when the page scrolls', async ({ page }) => {
   const tone = () => header.evaluate((element) => getComputedStyle(element).backgroundColor);
   const before = await tone();
 
-  await page.mouse.wheel(0, 600);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  // 0.24.0: the panes scroll on their own, not the window — scroll whatever of the page can scroll
+  const scrolled = await page.evaluate(() => {
+    const candidates = [document.scrollingElement, ...document.querySelectorAll('main *')];
+    for (const element of candidates) {
+      if (element !== null && element.scrollHeight > element.clientHeight + 50) {
+        element.scrollTop = 600;
+        if (element.scrollTop > 0) {
+          return true;
+        }
+      }
+    }
+    return false;
+  });
+  expect(scrolled).toBe(true);
   expect(await tone()).toBe(before);
 });
 
@@ -141,7 +157,7 @@ test('the sections have their icons and the phone bar leads with the daily ones'
   const bar = page.locator('nav.tb-bottom-nav');
   // 0.21.0: five sections in the bar (D2), the rest in the modal rail under ☰
   await expect(bar.getByRole('link')).toHaveText([
-    'Главная',
+    'Сегодня',
     'Расписание',
     'Задания',
     'Ученики',

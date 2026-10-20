@@ -202,7 +202,7 @@ test('the focus is a visible ring in the navigation, on the current section too'
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
   const nav = page.getByRole('navigation', { name: 'Разделы' });
-  const home = nav.getByRole('link', { name: 'Главная' });
+  const home = nav.getByRole('link', { name: 'Сегодня' });
   await expect(home).toHaveAttribute('aria-current', 'page');
 
   await home.focus();

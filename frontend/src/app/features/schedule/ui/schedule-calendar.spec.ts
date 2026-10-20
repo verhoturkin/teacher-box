@@ -34,11 +34,22 @@ describe('ScheduleCalendar', () => {
       groupLesson({ id: 'gl-2', groupName: null }),
     ]);
 
-    expect(ranges).toEqual([{ from: '2026-09-28', to: '2026-10-05' }]);
+    expect(ranges).toEqual([{ from: '2026-09-28', to: '2026-10-05', current: '2026-09-28' }]);
     expect(text).toContain('Иван Петров · Дроби');
     expect(text).toContain('? Ученик');
     expect(text).toContain('ОГЭ · Разбор');
     expect(text).toContain('Группа');
+  });
+
+  it('goes to the day asked for', async () => {
+    const ranges: CalendarRange[] = [];
+    fixture.componentInstance.rangeChange.subscribe((range) => ranges.push(range));
+    await render([]);
+
+    fixture.componentRef.setInput('focusDate', '2026-11-18');
+    await fixture.whenStable();
+
+    expect(ranges.at(-1)).toEqual({ from: '2026-11-16', to: '2026-11-23', current: '2026-11-16' });
   });
 
   it('paints the lessons of the teacher in the colours of their students and groups', async () => {
@@ -203,6 +214,22 @@ describe('ScheduleCalendar', () => {
     await render([scheduledLesson()]);
 
     expect(hostElement(fixture).querySelector('.tb-lesson--moving')).toBeNull();
+  });
+});
+
+describe('ScheduleCalendar unmarked lessons', () => {
+  it('outlines the unmarked past lessons of the list', async () => {
+    TestBed.configureTestingModule({ imports: [ScheduleCalendar] });
+    const fixture = TestBed.createComponent(ScheduleCalendar);
+    fixture.componentRef.setInput('initialView', 'listWeek');
+    fixture.componentRef.setInput('initialDate', '2026-10-01');
+    const lesson = scheduledLesson({ id: 'l-9' });
+    fixture.componentRef.setInput('lessons', [lesson, scheduledLesson({ id: 'l-2' })]);
+    fixture.componentRef.setInput('unmarked', [lesson]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('.tb-lesson--unmarked')).toHaveLength(1);
   });
 });
 

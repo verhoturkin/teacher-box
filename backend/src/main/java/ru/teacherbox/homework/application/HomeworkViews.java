@@ -187,8 +187,13 @@ public final class HomeworkViews {
      * @param overdue        open tasks of current students past their due date
      * @param dueSoon        open tasks of current students due within the next days
      * @param oldestToReview the works waiting longest
+     * @param weekAssigned   assignments given to current students in the current calendar week (Monday to Sunday,
+     *                       instance time zone)
+     * @param weekOnTime     works of current students handed in during that week not later than the due date
+     *                       (a task without a due date counts)
      */
-    public record HomeworkSummary(int toReview, int overdue, int dueSoon, List<ReviewQueueItem> oldestToReview) {
+    public record HomeworkSummary(int toReview, int overdue, int dueSoon, List<ReviewQueueItem> oldestToReview,
+            int weekAssigned, int weekOnTime) {
     }
 
     /**
