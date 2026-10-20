@@ -43,7 +43,7 @@ ADR: none.
 
 ### 243. Payments (B, F)
 
-- [ ] 243.1 **B** `GET /api/teacher/billing/operations?month=&kind=&studentId=` (payments, charges, absences of a
+- [x] 243.1 **B** `GET /api/teacher/billing/operations?month=&kind=&studentId=` (payments, charges, absences of a
   month) and weekly totals in `GET /api/teacher/billing/summary`. Tests, `docs/modules/billing.md`.
 - [ ] 243.2 **F** Spec §10.2: `billing/teacher/billing-overview-page.ts` → month header, four figures, journal with
   chips, supporting pane (debtors, advances running out, weekly bars); `monthly-report-page.ts` reachable from

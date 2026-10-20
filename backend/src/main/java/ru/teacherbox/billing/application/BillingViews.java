@@ -171,6 +171,7 @@ public final class BillingViews {
      * @param income     valid payments dated in the current month
      * @param month      the current month, {@code yyyy-MM}
      * @param priceSet   a lesson price is set (by default or for a student)
+     * @param weeks      the weeks of the month (Monday to Sunday, clipped to the month) with their totals
      */
     public record BillingSummary(
             String currency,
@@ -179,7 +180,57 @@ public final class BillingViews {
             List<Debtor> topDebtors,
             long income,
             String month,
-            boolean priceSet) {
+            boolean priceSet,
+            List<WeekTotal> weeks) {
+    }
+
+    /**
+     * Totals of one week of a month.
+     *
+     * @param from    first day of the week within the month
+     * @param to      last day of the week within the month
+     * @param income  valid payments dated in the week
+     * @param charged charged lessons dated in the week
+     */
+    public record WeekTotal(LocalDate from, LocalDate to, long income, long charged) {
+    }
+
+    /** Kind of a journal row. */
+    public enum OperationKind {
+        /** A payment of a student. */
+        PAYMENT,
+        /** A conducted lesson (charged). */
+        LESSON,
+        /** A missed lesson (charged) or a cancelled one (not charged). */
+        ABSENCE
+    }
+
+    /**
+     * A row of the month journal.
+     *
+     * @param amount        signed minor units: a payment is positive, a charge negative, a free absence and a
+     *                      voided payment zero
+     * @param status        lesson status; {@code null} for a payment
+     * @param note          lesson topic or payment comment
+     * @param voided        a voided payment or a cancelled lesson
+     * @param studentAvatar address of the photo of the student; {@code null}: none
+     */
+    public record Operation(
+            OperationKind kind,
+            UUID id,
+            UUID studentId,
+            String studentName,
+            @Nullable String studentAvatar,
+            LocalDate date,
+            long amount,
+            @Nullable LessonStatus status,
+            @Nullable String note,
+            boolean voided,
+            Instant createdAt) {
+    }
+
+    /** The journal of a month, newest first. */
+    public record Operations(String month, String currency, List<Operation> operations) {
     }
 
     /**

@@ -37,10 +37,17 @@ lesson price).
 
 ## REST and bot
 
-`/api/teacher/billing/**` (overview, summary, students/{id}, lessons, payments, `payments/{id}/receipt` —
-`PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly), `/api/me/billing` (+ `/summary`,
+`/api/teacher/billing/**` (overview, summary (`?month=yyyy-MM`, default the current one; `weeks` — Monday–Sunday weeks clipped to the month with `income` and `charged`), students/{id}, lessons, payments, `payments/{id}/receipt` —
+`PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly, operations), `/api/me/billing` (+ `/summary`,
 `/payments/{id}/receipt`). Bot actions (`billing/chat`): record a payment, record a
 lesson, the student's payments.
+
+### Operations journal (0.25.0)
+
+`GET /api/teacher/billing/operations?month=yyyy-MM&kind=&studentId=` (teacher only, student 403; month defaults to the
+current one) — one flat list of the month, newest first, built from billing's own `lessons` and `payments` (no
+cross-module reads). `kind`: `PAYMENT` (amount +), `LESSON` (conducted, amount −charge), `ABSENCE` (missed — charged,
+or cancelled — amount 0, `voided`). A voided payment stays in the list with `voided: true` and amount 0.
 
 ## Frontend
 

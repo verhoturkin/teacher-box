@@ -141,6 +141,19 @@ export interface BillingSummary {
   readonly month: string;
   /** A lesson price is set (by default or for a student). */
   readonly priceSet: boolean;
+  /** Weeks of the month (Monday to Sunday, clipped to the month) with their totals. */
+  readonly weeks: WeekTotal[];
+}
+
+/** Mirrors `WeekTotal`: totals of one week of a month. */
+export interface WeekTotal {
+  /** `yyyy-MM-dd`, first day of the week within the month. */
+  readonly from: string;
+  readonly to: string;
+  /** Valid payments dated in the week. */
+  readonly income: number;
+  /** Charged lessons dated in the week. */
+  readonly charged: number;
 }
 
 /** Mirrors `MyBillingSummary`. */

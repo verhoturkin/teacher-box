@@ -131,6 +131,7 @@ export function billingSummary(overrides: Partial<BillingSummary> = {}): Billing
     income: 0,
     month: '2026-09',
     priceSet: true,
+    weeks: [],
     ...overrides,
   };
 }
