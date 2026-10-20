@@ -413,7 +413,16 @@ Each held lesson (and each one missed without notice) is charged at the student'
 - **Prepaid** — the student paid in advance.
 - **Debt** — more lessons were held than paid for.
 
-Students in «Payments» are a list, a line per student: photo, name, lesson price, how many lessons and when the last one was, and the balance on the right. On a phone the balance is under the name.
+## The «Payments» page
+
+The page shows one month; the ‹ › arrows next to the title switch months.
+
+- **Four figures:** «Received», «Charged for lessons», «Debt» (the red tile — how many students owe) and «Prepaid».
+- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need. A student's name opens the «Payments» tab of their card.
+- **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
+- **Monthly report** — the button in the header.
+
+On a phone the top shows the month with an arrow to the previous one and the «⋮» menu (next month and the report), the figures scroll sideways and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
 
 ## Record a payment
 
