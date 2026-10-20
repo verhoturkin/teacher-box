@@ -96,6 +96,12 @@ class TeacherTextbooksController {
         return TextbookResponses.picture(textbooks.page(id, page));
     }
 
+    /** The first page of a PDF as a thumbnail, an image as it is; a Word file has none (404). */
+    @GetMapping("/{id}/cover")
+    ResponseEntity<Resource> cover(CurrentUser user, @PathVariable UUID id) {
+        return TextbookResponses.cover(textbooks.cover(user, id));
+    }
+
     private static List<UUID> orEmpty(@Nullable List<UUID> ids) {
         return ids == null ? List.of() : ids;
     }

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.textbooks.api.TextbookContent;
+import ru.teacherbox.textbooks.application.TextbookService.Cover;
 import ru.teacherbox.textbooks.application.TextbookService.PagePicture;
 import ru.teacherbox.textbooks.application.TextbookService.Upload;
 
@@ -40,6 +41,15 @@ final class TextbookResponses {
                 .header("X-Content-Type-Options", "nosniff")
                 .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePrivate())
                 .body(page.content());
+    }
+
+    /** A cover is shown in a list: the browser keeps it for a few minutes. */
+    static ResponseEntity<Resource> cover(Cover cover) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(cover.contentType()))
+                .header("X-Content-Type-Options", "nosniff")
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePrivate())
+                .body(cover.content());
     }
 
     static Upload upload(MultipartFile file) {

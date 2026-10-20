@@ -52,8 +52,23 @@ export class TextbooksApi {
     return this.http.get(`/api/teacher/textbooks/${textbookId}/file`, { responseType: 'blob' });
   }
 
+  /** The cover of the teacher's textbook: the first page of a PDF or the picture; 404 for a Word file. */
+  cover(textbookId: string): Observable<Blob> {
+    return this.http.get(`/api/teacher/textbooks/${textbookId}/cover`, {
+      responseType: 'blob',
+      context: quietContext(),
+    });
+  }
+
   myTextbooks(): Observable<MyTextbook[]> {
     return this.http.get<MyTextbook[]>('/api/me/textbooks', { context: quietContext() });
+  }
+
+  myCover(textbookId: string): Observable<Blob> {
+    return this.http.get(`/api/me/textbooks/${textbookId}/cover`, {
+      responseType: 'blob',
+      context: quietContext(),
+    });
   }
 
   myFile(textbookId: string): Observable<Blob> {

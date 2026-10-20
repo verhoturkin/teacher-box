@@ -24,6 +24,8 @@ export interface Textbook {
   readonly filename: string;
   readonly contentType: string;
   readonly size: number;
+  /** A PDF and a picture have a cover (`GET …/cover`), a Word file has none. */
+  readonly hasCover: boolean;
   readonly members: readonly TextbookMember[];
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -40,6 +42,7 @@ export interface MyTextbook {
   readonly format: TextbookFormat;
   readonly filename: string;
   readonly size: number;
+  readonly hasCover: boolean;
   /** The student's groups the textbook is shared with; empty when it is only the student's own. */
   readonly groupNames: readonly string[];
   readonly updatedAt: string;

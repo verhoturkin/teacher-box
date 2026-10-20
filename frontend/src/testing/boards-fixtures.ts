@@ -16,6 +16,7 @@ export function aBoard(overrides: Partial<Board> = {}): Board {
     createdAt: '2026-10-01T10:00:00Z',
     updatedAt: '2026-10-02T10:00:00Z',
     version: 0,
+    previewUpdatedAt: null,
     ...overrides,
   };
 }
@@ -41,6 +42,7 @@ export function aMyBoard(overrides: Partial<MyBoard> = {}): MyBoard {
     url: null,
     groupNames: [],
     updatedAt: '2026-10-02T10:00:00Z',
+    previewUpdatedAt: null,
     ...overrides,
   };
 }

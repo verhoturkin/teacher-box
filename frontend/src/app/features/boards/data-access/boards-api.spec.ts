@@ -118,6 +118,20 @@ describe('BoardsApi', () => {
     expect(seen).toHaveLength(1);
   });
 
+  it('puts the preview picture and reads it', () => {
+    const png = new Blob(['png'], { type: 'image/png' });
+    api.uploadPreview('board-1', png).subscribe();
+    const upload = backend.expectOne({ method: 'PUT', url: '/api/teacher/boards/board-1/preview' });
+    expect(upload.request.headers.get('Content-Type')).toBe('image/png');
+    expect(upload.request.body).toBe(png);
+    upload.flush(null);
+    const seen: Blob[] = [];
+    api.preview('board-1').subscribe((blob) => seen.push(blob));
+    backend.expectOne({ method: 'GET', url: '/api/boards/board-1/preview' }).flush(png);
+
+    expect(seen).toHaveLength(1);
+  });
+
   it('lists, makes, restores and deletes copies of a board', () => {
     const seen: unknown[] = [];
     api.backups('board-1').subscribe((backups) => seen.push(backups));

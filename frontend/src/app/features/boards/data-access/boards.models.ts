@@ -24,6 +24,8 @@ export interface Board {
   /** The last change of the board or of its drawing. */
   readonly updatedAt: string;
   readonly version: number;
+  /** When the preview picture was made (`GET /api/boards/{id}/preview`); `null` — none yet. */
+  readonly previewUpdatedAt: string | null;
 }
 
 /** Mirrors `MyBoardView`: a board of the student, newest change first. */
@@ -35,6 +37,7 @@ export interface MyBoard {
   /** The student's groups the board is bound to; empty when it is only the student's own. */
   readonly groupNames: readonly string[];
   readonly updatedAt: string;
+  readonly previewUpdatedAt: string | null;
 }
 
 /** What the teacher fills in for a board. */

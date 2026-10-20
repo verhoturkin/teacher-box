@@ -111,6 +111,24 @@ export class BoardsApi {
     });
   }
 
+  /** The editor's PNG of the drawing, put on every save (teacher only). */
+  uploadPreview(boardId: string, png: Blob): Observable<void> {
+    return this.http
+      .put(`/api/teacher/boards/${boardId}/preview`, png, {
+        headers: { 'Content-Type': 'image/png' },
+        context: quietContext(),
+      })
+      .pipe(map(() => undefined));
+  }
+
+  /** The preview of a board the user may open (404 until the first one is made). */
+  preview(boardId: string): Observable<Blob> {
+    return this.http.get(`/api/boards/${boardId}/preview`, {
+      responseType: 'blob',
+      context: quietContext(),
+    });
+  }
+
   /** A picture to put on a board by its API address, e.g. a page of a textbook (ADR-0033). */
   picture(url: string): Observable<Blob> {
     return this.http.get(url, { responseType: 'blob', context: quietContext() });

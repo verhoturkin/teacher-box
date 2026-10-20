@@ -32,10 +32,11 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
 
 ### 245. Materials (B, F) — experiment D3
 
-- [ ] 245.1 **B** Previews: board — PNG exported by the editor on save (`boards/editor`, Excalidraw
+- [x] 245.1 **B** Previews: board — PNG exported by the editor on save (`boards/editor`, Excalidraw
   `exportToBlob`) to `PUT /api/teacher/boards/{id}/preview`, served with the board; textbook — cover from the
   first page on upload (`textbooks`; decide the PDF / Word renderer in the substep). Storage in each module's
-  `FileStorage` namespace; tests; module docs.
+  `FileStorage` namespace; tests; module docs. *Decision: PDFBox (already used) renders PDF covers and an image is
+  its own cover; a Word file has no cover (`hasCover` false, the feed shows the format icon) — no heavy renderer.*
 - [ ] 245.2 **F** Spec §10.1: `features/materials` page (or inside `boards` with `textbooks/parts` — decide by the
   frontend isolation rule) from `boards/teacher/boards-page.ts` + `textbooks/teacher/textbooks-page.ts`; feed,
   connected group, chips, one filter; routes `/teacher/materials`, redirects from `/teacher/boards`,

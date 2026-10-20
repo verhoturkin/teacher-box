@@ -1,7 +1,15 @@
 import { DOCUMENT, Injectable, InjectionToken, inject } from '@angular/core';
 import type { ExcalidrawElementSkeleton } from '@excalidraw/excalidraw/data/transform';
-import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type { AppState, ExcalidrawProps, LibraryItems } from '@excalidraw/excalidraw/types';
+import type {
+  NonDeletedExcalidrawElement,
+  OrderedExcalidrawElement,
+} from '@excalidraw/excalidraw/element/types';
+import type {
+  AppState,
+  BinaryFiles,
+  ExcalidrawProps,
+  LibraryItems,
+} from '@excalidraw/excalidraw/types';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
 import { selfHostFonts } from './self-hosted-fonts';
 
@@ -63,6 +71,12 @@ export interface ExcalidrawModules {
     remote: readonly OrderedExcalidrawElement[],
     appState: AppState,
   ) => OrderedExcalidrawElement[];
+  /** The drawing as a PNG for the preview of the board (a few hundred pixels, on the board's background). */
+  readonly exportPreview: (
+    elements: readonly NonDeletedExcalidrawElement[],
+    appState: AppState,
+    files: BinaryFiles,
+  ) => Promise<Blob>;
   /** New elements from their skeletons (text, image) with fresh ids. */
   readonly convertToExcalidrawElements: (
     skeletons: readonly ExcalidrawElementSkeleton[],

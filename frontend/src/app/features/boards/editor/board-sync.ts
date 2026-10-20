@@ -1,5 +1,9 @@
 import { signal } from '@angular/core';
-import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
+import type {
+  ExcalidrawElement,
+  NonDeletedExcalidrawElement,
+  OrderedExcalidrawElement,
+} from '@excalidraw/excalidraw/element/types';
 import type { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { Observable, firstValueFrom } from 'rxjs';
 import { BoardScene } from '../data-access/boards.models';
@@ -25,6 +29,8 @@ export const LIVE_POLL_INTERVAL_MS = 30000;
 export const BROADCAST_DELAY_MS = 100;
 /** A failed save is tried again after this. */
 export const RETRY_DELAY_MS = 5000;
+/** The preview picture is made this long after the last save (and after the board is opened). */
+export const PREVIEW_DELAY_MS = 5000;
 /** Images of a board fetched at the same time (a browser opens about six connections to a host). */
 export const FILE_FETCHES = 6;
 
@@ -38,6 +44,8 @@ export interface BoardServer {
   changes(since: number): Observable<BoardScene | null>;
   upload(fileId: string, content: Blob): Observable<void>;
   file(fileId: string): Observable<Blob>;
+  /** Puts the preview picture of the board; only the teacher's editor has it (ADR-0048). */
+  preview?(png: Blob): Observable<void>;
 }
 
 /** The live channel as the sync uses it (`BoardLive`). */
@@ -84,6 +92,8 @@ export class BoardSync {
   private running: Promise<boolean> | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
   private pollTimer: ReturnType<typeof setInterval> | undefined;
+  private previewTimer: ReturnType<typeof setTimeout> | undefined;
+  private exportPreview: ExcalidrawModules['exportPreview'] | undefined;
   private polling = false;
   private stopped = false;
   /** The drawing the editor opens with. */
@@ -104,9 +114,14 @@ export class BoardSync {
    * before it loads the initial data, so the images are taken from the drawing it opens with, not from its
    * still empty scene; it puts the ones added meanwhile in place once the scene is loaded.
    */
-  attach(access: SceneAccess, modules: Pick<ExcalidrawModules, 'reconcileElements'>): void {
+  attach(
+    access: SceneAccess,
+    modules: Pick<ExcalidrawModules, 'reconcileElements' | 'exportPreview'>,
+  ): void {
     this.access = access;
     this.reconcile = modules.reconcileElements;
+    this.exportPreview = modules.exportPreview;
+    this.schedulePreview();
     void this.fetchMissingFiles(this.initialElements);
     this.pollTimer = setInterval(() => {
       if (this.live?.connected() && Date.now() - this.lastPoll < LIVE_POLL_INTERVAL_MS) return;
@@ -157,6 +172,7 @@ export class BoardSync {
     clearTimeout(this.saveTimer);
     if (this.running) await this.running;
     if (this.dirty) await this.save();
+    if (this.previewTimer !== undefined && !this.dirty) await this.makePreview();
     return !this.dirty;
   }
 
@@ -189,6 +205,7 @@ export class BoardSync {
     this.stopped = true;
     clearTimeout(this.saveTimer);
     clearTimeout(this.broadcastTimer);
+    clearTimeout(this.previewTimer);
     clearInterval(this.pollTimer);
   }
 
@@ -256,6 +273,7 @@ export class BoardSync {
       );
       this.sharedState = sharedState(appState);
       this.apply(scene);
+      if (changed.length > 0) this.schedulePreview();
       // Changes made while the request ran are saved next.
       const more = this.hasChanges();
       this.status.set(more ? 'saving' : 'saved');
@@ -266,6 +284,40 @@ export class BoardSync {
       this.status.set('offline');
       if (!this.stopped) this.schedule(RETRY_DELAY_MS);
       return false;
+    }
+  }
+
+  private schedulePreview(): void {
+    if (this.server.preview === undefined || this.stopped) return;
+    clearTimeout(this.previewTimer);
+    this.previewTimer = setTimeout(() => {
+      void this.makePreview();
+    }, PREVIEW_DELAY_MS);
+  }
+
+  /**
+   * Exports the drawing as a PNG and sends it as the board's preview. Quiet: a board without drawing, with
+   * images not loaded yet or a failed export or upload keeps its previous preview.
+   */
+  private async makePreview(): Promise<void> {
+    clearTimeout(this.previewTimer);
+    this.previewTimer = undefined;
+    const access = this.access;
+    const send = this.server.preview?.bind(this.server);
+    const exportPreview = this.exportPreview;
+    if (access === undefined || send === undefined || exportPreview === undefined || this.stopped)
+      return;
+    const elements = visible(access.getSceneElementsIncludingDeleted());
+    const files = access.getFiles();
+    const complete = elements.every((element) => {
+      const fileId = fileIdOf(element);
+      return fileId === null || fileId in files;
+    });
+    if (elements.length === 0 || !complete) return;
+    try {
+      await firstValueFrom(send(await exportPreview(elements, access.getAppState(), files)));
+    } catch {
+      // The next save makes a new one.
     }
   }
 
@@ -353,7 +405,17 @@ function hidden(): boolean {
   return typeof document !== 'undefined' && document.visibilityState === 'hidden';
 }
 
-function fileIdOf(element: OrderedExcalidrawElement): string | null {
+function visible(elements: readonly ExcalidrawElement[]): NonDeletedExcalidrawElement[] {
+  const shown: NonDeletedExcalidrawElement[] = [];
+  for (const element of elements) if (isShown(element)) shown.push(element);
+  return shown;
+}
+
+function isShown(element: ExcalidrawElement): element is NonDeletedExcalidrawElement {
+  return !element.isDeleted;
+}
+
+function fileIdOf(element: ExcalidrawElement): string | null {
   return element.type === 'image' && element.fileId !== null ? element.fileId : null;
 }
 

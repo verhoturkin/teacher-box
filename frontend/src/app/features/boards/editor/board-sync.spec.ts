@@ -9,6 +9,7 @@ import {
   LIVE_POLL_INTERVAL_MS,
   LiveOutlet,
   POLL_INTERVAL_MS,
+  PREVIEW_DELAY_MS,
   RETRY_DELAY_MS,
   SAVE_DELAY_MS,
 } from './board-sync';
@@ -49,6 +50,17 @@ class FakeServer implements BoardServer {
 
   file(fileId: string): Observable<Blob> {
     return this.fileAnswer(fileId);
+  }
+}
+
+/** The teacher's server: it takes the preview picture. */
+class PreviewServer extends FakeServer {
+  readonly previews: Blob[] = [];
+  previewAnswer: () => Observable<void> = () => of(undefined);
+
+  preview(png: Blob): Observable<void> {
+    this.previews.push(png);
+    return this.previewAnswer();
   }
 }
 
@@ -429,5 +441,86 @@ describe('BoardSync', () => {
       expect.objectContaining({ id: 'gone' }),
       expect.objectContaining({ id: 'arrow' }),
     ]);
+  });
+
+  describe('preview', () => {
+    let previews: PreviewServer;
+
+    beforeEach(() => {
+      previews = new PreviewServer();
+      server = previews;
+    });
+
+    it('sends a picture of the drawing once the board is open and after every save', async () => {
+      const exported = vi.spyOn(island.modules, 'exportPreview');
+      const { sync, state, access } = start([
+        anElement('a', 1),
+        anElement('b', 1, { isDeleted: true }),
+      ]);
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS - 1);
+      expect(previews.previews).toHaveLength(0);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(previews.previews).toHaveLength(1);
+      expect(exported.mock.calls[0]?.[0].map((element) => element.id)).toEqual(['a']);
+
+      state.elements = [anElement('a', 2)];
+      sync.changed(state.elements, access.getAppState());
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+      expect(previews.previews).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      expect(previews.previews).toHaveLength(2);
+      sync.stop();
+    });
+
+    it('makes the picture of a board being left at once', async () => {
+      const { sync } = start();
+
+      await expect(sync.flush()).resolves.toBe(true);
+      expect(previews.previews).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      expect(previews.previews).toHaveLength(1);
+      sync.stop();
+    });
+
+    it('does not draw an empty board, a board whose images are missing, or after stopping', async () => {
+      const image = anElement('img', 1, { type: 'image', fileId: 'f1' });
+      const empty = start([]);
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      const missing = start([image]);
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      const stopped = start();
+      stopped.sync.stop();
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+
+      expect(previews.previews).toHaveLength(0);
+      for (const { sync } of [empty, missing]) sync.stop();
+    });
+
+    it('stays quiet when the picture cannot be made or sent', async () => {
+      const exported = vi.spyOn(island.modules, 'exportPreview');
+      exported.mockRejectedValueOnce(new Error('canvas'));
+      const first = start();
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      expect(previews.previews).toHaveLength(0);
+
+      previews.previewAnswer = () => throwError(() => new Error('offline'));
+      const second = start();
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      expect(previews.previews).toHaveLength(1);
+      expect(second.sync.status()).toBe('saved');
+      first.sync.stop();
+      second.sync.stop();
+    });
+
+    it('makes no picture without a place to send it to', async () => {
+      server = new FakeServer();
+      const exported = vi.spyOn(island.modules, 'exportPreview');
+      exported.mockClear();
+      const { sync } = start();
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+
+      expect(exported).not.toHaveBeenCalled();
+      sync.stop();
+    });
   });
 });

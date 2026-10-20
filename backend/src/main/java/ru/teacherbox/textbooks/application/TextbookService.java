@@ -1,6 +1,7 @@
 package ru.teacherbox.textbooks.application;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -62,9 +63,10 @@ public class TextbookService {
     public record MemberView(MemberType type, UUID id, @Nullable String name) {
     }
 
+    /** @param hasCover a PDF and an image have a cover ({@link #cover}), a Word file has none */
     public record TextbookView(UUID id, TextbookKind kind, String title, @Nullable String course,
             @Nullable Integer pageCount, TextbookFormat format, String filename, String contentType, long size,
-            List<MemberView> members, Instant createdAt, Instant updatedAt, long version) {
+            boolean hasCover, List<MemberView> members, Instant createdAt, Instant updatedAt, long version) {
     }
 
     /**
@@ -73,8 +75,12 @@ public class TextbookService {
      * @param groupNames the student's groups the textbook is shared with (empty when it is only the student's own)
      */
     public record MyTextbookView(UUID id, TextbookKind kind, String title, @Nullable String course,
-            @Nullable Integer pageCount, TextbookFormat format, String filename, long size, List<String> groupNames,
-            Instant updatedAt) {
+            @Nullable Integer pageCount, TextbookFormat format, String filename, long size, boolean hasCover,
+            List<String> groupNames, Instant updatedAt) {
+    }
+
+    /** A cover picture. */
+    public record Cover(String contentType, Resource content) {
     }
 
     /** A page as a picture. */
@@ -114,6 +120,7 @@ public class TextbookService {
             Textbook textbook = Textbook.created(Ids.newId(), kind, title, course, pageCount, stored.file(),
                     stored.pages(), clock.instant());
             textbooks.insert(textbook, members);
+            makeCover(textbook);
             return views(List.of(textbook)).getFirst();
         } catch (RuntimeException e) {
             storage.delete(NAMESPACE, stored.file().key());
@@ -151,14 +158,18 @@ public class TextbookService {
         Textbook textbook = expected(find(textbookId), expectedVersion);
         StoredUpload stored = store(upload);
         Textbook saved;
+        Optional<String> oldCover = textbooks.findCoverKey(textbookId);
         try {
             saved = textbooks.update(textbook.withFile(stored.file(), stored.pages(), clock.instant()),
                     Optional.empty());
+            textbooks.setCoverKey(textbookId, null);
+            makeCover(saved);
         } catch (RuntimeException e) {
             storage.delete(NAMESPACE, stored.file().key());
             throw e;
         }
         storage.delete(NAMESPACE, textbook.file().key());
+        oldCover.ifPresent(key -> storage.delete(NAMESPACE, key));
         return views(List.of(saved)).getFirst();
     }
 
@@ -166,8 +177,27 @@ public class TextbookService {
     @Transactional
     public void remove(UUID textbookId) {
         Textbook textbook = find(textbookId);
+        Optional<String> cover = textbooks.findCoverKey(textbookId);
         textbooks.delete(textbookId);
         storage.delete(NAMESPACE, textbook.file().key());
+        cover.ifPresent(key -> storage.delete(NAMESPACE, key));
+    }
+
+    /**
+     * The cover of a textbook the user may open: the first page of a PDF as a thumbnail (made once, kept in
+     * the storage), an image as it is. A Word file has none: 404.
+     */
+    @Transactional
+    public Cover cover(CurrentUser user, UUID textbookId) {
+        Textbook textbook = find(textbookId);
+        if (!mayAccess(user, textbook)) {
+            throw notFound();
+        }
+        return switch (textbook.file().format()) {
+            case IMAGE -> new Cover(textbook.file().contentType(), load(textbook));
+            case PDF -> new Cover("image/png", storage.load(NAMESPACE, makeCover(textbook)));
+            case DOCUMENT -> throw new NotFoundException("textbooks.cover-not-found", "A Word file has no cover");
+        };
     }
 
     /**
@@ -220,7 +250,7 @@ public class TextbookService {
         return found.stream()
                 .map(textbook -> new MyTextbookView(textbook.id(), textbook.kind(), textbook.title(),
                         textbook.course(), textbook.pageCount(), textbook.file().format(),
-                        textbook.file().filename(), textbook.file().size(),
+                        textbook.file().filename(), textbook.file().size(), hasCover(textbook),
                         members.getOrDefault(textbook.id(), List.of()).stream()
                                 .filter(member -> member.type() == MemberType.GROUP)
                                 .map(member -> mine.get(member.id()))
@@ -274,6 +304,22 @@ public class TextbookService {
                 .collect(Collectors.toSet());
         return user.role() == Role.STUDENT && (memberIds.contains(user.id())
                 || groups.groupsOf(user.id()).stream().anyMatch(group -> memberIds.contains(group.id())));
+    }
+
+    private static boolean hasCover(Textbook textbook) {
+        return textbook.file().format() != TextbookFormat.DOCUMENT;
+    }
+
+    /** The key of the PDF's cover file: made from the first page when the textbook has none yet. */
+    private String makeCover(Textbook textbook) {
+        Optional<String> kept = textbooks.findCoverKey(textbook.id());
+        if (kept.isPresent() || textbook.file().format() != TextbookFormat.PDF) {
+            return kept.orElse("");
+        }
+        byte[] picture = pdf.cover(load(textbook));
+        String key = storage.store(NAMESPACE, new ByteArrayInputStream(picture)).key();
+        textbooks.setCoverKey(textbook.id(), key);
+        return key;
     }
 
     private TextbookContent whole(Textbook textbook) {
@@ -338,7 +384,7 @@ public class TextbookService {
         return found.stream()
                 .map(textbook -> new TextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
                         textbook.pageCount(), textbook.file().format(), textbook.file().filename(),
-                        textbook.file().contentType(), textbook.file().size(),
+                        textbook.file().contentType(), textbook.file().size(), hasCover(textbook),
                         members.getOrDefault(textbook.id(), List.of()).stream()
                                 .map(member -> new MemberView(member.type(), member.id(), names.get(member.id())))
                                 .toList(),

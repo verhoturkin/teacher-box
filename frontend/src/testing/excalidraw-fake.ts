@@ -105,6 +105,7 @@ export function fakeExcalidraw(): FakeIsland {
         }
         return [...merged.values()];
       },
+      exportPreview: () => Promise.resolve(new Blob(['png'], { type: 'image/png' })),
       convertToExcalidrawElements: (skeletons) =>
         skeletons.map((skeleton, index) => anElement(`new-${String(index)}`, 1, { ...skeleton })),
     },
