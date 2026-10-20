@@ -721,6 +721,22 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     «задание · сдано · срок»), files of assignments and answers (type icon; name button that downloads + size; the
     red «×» of the textbooks; the teacher's name button opens a PDF or a picture in a tab, the download is an icon
     button; picked files not sent yet are the same cards). The teacher opens a bound textbook by its title. «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-tb-board`.
+- Homework of the teacher (0.25.0, spec §9; `features/homework/teacher/`) — three panes of one route
+  (`/teacher/homework[/tasks/:taskId | /:assignmentId]`): the **list** in the fixed pane (the connected group
+  «На проверку · Активные · Готовые» with counts, the filter button of the header opens one search; tonal rows, no
+  cards: a work — avatar, student, «задание · сдано …», the «Просрочено» tag; «Ждут сдачи» under them), the **work or
+  the assignment** in the flexible pane (blocks on the pane's surface under uppercase labels; the chosen row is
+  `tb-list__item--current`), and from **extra-large** the **review side sheet** as the third pane (`review-sheet.ts`,
+  standard side sheet ≤ 400 dp: the AI draft with the tertiary tag «Черновик ИИ» and «Вставить», the comment, the
+  quick phrases as chips, «На доработку» tonal + «Принять» filled, «Дальше: <student>»); the rail collapses to
+  96 dp on this route (`RailState`). On medium and compact the route shows the list or the detail (back arrow); the
+  review form sits under the answer on medium.
+  - **Floating toolbar** (compact, **M3** floating toolbar; the sizes are *ours*): a pill of surface container high,
+    64 dp high, 16 dp from the screen edges (plus the safe area), elevation 2, above the content; it holds the AI
+    button, the comment button, «На доработку» and «Принять». The comment, the draft, the quick phrases and the grade
+    live in a bottom sheet opened by the comment button; the bottom navigation bar is hidden on this screen
+    (`RailState.bottomBarHidden`) so the toolbar takes its place. The toolbar replaces a bottom bar, never sits over
+    one.
 - AI requests (0.14.7) — the teacher's «Последние запросы» is a `tb-list` of cards, not a table: feature icon
   (`pi-file-edit` / `pi-check-square`); feature + status `p-tag`; «dd.MM.yyyy HH:mm · model · N с», the error under it
   (`tb-negative`); trail `--amount` — tokens; 10 rows, then «Показать ещё».

@@ -320,7 +320,7 @@ Pages of a textbook can be put on a board too — from «Textbooks» or from a t
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is split into two cards: «Active» — not all the work accepted yet, and «Done» — everything accepted. Each has a search by the title or a student's name; a long list shows 10 at a page. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮». «To review» next to the search in «Active» leaves only the homework with handed-in work; press it again to see all.
+«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is one list with a switch «To review / Active / Done» and a search by the title or a student's name. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮»; a click opens the homework to the right of the list.
 
 ## The homework's page
 
@@ -336,12 +336,18 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-Handed-in work is collected in the review queue (cards: the student, the homework, when handed in and the deadline): open it from the homework's «⋮» → «Review the works» or from the home page («Needs attention»). Open the work, give a grade and write a comment, then:
+«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; below it «Not given» — drafts) and **Done** (everything accepted). The filter button opens a search by the homework title or a student's name. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
 
+Press a work and it opens on the right: the task (it collapses), the student's answer and the picture files. «Open on the board» leads to the homework's board. On a wide screen the review is a separate panel at the right:
+
+- **Comment to the student** with quick phrases under it;
 - **Accept** — the work counts;
-- **Return for rework** — the student fixes it and hands it in again.
+- **Return** — the student fixes it and hands it in again;
+- «Next: …» — after the decision the next work of the queue opens.
 
-If the AI assistant is on, «Review draft» suggests a comment and a grade — check them before sending ([AI assistant](/teacher/help/ai)).
+On a medium screen the review form goes under the answer. On a phone the work opens full screen and a floating toolbar sits at the bottom: the AI and comment buttons, «Return» and «Accept». The comment, the AI draft and the grade open in a bottom sheet.
+
+If the AI assistant is on, «AI draft» suggests a comment and a grade — check them and press «Insert» ([AI assistant](/teacher/help/ai)). Old links to the review queue and to the work's page keep working.
 `,
   },
   textbooks: {

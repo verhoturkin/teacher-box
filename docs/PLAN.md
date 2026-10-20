@@ -39,7 +39,7 @@ ADR: none.
 - [x] 242.3 **F** Extra-large: review side sheet (AI draft from `ai/homework-ai-panel.ts`, comment, chips,
   decision), «Дальше» opens the next work; collapsed rail on this route.
 - [x] 242.4 **F** Compact: floating toolbar (spec §9), comment in a bottom sheet, bottom bar hidden.
-- [ ] 242.5 **D** design-system (three panes, floating toolbar), help (homework review; ru, en), wiki.
+- [x] 242.5 **D** design-system (three panes, floating toolbar), help (homework review; ru, en), wiki.
 
 ### 243. Payments (B, F)
 
