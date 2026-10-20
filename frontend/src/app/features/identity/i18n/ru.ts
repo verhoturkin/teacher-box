@@ -112,7 +112,6 @@ export const ru = {
   },
   studentForm: {
     newStudent: 'Новый ученик',
-    editStudent: 'Изменить ученика',
     name: 'Имя и фамилия',
     email: 'E-mail',
     phone: 'Телефон',
@@ -147,11 +146,24 @@ export const ru = {
     noMessenger: 'Без мессенджера',
     prepaid: (amount: string) => `Аванс ${amount}`,
     debt: (amount: string) => `Долг ${amount}`,
-    tabNames: { overview: 'Обзор', lessons: 'Занятия', homework: 'Задания', payments: 'Оплаты' },
+    tabNames: {
+      overview: 'Обзор',
+      lessons: 'Занятия',
+      homework: 'Задания',
+      payments: 'Оплаты',
+      profile: 'Профиль',
+    },
     connection: 'Связь',
     sent: 'Сообщение отправлено',
     paid: 'Оплата сохранена',
     planned: 'Занятие запланировано',
+  },
+  profile: {
+    details: 'Данные ученика',
+    access: 'Вход в кабинет',
+    invited: (date: string) => `Ссылка-приглашение действует до ${date}.`,
+    resetting: (date: string) => `Ссылка для нового пароля действует до ${date}.`,
+    deactivated: 'Доступ отключён. Вернуть его можно в меню «Действия».',
   },
   students: {
     title: 'Ученики',
@@ -192,7 +204,6 @@ export const ru = {
     deactivateMessage: (name: string) =>
       `${name} не сможет войти в личный кабинет. История занятий и заданий сохранится.`,
     deactivate: 'Отключить',
-    edit: 'Изменить',
     reactivate: 'Вернуть доступ',
     resetPassword: 'Сбросить пароль',
     newInvite: 'Новое приглашение',

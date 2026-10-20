@@ -146,7 +146,7 @@ export const en: Translation<typeof ru> = {
     portal: 'Portal room',
     portalHint: 'Lessons take place in a portal call',
     none: 'No video meeting link',
-    noneHint: 'It is set in the “Edit” dialog',
+    noneHint: 'It is set on the “Profile” tab',
   },
   room: {
     title: 'Video meeting',

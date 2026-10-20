@@ -47,6 +47,21 @@ describe('RoomPanel', () => {
     expect(host.textContent.trim()).toBe('');
   });
 
+  it('is a section under the fields of a dialog by default', async () => {
+    await show([]);
+    expect(host.querySelector('section h3')?.textContent).toContain('Видеовстреча');
+    expect(host.querySelector('p-card')).toBeNull();
+  });
+
+  it('is a card of its own on the Профиль tab', async () => {
+    fixture.componentRef.setInput('card', true);
+    await show([aRoom({ ownerId: 's-1' })]);
+    expect(host.querySelector('section')).toBeNull();
+    expect(host.querySelector('p-card')?.textContent).toContain('Видеовстреча');
+    expect(host.querySelector('p-card #room-link')).not.toBeNull();
+    expect(buttonByText(host, 'Отправить ученику')).toBeTruthy();
+  });
+
   it('saves a pasted link', async () => {
     const panel = await show([aRoom({ ownerId: 'other' })]);
     expect(host.textContent).toContain('ученик приходит');

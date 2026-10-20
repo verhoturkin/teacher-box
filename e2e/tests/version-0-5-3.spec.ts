@@ -62,6 +62,8 @@ test('the groups are in the list of students, without tabs', async ({ page, brow
   await expect(link).toHaveValue(/\/invite\//);
   const invite = await link.inputValue();
   await page.keyboard.press('Escape');
+  // 0.23.0: the new student's card opened beside the list; the list itself has no tabs
+  await page.goto('/teacher/students');
 
   await expect(page.getByRole('tab')).toHaveCount(0);
   // 0.23.0: groups are rows of the same list, the chip «Группы» filters them

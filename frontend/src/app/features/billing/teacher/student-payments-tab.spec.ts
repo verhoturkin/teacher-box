@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { hostElement, readableText, requireElement } from '@testing/dom';
 import { LedgerList } from '../ledger/ledger-list';
 import { StudentPaymentsTab } from './student-payments-tab';
 import { testProviders } from '@testing/setup';
@@ -50,43 +50,10 @@ describe('StudentPaymentsTab', () => {
     expect(host.querySelectorAll('.tb-list > li')).toHaveLength(2);
   });
 
-  it('changes the lesson price in place: the field under its label, the buttons under it', async () => {
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
-    buttonByText(host, 'Изменить цену занятия').click();
-    await fixture.whenStable();
-    expect(
-      requireElement(host, '#lesson-price-input', HTMLInputElement).value.replace(/\s/g, ' '),
-    ).toContain('1 500');
-    expect(requireElement(host, '.tb-field > label', HTMLLabelElement).htmlFor).toBe(
-      'lesson-price-input',
-    );
-    expect(host.querySelector('.tb-form-actions')).not.toBeNull();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
-
-    fixture.componentInstance.price.setValue(2000);
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
-
-    const request = backend.expectOne('/api/teacher/billing/students/s-1/price');
-    expect(request.request.body).toEqual({ lessonPrice: 200_000 });
-    request.flush({ studentId: 's-1', lessonPrice: 200_000 });
-    await fixture.whenStable();
-
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
-    expect(text()).toContain('Цена занятия 2 000 ₽');
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
-  });
-
-  it('leaves the lesson price as it was when editing is cancelled', async () => {
-    buttonByText(host, 'Изменить цену занятия').click();
-    await fixture.whenStable();
-    fixture.componentInstance.price.setValue(2000);
-    buttonByText(host, 'Отмена').click();
-    await fixture.whenStable();
-
-    expect(host.querySelector('#lesson-price-input')).toBeNull();
+  it('shows the lesson price without changing it: the price is changed on Профиль', () => {
     expect(text()).toContain('Цена занятия 1 500 ₽');
-    expect(fixture.componentInstance.price.value).toBe(1500);
+    expect(host.querySelector('#lesson-price-input')).toBeNull();
+    expect(host.querySelector('button[aria-label="Изменить цену занятия"]')).toBeNull();
   });
 
   it('cancels a lesson after confirmation, reloads and tells the card', async () => {

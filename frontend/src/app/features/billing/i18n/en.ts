@@ -84,7 +84,7 @@ export const en: Translation<typeof ru> = {
   },
   defaultPrice: {
     label: 'Price for new students',
-    hint: 'The price of each student is changed in their payment history',
+    hint: 'The price of each student is changed on the Profile tab of their card',
     edit: 'Change the price for new students',
     what: 'the price for new students',
     saved: 'New students and groups get this price',
@@ -134,15 +134,19 @@ export const en: Translation<typeof ru> = {
     receiptFailed:
       'The payment is recorded, but the receipt was not attached. Attach it in the student history.',
   },
+  studentPrice: {
+    lessonPrice: 'Lesson price',
+    what: 'the lesson price',
+    hint: 'Charged for each lesson of the student; a group lesson costs the group price',
+    changed: 'Lesson price changed',
+  },
   studentLedger: {
     what: 'the payment history',
     balance: 'Balance',
     charged: 'Charged in total',
     paid: 'Paid in total',
     lessonPrice: 'Lesson price',
-    editPrice: 'Change the lesson price',
     history: 'History',
-    priceChanged: 'Lesson price changed',
     cancelHeader: 'Remove the charge?',
     cancelMessage: (amount: string) =>
       `The charge of ${amount} will be removed. The record stays in the history.`,

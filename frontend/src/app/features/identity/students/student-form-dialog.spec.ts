@@ -1,25 +1,9 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { CreatedStudent, Student } from '../data-access/identity.models';
+import { CreatedStudent } from '../data-access/identity.models';
 import { StudentFormDialog } from './student-form-dialog';
 import { testProviders } from '@testing/setup';
-
-const STUDENT: Student = {
-  id: 's-1',
-  displayName: 'Мария',
-  avatar: null,
-  email: 'maria@example.com',
-  phone: null,
-  note: '5 класс',
-  defaultTopic: null,
-  color: null,
-  status: 'ACTIVE',
-  login: 'maria',
-  createdAt: '2026-09-01T10:00:00Z',
-  version: 2,
-  pendingInvite: null,
-};
 
 describe('StudentFormDialog', () => {
   let fixture: ComponentFixture<StudentFormDialog>;
@@ -35,18 +19,11 @@ describe('StudentFormDialog', () => {
   });
 
   afterEach(() => {
-    // the room panel of an edited owner loads its room
-    for (const request of backend.match((request) =>
-      request.url.startsWith('/api/teacher/meetings/'),
-    )) {
-      request.flush([]);
-    }
     backend.verify();
     fixture.destroy();
   });
 
-  async function open(student: Student | null): Promise<void> {
-    fixture.componentRef.setInput('student', student);
+  async function open(): Promise<void> {
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
   }
@@ -55,21 +32,19 @@ describe('StudentFormDialog', () => {
     return requireElement(document.body, `#${id}`, HTMLInputElement);
   }
 
-  it('creates a student', async () => {
+  it('creates a student from the name and a contact', async () => {
     const created: CreatedStudent[] = [];
     fixture.componentInstance.created.subscribe((value) => created.push(value));
-    await open(null);
+    await open();
     expect(bodyText()).toContain('Новый ученик');
+    // the rest of the profile is on the card's Профиль tab
+    expect(document.body.querySelector('#note')).toBeNull();
+    expect(document.body.querySelector('tb-label-color-field')).toBeNull();
+    expect(document.body.querySelector('tb-room-panel')).toBeNull();
 
     typeInto(field('displayName'), 'Пётр');
     typeInto(field('phone'), '+7 900');
     await fixture.whenStable();
-    // choosing a colour keeps what was typed: the form is filled only when the dialog opens
-    requireElement(document.body, 'tb-label-color-field .p-select', HTMLElement).click();
-    await fixture.whenStable();
-    requireElement(document.body, 'li[aria-label="Фиолетовый"]', HTMLElement).click();
-    await fixture.whenStable();
-    expect(field('displayName').value).toBe('Пётр');
     buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
@@ -79,10 +54,24 @@ describe('StudentFormDialog', () => {
       phone: '+7 900',
       note: null,
       defaultTopic: null,
-      color: 'VIOLET',
+      color: null,
     });
     const response: CreatedStudent = {
-      student: { ...STUDENT, id: 's-2', displayName: 'Пётр', status: 'INVITED' },
+      student: {
+        id: 's-2',
+        displayName: 'Пётр',
+        avatar: null,
+        email: null,
+        phone: '+7 900',
+        note: null,
+        defaultTopic: null,
+        color: null,
+        status: 'INVITED',
+        login: null,
+        createdAt: '2026-09-01T10:00:00Z',
+        version: 0,
+        pendingInvite: { purpose: 'ACTIVATION', expiresAt: '2026-10-01T10:00:00Z' },
+      },
       invite: { token: 't', purpose: 'ACTIVATION', expiresAt: '2026-10-01T10:00:00Z' },
     };
     request.flush(response);
@@ -92,78 +81,31 @@ describe('StudentFormDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
-  it('submits from a field: the button of the footer belongs to the form (Enter)', async () => {
-    await open(null);
+  it('opens empty again after a student was typed in', async () => {
+    await open();
     typeInto(field('displayName'), 'Пётр');
+    fixture.componentRef.setInput('visible', false);
+    await fixture.whenStable();
+    await open();
+
+    expect(field('displayName').value).toBe('');
+  });
+
+  it('submits from a field: the button of the footer belongs to the form (Enter)', async () => {
+    await open();
+    typeInto(field('displayName'), 'Пётр');
+    typeInto(field('email'), 'petr@example.com');
     await fixture.whenStable();
 
     expect(buttonByText(document.body, 'Сохранить').form?.id).toBe('student-form');
     requireElement(document.body, '#student-form', HTMLFormElement).requestSubmit();
 
-    backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
-  });
-
-  it('shows the login read-only and the room of a student being edited', async () => {
-    await open(STUDENT);
-    const login = field('login');
-    expect(login.value).toBe('maria');
-    expect(login.readOnly).toBe(true);
-    expect(login.closest('form')?.id).toBe('student-form');
-    expect(bodyText()).toContain('Видеовстреча');
-    backend.expectOne('/api/teacher/meetings/rooms').flush([]);
-    backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
-  });
-
-  it('says the login is not chosen yet and has no room for a deactivated student', async () => {
-    await open({ ...STUDENT, login: null, status: 'DEACTIVATED' });
-    expect(field('login').value).toBe('Ещё не выбран');
-    expect(bodyText()).not.toContain('Видеовстреча');
-    backend.expectNone('/api/teacher/meetings/rooms');
-  });
-
-  it('has neither the login nor the room for a new student', async () => {
-    await open(null);
-    expect(document.body.querySelector('#login')).toBeNull();
-    expect(bodyText()).not.toContain('Видеовстреча');
-  });
-
-  it('edits a student with its version', async () => {
-    const updated: Student[] = [];
-    fixture.componentInstance.updated.subscribe((value) => updated.push(value));
-    await open({ ...STUDENT, color: 'GREEN' });
-    expect(bodyText()).toContain('Изменить ученика');
-    expect(field('displayName').value).toBe('Мария');
-    expect(requireElement(document.body, '#note', HTMLTextAreaElement).value).toBe('5 класс');
-    const color = requireElement(document.body, 'tb-label-color-field .p-select', HTMLElement);
-    expect(color.textContent).toContain('Зелёный');
-    expect(color.querySelector('.tb-label-swatch')?.getAttribute('data-tb-label')).toBe('green');
-
-    typeInto(field('email'), '');
-    typeInto(field('defaultTopic'), ' Физика ');
-    color.click();
-    await fixture.whenStable();
-    requireElement(document.body, 'li[aria-label="Синий"]', HTMLElement).click();
-    await fixture.whenStable();
-    buttonByText(document.body, 'Сохранить').click();
-
-    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/students/s-1' });
-    expect(request.request.body).toEqual({
-      displayName: 'Мария',
-      email: null,
-      phone: null,
-      note: '5 класс',
-      defaultTopic: 'Физика',
-      color: 'BLUE',
-      version: 2,
-    });
-    request.flush({ ...STUDENT, email: null, version: 3 });
-    await fixture.whenStable();
-
-    expect(updated.map((student) => student.version)).toEqual([3]);
+    const request = backend.expectOne({ method: 'POST', url: '/api/teacher/students' });
+    expect(request.request.body).toMatchObject({ email: 'petr@example.com', phone: null });
   });
 
   it('shows backend errors and stays open', async () => {
-    await open(null);
+    await open();
     typeInto(field('displayName'), 'Ошибка');
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
@@ -181,7 +123,7 @@ describe('StudentFormDialog', () => {
   });
 
   it('does not submit an empty name', async () => {
-    await open(null);
+    await open();
 
     buttonByText(document.body, 'Сохранить').click();
 
@@ -189,7 +131,7 @@ describe('StudentFormDialog', () => {
   });
 
   it('closes on cancel', async () => {
-    await open(null);
+    await open();
 
     buttonByText(document.body, 'Отмена').click();
     await fixture.whenStable();

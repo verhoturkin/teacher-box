@@ -17,6 +17,7 @@ import { PaymentDialog, StudentPaymentsTab } from '@features/billing/parts';
 import { Student } from '../data-access/identity.models';
 import { StudentRow } from './roster';
 import { StudentCard, channelNames } from './student-card';
+import { StudentProfileTab } from './student-profile-tab';
 
 /** What the cards of Обзор read: answered by their own specs. */
 const OVERVIEW_READS =
@@ -43,7 +44,7 @@ describe('StudentCard', () => {
 
   async function render(
     student: StudentRow,
-    inputs: Partial<{ channels: readonly string[] | null; single: boolean }> = {},
+    inputs: Partial<{ channels: readonly string[] | null; single: boolean; busy: boolean }> = {},
     phone = false,
   ): Promise<void> {
     TestBed.configureTestingModule({
@@ -140,7 +141,7 @@ describe('StudentCard', () => {
     const tabs = Array.from(host.querySelectorAll('[role="tab"]')).map((tab) =>
       tab.textContent.trim(),
     );
-    expect(tabs).toEqual(['Обзор', 'Занятия', 'Задания', 'Оплаты']);
+    expect(tabs).toEqual(['Обзор', 'Занятия', 'Задания', 'Оплаты', 'Профиль']);
     for (const part of [
       'tb-student-lessons-card',
       'tb-student-tasks-card',
@@ -173,6 +174,7 @@ describe('StudentCard', () => {
       ['lessons', 'tb-student-lessons-tab'],
       ['homework', 'tb-student-tasks-tab'],
       ['payments', 'tb-student-payments-tab'],
+      ['profile', 'tb-student-profile-tab'],
     ] as const) {
       fixture.componentRef.setInput('tab', tab);
       await fixture.whenStable();
@@ -195,6 +197,26 @@ describe('StudentCard', () => {
 
     part(StudentPaymentsTab).changed.emit();
     expect(changed).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes what Профиль saved and asks for to the page', async () => {
+    await render(row(), { busy: true });
+    fixture.componentRef.setInput('tab', 'profile');
+    await fixture.whenStable();
+    const saved = vi.fn();
+    const invite = vi.fn();
+    fixture.componentInstance.saved.subscribe(saved);
+    fixture.componentInstance.invite.subscribe(invite);
+    const profile = part(StudentProfileTab);
+    expect(profile.busy()).toBe(true);
+    expect(profile.student().id).toBe('m');
+
+    const student = aStudent({ id: 'm', displayName: 'Мария Иванова' });
+    profile.saved.emit(student);
+    profile.invite.emit();
+
+    expect(saved).toHaveBeenCalledWith(student);
+    expect(invite).toHaveBeenCalledTimes(1);
   });
 
   it('writes to the student alone', async () => {

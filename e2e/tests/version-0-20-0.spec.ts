@@ -16,11 +16,14 @@ async function signIn(page: Page, login: string, password: string): Promise<void
   await expect(page).not.toHaveURL(/\/login/);
 }
 
-async function pickColor(page: Page, name: string): Promise<void> {
-  const dialog = page.getByRole('dialog');
-  await dialog.locator('tb-label-color-field .p-select').click();
+async function pickColor(
+  page: Page,
+  name: string,
+  where = page.getByRole('dialog'),
+): Promise<void> {
+  await where.locator('tb-label-color-field .p-select').click();
   await page.getByRole('option', { name }).click();
-  await expect(dialog.locator('tb-label-color-field .p-select')).toContainText(name);
+  await expect(where.locator('tb-label-color-field .p-select')).toContainText(name);
 }
 
 test('the teacher colours a student and a group', async ({ page }) => {
@@ -31,12 +34,15 @@ test('the teacher colours a student and a group', async ({ page }) => {
 
   await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(student);
-  await pickColor(page, 'Фиолетовый');
   await page.getByRole('button', { name: 'Сохранить' }).click();
   // the invitation link opens after saving
   const invite = page.getByRole('dialog', { name: `Ссылка для ученика: ${student}` });
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
+  // 0.23.0: the colour is on the Профиль tab of the card, which opens after creating
+  const details = page.locator('p-card', { hasText: 'Данные ученика' });
+  await pickColor(page, 'Фиолетовый', details);
+  await details.getByRole('button', { name: 'Сохранить' }).click();
 
   const row = page.locator('li', { hasText: student });
   await expect(row).toHaveAttribute('data-tb-label', 'violet');
@@ -50,7 +56,7 @@ test('the teacher colours a student and a group', async ({ page }) => {
     page.getByRole('dialog').locator('.p-multiselect-chip', { hasText: student }),
   ).toHaveAttribute('data-tb-label', 'violet');
   await pickColor(page, 'Салатовый');
-  await page.getByRole('button', { name: 'Сохранить' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Сохранить' }).click();
 
   await expect(page.locator('li', { hasText: group })).toHaveAttribute('data-tb-label', 'lime');
 });

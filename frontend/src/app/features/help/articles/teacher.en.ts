@@ -14,7 +14,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 ## Four steps
 
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
-2. **Check the lesson price.** «Payments» → click the student's name → the «Payments» tab of their card → the «Lesson price» field. Debts and prepayments are counted from it.
+2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
@@ -66,8 +66,8 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 ## Add a student
 
 1. Click «Create» → «Student» (on a phone — «Students» → «Add student»).
-2. Enter the name. Email and phone are optional, you and the student see them; the note is seen only by you.
-3. The portal shows an invitation link. Copy it and send it to the student.
+2. Enter the name. Email and phone are optional, you and the student see them.
+3. The portal opens the student's card on the «Profile» tab and shows an invitation link. Copy it and send it to the student. Fill in the rest on «Profile»: the note, the default topic, the colour, the lesson price, the video meeting.
 
 The student opens the link, chooses a login and a password and gets to their cabinet. The link is valid for a few days — if it is out of date, issue a new one.
 
@@ -85,7 +85,7 @@ The **Lessons** tab lists all the student's lessons, group ones too: «Upcoming�
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
-Email, phone, note, login (the student chooses it, so it is read-only) and the **video meeting** are in the «Edit» window ([Video meetings](/teacher/help/meetings)).
+The **Profile** tab is everything you know about the student, changed right there. «Student details»: the name, email, phone, note (only you see it), default topic and colour — change the fields and press «Save» under them («Cancel» brings back the saved ones). Below are the lesson price (with its own «Save»), the **video meeting** (actions in it are saved at once, [Video meetings](/teacher/help/meetings)) and «Cabinet sign-in»: the login (the student chooses it, so it is read-only), until when the link works and the button for a new link — «New invitation» or «Reset password».
 
 The student's groups are rows of the same list ([Groups](/teacher/help/groups)), their boards in «Boards» ([Boards](/teacher/help/boards)).
 
@@ -93,14 +93,13 @@ The student's groups are rows of the same list ([Groups](/teacher/help/groups)),
 
 The «⋮» button in the student's card (right of the buttons, on a phone at the top next to the name) opens the menu:
 
-- **Edit** — name, contacts, note, default topic, colour and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and homework stays.
 - **Give access back** — for students whose access is off (the «Turned off» filter).
 
 ## Student colour
 
-In the «Edit» window pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints the background of their row (the circle with initials keeps the portal colour) in every list — students, billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
+On the «Profile» tab pick a **Colour** from the list (ten colours or «No colour»). The colour helps you find the student at a glance: it paints the background of their row (the circle with initials keeps the portal colour) in every list — students, billing, homework, schedule, video meetings, messengers — their lessons in the calendar and their chip in the student pickers. Only you see the colour; the student does not.
 
 In the calendar a planned lesson is filled with the colour. A conducted, missed or cancelled lesson keeps the colour of its status, with the student's colour as a stripe on the left.
 `,
@@ -142,7 +141,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 - **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
 - **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
 
-**Default topic.** If a student or a group has a default topic (in the «Edit» window of the student or group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the student's «Profile» tab or in the group's «Edit» window), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -210,7 +209,7 @@ On a phone a minimized call is a bar above the bottom menu.
 
 ## External link
 
-If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student or the group → «⋮» → «Edit» → «Video meeting».
+If a student or a group has a link to an external video service (Telemost, Zoom), lessons and reminders lead there, not to the portal room. To hold lessons in the portal, delete the link: «Students» → the student → the «Profile» tab → «Video meeting» (for a group — «⋮» → «Edit» → «Video meeting»).
 
 The administrator turns calls in the portal on (a call server is needed). If they are off, the section says so.
 `,
@@ -223,7 +222,7 @@ If calls in the portal are on, lessons are held in the portal room — see [Call
 
 ## Set the link
 
-«Students» → the student or the group → «⋮» in the card → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
+«Students» → the student → the «Profile» tab of their card → «Video meeting»; for a group — «⋮» in the card → «Edit» → the «Video meeting» block at the bottom of the window. Actions in this block are saved at once, without «Save».
 
 Create a meeting in Telemost, Zoom or another service, paste the link and click «Add link».
 
@@ -409,7 +408,7 @@ Lessons are charged when you mark them in the schedule. If a lesson took place b
 
 ## Price and history
 
-Click a student's name to open the «Payments» tab of their card in «Students»: lessons, payments and the lesson price (it can be changed; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
+Click a student's name to open the «Payments» tab of their card in «Students»: lessons, payments and the lesson price (it is changed on the «Profile» tab; past lessons keep the old price). The history is a list, a line per lesson or payment: the date and details under the title, the amount on the right; the cross removes a charge or voids a payment. The latest 20 are shown first, the rest with «Show more».
 
 ## Monthly report
 

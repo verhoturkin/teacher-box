@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -268,6 +268,8 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 [menuOpen]="menuFor() === row"
                 (more)="openMenu(row, $event)"
                 (changed)="loadExtras()"
+                (saved)="onUpdated($event)"
+                (invite)="reissueInvite(row.student)"
               />
             } @else {
               <!-- the group's card comes in 237.6 -->
@@ -297,12 +299,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       appendTo="body"
       (onHide)="menuFor.set(null)"
     />
-    <tb-student-form-dialog
-      [(visible)]="formVisible"
-      [student]="editedStudent()"
-      (created)="onCreated($event)"
-      (updated)="onUpdated($event)"
-    />
+    <tb-student-form-dialog [(visible)]="formVisible" (created)="onCreated($event)" />
     <tb-invite-link-dialog
       [(visible)]="inviteVisible"
       [invite]="invite()"
@@ -377,6 +374,7 @@ export class StudentsPage implements OnInit {
   private readonly confirmation = inject(ConfirmationService);
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);
+  private readonly router = inject(Router);
   private readonly menu = viewChild.required<Menu>('menu');
 
   /** Route parameter: the student whose card is open. */
@@ -478,7 +476,6 @@ export class StudentsPage implements OnInit {
   });
 
   protected readonly formVisible = signal(false);
-  protected readonly editedStudent = signal<Student | null>(null);
   protected readonly inviteVisible = signal(false);
   protected readonly invite = signal<IssuedInvite | null>(null);
   protected readonly inviteStudentName = signal('');
@@ -635,7 +632,6 @@ export class StudentsPage implements OnInit {
   }
 
   protected openCreate(): void {
-    this.editedStudent.set(null);
     this.formVisible.set(true);
   }
 
@@ -644,9 +640,13 @@ export class StudentsPage implements OnInit {
     this.groupFormVisible.set(true);
   }
 
+  /** A new student: their card opens on Профиль to fill in the rest, over it the invitation link. */
   protected onCreated(created: CreatedStudent): void {
     this.students.update((students) => [...students, created.student]);
     this.colors.rememberStudent(created.student);
+    void this.router.navigate(['/teacher/students', created.student.id], {
+      queryParams: { tab: 'profile' },
+    });
     this.showInvite(created.student, created.invite);
   }
 
@@ -668,7 +668,7 @@ export class StudentsPage implements OnInit {
     }
   }
 
-  private reissueInvite(student: Student): void {
+  protected reissueInvite(student: Student): void {
     this.busy.guard(student.id, this.api.reissueInvite(student.id)).subscribe((invite) => {
       this.replaceStudent({
         ...student,
@@ -723,16 +723,7 @@ export class StudentsPage implements OnInit {
   }
 
   private studentActions(student: Student): MenuItem[] {
-    const items: MenuItem[] = [
-      {
-        label: this.t.edit,
-        icon: 'tb-i tb-i-edit',
-        command: () => {
-          this.editedStudent.set(student);
-          this.formVisible.set(true);
-        },
-      },
-    ];
+    const items: MenuItem[] = [];
     if (student.status === 'DEACTIVATED') {
       items.push({
         label: this.t.reactivate,

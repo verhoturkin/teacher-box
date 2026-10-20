@@ -619,9 +619,20 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     ранее» reads the year before; a past lesson's tag is its status, a group lesson the student attended or
     missed — the student's own attendance; cancelled rows are inactive); «Все задания» of `tb-student-tasks-tab`
     (open ones as on Обзор, then the accepted ones, the latest reviewed first, with the grade; 20 + «Показать
-    ещё»); `tb-student-payments-tab` — the figures (balance, totals, lesson price edited in place) and the
-    ledger card «История» (`tb-ledger-list`). The old page `/teacher/billing/students/:id` redirects to
+    ещё»); `tb-student-payments-tab` — the figures (balance, totals, lesson price — read-only since 237.5) and
+    the ledger card «История» (`tb-ledger-list`). The old page `/teacher/billing/students/:id` redirects to
     `/teacher/students/:id?tab=payments`; billing links to a student open that tab.
+    Профиль (237.5, `tb-student-profile-tab`) — the student's data changed in place, cards one under another:
+    «Данные ученика» (name *, e-mail, phone, note, default topic, colour — always editable fields, under them
+    `tb-form-actions` with the tonal «Сохранить», off until a field differs from the saved profile, and the text
+    «Отмена» shown only then, which brings the saved values back; a saved profile updates the list row),
+    «Цена занятия» (`tb-student-price-card` of billing — the one place a student's price is changed, the same
+    field + tonal «Сохранить»), «Видеовстреча» (`tb-room-panel [card]`, every action saved at once) and «Вход в
+    кабинет» (the read-only login, until when the issued link works, tonal «Новое приглашение» / «Сбросить
+    пароль» — the same action as in «⋮»). *Our decision (M3 publishes no in-place edit pattern):* fields stay
+    editable instead of a read view with a pencil, as the account's sections. The dialog «Новый ученик» asks only
+    the name and the contacts; after it the card opens on Профиль with the invitation link over it. «⋮» has no
+    «Изменить» any more.
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,

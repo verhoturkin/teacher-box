@@ -114,7 +114,6 @@ export const en: Translation<typeof ru> = {
   },
   studentForm: {
     newStudent: 'New student',
-    editStudent: 'Edit student',
     name: 'First and last name',
     email: 'Email',
     phone: 'Phone',
@@ -154,11 +153,19 @@ export const en: Translation<typeof ru> = {
       lessons: 'Lessons',
       homework: 'Homework',
       payments: 'Payments',
+      profile: 'Profile',
     },
     connection: 'Contact',
     sent: 'Message sent',
     paid: 'Payment saved',
     planned: 'Lesson planned',
+  },
+  profile: {
+    details: 'Student details',
+    access: 'Cabinet sign-in',
+    invited: (date: string) => `The invitation link works until ${date}.`,
+    resetting: (date: string) => `The new password link works until ${date}.`,
+    deactivated: 'Access is off. Turn it back on in the “Actions” menu.',
   },
   students: {
     title: 'Students',
@@ -199,7 +206,6 @@ export const en: Translation<typeof ru> = {
     deactivateMessage: (name: string) =>
       `${name} will not be able to sign in to the cabinet. The history of lessons and homework stays.`,
     deactivate: 'Turn off',
-    edit: 'Edit',
     reactivate: 'Give access back',
     resetPassword: 'Reset password',
     newInvite: 'New invitation',

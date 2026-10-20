@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   inject,
   input,
@@ -9,15 +8,10 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
-import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Tooltip } from 'primeng/tooltip';
 import { ConfirmDialog } from 'primeng/confirmdialog';
-import { InputNumber } from 'primeng/inputnumber';
-import { formatMoney, toMajorUnits, toMinorUnits } from '@shared/money/money';
+import { formatMoney } from '@shared/money/money';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
@@ -30,28 +24,15 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { dangerConfirmation } from '@shared/ui/confirmation';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
-import { locale } from '@core/i18n/language';
 
 /**
- * The Оплаты tab of a student's card (redesign spec §8): the balance, the totals, the lesson price and the
- * history of lessons and payments with the teacher's corrections — cancelled charges, voided payments,
- * receipts. A payment is recorded from the card's «Оплата».
+ * The Оплаты tab of a student's card (redesign spec §8): the balance, the totals, the lesson price (changed on
+ * Профиль) and the history of lessons and payments with the teacher's corrections — cancelled charges,
+ * voided payments, receipts. A payment is recorded from the card's «Оплата».
  */
 @Component({
   selector: 'tb-student-payments-tab',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Card,
-    ConfirmDialog,
-    InputNumber,
-    MoneyPipe,
-    BalanceAmount,
-    LedgerList,
-    Tooltip,
-    LoadStateView,
-  ],
+  imports: [Card, ConfirmDialog, MoneyPipe, BalanceAmount, LedgerList, LoadStateView],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -80,56 +61,11 @@ import { locale } from '@core/i18n/language';
           </div>
         </p-card>
         <p-card>
-          @if (editingPrice()) {
-            <!-- the field under its label across the card, the buttons under it (ADR-0018) -->
-            <form class="tb-form" [formGroup]="priceForm" (ngSubmit)="savePrice()">
-              <div class="tb-field">
-                <label for="lesson-price-input">{{ t.lessonPrice }}</label>
-                <p-inputnumber
-                  inputId="lesson-price-input"
-                  formControlName="price"
-                  mode="currency"
-                  currencyDisplay="narrowSymbol"
-                  [currency]="ledger.currency"
-                  [locale]="locale"
-                  [min]="0"
-                  [fluid]="true"
-                />
-              </div>
-              <div class="tb-form-actions">
-                <p-button
-                  [label]="c.cancel"
-                  severity="secondary"
-                  [text]="true"
-                  (onClick)="cancelPrice()"
-                />
-                <p-button
-                  type="submit"
-                  severity="secondary"
-                  [label]="c.save"
-                  icon="tb-i tb-i-check"
-                  [disabled]="price.invalid || !priceChanged()"
-                  [loading]="savingPrice()"
-                />
-              </div>
-            </form>
-          } @else {
-            <div class="tb-stat">
-              <span class="tb-muted">{{ t.lessonPrice }}</span>
-              <span class="tb-stat__value">
-                {{ ledger.lessonPrice | money: ledger.currency }}
-                <p-button
-                  icon="tb-i tb-i-edit"
-                  severity="secondary"
-                  [text]="true"
-                  [rounded]="true"
-                  [pTooltip]="t.editPrice"
-                  [ariaLabel]="t.editPrice"
-                  (onClick)="editingPrice.set(true)"
-                />
-              </span>
-            </div>
-          }
+          <!-- changed on the Профиль tab (redesign spec §8: one home per function) -->
+          <div class="tb-stat">
+            <span class="tb-muted">{{ t.lessonPrice }}</span>
+            <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
+          </div>
         </p-card>
       </div>
 
@@ -149,8 +85,6 @@ import { locale } from '@core/i18n/language';
   `,
 })
 export class StudentPaymentsTab {
-  protected readonly locale = locale();
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.studentLedger;
   private readonly api = inject(BillingApi);
   private readonly confirmation = inject(ConfirmationService);
@@ -165,21 +99,6 @@ export class StudentPaymentsTab {
   readonly changed = output();
 
   protected readonly ledger = signal<StudentLedger | null>(null);
-  protected readonly editingPrice = signal(false);
-  readonly price = new FormControl<number | null>(null, [Validators.required, Validators.min(0)]);
-  protected readonly priceForm = new FormGroup({ price: this.price });
-  private readonly priceValue = toSignal(this.price.valueChanges, { initialValue: null });
-  protected readonly priceChanged = computed(() => {
-    const ledger = this.ledger();
-    const value = this.priceValue();
-    return (
-      ledger !== null &&
-      value !== null &&
-      toMinorUnits(value, ledger.currency) !== ledger.lessonPrice
-    );
-  });
-
-  protected readonly savingPrice = signal(false);
   protected readonly state = new LoadState();
 
   constructor() {
@@ -198,36 +117,7 @@ export class StudentPaymentsTab {
       .pipe(this.state.track())
       .subscribe((ledger) => {
         this.ledger.set(ledger);
-        this.price.setValue(toMajorUnits(ledger.lessonPrice, ledger.currency));
       });
-  }
-
-  protected savePrice(): void {
-    const ledger = this.ledger();
-    const value = this.price.value;
-    if (ledger === null || value === null || this.price.invalid || this.savingPrice()) {
-      return;
-    }
-    this.savingPrice.set(true);
-    this.api.changeLessonPrice(ledger.studentId, toMinorUnits(value, ledger.currency)).subscribe({
-      next: (saved) => {
-        this.savingPrice.set(false);
-        this.ledger.set({ ...ledger, lessonPrice: saved });
-        this.editingPrice.set(false);
-        this.snackbar.success(T.studentLedger.priceChanged);
-      },
-      error: () => {
-        this.savingPrice.set(false);
-      },
-    });
-  }
-
-  protected cancelPrice(): void {
-    const ledger = this.ledger();
-    if (ledger !== null) {
-      this.price.setValue(toMajorUnits(ledger.lessonPrice, ledger.currency));
-    }
-    this.editingPrice.set(false);
   }
 
   protected confirmCancel(lesson: Lesson): void {

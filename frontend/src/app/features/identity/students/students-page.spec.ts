@@ -373,10 +373,14 @@ describe('StudentsPage', () => {
       expect(router.url).toBe('/');
     });
 
-    it('shows the invitation link after creating a student', async () => {
+    it('opens the card of a new student on Профиль and shows the invitation link', async () => {
       await load([MARIA]);
-      await TestBed.inject(Router).navigateByUrl('/?create=student');
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl('/?create=student');
       await fixture.whenStable();
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      // the dialog asks only the name and a contact
+      expect(document.body.querySelector('p-dialog #note')).toBeNull();
 
       typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Анна');
       await fixture.whenStable();
@@ -389,6 +393,9 @@ describe('StudentsPage', () => {
 
       expect(rows()[0]).toContain('Анна');
       expect(bodyText()).toContain('Ссылка для ученика: Анна');
+      expect(navigate).toHaveBeenCalledWith(['/teacher/students', 'a'], {
+        queryParams: { tab: 'profile' },
+      });
     });
 
     it('shows the debt instead of the tag on the right', async () => {
@@ -415,21 +422,49 @@ describe('StudentsPage', () => {
       expect(button.closest('tb-student-card header')).not.toBeNull();
     });
 
-    it('edits a student from the menu', async () => {
+    it('has no «Изменить» in the menu: the profile is changed on Профиль', async () => {
       await load([MARIA]);
+      await openCard('Мария');
+      buttonByText(host, 'Действия: Мария').click();
+      await fixture.whenStable();
 
-      await act('Мария', 'Изменить');
+      expect(() => menuItemByText('Изменить')).toThrow();
+      expect(menuItemByText('Сбросить пароль')).toBeTruthy();
+    });
+
+    it('saves the profile in place and puts the student in the list', async () => {
+      await load([MARIA]);
+      fixture.componentRef.setInput('tab', 'profile');
+      await openCard('Мария');
       flushRoom();
       await fixture.whenStable();
-      typeInto(requireElement(document.body, '#displayName', HTMLInputElement), 'Мария Иванова');
+
+      typeInto(requireElement(host, '#profile-name', HTMLInputElement), 'Мария Иванова');
       await fixture.whenStable();
-      buttonByText(document.body, 'Сохранить').click();
+      buttonByText(host, 'Сохранить').click();
       backend
-        .expectOne('/api/teacher/students/m')
+        .expectOne({ method: 'PUT', url: '/api/teacher/students/m' })
         .flush({ ...MARIA, displayName: 'Мария Иванова', version: 1 });
       await fixture.whenStable();
 
       expect(rows()[0]).toContain('Мария Иванова');
+      expect(requireElement(host, '#profile-name', HTMLInputElement).value).toBe('Мария Иванова');
+    });
+
+    it('issues a new link from Профиль as from «⋮»', async () => {
+      await load([BORIS]);
+      fixture.componentRef.setInput('tab', 'profile');
+      await openCard('Борис');
+      await fixture.whenStable();
+
+      buttonByText(host, 'Новое приглашение').click();
+      backend.expectOne('/api/teacher/students/b/invite').flush({
+        token: 'new-token',
+        purpose: 'ACTIVATION',
+        expiresAt: '2026-10-03T10:00:00Z',
+      });
+      await fixture.whenStable();
+      expect(bodyText()).toContain('придумает логин и пароль');
     });
 
     it('resets the password of an active student and re-invites an invited one', async () => {

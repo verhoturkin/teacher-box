@@ -123,13 +123,18 @@ test.describe('on a phone', () => {
     inviteLink = await link.inputValue();
     await page.keyboard.press('Escape');
 
-    // 0.7.3: a student is a row of the list — the name and the status on the right; 0.23.0: «⋮» is in
-    // the card, which replaces the list on a phone
-    const card = page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT });
-    await expect(card.locator('p-tag')).toHaveText('Приглашён');
-    await card.getByRole('link', { name: STUDENT }).click();
+    // 0.23.0: the new student's card opens on Профиль, in place of the list on a phone, «⋮» in its header
+    await expect(page.getByRole('tab', { name: 'Профиль' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await expect(page.getByRole('button', { name: `Действия: ${STUDENT}` })).toBeVisible();
     await expectNoSideScroll(page);
+
+    // 0.7.3: a student is a row of the list — the name and the status on the right
+    await page.getByRole('link', { name: 'Все ученики' }).click();
+    const card = page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT });
+    await expect(card.locator('p-tag')).toHaveText('Приглашён');
   });
 
   test('the schedule is a day list with the FAB for a new lesson', async ({ page }) => {

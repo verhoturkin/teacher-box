@@ -36,6 +36,8 @@ import { T } from '../i18n/texts';
 import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab } from './card-tabs';
 import { StudentRow } from './roster';
 import { STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
+import { StudentProfileTab } from './student-profile-tab';
+import { Student } from '../data-access/identity.models';
 
 /** A tag of the header: the status, the messenger, the balance. */
 interface HeaderTag {
@@ -49,7 +51,7 @@ interface HeaderTag {
  * tags of the status, the messenger and the balance, the actions «Написать», «Оплата», «Занятие» and «⋮» — and
  * the tabs named by `?tab=`. Обзор puts together the parts of the other features: the next lessons, the open
  * homework, the balance, the messengers and the video meeting; Занятия, Задания and Оплаты are the full lists of
- * those features — all the lessons, every task, the ledger.
+ * those features — all the lessons, every task, the ledger; Профиль changes the student's data in place.
  */
 @Component({
   selector: 'tb-student-card',
@@ -67,6 +69,7 @@ interface HeaderTag {
     StudentLessonsCard,
     StudentLessonsTab,
     StudentPaymentsTab,
+    StudentProfileTab,
     StudentTasksCard,
     StudentTasksTab,
     Tab,
@@ -191,6 +194,16 @@ interface HeaderTag {
             />
           }
         </p-tabpanel>
+        <p-tabpanel value="profile">
+          @if (tab() === 'profile') {
+            <tb-student-profile-tab
+              [student]="row.student"
+              [busy]="busy()"
+              (saved)="saved.emit($event)"
+              (invite)="invite.emit()"
+            />
+          }
+        </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
 
@@ -307,6 +320,10 @@ export class StudentCard {
   readonly more = output<Event>();
   /** A payment or a lesson changed what the list knows of the student. */
   readonly changed = output();
+  /** Профиль saved the student's data. */
+  readonly saved = output<Student>();
+  /** Профиль asks for a new invitation link (as «⋮» does). */
+  readonly invite = output();
 
   protected readonly writeVisible = signal(false);
   protected readonly paymentVisible = signal(false);

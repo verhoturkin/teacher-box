@@ -54,9 +54,10 @@ student or group. ADR: none.
   *The ledger page became `billing/teacher/student-payments-tab.ts` (figures, price in place, history; the
   payment is the header's «Оплата»); Занятия read half a year back and ahead + «Показать ранее» (the backend
   allows 400 days). No backend `Portal.link` pointed at the old page; billing links now open the tab.*
-- [ ] 237.5 **F** Профиль tab: inline fields of `student-form-dialog.ts` (name, contacts, note, default topic,
+- [x] 237.5 **F** Профиль tab: inline fields of `student-form-dialog.ts` (name, contacts, note, default topic,
   colour, price, `meetings/rooms/room-panel.ts`, invite link); the dialog stays only for creating (name +
-  contact), then opens the card.
+  contact), then opens the card. *The price is changed only on Профиль (`billing` part `tb-student-price-card`);
+  Оплаты shows it read-only. «⋮» lost «Изменить»; the card opens on `?tab=profile` after creating.*
 - [ ] 237.6 **F** Group card (Обзор, Занятия, Задания, Участники, Профиль) from `group-form-dialog.ts`.
 - [ ] 237.7 **D** design-system (list-detail, card anatomy), `docs/modules/identity.md`, help (students, groups,
   payments of a student; ru, en), wiki.
