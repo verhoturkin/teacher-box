@@ -111,6 +111,11 @@ export class ScheduleCalendar {
   readonly focusDate = input<string | null>(null);
   /** Past lessons without a mark (`GET /schedule/unmarked`): outlined in the grid, marked from the lesson's dialog. */
   readonly unmarked = input<readonly ScheduledLesson[]>([]);
+  /**
+   * A phone's own screen of the calendar (the teacher's «Неделя», «Месяц»): that view without the footer of
+   * views, which the «⋮» of the page replaces. Without it a phone shows the list with the footer.
+   */
+  readonly phoneView = input<CalendarView | null>(null);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -147,16 +152,20 @@ export class ScheduleCalendar {
   protected readonly options = computed<CalendarOptions>(() => {
     const editable = this.editable();
     const mobile = this.mobile();
+    const phoneView = this.phoneView();
     return {
       plugins: [classicTheme, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
       locale: CALENDAR_LOCALES[language()],
-      initialView: mobile ? 'listWeek' : this.initialView(),
+      initialView: mobile ? (phoneView ?? 'listWeek') : this.initialView(),
       initialDate: this.initialDate() ?? undefined,
       ...(mobile
         ? {
             headerToolbar: { start: 'title', end: 'prev,next' },
             toolbarTitleClass: 'tb-calendar-title',
-            footerToolbar: { start: 'today', end: 'listWeek,timeGridDay,dayGridMonth' },
+            footerToolbar:
+              phoneView === null
+                ? { start: 'today', end: 'listWeek,timeGridDay,dayGridMonth' }
+                : { start: 'today' },
           }
         : {
             headerToolbar: {

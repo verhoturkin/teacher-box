@@ -10,7 +10,6 @@ import { aGroup } from '@testing/identity-fixtures';
 import {
   at,
   changeRequest,
-  groupLesson,
   lessonSeries,
   onceOffTime,
   scheduleSettings,
@@ -19,7 +18,6 @@ import {
 } from '@testing/schedule-fixtures';
 import { OffTime, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
-import { LessonDetailsDialog } from './lesson-details-dialog';
 import { LessonDialog } from './lesson-dialog';
 import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
@@ -183,30 +181,6 @@ describe('SchedulePage', () => {
 
     expect(readableText(hostElement(fixture))).toContain('Нет регулярных занятий');
     expect(calendar.loaded()).toBe(true);
-  });
-
-  it('offers groups with students and marks a group lesson on a phone', async () => {
-    phone.next({ matches: true, breakpoints: {} });
-    const text = await render(scheduleSettings(), [
-      groupLesson({ id: 'gl-9', startsAt: at(2026, 9, 1, 18), endsAt: at(2026, 9, 1, 19, 30) }),
-    ]);
-    const dialog = fixture.debugElement
-      .query(By.directive(LessonDialog))
-      .injector.get(LessonDialog);
-
-    expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ', defaultTopic: null }]);
-    expect(text).toContain('Группа «ОГЭ»');
-    buttonByText(hostElement(fixture), 'Отметить занятие: Группа «ОГЭ»').click();
-    await fixture.whenStable();
-    buttonByText(document.body, 'Отметить посещаемость: Группа «ОГЭ»').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Кто был на занятии');
-    expect(bodyText()).toContain('Мария');
-    // the attendance opens at once, not through the details of the lesson (ADR-0026)
-    const details = fixture.debugElement
-      .query(By.directive(LessonDetailsDialog))
-      .injector.get(LessonDetailsDialog);
-    expect(details.visible()).toBe(false);
   });
 
   it('shows busy times from the teacher’s Google Calendar', async () => {
@@ -513,32 +487,5 @@ describe('SchedulePage', () => {
     });
     stop.flush(null);
     await flushReload();
-  });
-
-  it('on a phone opens the buttons of a past lesson in a bottom sheet', async () => {
-    phone.next({ matches: true, breakpoints: {} });
-    await render(scheduleSettings(), [scheduledLesson({ id: 'l-9' }), groupLesson()]);
-    const rows = Array.from(
-      hostElement(fixture).querySelectorAll('ul.tb-list li.tb-list__item--link'),
-      (row) => readableText(row),
-    );
-    expect(rows).toHaveLength(2);
-    expect(rows[0]).not.toContain('Проведено');
-
-    buttonByText(hostElement(fixture), 'Отметить занятие: Иван Петров').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Проведено');
-    buttonByText(document.body, 'Пропуск: Иван Петров').click();
-    backend
-      .expectOne('/api/teacher/schedule/lessons/l-9/outcome')
-      .flush(scheduledLesson({ status: 'MISSED' }));
-    await flushReload([groupLesson()]);
-    expect(document.querySelector('.p-drawer.tb-sheet')).toBeNull();
-
-    buttonByText(hostElement(fixture), 'Отметить занятие: Группа «ОГЭ»').click();
-    await fixture.whenStable();
-    buttonByText(document.body, 'Отметить посещаемость: Группа «ОГЭ»').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Кто был на занятии');
   });
 });
