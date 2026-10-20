@@ -163,6 +163,18 @@ describe('LessonDialog', () => {
     expect(topic.value).toBe('Своя тема');
   });
 
+  it('plans with the student of the card: fixed, with their default topic', async () => {
+    fixture.componentRef.setInput('students', [
+      { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },
+    ]);
+    fixture.componentRef.setInput('studentId', 's-1');
+    const dialog = await open();
+
+    expect(dialog.form.controls.owner.value).toBe('student:s-1');
+    expect(dialog.form.controls.owner.disabled).toBe(true);
+    expect(dialog.form.controls.topic.value).toBe('Физика');
+  });
+
   it('keeps the topic of a planned lesson', async () => {
     fixture.componentRef.setInput('students', [
       { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },

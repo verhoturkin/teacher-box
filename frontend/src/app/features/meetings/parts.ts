@@ -3,6 +3,7 @@
  * settings panel. The call itself is in `index.ts` (lazy).
  */
 export type { RoomOwnerRef } from './data-access/meetings.models';
+export { RoomLink } from './rooms/room-link';
 export { RoomPanel } from './rooms/room-panel';
 export { MeetingsSettingsPanel } from './settings/meetings-settings-panel';
 export { JoinLessonButton } from './ui/join-lesson-button';

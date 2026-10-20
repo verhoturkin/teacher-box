@@ -23,6 +23,7 @@ import { PageDetail } from '@core/routing/page-detail';
 import type { ScheduledLesson } from '@features/schedule/parts';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog } from '../groups/group-form-dialog';
+import { StudentCard } from './student-card';
 import { StudentsPage } from './students-page';
 
 const MARIA = aStudent({
@@ -58,6 +59,10 @@ const SUMMER = aGroup({
 /** In two hours, so the nearest lesson is «сегодня» or «завтра» whatever the time of the run. */
 const SOON = new Date(Date.now() + 2 * 3_600_000);
 
+/** What the Обзор tab of a student's card reads. */
+const OVERVIEW_READS =
+  /schedule\/lessons\?.*studentId=|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)/;
+
 interface Extras {
   readonly balances?: Record<string, number>;
   readonly withMessenger?: readonly string[];
@@ -70,7 +75,7 @@ describe('StudentsPage', () => {
   let host: HTMLElement;
 
   async function create(
-    inputs: { studentId?: string; groupId?: string } = {},
+    inputs: { studentId?: string; groupId?: string; tab?: string } = {},
     ...providers: Provider[]
   ): Promise<void> {
     TestBed.configureTestingModule({
@@ -88,6 +93,8 @@ describe('StudentsPage', () => {
 
   afterEach(() => {
     fixture.destroy();
+    // the reads of the card's Обзор: its own spec answers them
+    backend.match((request) => OVERVIEW_READS.test(request.urlWithParams));
     backend.verify();
   });
 
@@ -114,7 +121,10 @@ describe('StudentsPage', () => {
         ),
     );
     backend
-      .expectOne((request) => request.url === '/api/teacher/schedule/lessons')
+      .expectOne(
+        (request) =>
+          request.url === '/api/teacher/schedule/lessons' && !request.params.has('studentId'),
+      )
       .flush(extras.lessons ?? []);
     backend
       .expectOne('/api/teacher/billing/groups')
@@ -402,7 +412,7 @@ describe('StudentsPage', () => {
       await openCard('Мария');
       const button = buttonByText(host, 'Действия: Мария');
       expect(button.getAttribute('aria-haspopup')).toBe('menu');
-      expect(button.closest('.tb-roster__head')).not.toBeNull();
+      expect(button.closest('tb-student-card header')).not.toBeNull();
     });
 
     it('edits a student from the menu', async () => {
@@ -540,14 +550,29 @@ describe('StudentsPage', () => {
       expect(current).toHaveLength(1);
       expect(current[0]?.textContent).toContain('Мария');
       expect(current[0]?.querySelector('a')?.getAttribute('aria-current')).toBe('page');
-      expect(host.querySelector('.tb-roster__heading')?.textContent).toBe('Мария');
+      // the name is the card's own heading beside the list
+      expect(host.querySelector('tb-student-card h2')?.textContent).toBe('Мария');
       expect(host.querySelector('tb-pane:last-child tb-page-header')).toBeNull();
-      // the contacts, the login and the note until the card's profile comes
-      const card = readableText(requireElement(host, '.tb-roster__card', HTMLElement));
-      expect(card).toContain('Телефон: +7 900 000-00-00');
-      expect(card).toContain('Логин: maria');
-      expect(card).toContain('Заметка: 5 класс');
+      expect(host.querySelector('tb-student-card tb-student-lessons-card')).not.toBeNull();
       expect(TestBed.inject(PageDetail).value()).toBe('Мария');
+    });
+
+    it('gives the card the messengers, the balance and the tab, and reads them again after a payment', async () => {
+      await create({ studentId: 'm', tab: 'unknown' }, screenWidth(1200));
+      await load([MARIA], [], { balances: { m: -300_000 }, withMessenger: ['m'] });
+
+      const card = fixture.debugElement.query(By.directive(StudentCard)).injector.get(StudentCard);
+      const header = (): string =>
+        readableText(requireElement(host, 'tb-student-card header', HTMLElement));
+      expect(header()).toContain('Telegram');
+      expect(header()).toMatch(/Долг 3\s000\s₽/);
+      expect(card.tab()).toBe('overview');
+
+      card.changed.emit();
+      flushExtras([MARIA], { balances: { m: 0 } });
+      await fixture.whenStable();
+      expect(header()).not.toContain('Долг');
+      expect(header()).toContain('Без мессенджера');
     });
 
     it('opens a group card', async () => {
@@ -602,6 +627,8 @@ describe('StudentsPage', () => {
         expect(back.getAttribute('aria-label')).toBe('Все ученики');
         expect(host.querySelector('h1')?.textContent).toBe('Мария');
         expect(host.querySelector('tb-page-header [aria-label="Действия: Мария"]')).not.toBeNull();
+        // the page header names the student: the card shows no second name
+        expect(host.querySelector('tb-student-card h2')).toBeNull();
       });
     }
 

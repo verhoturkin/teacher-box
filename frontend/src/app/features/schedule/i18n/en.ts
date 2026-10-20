@@ -129,6 +129,14 @@ export const en: Translation<typeof ru> = {
     sent: 'The teacher will get your request',
     withdrawn: 'Request withdrawn',
   },
+  studentLessons: {
+    title: 'Next lessons',
+    what: 'lessons',
+    nothing: 'No lessons planned',
+    noTopic: 'No topic',
+    recurring: 'recurring',
+    more: (count: number) => `${String(count)} more planned`,
+  },
   attendanceDialog: {
     title: 'Who came to the lesson',
     of: (name: string) => `Attendance: ${name}`,

@@ -2992,6 +2992,15 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
+/*
+ * Tabs of a card (the student's card, 237.3): M3 fixed tabs aligned to the leading edge of the pane; each tab
+ * is as wide as its label (our decision: M3 sizes them by the widest), so a card with few tabs does not
+ * stretch one tab across the pane. They scroll when they no longer fit (M3 scrollable tabs).
+ */
+.tb-tabs--start .p-tab {
+  flex: 0 0 auto;
+}
+
 .tb-side-sheet__head {
   display: flex;
   flex: 1;

@@ -27,6 +27,9 @@ import {
 } from './schedule.models';
 
 /** Requests whose errors the dialog (e.g. an overlap) or the page (a failed load, ADR-0025) shows itself. */
+/** Whose lessons: one student's (with their group lessons) or one group's. */
+export type LessonsOf = { readonly studentId: string } | { readonly groupId: string };
+
 const QUIET = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
 
 /** HTTP client of the schedule module. */
@@ -38,12 +41,19 @@ export class ScheduleApi {
     return this.http.get<ScheduleSettings>('/api/me/schedule/settings', QUIET);
   }
 
-  /** Lessons that start on days `[from, to)` (`yyyy-MM-dd`). */
-  lessons(from: string, to: string): Observable<ScheduledLesson[]> {
-    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', {
-      ...QUIET,
-      params: range(from, to),
-    });
+  /**
+   * Lessons that start on days `[from, to)` (`yyyy-MM-dd`); `of` — only those of one student (their group
+   * lessons too) or of one group.
+   */
+  lessons(from: string, to: string, of?: LessonsOf): Observable<ScheduledLesson[]> {
+    let params = range(from, to);
+    if (of !== undefined) {
+      params =
+        'studentId' in of
+          ? params.set('studentId', of.studentId)
+          : params.set('groupId', of.groupId);
+    }
+    return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', { ...QUIET, params });
   }
 
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {

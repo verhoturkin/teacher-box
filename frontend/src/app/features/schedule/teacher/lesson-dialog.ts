@@ -26,6 +26,7 @@ import { optionalText } from '../schedule-labels';
 import {
   LessonGroup,
   OwnerValue,
+  defaultTopic,
   followDefaultTopic,
   ownerIds,
   ownerOptions,
@@ -181,6 +182,8 @@ export class LessonDialog {
   /** Time of a new lesson. */
   readonly slot = input<LessonSlot | null>(null);
   readonly defaultDuration = input(60);
+  /** A new lesson with this student only (the student's card): «with whom» is set and fixed. */
+  readonly studentId = input<string | null>(null);
   readonly saved = output<ScheduledLesson>();
 
   protected readonly ownerOptions = computed(() => ownerOptions(this.students(), this.groups()));
@@ -269,14 +272,19 @@ export class LessonDialog {
     this.overlap.set(false);
     const lesson = this.lesson();
     const slot = this.slot();
+    const studentId = this.studentId();
+    const preset: OwnerValue | null = studentId === null ? null : `student:${studentId}`;
     this.form.reset({
-      owner: lesson === null ? null : ownerValue(lesson),
+      owner: lesson === null ? preset : ownerValue(lesson),
       startsAt: lesson === null ? (slot?.start ?? null) : new Date(lesson.startsAt),
       durationMinutes: lesson?.durationMinutes ?? slot?.durationMinutes ?? this.defaultDuration(),
-      topic: lesson?.topic ?? '',
+      topic:
+        lesson === null
+          ? defaultTopic(preset, { students: this.students(), groups: this.groups() })
+          : (lesson.topic ?? ''),
       meetingUrl: lesson?.meetingUrl ?? '',
     });
-    if (lesson === null) {
+    if (lesson === null && preset === null) {
       this.form.controls.owner.enable();
     } else {
       this.form.controls.owner.disable();

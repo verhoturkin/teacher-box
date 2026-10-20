@@ -43,9 +43,12 @@ student or group. ADR: none.
   *Messengers for the chip come from the list read `GET /api/teacher/notifications/students` (current students),
   not the one-student read of 237.1; until 237.3 the detail pane is a minimal card (name, status, contacts)
   with the «⋮» menu that left the rows (teacher, 2026-10-20); from expanded only the list scrolls.*
-- [ ] 237.3 **F** Card header (avatar 72, tags, «Написать» → `broadcast-dialog` for one, «Оплата» →
+- [x] 237.3 **F** Card header (avatar 72, tags, «Написать» → `broadcast-dialog` for one, «Оплата» →
   `payment-dialog` preset, «Занятие» → `lesson-dialog` preset, «⋮») and the Обзор tab, composed from
   `@features/{schedule,homework,billing,meetings,notifications}/parts`.
+  *Обзор has no attendance figures nor boards and textbooks yet (no one-student read for them); tabs are
+  `CARD_TABS` in `identity/students/card-tabs.ts` — 237.4/237.5 add theirs there; the room line says the link
+  is set in «Изменить» until the Профиль tab (237.5).*
 - [ ] 237.4 **F** Tabs Занятия, Задания, Оплаты (`billing/ledger/ledger-list.ts`); `billing/teacher/student-ledger-page.ts`
   goes, `/teacher/billing/students/:id` redirects to `/teacher/students/:id?tab=payments`.
 - [ ] 237.5 **F** Профиль tab: inline fields of `student-form-dialog.ts` (name, contacts, note, default topic,

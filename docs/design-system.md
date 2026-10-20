@@ -515,7 +515,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**): equal sections 48 dp, Title Small, 3 dp primary indicator inset
-  2 dp, 1 dp outline-variant divider. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
+  2 dp, 1 dp outline-variant divider; `tb-tabs--start` (a card's tabs) — leading-aligned, each as wide as
+  its label (*ours*), scrollable. Anatomy, top to bottom: the header (headline «Уведомления» in Title Large,
   «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (`tb-list--no-lead`,
   «Прочитать все», «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
   explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
@@ -596,9 +597,23 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     «Приглашён» / «Отключён» / «В архиве» (none for an active student; the trail column is shared by the
     subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2): the
     actions (one popup `p-menu`, `aria-haspopup` + `aria-expanded`) are a «⋮» in the card's header. The row of the open card (from expanded) is `tb-list__item--current`:
-    secondary-container, title weight 500 (M3 selected list item), also over a student's colour. Until the
-    card (237.3) the detail pane shows the name, the status, the contacts, the login and the note; with
-    nothing open beside the list — «Выберите ученика или группу».
+    secondary-container, title weight 500 (M3 selected list item), also over a student's colour. With
+    nothing open beside the list — «Выберите ученика или группу»; a group's card is still the members line
+    (237.6).
+  - Student's card (237.3, `identity/students/student-card.ts`) — header: the 72 px avatar in the student's
+    colour (label container, *ours*), the name (h2, Headline Small; on one pane the page header carries it and
+    «⋮»), «с сентября 2025» (Body Medium, on-surface-variant), tags — the status (not for an active student),
+    the messengers or «Без мессенджера» (warn), «Аванс N» (success) / «Долг N» (danger); actions — tonal
+    «Написать» (`tb-broadcast-dialog [to]`, one recipient, no picker) and «Оплата» (`tb-payment-dialog` with the
+    student), filled «Занятие» (`tb-lesson-dialog [studentId]`: «with whom» fixed, the default topic and the
+    length from the schedule settings), «⋮»; a deactivated student keeps only «Оплата». On compact the three
+    are tonal, equal width across the card. Tabs `tb-tabs tb-tabs--start` named by `?tab=` (`card-tabs.ts`;
+    Обзор, the default, is left out of the address). Обзор — cards one under another, each a part of its
+    feature: «Ближайшие занятия» (3 of 60 days, «Ещё запланировано: N»), «Задания» (open ones, works to review
+    first, then by the deadline; 5 + «Ещё открытых: N»), «Баланс» (the figure, the lesson price, the last 3
+    counted operations), «Связь» (`tb-student-channels` — connected messengers, failed deliveries, «Напомнить»
+    without one; `tb-room-link` — the external link with copy, the portal room, or no link). A payment or a
+    lesson from the header reads the balance and the lessons again, and the list's balances too.
   - Assignments (0.14.1) — the same `tb-list` of cards instead of a table: icon (a board icon when the assignment is
     on a board); title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»); trail — the progress `p-tag`
     (`assignmentProgress` in `homework-labels.ts`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success,

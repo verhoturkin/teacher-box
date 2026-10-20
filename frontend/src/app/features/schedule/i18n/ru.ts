@@ -126,6 +126,14 @@ export const ru = {
     sent: 'Учитель получит ваш запрос',
     withdrawn: 'Запрос отозван',
   },
+  studentLessons: {
+    title: 'Ближайшие занятия',
+    what: 'занятия',
+    nothing: 'Занятий не запланировано',
+    noTopic: 'Тема не задана',
+    recurring: 'регулярное',
+    more: (count: number) => `Ещё запланировано: ${String(count)}`,
+  },
   attendanceDialog: {
     title: 'Кто был на занятии',
     of: (name: string) => `Посещаемость: ${name}`,

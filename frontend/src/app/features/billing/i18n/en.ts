@@ -25,6 +25,14 @@ export const en: Translation<typeof ru> = {
     lastPayment: (amount: string, date: string) => `Last payment: ${amount}, ${date}`,
     history: 'Payment history',
   },
+  studentBalance: {
+    title: 'Balance',
+    what: 'the balance',
+    lessonPrice: (price: string) => `Lesson price ${price}`,
+    last: 'Last operations',
+    payment: 'Payment',
+    lesson: 'Lesson',
+  },
   balance: {
     debt: (amount: string) => `debt ${amount}`,
     prepaid: (amount: string) => `prepaid ${amount}`,

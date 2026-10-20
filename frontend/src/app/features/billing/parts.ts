@@ -7,3 +7,5 @@ export type { BillingSummary, MyBillingSummary } from './data-access/billing.mod
 export { DefaultPriceCard } from './settings/default-price-card';
 export { FinanceWidget } from './home/finance-widget';
 export { MyBalanceWidget } from './home/my-balance-widget';
+export { PaymentDialog } from './teacher/payment-dialog';
+export { StudentBalanceCard } from './teacher/student-balance-card';

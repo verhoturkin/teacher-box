@@ -77,7 +77,9 @@ Students and groups are in one list. A student's row shows the photo (if the stu
 
 Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
 
-Click a row — the card of the student or the group opens on the right with the contacts, the login and the note (on a phone the card replaces the list, the «back» arrow returns to it).
+Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
+
+The top of a student's card shows the photo, the name, since which month they study with you and the tags: the messenger (or «No messenger»), the prepayment or the debt. Next to them are three buttons: **Write** — a message to this student only, **Payment** — record their payment, **Lesson** — plan a lesson with them (the default topic is filled in). The **Overview** tab gathers the main things: the next lessons, the open homework (each opens by its title), the balance with the last operations and «Contact» — the connected messengers (with none, «Remind» sends the student a link to connect one) and the video meeting link.
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
@@ -87,7 +89,7 @@ The student's groups are rows of the same list ([Groups](/teacher/help/groups)),
 
 ## Links and access
 
-The «⋮» button in the student's card (right of the name) opens the menu:
+The «⋮» button in the student's card (right of the buttons, on a phone at the top next to the name) opens the menu:
 
 - **Edit** — name, contacts, note, default topic, colour and video meeting.
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.

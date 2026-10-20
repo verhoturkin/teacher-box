@@ -70,6 +70,13 @@ export const ru = {
     take: 'Взять',
     replace: 'Заменить',
   },
+  studentTasks: {
+    title: 'Задания',
+    what: 'задания',
+    nothing: 'Открытых заданий нет',
+    until: (date: string) => `до ${date}`,
+    more: (count: number) => `Ещё открытых: ${String(count)}`,
+  },
   deadlines: {
     title: 'Домашние задания',
     nothing: 'Открытых заданий нет',

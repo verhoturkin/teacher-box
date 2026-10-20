@@ -139,6 +139,13 @@ export class HomeworkApi {
     });
   }
 
+  /** The tasks of one student, every status. */
+  studentTasks(studentId: string): Observable<MyTask[]> {
+    return this.http.get<MyTask[]>(`${TEACHER}/students/${studentId}/tasks`, {
+      context: quietContext(),
+    });
+  }
+
   teacherFile(attachmentId: string): Observable<Blob> {
     return this.http.get(`${TEACHER}/attachments/${attachmentId}`, { responseType: 'blob' });
   }

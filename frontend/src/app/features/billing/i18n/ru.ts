@@ -24,6 +24,14 @@ export const ru = {
     lastPayment: (amount: string, date: string) => `Последняя оплата: ${amount}, ${date}`,
     history: 'История оплат',
   },
+  studentBalance: {
+    title: 'Баланс',
+    what: 'баланс',
+    lessonPrice: (price: string) => `Цена занятия ${price}`,
+    last: 'Последние операции',
+    payment: 'Оплата',
+    lesson: 'Занятие',
+  },
   balance: {
     debt: (amount: string) => `долг ${amount}`,
     prepaid: (amount: string) => `аванс ${amount}`,

@@ -61,31 +61,39 @@ export interface Recipient {
         [formGroup]="form"
         (ngSubmit)="send()"
       >
-        <div class="tb-field">
-          <label for="broadcast-students">{{ t.to }}</label>
-          <p-multiselect
-            inputId="broadcast-students"
-            formControlName="studentIds"
-            [options]="students()"
-            optionLabel="displayName"
-            optionValue="id"
-            [placeholder]="t.everyone"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
-          />
-          <small class="tb-hint">{{ t.hint }}</small>
-        </div>
-        @if (visible()) {
-          <tb-group-picker
-            inputId="broadcast-group"
-            (picked)="addStudents($event)"
-            (dropped)="removeStudents($event)"
-          />
+        @if (to(); as recipient) {
+          <!-- the student's card writes to that student only -->
+          <div class="tb-field">
+            <label for="broadcast-to">{{ t.to }}</label>
+            <input pInputText id="broadcast-to" [value]="recipient.displayName" readonly />
+          </div>
+        } @else {
+          <div class="tb-field">
+            <label for="broadcast-students">{{ t.to }}</label>
+            <p-multiselect
+              inputId="broadcast-students"
+              formControlName="studentIds"
+              [options]="students()"
+              optionLabel="displayName"
+              optionValue="id"
+              [placeholder]="t.everyone"
+              [filter]="true"
+              [filterPlaceHolder]="t.search"
+              [ariaFilterLabel]="t.search"
+              display="chip"
+              tbChipColors="student"
+              appendTo="body"
+              [fluid]="true"
+            />
+            <small class="tb-hint">{{ t.hint }}</small>
+          </div>
+          @if (visible()) {
+            <tb-group-picker
+              inputId="broadcast-group"
+              (picked)="addStudents($event)"
+              (dropped)="removeStudents($event)"
+            />
+          }
         }
         <div class="tb-field">
           <label for="broadcast-title">{{ t.subject }}</label>
@@ -124,6 +132,8 @@ export class BroadcastDialog {
 
   readonly visible = model(false);
   readonly students = input<Recipient[]>([]);
+  /** The one student to write to (their card): no choice of recipients. */
+  readonly to = input<Recipient | null>(null);
   /** Emits the number of recipients. */
   readonly sent = output<number>();
 
@@ -162,6 +172,12 @@ export class BroadcastDialog {
     control.setValue(control.value.filter((id) => !gone.has(id)));
   }
 
+  /** The chosen students, or the one of the card (an empty list would mean everybody). */
+  private recipientIds(chosen: string[]): string[] {
+    const to = this.to();
+    return to === null ? chosen : [to.id];
+  }
+
   send(): void {
     if (!revealErrors(this.form) || this.pending()) {
       return;
@@ -173,7 +189,7 @@ export class BroadcastDialog {
       .broadcast({
         title: value.title.trim(),
         body: value.body.trim() === '' ? null : value.body.trim(),
-        studentIds: value.studentIds,
+        studentIds: this.recipientIds(value.studentIds),
       })
       .subscribe({
         next: (recipients) => {

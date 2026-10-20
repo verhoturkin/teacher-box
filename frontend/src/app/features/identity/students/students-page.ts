@@ -64,6 +64,8 @@ import {
   lessonWhen,
   rosterRows,
 } from './roster';
+import { cardTab } from './card-tabs';
+import { StudentCard, channelNames } from './student-card';
 import { StudentFormDialog } from './student-form-dialog';
 import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 
@@ -76,6 +78,8 @@ interface Extras {
   readonly balances: ReadonlyMap<string, number> | null;
   readonly currency: string;
   readonly messengers: ReadonlySet<string> | null;
+  /** The connected messengers by student (`ChannelType` names). */
+  readonly channels: ReadonlyMap<string, readonly string[]> | null;
   readonly lessons: readonly ScheduledLesson[] | null;
   readonly groupPrices: ReadonlyMap<string, number>;
 }
@@ -109,6 +113,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     ButtonAttributes,
     GroupFormDialog,
     InviteLinkDialog,
+    StudentCard,
     StudentFormDialog,
     LoadStateView,
     PageHeader,
@@ -222,7 +227,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       }
       @if (layout.detail()) {
         <tb-pane [label]="detailTitle()">
-          <!-- the actions of the open card (its full header comes in 237.3) -->
+          <!-- «⋮» of the open card: in the page header on one pane, in the card's own header beside the list -->
           <ng-template #actions>
             @if (selected(); as row) {
               <p-button
@@ -245,34 +250,31 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
             <tb-page-header [title]="detailTitle()" back="/teacher/students" [backLabel]="t.all">
               <ng-container [ngTemplateOutlet]="actions" />
             </tb-page-header>
-          } @else if (selected()) {
+          } @else if (selected()?.kind === 'group') {
             <div class="tb-roster__head">
               <h2 class="tb-roster__heading">{{ detailTitle() }}</h2>
               <ng-container [ngTemplateOutlet]="actions" />
             </div>
           }
           @if (selected(); as row) {
-            <!-- the card's header and tabs come in 237.3–237.6 -->
-            <div class="tb-roster__card">
-              @if (row.kind === 'student') {
-                @if (row.student.status !== 'ACTIVE') {
-                  <p-tag
-                    [value]="statusLabels[row.student.status]"
-                    [severity]="statusSeverities[row.student.status]"
-                  />
-                }
-                @if (supporting(row); as line) {
-                  <p class="tb-muted">{{ line }}</p>
-                }
-                <ul class="tb-roster__facts">
-                  @for (fact of factsOf(row.student); track fact) {
-                    <li>{{ fact }}</li>
-                  }
-                </ul>
-              } @else {
+            @if (row.kind === 'student') {
+              <tb-student-card
+                [student]="row"
+                [currency]="extras().currency"
+                [channels]="selectedChannels()"
+                [tab]="cardTab()"
+                [single]="layout.single()"
+                [busy]="busy.is(row.id)"
+                [menuOpen]="menuFor() === row"
+                (more)="openMenu(row, $event)"
+                (changed)="loadExtras()"
+              />
+            } @else {
+              <!-- the group's card comes in 237.6 -->
+              <div class="tb-roster__card">
                 <p class="tb-muted">{{ supporting(row) }}</p>
-              }
-            </div>
+              </div>
+            }
           } @else if (state.ready()) {
             @if (open()) {
               <tb-empty-state
@@ -357,21 +359,8 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       font: var(--tb-type-headline-s-emphasized);
     }
 
-    .tb-roster__card {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--tb-space-2);
-
-      p {
-        margin: 0;
-      }
-    }
-
-    .tb-roster__facts {
+    .tb-roster__card p {
       margin: 0;
-      padding: 0;
-      list-style: none;
     }
   `,
 })
@@ -394,6 +383,8 @@ export class StudentsPage implements OnInit {
   readonly studentId = input<string>();
   /** Route parameter: the group whose card is open. */
   readonly groupId = input<string>();
+  /** Query parameter: the tab of the card (Обзор when missing). */
+  readonly tab = input<string>();
 
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly statusSeverities = STATUS_SEVERITIES;
@@ -404,6 +395,7 @@ export class StudentsPage implements OnInit {
     balances: null,
     currency: 'RUB',
     messengers: null,
+    channels: null,
     lessons: null,
     groupPrices: new Map(),
   });
@@ -466,6 +458,13 @@ export class StudentsPage implements OnInit {
       ) ?? null
     );
   });
+  protected readonly cardTab = computed(() => cardTab(this.tab()));
+  /** The messengers of the open student's card; a student missing from the read has none. */
+  protected readonly selectedChannels = computed(() => {
+    const row = this.selected();
+    const channels = this.extras().channels;
+    return row === null || channels === null ? null : channelNames(channels.get(row.id) ?? []);
+  });
   protected readonly detailTitle = computed(() => this.selected()?.name ?? this.t.title);
 
   /** The row whose «⋮» menu is open: one popup menu serves every row. */
@@ -515,7 +514,7 @@ export class StudentsPage implements OnInit {
   }
 
   /** Balances, messengers and lessons: without them the rows only lose their supporting details. */
-  private loadExtras(): void {
+  protected loadExtras(): void {
     const today = new Date();
     forkJoin({
       overview: orNull(this.billing.overview(quietContext())),
@@ -542,6 +541,15 @@ export class StudentsPage implements OnInit {
                 messengers
                   .filter((student) => student.channels.length > 0)
                   .map((student) => student.studentId),
+              ),
+        channels:
+          messengers === null
+            ? null
+            : new Map(
+                messengers.map((student) => [
+                  student.studentId,
+                  student.channels.map((channel) => channel.channel),
+                ]),
               ),
         lessons,
         groupPrices: new Map(
@@ -609,16 +617,6 @@ export class StudentsPage implements OnInit {
 
   private money(amount: number): string {
     return formatMoney(amount, this.extras().currency);
-  }
-
-  /** The contacts, the login and the note of a student (the card's profile comes in 237.5). */
-  protected factsOf(student: Student): string[] {
-    return [
-      student.phone === null ? null : this.t.phone(student.phone),
-      student.email === null ? null : this.t.email(student.email),
-      student.login === null ? null : this.t.login(student.login),
-      student.note === null ? null : this.t.note(student.note),
-    ].filter((fact) => fact !== null);
   }
 
   /** The tooltip of the status: until when the issued link works. */
