@@ -1,8 +1,16 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
@@ -27,8 +35,9 @@ import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 
 /**
- * Student: an assignment, the teacher's feedback and handing in an answer; «Перейти на доску» when the teacher put
- * the assignment on one of the student's boards.
+ * Student: the detail pane of the homework list-detail (redesign spec §9) — an assignment, the teacher's feedback
+ * and handing in an answer, blocks on the pane's surface under labels; «Перейти на доску» when the teacher put
+ * the assignment on one of the student's boards. On one pane the header has «back» to the list.
  */
 @Component({
   selector: 'tb-my-task-page',
@@ -37,7 +46,6 @@ import { T } from '../i18n/texts';
     DatePipe,
     ReactiveFormsModule,
     Button,
-    Card,
     Message,
     Textarea,
     MarkdownView,
@@ -54,7 +62,11 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <tb-page-header [title]="task.assignment.title" back="/cabinet/homework" [backLabel]="t.back">
+      <tb-page-header
+        [title]="task.assignment.title"
+        [back]="single() ? '/cabinet/homework' : null"
+        [backLabel]="t.back"
+      >
         <tb-help-button help topic="cabinet/homework" />
         <span meta [class.tb-negative]="task.overdue">
           {{
@@ -84,7 +96,8 @@ import { T } from '../i18n/texts';
           </p-message>
         }
 
-        <p-card [header]="t.assignment">
+        <section>
+          <h2 class="tb-task__label">{{ t.assignment }}</h2>
           <tb-markdown [text]="task.assignment.description" />
           @if (task.assignment.videos.length > 0) {
             <h3 class="tb-subtitle">{{ tv.title }}</h3>
@@ -103,10 +116,13 @@ import { T } from '../i18n/texts';
               (download)="downloadTextbook(task.taskId, $event)"
             />
           }
-        </p-card>
+        </section>
 
         @if (task.status !== 'ACCEPTED') {
-          <p-card [header]="task.submissions.length === 0 ? t.yourAnswer : t.newAnswer">
+          <section>
+            <h2 class="tb-task__label">
+              {{ task.submissions.length === 0 ? t.yourAnswer : t.newAnswer }}
+            </h2>
             <div class="tb-form">
               <div class="tb-field">
                 <label for="answer-text">{{ t.answerText }}</label>
@@ -125,20 +141,35 @@ import { T } from '../i18n/texts';
                 />
               </div>
             </div>
-          </p-card>
+          </section>
         }
 
-        <p-card [header]="t.myAnswers">
+        <section>
+          <h2 class="tb-task__label">{{ t.myAnswers }}</h2>
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
-        </p-card>
+        </section>
       </div>
     } @else {
-      <tb-page-header [title]="t.assignment" back="/cabinet/homework" [backLabel]="t.back" />
+      <tb-page-header
+        [title]="t.assignment"
+        [back]="single() ? '/cabinet/homework' : null"
+        [backLabel]="t.back"
+      />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,
+  styles: `
+    /* a label over a block on the pane's surface (M3 label medium, as the teacher's assignment) */
+    .tb-task__label {
+      margin: 0 0 var(--tb-space-2);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  `,
 })
-export class MyTaskPage implements OnInit {
+export class MyTaskPage {
   protected readonly t = T.myTask;
   protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
@@ -148,11 +179,26 @@ export class MyTaskPage implements OnInit {
 
   /** Route parameter. */
   readonly taskId = input.required<string>();
+  /** One pane at a time: the header has «back» to the list. */
+  readonly single = input(false);
+  /** The answer was handed in: the list reads the status again. */
+  readonly changed = output<TaskDetails>();
 
   protected readonly task = signal<TaskDetails | null>(null);
 
   constructor() {
     pageDetail(() => this.task()?.assignment.title);
+    // another work opens beside the list: its own answer form and its own load
+    effect(() => {
+      this.taskId();
+      untracked(() => {
+        this.task.set(null);
+        this.text.reset();
+        this.files.set([]);
+        this.error.set(null);
+        this.load();
+      });
+    });
   }
   readonly text = new FormControl('', {
     nonNullable: true,
@@ -162,10 +208,6 @@ export class MyTaskPage implements OnInit {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly state = new LoadState();
-
-  ngOnInit(): void {
-    this.load();
-  }
 
   protected load(): void {
     this.api
@@ -193,6 +235,7 @@ export class MyTaskPage implements OnInit {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
+        this.changed.emit(task);
         this.snackbar.success(T.myTask.sent);
       },
       error: (error: unknown) => {

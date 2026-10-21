@@ -251,7 +251,7 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/cabinet/homework/t-1');
     backend.expectOne('/api/me/homework/tasks/t-1');
-    expect(title()).toBe('Задание — Teacher Box');
+    expect(title()).toBe('Задания — Teacher Box');
   });
 
   it('leads the teacher from the account page to its category of the settings', async () => {

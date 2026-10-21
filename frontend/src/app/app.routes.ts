@@ -62,6 +62,19 @@ const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
 };
 
 /**
+ * The student's `/cabinet/homework` and `/cabinet/homework/:taskId` are one route: the list stays, the task beside
+ * it changes (redesign spec §9).
+ */
+const myHomeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
+  const [section, task, ...rest] = segments;
+  return section?.path !== 'homework' || rest.length > 0
+    ? null
+    : task === undefined
+      ? { consumed: segments }
+      : { consumed: segments, posParams: { taskId: task } };
+};
+
+/**
  * Old `/teacher/boards`, `/teacher/textbooks` and the student's `/cabinet/boards`, `/cabinet/textbooks`: the tab of
  * Materials, the query (`?student=`, `?create=`…) stays.
  */
@@ -233,14 +246,9 @@ export const routes: Routes = [
         loadComponent: () => import('@features/schedule').then((m) => m.MySchedulePage),
       },
       {
-        path: 'homework',
+        matcher: myHomeworkMatcher,
         title: NAV.homework,
         loadComponent: () => import('@features/homework').then((m) => m.MyHomeworkPage),
-      },
-      {
-        path: 'homework/:taskId',
-        title: N.assignment,
-        loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
       },
       {
         path: 'materials',

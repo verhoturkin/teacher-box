@@ -52,7 +52,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
 - [x] 246.1 **F** `core/layout/student-layout.ts`: five destinations (spec §5), bar without «Ещё».
 - [x] 246.2 **F** `features/home/student-home.ts` → two-column feed (spec §10.4); «Оплачено N занятий» from
   `GET /api/me/billing/summary` (balance ÷ price; a backend field if the price is not there).
-- [ ] 246.3 **F** `homework/student/my-homework-page.ts` + `my-task-page.ts` → list-detail.
+- [x] 246.3 **F** `homework/student/my-homework-page.ts` + `my-task-page.ts` → list-detail.
 - [ ] 246.4 **D** design-system, cabinet help (ru, en), wiki for students.
 
 ### 247. Admin (F)
