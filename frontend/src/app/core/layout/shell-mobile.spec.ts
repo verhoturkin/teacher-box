@@ -20,6 +20,7 @@ describe('Shell on a phone', () => {
     items: MenuItem[],
     bottomNav: readonly string[] = [],
     url = '/teacher',
+    search = false,
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
@@ -32,6 +33,7 @@ describe('Shell on a phone', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('bottomNav', bottomNav);
+    fixture.componentRef.setInput('search', search);
     fixture.componentRef.setInput('footerLinks', TEACHER_FOOTER_LINKS);
     fixture.componentRef.setInput('homeLink', '/teacher');
     await TestBed.inject(Router).navigateByUrl(url);
@@ -64,6 +66,39 @@ describe('Shell on a phone', () => {
 
   afterEach(() => {
     fixture.destroy();
+  });
+
+  it('opens the full-screen search from the icon of the top app bar and on Ctrl K', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher', true);
+    expect(host.querySelector('.tb-search')).toBeNull();
+    const button = requireElement(
+      host,
+      '.tb-shell__header button[aria-label="Открыть поиск"]',
+      HTMLButtonElement,
+    );
+
+    button.focus();
+    button.click();
+    await fixture.whenStable();
+    const dialog = requireElement(host, 'tb-global-search .tb-search[role="dialog"]', HTMLElement);
+    expect(document.activeElement).toBe(dialog.querySelector('input'));
+
+    dialog
+      .querySelector('input')
+      ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-search')).toBeNull();
+    expect(document.activeElement).toBe(button);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-search[role="dialog"]')).not.toBeNull();
+  });
+
+  it('has no search icon without a search', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
+
+    expect(host.querySelector('button[aria-label="Открыть поиск"]')).toBeNull();
   });
 
   it('puts five sections of the teacher in the bottom bar and no «Ещё» (D2)', async () => {

@@ -69,7 +69,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
   over module facades (each module searches its own data). Write the decision into spec §2.
   *Decided: frontend, no endpoint (spec §2, D6); `core/search` contract — `SEARCH_SOURCES`, `GlobalSearch`,
   `searchEntries` — is ready for 248.2; the search is the teacher's only.*
-- [ ] 248.2 **F** Search bar in the top strip (`shell.ts`), Ctrl K, results grouped (students, groups,
+- [x] 248.2 **F** Search bar in the top strip (`shell.ts`), Ctrl K, results grouped (students, groups,
   assignments, boards, textbooks); compact — the search icon in the top app bar opens a full-screen search.
 - [ ] 248.3 **D** design-system, help (ru, en), wiki.
 

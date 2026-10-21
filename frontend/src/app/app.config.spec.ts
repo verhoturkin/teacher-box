@@ -7,6 +7,8 @@ import { appConfig } from './app.config';
 import { NewMessageDialog, NotificationsSheetContent } from '@features/notifications/parts';
 import { NEW_MESSAGE_DIALOG } from '@core/notifications/new-message';
 import { NOTIFICATIONS_SHEET_CONTENT } from '@core/notifications/notifications-sheet-state';
+import { SEARCH_SOURCES } from '@core/search/search';
+import { searchSources } from './search-sources';
 import { AuthService } from '@core/auth/auth.service';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
@@ -32,6 +34,10 @@ describe('appConfig', () => {
       NotificationsSheetContent,
     );
     await expect(TestBed.inject(NEW_MESSAGE_DIALOG)()).resolves.toBe(NewMessageDialog);
+  });
+
+  it('gives the global search the sources of the teacher’s lists', () => {
+    expect(TestBed.inject(SEARCH_SOURCES)).toBe(searchSources);
   });
 
   it('restores the session on start', () => {

@@ -7,6 +7,7 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -21,6 +22,7 @@ import { NotificationsSheet } from '@core/notifications/notifications-sheet';
 import { openOnNotificationsParam } from '@core/notifications/notifications-sheet-state';
 import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
 import { CORE_T } from '@core/i18n/texts';
+import { GlobalSearchView } from '@core/search/global-search-view';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
@@ -56,6 +58,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     ButtonDirective,
     ButtonIcon,
     CreateMenu,
+    GlobalSearchView,
     NavBadge,
     NewMessage,
     Drawer,
@@ -72,6 +75,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   host: {
     '[class.tb-shell--rail]': '!compact()',
     '[class.tb-shell--wide]': 'expanded()',
+    '(document:keydown)': 'onKeydown($event)',
   },
   template: `
     <header class="tb-shell__header">
@@ -92,6 +96,24 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           <i pButtonIcon class="tb-i tb-i-menu" aria-hidden="true"></i>
         </button>
         <span class="tb-shell__title">{{ pageBar()?.title ?? title() }}</span>
+        @if (search()) {
+          <button
+            pButton
+            type="button"
+            class="tb-shell__user-button--round"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [attr.aria-label]="searchLabel"
+            aria-haspopup="dialog"
+            (click)="searchOpen.set(true)"
+          >
+            <i pButtonIcon class="tb-i tb-i-search" aria-hidden="true"></i>
+          </button>
+        }
+      } @else if (search()) {
+        <!-- the M3 search bar of the top strip (spec §3.2, 248.2) -->
+        <tb-global-search />
       }
       @if (pageBar(); as bar) {
         <!-- the page's own actions in place of the bell and the account (spec §10.2) -->
@@ -250,6 +272,9 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           (keydown.escape)="rail.close($event)"
         />
       </p-drawer>
+      @if (search()) {
+        <tb-global-search [full]="true" [(open)]="searchOpen" />
+      }
     }
   `,
   styleUrl: './shell.scss',
@@ -289,6 +314,8 @@ export class Shell {
    * create actions (spec §3.1).
    */
   readonly create = input(false);
+  /** The global search of the top strip and Ctrl K (the teacher only, redesign spec §2, D6). */
+  readonly search = input(false);
   /** The notification bell (the administrator has no notifications). */
   readonly notifications = input(true);
   /**
@@ -311,6 +338,10 @@ export class Shell {
   );
   /** The modal expanded rail is open (compact only). */
   protected readonly railOpen = signal(false);
+  /** The full-screen search view is open (compact only). */
+  protected readonly searchOpen = signal(false);
+  protected readonly searchLabel = CORE_T.search.open;
+  private readonly searchBar = viewChild(GlobalSearchView);
   private readonly document = inject(DOCUMENT);
   protected readonly userOpen = signal(false);
   private readonly url = injectUrl();
@@ -342,6 +373,24 @@ export class Shell {
     }
     return best.label;
   });
+  /** Ctrl K / ⌘ K: the search bar takes the focus, on compact the full-screen search opens. */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (
+      this.search() &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.shiftKey &&
+      !event.altKey &&
+      event.key.toLowerCase() === 'k'
+    ) {
+      event.preventDefault();
+      if (this.compact()) {
+        this.searchOpen.set(true);
+      } else {
+        this.searchBar()?.focus();
+      }
+    }
+  }
+
   /** The destination of the current page (`isNavActive`). */
   protected isActive(item: NavItem): boolean {
     return isNavActive(item, this.url());
