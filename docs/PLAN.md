@@ -71,7 +71,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
   `searchEntries` — is ready for 248.2; the search is the teacher's only.*
 - [x] 248.2 **F** Search bar in the top strip (`shell.ts`), Ctrl K, results grouped (students, groups,
   assignments, boards, textbooks); compact — the search icon in the top app bar opens a full-screen search.
-- [ ] 248.3 **D** design-system, help (ru, en), wiki.
+- [x] 248.3 **D** design-system, help (ru, en), wiki.
 
 ### 249. Release 0.26.0 (D)
 

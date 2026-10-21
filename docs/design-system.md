@@ -370,13 +370,21 @@ component that shows one adds it to `PRIME`).
   **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
-- **Top bar** (sticky, no divider below it): from medium the **top strip** — 80 px (*ours*, spec §3.2), only the
-  bell and the avatar at the trailing end (no portal name: it is at the top of the rail); on compact the **M3
+- **Top bar** (sticky, no divider below it): from medium the **top strip** — 80 px (*ours*, spec §3.2), the
+  global search (teacher only, below) in the middle, the bell and the avatar at the trailing end (no portal name: it is at the top of the rail); on compact the **M3
   small top app bar** — 64 dp, ☰ (leading button, «Разделы», `aria-haspopup="dialog"`), the title of the section
   in Title Large on one line (the destination whose link leads the address; reverses 0.9.2, which hid it), bell,
   avatar. The title is not a heading: the page's one h1 stays in `tb-page-header`. User button — the avatar alone
   (40 px circle, a photo or the person icon) at every size, named «<name>: меню пользователя». User menu:
   «Мой аккаунт», theme, language, sign out. No cabinet name.
+- **Global search** (`core/search/global-search-view.ts`, 248, teacher only; sources in `search-sources.ts`, the
+  frontend over loaded lists, spec §2 D6): in the top strip the **M3 docked search bar** (56 px filled pill, as
+  `tb-search-field`, with the hint chip «Ctrl K» / «⌘ K») and under it the **search view** — a `surface-container`
+  dropdown, 28 px corners (*ours*), results in groups «Ученики · Группы · Задания · Доски · Учебники» (up to 5
+  each, «Ещё N»), states: hint, loading, no results, group failed. ARIA combobox + listbox (`aria-activedescendant`);
+  ↑ ↓ move, Enter opens, Esc closes. **Ctrl K / ⌘ K** (`shell.ts`) focuses the bar. **Compact:** the top app
+  bar's search icon (`aria-haspopup="dialog"`) opens a **full-screen search view** with «back»; the focus returns
+  to the icon on close.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
 - **One column inside a pane** (ADR-0021, refined by ADR-0048): panes replace multi-column pages only from
