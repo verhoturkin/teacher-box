@@ -88,6 +88,10 @@ export const ru = {
     messagesResent: (count: number) => `Отправлено повторно сообщений: ${String(count)}`,
   },
   integrations: {
+    sections: 'Разделы',
+    all: 'Все интеграции',
+    connectionsSummary: 'Работают ли мессенджеры, ИИ и Google',
+    aiSummary: 'Сервис, модель, расход токенов и журнал запросов',
     title: 'Интеграции',
     check: 'Проверка связи',
     run: 'Проверить',
@@ -168,6 +172,8 @@ export const ru = {
     changed: (name: string, level: string) => `Уровень изменён: ${name} — ${level}`,
   },
   settings: {
+    sections: 'Разделы',
+    all: 'Все настройки',
     title: 'Настройки',
     saveAndRestart: 'Сохранить и перезапустить',
     about:

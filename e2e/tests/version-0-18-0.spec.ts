@@ -18,7 +18,7 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 
 test('the administrator sees how many days backups are kept', async ({ page }) => {
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings?open=backups');
+  await page.goto('/admin/settings/backups');
 
   const days = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await expect(days).toBeVisible();

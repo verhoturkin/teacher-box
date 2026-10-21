@@ -1,7 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { Select } from 'primeng/select';
 import { adminSetting, adminSettings } from '@testing/admin-fixtures';
 import {
@@ -12,7 +11,7 @@ import {
   requireElement,
   typeInto,
 } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { RESTART_POLL_MS } from '@shared/restart/restart-wait';
 import { AdminSettings } from '../data-access/admin.models';
 import { SettingsPage } from './settings-page';
@@ -24,15 +23,19 @@ describe('SettingsPage', () => {
 
   async function render(
     settings: AdminSettings = adminSettings(),
-    open = 'docker,accounts,ai,backups,portal',
+    section = 'ai',
+    width?: number,
   ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
-      providers: testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
+      providers: [
+        ...testProviders({ provide: RESTART_POLL_MS, useValue: 1_000_000 }),
+        ...(width === undefined ? [] : [screenWidth(width)]),
+      ],
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(SettingsPage);
-    fixture.componentRef.setInput('open', open);
+    fixture.componentRef.setInput('section', section);
     fixture.detectChanges();
     backend.expectOne('/api/admin/settings').flush(settings);
     await fixture.whenStable();
@@ -65,6 +68,11 @@ describe('SettingsPage', () => {
     expect(readableText(host)).not.toContain('Не удалось загрузить');
   });
 
+  async function show(section: string): Promise<void> {
+    fixture.componentRef.setInput('section', section);
+    await fixture.whenStable();
+  }
+
   async function saveWith(password: string): Promise<void> {
     await fixture.whenStable();
     buttonByText(host, 'Сохранить и перезапустить').click();
@@ -80,59 +88,65 @@ describe('SettingsPage', () => {
 
   it('shows every setting by section with where its value comes from', async () => {
     await render(adminSettings({ restartNeeded: true }));
-    const text = readableText(host);
 
-    expect(text).toContain('Docker');
-    expect(text).toContain('Порт веб-интерфейса на сервере');
-    expect(text).toContain('8080');
-    expect(text).toContain('Пароль учителя задан TEACHERBOX_IDENTITY_TEACHER_PASSWORD');
-    expect(text).toContain('задан');
-    expect(text).toContain('из .env');
-    expect(text).toContain('задано здесь');
-    expect(text).toContain('Сохранённые настройки применятся после перезапуска портала');
     expect(
       requireElement(host, '#setting-TEACHERBOX_AI_API_KEY', HTMLInputElement).placeholder,
     ).toBe('задан — введите новый, чтобы сменить');
+    expect(readableText(host)).toContain('из .env');
+    expect(readableText(host)).toContain(
+      'Сохранённые настройки применятся после перезапуска портала',
+    );
+    expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(true);
+
+    await show('docker');
+    expect(readableText(host)).toContain('Порт веб-интерфейса на сервере');
+    expect(readableText(host)).toContain('8080');
+
+    await show('accounts');
+    expect(readableText(host)).toContain(
+      'Пароль учителя задан TEACHERBOX_IDENTITY_TEACHER_PASSWORD',
+    );
+    expect(readableText(host)).toContain('задан');
+
+    await show('backups');
     expect(
       requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP_DAYS', HTMLInputElement).value,
     ).toBe('14');
-    expect(buttonByText(host, 'Сохранить и перезапустить').disabled).toBe(true);
+    expect(readableText(host)).toContain('задано здесь');
   });
 
-  it('folds the sections and keeps the open ones in the address', async () => {
-    await render(adminSettings(), '');
-    const router = TestBed.inject(Router);
-    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+  it('lists the sections and shows the chosen one beside them', async () => {
+    await render(adminSettings(), 'backups');
+    const items = Array.from(host.querySelectorAll('tb-pane-nav a'));
 
-    expect(host.querySelector('#setting-TEACHERBOX_AI_MODEL')).toBeNull();
+    expect(items.length).toBeGreaterThan(3);
     expect(readableText(host)).toContain('Сервис, модель, ключ и лимиты');
-
-    buttonByText(host, 'ИИ-помощник').click();
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { open: 'ai' },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
-
-    fixture.componentRef.setInput('open', 'ai,backups');
-    await fixture.whenStable();
-    fixture.componentInstance.fold('ai', false);
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { open: 'backups' },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
-    fixture.componentRef.setInput('open', 'backups');
-    await fixture.whenStable();
-    fixture.componentInstance.fold('backups', false);
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { open: null },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    expect(host.querySelector('#setting-TEACHERBOX_AI_MODEL')).toBeNull();
+    expect(host.querySelector('#setting-TEACHERBOX_BACKUP_KEEP_DAYS')).not.toBeNull();
+    expect(
+      items
+        .filter((item) => item.getAttribute('aria-current') === 'page')
+        .map((item) => item.getAttribute('href')),
+    ).toEqual(['/admin/settings/backups']);
   });
 
-  it('counts the unsaved changes of a folded section and explains a section it does not know', async () => {
+  it('shows the first section while none is chosen, and takes an unknown one for it', async () => {
+    await render(adminSettings(), 'nope');
+
+    expect(host.querySelector('.tb-settings')).not.toBeNull();
+    expect(host.querySelector('a[aria-current="page"]')).not.toBeNull();
+  });
+
+  it('on a phone shows the list alone and a section alone with «back» and the save button', async () => {
+    await render(adminSettings(), 'ai', 390);
+
+    expect(host.querySelector('tb-pane-nav')).toBeNull();
+    expect(host.querySelector('a[href="/admin/settings"]')).not.toBeNull();
+    expect(buttonByText(host, 'Сохранить и перезапустить')).toBeTruthy();
+    expect(host.querySelector('#setting-TEACHERBOX_AI_MODEL')).not.toBeNull();
+  });
+
+  it('counts the unsaved changes of a section in the list and explains a section it does not know', async () => {
     const extra = adminSetting({
       name: 'TEACHERBOX_EXTRA',
       section: 'extra',
@@ -144,15 +158,12 @@ describe('SettingsPage', () => {
       adminSettings({
         settings: [...settings.settings, extra, { ...extra, name: 'B', title: 'Вторая' }],
       }),
-      '',
     );
 
     expect(readableText(host)).toContain('Первая, Вторая');
     fixture.componentInstance.change(extra, '1');
     await fixture.whenStable();
-    expect(requireElement(host, '#settings-extra .p-badge', HTMLElement).textContent).toContain(
-      '1',
-    );
+    expect(requireElement(host, 'tb-pane-nav p-badge', HTMLElement).textContent).toContain('1');
   });
 
   it('chooses the time zone from the list', async () => {
@@ -227,7 +238,7 @@ describe('SettingsPage', () => {
   });
 
   it('explains a wrong value and a wrong password', async () => {
-    await render();
+    await render(adminSettings(), 'backups');
     typeInto(
       requireElement(host, '#setting-TEACHERBOX_BACKUP_KEEP_DAYS', HTMLInputElement),
       'много',

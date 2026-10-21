@@ -89,6 +89,31 @@ function adminJournal(view: 'events'): RedirectFunction {
     inject(Router).createUrlTree(['/admin/logs'], { queryParams: { ...queryParams, view } });
 }
 
+/** `/admin/<page>` and `/admin/<page>/:section` are one route: the list stays, the section beside it changes (247.2). */
+function adminSectionMatcher(page: string): UrlMatcher {
+  return (segments): UrlMatchResult | null => {
+    const [first, section, ...rest] = segments;
+    if (first?.path !== page || rest.length > 0) {
+      return null;
+    }
+    return section === undefined
+      ? { consumed: segments }
+      : { consumed: segments, posParams: { section } };
+  };
+}
+
+/** The old `?open=ai,backups` of the admin settings (the open fold cards) → the first of them as the section. */
+const adminSettingsOpen: CanActivateFn = (route) => {
+  const { open } = route.queryParams as Record<string, string | undefined>;
+  const [section] = (open ?? '').split(',');
+  return (
+    route.params['section'] !== undefined ||
+    section === undefined ||
+    section === '' ||
+    inject(Router).createUrlTree(['/admin/settings', section])
+  );
+};
+
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -318,7 +343,7 @@ export const routes: Routes = [
       },
       { path: 'events', pathMatch: 'full', redirectTo: adminJournal('events') },
       {
-        path: 'integrations',
+        matcher: adminSectionMatcher('integrations'),
         title: NAV.integrations,
         loadComponent: () => import('@features/admin').then((m) => m.IntegrationsPage),
       },
@@ -328,8 +353,9 @@ export const routes: Routes = [
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
-        path: 'settings',
+        matcher: adminSectionMatcher('settings'),
         title: NAV.settings,
+        canActivate: [adminSettingsOpen],
         loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
       },
       // the archive for the developer is collected on «Состояние»

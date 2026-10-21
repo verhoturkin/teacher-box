@@ -60,7 +60,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
 - [x] 247.1 **F** Spec §10.5: «Состояние» = `admin/status/status-page.ts` + `admin/diagnostics/diagnostics-page.ts`;
   «Журнал» = `admin/logs/log-page.ts` + `admin/events/events-page.ts` with chips; `admin-layout.ts` menu of five;
   redirects.
-- [ ] 247.2 **F** `admin/integrations`, `admin/backups`, `admin/settings` → list-detail like 234.
+- [x] 247.2 **F** `admin/integrations`, `admin/backups`, `admin/settings` → list-detail like 234.
 - [ ] 247.3 **D** design-system, admin help (ru, en), wiki «Администрирование».
 
 ### 248. Global search (B?, F) — experiment D6

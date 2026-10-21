@@ -89,6 +89,10 @@ export const en: Translation<typeof ru> = {
     messagesResent: (count: number) => `Messages resent: ${String(count)}`,
   },
   integrations: {
+    sections: 'Sections',
+    all: 'All integrations',
+    connectionsSummary: 'Whether the messengers, AI and Google work',
+    aiSummary: 'Provider, model, token usage and the request log',
     title: 'Integrations',
     check: 'Connection check',
     run: 'Check',
@@ -170,6 +174,8 @@ export const en: Translation<typeof ru> = {
     changed: (name: string, level: string) => `Level changed: ${name} — ${level}`,
   },
   settings: {
+    sections: 'Sections',
+    all: 'All settings',
     title: 'Settings',
     saveAndRestart: 'Save and restart',
     about:
