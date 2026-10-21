@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,6 +26,8 @@ import ru.teacherbox.boards.domain.BoardMember;
 import ru.teacherbox.boards.domain.BoardScene;
 import ru.teacherbox.boards.domain.MemberType;
 import ru.teacherbox.boards.persistence.BoardRepository;
+import ru.teacherbox.boards.persistence.PreviewRepository;
+import ru.teacherbox.boards.persistence.PreviewRepository.Preview;
 import ru.teacherbox.boards.persistence.SceneRepository;
 import ru.teacherbox.identity.api.GroupSummary;
 import ru.teacherbox.identity.api.StudentGroups;
@@ -45,9 +48,12 @@ public class BoardService {
     public record MemberView(MemberType type, UUID id, @Nullable String name) {
     }
 
-    /** @param updatedAt the last change of the board or of its scene */
+    /**
+     * @param updatedAt        the last change of the board or of its scene
+     * @param previewUpdatedAt when the preview picture was made; none — the board has no preview yet
+     */
     public record BoardView(UUID id, BoardKind kind, String title, @Nullable String url, List<MemberView> members,
-            Instant createdAt, Instant updatedAt, long version) {
+            Instant createdAt, Instant updatedAt, long version, @Nullable Instant previewUpdatedAt) {
     }
 
     /**
@@ -56,21 +62,24 @@ public class BoardService {
      * @param groupNames the student's groups the board is bound to (empty when it is only the student's own)
      */
     public record MyBoardView(UUID id, BoardKind kind, String title, @Nullable String url, List<String> groupNames,
-            Instant updatedAt) {
+            Instant updatedAt, @Nullable Instant previewUpdatedAt) {
     }
 
     private final BoardRepository boards;
     private final SceneRepository scenes;
+    private final PreviewRepository previews;
     private final FileStorage storage;
     private final UserDirectory users;
     private final StudentGroups groups;
     private final Clock clock;
     private final ApplicationEventPublisher events;
 
-    public BoardService(BoardRepository boards, SceneRepository scenes, FileStorage storage, UserDirectory users,
+    public BoardService(BoardRepository boards, SceneRepository scenes, PreviewRepository previews,
+            FileStorage storage, UserDirectory users,
             StudentGroups groups, Clock clock, ApplicationEventPublisher events) {
         this.boards = boards;
         this.scenes = scenes;
+        this.previews = previews;
         this.storage = storage;
         this.users = users;
         this.groups = groups;
@@ -137,10 +146,12 @@ public class BoardService {
     @Transactional
     public void remove(UUID boardId) {
         List<BoardFile> files = scenes.findFiles(boardId);
+        Optional<String> preview = previews.find(boardId).map(Preview::key);
         if (!boards.delete(boardId)) {
             throw notFound();
         }
         files.forEach(file -> storage.delete(NAMESPACE, file.fileKey()));
+        preview.ifPresent(key -> storage.delete(NAMESPACE, key));
         events.publishEvent(new BoardAccessChanged(boardId));
     }
 
@@ -179,7 +190,9 @@ public class BoardService {
         Map<UUID, String> mine = withGroups(studentId);
         List<Board> found = boards.findByIds(boards.findIdsByMembers(mine.keySet()));
         Map<UUID, List<BoardMember>> members = boards.findMembers(found.stream().map(Board::id).toList());
-        Map<UUID, Instant> changed = scenes.findUpdatedAt(found.stream().map(Board::id).toList());
+        List<UUID> ids = found.stream().map(Board::id).toList();
+        Map<UUID, Instant> changed = scenes.findUpdatedAt(ids);
+        Map<UUID, Instant> previewed = previews.findUpdatedAt(ids);
         return found.stream()
                 .map(board -> new MyBoardView(board.id(), board.kind(), board.title(), board.url(),
                         members.getOrDefault(board.id(), List.of()).stream()
@@ -187,7 +200,7 @@ public class BoardService {
                                 .map(member -> mine.get(member.id()))
                                 .filter(Objects::nonNull)
                                 .toList(),
-                        latest(board.updatedAt(), changed.get(board.id()))))
+                        latest(board.updatedAt(), changed.get(board.id())), previewed.get(board.id())))
                 .sorted(Comparator.comparing(MyBoardView::updatedAt).reversed())
                 .toList();
     }
@@ -212,6 +225,7 @@ public class BoardService {
         List<UUID> ids = found.stream().map(Board::id).toList();
         Map<UUID, List<BoardMember>> members = boards.findMembers(ids);
         Map<UUID, Instant> changed = scenes.findUpdatedAt(ids);
+        Map<UUID, Instant> previewed = previews.findUpdatedAt(ids);
         Set<UUID> memberIds = new HashSet<>();
         members.values().forEach(list -> list.forEach(member -> memberIds.add(member.id())));
         Map<UUID, String> names = new HashMap<>(users.findStudents(memberIds).stream()
@@ -222,7 +236,7 @@ public class BoardService {
                         members.getOrDefault(board.id(), List.of()).stream()
                                 .map(member -> new MemberView(member.type(), member.id(), names.get(member.id())))
                                 .toList(),
-                        board.createdAt(), latest(board.updatedAt(), changed.get(board.id())), board.version()))
+                        board.createdAt(), latest(board.updatedAt(), changed.get(board.id())), board.version(), previewed.get(board.id())))
                 .toList();
     }
 

@@ -11,5 +11,7 @@ export type {
   TextbookKind,
 } from './data-access/textbooks.models';
 export { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from './textbooks-labels';
+export { TextbooksFeed, type TextbooksFilter } from './teacher/textbooks-feed';
+export { MyTextbooksFeed } from './student/my-textbooks-feed';
 export { TextbookToBoardDialog } from './teacher/textbook-to-board-dialog';
 export type { BoardTextbook } from './teacher/textbook-to-board-dialog';

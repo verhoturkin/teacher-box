@@ -93,6 +93,12 @@ describe('TextbooksApi', () => {
     backend.expectOne('/api/teacher/textbooks/tb-1/file').flush(new Blob(['x']));
     api.myFile('tb-1').subscribe();
     backend.expectOne('/api/me/textbooks/tb-1/file').flush(new Blob(['x']));
+    const covers: Blob[] = [];
+    api.cover('tb-1').subscribe((blob) => covers.push(blob));
+    backend.expectOne('/api/teacher/textbooks/tb-1/cover').flush(new Blob(['x']));
+    api.myCover('tb-1').subscribe((blob) => covers.push(blob));
+    backend.expectOne('/api/me/textbooks/tb-1/cover').flush(new Blob(['x']));
+    expect(covers).toHaveLength(2);
     expect(textbookPageUrl('tb-1', 3)).toBe('/api/teacher/textbooks/tb-1/pages/3');
   });
 });

@@ -27,6 +27,8 @@ class PdfPages {
     static final float DPI = 150;
     /** The widest page picture, pixels: a wide spread is rendered smaller. */
     static final int MAX_WIDTH = 2000;
+    /** The widest cover, pixels: enough for a card of the materials feed on a dense screen. */
+    static final int COVER_WIDTH = 600;
 
     private static final float POINTS_PER_INCH = 72;
 
@@ -69,6 +71,15 @@ class PdfPages {
      * @throws NotFoundException {@code textbooks.page-not-found} past the end
      */
     byte[] picture(Resource pdf, int page) {
+        return render(pdf, page, MAX_WIDTH);
+    }
+
+    /** @return the first page as a PNG at most {@link #COVER_WIDTH} wide */
+    byte[] cover(Resource pdf) {
+        return render(pdf, 1, COVER_WIDTH);
+    }
+
+    private byte[] render(Resource pdf, int page, int maxWidth) {
         try (PDDocument document = load(pdf)) {
             if (page < 1 || page > document.getNumberOfPages()) {
                 throw TextbookService.pageNotFound();
@@ -77,7 +88,7 @@ class PdfPages {
             PDRectangle box = pdPage.getCropBox();
             boolean turned = pdPage.getRotation() % 180 != 0;
             float widthInches = (turned ? box.getHeight() : box.getWidth()) / POINTS_PER_INCH;
-            float dpi = widthInches * DPI > MAX_WIDTH ? MAX_WIDTH / widthInches : DPI;
+            float dpi = widthInches * DPI > maxWidth ? maxWidth / widthInches : DPI;
             BufferedImage image = new PDFRenderer(document).renderImageWithDPI(page - 1, dpi, ImageType.RGB);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ImageIO.write(image, "png", out);

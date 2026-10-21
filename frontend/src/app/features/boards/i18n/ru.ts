@@ -8,6 +8,9 @@ export const ru = {
     DAILY: 'Ежедневная копия',
     MANUAL: 'Копия учителя',
   },
+  services: {
+    holst: 'Холст',
+  },
   group: (name: string) => `группа «${name}»`,
   notOpened: 'никому не открыта',
   editor: {

@@ -1,4 +1,4 @@
-import { Type } from '@angular/core';
+import { Type, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
@@ -7,7 +7,7 @@ import { authResponse } from '@testing/auth';
 import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { ADMIN_MENU, AdminLayout } from './admin-layout';
-import { STUDENT_MENU, StudentLayout } from './student-layout';
+import { StudentLayout, studentMenu } from './student-layout';
 import { TEACHER_MENU, TeacherLayout } from './teacher-layout';
 
 describe('The rail of each role (spec §3.2)', () => {
@@ -23,7 +23,7 @@ describe('The rail of each role (spec §3.2)', () => {
       'student',
       StudentLayout,
       'STUDENT',
-      STUDENT_MENU.map((item) => String(item.label)),
+      studentMenu(signal(0)).map((item) => String(item.label)),
       ['/cabinet/help'],
     ],
     [
@@ -31,7 +31,7 @@ describe('The rail of each role (spec §3.2)', () => {
       AdminLayout,
       'ADMIN',
       ADMIN_MENU.map((item) => String(item.label)),
-      ['/admin/settings', '/admin/help'],
+      ['/admin/help'],
     ],
   ])(
     'of the %s: the brand, «Создать» of the teacher, the sections, then the settings and the help',
@@ -71,21 +71,21 @@ describe('The phone navigation of each role (spec §3.1, D2)', () => {
       TeacherLayout,
       'TEACHER',
       ['Сегодня', 'Расписание', 'Задания', 'Ученики', 'Оплаты'],
-      ['Учебники', 'Доски', 'Настройки', 'Справка'],
+      ['Материалы', 'Настройки', 'Справка'],
     ],
     [
       'student',
       StudentLayout,
       'STUDENT',
-      ['Главная', 'Расписание', 'Задания', 'Мои доски', 'Оплаты'],
-      ['Учебники', 'Справка'],
+      ['Главная', 'Расписание', 'Задания', 'Материалы', 'Оплаты'],
+      ['Справка'],
     ],
     [
       'administrator',
       AdminLayout,
       'ADMIN',
-      ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'События'],
-      ['Диагностика', 'Настройки', 'Справка'],
+      ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'Настройки'],
+      ['Справка'],
     ],
   ])(
     'of the %s: five sections in the bar, the rest under ☰, no «Ещё»',

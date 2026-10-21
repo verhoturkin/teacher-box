@@ -33,6 +33,11 @@ class MyTextbooksController {
         return TextbookResponses.download(textbooks.download(requireStudent(user), id));
     }
 
+    @GetMapping("/api/me/textbooks/{id}/cover")
+    ResponseEntity<Resource> cover(CurrentUser user, @PathVariable UUID id) {
+        return TextbookResponses.cover(textbooks.cover(requireStudent(user), id));
+    }
+
     private static CurrentUser requireStudent(CurrentUser user) {
         if (user.role() != Role.STUDENT) {
             throw new ForbiddenException("textbooks.students-only", "Only students have their textbooks here");

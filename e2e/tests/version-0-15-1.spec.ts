@@ -128,12 +128,17 @@ test('the nearest lesson of the student is a calendar event like the teacher’s
   await expect(hero.getByRole('button', { name: 'Перенести' })).toHaveCount(0);
 });
 
-test('the student’s homework is active and done, with a search', async ({ page }) => {
+test('the student’s homework is filtered to hand in, in review and done, with a search', async ({
+  page,
+}) => {
   await signIn(page);
   await page.goto('/cabinet/homework');
-  await expect(page.getByText('Активные', { exact: true })).toBeVisible();
-  await expect(page.getByText('Выполненные', { exact: true })).toBeVisible();
-  const search = page.getByRole('searchbox', { name: 'Поиск: Активные' });
+  const filters = page.getByRole('group', { name: 'Что показать' });
+  await expect(filters.getByRole('button', { name: /^Сдать/ })).toBeVisible();
+  await expect(filters.getByRole('button', { name: /^На проверке/ })).toBeVisible();
+  await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Поиск', exact: true }).click();
+  const search = page.getByRole('searchbox', { name: 'Название задания' });
   await search.fill(RUN);
   await expect(page.getByRole('link', { name: HOMEWORK })).toBeVisible();
   await search.fill(`нет такого ${RUN}`);

@@ -25,6 +25,12 @@ groups; pages of a PDF cut out for homework and rendered as pictures for boards.
   ≤ 500 pages, page ≤ 10 000 (`textbooks.pages-invalid`); past the textbook's end — `textbooks.pages-beyond`.
 - A page picture (`PdfPages.picture`): PNG at 150 dpi, at most 2000 px wide (a turned page counts its turned
   width); an image textbook's page 1 is the file itself.
+- Cover (245.1): a PDF — its first page rendered by PDFBox at most 600 px wide (`PdfPages.cover`), kept as a PNG in the
+  `textbooks` namespace (`textbooks.cover_key`, `V2`); made on upload and replacing the file (the old one is deleted
+  with the textbook's old file) and, for a textbook uploaded before, on the first request. An image — the file
+  itself. *A Word file has no cover (decision of 245.1: PDFBox is already in the project and renders PDF only;
+  rendering DOC/DOCX needs LibreOffice or a commercial library, too heavy for a small self-hosted portal) — `hasCover`
+  is false and the feed shows the format icon.*
 - Downloads are always attachments with `nosniff`, `no-store`; page pictures are `private, max-age=300`.
 
 ## Contract (`textbooks::api`)
@@ -35,7 +41,7 @@ skipped, named `<file> (с. 1-3).pdf`), any other file whole. No events.
 
 ## Data
 
-`textbooks` (kind, title, course, page_count, format, file_key, filename, content_type, size, version),
+`textbooks` (kind, title, course, page_count, format, file_key, filename, content_type, size, cover_key, version),
 `textbook_members` (`member_type` `STUDENT` / `GROUP`, `member_id`). Both are in the full reset; files are in
 the portal backup.
 
@@ -45,8 +51,8 @@ the portal backup.
 |---|---|
 | `GET /api/teacher/textbooks` (newest first), `POST` (multipart: `file`, `kind`, `title`, `course`, `pageCount`, `studentIds`, `groupIds`) | teacher |
 | `PUT /api/teacher/textbooks/{id}` (JSON with `version`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
-| `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture) | teacher |
-| `GET /api/me/textbooks` (with `groupNames`, newest change first), `GET /api/me/textbooks/{id}/file` | student |
+| `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |
+| `GET /api/me/textbooks` (with `groupNames`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
 
 Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` for `/api/teacher/textbooks`.
 
@@ -54,7 +60,7 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 
 `features/textbooks/` (pages in `index.ts`, types in `parts.ts`), labels in `textbooks-labels.ts`:
 
-- `teacher/textbooks-page.ts` — «Учебники» (`/teacher/textbooks`, menu item after «Задания»): one row per textbook
+- `teacher/textbooks-feed.ts` — the textbooks tab of «Материалы» (`features/materials`, `/teacher/materials?tab=textbooks`, 245.2; `/teacher/textbooks` redirects; cards with covers, `TextbooksFeed` in `parts.ts`; the rest of this item is the behaviour of the former page): one row per textbook
   (`tb-list`) under a «Поиск по названию» field (case-insensitive, «Ничего не найдено» when nothing matches):
   kind icon, the title (a tap opens it — `shared/files/file-opener.ts`: a PDF or a picture in a new tab, a Word
   file saved), «Учебник · course · PDF, 120 с., 4,2 МБ», members; row

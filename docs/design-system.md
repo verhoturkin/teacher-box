@@ -1,8 +1,7 @@
 # Design system
 
-> **Redesign 2026-10 in progress** (ADR-0048, releases 0.21.0–0.26.0): the target interface is
-> [`redesign/README.md`](redesign/README.md). This page describes what is shipped; each stage rewrites only the
-> sections it changed.
+> The 2026-10 redesign (ADR-0048, releases 0.21.0–0.26.0) is finished and shipped; this page is the single source
+> of its rules. The target spec and mockups are kept as history in `archive/redesign-2026-10/`.
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
 ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044, the button accent of ADR-0045 and the icons of ADR-0046, which are the history (*why*); if they disagree with this page, this page is right. A change to
@@ -146,7 +145,7 @@ component that shows one adds it to `PRIME`).
 | Restore, history of versions | `history` | `pi-history` |
 | Admin: status | `dns` | `pi-server` |
 | Admin: log | `list_alt` | `pi-list` |
-| Admin: events | `sync` | `pi-sync` |
+| Admin: events (chip «События» of the journal) | `sync` | `pi-sync` |
 | Set in Docker | `deployed_code` | `pi-box` (setting) |
 | Set in .env, locked | `lock` | `pi-lock` |
 | Archive | `inventory_2` | `pi-box` (groups) |
@@ -298,7 +297,7 @@ component that shows one adds it to `PRIME`).
   rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
   the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
   group** (`tb-side-nav__footer`, pushed down by `margin-top: auto`): the area's settings (`footerLinks`:
-  teacher `/teacher/settings`, admin `/admin/settings`; the student has none) and «Справка»
+  teacher `/teacher/settings`; the student and the admin have none — «Настройки» is the admin's fifth destination) and «Справка»
   (`/<area>/help`), same items as the sections. **Expanded item** (**M3E** expanded rail): the target spans
   the rail's width, the 56 px pill indicator hugs icon + label — 16 dp before and after, 8 dp between — in
   secondary-container; state layer and focus ring on the indicator.
@@ -307,8 +306,9 @@ component that shows one adds it to `PRIME`).
   extended FAB in the expanded rail (56 px, corner large, 16/8/16, Title Medium — **M3**), FAB 56 px centred in
   the collapsed rail (**M3**: collapsed rail → FAB, expanded → extended FAB); elevation 0 as nested in the rail
   (**M3**), primary-container, hover = state layer; 16 px to the destinations (*ours*). It opens `tb-fab-menu`
-  (variant `extended` / `rail`) with six items — Занятие, Задание, Оплата, Ученик, Доска, Сообщение — the
-  current section's item first (*ours*). *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
+  (variant `extended` / `rail`) with seven items — Занятие, Задание, Оплата, Ученик, Доска, Учебник, Сообщение — the
+  current section's item first, on «Материалы» the item of the open tab (*ours*). *Ours, against M3* (a FAB menu
+  holds up to six): «Доска» and «Учебник» are two kinds of one section (245.2), merging them would hide a kind. *Ours, against M3* (which keeps FAB menus off extended FABs and rails):
   one global entry point instead of a create button per section (ADR-0048). An item opens
   `/teacher/<section>?create=<kind>`; the section opens its form via `openOnCreate()`
   (`core/routing/create-param.ts`) and drops the parameter with `replaceUrl`. «Сообщение» has no section: it is
@@ -316,9 +316,9 @@ component that shows one adds it to `PRIME`).
   the feature's dialog through `NEW_MESSAGE_DIALOG`, focus back on the FAB); a message sent refreshes
   «Отправленные» of the bell's sheet (235.3). From 600 px it is the screen's only
   FAB (232.2): a section whose create action is a menu item renders its `tb-page-fab` only on compact
-  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same six items
-  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Новый учебник»
-  (textbooks), «Оплата» of one student (ledger, prefilled).
+  (`@if (mobile())`), and the home quick actions are gone; on compact the teacher home shows the same items
+  as the phone FAB menu. Actions «Создать» does not make keep their header button at every width: «Оплата» of one
+  student (ledger, prefilled).
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
   `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
@@ -352,9 +352,9 @@ component that shows one adds it to `PRIME`).
   «Уведомления» (`?open=` / `?tab=` → messengers); its other addresses open the bell's sheet (§8).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
-  Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
-  «Главная», «Расписание», «Задания», «Мои доски» (for «Материалы»), «Оплаты»; admin: «Состояние», «Журнал»,
-  «Интеграции», «Копии», «События». The other sections and the rail's bottom group are in the **modal expanded
+  Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student
+  (246.1): «Главная», «Расписание», «Задания», «Материалы», «Оплаты» — all five in the bar, no «Ещё»; admin (247.1): «Состояние», «Журнал»,
+  «Интеграции», «Копии», «Настройки» — all five in the bar too. The other sections and the rail's bottom group are in the **modal expanded
   rail** under ☰ (**M3E**: more than five destinations → modal expanded rail): `p-drawer` + `tbModalDrawer` on the
   start edge — scrim 32 % (**M3**), Esc / scrim / a destination / its menu button (`menu_open`, «Закрыть») close
   it, focus trap, focus back to ☰; `tb-side-nav [modal]` with the brand at the top; surface-container, elevation
@@ -369,13 +369,21 @@ component that shows one adds it to `PRIME`).
   **filled** (`'FILL' 1` on `--tb-spring-fast-effects`, 0.17.2); navigation icons are 24 px;
   inactive labels on-surface-variant, Label Medium. The expanded rail (280 px) keeps on-secondary-container and
   Label Large for its horizontal items.
-- **Top bar** (sticky, no divider below it): from medium the **top strip** — 80 px (*ours*, spec §3.2), only the
-  bell and the avatar at the trailing end (no portal name: it is at the top of the rail); on compact the **M3
+- **Top bar** (sticky, no divider below it): from medium the **top strip** — 80 px (*ours*, spec §3.2), the
+  global search (teacher only, below) in the middle, the bell and the avatar at the trailing end (no portal name: it is at the top of the rail); on compact the **M3
   small top app bar** — 64 dp, ☰ (leading button, «Разделы», `aria-haspopup="dialog"`), the title of the section
   in Title Large on one line (the destination whose link leads the address; reverses 0.9.2, which hid it), bell,
   avatar. The title is not a heading: the page's one h1 stays in `tb-page-header`. User button — the avatar alone
   (40 px circle, a photo or the person icon) at every size, named «<name>: меню пользователя». User menu:
   «Мой аккаунт», theme, language, sign out. No cabinet name.
+- **Global search** (`core/search/global-search-view.ts`, 248, teacher only; sources in `search-sources.ts`, the
+  frontend over loaded lists, spec §2 D6): in the top strip the **M3 docked search bar** (56 px filled pill, as
+  `tb-search-field`, with the hint chip «Ctrl K» / «⌘ K») and under it the **search view** — a `surface-container`
+  dropdown, 28 px corners (*ours*), results in groups «Ученики · Группы · Задания · Доски · Учебники» (up to 5
+  each, «Ещё N»), states: hint, loading, no results, group failed. ARIA combobox + listbox (`aria-activedescendant`);
+  ↑ ↓ move, Enter opens, Esc closes. **Ctrl K / ⌘ K** (`shell.ts`) focuses the bar. **Compact:** the top app
+  bar's search icon (`aria-haspopup="dialog"`) opens a **full-screen search view** with «back»; the focus returns
+  to the icon on close.
 - **Cards on the phone:** 16 px at the sides (M3 compact), 12 px around a list or a table, so the titles of
   all cards line up.
 - **One column inside a pane** (ADR-0021, refined by ADR-0048): panes replace multi-column pages only from
@@ -389,9 +397,9 @@ component that shows one adds it to `PRIME`).
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
 - **Foldable sections** `tb-fold-card` (not tabs): header is a button with chevron and a line of explanation;
-  content loads on first open; open sections in the URL (`?open=`). Still used by the administrator's
-  «Настройки» (`admin/settings`, until 247.2). The teacher's settings are list-detail (§ panes above) and the
-  teacher's notifications are in the bell's sheet (§8), not fold cards.
+  content loads on first open; open sections in the URL (`?open=`). No page uses them since 247.2: the
+  settings of the teacher and of the administrator are list-detail (§ panes above) and the teacher's
+  notifications are in the bell's sheet (§8).
 
 ## 5. Page anatomy
 
@@ -406,7 +414,7 @@ component that shows one adds it to `PRIME`).
   232.2); on the phone an extended FAB (icon + label,
   primary-container, shadow), always visible. FAB only for create/record (student, lesson, task, payment);
   at most one per page.
-- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the six
+- **FAB menu** `tb-fab-menu` (`@shared/ui`, M3 Expressive, 0.15.0): the home page's «Создать» on a phone (the
   items of the rail menu, 232.2). The FAB «+» (56 px, primary container) opens up to six pills over it (56 px high, full corners,
   primary container, Title Medium, icon 24 px, 24 px padding, 4 px apart, end-aligned, appearing one after another)
   and turns into the round «Закрыть» (primary). Motion (**M3E**): the FAB and the items have a state layer (hover 8 %,
@@ -763,6 +771,68 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   then «Показать ещё»).
   `tb-list__trail--amount`: on the phone the amount (`tb-list__amount`) goes under the text and the icon
   button stays on the right, so the name keeps its width.
+- **Materials** (245.2–245.3, spec §10.1): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
+  `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
+  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), `tb-search-field`,
+  `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»; for textbooks «Все · Учебники · Рабочие
+  тетради · Другое · Ученик или группа»), the sort menu «Сначала изменённые / По названию / Сначала новые», then the
+  feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
+  between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
+  `surface container low`, the preview on top (a board's PNG exported by the editor on save, a textbook's cover — the first page of a PDF, an image itself, none for a Word file (245.1): `tb-blob-image` fetches it with the
+  HTTP client as a blob; the icon of the kind while there is none), a tonal tile with the icon and the tag of the
+  service («Холст», «Miro») for an external board, the title (`title medium`) and «кому · дата» under the preview,
+  «⋮» at the end. The title link is stretched over the whole card, «⋮» stays above it. «Ученик или группа» shows a
+  `p-select` of students and groups and keeps the choice in `?student=` / `?group=` (as the old boards page did);
+  the rail's «Создать» leads to `?tab=…&create=board|textbook`. The old `/teacher/boards` and `/teacher/textbooks`
+  redirect to the tabs with their query. *Isolation decision (frontend rule, AGENTS.md §4.2.6):* the page lives in its
+  own feature `features/materials` and only composes two parts that belong to their modules —
+  `BoardsFeed` (`@features/boards/parts`) and `TextbooksFeed` (`@features/textbooks/parts`): each owns its API, cards,
+  «⋮» menu and dialogs, and takes the search text, the filter, the sort, the member and the students/groups as inputs;
+  a feature never imports another's internals. Both feeds stay mounted (the inactive one `hidden`), so both
+  numbers of the group are known. The student's page (`/cabinet/materials`, `MyMaterialsPage`) is the same feed
+  without the actions: `MyBoardsFeed` / `MyTextbooksFeed`, no «⋮» (`tb-material-card` shows it only when it has an
+  actions label), no member select, no create; chips «Все · На портале · Внешние» / by kind; `/cabinet/boards` and
+  `/cabinet/textbooks` redirect to the tabs; «Материалы» is the fourth destination of the bottom bar.
+- **Admin** (247.1–247.2, spec §5, §10.5):
+  - Shell (`admin-layout.ts`, `ADMIN_MENU`): five destinations — «Состояние», «Журнал», «Интеграции», «Копии»,
+    «Настройки» — in the rail and all in the bottom bar; «Справка» at the bottom of the rail. `/admin` leads to
+    «Состояние»; `/admin/events` redirects to the journal's chip «События» (`?view=events`) and
+    `/admin/diagnostics` to «Состояние».
+  - «Состояние» (`status-page.ts`): a feed of status tiles in `tb-panes`, a fixed column order that is also the
+    reading order — services, event queue, diagnostics | system, resources, last backup, portal address; from
+    expanded two columns, below one. The header line is «Версия … · работает …»; «Собрать диагностику» (the
+    archive for the developer) is a header action; the diagnostics tile says what is in it. The event queue tile counts pending events and
+    failed deliveries and links «Разобрать в журнале».
+  - «Журнал» (`journal-page.ts`): filter chips «Логи · События · Ошибки» (`?view=`), «Ещё фильтры» for period
+    and level. «Логи» and «Ошибки» are list-detail: entries in the fixed pane, the chosen one beside it (message,
+    request code, stack trace); with nothing open the detail pane holds the temporary log levels. On compact the
+    detail has «К списку». «События» is a wide page (the internal events, resubmit of stuck ones).
+  - «Интеграции» and «Настройки» (`/admin/integrations[/:section]`, `/admin/settings[/:section]`): list-detail
+    like the teacher's Settings, the sections in `tb-pane-nav` (`shared/ui/pane-nav.ts`: two-line items with an
+    icon in a tonal circle and a count badge for unsaved changes; the chosen one in secondary container). Integrations:
+    «Проверка связи» and «ИИ-помощник»; the settings are grouped by the sections of the catalog and saved together
+    («Сохранить и перезапустить»). The old `?open=<section>` of the settings redirects to the section. «Копии» is the
+    teacher's backups card in a pane (one component, D4).
+- **Student cabinet** (246.1–246.3, spec §5, §9, §10.4):
+  - Shell (`student-layout.ts`, `studentMenu()`): the rail and the bar hold the five destinations; the inbox is in
+    the bell, the account, messengers and preferences in «Мой аккаунт», «Справка» at the bottom of the rail. The
+    count of open tasks (assigned or returned, `OpenTasks`, re-read after each navigation) is an **M3 large badge**
+    (`tb-nav-badge`, error / on-error, 16 dp pill, «999+» at most) on «Задания»: by the label in the expanded rail,
+    on the icon's corner in the collapsed rail and the bar; a screen-reader line «Заданий к сдаче: N» is next to it.
+  - Home (`student-home.ts`, spec §10.4): a feed in `tb-panes`, the header «Привет, <имя>» with the line «Следующее
+    занятие … · Заданий к сдаче: N». From expanded two columns (1.8fr / 1fr, *ours*), below it one column in
+    the same order. Lead column: the nearest lesson (hero), «Сдать» (`tb-my-deadlines-widget`: open tasks as
+    tonal rows, nearest deadline first, «Открыть», or tonal «Исправить» for a returned one), «Проверено недавно»
+    (the last 3 reviewed tasks, status chip), then the welcome and «connect messenger» cards. Side column:
+    «Оплачено N занятий» (`tb-my-balance-widget`: Display Small number = balance ÷ lesson price, the balance, a
+    4 dp bar full at 8 lessons (*ours*) over a tonal block; a debt or no price — the balance alone) and the
+    lesson materials (one board card and one textbook card, hidden when there are none). No FAB.
+  - Homework (`my-homework-page.ts` + `my-task-page.ts`, spec §9): a list-detail like the teacher's, one route
+    for `/cabinet/homework` and `/cabinet/homework/:taskId` (the list stays). Fixed list pane: the connected group
+    «Сдать · На проверке · Готовые» with counts (the first non-empty one is chosen), the filter button of the
+    header opens the search, `tb-list` rows (icon, title link, «до …» — red when overdue, status tag), the
+    current row in secondary-container; beside the detail only the list scrolls. Detail pane: the task with the
+    teacher's feedback and the answer form; on one pane «back» in its header leads to the list.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
   cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the

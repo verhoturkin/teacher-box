@@ -107,9 +107,6 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   // 0.24.0: the schedule is panes too (28 px)
   await page.goto('/teacher/schedule');
   expect(await style(page, 'main tb-pane', 'border-radius')).toBe('28px');
-  // the main action of a section outside «Создать» (232.2): the header button of the textbooks
-  await page.goto('/teacher/textbooks');
-  expect(await style(page, 'p-button.tb-page-fab .p-button', 'border-radius')).toBe('20px');
 });
 
 test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({

@@ -48,6 +48,44 @@ describe('Shell', () => {
     expect(host.querySelector('.tb-shell__brand')).toBeNull();
   });
 
+  it('has no search bar unless the area asks for it (the student and the administrator have none)', () => {
+    expect(hostElement(fixture).querySelector('tb-global-search')).toBeNull();
+  });
+
+  it('puts the search bar in the top strip and Ctrl K / ⌘ K focuses it', async () => {
+    fixture.componentRef.setInput('search', true);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const field = requireElement(
+      host,
+      '.tb-shell__header tb-global-search input[role="combobox"]',
+      HTMLInputElement,
+    );
+
+    const ctrl = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, cancelable: true });
+    document.dispatchEvent(ctrl);
+    expect(ctrl.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(field);
+
+    field.blur();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'K', metaKey: true }));
+    expect(document.activeElement).toBe(field);
+
+    field.blur();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, shiftKey: true }),
+    );
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k' }));
+    expect(document.activeElement).not.toBe(field);
+  });
+
+  it('ignores Ctrl K when there is no search', () => {
+    const ctrl = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, cancelable: true });
+    document.dispatchEvent(ctrl);
+
+    expect(ctrl.defaultPrevented).toBe(false);
+  });
+
   it('ends the rail with the settings and the help of the area', () => {
     const footer = requireElement(
       hostElement(fixture),

@@ -52,7 +52,10 @@ test('«Доски» lists every board without a member filter', async ({ page }
   await page.goto('/teacher/boards');
 
   await expect(page.getByRole('listitem').filter({ hasText: BOARD })).toBeVisible();
-  await expect(page.getByLabel('Ученик или группа')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Все', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(page.getByRole('button', { name: 'Все доски' })).toHaveCount(0);
 });
 

@@ -105,7 +105,8 @@ test('boards are a list with a row menu', async ({ page }) => {
   await page.goto('/teacher/boards');
   // 0.15.3: the Excalidraw boards are in «Доски на портале», the card tells the kind
   const row = page
-    .locator('ul.tb-list[aria-label="Доски на портале"] > li')
+    .getByRole('list', { name: 'Список досок' })
+    .getByRole('listitem')
     .filter({ hasText: BOARD });
   await expect(row).toContainText(STUDENT);
 

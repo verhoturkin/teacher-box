@@ -5,7 +5,8 @@
 [Установка](Install) ·
 [Первые шаги](First-steps) ·
 [Обновление](Update) ·
-[Копии](Backups)
+[Копии](Backups) ·
+[Администрирование](Admin)
 
 [Мессенджеры](Messengers) ·
 [Расписание](Schedule) ·

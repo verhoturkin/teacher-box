@@ -101,7 +101,7 @@ test.describe('on a phone', () => {
     const menu = page.getByRole('button', { name: 'Разделы' });
     await menu.click();
     const rail = page.getByRole('dialog', { name: 'Разделы' });
-    await expect(rail.getByRole('link', { name: 'Доски' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Материалы' })).toBeVisible();
     // 0.22.0: no «Уведомления» — the notifications are in the bell
     await expect(rail.getByRole('link', { name: 'Уведомления' })).toHaveCount(0);
     await expect(rail.getByRole('link', { name: 'Справка' })).toBeVisible();
@@ -168,7 +168,7 @@ test.describe('on a phone', () => {
       'Главная',
       'Расписание',
       'Задания',
-      'Мои доски',
+      'Материалы',
       'Оплаты',
     ]);
     await expect(bar.getByRole('button')).toHaveCount(0);

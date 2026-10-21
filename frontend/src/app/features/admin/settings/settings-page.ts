@@ -8,8 +8,8 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
@@ -32,7 +32,9 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { PageHeader } from '@shared/ui/page-header';
-import { FoldCard } from '@shared/ui/fold-card';
+import { PaneNav, PaneNavItem } from '@shared/ui/pane-nav';
+import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
+import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -53,6 +55,23 @@ interface Group {
 
 /** The line under a section's title, by its key; an unknown section names its first settings. */
 const SUMMARIES: Readonly<Record<string, string>> = T.settings.summaries;
+
+/** The icon of a section in the list; an unknown one gets the cog. */
+const SECTION_ICONS: Readonly<Record<string, string>> = {
+  portal: 'tb-i-palette',
+  billing: 'tb-i-account_balance_wallet',
+  homework: 'tb-i-badge',
+  schedule: 'tb-i-calendar_month',
+  meetings: 'tb-i-videocam',
+  boards: 'tb-i-palette',
+  notifications: 'tb-i-chat',
+  ai: 'tb-i-auto_awesome',
+  sessions: 'tb-i-lock',
+  backups: 'tb-i-database',
+  log: 'tb-i-list_alt',
+  accounts: 'tb-i-badge',
+  docker: 'tb-i-deployed_code',
+};
 
 interface Option {
   readonly label: string;
@@ -100,14 +119,19 @@ function toGroup(settings: readonly AdminSetting[]): Group {
 /**
  * The administrator's settings of the portal (ADR-0016): every variable of `.env` by section, where
  * its value comes from, changes that are more important than `.env` and a restart that applies them.
- * The sections fold (design system §4); the open ones are in the address (`?open=ai,backups`).
+ * List-detail (247.2): the sections in the fixed pane, the chosen one (`/admin/settings/:section`) beside it;
+ * on compact `/admin/settings` is the list and a section has «back» to it. The edits of all sections are saved
+ * together.
  */
 @Component({
   selector: 'tb-admin-settings-page',
   imports: [
     FormsModule,
     Button,
-    FoldCard,
+    NgTemplateOutlet,
+    Panes,
+    Pane,
+    PaneNav,
     Dialog,
     HelpButton,
     InputText,
@@ -120,140 +144,168 @@ function toGroup(settings: readonly AdminSetting[]): Group {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.title">
-      <tb-help-button help topic="admin/settings" />
+    <tb-panes medium="two">
+      @if (layout.list()) {
+        <tb-pane kind="fixed" [label]="t.sections">
+          <tb-page-header [title]="t.title">
+            <tb-help-button help topic="admin/settings" />
+            <ng-container [ngTemplateOutlet]="saveButton" />
+          </tb-page-header>
+          <div class="tb-stack">
+            <p class="tb-hint">{{ t.about }}</p>
+            @if (settings()?.restartNeeded) {
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                t.restartNeeded
+              }}</p-message>
+            }
+            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+              <tb-pane-nav
+                [items]="items()"
+                base="/admin/settings"
+                [current]="layout.detail() ? (currentGroup()?.section ?? null) : null"
+                [label]="t.sections"
+              />
+            </tb-load-state>
+          </div>
+        </tb-pane>
+      }
+      @if (layout.detail()) {
+        <tb-pane [label]="currentGroup()?.name ?? t.title">
+          @if (layout.single()) {
+            <tb-page-header
+              [title]="currentGroup()?.name ?? t.title"
+              back="/admin/settings"
+              [backLabel]="t.all"
+            >
+              <ng-container [ngTemplateOutlet]="saveButton" />
+            </tb-page-header>
+            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+              <ng-container [ngTemplateOutlet]="detail" />
+            </tb-load-state>
+          } @else {
+            <ng-container [ngTemplateOutlet]="detail" />
+          }
+        </tb-pane>
+      }
+    </tb-panes>
+
+    <ng-template #saveButton>
       <p-button
         [label]="t.saveAndRestart"
         icon="tb-i tb-i-save"
         [disabled]="changes() === 0"
         (onClick)="openConfirm()"
       />
-    </tb-page-header>
-    <div class="tb-stack">
-      <p class="tb-hint">{{ t.about }}</p>
-      @if (settings()?.restartNeeded) {
-        <p-message severity="warn" styleClass="tb-form-message">{{ t.restartNeeded }}</p-message>
-      }
-      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-        <div class="tb-stack">
-          @for (group of groups(); track group.section) {
-            <tb-fold-card
-              [id]="'settings-' + group.section"
-              [title]="group.name"
-              [summary]="group.summary"
-              [badge]="editedIn(group)"
-              [open]="opened().has(group.section)"
-              (openChange)="fold(group.section, $event)"
-            >
-              <ng-template>
-                <div class="tb-settings">
-                  @for (setting of group.editable; track setting.name) {
-                    <div class="tb-field tb-setting">
-                      <label [for]="'setting-' + setting.name">{{ setting.title }}</label>
-                      @if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
-                        <p-select
-                          [inputId]="'setting-' + setting.name"
-                          [options]="options(setting)"
-                          optionLabel="label"
-                          optionValue="value"
-                          [ngModel]="current(setting)"
-                          (ngModelChange)="change(setting, $event)"
-                          appendTo="body"
-                        />
-                      } @else if (setting.kind === 'TIME_ZONE') {
-                        <p-select
-                          [inputId]="'setting-' + setting.name"
-                          [options]="timeZones()"
-                          optionLabel="label"
-                          optionValue="value"
-                          [filter]="true"
-                          filterBy="label"
-                          [filterPlaceholder]="t.zoneFilter"
-                          [placeholder]="placeholder(setting)"
-                          [ngModel]="current(setting)"
-                          (ngModelChange)="change(setting, $event)"
-                          appendTo="body"
-                        />
-                      } @else {
-                        <input
-                          pInputText
-                          [id]="'setting-' + setting.name"
-                          [type]="setting.secret ? 'password' : 'text'"
-                          autocomplete="off"
-                          [value]="current(setting)"
-                          [placeholder]="placeholder(setting)"
-                          (input)="type(setting, $event)"
-                        />
-                      }
-                      @if (setting.hint !== '') {
-                        <small class="tb-hint">{{ setting.hint }}</small>
-                      }
-                      <div class="tb-setting__meta">
-                        <code class="tb-setting__name">{{ setting.name }}</code>
-                        <p-tag
-                          [value]="sources[setting.source]"
-                          [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
-                        />
-                        @if (edited(setting)) {
-                          <p-tag [value]="t.edited" severity="warn" />
-                        }
-                        @if (setting.source === 'ADMIN') {
-                          <p-button
-                            class="tb-setting__revert"
-                            [label]="t.revert"
-                            severity="secondary"
-                            [text]="true"
-                            [ariaLabel]="t.revertOf(setting.title)"
-                            (onClick)="revert(setting)"
-                          />
-                        }
-                      </div>
-                    </div>
-                  }
-                  @if (group.fixed.length > 0) {
-                    <!-- what cannot be changed here is data, not fields: a segmented list -->
-                    @if (group.note; as note) {
-                      <p class="tb-hint">{{ note }}</p>
+    </ng-template>
+
+    <ng-template #detail>
+      @if (currentGroup(); as group) {
+        @if (!layout.single()) {
+          <h2 class="tb-settings__heading">{{ group.name }}</h2>
+        }
+        <p class="tb-hint tb-settings__summary">{{ group.summary }}</p>
+        <div class="tb-settings">
+          @for (setting of group.editable; track setting.name) {
+            <div class="tb-field tb-setting">
+              <label [for]="'setting-' + setting.name">{{ setting.title }}</label>
+              @if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
+                <p-select
+                  [inputId]="'setting-' + setting.name"
+                  [options]="options(setting)"
+                  optionLabel="label"
+                  optionValue="value"
+                  [ngModel]="current(setting)"
+                  (ngModelChange)="change(setting, $event)"
+                  appendTo="body"
+                />
+              } @else if (setting.kind === 'TIME_ZONE') {
+                <p-select
+                  [inputId]="'setting-' + setting.name"
+                  [options]="timeZones()"
+                  optionLabel="label"
+                  optionValue="value"
+                  [filter]="true"
+                  filterBy="label"
+                  [filterPlaceholder]="t.zoneFilter"
+                  [placeholder]="placeholder(setting)"
+                  [ngModel]="current(setting)"
+                  (ngModelChange)="change(setting, $event)"
+                  appendTo="body"
+                />
+              } @else {
+                <input
+                  pInputText
+                  [id]="'setting-' + setting.name"
+                  [type]="setting.secret ? 'password' : 'text'"
+                  autocomplete="off"
+                  [value]="current(setting)"
+                  [placeholder]="placeholder(setting)"
+                  (input)="type(setting, $event)"
+                />
+              }
+              @if (setting.hint !== '') {
+                <small class="tb-hint">{{ setting.hint }}</small>
+              }
+              <div class="tb-setting__meta">
+                <code class="tb-setting__name">{{ setting.name }}</code>
+                <p-tag
+                  [value]="sources[setting.source]"
+                  [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
+                />
+                @if (edited(setting)) {
+                  <p-tag [value]="t.edited" severity="warn" />
+                }
+                @if (setting.source === 'ADMIN') {
+                  <p-button
+                    class="tb-setting__revert"
+                    [label]="t.revert"
+                    severity="secondary"
+                    [text]="true"
+                    [ariaLabel]="t.revertOf(setting.title)"
+                    (onClick)="revert(setting)"
+                  />
+                }
+              </div>
+            </div>
+          }
+          @if (group.fixed.length > 0) {
+            <!-- what cannot be changed here is data, not fields: a segmented list -->
+            @if (group.note; as note) {
+              <p class="tb-hint">{{ note }}</p>
+            }
+            <ul class="tb-list">
+              @for (setting of group.fixed; track setting.name) {
+                <li class="tb-setting">
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i
+                      [class]="
+                        setting.access === 'DOCKER' ? 'tb-i tb-i-deployed_code' : 'tb-i tb-i-lock'
+                      "
+                    ></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ setting.title }}</span>
+                    <span class="tb-list__supporting" [id]="'setting-' + setting.name">{{
+                      shown(setting)
+                    }}</span>
+                    <code class="tb-setting__name">{{ setting.name }}</code>
+                    @if (setting.hint !== '' && group.note === null) {
+                      <small class="tb-hint">{{ setting.hint }}</small>
                     }
-                    <ul class="tb-list">
-                      @for (setting of group.fixed; track setting.name) {
-                        <li class="tb-setting">
-                          <span class="tb-list__lead" aria-hidden="true"
-                            ><i
-                              [class]="
-                                setting.access === 'DOCKER'
-                                  ? 'tb-i tb-i-deployed_code'
-                                  : 'tb-i tb-i-lock'
-                              "
-                            ></i
-                          ></span>
-                          <div class="tb-list__text">
-                            <span class="tb-list__title">{{ setting.title }}</span>
-                            <span class="tb-list__supporting" [id]="'setting-' + setting.name">{{
-                              shown(setting)
-                            }}</span>
-                            <code class="tb-setting__name">{{ setting.name }}</code>
-                            @if (setting.hint !== '' && group.note === null) {
-                              <small class="tb-hint">{{ setting.hint }}</small>
-                            }
-                          </div>
-                          <span class="tb-list__trail">
-                            <p-tag
-                              [value]="sources[setting.source]"
-                              [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
-                            />
-                          </span>
-                        </li>
-                      }
-                    </ul>
-                  }
-                </div>
-              </ng-template>
-            </tb-fold-card>
+                  </div>
+                  <span class="tb-list__trail">
+                    <p-tag
+                      [value]="sources[setting.source]"
+                      [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
+                    />
+                  </span>
+                </li>
+              }
+            </ul>
           }
         </div>
-      </tb-load-state>
-    </div>
+      }
+    </ng-template>
 
     <p-dialog
       [header]="t.confirmTitle"
@@ -325,6 +377,15 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       gap: var(--tb-space-6);
     }
 
+    .tb-settings__heading {
+      margin: 0 0 var(--tb-space-2);
+      font: var(--tb-type-headline-s-emphasized);
+    }
+
+    .tb-settings__summary {
+      margin: 0 0 var(--tb-space-6);
+    }
+
     .tb-setting__meta {
       display: flex;
       flex-wrap: wrap;
@@ -349,7 +410,6 @@ export class SettingsPage implements OnInit {
   protected readonly t = T.settings;
   private readonly api = inject(AdminApi);
   private readonly pollMs = inject(RESTART_POLL_MS);
-  private readonly router = inject(Router);
 
   protected readonly sources = SOURCE_LABELS;
   protected readonly settings = signal<AdminSettings | null>(null);
@@ -365,10 +425,21 @@ export class SettingsPage implements OnInit {
     return [...sections.values()].map((settings) => toGroup(settings));
   });
 
-  /** The open sections (query parameter), e.g. `ai,backups`. */
-  readonly open = input<string>();
-  protected readonly opened = computed(
-    () => new Set((this.open() ?? '').split(',').filter((section) => section !== '')),
+  /** Route parameter: the chosen section; none — the list (beside it the first section). */
+  readonly section = input<string>();
+  protected readonly layout = injectListDetail(() => this.section() !== undefined, 'two');
+  protected readonly currentGroup = computed<Group | null>(() => {
+    const groups = this.groups();
+    return groups.find((group) => group.section === this.section()) ?? groups[0] ?? null;
+  });
+  protected readonly items = computed<PaneNavItem[]>(() =>
+    this.groups().map((group) => ({
+      id: group.section,
+      icon: SECTION_ICONS[group.section] ?? 'tb-i-settings',
+      title: group.name,
+      summary: group.summary,
+      badge: this.editedIn(group),
+    })),
   );
 
   /** Known time zones, and the one in force if the browser does not know it (e.g. an old name). */
@@ -396,6 +467,7 @@ export class SettingsPage implements OnInit {
   private poll: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
+    pageDetail(() => (this.layout.detail() ? this.currentGroup()?.name : null));
     inject(DestroyRef).onDestroy(() => {
       this.stopPolling();
     });
@@ -414,28 +486,9 @@ export class SettingsPage implements OnInit {
     return setting.name in this.edits();
   }
 
-  /** Unsaved changes of a section: a badge next to its title, seen while it is folded. */
+  /** Unsaved changes of a section: the badge of its item in the list. */
   protected editedIn(group: Group): number {
     return group.editable.filter((setting) => this.edited(setting)).length;
-  }
-
-  /** Keeps the open sections in the address, in the order of the page. */
-  fold(section: string, open: boolean): void {
-    const next = new Set(this.opened());
-    if (open) {
-      next.add(section);
-    } else {
-      next.delete(section);
-    }
-    const sections = this.groups()
-      .map((group) => group.section)
-      .filter((name) => next.has(name))
-      .join(',');
-    void this.router.navigate([], {
-      queryParams: { open: sections === '' ? null : sections },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
   }
 
   protected shown(setting: AdminSetting): string {

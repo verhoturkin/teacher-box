@@ -47,6 +47,17 @@ if (typeof window.ResizeObserver !== 'function') {
   Object.defineProperty(window, 'ResizeObserver', { writable: true, value: StaticResizeObserver });
 }
 
+/** jsdom has no object URLs (pictures the API serves to signed-in users only are shown through them). */
+for (const name of ['createObjectURL', 'revokeObjectURL'] as const) {
+  if (typeof URL[name] !== 'function') {
+    Object.defineProperty(URL, name, {
+      writable: true,
+      configurable: true,
+      value: name === 'createObjectURL' ? (): string => 'blob:test' : (): void => undefined,
+    });
+  }
+}
+
 // Under a parallel run with coverage (the pre-commit hook on a busy machine) the first test of a
 // spec file can take several seconds: it compiles its components. 5 s by default is too tight.
 vi.setConfig({ testTimeout: 20_000 });

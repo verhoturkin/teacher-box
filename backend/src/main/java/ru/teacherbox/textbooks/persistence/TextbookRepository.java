@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -76,6 +77,18 @@ public class TextbookRepository {
         return new Textbook(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
                 textbook.pageCount(), textbook.file(), textbook.createdAt(), textbook.updatedAt(),
                 textbook.version() + 1);
+    }
+
+    /** The key of the cover file, when the cover is made. */
+    public Optional<String> findCoverKey(UUID id) {
+        return jdbc.sql("select cover_key from textbooks.textbooks where id = :id").param("id", id)
+                .query(String.class).optional();
+    }
+
+    /** Sets (or with {@code null} clears) the cover; the textbook's version stays. */
+    public void setCoverKey(UUID id, @Nullable String key) {
+        jdbc.sql("update textbooks.textbooks set cover_key = :key where id = :id").param("key", key)
+                .param("id", id).update();
     }
 
     /** Deletes the textbook with its members. */

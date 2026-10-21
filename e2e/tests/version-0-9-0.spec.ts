@@ -64,7 +64,7 @@ test('TEACHERBOX_DOMAIN is a Docker setting the administrator only sees', async 
   });
 
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings?open=docker');
+  await page.goto('/admin/settings/docker');
   const setting = page
     .locator('.tb-setting')
     .filter({ hasText: 'Домен портала для HTTPS (Caddy)' });

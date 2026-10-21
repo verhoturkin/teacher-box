@@ -1,4 +1,4 @@
-import { countOf } from '@shared/text/plural';
+import { countOf, plural } from '@shared/text/plural';
 
 /** Texts of `billing`: balances, payments, the monthly report (ADR-0035). */
 export const ru = {
@@ -16,9 +16,11 @@ export const ru = {
     debtors: (count: number) => `должников: ${String(count)}`,
   },
   myBalance: {
-    title: 'Баланс',
-    lessonPrice: (price: string) => `Занятие стоит ${price}`,
-    lastPayment: (amount: string, date: string) => `Последняя оплата: ${amount}, ${date}`,
+    title: 'Оплачено',
+    paid: 'Оплачено',
+    lessons: (count: number) => plural(count, 'занятие', 'занятия', 'занятий'),
+    onBalance: (amount: string) => `${amount} на балансе`,
+    debt: (amount: string) => `Долг ${amount}`,
     history: 'История оплат',
   },
   studentBalance: {

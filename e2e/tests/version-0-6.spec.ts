@@ -16,9 +16,9 @@ const SECTIONS = [
   // 0.22.0: no «Звонки» — a category of the settings
   'Ученики',
   'Задания',
-  'Учебники',
+  // 0.26.0: boards and textbooks are one section
+  'Материалы',
   'Оплаты',
-  'Доски',
   // 0.22.0: no «Уведомления» — the bell's sheet
   // 0.22.0: no «ИИ-помощник» — a category of the settings
   // the bottom group of the rail (0.21.0)
@@ -132,16 +132,16 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   await rename(current);
 
   // A filled button is the primary role: a tone of the portal color readable on white (ADR-0023).
-  // the header button of a section outside «Создать» (232.2)
-  await page.goto('/teacher/textbooks');
-  await expect(page.getByRole('button', { name: 'Новый учебник' }).first()).toBeVisible();
+  // 0.26.0: the open button of the connected group of «Материалы»
+  await page.goto('/teacher/materials');
+  await expect(page.locator('.tb-segment[aria-pressed="true"]')).toBeVisible();
   const [button, shade] = await page.evaluate(() => {
     const probe = document.createElement('div');
     probe.style.color = 'var(--p-md-primary)';
     document.body.append(probe);
     const color = getComputedStyle(probe).color;
     probe.remove();
-    const filled = document.querySelector('.tb-page-fab .p-button');
+    const filled = document.querySelector('.tb-segment[aria-pressed="true"]');
     return [filled === null ? '' : getComputedStyle(filled).backgroundColor, color];
   });
   expect(button).toBe(shade);

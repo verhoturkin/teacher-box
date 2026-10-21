@@ -17,62 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Redesign 2026-10 (releases 0.21.0–0.26.0, stages 229–249)
-
-Spec: [`redesign/README.md`](redesign/README.md) (target interface, §N below refer to it); mockups and the
-analysis: [`redesign/report.html`](redesign/report.html). Every substep is one session and one commit: read
-spec §0–§2 and the § it names, load the `m3-expressive` skill for UI work, update `docs/design-system.md` for what
-the substep changed, help articles (ru, en) and `docs/wiki/` for what users see. Releases go in order; a later
-release may start only after the previous one is merged to `main`.
-
-## v0.26.0 — Materials, cabinet, admin, search
-
-Boards and textbooks in one feed with previews; the student's five destinations; the admin's five; global
-search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of materials).
-
-### 245. Materials (B, F) — experiment D3
-
-- [ ] 245.1 **B** Previews: board — PNG exported by the editor on save (`boards/editor`, Excalidraw
-  `exportToBlob`) to `PUT /api/teacher/boards/{id}/preview`, served with the board; textbook — cover from the
-  first page on upload (`textbooks`; decide the PDF / Word renderer in the substep). Storage in each module's
-  `FileStorage` namespace; tests; module docs.
-- [ ] 245.2 **F** Spec §10.1: `features/materials` page (or inside `boards` with `textbooks/parts` — decide by the
-  frontend isolation rule) from `boards/teacher/boards-page.ts` + `textbooks/teacher/textbooks-page.ts`; feed,
-  connected group, chips, one filter; routes `/teacher/materials`, redirects from `/teacher/boards`,
-  `/teacher/textbooks`; `TEACHER_MENU`.
-- [ ] 245.3 **F** Student: `boards/student/my-boards-page.ts` + `textbooks/student/my-textbooks-page.ts` → one
-  «Материалы» page.
-- [ ] 245.4 **D** design-system (feed), help (boards, textbooks; ru, en), wiki.
-
-### 246. Student cabinet (F)
-
-- [ ] 246.1 **F** `core/layout/student-layout.ts`: five destinations (spec §5), bar without «Ещё».
-- [ ] 246.2 **F** `features/home/student-home.ts` → two-column feed (spec §10.4); «Оплачено N занятий» from
-  `GET /api/me/billing/summary` (balance ÷ price; a backend field if the price is not there).
-- [ ] 246.3 **F** `homework/student/my-homework-page.ts` + `my-task-page.ts` → list-detail.
-- [ ] 246.4 **D** design-system, cabinet help (ru, en), wiki for students.
-
-### 247. Admin (F)
-
-- [ ] 247.1 **F** Spec §10.5: «Состояние» = `admin/status/status-page.ts` + `admin/diagnostics/diagnostics-page.ts`;
-  «Журнал» = `admin/logs/log-page.ts` + `admin/events/events-page.ts` with chips; `admin-layout.ts` menu of five;
-  redirects.
-- [ ] 247.2 **F** `admin/integrations`, `admin/backups`, `admin/settings` → list-detail like 234.
-- [ ] 247.3 **D** design-system, admin help (ru, en), wiki «Администрирование».
-
-### 248. Global search (B?, F) — experiment D6
-
-- [ ] 248.1 **D** Decide the source: frontend over the teacher's loaded lists, or `GET /api/teacher/search?q=`
-  over module facades (each module searches its own data). Write the decision into spec §2.
-- [ ] 248.2 **F** Search bar in the top strip (`shell.ts`), Ctrl K, results grouped (students, groups,
-  assignments, boards, textbooks); compact — the search icon in the top app bar opens a full-screen search.
-- [ ] 248.3 **D** design-system, help (ru, en), wiki.
-
-### 249. Release 0.26.0 (D)
-
-- [ ] 249.1 **D** Skill `release`; E2E: materials feed, student bar of five, search. Move `docs/redesign/` to
-  `docs/archive/redesign-2026-10/` and fold what is still useful into `docs/design-system.md`.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,

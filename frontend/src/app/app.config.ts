@@ -19,6 +19,7 @@ import {
 import { MessageService, Translation } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
+import { searchSources } from './search-sources';
 import { authInterceptor } from '@core/auth/auth.interceptor';
 import { ReportingErrorHandler } from '@core/errors/reporting-error-handler';
 import { AuthService } from '@core/auth/auth.service';
@@ -31,6 +32,7 @@ import { PRIMENG_RU } from '@core/i18n/primeng-ru';
 import { NEW_MESSAGE_DIALOG } from '@core/notifications/new-message';
 import { NOTIFICATIONS_SHEET_CONTENT } from '@core/notifications/notifications-sheet-state';
 import { Portal } from '@core/portal/portal';
+import { SEARCH_SOURCES } from '@core/search/search';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
 import { SystemBars } from '@core/theme/system-bars';
@@ -80,6 +82,8 @@ export const appConfig: ApplicationConfig = {
       provide: NEW_MESSAGE_DIALOG,
       useValue: () => import('@features/notifications/parts').then((m) => m.NewMessageDialog),
     },
+    // the teacher's global search reads the lists of the features when it opens
+    { provide: SEARCH_SOURCES, useValue: searchSources },
     { provide: LOCALE_ID, useFactory: locale },
     { provide: TitleStrategy, useClass: AppTitleStrategy },
   ],

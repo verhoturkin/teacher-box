@@ -14,10 +14,16 @@ const T = CORE_T.create;
  * students has no section: its dialog opens over the page (redesign 235.3).
  */
 type CreateAction = { readonly label: string; readonly icon: string } & (
-  { readonly kind: CreateKind; readonly section: string } | { readonly kind: 'message' }
+  | {
+      readonly kind: CreateKind;
+      readonly section: string;
+      /** More of the address: the tab of the page that has several. */
+      readonly query?: Readonly<Record<string, string>>;
+    }
+  | { readonly kind: 'message' }
 );
 
-/** The six items of the menu (M3 FAB menu: up to six) in their usual order. */
+/** The items of the menu in their usual order. */
 export const CREATE_ACTIONS: readonly CreateAction[] = [
   { kind: 'lesson', label: T.lesson, icon: 'tb-i-calendar_add_on', section: '/teacher/schedule' },
   {
@@ -33,7 +39,20 @@ export const CREATE_ACTIONS: readonly CreateAction[] = [
     section: '/teacher/billing',
   },
   { kind: 'student', label: T.student, icon: 'tb-i-person_add', section: '/teacher/students' },
-  { kind: 'board', label: T.board, icon: 'tb-i-co_present', section: '/teacher/boards' },
+  {
+    kind: 'board',
+    label: T.board,
+    icon: 'tb-i-co_present',
+    section: '/teacher/materials',
+    query: { tab: 'boards' },
+  },
+  {
+    kind: 'textbook',
+    label: T.textbook,
+    icon: 'tb-i-menu_book',
+    section: '/teacher/materials',
+    query: { tab: 'textbooks' },
+  },
   { kind: 'message', label: T.message, icon: 'tb-i-send' },
 ];
 
@@ -43,10 +62,18 @@ export const CREATE_ACTIONS: readonly CreateAction[] = [
  */
 export function createItems(url: string, message: () => void): FabMenuItem[] {
   const path = url.split(/[?#]/)[0] ?? '';
-  const current = CREATE_ACTIONS.find(
+  const search = new URLSearchParams(url.split('#')[0]?.split('?')[1] ?? '');
+  const here = CREATE_ACTIONS.filter(
     (action) =>
       'section' in action && (path === action.section || path.startsWith(`${action.section}/`)),
   );
+  // a page with tabs (Materials): the item of its open tab, else the first of the section
+  const current =
+    here.find(
+      (action) =>
+        'query' in action &&
+        Object.entries(action.query ?? {}).every(([key, value]) => search.get(key) === value),
+    ) ?? here[0];
   const ordered =
     current === undefined
       ? CREATE_ACTIONS
@@ -57,7 +84,7 @@ export function createItems(url: string, message: () => void): FabMenuItem[] {
           label: action.label,
           icon: action.icon,
           link: action.section,
-          queryParams: { [CREATE_PARAM]: action.kind },
+          queryParams: { ...action.query, [CREATE_PARAM]: action.kind },
         }
       : { label: action.label, icon: action.icon, run: message },
   );

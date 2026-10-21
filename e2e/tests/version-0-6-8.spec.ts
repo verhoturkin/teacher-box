@@ -202,7 +202,7 @@ test('students are list rows with the status on the right, «⋮» in the card, 
 
 test('the settings of the administrator are one under another', async ({ page }) => {
   await signIn(page, 1440, 'admin');
-  await page.goto('/admin/settings?open=sessions');
+  await page.goto('/admin/settings/sessions');
 
   const fields = page.locator('.tb-setting');
   await expect(fields.first()).toBeVisible();
@@ -212,6 +212,5 @@ test('the settings of the administrator are one under another', async ({ page })
   expect(new Set(lefts).size).toBe(1);
 
   await page.goto('/admin/status');
-  await expect(page.locator('.tb-stats .p-card').first()).toBeVisible();
-  await expectOneColumn(page);
+  await expect(page.locator('.tb-feed').first()).toBeVisible();
 });

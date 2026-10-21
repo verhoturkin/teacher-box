@@ -1,0 +1,227 @@
+/* The top strip's search: the M3 docked search bar (56 px) with the dropdown search view under it; on compact
+   the full-screen search view. The bar's width is ours: it stretches up to 45 rem (the sketches). */
+:host {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  max-width: 45rem;
+}
+
+:host(.tb-search--full) {
+  display: contents;
+}
+
+.tb-search {
+  position: relative;
+}
+
+.tb-search__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  box-sizing: border-box;
+  height: 3.5rem;
+  padding-inline: var(--tb-space-4);
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+  color: var(--p-md-on-surface-variant);
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--p-md-surface-container-high)
+    );
+  }
+
+  &:focus-within {
+    background: var(--p-md-surface-container-high);
+  }
+}
+
+.tb-search__lead {
+  flex: none;
+  margin-inline-end: var(--tb-space-3);
+}
+
+.tb-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+
+  &::placeholder {
+    color: var(--p-md-on-surface-variant);
+    opacity: 1;
+  }
+}
+
+/* The hint of the shortcut: a key cap, not a control */
+.tb-search__shortcut {
+  flex: none;
+  padding: 0 var(--tb-space-2);
+  border: 1px solid var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-sm);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m);
+  letter-spacing: 0.03em;
+}
+
+/* A 48 px target around a 24 px icon: «назад» and «очистить» */
+.tb-search__icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+}
+
+/* The dropdown search view: surface container high, extra-large corners, elevated, under the bar */
+.tb-search__panel {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + var(--tb-space-2));
+  z-index: 1;
+  box-sizing: border-box;
+  max-height: min(32rem, 70vh);
+  padding: var(--tb-space-2);
+  overflow-y: auto;
+  border-radius: var(--tb-shape-xl);
+  background: var(--p-md-surface-container-high);
+  box-shadow: var(--tb-elevation-3);
+}
+
+.tb-search__group {
+  padding: var(--tb-space-3) var(--tb-space-4) var(--tb-space-1);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-l);
+}
+
+.tb-search__option {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-4);
+  box-sizing: border-box;
+  min-height: 3.5rem;
+  padding: var(--tb-space-2) var(--tb-space-4);
+  border-radius: var(--tb-shape-xs);
+  color: var(--p-md-on-surface);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
+  }
+}
+
+/* the result Enter opens */
+.tb-search__option--active,
+.tb-search__option--active:hover {
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+}
+
+.tb-search__option-icon {
+  flex: none;
+  color: var(--p-md-on-surface-variant);
+}
+
+.tb-search__option--active .tb-search__option-icon {
+  color: inherit;
+}
+
+.tb-search__option-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tb-search__option-title {
+  overflow: hidden;
+  font: var(--tb-type-body-l);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-search__option-subtitle {
+  overflow: hidden;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-m);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-search__option--active .tb-search__option-subtitle {
+  color: inherit;
+}
+
+.tb-search__more {
+  padding: var(--tb-space-1) var(--tb-space-4) var(--tb-space-2);
+  padding-inline-start: calc(var(--tb-space-4) + 1.5rem + var(--tb-space-4));
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-m);
+}
+
+.tb-search__state {
+  margin: 0;
+  padding: var(--tb-space-4);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-m);
+}
+
+.tb-search__state--error {
+  color: var(--p-md-error);
+}
+
+/* Compact: the full-screen search view over the page — the bar on top (72 px), the results below */
+:host(.tb-search--full) .tb-search {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  background: var(--p-md-surface);
+}
+
+:host(.tb-search--full) .tb-search__bar {
+  flex: none;
+  height: 4.5rem;
+  padding-inline: var(--tb-space-1) var(--tb-space-1);
+  border-radius: 0;
+  background: var(--p-md-surface);
+  border-bottom: 1px solid var(--p-md-outline-variant);
+
+  &:hover {
+    background: var(--p-md-surface);
+  }
+}
+
+:host(.tb-search--full) .tb-search__panel {
+  position: static;
+  flex: 1;
+  max-height: none;
+  border-radius: 0;
+  background: var(--p-md-surface);
+  box-shadow: none;
+}

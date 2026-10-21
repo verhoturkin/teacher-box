@@ -36,30 +36,66 @@ describe('app routes', { timeout: 20_000 }, () => {
     return TestBed.inject(Title).getTitle();
   }
 
-  it('leads the administrator to the log and the other administration pages', async () => {
+  it('leads the administrator to the status and the other administration pages', async () => {
     auth.acceptSession(authResponse('ADMIN'));
     const backend = TestBed.inject(HttpTestingController);
 
     await harness.navigateByUrl('/');
-    expect(TestBed.inject(Router).url).toBe('/admin/logs');
-    expect(title()).toBe('Журнал — Teacher Box');
-    expect(text()).toContain('Журнал');
+    expect(TestBed.inject(Router).url).toBe('/admin/status');
+    expect(title()).toBe('Состояние — Teacher Box');
+    expect(text()).toContain('Состояние');
     backend.match(() => true);
 
     for (const [url, heading] of [
-      ['/admin/status', 'Состояние'],
-      ['/admin/events', 'События'],
+      ['/admin/logs', 'Журнал'],
       ['/admin/integrations', 'Интеграции'],
       ['/admin/backups', 'Копии'],
-      ['/admin/diagnostics', 'Диагностика'],
       ['/admin/account', 'Мой аккаунт'],
     ] as const) {
       await harness.navigateByUrl(url);
-      expect(title()).toBe(`${heading} — Teacher Box`);
+      expect(title()).toContain(`${heading} — Teacher Box`);
       backend.match(() => true);
     }
     await harness.navigateByUrl('/teacher');
-    expect(TestBed.inject(Router).url).toBe('/admin/logs');
+    expect(TestBed.inject(Router).url).toBe('/admin/status');
+    backend.match(() => true);
+  });
+
+  it('redirects the old administration pages to Состояние and Журнал (247.1)', async () => {
+    auth.acceptSession(authResponse('ADMIN'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/admin/events');
+    expect(TestBed.inject(Router).url).toBe('/admin/logs?view=events');
+    backend.match(() => true);
+
+    await harness.navigateByUrl('/admin/diagnostics');
+    expect(TestBed.inject(Router).url).toBe('/admin/status');
+    backend.match(() => true);
+  });
+
+  it('keeps one page for an administration list and its sections, and opens the old fold address (247.2)', async () => {
+    auth.acceptSession(authResponse('ADMIN'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/admin/integrations/ai');
+    expect(TestBed.inject(Router).url).toBe('/admin/integrations/ai');
+    backend.match(() => true);
+
+    await harness.navigateByUrl('/admin/integrations/ai/extra');
+    expect(text()).toContain('не найден');
+    backend.match(() => true);
+
+    await harness.navigateByUrl('/admin/settings/backups');
+    expect(TestBed.inject(Router).url).toBe('/admin/settings/backups');
+    backend.match(() => true);
+
+    await harness.navigateByUrl('/admin/settings?open=ai,backups');
+    expect(TestBed.inject(Router).url).toBe('/admin/settings/ai');
+    backend.match(() => true);
+
+    await harness.navigateByUrl('/admin/settings?open=');
+    expect(TestBed.inject(Router).url).toBe('/admin/settings?open=');
     backend.match(() => true);
   });
 
@@ -251,7 +287,7 @@ describe('app routes', { timeout: 20_000 }, () => {
 
     await harness.navigateByUrl('/cabinet/homework/t-1');
     backend.expectOne('/api/me/homework/tasks/t-1');
-    expect(title()).toBe('Задание — Teacher Box');
+    expect(title()).toBe('Задания — Teacher Box');
   });
 
   it('leads the teacher from the account page to its category of the settings', async () => {

@@ -149,16 +149,16 @@ test('boards are found by a student, and «Назад» of a board returns to th
   page,
 }) => {
   await signIn(page);
+  // 0.26.0: the boards are a tab of «Материалы» with one search
   await page.goto('/teacher/boards');
-  // 0.15.4: each card has its own search
-  const search = page.getByRole('searchbox', { name: 'Поиск: Доски на портале' });
+  const search = page.getByRole('searchbox', { name: 'Название, ученик или группа' });
   await search.fill(STUDENT);
   await expect(page.getByRole('link', { name: BOARD })).toBeVisible();
 
   await page.getByRole('link', { name: BOARD }).click();
   await expect(page).toHaveURL(new RegExp(`/teacher/boards/${boardId}`));
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
-  await expect(page).toHaveURL(/\/teacher\/boards$/);
+  await expect(page).toHaveURL(/\/teacher\/materials\?tab=boards$/);
 
   // opened by a link from outside, the board leads to the list of boards
   await page.goto(`/teacher/boards/${boardId}`);

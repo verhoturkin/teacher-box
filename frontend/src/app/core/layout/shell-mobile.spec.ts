@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
@@ -9,7 +10,7 @@ import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { RailState } from './rail-state';
 import { Shell } from './shell';
-import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
+import { STUDENT_BOTTOM_NAV, studentMenu } from './student-layout';
 import { TEACHER_BOTTOM_NAV, TEACHER_FOOTER_LINKS, TEACHER_MENU } from './teacher-layout';
 
 describe('Shell on a phone', () => {
@@ -19,6 +20,7 @@ describe('Shell on a phone', () => {
     items: MenuItem[],
     bottomNav: readonly string[] = [],
     url = '/teacher',
+    search = false,
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [Shell],
@@ -31,6 +33,7 @@ describe('Shell on a phone', () => {
     fixture = TestBed.createComponent(Shell);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('bottomNav', bottomNav);
+    fixture.componentRef.setInput('search', search);
     fixture.componentRef.setInput('footerLinks', TEACHER_FOOTER_LINKS);
     fixture.componentRef.setInput('homeLink', '/teacher');
     await TestBed.inject(Router).navigateByUrl(url);
@@ -63,6 +66,39 @@ describe('Shell on a phone', () => {
 
   afterEach(() => {
     fixture.destroy();
+  });
+
+  it('opens the full-screen search from the icon of the top app bar and on Ctrl K', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV, '/teacher', true);
+    expect(host.querySelector('.tb-search')).toBeNull();
+    const button = requireElement(
+      host,
+      '.tb-shell__header button[aria-label="Открыть поиск"]',
+      HTMLButtonElement,
+    );
+
+    button.focus();
+    button.click();
+    await fixture.whenStable();
+    const dialog = requireElement(host, 'tb-global-search .tb-search[role="dialog"]', HTMLElement);
+    expect(document.activeElement).toBe(dialog.querySelector('input'));
+
+    dialog
+      .querySelector('input')
+      ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-search')).toBeNull();
+    expect(document.activeElement).toBe(button);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-search[role="dialog"]')).not.toBeNull();
+  });
+
+  it('has no search icon without a search', async () => {
+    const host = await render(TEACHER_MENU, TEACHER_BOTTOM_NAV);
+
+    expect(host.querySelector('button[aria-label="Открыть поиск"]')).toBeNull();
   });
 
   it('puts five sections of the teacher in the bottom bar and no «Ещё» (D2)', async () => {
@@ -127,7 +163,7 @@ describe('Shell on a phone', () => {
     const nav = requireElement(rail, 'tb-side-nav', HTMLElement);
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
-    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники', 'Доски']);
+    expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Материалы']);
     expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
     // the focus goes into the rail
     expect(rail.contains(document.activeElement)).toBe(true);
@@ -159,25 +195,25 @@ describe('Shell on a phone', () => {
 
     rail = await openRail(host);
     const boards = Array.from(rail.querySelectorAll('a')).find(
-      (link) => link.textContent.trim() === 'Доски',
+      (link) => link.textContent.trim() === 'Материалы',
     );
     boards?.click();
     await fixture.whenStable();
     expect(menuButton(host).getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('puts five sections of the student in the bar and the textbooks under ☰', async () => {
-    const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV, '/cabinet');
+  it('puts the five sections of the student in the bar, none is left under ☰', async () => {
+    const host = await render(studentMenu(signal(0)), STUDENT_BOTTOM_NAV, '/cabinet');
 
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
       'Главная',
       'Расписание',
       'Задания',
-      'Мои доски',
+      'Материалы',
       'Оплаты',
     ]);
     const rail = await openRail(host);
-    expect(labels(rail, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Учебники']);
+    expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
   });
 
   it('takes the first five sections without a bar order', async () => {
@@ -188,12 +224,12 @@ describe('Shell on a phone', () => {
       'Расписание',
       'Ученики',
       'Задания',
-      'Учебники',
+      'Материалы',
     ]);
   });
 
   it('has no other sections in the modal rail when all fit the bar', async () => {
-    const host = await render(STUDENT_MENU.slice(0, 3));
+    const host = await render(studentMenu(signal(0)).slice(0, 3));
 
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(3);
     const rail = await openRail(host);

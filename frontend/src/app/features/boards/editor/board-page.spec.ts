@@ -272,6 +272,25 @@ describe('BoardPage', () => {
     await expect(leaving).resolves.toBe(true);
   });
 
+  it('sends the preview of the drawing when the teacher leaves, and the student sends none', async () => {
+    render();
+    const scene = await open();
+    scene.state.elements = [anElement('new', 1)];
+    const leaving = fixture.componentInstance.canLeave();
+    await vi.waitFor(() => {
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/boards/board-1/preview' }).flush(null);
+    });
+    await expect(leaving).resolves.toBe(true);
+  });
+
+  it('keeps the student’s editor from sending a preview', async () => {
+    render('cabinet');
+    const scene = await open();
+    scene.state.elements = [anElement('new', 1)];
+
+    await expect(fixture.componentInstance.canLeave()).resolves.toBe(true);
+  });
+
   it('saves when the tab is hidden and asks for changes when it is back', async () => {
     render();
     await open();

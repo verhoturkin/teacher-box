@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CORE_T } from '@core/i18n/texts';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
+import { NavBadge } from './nav-badge';
 import { NavItem, injectUrl, isNavActive } from './nav-item';
 
 /**
@@ -17,7 +18,7 @@ import { NavItem, injectUrl, isNavActive } from './nav-item';
  */
 @Component({
   selector: 'tb-side-nav',
-  imports: [RouterLink, PortalLogo],
+  imports: [RouterLink, PortalLogo, NavBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'navigation',
@@ -49,6 +50,14 @@ import { NavItem, injectUrl, isNavActive } from './nav-item';
                   ><i [class]="item.icon" aria-hidden="true"></i
                 ></span>
                 <span class="tb-side-nav__label">{{ item.label }}</span>
+                @if (item.count; as badge) {
+                  @if (badge() > 0) {
+                    <tb-nav-badge [count]="badge()" [inline]="!rail()" />
+                    @if (item.countLabel; as label) {
+                      <span class="tb-sr-only">{{ label(badge()) }}</span>
+                    }
+                  }
+                }
               </span>
             </a>
           </li>

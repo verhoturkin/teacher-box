@@ -2,12 +2,16 @@ import {
   Excalidraw,
   MainMenu,
   convertToExcalidrawElements,
+  exportToBlob,
   reconcileElements,
   useHandleLibrary,
 } from '@excalidraw/excalidraw';
 import type { RemoteExcalidrawElement } from '@excalidraw/excalidraw/data/reconcile';
-import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import type {
+  NonDeletedExcalidrawElement,
+  OrderedExcalidrawElement,
+} from '@excalidraw/excalidraw/element/types';
+import type { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { type ReactNode, createElement, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type {
@@ -45,9 +49,44 @@ export const EXCALIDRAW_MODULES: ExcalidrawModules = {
     ),
   reconcileElements: (local, remote, appState) =>
     isRemote(remote) ? reconcileElements(local, remote, appState) : [...local],
+  exportPreview: (elements, appState, files) =>
+    previewExporter()({
+      elements,
+      appState: { ...appState, exportBackground: true },
+      files,
+      mimeType: 'image/png',
+      maxWidthOrHeight: PREVIEW_SIZE,
+      exportPadding: 16,
+    }),
   convertToExcalidrawElements: (skeletons) =>
     convertToExcalidrawElements([...skeletons], { regenerateIds: true }),
 };
+
+/** The longer side of a preview, pixels: sharp in a card of the materials feed. */
+const PREVIEW_SIZE = 800;
+
+/**
+ * `exportToBlob` comes from `@excalidraw/utils`, whose declarations the package does not ship: its type
+ * cannot be resolved, so it is checked and typed here.
+ */
+type PreviewExporter = (options: {
+  elements: readonly NonDeletedExcalidrawElement[];
+  appState: Partial<AppState>;
+  files: BinaryFiles;
+  mimeType: 'image/png';
+  maxWidthOrHeight: number;
+  exportPadding: number;
+}) => Promise<Blob>;
+
+function previewExporter(): PreviewExporter {
+  const exporter: unknown = exportToBlob;
+  if (!isPreviewExporter(exporter)) throw new Error('Excalidraw has no exportToBlob');
+  return exporter;
+}
+
+function isPreviewExporter(value: unknown): value is PreviewExporter {
+  return typeof value === 'function';
+}
 
 function menuSetting(setting: BoardMenuSetting): ReactNode {
   return 'items' in setting

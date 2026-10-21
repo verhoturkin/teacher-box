@@ -1,5 +1,12 @@
 import { Injector, inject } from '@angular/core';
-import { CanActivateFn, Routes, UrlMatchResult, UrlMatcher } from '@angular/router';
+import {
+  CanActivateFn,
+  RedirectFunction,
+  Router,
+  Routes,
+  UrlMatchResult,
+  UrlMatcher,
+} from '@angular/router';
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
@@ -52,6 +59,59 @@ const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
   return second !== undefined || first.path === 'new' || first.path === 'review'
     ? null
     : { consumed: segments, posParams: { assignmentId: first } };
+};
+
+/**
+ * The student's `/cabinet/homework` and `/cabinet/homework/:taskId` are one route: the list stays, the task beside
+ * it changes (redesign spec §9).
+ */
+const myHomeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
+  const [section, task, ...rest] = segments;
+  return section?.path !== 'homework' || rest.length > 0
+    ? null
+    : task === undefined
+      ? { consumed: segments }
+      : { consumed: segments, posParams: { taskId: task } };
+};
+
+/**
+ * Old `/teacher/boards`, `/teacher/textbooks` and the student's `/cabinet/boards`, `/cabinet/textbooks`: the tab of
+ * Materials, the query (`?student=`, `?create=`…) stays.
+ */
+function materialsTab(tab: 'boards' | 'textbooks', area = 'teacher'): RedirectFunction {
+  return ({ queryParams }) =>
+    inject(Router).createUrlTree([`/${area}/materials`], { queryParams: { ...queryParams, tab } });
+}
+
+/** The old `/admin/events` is the «События» chip of the journal. */
+function adminJournal(view: 'events'): RedirectFunction {
+  return ({ queryParams }) =>
+    inject(Router).createUrlTree(['/admin/logs'], { queryParams: { ...queryParams, view } });
+}
+
+/** `/admin/<page>` and `/admin/<page>/:section` are one route: the list stays, the section beside it changes (247.2). */
+function adminSectionMatcher(page: string): UrlMatcher {
+  return (segments): UrlMatchResult | null => {
+    const [first, section, ...rest] = segments;
+    if (first?.path !== page || rest.length > 0) {
+      return null;
+    }
+    return section === undefined
+      ? { consumed: segments }
+      : { consumed: segments, posParams: { section } };
+  };
+}
+
+/** The old `?open=ai,backups` of the admin settings (the open fold cards) → the first of them as the section. */
+const adminSettingsOpen: CanActivateFn = (route) => {
+  const { open } = route.queryParams as Record<string, string | undefined>;
+  const [section] = (open ?? '').split(',');
+  return (
+    route.params['section'] !== undefined ||
+    section === undefined ||
+    section === '' ||
+    inject(Router).createUrlTree(['/admin/settings', section])
+  );
 };
 
 const N = CORE_T.titles;
@@ -143,10 +203,13 @@ export const routes: Routes = [
         canDeactivate: [canLeaveGuard],
       },
       {
-        path: 'textbooks',
-        title: NAV.textbooks,
-        loadComponent: () => import('@features/textbooks').then((m) => m.TextbooksPage),
+        path: 'materials',
+        title: NAV.materials,
+        loadComponent: () => import('@features/materials').then((m) => m.MaterialsPage),
       },
+      // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay
+      { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards') },
+      { path: 'textbooks', pathMatch: 'full', redirectTo: materialsTab('textbooks') },
       {
         path: 'billing',
         title: NAV.billing,
@@ -161,11 +224,6 @@ export const routes: Routes = [
       {
         path: 'billing/students/:studentId',
         redirectTo: '/teacher/students/:studentId?tab=payments',
-      },
-      {
-        path: 'boards',
-        title: NAV.boards,
-        loadComponent: () => import('@features/boards').then((m) => m.BoardsPage),
       },
       // the rooms are in the cards and the lessons; «Звонки» is a category of the settings (234.2)
       { path: 'calls', redirectTo: 'settings/calls' },
@@ -219,29 +277,22 @@ export const routes: Routes = [
         loadComponent: () => import('@features/schedule').then((m) => m.MySchedulePage),
       },
       {
-        path: 'homework',
+        matcher: myHomeworkMatcher,
         title: NAV.homework,
         loadComponent: () => import('@features/homework').then((m) => m.MyHomeworkPage),
       },
       {
-        path: 'homework/:taskId',
-        title: N.assignment,
-        loadComponent: () => import('@features/homework').then((m) => m.MyTaskPage),
+        path: 'materials',
+        title: NAV.materials,
+        loadComponent: () => import('@features/materials').then((m) => m.MyMaterialsPage),
       },
-      {
-        path: 'textbooks',
-        title: NAV.textbooks,
-        loadComponent: () => import('@features/textbooks').then((m) => m.MyTextbooksPage),
-      },
+      // boards and textbooks are the two tabs of Materials (245.3)
+      { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards', 'cabinet') },
+      { path: 'textbooks', pathMatch: 'full', redirectTo: materialsTab('textbooks', 'cabinet') },
       {
         path: 'billing',
         title: NAV.billing,
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
-      },
-      {
-        path: 'boards',
-        title: NAV.myBoards,
-        loadComponent: () => import('@features/boards').then((m) => m.MyBoardsPage),
       },
       {
         // the inbox is in the bell's sheet, the messengers in «Мой аккаунт» (235.2)
@@ -278,24 +329,21 @@ export const routes: Routes = [
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => import('@core/layout/admin-layout').then((m) => m.AdminLayout),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'logs' },
-      {
-        path: 'logs',
-        title: NAV.log,
-        loadComponent: () => import('@features/admin').then((m) => m.LogPage),
-      },
+      { path: '', pathMatch: 'full', redirectTo: 'status' },
       {
         path: 'status',
         title: NAV.status,
         loadComponent: () => import('@features/admin').then((m) => m.StatusPage),
       },
       {
-        path: 'events',
-        title: NAV.events,
-        loadComponent: () => import('@features/admin').then((m) => m.EventsPage),
+        // the log, the errors (`?view=errors`) and the events (`?view=events`) are the chips of the journal (247.1)
+        path: 'logs',
+        title: NAV.log,
+        loadComponent: () => import('@features/admin').then((m) => m.JournalPage),
       },
+      { path: 'events', pathMatch: 'full', redirectTo: adminJournal('events') },
       {
-        path: 'integrations',
+        matcher: adminSectionMatcher('integrations'),
         title: NAV.integrations,
         loadComponent: () => import('@features/admin').then((m) => m.IntegrationsPage),
       },
@@ -305,15 +353,13 @@ export const routes: Routes = [
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
-        path: 'settings',
+        matcher: adminSectionMatcher('settings'),
         title: NAV.settings,
+        canActivate: [adminSettingsOpen],
         loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
       },
-      {
-        path: 'diagnostics',
-        title: NAV.diagnostics,
-        loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),
-      },
+      // the archive for the developer is collected on «Состояние»
+      { path: 'diagnostics', pathMatch: 'full', redirectTo: 'status' },
       {
         path: 'help',
         title: N.help,

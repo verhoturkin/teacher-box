@@ -33,6 +33,15 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 - Images: `PUT|GET /api/boards/{id}/files/{fileId}` — raw body, png/jpeg/webp/gif checked by magic bytes (no SVG),
   ≤ 20 MB; stored once per `fileId` in the `boards` namespace of `FileStorage` (keys in `board_files`; a namespace
   cannot have sub-folders, so not `boards/<boardId>/`); served `private, max-age=1y, immutable`, `nosniff`.
+- Preview (245.1): the editor of the teacher exports the drawing as a PNG (`exportToBlob`, longer side 800 px, on the
+  board's background) and puts it with `PUT /api/teacher/boards/{id}/preview` (raw body, `image/png` checked by magic
+  bytes, ≤ 5 MB — `boards.file-type-not-allowed`, `boards.file-too-large`; an external board — 409 `boards.no-scene`).
+  One file per board in the `boards` namespace (`board_previews`: key, size, `updated_at`), the old one is deleted on
+  replace and with the board. `GET /api/boards/{id}/preview` goes through `requireAccess` (the teacher, a member
+  student; anyone else 404; no preview yet — 404 `boards.preview-not-found`), `private, max-age=60`, `nosniff`. The board
+  DTOs carry `previewUpdatedAt` (null until the first preview) — the feed asks for the picture when it is set and uses
+  it as the cache key. A student's editor sends none: a student's changes show in the preview the next time the
+  teacher saves or opens the board.
 - Copies: `DAILY` by `BoardBackupJob` (`TEACHERBOX_BOARDS_BACKUP_CRON`, default `0 0 3 * * *`, instance time zone)
   for every scene whose version is above its last daily copy; the newest `TEACHERBOX_BOARDS_BACKUP_KEEP` (7) daily
   copies stay. `MANUAL` — the teacher's, ≤ 20 per board. Restore saves the current scene as a `MANUAL` copy first,
@@ -47,15 +56,16 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 
 ## Contract, data, REST
 
-No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_backups`, `board_libraries` (the
+No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_previews`, `board_backups`, `board_libraries` (the
 Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 characters; `boards.library-invalid`,
 `boards.library-too-large`).
 
 | Endpoint | Who |
 |---|---|
 | `GET /api/teacher/boards?studentId=|groupId=` (`studentId` may repeat: the boards of any of the students, with their groups'), `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
+| `PUT /api/teacher/boards/{id}/preview` (PNG body) | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
-| `GET /api/boards/{id}`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
+| `GET /api/boards/{id}`, `GET /api/boards/{id}/preview`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
 | WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
 | `GET|PUT /api/boards/library` — the current user's own library (an array of items with `id` and `elements`) | teacher, student |
 | `GET /api/me/boards` (kind, `groupNames`, `updatedAt`, newest first) | student |
@@ -67,7 +77,7 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
-- `teacher/boards-page.ts` — «Доски» (`/teacher/boards`, menu item after «Оплаты», under ☰ on a phone since 231.2): all boards,
+- `teacher/boards-feed.ts` — the boards tab of «Материалы» (`features/materials`, `/teacher/materials?tab=boards`, 245.2; `/teacher/boards` redirects; cards with previews, `BoardsFeed` in `parts.ts`; the rest of this item is the behaviour of the former page): all boards,
   a search by the title or a member's (student's or group's) name above the list (0.15.0);
   a URL filter (`?student=`, `?group=`; a student's filter includes their groups' boards; since 0.7.3 the
   students page links no boards) — no filter control, a line «Доски ученика: …» / «Доски группы: …» with «Все доски»; a new board starts
@@ -106,6 +116,10 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
     sends the elements changed here 100 ms after a change (each version once; a closed channel leaves them to the
     save), merges the others' elements without saving them again, and polls when `saved` brings a newer version.
     `excalidraw-data.ts` — guards for server JSON, shared appState, data URLs, `isSyncable`.
+  - Preview: `BoardSync` (teacher's editor only — `BoardServer.preview`) exports the drawing 5 s after the last
+    save that changed elements and 5 s after the board is opened (`PREVIEW_DELAY_MS`), and at once when the board is
+    left (`flush`); nothing is sent for an empty board or while an image of the drawing is not loaded yet; a failed
+    export or upload is quiet (the next save tries again). `ExcalidrawModules.exportPreview` wraps `exportToBlob`.
   - `board-live.ts` — `BoardLive` (ADR-0029): ticket (`BoardsApi.liveTicket`), socket (`LIVE_SOCKET`, a fake in
     tests), the others (`peers`, with cursors), the cursor out at most every 50 ms, `ping` every 30 s, reconnects
     after 1, 2, 5, 10, 30 s (not after 1008 — the board was taken away). `board-presence.ts` — the others as
