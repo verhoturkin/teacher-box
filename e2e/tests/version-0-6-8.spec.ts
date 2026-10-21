@@ -212,6 +212,5 @@ test('the settings of the administrator are one under another', async ({ page })
   expect(new Set(lefts).size).toBe(1);
 
   await page.goto('/admin/status');
-  await expect(page.locator('.tb-stats .p-card').first()).toBeVisible();
-  await expectOneColumn(page);
+  await expect(page.locator('.tb-feed').first()).toBeVisible();
 });

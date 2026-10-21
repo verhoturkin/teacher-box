@@ -3,28 +3,15 @@ import { MenuItem } from 'primeng/api';
 import { CORE_T } from '@core/i18n/texts';
 import { Shell } from './shell';
 
+/**
+ * The five destinations of the administrator (spec §5): Состояние (+ Диагностика) · Журнал (+ События) ·
+ * Интеграции · Копии · Настройки — all in the bottom bar on a phone. The help is at the bottom of the rail.
+ */
 export const ADMIN_MENU: MenuItem[] = [
-  { label: CORE_T.nav.log, icon: 'tb-i tb-i-list_alt', routerLink: '/admin/logs' },
   { label: CORE_T.nav.status, icon: 'tb-i tb-i-dns', routerLink: '/admin/status' },
-  { label: CORE_T.nav.events, icon: 'tb-i tb-i-sync', routerLink: '/admin/events' },
+  { label: CORE_T.nav.log, icon: 'tb-i tb-i-list_alt', routerLink: '/admin/logs' },
   { label: CORE_T.nav.integrations, icon: 'tb-i tb-i-link', routerLink: '/admin/integrations' },
   { label: CORE_T.nav.backups, icon: 'tb-i tb-i-database', routerLink: '/admin/backups' },
-  { label: CORE_T.nav.diagnostics, icon: 'tb-i tb-i-download', routerLink: '/admin/diagnostics' },
-];
-
-/**
- * The sections of the bottom bar on a phone (spec §5: Состояние · Журнал · Интеграции · Резервные копии),
- * the fifth — «События» — until it joins the log (247); «Диагностика» and the bottom group are under ☰.
- */
-export const ADMIN_BOTTOM_NAV: readonly string[] = [
-  '/admin/status',
-  '/admin/logs',
-  '/admin/integrations',
-  '/admin/backups',
-];
-
-/** The bottom of the rail before «Справка»: the settings of the portal (spec §3.2). */
-export const ADMIN_FOOTER_LINKS: MenuItem[] = [
   { label: CORE_T.nav.settings, icon: 'tb-i tb-i-settings', routerLink: '/admin/settings' },
 ];
 
@@ -33,16 +20,8 @@ export const ADMIN_FOOTER_LINKS: MenuItem[] = [
   selector: 'tb-admin-layout',
   imports: [Shell],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-shell
-    [items]="menu"
-    [footerLinks]="footerLinks"
-    [bottomNav]="bottomNav"
-    homeLink="/admin"
-    [notifications]="false"
-  />`,
+  template: `<tb-shell [items]="menu" homeLink="/admin" [notifications]="false" />`,
 })
 export class AdminLayout {
   protected readonly menu = ADMIN_MENU;
-  protected readonly footerLinks = ADMIN_FOOTER_LINKS;
-  protected readonly bottomNav = ADMIN_BOTTOM_NAV;
 }

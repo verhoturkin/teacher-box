@@ -57,7 +57,7 @@ search as an experiment. ADR: **0049** if D3 merges Materials (new navigation of
 
 ### 247. Admin (F)
 
-- [ ] 247.1 **F** Spec §10.5: «Состояние» = `admin/status/status-page.ts` + `admin/diagnostics/diagnostics-page.ts`;
+- [x] 247.1 **F** Spec §10.5: «Состояние» = `admin/status/status-page.ts` + `admin/diagnostics/diagnostics-page.ts`;
   «Журнал» = `admin/logs/log-page.ts` + `admin/events/events-page.ts` with chips; `admin-layout.ts` menu of five;
   redirects.
 - [ ] 247.2 **F** `admin/integrations`, `admin/backups`, `admin/settings` → list-detail like 234.

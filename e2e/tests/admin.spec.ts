@@ -18,21 +18,23 @@ test('the administrator searches the log and checks the instance', async ({ page
   await page.getByLabel('Текст').fill('role=ADMIN');
   await page.getByRole('button', { name: 'Найти' }).click();
   const signIn = page
-    .getByRole('row')
+    .getByRole('listitem')
     .filter({ hasText: /Sign-in succeeded: .*role=ADMIN/ })
     .first();
   await expect(signIn).toBeVisible();
 
-  // The request code of the line finds every line of that request.
-  await signIn.getByRole('button', { name: /^код / }).click();
+  // The entry opens beside the list; the request code of the line finds every line of that request.
+  await signIn.getByRole('button').click();
+  await page.getByRole('button', { name: /^код / }).click();
+  await page.getByText('Ещё фильтры').click();
   await expect(page.getByLabel('Код ошибки')).not.toHaveValue('');
-  await expect(page.getByRole('row').filter({ hasText: 'role=ADMIN' }).first()).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: 'role=ADMIN' }).first()).toBeVisible();
 
   await page
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Состояние' })
     .click();
-  await expect(page.getByText('db: UP')).toBeVisible();
+  await expect(page.getByText('diskSpace', { exact: true })).toBeVisible();
 
   await page
     .getByRole('navigation', { name: 'Разделы' })

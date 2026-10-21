@@ -4,23 +4,23 @@ import { MessageService } from 'primeng/api';
 import { eventPublication, failedDelivery } from '@testing/admin-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { EventPublication, FailedDelivery } from '../data-access/admin.models';
-import { EventsPage } from './events-page';
+import { EventsPanel } from './events-panel';
 import { testProviders } from '@testing/setup';
 
-describe('EventsPage', () => {
-  let fixture: ComponentFixture<EventsPage>;
+describe('EventsPanel', () => {
+  let fixture: ComponentFixture<EventsPanel>;
   let backend: HttpTestingController;
   let messages: MessageService;
 
   async function render(events: EventPublication[], deliveries: FailedDelivery[]): Promise<void> {
     TestBed.configureTestingModule({
-      imports: [EventsPage],
+      imports: [EventsPanel],
       providers: testProviders(),
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
     vi.spyOn(messages, 'add');
-    fixture = TestBed.createComponent(EventsPage);
+    fixture = TestBed.createComponent(EventsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/admin/events').flush(events);
     backend.expectOne('/api/admin/notifications/deliveries').flush(deliveries);
@@ -42,9 +42,9 @@ describe('EventsPage', () => {
   });
 
   it('shows failed loads with «Повторить», not «everything is fine»', async () => {
-    TestBed.configureTestingModule({ imports: [EventsPage], providers: testProviders() });
+    TestBed.configureTestingModule({ imports: [EventsPanel], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
-    fixture = TestBed.createComponent(EventsPage);
+    fixture = TestBed.createComponent(EventsPanel);
     fixture.detectChanges();
     backend.expectOne('/api/admin/events').flush(null, { status: 500, statusText: 'Error' });
     backend

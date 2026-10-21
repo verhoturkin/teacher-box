@@ -17,10 +17,8 @@ export const en: Translation<typeof ru> = {
     settings: 'Settings',
     log: 'Log',
     status: 'Status',
-    events: 'Events',
     integrations: 'Integrations',
     backups: 'Backups',
-    diagnostics: 'Diagnostics',
   },
   titles: {
     signIn: 'Sign in',

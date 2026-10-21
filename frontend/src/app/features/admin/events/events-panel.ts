@@ -1,14 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { RowType } from '@shared/ui/row-type.directive';
 import { AdminApi } from '../data-access/admin-api';
 import { EventPublication, FailedDelivery } from '../data-access/admin.models';
 import { shortLogger } from '../admin-labels';
-import { PageHeader } from '@shared/ui/page-header';
-import { HelpButton } from '@features/help/parts';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Busy } from '@shared/ui/busy';
 import { LoadState } from '@shared/ui/load-state';
@@ -17,43 +14,29 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
-/** Administrator: events not processed yet and failed deliveries to messengers, with a retry. */
+/**
+ * Administrator, «События» of the journal: events not processed yet and failed deliveries to messengers, with
+ * a retry. The sections lie on the pane's surface under their titles (no cards).
+ */
 @Component({
-  selector: 'tb-events-page',
-  imports: [
-    DatePipe,
-    Button,
-    Card,
-    TableModule,
-    RowType,
-    PageHeader,
-    HelpButton,
-    EmptyState,
-    LoadStateView,
-  ],
+  selector: 'tb-events-panel',
+  imports: [DatePipe, Button, TableModule, RowType, EmptyState, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.title">
-      <tb-help-button help topic="admin/diagnostics" />
-    </tb-page-header>
     <div class="tb-stack">
-      <p-card>
-        <ng-template #title>
-          <div class="tb-card-title">
-            <span class="tb-card-title__text">{{ t.pending }}</span>
-            @if (events().length > 0) {
-              <div class="tb-card-title__actions">
-                <p-button
-                  [label]="t.retryAll"
-                  icon="tb-i tb-i-replay"
-                  severity="secondary"
-                  [loading]="busy.is('events')"
-                  (onClick)="resubmit([])"
-                />
-              </div>
-            }
-          </div>
-        </ng-template>
+      <section>
+        <div class="tb-events__head">
+          <h2 class="tb-events__title">{{ t.pending }}</h2>
+          @if (events().length > 0) {
+            <p-button
+              [label]="t.retryAll"
+              icon="tb-i tb-i-replay"
+              severity="secondary"
+              [loading]="busy.is('events')"
+              (onClick)="resubmit([])"
+            />
+          }
+        </div>
         <p class="tb-muted">{{ t.about }}</p>
         <tb-load-state [state]="eventsState" [what]="t.what" (retry)="loadEvents()">
           @if (events().length === 0) {
@@ -93,25 +76,21 @@ import { SHARED_T } from '@shared/i18n/texts';
             </p-table>
           }
         </tb-load-state>
-      </p-card>
+      </section>
 
-      <p-card>
-        <ng-template #title>
-          <div class="tb-card-title">
-            <span class="tb-card-title__text">{{ t.deliveries }}</span>
-            @if (deliveries().length > 0) {
-              <div class="tb-card-title__actions">
-                <p-button
-                  [label]="t.resendAll"
-                  icon="tb-i tb-i-replay"
-                  severity="secondary"
-                  [loading]="busy.is('deliveries')"
-                  (onClick)="retry([])"
-                />
-              </div>
-            }
-          </div>
-        </ng-template>
+      <section>
+        <div class="tb-events__head">
+          <h2 class="tb-events__title">{{ t.deliveries }}</h2>
+          @if (deliveries().length > 0) {
+            <p-button
+              [label]="t.resendAll"
+              icon="tb-i tb-i-replay"
+              severity="secondary"
+              [loading]="busy.is('deliveries')"
+              (onClick)="retry([])"
+            />
+          }
+        </div>
         <tb-load-state
           [state]="deliveriesState"
           [what]="t.whatDeliveries"
@@ -154,10 +133,23 @@ import { SHARED_T } from '@shared/i18n/texts';
             </p-table>
           }
         </tb-load-state>
-      </p-card>
+      </section>
     </div>
   `,
   styles: `
+    .tb-events__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-events__title {
+      margin: 0;
+      font: var(--tb-type-title-m);
+    }
+
     .tb-mono {
       font-family: var(--tb-font-mono);
       font-size: 0.85rem;
@@ -173,7 +165,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
   `,
 })
-export class EventsPage implements OnInit {
+export class EventsPanel implements OnInit {
   protected readonly t = T.events;
   protected channelName(channel: string): string {
     const names: Record<string, string> = SHARED_T.messengers;

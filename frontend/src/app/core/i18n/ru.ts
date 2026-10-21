@@ -15,10 +15,8 @@ export const ru = {
     settings: 'Настройки',
     log: 'Журнал',
     status: 'Состояние',
-    events: 'События',
     integrations: 'Интеграции',
     backups: 'Копии',
-    diagnostics: 'Диагностика',
   },
   titles: {
     signIn: 'Вход',

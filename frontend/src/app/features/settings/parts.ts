@@ -3,3 +3,5 @@
  * administrator area). Pages are loaded lazily through index.ts.
  */
 export { BackupsCard } from './backups/backups-card';
+export { BackupsApi } from './backups/backups-api';
+export type { BackupInfo } from './data-access/settings.models';

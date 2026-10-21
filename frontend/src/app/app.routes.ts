@@ -83,6 +83,12 @@ function materialsTab(tab: 'boards' | 'textbooks', area = 'teacher'): RedirectFu
     inject(Router).createUrlTree([`/${area}/materials`], { queryParams: { ...queryParams, tab } });
 }
 
+/** The old `/admin/events` is the «События» chip of the journal. */
+function adminJournal(view: 'events'): RedirectFunction {
+  return ({ queryParams }) =>
+    inject(Router).createUrlTree(['/admin/logs'], { queryParams: { ...queryParams, view } });
+}
+
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -298,22 +304,19 @@ export const routes: Routes = [
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => import('@core/layout/admin-layout').then((m) => m.AdminLayout),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'logs' },
-      {
-        path: 'logs',
-        title: NAV.log,
-        loadComponent: () => import('@features/admin').then((m) => m.LogPage),
-      },
+      { path: '', pathMatch: 'full', redirectTo: 'status' },
       {
         path: 'status',
         title: NAV.status,
         loadComponent: () => import('@features/admin').then((m) => m.StatusPage),
       },
       {
-        path: 'events',
-        title: NAV.events,
-        loadComponent: () => import('@features/admin').then((m) => m.EventsPage),
+        // the log, the errors (`?view=errors`) and the events (`?view=events`) are the chips of the journal (247.1)
+        path: 'logs',
+        title: NAV.log,
+        loadComponent: () => import('@features/admin').then((m) => m.JournalPage),
       },
+      { path: 'events', pathMatch: 'full', redirectTo: adminJournal('events') },
       {
         path: 'integrations',
         title: NAV.integrations,
@@ -329,11 +332,8 @@ export const routes: Routes = [
         title: NAV.settings,
         loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
       },
-      {
-        path: 'diagnostics',
-        title: NAV.diagnostics,
-        loadComponent: () => import('@features/admin').then((m) => m.DiagnosticsPage),
-      },
+      // the archive for the developer is collected on «Состояние»
+      { path: 'diagnostics', pathMatch: 'full', redirectTo: 'status' },
       {
         path: 'help',
         title: N.help,

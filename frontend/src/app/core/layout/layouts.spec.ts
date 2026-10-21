@@ -31,7 +31,7 @@ describe('The rail of each role (spec §3.2)', () => {
       AdminLayout,
       'ADMIN',
       ADMIN_MENU.map((item) => String(item.label)),
-      ['/admin/settings', '/admin/help'],
+      ['/admin/help'],
     ],
   ])(
     'of the %s: the brand, «Создать» of the teacher, the sections, then the settings and the help',
@@ -84,8 +84,8 @@ describe('The phone navigation of each role (spec §3.1, D2)', () => {
       'administrator',
       AdminLayout,
       'ADMIN',
-      ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'События'],
-      ['Диагностика', 'Настройки', 'Справка'],
+      ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'Настройки'],
+      ['Справка'],
     ],
   ])(
     'of the %s: five sections in the bar, the rest under ☰, no «Ещё»',
