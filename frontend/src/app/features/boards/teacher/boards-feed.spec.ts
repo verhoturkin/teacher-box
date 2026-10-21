@@ -49,7 +49,7 @@ describe('BoardsFeed', () => {
     expect(cards).toHaveLength(2);
     const portal = cards[1]?.querySelector('a.tb-material-card__title');
     const external = cards[0]?.querySelector('a.tb-material-card__title');
-    expect(portal?.getAttribute('href')).toMatch(/\/board-1$/);
+    expect(portal?.getAttribute('href')).toBe('/teacher/boards/board-1');
     expect(external?.getAttribute('href')).toBe('https://app.holst.so/board/1');
     expect(external?.getAttribute('target')).toBe('_blank');
     expect(host.querySelector('.tb-material-card__tag')?.textContent).toContain('Холст');

@@ -178,7 +178,7 @@ test('the teacher creates a board for a student and a group, draws and returns',
 
   // opened from the list: «Назад» returns to it (0.15.0)
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
-  await expect(page).toHaveURL(/\/teacher\/boards$/);
+  await expect(page).toHaveURL(/\/teacher\/materials\?tab=boards$/);
   await expect.poll(async () => (await scene(page.request)).elements.length).toBe(1);
 });
 
@@ -187,8 +187,8 @@ test('the student opens the board from «Мои доски» and sees the drawin
   request,
 }) => {
   await signIn(page, vera.login, vera.password);
-  await page.getByRole('link', { name: 'Мои доски' }).first().click();
-  await expect(page).toHaveURL(/\/cabinet\/boards$/);
+  await page.getByRole('link', { name: 'Материалы' }).first().click();
+  await expect(page).toHaveURL(/\/cabinet\/materials/);
   await page.getByRole('link', { name: BOARD }).click();
 
   await expect(page).toHaveURL(new RegExp(`/cabinet/boards/${boardId}$`));
@@ -285,6 +285,6 @@ test('an external board opens in a new tab', async ({ page, request }) => {
   const link = page.getByRole('link', { name: `Холст ${RUN}` });
   await expect(link).toHaveAttribute('href', 'https://app.holst.so/board/e2e-1-7');
   await expect(link).toHaveAttribute('target', '_blank');
-  // 0.15.3: an external board is in «Внешние доски»
-  await expect(page.getByRole('list', { name: 'Внешние доски' })).toContainText(`Холст ${RUN}`);
+  // 0.26.0: boards are one feed «Список досок»
+  await expect(page.getByRole('list', { name: 'Список досок' })).toContainText(`Холст ${RUN}`);
 });

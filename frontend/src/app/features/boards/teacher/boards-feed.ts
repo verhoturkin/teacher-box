@@ -23,7 +23,7 @@ import { MaterialCard } from '@shared/ui/material-card';
 import { MaterialSort, sortMaterials } from '@shared/ui/material-sort';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
-import { boardMembersText, boardServiceTag } from '../boards-labels';
+import { boardMembersText, boardRoute, boardServiceTag } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
 import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
@@ -72,7 +72,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
               <tb-material-card
                 [title]="board.title"
                 [supporting]="details(board)"
-                [routerLink]="board.kind === 'EXCALIDRAW' ? [board.id] : null"
+                [routerLink]="board.kind === 'EXCALIDRAW' ? route(board.id) : null"
                 [href]="board.kind === 'LINK' ? board.url : null"
                 [tonal]="board.kind === 'LINK'"
                 [tag]="board.kind === 'LINK' ? tagOf(board) : null"
@@ -198,6 +198,10 @@ export class BoardsFeed {
     return [boardMembersText(board), this.date.transform(board.updatedAt, 'dd.MM') ?? ''].join(
       ' · ',
     );
+  }
+
+  protected route(boardId: string): string {
+    return boardRoute('teacher', boardId);
   }
 
   protected tagOf(board: Board): string | null {

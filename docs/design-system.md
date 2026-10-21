@@ -1,8 +1,7 @@
 # Design system
 
-> **Redesign 2026-10 in progress** (ADR-0048, releases 0.21.0–0.26.0): the target interface is
-> [`redesign/README.md`](redesign/README.md). This page describes what is shipped; each stage rewrites only the
-> sections it changed.
+> The 2026-10 redesign (ADR-0048, releases 0.21.0–0.26.0) is finished and shipped; this page is the single source
+> of its rules. The target spec and mockups are kept as history in `archive/redesign-2026-10/`.
 
 The **current** UI rules: Material 3 Expressive (M3E) on PrimeNG 21. This page brings together ADR-0015,
 ADR-0017–0027, the call window of ADR-0030, the M3E alignment of ADR-0044, the button accent of ADR-0045 and the icons of ADR-0046, which are the history (*why*); if they disagree with this page, this page is right. A change to

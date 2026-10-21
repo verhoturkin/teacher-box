@@ -12,7 +12,9 @@ test('the administrator searches the log and checks the instance', async ({ page
   await page.getByLabel('Логин').fill('admin');
   await page.locator('#password').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Войти' }).click();
-  await expect(page).toHaveURL(/\/admin\/logs$/);
+  await expect(page).toHaveURL(/\/admin\/status$/);
+  await page.getByRole('link', { name: 'Журнал' }).first().click();
+  await expect(page).toHaveURL(/\/admin\/logs/);
   await expect(page.getByRole('heading', { name: 'Журнал', level: 1 })).toBeVisible();
 
   await page.getByLabel('Текст').fill('role=ADMIN');
@@ -44,5 +46,5 @@ test('the administrator searches the log and checks the instance', async ({ page
   await expect(page.getByText('Провайдер не выбран (TEACHERBOX_AI_PROVIDER)')).toBeVisible();
 
   await page.goto('/teacher');
-  await expect(page).toHaveURL(/\/admin\/logs$/);
+  await expect(page).toHaveURL(/\/admin\/status$/);
 });
