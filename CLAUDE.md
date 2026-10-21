@@ -1,59 +1,17 @@
 # CLAUDE.md
 
-Project rules — in AGENTS.md (single source for all agents); `backend/` and `frontend/` have their own
-CLAUDE.md → AGENTS.md, loaded when you work there.
+Project rules — in AGENTS.md (single source for all agents, including workflow §10, context economy §11,
+environment §12, replies §14); `backend/` and `frontend/` have their own CLAUDE.md → AGENTS.md, loaded when you
+work there. Add new shared rules to AGENTS.md, not here.
 
 @AGENTS.md
 
-## Workflow
+## Claude Code specifics
 
-0. **New branch — from the latest `main`** (`git fetch origin`, `git switch -c <branch> origin/main`; AGENTS.md
-   §8.1), so the plan and stage numbers continue from what is already released.
-1. **Work from the plan.** Find the task's substep in `docs/PLAN.md`; not there — add it first (or ask the user).
-   Plans are written in English. Read only what AGENTS.md §2 lists for the task; `docs/archive/` only when
-   history is needed, and grep for the item instead of reading whole files.
-2. **Contract and tests first.** New use case: `api` facade/DTO/event → test → implementation. REST — controller
-   test with role checks first.
-3. **Module isolation is a hard rule** (AGENTS.md §4.2). Need another module's data — add a facade method or
-   subscribe to an event; never read another module's schema.
-4. **Verify before committing** (mandatory, see AGENTS.md §8): backend → `./mvnw clean verify`; frontend →
-   `npm run lint && npm test && npm run build`; Docker files → `docker compose -f <file> config` (+ build if the
-   daemon is up). Commit only when green; fix causes, never `--no-verify`.
-5. Tick the substep in `docs/PLAN.md` in the same commit; release — skill `release`.
-6. Keep docs current in the same commit: `docs/modules/<m>.md` for module behaviour, `docs/design-system.md`
-   for UI rules, ADR index for new ADRs; user docs — `docs/wiki/` (AGENTS.md §6.1), published to the GitHub
-   wiki by CI on the release tag.
-
-## Context economy
-
-- Read the part of a file you need (`offset`/`limit`, Grep with context) rather than whole large files
-  (`styles.scss`, `teacher-box-preset.ts`, help articles, CHANGELOG).
-- Broad searches across many files ("where is X used", "how do modules do Y") — delegate to the Explore subagent
-  and take its conclusion, not the file dumps.
-- Targeted tests while iterating, `verify.sh` once before the commit (AGENTS.md §5). Don't run `npm run format`
-  for files you edited: the PostToolUse hook in `.claude/settings.json` formats them.
+- Broad searches across many files — delegate to the Explore subagent.
 - Project subagent `docs-sync` (Sonnet, `.claude/agents/`) — only when a change touches 3 or more docs, or to
-  sync docs before a release. Ticking the PLAN.md checkbox or editing one doc — do it inline: a subagent starts
-  cold and costs more there.
-- Browser checks: only when the change is visible in the UI. Verify with text tools first (`read_page`,
-  `get_page_text`, console/network); take one final screenshot with `scale: 0.5` as proof, not one per step.
-- `package-lock.json` files and build output (`dist`, `target/classes`, `node_modules`, HTML coverage reports,
-  `backend/data`) are not readable (`permissions.deny`); check versions with `npm ls <pkg>`.
-
-## Developer environment
-
-- Windows 11, PowerShell 5.1 (no `&&` — use `;` and `if ($?)`); Git Bash for `*.sh`.
-- JDK 25, Maven 3.9 (use `mvnw`), Node 22, npm 10 (install with `npx -y npm@11 ci|install` — ADR-0007), Docker
-  (daemon may be down — check `docker info`).
-- Files: UTF-8 without BOM, LF (`.gitattributes`).
-
-## Up-to-date knowledge
-
-Angular 21, PrimeNG 21, Spring Boot 4.1, Spring Security 7, Spring Modulith 2.1, Jackson 3, JUnit 6 are newer than
-most online examples: **check current docs** (context7 MCP) before using an unfamiliar API. Version traps are in
-the nested AGENTS.md files.
-
-## Replies to the user
-
-- The user writes in Russian — reply in Russian.
-- Report checks honestly: what ran, what passed, what didn't.
+  sync docs before a release; a subagent starts cold and costs more for one doc.
+- Don't run `npm run format` for files you edited: the PostToolUse hook in `.claude/settings.json` formats them.
+- Browser checks: `read_page` / `get_page_text` first, one final screenshot with `scale: 0.5`.
+- `package-lock.json` and build output are unreadable (`permissions.deny` in `.claude/settings.json`).
+- Library docs — context7 MCP.
