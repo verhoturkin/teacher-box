@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
@@ -9,7 +10,7 @@ import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { RailState } from './rail-state';
 import { Shell } from './shell';
-import { STUDENT_BOTTOM_NAV, STUDENT_MENU } from './student-layout';
+import { STUDENT_BOTTOM_NAV, studentMenu } from './student-layout';
 import { TEACHER_BOTTOM_NAV, TEACHER_FOOTER_LINKS, TEACHER_MENU } from './teacher-layout';
 
 describe('Shell on a phone', () => {
@@ -167,7 +168,7 @@ describe('Shell on a phone', () => {
   });
 
   it('puts the five sections of the student in the bar, none is left under ☰', async () => {
-    const host = await render(STUDENT_MENU, STUDENT_BOTTOM_NAV, '/cabinet');
+    const host = await render(studentMenu(signal(0)), STUDENT_BOTTOM_NAV, '/cabinet');
 
     expect(labels(host, 'nav.tb-bottom-nav a')).toEqual([
       'Главная',
@@ -193,7 +194,7 @@ describe('Shell on a phone', () => {
   });
 
   it('has no other sections in the modal rail when all fit the bar', async () => {
-    const host = await render(STUDENT_MENU.slice(0, 3));
+    const host = await render(studentMenu(signal(0)).slice(0, 3));
 
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(3);
     const rail = await openRail(host);

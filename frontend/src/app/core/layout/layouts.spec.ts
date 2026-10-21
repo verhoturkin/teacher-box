@@ -1,4 +1,4 @@
-import { Type } from '@angular/core';
+import { Type, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
@@ -7,7 +7,7 @@ import { authResponse } from '@testing/auth';
 import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth, testProvidersWithRouter } from '@testing/setup';
 import { ADMIN_MENU, AdminLayout } from './admin-layout';
-import { STUDENT_MENU, StudentLayout } from './student-layout';
+import { StudentLayout, studentMenu } from './student-layout';
 import { TEACHER_MENU, TeacherLayout } from './teacher-layout';
 
 describe('The rail of each role (spec §3.2)', () => {
@@ -23,7 +23,7 @@ describe('The rail of each role (spec §3.2)', () => {
       'student',
       StudentLayout,
       'STUDENT',
-      STUDENT_MENU.map((item) => String(item.label)),
+      studentMenu(signal(0)).map((item) => String(item.label)),
       ['/cabinet/help'],
     ],
     [

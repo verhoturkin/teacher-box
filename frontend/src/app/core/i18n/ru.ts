@@ -2,6 +2,7 @@
 export const ru = {
   nav: {
     sections: 'Разделы',
+    openTasks: (count: number) => `Заданий к сдаче: ${String(count)}`,
     home: 'Главная',
     today: 'Сегодня',
     schedule: 'Расписание',

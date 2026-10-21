@@ -4,6 +4,7 @@ import type { ru } from './ru';
 export const en: Translation<typeof ru> = {
   nav: {
     sections: 'Sections',
+    openTasks: (count: number) => `Tasks to hand in: ${String(count)}`,
     home: 'Home',
     today: 'Today',
     schedule: 'Schedule',

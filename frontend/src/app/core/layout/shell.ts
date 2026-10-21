@@ -24,6 +24,7 @@ import { CORE_T } from '@core/i18n/texts';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
+import { NavBadge } from './nav-badge';
 import { SideNav } from './side-nav';
 import { NavItem, injectUrl, isNavActive } from './nav-item';
 import { RailState } from './rail-state';
@@ -55,6 +56,7 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     ButtonDirective,
     ButtonIcon,
     CreateMenu,
+    NavBadge,
     NewMessage,
     Drawer,
     ModalDrawer,
@@ -196,8 +198,18 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
               [attr.aria-current]="isActive(item) ? 'page' : null"
             >
               <span class="tb-bottom-nav__icon"
-                ><i [class]="item.icon" aria-hidden="true"></i
-              ></span>
+                ><i [class]="item.icon" aria-hidden="true"></i>
+                @if (item.count; as badge) {
+                  @if (badge() > 0) {
+                    <tb-nav-badge [count]="badge()" />
+                  }
+                }
+              </span>
+              @if (item.count; as badge) {
+                @if (badge() > 0 && item.countLabel; as label) {
+                  <span class="tb-sr-only">{{ label(badge()) }}</span>
+                }
+              }
               <span class="tb-bottom-nav__label">{{ item.label }}</span>
             </a>
           }

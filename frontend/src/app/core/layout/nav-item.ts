@@ -10,6 +10,10 @@ import { filter, map } from 'rxjs';
  */
 export interface NavItem extends MenuItem {
   readonly alsoActive?: readonly string[];
+  /** The counter on the destination (M3 badge); nothing at 0. */
+  readonly count?: Signal<number>;
+  /** What a screen reader hears for the counter. */
+  readonly countLabel?: (count: number) => string;
 }
 
 function exact(item: NavItem): boolean {
