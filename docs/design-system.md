@@ -146,7 +146,7 @@ component that shows one adds it to `PRIME`).
 | Restore, history of versions | `history` | `pi-history` |
 | Admin: status | `dns` | `pi-server` |
 | Admin: log | `list_alt` | `pi-list` |
-| Admin: events | `sync` | `pi-sync` |
+| Admin: events (chip «События» of the journal) | `sync` | `pi-sync` |
 | Set in Docker | `deployed_code` | `pi-box` (setting) |
 | Set in .env, locked | `lock` | `pi-lock` |
 | Archive | `inventory_2` | `pi-box` (groups) |
@@ -298,7 +298,7 @@ component that shows one adds it to `PRIME`).
   rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
   the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
   group** (`tb-side-nav__footer`, pushed down by `margin-top: auto`): the area's settings (`footerLinks`:
-  teacher `/teacher/settings`, admin `/admin/settings`; the student has none) and «Справка»
+  teacher `/teacher/settings`; the student and the admin have none — «Настройки» is the admin's fifth destination) and «Справка»
   (`/<area>/help`), same items as the sections. **Expanded item** (**M3E** expanded rail): the target spans
   the rail's width, the 56 px pill indicator hugs icon + label — 16 dp before and after, 8 dp between — in
   secondary-container; state layer and focus ring on the indicator.
@@ -354,8 +354,8 @@ component that shows one adds it to `PRIME`).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
   Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student
-  (246.1): «Главная», «Расписание», «Задания», «Материалы», «Оплаты» — all five in the bar, no «Ещё»; admin: «Состояние», «Журнал»,
-  «Интеграции», «Копии», «События». The other sections and the rail's bottom group are in the **modal expanded
+  (246.1): «Главная», «Расписание», «Задания», «Материалы», «Оплаты» — all five in the bar, no «Ещё»; admin (247.1): «Состояние», «Журнал»,
+  «Интеграции», «Копии», «Настройки» — all five in the bar too. The other sections and the rail's bottom group are in the **modal expanded
   rail** under ☰ (**M3E**: more than five destinations → modal expanded rail): `p-drawer` + `tbModalDrawer` on the
   start edge — scrim 32 % (**M3**), Esc / scrim / a destination / its menu button (`menu_open`, «Закрыть») close
   it, focus trap, focus back to ☰; `tb-side-nav [modal]` with the brand at the top; surface-container, elevation
@@ -390,9 +390,9 @@ component that shows one adds it to `PRIME`).
   take the card's width (0.15.1). Columns only inside one row of data
   (name — value, table columns, row buttons, filter fields).
 - **Foldable sections** `tb-fold-card` (not tabs): header is a button with chevron and a line of explanation;
-  content loads on first open; open sections in the URL (`?open=`). Still used by the administrator's
-  «Настройки» (`admin/settings`, until 247.2). The teacher's settings are list-detail (§ panes above) and the
-  teacher's notifications are in the bell's sheet (§8), not fold cards.
+  content loads on first open; open sections in the URL (`?open=`). No page uses them since 247.2: the
+  settings of the teacher and of the administrator are list-detail (§ panes above) and the teacher's
+  notifications are in the bell's sheet (§8).
 
 ## 5. Page anatomy
 
@@ -786,6 +786,26 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   without the actions: `MyBoardsFeed` / `MyTextbooksFeed`, no «⋮» (`tb-material-card` shows it only when it has an
   actions label), no member select, no create; chips «Все · На портале · Внешние» / by kind; `/cabinet/boards` and
   `/cabinet/textbooks` redirect to the tabs; «Материалы» is the fourth destination of the bottom bar.
+- **Admin** (247.1–247.2, spec §5, §10.5):
+  - Shell (`admin-layout.ts`, `ADMIN_MENU`): five destinations — «Состояние», «Журнал», «Интеграции», «Копии»,
+    «Настройки» — in the rail and all in the bottom bar; «Справка» at the bottom of the rail. `/admin` leads to
+    «Состояние»; `/admin/events` redirects to the journal's chip «События» (`?view=events`) and
+    `/admin/diagnostics` to «Состояние».
+  - «Состояние» (`status-page.ts`): a feed of status tiles in `tb-panes`, a fixed column order that is also the
+    reading order — services, event queue, diagnostics | system, resources, last backup, portal address; from
+    expanded two columns, below one. The header line is «Версия … · работает …»; «Собрать диагностику» (the
+    archive for the developer) is a header action; the diagnostics tile says what is in it. The event queue tile counts pending events and
+    failed deliveries and links «Разобрать в журнале».
+  - «Журнал» (`journal-page.ts`): filter chips «Логи · События · Ошибки» (`?view=`), «Ещё фильтры» for period
+    and level. «Логи» and «Ошибки» are list-detail: entries in the fixed pane, the chosen one beside it (message,
+    request code, stack trace); with nothing open the detail pane holds the temporary log levels. On compact the
+    detail has «К списку». «События» is a wide page (the internal events, resubmit of stuck ones).
+  - «Интеграции» and «Настройки» (`/admin/integrations[/:section]`, `/admin/settings[/:section]`): list-detail
+    like the teacher's Settings, the sections in `tb-pane-nav` (`shared/ui/pane-nav.ts`: two-line items with an
+    icon in a tonal circle and a count badge for unsaved changes; the chosen one in secondary container). Integrations:
+    «Проверка связи» and «ИИ-помощник»; the settings are grouped by the sections of the catalog and saved together
+    («Сохранить и перезапустить»). The old `?open=<section>` of the settings redirects to the section. «Копии» is the
+    teacher's backups card in a pane (one component, D4).
 - **Student cabinet** (246.1–246.3, spec §5, §9, §10.4):
   - Shell (`student-layout.ts`, `studentMenu()`): the rail and the bar hold the five destinations; the inbox is in
     the bell, the account, messengers and preferences in «Мой аккаунт», «Справка» at the bottom of the rail. The

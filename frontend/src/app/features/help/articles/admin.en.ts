@@ -11,21 +11,19 @@ The administrator helps with the server: reads the log, checks the integrations 
 
 ## Sections
 
-- **Log** — search the server's records. Detailed records can be turned on for a while for one section.
-- **Status** — the version, disk space, memory and the portal address.
+- **Status** — tiles: the services, the event queue, the version and uptime, memory and disk space, the last backup, the portal address. The «Collect diagnostics» button at the top downloads an archive for the developer: the log and the settings without passwords and personal data.
+- **Log** — three filters: «Logs» (the server's records; pick a record — the request code and the error details are on the right), «Events» (internal events of the portal; stuck ones can be resubmitted) and «Errors». With no record picked, detailed records can be turned on for a while for one section on the right.
+- **Integrations** — the connection check of the messengers, the AI, the call server (LiveKit) and other external services, and the «AI assistant» section.
 - **Backups** — [backups](/admin/help/backups): making and restoring them.
-- **Events** — internal events of the portal; stuck ones can be resubmitted.
-- **Integrations** — a check of the messengers, the AI, the call server (LiveKit) and other external services.
 - **Settings** — [portal settings](/admin/help/settings) instead of the .env file.
-- **Diagnostics** — an archive for the developer: the log and the settings without passwords and personal data.
 
-The sections are in the panel on the left, «Settings» and «Help» at its bottom. On a phone the bottom of the screen has «Status», «Log», «Integrations», «Backups», «Events»; «Diagnostics», «Settings» and «Help» are under the ☰ button at the top left. Your photo (or a person icon) at the top right opens the menu: «My account», the theme, the language and «Sign out».
+The sections are in the panel on the left, «Help» at its bottom. On a phone all five sections are at the bottom of the screen, «Help» is under the ☰ button at the top left. Your photo (or a person icon) at the top right opens the menu: «My account», the theme, the language and «Sign out».
 
 ## If something broke
 
 1. Open «Integrations» and click «Check».
 2. Look through the «Log» for the time you need.
-3. Download the archive in «Diagnostics» and send it to the developer.
+3. Click «Collect diagnostics» in «Status» and send the archive to the developer.
 
 ## On the server
 
@@ -62,14 +60,14 @@ To restart, the container needs the \`restart: unless-stopped\` policy (the port
 
 ## Portal address
 
-«Status» → «Portal address». All the portal's links start with it: invitations, bot messages, the calendar subscription, Google and Yandex return addresses. If the address is set by the TEACHERBOX_PUBLIC_URL variable, the portal only shows it.
+«Status» → the «Portal address» tile. All the portal's links start with it: invitations, bot messages, the calendar subscription, Google and Yandex return addresses. If the address is set by the TEACHERBOX_PUBLIC_URL variable, the portal only shows it.
 `,
   },
   settings: {
     title: 'Portal settings',
     summary: 'How to change the .env settings in the interface',
     body: `
-The «Settings» section shows all the portal's settings of the .env file by section: the value and where it comes from — «default», «from .env» or «set here». The sections are folded — open the one you need; the number next to a section's name is how many unsaved changes it has.
+The «Settings» section shows all the portal's settings of the .env file by section: the value and where it comes from — «default», «from .env» or «set here». The sections are listed on the left and the chosen one is on the right (on a phone the list comes first and a section opens on its own page with a «back» button); the number next to a section's name is how many unsaved changes it has. The changes of all sections are saved together.
 
 ## Change
 
