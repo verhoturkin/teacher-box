@@ -29,10 +29,10 @@ import { T } from '../i18n/texts';
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+    <tb-load-state [state]="state" [what]="t.what" [compact]="limit() > 0" (retry)="load()">
       @if (shown().length > 0) {
         <ul class="tb-material-grid" [attr.aria-label]="t.list">
-          @for (board of shown(); track board.id) {
+          @for (board of visible(); track board.id) {
             <li>
               <tb-material-card
                 [title]="board.title"
@@ -49,6 +49,8 @@ import { T } from '../i18n/texts';
             </li>
           }
         </ul>
+      } @else if (limit() > 0) {
+        <!-- the home page: a place without boards stays empty -->
       } @else if (boards().length > 0) {
         <tb-empty-state icon="tb-i-search" [title]="k.notFound" />
       } @else {
@@ -67,6 +69,8 @@ export class MyBoardsFeed implements OnInit {
   /** The search text of the page. */
   readonly query = input('');
   readonly filter = input<BoardsFilter>('all');
+  /** The home page shows only the newest boards and no empty state; 0 — all of them. */
+  readonly limit = input(0);
 
   protected readonly state = new LoadState();
   protected readonly boards = signal<MyBoard[]>([]);
@@ -81,6 +85,11 @@ export class MyBoardsFeed implements OnInit {
         (kind === null || board.kind === kind) &&
         (query === '' || board.title.toLocaleLowerCase().includes(query)),
     );
+  });
+
+  protected readonly visible = computed(() => {
+    const limit = this.limit();
+    return limit > 0 ? this.shown().slice(0, limit) : this.shown();
   });
 
   /** The preview of a board (a stable function for `tb-blob-image`). */

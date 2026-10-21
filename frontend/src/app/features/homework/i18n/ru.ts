@@ -86,13 +86,12 @@ export const ru = {
     showMore: 'Показать ещё',
   },
   deadlines: {
-    title: 'Домашние задания',
+    title: 'Сдать',
     nothing: 'Открытых заданий нет',
+    openTask: 'Открыть',
+    fix: 'Исправить',
+    recent: 'Проверено недавно',
     until: (date: string) => `до ${date}`,
-    toRework: 'На доработку',
-    open: (count: number) => `Открыто: ${String(count)}`,
-    overdue: (count: number) => `, просрочено: ${String(count)}`,
-    all: 'Все задания',
   },
   mine: {
     title: 'Задания',

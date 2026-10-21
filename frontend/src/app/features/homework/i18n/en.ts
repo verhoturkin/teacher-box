@@ -88,13 +88,12 @@ export const en: Translation<typeof ru> = {
     showMore: 'Show more',
   },
   deadlines: {
-    title: 'Homework',
-    nothing: 'No open homework',
+    title: 'To hand in',
+    nothing: 'No open tasks',
+    openTask: 'Open',
+    fix: 'Fix',
+    recent: 'Reviewed recently',
     until: (date: string) => `until ${date}`,
-    toRework: 'To rework',
-    open: (count: number) => `Open: ${String(count)}`,
-    overdue: (count: number) => `, overdue: ${String(count)}`,
-    all: 'All homework',
   },
   mine: {
     title: 'Homework',

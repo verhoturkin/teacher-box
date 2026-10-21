@@ -28,10 +28,10 @@ import { T } from '../i18n/texts';
   imports: [MaterialCard, EmptyState, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+    <tb-load-state [state]="state" [what]="t.what" [compact]="limit() > 0" (retry)="load()">
       @if (shown().length > 0) {
         <ul class="tb-material-grid" [attr.aria-label]="t.list">
-          @for (textbook of shown(); track textbook.id) {
+          @for (textbook of visible(); track textbook.id) {
             <li>
               <tb-material-card
                 [title]="textbook.title"
@@ -46,6 +46,8 @@ import { T } from '../i18n/texts';
             </li>
           }
         </ul>
+      } @else if (limit() > 0) {
+        <!-- the home page: a place without textbooks stays empty -->
       } @else if (textbooks().length > 0) {
         <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
       } @else {
@@ -62,6 +64,8 @@ export class MyTextbooksFeed implements OnInit {
   /** The search text of the page. */
   readonly query = input('');
   readonly filter = input<TextbooksFilter>('all');
+  /** The home page shows only the newest textbooks and no empty state; 0 — all of them. */
+  readonly limit = input(0);
 
   protected readonly icons = TEXTBOOK_KIND_ICONS;
   protected readonly state = new LoadState();
@@ -78,6 +82,11 @@ export class MyTextbooksFeed implements OnInit {
           textbook.title.toLocaleLowerCase('ru').includes(query) ||
           (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false)),
     );
+  });
+
+  protected readonly visible = computed(() => {
+    const limit = this.limit();
+    return limit > 0 ? this.shown().slice(0, limit) : this.shown();
   });
 
   /** The cover of a textbook (a stable function for `tb-blob-image`). */

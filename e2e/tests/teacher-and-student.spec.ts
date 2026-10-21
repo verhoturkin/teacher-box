@@ -231,6 +231,6 @@ test('the home pages sum up the day', async ({ page, browser }) => {
   // 0.15.1: the title of the nearest lesson is for screen readers only
   await expect(student.getByRole('heading', { name: 'Ближайшее занятие' })).toHaveCount(1);
   await expect(student.getByText('Проценты')).toBeVisible();
-  await expect(student.getByText('аванс 1 500 ₽')).toBeVisible();
+  await expect(student.getByText('1 500 ₽ на балансе')).toBeVisible();
   await expect(student.getByText('Открытых заданий нет')).toBeVisible();
 });

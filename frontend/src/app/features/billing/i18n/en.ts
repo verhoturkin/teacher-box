@@ -1,5 +1,5 @@
 import type { Translation } from '@core/i18n/language';
-import { countOf } from '@shared/text/plural';
+import { countOf, plural } from '@shared/text/plural';
 import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
@@ -17,9 +17,11 @@ export const en: Translation<typeof ru> = {
     debtors: (count: number) => `debtors: ${String(count)}`,
   },
   myBalance: {
-    title: 'Balance',
-    lessonPrice: (price: string) => `A lesson costs ${price}`,
-    lastPayment: (amount: string, date: string) => `Last payment: ${amount}, ${date}`,
+    title: 'Paid',
+    paid: 'Paid',
+    lessons: (count: number) => plural(count, 'lesson', 'lessons', 'lessons'),
+    onBalance: (amount: string) => `${amount} on the balance`,
+    debt: (amount: string) => `Debt ${amount}`,
     history: 'Payment history',
   },
   studentBalance: {
