@@ -59,7 +59,35 @@ rows and the order of blocks changed with the width. Panes keep those fixes:
 | D3 | Merge Boards and Textbooks into «Материалы» | Yes, experiment in 0.26.0; fallback — one boards list with chips | **experiment** — teacher, 2026-10-19 |
 | D4 | Backups in the teacher's Settings when the portal has an administrator | Keep both, one component | **keep both** — teacher, 2026-10-19 |
 | D5 | Expanded rail (280) from large (1200) or from extra-large (1600) | From 1600; collapsed rail 96 below | our decision (ADR-0048), revisit at 230 |
-| D6 | Global search (Ctrl K) | Experiment, last release | 248 |
+| D6 | Global search (Ctrl K) | Experiment, last release | **frontend source** — decided at 248.1 (below) |
+
+**D6 — source of the global search (decided at 248.1): the frontend, no new endpoint.**
+
+- *Data size.* One tutor: tens of students and groups, hundreds of assignments and boards, a few textbooks —
+  a few hundred short rows in total, so a substring filter in the browser takes a millisecond.
+- *Every list already exists* as a teacher's endpoint (`IdentityApi.listStudents/listGroups`,
+  `HomeworkApi.assignments`, `BoardsApi.list`, `TextbooksApi.list`) with the fields the search needs (title, names,
+  e-mail/login, students of an assignment, course). No new read path, no change in any module.
+- *A backend search would need an aggregator.* `GET /api/teacher/search` has to call five modules; in the
+  allowed-dependency table (AGENTS.md §4.2) no module may depend on `homework`, `boards`, `textbooks` and
+  `identity` together, and `platform` must not know business modules. It would take a new module or a change of
+  the table (an ADR) plus five facade methods, five SQL `LIKE`s and tests — all for data that fits in memory.
+- *Latency:* typing never waits for the network — the lists are read once when the search opens and kept for
+  60 s (`SEARCH_TTL`), then the next opening reads them again; a failed list shows as «не удалось
+  загрузить» for its group only, the others still answer.
+- *Roles.* The search is the teacher's only: `TEACHER` gets the bar and Ctrl K. A `STUDENT` has none (each of
+  their lists is short and has its own filter, so the top strip of the cabinet shows no search); `ADMIN` has none
+  (no student data, ADR-0010; the admin's lists are filtered in place).
+- *Contract (`core/search/search.ts`, used by 248.2).* `core/` imports no feature, so the application provides
+  `SEARCH_SOURCES` (a lazy factory of `SearchSource { group, load(): Observable<SearchEntry[]> }`, built in
+  `app.config.ts` like `NEW_MESSAGE_DIALOG`, from the `parts` of the features). `GlobalSearch` holds the `query`,
+  `loading`, `failed` and `results` signals; `refresh()` reads the sources, `invalidate()` forces a new read.
+  Matching (`searchEntries`): case-insensitive, «ё» = «е», every word of the query must be found in the title,
+  subtitle or hidden keywords; the title start ranks first, then a word start, a substring, other fields; at most 5
+  entries per group (the rest as «Ещё N»), groups in the order students, groups, assignments, boards, textbooks.
+- *Testability:* the matcher is a pure function and the service takes fake sources — unit tests only, no backend
+  or E2E change. If the data ever outgrows the browser, a backend search can replace the sources behind the same
+  contract without touching the UI.
 
 Answers recorded at 229.1 (2026-10-19): the teacher took every default, so §3–§10 and stages 230–249 stand
 as written.
