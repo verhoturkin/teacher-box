@@ -353,8 +353,8 @@ component that shows one adds it to `PRIME`).
   «Уведомления» (`?open=` / `?tab=` → messengers); its other addresses open the bell's sheet (§8).
 - **Bottom bar** (231.2): five sections of the role (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5 destinations) in the
   order of `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the menu; no «Ещё».
-  Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student:
-  «Главная», «Расписание», «Задания», «Мои доски» (for «Материалы»), «Оплаты»; admin: «Состояние», «Журнал»,
+  Teacher (D2): «Главная» (for «Сегодня» until it ships), «Расписание», «Задания», «Ученики», «Оплаты»; student
+  (246.1): «Главная», «Расписание», «Задания», «Материалы», «Оплаты» — all five in the bar, no «Ещё»; admin: «Состояние», «Журнал»,
   «Интеграции», «Копии», «События». The other sections and the rail's bottom group are in the **modal expanded
   rail** under ☰ (**M3E**: more than five destinations → modal expanded rail): `p-drawer` + `tbModalDrawer` on the
   start edge — scrim 32 % (**M3**), Esc / scrim / a destination / its menu button (`menu_open`, «Закрыть») close
@@ -786,6 +786,26 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   without the actions: `MyBoardsFeed` / `MyTextbooksFeed`, no «⋮» (`tb-material-card` shows it only when it has an
   actions label), no member select, no create; chips «Все · На портале · Внешние» / by kind; `/cabinet/boards` and
   `/cabinet/textbooks` redirect to the tabs; «Материалы» is the fourth destination of the bottom bar.
+- **Student cabinet** (246.1–246.3, spec §5, §9, §10.4):
+  - Shell (`student-layout.ts`, `studentMenu()`): the rail and the bar hold the five destinations; the inbox is in
+    the bell, the account, messengers and preferences in «Мой аккаунт», «Справка» at the bottom of the rail. The
+    count of open tasks (assigned or returned, `OpenTasks`, re-read after each navigation) is an **M3 large badge**
+    (`tb-nav-badge`, error / on-error, 16 dp pill, «999+» at most) on «Задания»: by the label in the expanded rail,
+    on the icon's corner in the collapsed rail and the bar; a screen-reader line «Заданий к сдаче: N» is next to it.
+  - Home (`student-home.ts`, spec §10.4): a feed in `tb-panes`, the header «Привет, <имя>» with the line «Следующее
+    занятие … · Заданий к сдаче: N». From expanded two columns (1.8fr / 1fr, *ours*), below it one column in
+    the same order. Lead column: the nearest lesson (hero), «Сдать» (`tb-my-deadlines-widget`: open tasks as
+    tonal rows, nearest deadline first, «Открыть», or tonal «Исправить» for a returned one), «Проверено недавно»
+    (the last 3 reviewed tasks, status chip), then the welcome and «connect messenger» cards. Side column:
+    «Оплачено N занятий» (`tb-my-balance-widget`: Display Small number = balance ÷ lesson price, the balance, a
+    4 dp bar full at 8 lessons (*ours*) over a tonal block; a debt or no price — the balance alone) and the
+    lesson materials (one board card and one textbook card, hidden when there are none). No FAB.
+  - Homework (`my-homework-page.ts` + `my-task-page.ts`, spec §9): a list-detail like the teacher's, one route
+    for `/cabinet/homework` and `/cabinet/homework/:taskId` (the list stays). Fixed list pane: the connected group
+    «Сдать · На проверке · Готовые» with counts (the first non-empty one is chosen), the filter button of the
+    header opens the search, `tb-list` rows (icon, title link, «до …» — red when overdue, status tag), the
+    current row in secondary-container; beside the detail only the list scrolls. Detail pane: the task with the
+    teacher's feedback and the answer form; on one pane «back» in its header leads to the list.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·
   изменена»; trail — «⋮» only («Резервные копии», «Изменить», «Удалить…» red), one line on a phone. 0.15.3: two
   cards «Доски на портале» (Excalidraw) and «Внешние доски» (by link), each with its own search inside, as the

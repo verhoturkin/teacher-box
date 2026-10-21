@@ -84,7 +84,9 @@ The links to the lesson and the boards are in the bot too: «Join lesson» and �
     body: `
 ## See the homework
 
-«Homework» — two cards: «Active» (not accepted by the teacher yet; what is still to do comes first) and «Done» (accepted). Each has a search by the title; a long list shows 10 at a page. A row: the title, the deadline and the status. Overdue ones are marked red. A reminder comes before the deadline.
+«Homework» — the list on the left and the chosen task on the right (on a phone the list and the task open one after another; the «back» arrow leads from the task to the list). Above the list are three buttons with numbers: «To hand in» (still to do, or returned by the teacher), «In review» (you handed it in and wait for the teacher) and «Done» (accepted). The one with something to do opens first. The funnel button in the header turns on a search by the title. A row: the title, the deadline and the status; overdue ones are marked red. The number on the «Homework» icon in the menu is how many tasks wait for you to hand in. A reminder comes before the deadline.
+
+On the home page the tasks to hand in are in the «To hand in» block (the nearest deadline first; a returned one has «Fix»), and the latest reviewed ones are in «Reviewed recently».
 
 If the homework has a video, it plays right in the homework (a link to another site opens with «Open the video in a new tab»). If the teacher shows its transcript, there is a «Transcript» button under the video.
 
@@ -170,8 +172,9 @@ Send the bot /stop or disconnect the messenger in «My account» (your photo at 
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
 
-- The sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «Materials», «Payments»; the ☰ button at the top left opens «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled.
+- All five sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «Materials», «Payments»; the ☰ button at the top left opens «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled, and «Homework» has a red number — how many tasks wait to be handed in.
 - The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
+- On a wide screen the home page has two columns: on the left the lesson, «To hand in» and «Reviewed recently», on the right «Paid» (N lessons) (how many lessons the balance covers at the lesson price) and the lesson's materials; on a narrow screen everything is one column in the same order.
 - The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
 - Lists are shown as cards, forms open full screen.
 - If a field of a form is filled in wrong, the portal says so under the field; if a block did not load, it offers «Retry».
