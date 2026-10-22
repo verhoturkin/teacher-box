@@ -63,7 +63,7 @@ import { T } from './i18n/texts';
     <tb-panes medium="two">
       @if (layout.list()) {
         <tb-pane kind="fixed" [label]="t.categories">
-          <tb-page-header [title]="t.title">
+          <tb-page-header tbPaneHeader [title]="t.title">
             <tb-help-button help topic="teacher/settings" />
           </tb-page-header>
           <nav [attr.aria-label]="t.categories">
@@ -95,12 +95,13 @@ import { T } from './i18n/texts';
         <tb-pane [label]="current().title">
           @if (layout.single()) {
             <tb-page-header
+              tbPaneHeader
               [title]="current().title"
               back="/teacher/settings"
               [backLabel]="t.all"
             />
           } @else {
-            <h2 class="tb-settings__heading">{{ current().title }}</h2>
+            <h2 tbPaneHeader class="tb-settings__heading">{{ current().title }}</h2>
           }
           @switch (current().id) {
             @case ('account') {

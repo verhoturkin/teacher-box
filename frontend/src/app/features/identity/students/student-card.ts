@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -48,6 +49,7 @@ import { Student } from '../data-access/identity.models';
 @Component({
   selector: 'tb-student-card',
   imports: [
+    PaneHeader,
     Avatar,
     BroadcastDialog,
     Button,
@@ -75,49 +77,50 @@ import { Student } from '../data-access/identity.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let row = student();
-    <tb-card-head
-      [name]="row.name"
-      [line]="since()"
-      [tags]="tags()"
-      [single]="single()"
-      [actionsLabel]="actionsLabel()"
-      [busy]="busy()"
-      [menuOpen]="menuOpen()"
-      (more)="more.emit($event)"
-    >
-      <tb-avatar
-        avatar
-        class="tb-student-card__avatar"
-        [attr.data-tb-label]="color()"
+    <ng-template tbPaneHeader
+      ><tb-card-head
         [name]="row.name"
-        [photo]="row.student.avatar"
-        size="4.5rem"
-      />
-      @if (current()) {
+        [line]="since()"
+        [tags]="tags()"
+        [single]="single()"
+        [actionsLabel]="actionsLabel()"
+        [busy]="busy()"
+        [menuOpen]="menuOpen()"
+        (more)="more.emit($event)"
+      >
+        <tb-avatar
+          avatar
+          class="tb-student-card__avatar"
+          [attr.data-tb-label]="color()"
+          [name]="row.name"
+          [photo]="row.student.avatar"
+          size="4.5rem"
+        />
+        @if (current()) {
+          <p-button
+            [label]="t.write"
+            icon="tb-i tb-i-chat"
+            severity="secondary"
+            (onClick)="writeVisible.set(true)"
+          />
+        }
         <p-button
-          [label]="t.write"
-          icon="tb-i tb-i-chat"
+          [label]="t.payment"
+          icon="tb-i tb-i-payments"
           severity="secondary"
-          (onClick)="writeVisible.set(true)"
+          [pTooltip]="t.paymentHint"
+          (onClick)="paymentVisible.set(true)"
         />
-      }
-      <p-button
-        [label]="t.payment"
-        icon="tb-i tb-i-payments"
-        severity="secondary"
-        [pTooltip]="t.paymentHint"
-        (onClick)="paymentVisible.set(true)"
-      />
-      @if (current()) {
-        <p-button
-          [label]="t.lesson"
-          icon="tb-i tb-i-event"
-          [severity]="mobile() ? 'secondary' : 'primary'"
-          [loading]="lessonPending()"
-          (onClick)="openLesson()"
-        />
-      }
-    </tb-card-head>
+        @if (current()) {
+          <p-button
+            [label]="t.lesson"
+            icon="tb-i tb-i-event"
+            [severity]="mobile() ? 'secondary' : 'primary'"
+            [loading]="lessonPending()"
+            (onClick)="openLesson()"
+          />
+        }</tb-card-head
+    ></ng-template>
 
     <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
       <p-tablist>

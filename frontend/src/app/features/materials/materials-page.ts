@@ -73,74 +73,75 @@ interface MemberOption {
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="t.title">
-          <tb-help-button
-            help
-            [topic]="active() === 'boards' ? 'teacher/boards' : 'teacher/textbooks'"
-          />
-          @if (!mobile()) {
+        <div tbPaneHeader>
+          <tb-page-header [title]="t.title">
+            <tb-help-button
+              help
+              [topic]="active() === 'boards' ? 'teacher/boards' : 'teacher/textbooks'"
+            />
+            @if (!mobile()) {
+              <tb-segment-group
+                [label]="t.tabs"
+                [segments]="segments()"
+                [value]="active()"
+                (valueChange)="selectTab($event)"
+              />
+            }
+            <!-- on a phone the rail's «Создать» is not there: the page's own FAB (spec §1 principle 5) -->
+            @if (mobile()) {
+              <p-button
+                class="tb-page-fab"
+                [label]="active() === 'boards' ? t.newBoard : t.newTextbook"
+                icon="tb-i tb-i-add"
+                (onClick)="openCreate()"
+              />
+            }
+          </tb-page-header>
+
+          @if (mobile()) {
             <tb-segment-group
+              class="tb-materials__tabs"
               [label]="t.tabs"
               [segments]="segments()"
               [value]="active()"
               (valueChange)="selectTab($event)"
             />
           }
-          <!-- on a phone the rail's «Создать» is not there: the page's own FAB (spec §1 principle 5) -->
-          @if (mobile()) {
+
+          <div class="tb-materials__bar">
+            <tb-search-field [formControl]="search" [label]="t.search" />
+            <tb-filter-chips
+              [label]="t.filters"
+              [chips]="chips()"
+              [value]="chip()"
+              (valueChange)="selectChip($event)"
+            />
             <p-button
-              class="tb-page-fab"
-              [label]="active() === 'boards' ? t.newBoard : t.newTextbook"
-              icon="tb-i tb-i-add"
-              (onClick)="openCreate()"
+              class="tb-materials__sort"
+              icon="tb-i tb-i-sort"
+              [label]="mobile() ? undefined : sortLabels[sort()]"
+              [text]="true"
+              severity="secondary"
+              [ariaLabel]="t.sort.label + ': ' + sortLabels[sort()]"
+              (onClick)="sortPopup.toggle($event)"
+            />
+            <p-menu #sortPopup [model]="sortItems()" [popup]="true" appendTo="body" />
+          </div>
+          @if (chip() === 'member') {
+            <p-select
+              class="tb-materials__member"
+              [options]="memberOptions()"
+              [group]="true"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="memberValue()"
+              (ngModelChange)="selectMember($event)"
+              [placeholder]="t.member.placeholder"
+              [ariaLabel]="t.member.label"
+              [showClear]="true"
             />
           }
-        </tb-page-header>
-
-        @if (mobile()) {
-          <tb-segment-group
-            class="tb-materials__tabs"
-            [label]="t.tabs"
-            [segments]="segments()"
-            [value]="active()"
-            (valueChange)="selectTab($event)"
-          />
-        }
-
-        <div class="tb-materials__bar">
-          <tb-search-field [formControl]="search" [label]="t.search" />
-          <tb-filter-chips
-            [label]="t.filters"
-            [chips]="chips()"
-            [value]="chip()"
-            (valueChange)="selectChip($event)"
-          />
-          <p-button
-            class="tb-materials__sort"
-            icon="tb-i tb-i-sort"
-            [label]="mobile() ? undefined : sortLabels[sort()]"
-            [text]="true"
-            severity="secondary"
-            [ariaLabel]="t.sort.label + ': ' + sortLabels[sort()]"
-            (onClick)="sortPopup.toggle($event)"
-          />
-          <p-menu #sortPopup [model]="sortItems()" [popup]="true" appendTo="body" />
         </div>
-        @if (chip() === 'member') {
-          <p-select
-            class="tb-materials__member"
-            [options]="memberOptions()"
-            [group]="true"
-            optionLabel="label"
-            optionValue="value"
-            [ngModel]="memberValue()"
-            (ngModelChange)="selectMember($event)"
-            [placeholder]="t.member.placeholder"
-            [ariaLabel]="t.member.label"
-            [showClear]="true"
-          />
-        }
-
         <div [hidden]="active() !== 'boards'">
           <tb-boards-feed
             #boards
@@ -193,7 +194,7 @@ interface MemberOption {
     @media (width < 37.5em) {
       .tb-materials__bar {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 1fr;
         gap: var(--tb-space-2);
       }
 

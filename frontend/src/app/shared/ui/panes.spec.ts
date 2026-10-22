@@ -1,8 +1,36 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { hostElement, requireElement } from '@testing/dom';
+import { hostElement, readableText, requireElement } from '@testing/dom';
 import { screenWidth } from '@testing/setup';
-import { MediumPanes, Pane, Panes, PaneKind, injectListDetail } from './panes';
+import { MediumPanes, Pane, Panes, PaneHeader, PaneKind, injectListDetail } from './panes';
+
+@Component({
+  selector: 'tb-embedded-heading',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PaneHeader],
+  template: `<ng-template tbPaneHeader
+      ><button type="button" (click)="count.set(count() + 1)">
+        Heading {{ count() }}
+      </button></ng-template
+    >
+    <p>Body</p>`,
+})
+class EmbeddedHeading {
+  readonly count = signal(0);
+}
+@Component({
+  imports: [Pane, Panes, EmbeddedHeading],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-panes
+    ><tb-pane>
+      @if (show()) {
+        <tb-embedded-heading />
+      }</tb-pane
+  ></tb-panes>`,
+})
+class EmbeddedHost {
+  readonly show = signal(true);
+}
 
 @Component({
   selector: 'tb-panes-host',
@@ -57,6 +85,21 @@ describe('Panes', () => {
     const panes = Array.from(host.querySelectorAll<HTMLElement>('tb-pane'));
     return { fixture, host, panes };
   }
+
+  it('keeps an embedded heading outside the scroll area and removes it with its component', async () => {
+    const fixture = TestBed.createComponent(EmbeddedHost);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const button = requireElement(host, '.tb-pane__header button', HTMLButtonElement);
+    expect(host.querySelector('.tb-pane__scroll button')).toBeNull();
+    expect(host.querySelector('.tb-pane__scroll p')?.textContent).toBe('Body');
+    button.click();
+    await fixture.whenStable();
+    expect(readableText(button)).toBe('Heading 1');
+    fixture.componentInstance.show.set(false);
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-pane__header button')).toBeNull();
+  });
 
   it.each([
     [839, ''],

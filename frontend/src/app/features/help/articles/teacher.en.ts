@@ -61,6 +61,12 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 - Address — with the portal administrator.
 - Your name and photo — «My account».
 - Price for new students — «Settings» → «Payments».
+
+Headings, search and filters stay above scrolling lists. Assignment actions are in the detail card,
+without a separate row menu. In Payments, operations scroll while the month and summary stay above them.
+The monthly report follows the same pane layout. Help search and article text fill the pane width,
+with the article heading above the scrolling text. Static rows have no hover highlight.
+Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
 `,
   },
   students: {
@@ -70,7 +76,7 @@ After the first sign-in the portal opens a short setup wizard. It can be skipped
 ## Add a student
 
 1. Click «Create» → «Student» (on a phone — «Students» → «Add student»).
-2. Enter the name. Email and phone are optional, you and the student see them.
+2. Choose «Student» and enter the name. Email and phone are optional, you and the student see them.
 3. The portal opens the student's card on the «Profile» tab and shows an invitation link. Copy it and send it to the student. Fill in the rest on «Profile»: the note, the default topic, the colour, the lesson price, the video meeting.
 
 The student opens the link, chooses a login and a password and gets to their cabinet. The link is valid for a few days — if it is out of date, issue a new one.
@@ -116,7 +122,7 @@ A group is students who study together. A group has its own lesson price: it is 
 
 ## Create a group
 
-1. «Students» → the «Create group» button next to the title.
+1. «Create» → «Student» (on a phone, the add button in «Students»), then choose «Group».
 2. Enter the name, tick the students and click «Create».
 3. The group's card opens on the «Profile» tab: set the price of one lesson for each member. A default topic and a colour are optional: the group's colour highlights its icons in lists, its lessons in the calendar and its chip in the group pickers.
 

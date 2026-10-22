@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -42,6 +43,7 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-my-task-page',
   imports: [
+    PaneHeader,
     VideoList,
     DatePipe,
     ReactiveFormsModule,
@@ -62,24 +64,30 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <tb-page-header
-        [title]="task.assignment.title"
-        [back]="single() ? '/cabinet/homework' : null"
-        [backLabel]="t.back"
-      >
-        <tb-help-button help topic="cabinet/homework" />
-        <span meta [class.tb-negative]="task.overdue">
-          {{
-            task.assignment.dueAt
-              ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-              : t.noDueDate
-          }}
-        </span>
-        <tb-task-status meta [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
-        @if (task.assignment.boardId; as boardId) {
-          <tb-my-board-button [boardId]="boardId" />
-        }
-      </tb-page-header>
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="task.assignment.title"
+          [back]="single() ? '/cabinet/homework' : null"
+          [backLabel]="t.back"
+        >
+          <tb-help-button help topic="cabinet/homework" />
+          <span meta [class.tb-negative]="task.overdue">
+            {{
+              task.assignment.dueAt
+                ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
+                : t.noDueDate
+            }}
+          </span>
+          <tb-task-status
+            meta
+            [status]="task.status"
+            [overdue]="task.overdue"
+            [grade]="task.grade"
+          />
+          @if (task.assignment.boardId; as boardId) {
+            <tb-my-board-button [boardId]="boardId" />
+          }</tb-page-header
+      ></ng-template>
 
       <div class="tb-stack">
         @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {
@@ -150,11 +158,12 @@ import { T } from '../i18n/texts';
         </section>
       </div>
     } @else {
-      <tb-page-header
-        [title]="t.assignment"
-        [back]="single() ? '/cabinet/homework' : null"
-        [backLabel]="t.back"
-      />
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="t.assignment"
+          [back]="single() ? '/cabinet/homework' : null"
+          [backLabel]="t.back"
+      /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,

@@ -105,7 +105,11 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
   await expect(page.locator('.tb-shell__title')).toHaveText('Настройки');
 
   const backups = page.locator('#backups');
-  await backups.getByRole('button', { name: 'Создать копию сейчас' }).click();
+  const pane = page.locator('tb-pane').filter({ has: backups });
+  await pane
+    .locator('.tb-pane__header')
+    .getByRole('button', { name: 'Создать копию сейчас', exact: true })
+    .click();
   await expect(page.getByText(/^Копия .+ создана$/)).toBeVisible({ timeout: 30_000 });
   const actions = backups.getByRole('button', { name: /^Действия: / }).first();
   await actions.click();

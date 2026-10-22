@@ -1,6 +1,11 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  Directive,
+  DestroyRef,
+  TemplateRef,
+  ViewContainerRef,
   Signal,
   afterNextRender,
   computed,
@@ -120,6 +125,7 @@ export class Panes {
  */
 @Component({
   selector: 'tb-pane',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-pane',
@@ -133,7 +139,12 @@ export class Panes {
     '[animate.leave]': 'leave()',
   },
   template: `
-    <div class="tb-pane__header"><ng-content select="[tbPaneHeader]" /></div>
+    <div class="tb-pane__header">
+      <ng-content select="[tbPaneHeader]" />
+      @for (heading of headings(); track heading) {
+        <ng-container [ngTemplateOutlet]="heading" />
+      }
+    </div>
     <div class="tb-pane__scroll"><ng-content /></div>
   `,
   styles: `
@@ -158,7 +169,7 @@ export class Panes {
     /* Optional persistent heading/actions; geometry is a portal decision using the pane padding. */
     .tb-pane__header:not(:empty) {
       flex: none;
-      padding: var(--tb-space-6) var(--tb-space-6) 0;
+      padding: var(--tb-space-6) var(--tb-space-6) var(--tb-space-4);
     }
 
     :host:has(.tb-pane__header:not(:empty)) .tb-pane__scroll {
@@ -184,7 +195,7 @@ export class Panes {
 
     @media (width < 37.5em) {
       .tb-pane__header:not(:empty) {
-        padding: var(--tb-space-4) var(--tb-space-4) 0;
+        padding: var(--tb-space-4);
       }
 
       .tb-pane__scroll {
@@ -216,6 +227,14 @@ export class Panes {
   `,
 })
 export class Pane {
+  readonly headings = signal<readonly TemplateRef<unknown>[]>([]);
+  registerHeading(heading: TemplateRef<unknown>): () => void {
+    this.headings.update((items) => [...items, heading]);
+    return () => {
+      this.headings.update((items) => items.filter((item) => item !== heading));
+    };
+  }
+
   private readonly panes = inject(Panes);
 
   readonly kind = input<PaneKind>('flexible');
@@ -277,4 +296,18 @@ export function injectListDetail(open: () => boolean, medium: MediumPanes = 'one
     list: computed(() => !single() || !open()),
     detail: computed(() => !single() || open()),
   };
+}
+
+/** A heading declared by an embedded detail component, rendered in its enclosing pane's header. */
+@Directive({ selector: 'ng-template[tbPaneHeader]' })
+export class PaneHeader {
+  constructor() {
+    const pane = inject(Pane, { optional: true });
+    const template = inject<TemplateRef<unknown>>(TemplateRef);
+    if (pane) {
+      inject(DestroyRef).onDestroy(pane.registerHeading(template));
+    } else {
+      inject(ViewContainerRef).createEmbeddedView(template);
+    }
+  }
 }

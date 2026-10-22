@@ -9,27 +9,21 @@ import {
   input,
   linkedSignal,
   signal,
-  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ConfirmationService, MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
-import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
-import { dangerConfirmation } from '@shared/ui/confirmation';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -68,11 +62,9 @@ type Filter = 'review' | 'active' | 'done';
     Avatar,
     Button,
     ButtonAttributes,
-    ConfirmDialog,
     EmptyState,
     HelpButton,
     LoadStateView,
-    Menu,
     Pane,
     PageHeader,
     Panes,
@@ -85,127 +77,124 @@ type Filter = 'review' | 'active' | 'done';
     TaskReviewPage,
     Tooltip,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.title" [class.tb-hw__pane]="!layout.single()">
-          <tb-page-header [title]="t.title">
-            <tb-help-button help topic="teacher/homework" />
-            <p-button
-              icon="tb-i tb-i-filter_list"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
-              [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
-              [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
-              (onClick)="toggleSearch()"
-            />
-            <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
-            @if (mobile()) {
+        <tb-pane kind="fixed" [label]="t.title">
+          <div tbPaneHeader>
+            <tb-page-header [title]="t.title">
+              <tb-help-button help topic="teacher/homework" />
               <p-button
-                class="tb-page-fab"
-                [label]="t.create"
-                icon="tb-i tb-i-add"
-                (onClick)="openCreate()"
+                icon="tb-i tb-i-filter_list"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
+                [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
+                [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
+                (onClick)="toggleSearch()"
               />
-            }
-          </tb-page-header>
+              <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+              @if (mobile()) {
+                <p-button
+                  class="tb-page-fab"
+                  [label]="t.create"
+                  icon="tb-i tb-i-add"
+                  (onClick)="openCreate()"
+                />
+              }
+            </tb-page-header>
 
-          <div class="tb-hw__filters">
-            <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
-            @if (searchOpen()) {
-              <tb-search-field [formControl]="search" [label]="t.search" />
-            }
+            <div class="tb-hw__filters">
+              <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
+              @if (searchOpen()) {
+                <tb-search-field [formControl]="search" [label]="t.search" />
+              }
+            </div>
           </div>
-
-          <!-- beside the detail only the list scrolls: the header, the group and the search stay -->
-          <div class="tb-hw__scroll">
-            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-              @switch (filter()) {
-                @case ('review') {
-                  @if (works().length > 0) {
-                    <ul class="tb-list" [attr.aria-label]="t.toReview">
-                      @for (work of works(); track work.taskId) {
-                        <li [class.tb-list__item--current]="taskId() === work.taskId">
-                          <tb-avatar
-                            [attr.data-tb-label]="colors.studentLabel(work.studentId)"
-                            [name]="work.studentName"
-                            [photo]="work.studentAvatar"
-                          />
-                          <div class="tb-list__text">
-                            <a
-                              class="tb-list__title tb-list__link"
-                              [routerLink]="['/teacher/homework/tasks', work.taskId]"
-                              [attr.aria-current]="taskId() === work.taskId ? 'page' : null"
-                              [attr.aria-label]="t.reviewOf(work.studentName, work.title)"
-                              >{{ work.studentName }}</a
-                            >
-                            <span class="tb-list__supporting">{{ handedIn(work) }}</span>
+          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+            @switch (filter()) {
+              @case ('review') {
+                @if (works().length > 0) {
+                  <ul class="tb-list" [attr.aria-label]="t.toReview">
+                    @for (work of works(); track work.taskId) {
+                      <li [class.tb-list__item--current]="taskId() === work.taskId">
+                        <tb-avatar
+                          [attr.data-tb-label]="colors.studentLabel(work.studentId)"
+                          [name]="work.studentName"
+                          [photo]="work.studentAvatar"
+                        />
+                        <div class="tb-list__text">
+                          <a
+                            class="tb-list__title tb-list__link"
+                            [routerLink]="['/teacher/homework/tasks', work.taskId]"
+                            [attr.aria-current]="taskId() === work.taskId ? 'page' : null"
+                            [attr.aria-label]="t.reviewOf(work.studentName, work.title)"
+                            >{{ work.studentName }}</a
+                          >
+                          <span class="tb-list__supporting">{{ handedIn(work) }}</span>
+                        </div>
+                        @if (isLate(work)) {
+                          <div class="tb-list__trail">
+                            <p-tag [value]="t.late" severity="danger" />
                           </div>
-                          @if (isLate(work)) {
-                            <div class="tb-list__trail">
-                              <p-tag [value]="t.late" severity="danger" />
-                            </div>
-                          }
-                        </li>
-                      }
-                    </ul>
-                  } @else if (!searching() && waiting().length === 0) {
-                    <tb-empty-state
-                      icon="tb-i-check_circle"
-                      [title]="t.allReviewedTitle"
-                      [hint]="t.allReviewedHint"
-                    />
-                  } @else if (searching()) {
-                    <ng-container [ngTemplateOutlet]="notFound" />
-                  }
-                  @if (waiting().length > 0) {
-                    <h2 class="tb-hw__section">{{ t.waiting }}</h2>
-                    <ng-container
-                      [ngTemplateOutlet]="assignmentRows"
-                      [ngTemplateOutletContext]="{ rows: waiting(), label: t.waiting }"
-                    />
-                  }
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else if (!searching() && waiting().length === 0) {
+                  <tb-empty-state
+                    icon="tb-i-check_circle"
+                    [title]="t.allReviewedTitle"
+                    [hint]="t.allReviewedHint"
+                  />
+                } @else if (searching()) {
+                  <ng-container [ngTemplateOutlet]="notFound" />
                 }
-                @case ('active') {
-                  @if (given().length > 0) {
-                    <ng-container
-                      [ngTemplateOutlet]="assignmentRows"
-                      [ngTemplateOutletContext]="{ rows: given(), label: t.active }"
-                    />
-                  } @else if (drafts().length === 0) {
-                    <ng-container
-                      [ngTemplateOutlet]="empty"
-                      [ngTemplateOutletContext]="{ done: false }"
-                    />
-                  }
-                  @if (drafts().length > 0) {
-                    <h2 class="tb-hw__section">{{ t.drafts }}</h2>
-                    <ng-container
-                      [ngTemplateOutlet]="assignmentRows"
-                      [ngTemplateOutletContext]="{ rows: drafts(), label: t.drafts }"
-                    />
-                  }
-                }
-                @case ('done') {
-                  @if (finished().length > 0) {
-                    <ng-container
-                      [ngTemplateOutlet]="assignmentRows"
-                      [ngTemplateOutletContext]="{ rows: finished(), label: t.done }"
-                    />
-                  } @else {
-                    <ng-container
-                      [ngTemplateOutlet]="empty"
-                      [ngTemplateOutletContext]="{ done: true }"
-                    />
-                  }
+                @if (waiting().length > 0) {
+                  <h2 class="tb-hw__section">{{ t.waiting }}</h2>
+                  <ng-container
+                    [ngTemplateOutlet]="assignmentRows"
+                    [ngTemplateOutletContext]="{ rows: waiting(), label: t.waiting }"
+                  />
                 }
               }
-            </tb-load-state>
-          </div>
+              @case ('active') {
+                @if (given().length > 0) {
+                  <ng-container
+                    [ngTemplateOutlet]="assignmentRows"
+                    [ngTemplateOutletContext]="{ rows: given(), label: t.active }"
+                  />
+                } @else if (drafts().length === 0) {
+                  <ng-container
+                    [ngTemplateOutlet]="empty"
+                    [ngTemplateOutletContext]="{ done: false }"
+                  />
+                }
+                @if (drafts().length > 0) {
+                  <h2 class="tb-hw__section">{{ t.drafts }}</h2>
+                  <ng-container
+                    [ngTemplateOutlet]="assignmentRows"
+                    [ngTemplateOutletContext]="{ rows: drafts(), label: t.drafts }"
+                  />
+                }
+              }
+              @case ('done') {
+                @if (finished().length > 0) {
+                  <ng-container
+                    [ngTemplateOutlet]="assignmentRows"
+                    [ngTemplateOutletContext]="{ rows: finished(), label: t.done }"
+                  />
+                } @else {
+                  <ng-container
+                    [ngTemplateOutlet]="empty"
+                    [ngTemplateOutletContext]="{ done: true }"
+                  />
+                }
+              }
+            }
+          </tb-load-state>
         </tb-pane>
       }
       @if (layout.detail()) {
@@ -291,19 +280,6 @@ type Filter = 'review' | 'active' | 'done';
               } @else if (progress(assignment); as badge) {
                 <p-tag [value]="badge.label" [severity]="badge.severity" />
               }
-              <p-button
-                icon="tb-i tb-i-more_vert"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [pTooltip]="t.actions(assignment.title)"
-                [ariaLabel]="t.actions(assignment.title)"
-                [tbAttributes]="{
-                  'aria-haspopup': 'menu',
-                  'aria-expanded': menuFor()?.id === assignment.id ? 'true' : 'false',
-                }"
-                (onClick)="openMenu(assignment, $event)"
-              />
             </div>
           </li>
         }
@@ -325,31 +301,9 @@ type Filter = 'review' | 'active' | 'done';
     <ng-template #notFound>
       <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
     </ng-template>
-
-    <p-menu
-      #menu
-      [model]="menuItems()"
-      [popup]="true"
-      appendTo="body"
-      (onHide)="menuFor.set(null)"
-    />
-    <p-confirmdialog />
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the students' list) */
-    .tb-hw__pane ::ng-deep .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .tb-hw__pane .tb-hw__scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
     .tb-hw__filters {
       display: flex;
       flex-direction: column;
@@ -380,10 +334,7 @@ export class AssignmentsPage implements OnInit {
   );
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
-  private readonly confirmation = inject(ConfirmationService);
-  private readonly snackbar = inject(Snackbar);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
-  private readonly menu = viewChild.required<Menu>('menu');
 
   private readonly size = injectWindowSize();
   /** The work the detail pane has read: the side sheet reviews it. */
@@ -424,13 +375,6 @@ export class AssignmentsPage implements OnInit {
   protected readonly state = new LoadState();
   /** The moment the lists were read: a due date before it is overdue. */
   private readonly now = signal(Date.now());
-  /** The assignment whose «⋮» menu is open: one popup menu serves every row. */
-  protected readonly menuFor = signal<AssignmentSummary | null>(null);
-  protected readonly menuItems = computed<MenuItem[]>(() => {
-    const assignment = this.menuFor();
-    return assignment === null ? [] : this.actionsOf(assignment);
-  });
-
   protected readonly searchOpen = signal(false);
   protected readonly search = new FormControl('', { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
@@ -557,11 +501,6 @@ export class AssignmentsPage implements OnInit {
       });
   }
 
-  protected openMenu(assignment: AssignmentSummary, event: Event): void {
-    this.menuFor.set(assignment);
-    this.menu().toggle(event);
-  }
-
   /** «Дроби · сдано 05.09 10:00». */
   protected handedIn(work: ReviewQueueItem): string {
     return work.submittedAt === null
@@ -597,68 +536,5 @@ export class AssignmentsPage implements OnInit {
         ? T.noDueDate
         : this.t.until(this.dates.transform(assignment.dueAt, 'dd.MM.yyyy HH:mm') ?? '');
     return `${who} · ${due}`;
-  }
-
-  private actionsOf(assignment: AssignmentSummary): MenuItem[] {
-    return [
-      {
-        label: T.list.open,
-        icon: 'tb-i tb-i-visibility',
-        command: () => void this.router.navigate(['/teacher/homework', assignment.id]),
-      },
-      {
-        label: T.list.edit,
-        icon: 'tb-i tb-i-edit',
-        command: () => void this.router.navigate(['/teacher/homework', assignment.id, 'edit']),
-      },
-      ...(assignment.submitted > 0
-        ? [
-            {
-              label: T.list.review,
-              icon: 'tb-i tb-i-rate_review',
-              command: () => {
-                this.filter.set('review');
-              },
-            },
-          ]
-        : []),
-      ...(assignment.boardId === null
-        ? []
-        : [
-            {
-              label: T.list.openBoard,
-              icon: 'tb-i tb-i-arrow_outward',
-              command: () => void this.router.navigate(['/teacher/boards', assignment.boardId]),
-            },
-          ]),
-      {
-        label: T.remove.action,
-        icon: 'tb-i tb-i-delete',
-        styleClass: 'tb-menu-item--danger',
-        command: () => {
-          this.confirmRemove(assignment);
-        },
-      },
-    ];
-  }
-
-  /** Deletes the assignment with the answers and the files, after a confirmation. */
-  private confirmRemove(assignment: AssignmentSummary): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
-        header: T.remove.header,
-        message: T.remove.message(assignment.title),
-        acceptLabel: T.remove.confirm,
-        accept: () => {
-          this.api.deleteAssignment(assignment.id).subscribe(() => {
-            this.assignments.update((all) =>
-              all.filter((candidate) => candidate.id !== assignment.id),
-            );
-            this.queue.update((all) => all.filter((work) => work.assignmentId !== assignment.id));
-            this.snackbar.success(T.remove.deleted(assignment.title));
-          });
-        },
-      }),
-    );
   }
 }

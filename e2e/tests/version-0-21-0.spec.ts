@@ -65,12 +65,14 @@ test('the help shows the list and the article side by side at 1920, one pane at 
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   const list = page.getByRole('region', { name: 'Статьи справки' });
-  const article = page.locator('article.tb-help__article');
+  const article = page.locator('tb-pane.tb-help__article-card');
 
   await page.setViewportSize(WIDE);
   await page.goto('/teacher/help/first-steps');
   await expect(list).toBeVisible();
-  await expect(article.getByRole('heading', { name: 'Первые шаги' })).toBeVisible();
+  await expect(
+    article.locator('.tb-pane__header').getByRole('heading', { name: 'Первые шаги' }),
+  ).toBeVisible();
   const listBox = await list.boundingBox();
   const articleBox = await article.boundingBox();
   expect(listBox && articleBox && articleBox.x >= listBox.x + listBox.width).toBeTruthy();

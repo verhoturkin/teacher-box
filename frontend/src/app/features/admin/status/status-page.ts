@@ -55,7 +55,7 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="t.title">
+        <tb-page-header tbPaneHeader [title]="t.title">
           <tb-help-button help topic="admin/diagnostics" />
           @if (status(); as status) {
             <span meta class="tb-muted">{{

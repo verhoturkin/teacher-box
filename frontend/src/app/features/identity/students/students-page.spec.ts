@@ -23,6 +23,7 @@ import { PageDetail } from '@core/routing/page-detail';
 import type { ScheduledLesson } from '@features/schedule/parts';
 import { Student, StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog } from '../groups/group-form-dialog';
+import { StudentFormDialog } from './student-form-dialog';
 import { StudentCard } from './student-card';
 import { StudentsPage } from './students-page';
 
@@ -420,7 +421,7 @@ describe('StudentsPage', () => {
       await openCard('Мария');
       const button = buttonByText(host, 'Действия: Мария');
       expect(button.getAttribute('aria-haspopup')).toBe('menu');
-      expect(button.closest('tb-student-card header')).not.toBeNull();
+      expect(button.closest('tb-pane:last-child .tb-pane__header header')).not.toBeNull();
     });
 
     it('has no «Изменить» in the menu: the profile is changed on Профиль', async () => {
@@ -525,7 +526,10 @@ describe('StudentsPage', () => {
     it('creates a group and opens its card on Профиль', async () => {
       await load([MARIA]);
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      buttonByText(host, 'Создать группу').click();
+      fixture.debugElement
+        .query(By.directive(StudentFormDialog))
+        .injector.get(StudentFormDialog)
+        .createGroup.emit();
       await fixture.whenStable();
       expect(bodyText()).toContain('Новая группа');
 
@@ -593,15 +597,17 @@ describe('StudentsPage', () => {
 
       expect(panes()).toEqual(['Список учеников', 'Мария']);
       // beside the card only the list scrolls: the header, the search and the chips stay
-      expect(host.querySelector('tb-pane')?.classList).toContain('tb-roster__pane');
-      expect(host.querySelector('.tb-roster__scroll ul.tb-list')).not.toBeNull();
-      expect(host.querySelector('.tb-roster__scroll tb-filter-chips')).toBeNull();
+      expect(host.querySelector('tb-pane .tb-pane__header tb-search-field')).not.toBeNull();
+      expect(host.querySelector('.tb-pane__scroll ul.tb-list')).not.toBeNull();
+      expect(host.querySelector('.tb-pane__scroll tb-filter-chips')).toBeNull();
       const current = host.querySelectorAll('ul.tb-list > li.tb-list__item--current');
       expect(current).toHaveLength(1);
       expect(current[0]?.textContent).toContain('Мария');
       expect(current[0]?.querySelector('a')?.getAttribute('aria-current')).toBe('page');
       // the name is the card's own heading beside the list
-      expect(host.querySelector('tb-student-card h2')?.textContent).toBe('Мария');
+      expect(host.querySelector('tb-pane:last-child .tb-pane__header h2')?.textContent).toBe(
+        'Мария',
+      );
       expect(host.querySelector('tb-pane:last-child tb-page-header')).toBeNull();
       expect(host.querySelector('tb-student-card tb-student-lessons-card')).not.toBeNull();
       expect(TestBed.inject(PageDetail).value()).toBe('Мария');
@@ -613,7 +619,9 @@ describe('StudentsPage', () => {
 
       const card = fixture.debugElement.query(By.directive(StudentCard)).injector.get(StudentCard);
       const header = (): string =>
-        readableText(requireElement(host, 'tb-student-card header', HTMLElement));
+        readableText(
+          requireElement(host, 'tb-pane:last-child .tb-pane__header header', HTMLElement),
+        );
       expect(header()).toContain('Telegram');
       expect(header()).toMatch(/Долг 3\s000\s₽/);
       expect(card.tab()).toBe('overview');
@@ -630,11 +638,17 @@ describe('StudentsPage', () => {
       await load([MARIA], [OGE]);
 
       expect(panes()).toEqual(['Список учеников', 'ОГЭ 9 класс']);
-      expect(host.querySelector('tb-group-card h2')?.textContent).toBe('ОГЭ 9 класс');
-      expect(readableText(requireElement(host, 'tb-group-card header', HTMLElement))).toContain(
-        '2 участника',
+      expect(host.querySelector('tb-pane:last-child .tb-pane__header h2')?.textContent).toBe(
+        'ОГЭ 9 класс',
       );
-      expect(buttonByText(host, 'Действия: ОГЭ 9 класс').closest('tb-group-card')).not.toBeNull();
+      expect(
+        readableText(
+          requireElement(host, 'tb-pane:last-child .tb-pane__header header', HTMLElement),
+        ),
+      ).toContain('2 участника');
+      expect(
+        buttonByText(host, 'Действия: ОГЭ 9 класс').closest('.tb-pane__header'),
+      ).not.toBeNull();
       expect(host.querySelector('tb-group-card tb-student-lessons-card')).not.toBeNull();
     });
 
@@ -681,7 +695,7 @@ describe('StudentsPage', () => {
         expect(host.querySelector('h1')?.textContent).toBe('Мария');
         expect(host.querySelector('tb-page-header [aria-label="Действия: Мария"]')).not.toBeNull();
         // the page header names the student: the card shows no second name
-        expect(host.querySelector('tb-student-card h2')).toBeNull();
+        expect(host.querySelector('tb-pane:last-child .tb-pane__header h2')).toBeNull();
       });
     }
 

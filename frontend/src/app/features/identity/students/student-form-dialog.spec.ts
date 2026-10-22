@@ -32,6 +32,17 @@ describe('StudentFormDialog', () => {
     return requireElement(document.body, `#${id}`, HTMLInputElement);
   }
 
+  it('offers student or group creation and hands group creation to the page', async () => {
+    const createGroup = vi.fn();
+    fixture.componentInstance.createGroup.subscribe(createGroup);
+    await open();
+    buttonByText(document.body, 'Группа').click();
+    await fixture.whenStable();
+    expect(createGroup).toHaveBeenCalledOnce();
+    expect(fixture.componentInstance.visible()).toBe(false);
+    backend.expectNone('/api/teacher/students');
+  });
+
   it('creates a student from the name and a contact', async () => {
     const created: CreatedStudent[] = [];
     fixture.componentInstance.created.subscribe((value) => created.push(value));

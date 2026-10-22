@@ -69,24 +69,23 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.title" [class.tb-hw__pane]="!layout.single()">
-          <tb-page-header [title]="t.title">
-            <tb-help-button help topic="cabinet/homework" />
-            @if (tasks().length > 0) {
-              <p-button
-                icon="tb-i tb-i-filter_list"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
-                [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
-                [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
-                (onClick)="toggleSearch()"
-              />
-            }
-          </tb-page-header>
-
-          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+        <tb-pane kind="fixed" [label]="t.title">
+          <div tbPaneHeader>
+            <tb-page-header [title]="t.title">
+              <tb-help-button help topic="cabinet/homework" />
+              @if (tasks().length > 0) {
+                <p-button
+                  icon="tb-i tb-i-filter_list"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
+                  [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
+                  [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
+                  (onClick)="toggleSearch()"
+                />
+              }
+            </tb-page-header>
             @if (tasks().length > 0) {
               <div class="tb-hw__filters">
                 <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
@@ -94,69 +93,70 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
                   <tb-search-field [formControl]="search" [label]="t.search" />
                 }
               </div>
+            }
+          </div>
 
-              <!-- beside the detail only the list scrolls: the header, the group and the search stay -->
-              <div class="tb-hw__scroll">
-                @if (rows().length > 0) {
-                  <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="filterLabel()">
-                    @for (task of rows(); track task.taskId) {
-                      <li [class.tb-list__item--current]="taskId() === task.taskId">
-                        <span class="tb-list__lead" aria-hidden="true"
-                          ><i class="tb-i tb-i-assignment"></i
-                        ></span>
-                        <div class="tb-list__text">
-                          <a
-                            class="tb-list__title tb-list__link"
-                            [routerLink]="['/cabinet/homework', task.taskId]"
-                            [attr.aria-current]="taskId() === task.taskId ? 'page' : null"
-                            >{{ task.title }}</a
-                          >
-                          <span class="tb-list__supporting" [class.tb-negative]="task.overdue">{{
-                            due(task)
-                          }}</span>
-                        </div>
-                        <div class="tb-list__trail tb-list__trail--icons">
-                          <tb-task-status
-                            [status]="task.status"
-                            [overdue]="task.overdue"
-                            [grade]="task.grade"
-                          />
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                } @else if (searching()) {
-                  <tb-empty-state
-                    icon="tb-i-search"
-                    [title]="t.notFoundTitle"
-                    [hint]="t.notFoundHint"
-                  />
-                } @else {
-                  @switch (filter()) {
-                    @case ('todo') {
-                      <tb-empty-state
-                        icon="tb-i-assignment"
-                        [title]="t.noTodoTitle"
-                        [hint]="t.noTodoHint"
-                      />
-                    }
-                    @case ('review') {
-                      <tb-empty-state
-                        icon="tb-i-assignment"
-                        [title]="t.noReviewTitle"
-                        [hint]="t.noReviewHint"
-                      />
-                    }
-                    @case ('ready') {
-                      <tb-empty-state
-                        icon="tb-i-check_circle"
-                        [title]="t.noReadyTitle"
-                        [hint]="t.noReadyHint"
-                      />
-                    }
+          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+            @if (tasks().length > 0) {
+              @if (rows().length > 0) {
+                <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="filterLabel()">
+                  @for (task of rows(); track task.taskId) {
+                    <li [class.tb-list__item--current]="taskId() === task.taskId">
+                      <span class="tb-list__lead" aria-hidden="true"
+                        ><i class="tb-i tb-i-assignment"></i
+                      ></span>
+                      <div class="tb-list__text">
+                        <a
+                          class="tb-list__title tb-list__link"
+                          [routerLink]="['/cabinet/homework', task.taskId]"
+                          [attr.aria-current]="taskId() === task.taskId ? 'page' : null"
+                          >{{ task.title }}</a
+                        >
+                        <span class="tb-list__supporting" [class.tb-negative]="task.overdue">{{
+                          due(task)
+                        }}</span>
+                      </div>
+                      <div class="tb-list__trail tb-list__trail--icons">
+                        <tb-task-status
+                          [status]="task.status"
+                          [overdue]="task.overdue"
+                          [grade]="task.grade"
+                        />
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else if (searching()) {
+                <tb-empty-state
+                  icon="tb-i-search"
+                  [title]="t.notFoundTitle"
+                  [hint]="t.notFoundHint"
+                />
+              } @else {
+                @switch (filter()) {
+                  @case ('todo') {
+                    <tb-empty-state
+                      icon="tb-i-assignment"
+                      [title]="t.noTodoTitle"
+                      [hint]="t.noTodoHint"
+                    />
+                  }
+                  @case ('review') {
+                    <tb-empty-state
+                      icon="tb-i-assignment"
+                      [title]="t.noReviewTitle"
+                      [hint]="t.noReviewHint"
+                    />
+                  }
+                  @case ('ready') {
+                    <tb-empty-state
+                      icon="tb-i-check_circle"
+                      [title]="t.noReadyTitle"
+                      [hint]="t.noReadyHint"
+                    />
                   }
                 }
-              </div>
+              }
             } @else {
               <tb-empty-state icon="tb-i-assignment" [title]="t.emptyTitle" [hint]="t.emptyHint" />
             }
@@ -176,17 +176,6 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the teacher's list) */
-    .tb-hw__pane ::ng-deep .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .tb-hw__pane .tb-hw__scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
     .tb-hw__filters {
       display: flex;
       flex-direction: column;

@@ -16,14 +16,7 @@ import {
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import {
-  bodyText,
-  buttonByText,
-  hostElement,
-  menuItemByText,
-  readableText,
-  requireElement,
-} from '@testing/dom';
+import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
@@ -224,69 +217,10 @@ describe('AssignmentsPage', () => {
     expect(readableText(host)).toContain('Ничего не найдено');
   });
 
-  it('acts on an assignment from its «⋮» menu', async () => {
-    const { host, fixture, navigate } = await render(
-      [
-        assignmentSummary(),
-        assignmentSummary({ id: 'a-2', title: 'Без срока', boardId: 'board-1', submitted: 0 }),
-      ],
-      [],
-    );
-    async function act(title: string, item: string): Promise<void> {
-      buttonByText(host, `Действия: ${title}`).click();
-      await fixture.whenStable();
-      menuItemByText(item).click();
-      await fixture.whenStable();
-    }
-    buttonByText(host, 'Действия: Без срока').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Открыть доску');
-    expect(bodyText()).not.toContain('Проверить работы');
-    buttonByText(host, 'Действия: Без срока').click();
-    await fixture.whenStable();
-    await act('Без срока', 'Открыть');
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2']);
-    await act('Без срока', 'Изменить');
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
-    await act('Без срока', 'Открыть доску');
-    expect(navigate).toHaveBeenCalledWith(['/teacher/boards', 'board-1']);
-
-    // «Проверить работы» shows the works to review in this very list
-    await act('Дроби', 'Проверить работы');
-    expect(segment(host, 'На проверку').getAttribute('aria-pressed')).toBe('true');
-  });
-
-  it('deletes an assignment from its «⋮» menu after a confirmation', async () => {
-    const { backend } = configure();
-    const fixture = TestBed.createComponent(AssignmentsPage);
-    await fixture.whenStable();
-    backend
-      .expectOne('/api/teacher/homework/assignments')
-      .flush([assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Лишнее' })]);
-    backend.expectOne(QUEUE).flush([]);
-    await fixture.whenStable();
-    const host = hostElement(fixture);
-    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
-    const confirm = vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
-      options.accept?.();
-      return confirmation;
-    });
-
-    buttonByText(host, 'Действия: Лишнее').click();
-    await fixture.whenStable();
-    menuItemByText('Удалить…').click();
-    expect(confirm.mock.calls[0]?.[0].header).toBe('Удалить задание?');
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-2' })
-      .flush(null);
-    await fixture.whenStable();
-
-    expect(readableText(host)).not.toContain('Лишнее');
-    expect(readableText(host)).toContain('Дроби');
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Задание «Лишнее» удалено' }),
-    );
-    fixture.destroy();
+  it('opens assignments through their title and keeps actions in the detail card', async () => {
+    const { host } = await render([assignmentSummary()], []);
+    expect(host.querySelector('a[href="/teacher/homework/a-1"]')).not.toBeNull();
+    expect(host.querySelector('.tb-list p-button')).toBeNull();
   });
 
   it('shows a failed load with «Повторить», then the empty state', async () => {
@@ -914,7 +848,7 @@ describe('AssignmentsPage with a detail', () => {
     await fixture.whenStable();
 
     expect(host.querySelector('tb-assignment-page')).not.toBeNull();
-    expect(host.querySelector('tb-assignment-page h1')?.textContent).toBe('Дроби');
+    expect(host.querySelector('tb-pane:last-child .tb-pane__header h1')?.textContent).toBe('Дроби');
   });
 
   it('reads the lists again after a work is reviewed', async () => {
@@ -984,7 +918,7 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
 
     requireElement(
       host,
-      'tb-review-sheet button[aria-label="Закрыть проверку"]',
+      '.tb-pane__header button[aria-label="Закрыть проверку"]',
       HTMLElement,
     ).click();
 

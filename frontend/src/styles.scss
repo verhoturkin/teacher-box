@@ -399,6 +399,14 @@ body {
  * a rounded outline-variant bar. Ours (M3 does not publish scrollbars). Firefox has no track margin: it
  * gets the thin standard bar, which the clipped corner already hides.
  */
+/* The pane header owns the fixed gap before scrolling content. Trim the projected heading's
+ * trailing margin so it does not duplicate that gap (also for a title/search/filter wrapper).
+ */
+.tb-pane__header > :last-child,
+.tb-pane__header > [tbPaneHeader]:last-child > :last-child {
+  margin-block-end: 0;
+}
+
 .tb-pane__scroll,
 .tb-notifications-pane,
 .tb-roster__scroll,
@@ -1321,10 +1329,11 @@ p-button.tb-list__stretched .p-button {
 }
 
 /*
- * The state layer on hover for every row of a list, as in the list of the settings (the same 8 % of the content
- * colour over the row's tone); a row that opens as a whole also shows the pointer
+ * Only rows that open or select as a whole get the hover state layer.
+ * Buttons and links inside static rows keep their own interaction states.
  */
-.tb-list > li:hover {
+.tb-list
+  > li:is(.tb-list__item--link, :has(.tb-list__link, .tb-list__stretched, > a, > button)):hover {
   background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), var(--tb-list-item));
 }
 
@@ -1590,6 +1599,16 @@ p-button.tb-list__stretched .p-button {
  */
 p-button.tb-button-steady .p-button {
   min-width: 8.5rem;
+}
+
+/* Programmatic autofocus can match :focus-visible even without keyboard use. Preserve actual focus,
+ * but suppress its ring until keyboard interaction. Important overrides component-scoped outlines;
+ * backgrounds, field borders, validation and elevation remain independent of this visual ring.
+ */
+:root:not(.tb-keyboard-focus) :is(:focus, :focus-visible),
+:root:not(.tb-keyboard-focus) :is(:focus, :focus-visible)::before,
+:root:not(.tb-keyboard-focus) :is(:focus, :focus-visible)::after {
+  outline: none !important;
 }
 
 /*

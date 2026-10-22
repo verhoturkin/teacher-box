@@ -108,6 +108,9 @@ export const ru = {
     heading: (name: string) => `Ссылка для ученика: ${name}`,
   },
   studentForm: {
+    createKind: 'Что создать',
+    student: 'Ученик',
+    group: 'Группа',
     newStudent: 'Новый ученик',
     name: 'Имя и фамилия',
     email: 'E-mail',

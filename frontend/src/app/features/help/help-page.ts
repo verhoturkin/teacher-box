@@ -43,8 +43,10 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
     <tb-panes>
       @if (layout.list()) {
         <tb-pane kind="fixed" [label]="t.articles">
-          <tb-page-header [title]="t.help" />
-          <tb-search-field [formControl]="search" [label]="t.search" />
+          <div tbPaneHeader>
+            <tb-page-header [title]="t.help" />
+            <tb-search-field [formControl]="search" [label]="t.search" />
+          </div>
           <nav [attr.aria-label]="t.articles">
             <ul class="tb-help__list">
               @for (article of found(); track article.id) {
@@ -78,15 +80,25 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
       @if (layout.detail()) {
         <tb-pane class="tb-help__article-card">
           @if (layout.single()) {
-            <tb-page-header [title]="t.help" [back]="['/', area(), 'help']" [backLabel]="t.all" />
+            <tb-page-header
+              tbPaneHeader
+              [title]="t.help"
+              [back]="['/', area(), 'help']"
+              [backLabel]="t.all"
+            />
           }
+          <div tbPaneHeader>
+            @if (current(); as article) {
+              <h2 class="tb-help__title">{{ article.title }}</h2>
+              <p class="tb-help__summary">{{ article.summary }}</p>
+            }
+          </div>
           @if (current(); as article) {
             <article class="tb-help__article">
               @if (missing()) {
                 <p class="tb-muted">{{ t.missing(article.title) }}</p>
               }
-              <h2 class="tb-help__title">{{ article.title }}</h2>
-              <p class="tb-help__summary">{{ article.summary }}</p>
+
               <tb-help-article [body]="article.body" />
             </article>
           }
@@ -97,8 +109,8 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
   styles: `
     /*
      * List-detail (redesign spec §3.3): the contents with the search in the fixed pane, the chosen
-     * article in the flexible one; on compact and medium the route shows one of them. Running text keeps
-     * 66 ch (spec §1).
+     * article in the flexible one; on compact and medium the route shows one of them. Running text uses
+     * the available pane width.
      */
     .tb-help__list {
       display: flex;
@@ -147,7 +159,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
     }
 
     .tb-help__article {
-      max-width: 66ch;
+      width: 100%;
     }
 
     .tb-help__title {

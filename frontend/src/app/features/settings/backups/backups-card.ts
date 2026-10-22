@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -43,6 +44,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
 @Component({
   selector: 'tb-backups-card',
   imports: [
+    PaneHeader,
     EmptyState,
     DatePipe,
     Button,
@@ -59,22 +61,23 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="backups">
-      <ng-template #title>
-        <div class="tb-card-title">
-          <span class="tb-card-title__text"
-            >{{ t.title }} <tb-help-button [topic]="helpTopic()"
-          /></span>
-          <div class="tb-card-title__actions">
-            <p-button
-              [label]="t.create"
-              severity="secondary"
-              icon="tb-i tb-i-database"
-              [loading]="creating()"
-              (onClick)="create()"
-            />
-          </div>
-        </div>
-      </ng-template>
+      <ng-template #title
+        ><ng-template tbPaneHeader>
+          <div class="tb-card-title">
+            <span class="tb-card-title__text"
+              >{{ t.title }} <tb-help-button [topic]="helpTopic()"
+            /></span>
+            <div class="tb-card-title__actions">
+              <p-button
+                [label]="t.create"
+                severity="secondary"
+                icon="tb-i tb-i-database"
+                [loading]="creating()"
+                (onClick)="create()"
+              />
+            </div>
+          </div> </ng-template
+      ></ng-template>
       <p class="tb-muted">
         {{ t.about }}
         @if (isAdmin()) {

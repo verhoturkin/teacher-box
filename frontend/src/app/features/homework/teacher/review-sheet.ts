@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -49,6 +50,7 @@ export interface NextWork {
 @Component({
   selector: 'tb-review-sheet',
   imports: [
+    PaneHeader,
     NgTemplateOutlet,
     ReactiveFormsModule,
     Drawer,
@@ -127,24 +129,25 @@ export interface NextWork {
         </div>
       </p-drawer>
     } @else {
-      <div class="tb-sheet__head">
-        <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
-        @if (total() > 0 && place() > 0) {
-          <span class="tb-sheet__place">{{ t.position(place(), total()) }}</span>
-        }
-        <button
-          pButton
-          type="button"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          [attr.aria-label]="t.closeReview"
-          (click)="closed.emit()"
-        >
-          <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
-        </button>
-      </div>
-
+      <ng-template tbPaneHeader
+        ><div class="tb-sheet__head">
+          <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
+          @if (total() > 0 && place() > 0) {
+            <span class="tb-sheet__place">{{ t.position(place(), total()) }}</span>
+          }
+          <button
+            pButton
+            type="button"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [attr.aria-label]="t.closeReview"
+            (click)="closed.emit()"
+          >
+            <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
+          </button>
+        </div>
+      </ng-template>
       <ng-container [ngTemplateOutlet]="fields" />
 
       <div class="tb-sheet__decision">

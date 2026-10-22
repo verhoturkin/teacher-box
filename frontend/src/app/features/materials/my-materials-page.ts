@@ -45,41 +45,42 @@ import { T } from './i18n/texts';
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="t.title">
-          <tb-help-button
-            help
-            [topic]="active() === 'boards' ? 'cabinet/lesson' : 'cabinet/textbooks'"
-          />
-          @if (!mobile()) {
+        <div tbPaneHeader>
+          <tb-page-header [title]="t.title">
+            <tb-help-button
+              help
+              [topic]="active() === 'boards' ? 'cabinet/lesson' : 'cabinet/textbooks'"
+            />
+            @if (!mobile()) {
+              <tb-segment-group
+                [label]="t.tabs"
+                [segments]="segments()"
+                [value]="active()"
+                (valueChange)="selectTab($event)"
+              />
+            }
+          </tb-page-header>
+
+          @if (mobile()) {
             <tb-segment-group
+              class="tb-my-materials__tabs"
               [label]="t.tabs"
               [segments]="segments()"
               [value]="active()"
               (valueChange)="selectTab($event)"
             />
           }
-        </tb-page-header>
 
-        @if (mobile()) {
-          <tb-segment-group
-            class="tb-my-materials__tabs"
-            [label]="t.tabs"
-            [segments]="segments()"
-            [value]="active()"
-            (valueChange)="selectTab($event)"
-          />
-        }
-
-        <div class="tb-my-materials__bar">
-          <tb-search-field [formControl]="search" [label]="t.searchMine" />
-          <tb-filter-chips
-            [label]="t.filters"
-            [chips]="chips()"
-            [value]="chip()"
-            (valueChange)="picked.set($event)"
-          />
+          <div class="tb-my-materials__bar">
+            <tb-search-field [formControl]="search" [label]="t.searchMine" />
+            <tb-filter-chips
+              [label]="t.filters"
+              [chips]="chips()"
+              [value]="chip()"
+              (valueChange)="picked.set($event)"
+            />
+          </div>
         </div>
-
         <div [hidden]="active() !== 'boards'">
           <tb-my-boards-feed #boards [query]="query()" [filter]="boardsFilter()" />
         </div>

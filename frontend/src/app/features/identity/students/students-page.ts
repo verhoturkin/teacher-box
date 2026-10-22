@@ -126,108 +126,93 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.list" [class.tb-roster__pane]="!layout.single()">
-          <tb-page-header [title]="t.title">
-            <tb-help-button help topic="teacher/students" />
-            @if (state.ready()) {
-              <span meta class="tb-muted">{{ summary() }}</span>
-            }
-            <p-button
-              icon="tb-i tb-i-group_add"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [ariaLabel]="t.createGroup"
-              [pTooltip]="t.createGroup"
-              (onClick)="openCreateGroup()"
-            />
-            <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
-            @if (mobile()) {
-              <p-button
-                class="tb-page-fab"
-                [label]="t.add"
-                icon="tb-i tb-i-person_add"
-                (onClick)="openCreate()"
-              />
-            }
-          </tb-page-header>
-
-          <div class="tb-roster__filters">
-            <tb-search-field [formControl]="search" [label]="t.search" />
-            <tb-filter-chips [label]="t.filters" [chips]="chips()" [(value)]="filter" />
-          </div>
-
-          <!-- beside the card only the list scrolls: the header, the search and the chips stay -->
-          <div class="tb-roster__scroll">
-            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-              @if (visibleRows().length > 0) {
-                <ul class="tb-list" [attr.aria-label]="t.title">
-                  @for (row of visibleRows(); track row.kind + row.id) {
-                    <li [class.tb-list__item--current]="isCurrent(row)">
-                      @if (row.kind === 'student') {
-                        <tb-avatar
-                          [attr.data-tb-label]="colorOf(row)"
-                          [name]="row.name"
-                          [photo]="row.student.avatar"
-                        />
-                      } @else {
-                        <span
-                          class="tb-list__lead"
-                          [attr.data-tb-label]="colorOf(row)"
-                          aria-hidden="true"
-                          ><i class="tb-i tb-i-group"></i
-                        ></span>
-                      }
-                      <div class="tb-list__text">
-                        <a
-                          class="tb-list__title tb-list__link"
-                          [routerLink]="linkOf(row)"
-                          [attr.aria-current]="isCurrent(row) ? 'page' : null"
-                          >{{ row.name }}</a
-                        >
-                        @if (supporting(row); as line) {
-                          <span class="tb-list__supporting">{{ line }}</span>
-                        }
-                      </div>
-                      <div class="tb-list__trail tb-list__trail--icons">
-                        @if (row.kind === 'student') {
-                          @if (debtOf(row); as debt) {
-                            <span class="tb-roster__debt"
-                              ><span aria-hidden="true">{{ debt.shown }}</span
-                              ><span class="tb-sr-only">{{ debt.spoken }}</span></span
-                            >
-                          } @else if (row.student.status !== 'ACTIVE') {
-                            <!-- one status on the right (spec §8): the debt, or else the tag -->
-                            <p-tag
-                              [value]="statusLabels[row.student.status]"
-                              [severity]="statusSeverities[row.student.status]"
-                              [pTooltip]="inviteHint(row.student)"
-                            />
-                          }
-                        } @else if (row.group.archivedAt) {
-                          <p-tag [value]="tg.archived" severity="secondary" />
-                        }
-                      </div>
-                    </li>
-                  }
-                </ul>
-              } @else if (students().length === 0 && filter() !== 'groups') {
-                <tb-empty-state
-                  icon="tb-i-person_add"
-                  [title]="t.emptyTitle"
-                  [hint]="t.emptyHint"
-                />
-              } @else if (filter() === 'groups' && groups().length === 0) {
-                <tb-empty-state icon="tb-i-group" [title]="tg.emptyTitle" [hint]="tg.emptyHint" />
-              } @else {
-                <tb-empty-state
-                  icon="tb-i-search"
-                  [title]="t.notFoundTitle"
-                  [hint]="t.notFoundHint"
+        <tb-pane kind="fixed" [label]="t.list">
+          <div tbPaneHeader>
+            <tb-page-header [title]="t.title">
+              <tb-help-button help topic="teacher/students" />
+              @if (state.ready()) {
+                <span meta class="tb-muted">{{ summary() }}</span>
+              }
+              <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+              @if (mobile()) {
+                <p-button
+                  class="tb-page-fab"
+                  [label]="t.add"
+                  icon="tb-i tb-i-person_add"
+                  (onClick)="openCreate()"
                 />
               }
-            </tb-load-state>
+            </tb-page-header>
+
+            <div class="tb-roster__filters">
+              <tb-search-field [formControl]="search" [label]="t.search" />
+              <tb-filter-chips [label]="t.filters" [chips]="chips()" [(value)]="filter" />
+            </div>
           </div>
+          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+            @if (visibleRows().length > 0) {
+              <ul class="tb-list" [attr.aria-label]="t.title">
+                @for (row of visibleRows(); track row.kind + row.id) {
+                  <li [class.tb-list__item--current]="isCurrent(row)">
+                    @if (row.kind === 'student') {
+                      <tb-avatar
+                        [attr.data-tb-label]="colorOf(row)"
+                        [name]="row.name"
+                        [photo]="row.student.avatar"
+                      />
+                    } @else {
+                      <span
+                        class="tb-list__lead"
+                        [attr.data-tb-label]="colorOf(row)"
+                        aria-hidden="true"
+                        ><i class="tb-i tb-i-group"></i
+                      ></span>
+                    }
+                    <div class="tb-list__text">
+                      <a
+                        class="tb-list__title tb-list__link"
+                        [routerLink]="linkOf(row)"
+                        [attr.aria-current]="isCurrent(row) ? 'page' : null"
+                        >{{ row.name }}</a
+                      >
+                      @if (supporting(row); as line) {
+                        <span class="tb-list__supporting">{{ line }}</span>
+                      }
+                    </div>
+                    <div class="tb-list__trail tb-list__trail--icons">
+                      @if (row.kind === 'student') {
+                        @if (debtOf(row); as debt) {
+                          <span class="tb-roster__debt"
+                            ><span aria-hidden="true">{{ debt.shown }}</span
+                            ><span class="tb-sr-only">{{ debt.spoken }}</span></span
+                          >
+                        } @else if (row.student.status !== 'ACTIVE') {
+                          <!-- one status on the right (spec §8): the debt, or else the tag -->
+                          <p-tag
+                            [value]="statusLabels[row.student.status]"
+                            [severity]="statusSeverities[row.student.status]"
+                            [pTooltip]="inviteHint(row.student)"
+                          />
+                        }
+                      } @else if (row.group.archivedAt) {
+                        <p-tag [value]="tg.archived" severity="secondary" />
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            } @else if (students().length === 0 && filter() !== 'groups') {
+              <tb-empty-state icon="tb-i-person_add" [title]="t.emptyTitle" [hint]="t.emptyHint" />
+            } @else if (filter() === 'groups' && groups().length === 0) {
+              <tb-empty-state icon="tb-i-group" [title]="tg.emptyTitle" [hint]="tg.emptyHint" />
+            } @else {
+              <tb-empty-state
+                icon="tb-i-search"
+                [title]="t.notFoundTitle"
+                [hint]="t.notFoundHint"
+              />
+            }
+          </tb-load-state>
         </tb-pane>
       }
       @if (layout.detail()) {
@@ -252,7 +237,12 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
             }
           </ng-template>
           @if (layout.single()) {
-            <tb-page-header [title]="detailTitle()" back="/teacher/students" [backLabel]="t.all">
+            <tb-page-header
+              tbPaneHeader
+              [title]="detailTitle()"
+              back="/teacher/students"
+              [backLabel]="t.all"
+            >
               <ng-container [ngTemplateOutlet]="actions" />
             </tb-page-header>
           }
@@ -306,7 +296,11 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       appendTo="body"
       (onHide)="menuFor.set(null)"
     />
-    <tb-student-form-dialog [(visible)]="formVisible" (created)="onCreated($event)" />
+    <tb-student-form-dialog
+      [(visible)]="formVisible"
+      (created)="onCreated($event)"
+      (createGroup)="openCreateGroup()"
+    />
     <tb-invite-link-dialog
       [(visible)]="inviteVisible"
       [invite]="invite()"
@@ -321,19 +315,6 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision) */
-    .tb-roster__pane ::ng-deep .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .tb-roster__pane .tb-roster__scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
     .tb-roster__filters {
       display: flex;
       flex-direction: column;

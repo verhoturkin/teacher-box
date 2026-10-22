@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -42,6 +43,7 @@ import { GroupProfileTab } from './group-profile-tab';
 @Component({
   selector: 'tb-group-card',
   imports: [
+    PaneHeader,
     BroadcastDialog,
     Button,
     Card,
@@ -64,39 +66,40 @@ import { GroupProfileTab } from './group-profile-tab';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let item = group();
-    <tb-card-head
-      [name]="item.name"
-      [line]="line()"
-      [tags]="tags()"
-      [single]="single()"
-      [actionsLabel]="actionsLabel()"
-      [busy]="busy()"
-      [menuOpen]="menuOpen()"
-      (more)="more.emit($event)"
-    >
-      <span avatar class="tb-group-card__avatar" [attr.data-tb-label]="color()" aria-hidden="true"
-        ><i class="tb-i tb-i-group"></i
-      ></span>
-      @if (current() && recipients().length > 0) {
-        <p-button
-          [label]="c.write"
-          icon="tb-i tb-i-chat"
-          severity="secondary"
-          [pTooltip]="t.writeHint"
-          (onClick)="writeVisible.set(true)"
-        />
-      }
-      @if (current()) {
-        <p-button
-          [label]="c.lesson"
-          icon="tb-i tb-i-event"
-          [severity]="mobile() ? 'secondary' : 'primary'"
-          [pTooltip]="t.lessonHint"
-          [loading]="lessonPending()"
-          (onClick)="openLesson()"
-        />
-      }
-    </tb-card-head>
+    <ng-template tbPaneHeader
+      ><tb-card-head
+        [name]="item.name"
+        [line]="line()"
+        [tags]="tags()"
+        [single]="single()"
+        [actionsLabel]="actionsLabel()"
+        [busy]="busy()"
+        [menuOpen]="menuOpen()"
+        (more)="more.emit($event)"
+      >
+        <span avatar class="tb-group-card__avatar" [attr.data-tb-label]="color()" aria-hidden="true"
+          ><i class="tb-i tb-i-group"></i
+        ></span>
+        @if (current() && recipients().length > 0) {
+          <p-button
+            [label]="c.write"
+            icon="tb-i tb-i-chat"
+            severity="secondary"
+            [pTooltip]="t.writeHint"
+            (onClick)="writeVisible.set(true)"
+          />
+        }
+        @if (current()) {
+          <p-button
+            [label]="c.lesson"
+            icon="tb-i tb-i-event"
+            [severity]="mobile() ? 'secondary' : 'primary'"
+            [pTooltip]="t.lessonHint"
+            [loading]="lessonPending()"
+            (onClick)="openLesson()"
+          />
+        }</tb-card-head
+    ></ng-template>
 
     <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
       <p-tablist>

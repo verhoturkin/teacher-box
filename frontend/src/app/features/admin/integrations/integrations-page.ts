@@ -58,7 +58,7 @@ type Section = 'connections' | 'ai';
     <tb-panes medium="two">
       @if (layout.list()) {
         <tb-pane kind="fixed" [label]="t.sections">
-          <tb-page-header [title]="t.title">
+          <tb-page-header tbPaneHeader [title]="t.title">
             <tb-help-button help topic="admin/diagnostics" />
           </tb-page-header>
           <tb-pane-nav
@@ -73,12 +73,13 @@ type Section = 'connections' | 'ai';
         <tb-pane [label]="currentTitle()">
           @if (layout.single()) {
             <tb-page-header
+              tbPaneHeader
               [title]="currentTitle()"
               back="/admin/integrations"
               [backLabel]="t.all"
             />
           } @else {
-            <h2 class="tb-integrations__heading">{{ currentTitle() }}</h2>
+            <h2 tbPaneHeader class="tb-integrations__heading">{{ currentTitle() }}</h2>
           }
           @if (current() === 'connections') {
             <div class="tb-stack">
