@@ -64,6 +64,16 @@ with the rest of the files by the full reset.
 
 ## Frontend
 
+The shared `groups/member-picker.ts` foundation (0.29.0, exported through `parts.ts`) provides one
+searchable Students/Groups dropdown. Its reactive-form value is an array of typed `MemberSelection`
+entries (`kind: STUDENT | GROUP`, `id`), deduplicated by type and ID. Options accept a name, optional
+disambiguating detail and an unavailable flag; unavailable options are disabled, while missing prefilled
+values remain visible by ID and removable. A selection limit supports single-recipient callers as well
+as multiple selection. Disabled, touched, reset and validation behavior follows Angular forms and the
+portal field convention. It performs no HTTP requests and never expands group membership: callers own
+access grants or recipient snapshots, including preserving explicit students when removing groups.
+Existing paired selectors are migrated in plan steps 258.2–258.3.
+
 `features/identity/`: `login/`, `invite/`, `colors/` (0.20.0: `TeacherColors` — the colours of students and groups
 by id, loaded by the teacher area's guard in `app.routes.ts`, used by every teacher list; since 0.27.0 accents are on avatars and group icons, with a ring around photos, while row backgrounds retain portal surface roles; `tbChipColors` — paints the
 chips of a student / group multiselect; `tb-label-color-field` — the colour select of both dialogs),

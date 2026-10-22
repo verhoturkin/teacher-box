@@ -4,6 +4,15 @@ import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
+  memberPicker: {
+    students: 'Students',
+    groups: 'Groups',
+    student: 'Student',
+    group: 'Group',
+    placeholder: 'Choose students and groups',
+    search: 'Search students and groups',
+    unavailable: 'Unavailable',
+  },
   login: {
     title: (portal: string) => `Sign in to ${portal}`,
     expired: 'The session has expired. Sign in again',

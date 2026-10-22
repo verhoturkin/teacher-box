@@ -54,7 +54,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
 
 ### Stage 258 — One student/group picker
 
-- [ ] 258.1 **F** Introduce a reusable picker in `identity` exported via `parts.ts`: one searchable
+- [x] 258.1 **F** Introduce a reusable picker in `identity` exported via `parts.ts`: one searchable
   dropdown, Students/Groups sections, distinguishable types, selected chips, clearing and keyboard
   access. Preserve typed student/group IDs; support the selection cardinality required by each caller.
   Cover namesakes, duplicate membership, empty options, archived/unavailable values and prefilled

@@ -911,6 +911,15 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   account and group forms correct in both themes; a new custom form surface must declare this property
   alongside its background. `--tb-card` remains a card colour, not an assumption about every form.
 - Required fields: `*` after the label + `aria-required` (`tb-field--required`); optional ones unmarked.
+- Combined member field (0.29.0 foundation): `identity/parts` exports `tb-member-picker`, a grouped
+  PrimeNG MultiSelect with one search, Students/Groups sections, removable typed chips and clearing.
+  From M3: checkboxes for multiple related choices and input chips for selected entities. Portal decisions:
+  grouping both entity types in one dropdown, prefixing chip labels with the type and accepting an optional
+  selection limit. Callers wrap it in `.tb-field` with a label targeting its required `inputId` and use a
+  reactive form control; `tbFieldErrors` supplies the standard required/error semantics. Optional option
+  details distinguish namesakes. Unavailable options cannot be newly selected; prefilled unavailable or
+  missing IDs stay visible (missing names fall back to IDs) and removable. The field stores explicit
+  `{ kind, id }` choices; each caller owns grant semantics or group-to-student snapshot resolution.
 - Errors: `<form tbFieldErrors>` (`shared/ui/field-errors.ts`) shows text under the field (Body Small, error;
   replaces the hint), sets `aria-invalid` / `aria-describedby`, maps server error codes (e.g. `login.taken`)
   to their field; submit with errors shows all and focuses the first.
