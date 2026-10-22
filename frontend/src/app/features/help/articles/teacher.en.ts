@@ -264,7 +264,7 @@ One lesson can have another link — in the lesson window.
     body: `
 Boards are a tab of the «Materials» section (next to the «Textbooks» tab, [Textbooks](/teacher/help/textbooks)): all boards in one place, as cards with the board's picture. The search above the cards finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
 
-Search fills the pane width; filters and sorting are below it. The «Textbooks» tab uses the same layout.
+Search fills the pane width; filters and sorting are below it. The «Textbooks» tab uses the same layout. Cards keep a compact size even when the list contains a single material.
 
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.

@@ -806,8 +806,13 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   `tb-search-field`, then a separate row of `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»;
   for textbooks «Все · Учебники · Рабочие тетради · Другое · Ученик или группа») and the sort menu
   «Сначала изменённые / По названию / Сначала новые» (0.29.0, our layout decision), then the
-  feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
-  between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
+  feed `tb-material-grid` (`styles.scss`: 2 shrinkable columns on compact, auto-fill from medium with
+  192–240 px tracks that can shrink to the available pane width; 12 px between cards on a phone, 16 px wider).
+  **Portal sizing decision (0.29.0, not prescribed by M3):** cards cap at 240 px (15 rem), including sparse
+  and single-card lists; auto-fill retains empty tracks. Previously a 1440 px viewport gave a 306 × 259 px
+  card; the new maximum is 240 × 218 px (about 22% narrower and 16% shorter). Preview aspect stays 8:5,
+  caption typography and action targets keep their sizes; compact cards still shrink to fit two columns.
+  A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
   `surface container low`, the preview on top (a board's PNG exported by the editor on save, a textbook's cover — the first page of a PDF, an image itself, none for a Word file (245.1): `tb-blob-image` fetches it with the
   HTTP client as a blob; the icon of the kind while there is none), a tonal tile with the icon and the tag of the
   service («Холст», «Miro») for an external board, the title (`title medium`) and «кому · дата» under the preview,

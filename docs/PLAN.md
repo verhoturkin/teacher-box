@@ -40,7 +40,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   (`features/materials/{materials-page,my-materials-page}.ts`, `identity/students/students-page.ts`).
   Place filter chips and sorting below it; preserve query, sorting, member filters and tabs. Check
   teacher/student pages, narrow panes and clearing a query without a width jump.
-- [ ] 257.3 **F** Reduce the maximum linear size of board/textbook cards by approximately 20% through
+- [x] 257.3 **F** Reduce the maximum linear size of board/textbook cards by approximately 20% through
   `.tb-material-grid` in `styles.scss` and `shared/ui/material-card.ts`. First measure the current wide
   layout, then set a bounded responsive grid so sparse lists do not stretch cards. Keep preview aspect
   ratio, readable titles, menus and interaction targets; retain a usable compact layout. Check both

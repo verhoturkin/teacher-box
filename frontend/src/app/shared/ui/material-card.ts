@@ -78,6 +78,7 @@ import { BlobImage } from './blob-image';
       display: flex;
       flex-direction: column;
       min-width: 0;
+      max-inline-size: 15rem;
       overflow: hidden;
       border-radius: var(--tb-shape-lg-plus);
       background: var(--p-md-surface-container-low);

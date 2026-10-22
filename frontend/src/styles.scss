@@ -3961,27 +3961,20 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /*
- * The feed of material cards (Materials, redesign spec §10.1): 2 columns on compact, 3 from medium, 4 on
- * large, 6 on extra-large — the spec's counts by breakpoint; 12 px between the cards of a phone, 16 px wider.
+ * Material cards: two shrinkable columns on compact, as many bounded columns as fit from medium.
+ * Ours: 240 px maximum width (about 20% below the former 306 px at a 1440 px viewport), including
+ * single-card lists; 12 px between cards on a phone, 16 px wider. Auto-fill keeps empty tracks.
  */
 .tb-material-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 15rem));
   gap: var(--tb-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 
   @media (width >= 37.5em) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 15rem));
     gap: var(--tb-space-4);
-  }
-
-  @media (width >= 75em) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  @media (width >= 100em) {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
