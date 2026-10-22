@@ -64,11 +64,15 @@ import { T } from '../i18n/texts';
                 </tr>
               </ng-template>
               <ng-template #body let-row [tbRowType]="students">
-                <tr [attr.data-tb-label]="colors.studentLabel(row.studentId)">
+                <tr>
                   <td class="tb-check-column"><p-tableCheckbox [value]="row" /></td>
                   <td [attr.data-label]="t.student">
                     <div class="tb-person">
-                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                      <tb-avatar
+                        [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                        [name]="row.displayName"
+                        [photo]="row.avatar"
+                      />
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ row.displayName }}</span>
                       </div>

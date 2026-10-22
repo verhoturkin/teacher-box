@@ -6,8 +6,8 @@ import { CORE_T } from '@core/i18n/texts';
  * Colours of students and groups in the teacher's lists: a fixed palette of M3 static colours (formerly custom
  * colours). Each reference colour gives the four roles of an accent — the colour, on-colour, container and
  * on-container — of both themes from its M3 Fidelity scheme (2025 spec), so the container keeps the reference
- * colour like the portal colour does. The same scheme gives the surface containers and the text on them: a row
- * of a student or a group is built like any row of the portal, only from the neutral palette of its colour. Not harmonized with the portal colour: harmonizing pulls neighbouring hues
+ * colour like the portal colour does. The accent container highlights initials and group icons; photos keep
+ * a colour ring. List rows retain the portal's neutral surfaces. Not harmonized with the portal colour: harmonizing pulls neighbouring hues
  * together, and the labels must stay apart (our decision).
  */
 export const LABEL_COLORS = [

@@ -143,8 +143,9 @@ import { SHARED_T } from '@shared/i18n/texts';
           @if (lesson.groupId !== null) {
             <ul class="tb-list">
               @for (participant of lesson.participants; track participant.studentId) {
-                <li [attr.data-tb-label]="colors.studentLabel(participant.studentId)">
+                <li>
                   <tb-avatar
+                    [attr.data-tb-label]="colors.studentLabel(participant.studentId)"
                     [name]="participant.studentName ?? c.student"
                     [photo]="participant.studentAvatar"
                   />

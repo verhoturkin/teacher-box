@@ -10,7 +10,10 @@ import { MediumPanes, Pane, Panes, PaneKind, injectListDetail } from './panes';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes [medium]="medium()">
-      <tb-pane [kind]="first()" label="Список"><button type="button">Первая</button></tb-pane>
+      <tb-pane [kind]="first()" label="Список">
+        <h2 tbPaneHeader>Заголовок</h2>
+        <button type="button">Первая</button>
+      </tb-pane>
       <tb-pane><button type="button">Вторая</button></tb-pane>
       @if (sheet()) {
         <tb-pane kind="sheet"><button type="button">Третья</button></tb-pane>
@@ -136,6 +139,14 @@ describe('Panes', () => {
     expect(panes[0]?.getAttribute('aria-label')).toBe('Список');
     expect(panes[1]?.hasAttribute('role')).toBe(false);
     expect(panes[1]?.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('keeps a persistent heading outside the scrolling content', async () => {
+    const { panes } = await render(1200);
+    const pane = panes[0]!;
+    expect(pane.querySelector('.tb-pane__header h2')?.textContent).toBe('Заголовок');
+    expect(pane.querySelector('.tb-pane__scroll h2')).toBeNull();
+    expect(pane.querySelector('.tb-pane__scroll button')?.textContent).toBe('Первая');
   });
 
   it('shows the panes of a new page without motion and adds and removes a pane', async () => {

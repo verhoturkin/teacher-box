@@ -247,14 +247,16 @@ describe('StudentsPage', () => {
       }
     });
 
-    it('tints the row of a student or a group with its colour, not the avatar', async () => {
+    it('highlights student avatars and group leads with their colour, keeping row surfaces neutral', async () => {
       await load([{ ...MARIA, color: 'GREEN' }, BORIS], [{ ...OGE, color: 'LIME' }]);
 
       const [boris, maria, group] = Array.from(host.querySelectorAll('ul.tb-list > li'));
-      expect(maria?.getAttribute('data-tb-label')).toBe('green');
-      expect(maria?.querySelector('tb-avatar')?.hasAttribute('data-tb-label')).toBe(false);
+      expect(maria?.hasAttribute('data-tb-label')).toBe(false);
+      expect(maria?.querySelector('tb-avatar')?.getAttribute('data-tb-label')).toBe('green');
       expect(boris?.hasAttribute('data-tb-label')).toBe(false);
-      expect(group?.getAttribute('data-tb-label')).toBe('lime');
+      expect(boris?.querySelector('tb-avatar')?.hasAttribute('data-tb-label')).toBe(false);
+      expect(group?.hasAttribute('data-tb-label')).toBe(false);
+      expect(group?.querySelector('.tb-list__lead')?.getAttribute('data-tb-label')).toBe('lime');
     });
 
     it('opens the card of a student or a group from its row', async () => {

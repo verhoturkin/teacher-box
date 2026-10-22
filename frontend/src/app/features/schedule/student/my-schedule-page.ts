@@ -9,7 +9,6 @@ import {
 import { forkJoin } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { Drawer } from 'primeng/drawer';
 import { Tag } from 'primeng/tag';
 import { injectMobile } from '@core/layout/mobile';
@@ -32,7 +31,11 @@ import {
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { LessonActions } from '../ui/lesson-actions';
-import { CalendarRange, ScheduleCalendar } from '../ui/schedule-calendar';
+import { CalendarRange, CalendarView, ScheduleCalendar } from '../ui/schedule-calendar';
+import { MiniMonth } from '../ui/mini-month';
+import { ScheduleAgenda, weekStart, weekDays } from '../ui/schedule-agenda';
+import { Pane, Panes } from '@shared/ui/panes';
+import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { LessonSummary, excusedFrom } from './lesson-summary';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -55,9 +58,8 @@ export function nextMonday(date: Date): Date {
 }
 
 /**
- * The student's schedule, one card under another (ADR-0021): upcoming lessons of this week with the
- * link to the online lesson and requests to move or cancel them, the student's requests, the
- * calendar and the calendar link.
+ * The student's schedule follows the teacher's panes: calendar, with upcoming lessons, requests
+ * and a subscription beside it. Compact uses the shared agenda and opens lesson actions in a sheet.
  */
 @Component({
   selector: 'tb-my-schedule-page',
@@ -69,7 +71,11 @@ export function nextMonday(date: Date): Date {
     EmptyState,
     HelpButton,
     Button,
-    Card,
+    Pane,
+    Panes,
+    MiniMonth,
+    ScheduleAgenda,
+    FilterChips,
     Drawer,
     Tag,
     CalendarFeedPanel,
@@ -82,155 +88,201 @@ export function nextMonday(date: Date): Date {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-page-header [title]="t.title">
-      <tb-help-button help topic="cabinet/schedule" />
-    </tb-page-header>
-    <div class="tb-stack">
-      <p-card [header]="t.upcoming">
-        <tb-load-state [state]="upcomingState" [what]="t.whatUpcoming" (retry)="reload()">
-          @if (upcoming().length === 0) {
-            <tb-empty-state
-              icon="tb-i-calendar_month"
-              [title]="t.noMoreTitle"
-              [hint]="t.noMoreHint"
-            />
-          } @else {
-            <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
-              @for (lesson of upcoming(); track lesson.id) {
-                <li [class.tb-list__item--link]="mobile()">
-                  <span class="tb-list__lead" aria-hidden="true">
-                    <i [class]="leadIcon(lesson)"></i>
-                  </span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ time(lesson) }}</span>
-                    <tb-lesson-summary [lesson]="lesson" />
-                  </div>
-                  @if (mobile()) {
-                    <!-- a phone: the row stays one line, its actions are in the bottom sheet -->
-                    <div class="tb-list__trail tb-list__trail--icons">
-                      <!-- stretched over the row: the whole row opens the sheet -->
-                      <p-button
-                        class="tb-list__stretched"
-                        icon="tb-i tb-i-chevron_right"
-                        severity="secondary"
-                        [text]="true"
-                        [rounded]="true"
-                        [ariaLabel]="t.lesson(time(lesson))"
-                        (onClick)="openSheet(lesson)"
-                      />
-                    </div>
-                  } @else {
-                    <div class="tb-list__trail">
-                      <tb-lesson-actions
-                        [inRow]="true"
-                        [joinUrl]="joinUrl(lesson)"
-                        [requests]="canAsk(lesson)"
-                        [group]="lesson.groupId !== null"
-                        (ask)="ask(lesson, $event)"
-                      />
-                      @if (lesson.pendingRequests[0]; as request) {
-                        <p-button
-                          severity="danger"
-                          [label]="t.withdraw"
-                          [text]="true"
-                          [ariaLabel]="t.withdrawOf(time(lesson))"
-                          [loading]="actions.is('withdraw-' + request.id)"
-                          (onClick)="withdraw(request)"
-                        />
-                      }
-                    </div>
-                  }
-                </li>
-              }
-            </ul>
-          }
-        </tb-load-state>
-      </p-card>
-
-      @if (requests().length > 0) {
-        <p-card [header]="t.requests">
-          @if (pendingRequests().length > 0) {
-            <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
-              @for (request of pendingRequests(); track request.id) {
-                <ng-container *ngTemplateOutlet="requestRow; context: { $implicit: request }" />
-              }
-            </ul>
-          } @else {
-            <p class="tb-muted">{{ t.noPendingRequests }}</p>
-          }
-          @if (resolvedRequests().length > 0) {
-            <div class="tb-requests-resolved">
-              <p-button
-                [label]="t.resolvedRequests(resolvedRequests().length)"
-                [icon]="resolvedOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
-                iconPos="right"
-                [text]="true"
-                severity="secondary"
-                [tbAttributes]="{
-                  'aria-expanded': resolvedOpen() ? 'true' : 'false',
-                  'aria-controls': 'tb-requests-resolved',
-                }"
-                (onClick)="resolvedOpen.update((open) => !open)"
-              />
-              <div id="tb-requests-resolved" role="region" [attr.aria-label]="t.resolved">
-                @if (resolvedOpen()) {
-                  <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
-                    @for (request of resolvedRequests(); track request.id) {
-                      <ng-container
-                        *ngTemplateOutlet="requestRow; context: { $implicit: request }"
-                      />
-                    }
-                  </ul>
-                }
-              </div>
-            </div>
-          }
-        </p-card>
-      }
-
-      <ng-template #requestRow let-request [tbRowType]="requests()">
-        <li>
-          <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-forum"></i></span>
-          <div class="tb-list__text">
-            <span class="tb-list__title">
-              {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
-              @if (request.groupName !== null) {
-                · {{ t.group(request.groupName) }}
-              }
-            </span>
-            @if (request.answer !== null) {
-              <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
-            }
-          </div>
-          <div class="tb-list__trail">
-            <p-tag
-              [value]="requestStatuses[request.status].label"
-              [severity]="requestStatuses[request.status].severity"
-            />
-          </div>
-        </li>
-      </ng-template>
-      <p-card>
-        @if (calendarState.status() === 'error') {
-          <tb-load-state
-            [state]="calendarState"
-            [what]="t.whatCalendar"
-            [compact]="true"
-            (retry)="loadCalendar()"
+    <tb-panes>
+      <tb-pane [label]="t.title">
+        <tb-page-header [title]="t.title">
+          <tb-help-button help topic="cabinet/schedule" />
+        </tb-page-header>
+        @if (mobile()) {
+          <tb-filter-chips
+            [label]="page.screens"
+            [chips]="screens()"
+            [value]="screen()"
+            (valueChange)="selectScreen($event)"
           />
         }
-        <tb-schedule-calendar
-          [lessons]="calendarLessons()"
-          [busy]="busy()"
-          [busyTitle]="t.busy"
-          [showStudent]="false"
-          initialView="listWeek"
-          [loaded]="calendarState.ready()"
-          (rangeChange)="onRange($event)"
-        />
-      </p-card>
-      <tb-calendar-feed-panel />
-    </div>
+        @if (mobile() && screen() === 'agenda') {
+          <tb-schedule-agenda
+            [lessons]="calendarLessons()"
+            [loaded]="calendarState.ready()"
+            [showStudent]="false"
+            [day]="currentDay()"
+            (dayChange)="selectDay($event)"
+            (lessonClick)="openSheet($event)"
+          />
+          @if (calendarState.status() === 'error') {
+            <tb-load-state
+              [state]="calendarState"
+              [what]="t.whatCalendar"
+              [compact]="true"
+              (retry)="loadCalendar()"
+            />
+          }
+        } @else {
+          @if (calendarState.status() === 'error') {
+            <tb-load-state
+              [state]="calendarState"
+              [what]="t.whatCalendar"
+              [compact]="true"
+              (retry)="loadCalendar()"
+            />
+          }
+          <!-- FullCalendar reads initialView at creation; each compact screen gets its own view. -->
+          @for (view of [screen()]; track view) {
+            <tb-schedule-calendar
+              [lessons]="calendarLessons()"
+              [busy]="busy()"
+              [busyTitle]="t.busy"
+              [showStudent]="false"
+              [focusDate]="focusDate()"
+              [initialDate]="currentDay()"
+              [phoneView]="phoneView()"
+              (lessonClick)="openSheet($event)"
+              [loaded]="calendarState.ready()"
+              (rangeChange)="onRange($event)"
+            />
+          }
+        }
+      </tb-pane>
+      <tb-pane kind="fixed" class="tb-my-schedule-side" [label]="t.upcoming">
+        @if (!mobile()) {
+          <tb-mini-month
+            [current]="currentDay()"
+            [marked]="lessonDays()"
+            (dateSelect)="focusDate.set($event)"
+          />
+        }
+        <div class="tb-stack">
+          <section class="tb-my-schedule-section">
+            <h2>{{ t.upcoming }}</h2>
+            <tb-load-state [state]="upcomingState" [what]="t.whatUpcoming" (retry)="reload()">
+              @if (upcoming().length === 0) {
+                <tb-empty-state
+                  icon="tb-i-calendar_month"
+                  [title]="t.noMoreTitle"
+                  [hint]="t.noMoreHint"
+                />
+              } @else {
+                <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
+                  @for (lesson of upcoming(); track lesson.id) {
+                    <li [class.tb-list__item--link]="mobile()">
+                      <span class="tb-list__lead" aria-hidden="true">
+                        <i [class]="leadIcon(lesson)"></i>
+                      </span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ time(lesson) }}</span>
+                        <tb-lesson-summary [lesson]="lesson" />
+                      </div>
+                      @if (mobile()) {
+                        <!-- a phone: the row stays one line, its actions are in the bottom sheet -->
+                        <div class="tb-list__trail tb-list__trail--icons">
+                          <!-- stretched over the row: the whole row opens the sheet -->
+                          <p-button
+                            class="tb-list__stretched"
+                            icon="tb-i tb-i-chevron_right"
+                            severity="secondary"
+                            [text]="true"
+                            [rounded]="true"
+                            [ariaLabel]="t.lesson(time(lesson))"
+                            (onClick)="openSheet(lesson)"
+                          />
+                        </div>
+                      } @else {
+                        <div class="tb-list__trail">
+                          <tb-lesson-actions
+                            [inRow]="true"
+                            [joinUrl]="joinUrl(lesson)"
+                            [requests]="canAsk(lesson)"
+                            [group]="lesson.groupId !== null"
+                            (ask)="ask(lesson, $event)"
+                          />
+                          @if (lesson.pendingRequests[0]; as request) {
+                            <p-button
+                              severity="danger"
+                              [label]="t.withdraw"
+                              [text]="true"
+                              [ariaLabel]="t.withdrawOf(time(lesson))"
+                              [loading]="actions.is('withdraw-' + request.id)"
+                              (onClick)="withdraw(request)"
+                            />
+                          }
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </tb-load-state>
+          </section>
+
+          @if (requests().length > 0) {
+            <section class="tb-my-schedule-section">
+              <h2>{{ t.requests }}</h2>
+              @if (pendingRequests().length > 0) {
+                <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
+                  @for (request of pendingRequests(); track request.id) {
+                    <ng-container *ngTemplateOutlet="requestRow; context: { $implicit: request }" />
+                  }
+                </ul>
+              } @else {
+                <p class="tb-muted">{{ t.noPendingRequests }}</p>
+              }
+              @if (resolvedRequests().length > 0) {
+                <div class="tb-requests-resolved">
+                  <p-button
+                    [label]="t.resolvedRequests(resolvedRequests().length)"
+                    [icon]="resolvedOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
+                    iconPos="right"
+                    [text]="true"
+                    severity="secondary"
+                    [tbAttributes]="{
+                      'aria-expanded': resolvedOpen() ? 'true' : 'false',
+                      'aria-controls': 'tb-requests-resolved',
+                    }"
+                    (onClick)="resolvedOpen.update((open) => !open)"
+                  />
+                  <div id="tb-requests-resolved" role="region" [attr.aria-label]="t.resolved">
+                    @if (resolvedOpen()) {
+                      <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
+                        @for (request of resolvedRequests(); track request.id) {
+                          <ng-container
+                            *ngTemplateOutlet="requestRow; context: { $implicit: request }"
+                          />
+                        }
+                      </ul>
+                    }
+                  </div>
+                </div>
+              }
+            </section>
+          }
+
+          <ng-template #requestRow let-request [tbRowType]="requests()">
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-forum"></i></span>
+              <div class="tb-list__text">
+                <span class="tb-list__title">
+                  {{ kind(request) }}: {{ start(request.lessonStartsAt) }}
+                  @if (request.groupName !== null) {
+                    · {{ t.group(request.groupName) }}
+                  }
+                </span>
+                @if (request.answer !== null) {
+                  <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
+                }
+              </div>
+              <div class="tb-list__trail">
+                <p-tag
+                  [value]="requestStatuses[request.status].label"
+                  [severity]="requestStatuses[request.status].severity"
+                />
+              </div>
+            </li>
+          </ng-template>
+          <tb-calendar-feed-panel />
+        </div>
+      </tb-pane>
+    </tb-panes>
 
     <p-drawer
       tbModalDrawer
@@ -277,6 +329,30 @@ export function nextMonday(date: Date): Date {
     />
   `,
   styles: `
+    :host ::ng-deep .tb-my-schedule-side {
+      background: var(--p-md-surface-container-low);
+      --tb-list-item: var(--p-md-surface-container-lowest);
+    }
+
+    :host-context(.tb-dark) ::ng-deep .tb-my-schedule-side {
+      --tb-list-item: var(--p-md-surface-container-high);
+    }
+
+    :host ::ng-deep .tb-my-schedule-side .tb-pane__scroll {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    tb-filter-chips {
+      margin-block-end: var(--tb-space-4);
+    }
+
+    .tb-my-schedule-section h2 {
+      margin: 0 0 var(--tb-space-3);
+      font: var(--tb-type-title-m-emphasized);
+    }
+
     /* «Решённые»: apart from the pending ones, without a line */
     .tb-requests-resolved {
       margin-top: var(--tb-space-3);
@@ -291,6 +367,21 @@ export function nextMonday(date: Date): Date {
 export class MySchedulePage implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.mine;
+  protected readonly page = T.page;
+  protected readonly screen = signal('agenda');
+  protected readonly screens = computed<readonly FilterChip<string>[]>(() => [
+    { value: 'agenda', label: T.page.screenAgenda },
+    { value: 'week', label: T.page.screenWeek },
+    { value: 'month', label: T.page.screenMonth },
+  ]);
+  protected readonly phoneView = computed<CalendarView | null>(() =>
+    this.screen() === 'month' ? 'dayGridMonth' : 'timeGridWeek',
+  );
+  protected readonly currentDay = signal(toIsoDate(new Date()));
+  protected readonly focusDate = signal<string | null>(null);
+  protected readonly lessonDays = computed(
+    () => new Set(this.calendarLessons().map((lesson) => toIsoDate(new Date(lesson.startsAt)))),
+  );
   protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
@@ -334,11 +425,26 @@ export class MySchedulePage implements OnInit {
   private range: CalendarRange | null = null;
 
   ngOnInit(): void {
+    if (this.mobile()) this.selectDay(this.currentDay());
     this.reload();
   }
 
   onRange(range: CalendarRange): void {
+    this.currentDay.set(range.current);
     this.range = range;
+    this.loadCalendar();
+  }
+
+  protected selectScreen(screen: string): void {
+    this.screen.set(screen);
+    if (screen === 'agenda') this.selectDay(this.currentDay());
+  }
+
+  protected selectDay(day: string): void {
+    this.currentDay.set(day);
+    const from = weekStart(day);
+    const last = weekDays(from)[6] ?? from;
+    this.range = { from, to: toIsoDate(nextMonday(fromIsoDate(last))), current: day };
     this.loadCalendar();
   }
 

@@ -3,8 +3,8 @@ import { InitialsPipe } from './initials';
 
 /**
  * A person's avatar (ADR-0020): their photo cut to a circle, or the initials of the name when there is
- * no photo or it does not load. Decorative: the name is always next to it. The initials keep the colours of
- * the theme: the colour of a student or a group tints the row or the card around the avatar (`data-tb-label`).
+ * no photo or it does not load. Decorative: the name is always next to it. `data-tb-label` highlights the
+ * avatar in the student’s colour: a container behind initials, or a ring around a photo.
  */
 @Component({
   selector: 'tb-avatar',

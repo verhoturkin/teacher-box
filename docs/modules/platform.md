@@ -36,6 +36,10 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `<data-dir>/google-drive.json` (`DriveConnectionStore`; survives restore and reset), `CloudBackupService`: after
   `BackupCreated` of a scheduled or manual backup it uploads it in the background (one task at a time) into the
   portal's folder and deletes the ones uploaded more than `TEACHERBOX_BACKUP_KEEP_DAYS` ago; a rejected token disconnects with an error.
+  The administrator also has `GET /api/admin/backups/google`, `GET …/files`, `POST …/uploads/{name}`
+  and `POST …/files/{id}/download`: technical backup management only, with no archive download to the device,
+  OAuth management, account address, client ID or detailed connection errors. The admin backups page reuses
+  `DrivePanel` with a page-scoped `DriveStore`; restored cloud copies refresh the server list.
   OAuth client — `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET` or entered by the teacher; proxy
   `TEACHERBOX_BACKUP_GOOGLE_PROXY`. REST (teacher): `GET|DELETE /api/teacher/backups/google`, `PUT …/client`,
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is

@@ -44,7 +44,7 @@ HTTPS comes from the built-in Caddy: it gets a certificate for the domain of the
     body: `
 ## Backups
 
-The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data. Google Drive for the backups is connected by the teacher too; whether it works is shown in «Integrations».
+The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data. The teacher connects Google Drive for backups. The «Backups» section also shows copies in Google Drive: bring a copy to the server, then restore it from the server list.
 
 Backups are kept for as many days as «Settings» → «Backups» → «Days to keep backups» says (14 by default); the portal deletes older backups of every kind after making a new one, on the server and in Google Drive.
 
@@ -67,7 +67,7 @@ To restart, the container needs the \`restart: unless-stopped\` policy (the port
     title: 'Portal settings',
     summary: 'How to change the .env settings in the interface',
     body: `
-The «Settings» section shows all the portal's settings of the .env file by section: the value and where it comes from — «default», «from .env» or «set here». The sections are listed on the left and the chosen one is on the right (on a phone the list comes first and a section opens on its own page with a «back» button); the number next to a section's name is how many unsaved changes it has. The changes of all sections are saved together.
+The «Settings» section shows all the portal's settings of the .env file by section: the value and where it comes from — «default», «from .env» or «set here». The sections are listed on the left and the chosen one is on the right (on a phone the list comes first and a section opens on its own page with a «back» button); the number next to a section's name is how many unsaved changes it has. The changes of all sections are saved together. On a computer, headings and «Save and restart» stay visible while the fields scroll.
 
 ## Change
 

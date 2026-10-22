@@ -61,7 +61,8 @@ describe('GroupMembersTab', () => {
 
     expect(rows()).toEqual(['Б Борис Приглашён', 'Мария']);
     const maria = host.querySelectorAll('ul.tb-list > li')[1];
-    expect(maria?.getAttribute('data-tb-label')).toBe('blue');
+    expect(maria?.hasAttribute('data-tb-label')).toBe(false);
+    expect(maria?.querySelector('tb-avatar')?.getAttribute('data-tb-label')).toBe('blue');
     expect(maria?.querySelector('a')?.getAttribute('href')).toBe('/teacher/students/m');
   });
 

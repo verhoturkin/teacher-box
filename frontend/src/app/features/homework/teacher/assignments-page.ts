@@ -129,11 +129,12 @@ type Filter = 'review' | 'active' | 'done';
                   @if (works().length > 0) {
                     <ul class="tb-list" [attr.aria-label]="t.toReview">
                       @for (work of works(); track work.taskId) {
-                        <li
-                          [attr.data-tb-label]="colors.studentLabel(work.studentId)"
-                          [class.tb-list__item--current]="taskId() === work.taskId"
-                        >
-                          <tb-avatar [name]="work.studentName" [photo]="work.studentAvatar" />
+                        <li [class.tb-list__item--current]="taskId() === work.taskId">
+                          <tb-avatar
+                            [attr.data-tb-label]="colors.studentLabel(work.studentId)"
+                            [name]="work.studentName"
+                            [photo]="work.studentAvatar"
+                          />
                           <div class="tb-list__text">
                             <a
                               class="tb-list__title tb-list__link"

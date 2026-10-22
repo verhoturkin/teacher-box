@@ -53,17 +53,17 @@ export class TeacherColors {
     return id == null ? null : (this.groups().get(id) ?? null);
   }
 
-  /** `data-tb-label` of a student's row or card (the teacher's lists); `null`: none. */
+  /** `data-tb-label` of a student's avatar (the teacher's lists); `null`: none. */
   studentLabel(id: string | null | undefined): string | null {
     return keyOf(this.student(id));
   }
 
-  /** `data-tb-label` of a group's row or card; `null`: none. */
+  /** `data-tb-label` of a group's avatar; `null`: none. */
   groupLabel(id: string | null | undefined): string | null {
     return keyOf(this.group(id));
   }
 
-  /** `data-tb-label` of a lesson's or a board's row or card: its group, else its student. */
+  /** `data-tb-label` of a lesson's or a board's avatar: its group, else its student. */
   ownerLabel(
     studentId: string | null | undefined,
     groupId: string | null | undefined,

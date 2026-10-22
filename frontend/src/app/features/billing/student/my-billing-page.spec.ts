@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ledger } from '@testing/billing-fixtures';
+import { ledger, lesson, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { StudentLedger } from '../data-access/billing.models';
 import { MyBillingPage } from './my-billing-page';
@@ -34,6 +34,48 @@ describe('MyBillingPage', () => {
 
   it('confirms that everything is paid', async () => {
     expect(await render(ledger({ balance: 0 }))).toContain('Всё оплачено');
+  });
+
+  it('filters its journal without changing the balance or totals', async () => {
+    TestBed.configureTestingModule({ imports: [MyBillingPage], providers: testProviders() });
+    const fixture = TestBed.createComponent(MyBillingPage);
+    await fixture.whenStable();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/me/billing')
+      .flush(
+        ledger({
+          lessons: [
+            lesson(),
+            lesson({ id: 'missed', status: 'MISSED', topic: 'Пропущенная тема' }),
+          ],
+          payments: [payment()],
+        }),
+      );
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(host.querySelectorAll('tb-pane')).toHaveLength(1);
+    expect(host.querySelectorAll('p-card')).toHaveLength(0);
+
+    buttonByText(host, 'Оплаты').click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('за сентябрь');
+    expect(readableText(host)).not.toContain('Дроби');
+    expect(host.querySelectorAll('tb-ledger-list li')).toHaveLength(1);
+
+    buttonByText(host, 'Пропуски').click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Пропущенная тема');
+    expect(readableText(host)).not.toContain('за сентябрь');
+    expect(host.querySelectorAll('tb-ledger-list li')).toHaveLength(1);
+
+    buttonByText(host, 'Занятия').click();
+    await fixture.whenStable();
+    expect(host.querySelectorAll('tb-ledger-list li')).toHaveLength(1);
+
+    buttonByText(host, 'Все').click();
+    await fixture.whenStable();
+    expect(host.querySelectorAll('tb-ledger-list li')).toHaveLength(3);
+    expect(readableText(host)).toContain('аванс 3 500 ₽');
   });
 
   it('shows a failed load with «Повторить»', async () => {

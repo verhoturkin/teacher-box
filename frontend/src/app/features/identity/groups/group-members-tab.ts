@@ -55,8 +55,12 @@ import { groupInput } from './group-input';
       } @else {
         <ul class="tb-list" [attr.aria-label]="t.title">
           @for (member of members(); track member.id) {
-            <li [attr.data-tb-label]="colorOf(member)">
-              <tb-avatar [name]="member.displayName" [photo]="photoOf(member)" />
+            <li>
+              <tb-avatar
+                [attr.data-tb-label]="colorOf(member)"
+                [name]="member.displayName"
+                [photo]="photoOf(member)"
+              />
               <div class="tb-list__text">
                 <a
                   class="tb-list__title tb-list__link"

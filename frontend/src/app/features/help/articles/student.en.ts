@@ -33,7 +33,7 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     title: 'Schedule and moving',
     summary: 'Your lessons, cancelling and moving',
     body: `
-«Schedule» shows the upcoming lessons — until the end of this week — and a calendar where the next weeks are visible too.
+«Schedule» shows a week or month calendar. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
 ## Cancel or move a lesson
 
@@ -118,7 +118,7 @@ Click the title to open the textbook in a new tab (a Word file is downloaded), a
     title: 'Payments',
     summary: 'Balance, lesson price and history',
     body: `
-«Payments» shows:
+«Payments» shows figures at the top and history below. History filters show all operations, only payments or only charges. The figures show:
 
 - **Balance** — prepaid (you paid in advance) or debt;
 - **Lesson price**;
