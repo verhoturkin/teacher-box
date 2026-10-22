@@ -67,3 +67,9 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 `features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), `ai-settings-panel.ts` = the settings category «ИИ-помощник» (`/teacher/settings/ai`, `/teacher/ai` redirects; usage, the request log with «Показать ещё») with `prompt-library-card.ts` (`#prompt-library`, the menu's link) and
 `system-prompts-card.ts` (both system prompts, «Изменён», a dialog with «Вернуть стандартный»); embedded via `parts.ts`.
+
+The assignment editor uses a main authoring pane and an AI supporting pane (0.29.0 variant 1).
+From expanded width the AI is on the right; compact/medium use a modal right drawer with focus return.
+`HomeworkAiState` is scoped to the editor so requests, source keys, draft and in-flight generation survive
+closing or adapting the panel. Markdown preview remains a single Text/Preview field. Applying a draft
+requires Insert/Replace; closing the AI never changes authored text. Materials/videos and submit order stay intact.

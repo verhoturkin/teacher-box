@@ -504,15 +504,22 @@ This persistent-header placement is our product decision.
   there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
   button is hidden. The search takes the full available width of its pane or card; «×» never resizes it
   (0.28.0, our layout decision). Filters and sorting controls wrap below it.
-- **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
-  («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
-  second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
-  AI assistant is a bar inside the text field, between its header and the text (0.14.4): request, «Промты» menu
-  (search, save, library), «Опереться на» popover, generate; the draft comes between the bar and the text. Hidden in
-  «Просмотр». Markdown is one field
-  with a «Текст / Просмотр» switch at every width — never a second, side-by-side field. Students and groups are two
-  multiselects side by side (a settings grid of `minmax(16rem, 1fr)` columns), so a group never gets squeezed. Leaving
-  with unsaved changes asks (`canLeaveGuard`, danger confirmation).
+- **Assignment editor (0.29.0, variant 1)**: a main flexible pane for title, recipients/deadline,
+  Markdown Text/Preview, textbooks/files and videos. A supporting sheet on the right holds the AI request,
+  prompt library/search/save, source selection, generation/error/retry and draft Remove/Insert/Replace.
+  From M3: supporting-pane canonical layout and adaptation at the shared breakpoints. Portal decisions:
+  the supporting sheet uses the existing pane width, appears beside the editor from expanded, and opens
+  as a modal right drawer at compact/medium widths. A close action returns focus to the opener. Main
+  content precedes AI in DOM/reading order. There is one Markdown Text/Preview field at every width.
+  The header keeps Assign/Save (filled) and Assign/Save and place on board (tonal). The AI never changes
+  authored text without Insert/Replace. Its editor-scoped state survives closing/adapting the pane.
+  The unsaved guard and save-materials-before-notifying sequence remain in the editor.
+  Control inventory: title; explicit student/group selections; due date (automatic next lesson, manual
+  override/clear); Markdown Text/Preview and hint; textbooks (bind/pages/change/remove/open); new files
+  (pick/remove); videos (URL/title, YouTube captions and language, transcript file/text, student visibility,
+  add/remove); issue/save and issue/save-and-place-on-board; existing issued materials managed on the
+  assignment page; AI request, prompt search/library/save/manage, sources from textbooks/files/video
+  transcripts, generate/loading/error/retry, draft Remove/Insert/Replace; leave-with-changes confirmation.
 
 ## 6. States and feedback
 

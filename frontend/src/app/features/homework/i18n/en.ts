@@ -137,6 +137,8 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not send the answer',
   },
   editor: {
+    aiTitle: 'AI assistant',
+    closeAi: 'Close AI assistant',
     pages: (pages: string) => `p. ${pages}`,
     newAssignment: 'New homework',
     editAssignment: 'Edit homework',

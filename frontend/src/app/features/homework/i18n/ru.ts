@@ -135,6 +135,8 @@ export const ru = {
     failed: 'Не удалось отправить ответ',
   },
   editor: {
+    aiTitle: 'ИИ-помощник',
+    closeAi: 'Закрыть ИИ-помощника',
     pages: (pages: string) => `с. ${pages}`,
     newAssignment: 'Новое задание',
     editAssignment: 'Изменить задание',

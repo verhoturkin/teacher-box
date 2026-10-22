@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  Injectable,
   computed,
   inject,
   input,
@@ -29,6 +30,29 @@ import { SearchField } from '@shared/ui/search-field';
 export interface AppliedDraft {
   readonly draft: HomeworkDraft;
   readonly mode: 'replace' | 'insert';
+}
+
+/** State belongs to the editor so adapting or closing its supporting pane preserves ongoing work. */
+@Injectable()
+export class HomeworkAiState {
+  readonly prompt = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.maxLength(4_000)],
+  });
+  readonly promptTitle = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.maxLength(100)],
+  });
+  readonly library = signal<SavedPrompt[]>([]);
+  readonly query = signal('');
+  readonly draft = signal<HomeworkDraft | null>(null);
+  /** Keys of the chosen sources. */
+  readonly chosen = signal<ReadonlySet<string>>(new Set());
+  readonly pending = signal(false);
+  readonly naming = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly focused = signal(false);
 }
 
 /**
@@ -392,7 +416,7 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly t = T.panel;
   private readonly api = inject(AiApi);
   private readonly snackbar = inject(Snackbar);
-  private readonly menu = viewChild.required<Popover>('prompts');
+  private readonly menu = viewChild<Popover>('prompts');
 
   /** What the teacher already called the assignment. */
   readonly title = input('');
@@ -402,20 +426,11 @@ export class HomeworkAiPanel implements OnInit {
   readonly sources = input<readonly SourceOption[]>([]);
   readonly applied = output<AppliedDraft>();
 
-  readonly prompt = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.maxLength(4_000)],
-  });
-  readonly promptTitle = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.maxLength(100)],
-  });
-  protected readonly library = signal<SavedPrompt[]>([]);
-  /**
-   * The search over the library. A list of our own, not `p-listbox`: the unit tests of a worker share one jsdom
-   * document, and after a Listbox jsdom fails to compute the styles of later specs.
-   */
-  protected readonly query = signal('');
+  private readonly state = inject(HomeworkAiState, { optional: true }) ?? new HomeworkAiState();
+  readonly prompt = this.state.prompt;
+  readonly promptTitle = this.state.promptTitle;
+  protected readonly library = this.state.library;
+  protected readonly query = this.state.query;
   protected readonly found = computed(() => {
     const query = this.query().trim().toLocaleLowerCase();
     return query === ''
@@ -424,18 +439,17 @@ export class HomeworkAiPanel implements OnInit {
           `${prompt.title} ${prompt.text}`.toLocaleLowerCase().includes(query),
         );
   });
-  protected readonly draft = signal<HomeworkDraft | null>(null);
-  /** Keys of the chosen sources. */
-  protected readonly chosen = signal<ReadonlySet<string>>(new Set());
+  protected readonly draft = this.state.draft;
+  protected readonly chosen = this.state.chosen;
   /** The chosen sources still offered: a file taken off the assignment drops out. */
   protected readonly picked = computed(() =>
     this.sources().filter((option) => this.chosen().has(option.key)),
   );
-  protected readonly pending = signal(false);
-  protected readonly naming = signal(false);
-  protected readonly saving = signal(false);
-  protected readonly error = signal<string | null>(null);
-  protected readonly focused = signal(false);
+  protected readonly pending = this.state.pending;
+  protected readonly naming = this.state.naming;
+  protected readonly saving = this.state.saving;
+  protected readonly error = this.state.error;
+  protected readonly focused = this.state.focused;
   /** The request folds to a line while the teacher looks at a draft. */
   protected readonly folded = computed(() => this.draft() !== null && !this.focused());
 
@@ -465,7 +479,7 @@ export class HomeworkAiPanel implements OnInit {
   protected use(prompt: SavedPrompt | null): void {
     if (prompt !== null) {
       this.prompt.setValue(prompt.text);
-      this.menu().hide();
+      this.menu()?.hide();
     }
   }
 
@@ -521,7 +535,7 @@ export class HomeworkAiPanel implements OnInit {
       next: (saved) => {
         this.saving.set(false);
         this.naming.set(false);
-        this.menu().hide();
+        this.menu()?.hide();
         this.library.update((prompts) =>
           [...prompts, saved].sort((a, b) => a.title.localeCompare(b.title)),
         );

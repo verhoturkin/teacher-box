@@ -393,6 +393,8 @@ A student sees the textbooks open to them in their «Materials» section and can
     body: `
 The AI assistant saves time, but you always decide: it only suggests a draft.
 
+The homework editor keeps authoring in the main pane and the AI assistant on the right. On a narrow screen open «AI assistant» to use its modal panel. Closing or resizing preserves the request, sources and draft. Text/Preview switches one Markdown field; drafts change it only through Insert/Replace.
+
 ## What it can do
 
 - **Homework draft** — the AI assistant bar above the «Homework text» field of the editor (in «Text» mode). Write in your own words what you need and click «Generate». The draft appears between the request and the text: «Replace» takes its title and text, «Add to the end» adds its text after yours, «Discard» drops it, «Once more» asks for a new one.

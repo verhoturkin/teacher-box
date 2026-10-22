@@ -126,14 +126,14 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
 
 ### Stage 261 — Assignment editor with a supporting AI pane (variant 1 selected)
 
-- [ ] 261.1 **F** Specify the selected variant 1 for `homework/teacher/assignment-editor-page.ts` using
+- [x] 261.1 **F** Specify the selected variant 1 for `homework/teacher/assignment-editor-page.ts` using
   current pane/header/form patterns. Main pane: title, recipients/deadline, Markdown Text/Preview,
   materials and videos. Supporting pane: AI request, prompts, sources and generated draft, on the right
   at wide widths; open it as a modal supporting panel on compact screens, following the review page.
   Preserve request/draft/source state when closing or adapting the AI pane, and define focus return and
   reading order. Inventory every current control before moving it. M3 provides the supporting-pane/
   adaptive patterns; grouping, proportions and compact presentation are portal decisions.
-- [ ] 261.2 **F** Implement variant 1; reuse the review page's AI pane patterns and the
+- [x] 261.2 **F** Implement variant 1; reuse the review page's AI pane patterns and the
   picker from stage 258. Retain title, Markdown Text/Preview, recipients and deadline (including manual
   override and automatic nearest-lesson selection), attachments, textbook bindings/pages, videos and
   transcripts (YouTube subtitles/language, uploaded .srt/.vtt/.txt and student visibility), create/edit
@@ -143,7 +143,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   from textbooks/PDF/images/transcripts, generation/loading/error/retry states and draft Remove/Insert/
   Replace actions; never overwrite authored text without explicit application. Inventory the
   exact current controls in 261.1 and check each after the move; no parallel Markdown preview column.
-- [ ] 261.3 **F** Test authoring, editing, preview, attachments/textbooks/videos, AI interactions, both submit
+- [x] 261.3 **F** Test authoring, editing, preview, attachments/textbooks/videos, AI interactions, both submit
   actions and leaving with changes. Check compact/desktop, long content, keyboard focus, dark theme
   and 200% text scaling. Update `docs/design-system.md`, homework/AI specs and help/wiki in the same step.
 

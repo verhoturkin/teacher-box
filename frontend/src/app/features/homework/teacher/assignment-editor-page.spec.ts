@@ -6,7 +6,8 @@ import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails, attachment, boundTextbook } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import { testProviders } from '@testing/setup';
+import { HomeworkAiState } from '@features/ai/parts';
+import { screenWidth, testProviders } from '@testing/setup';
 import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
@@ -358,8 +359,8 @@ describe('AssignmentEditorPage', () => {
     for (const request of backend.match('/api/teacher/ai/prompts')) {
       request.flush([]);
     }
-    const assistant = host.querySelector<HTMLElement>('.tb-field tb-homework-ai-panel');
-    expect(assistant?.hidden).toBe(false);
+    const assistant = host.querySelector<HTMLElement>('tb-pane[kind="sheet"] tb-homework-ai-panel');
+    expect(assistant).not.toBeNull();
     page.applyDraft({
       draft: { title: 'Проценты', description: '1. Найдите 10%' },
       mode: 'replace',
@@ -367,7 +368,7 @@ describe('AssignmentEditorPage', () => {
     await fixture.whenStable();
     expect(page.form.controls.title.value).toBe('Проценты');
     expect(page.mode.value).toBe('preview');
-    expect(assistant?.hidden).toBe(true);
+    expect(host.querySelector('tb-pane[kind="sheet"] tb-homework-ai-panel')).toBe(assistant);
     expect(page.canLeave()).not.toBe(true);
 
     page.form.patchValue({ title: '' });
@@ -377,6 +378,44 @@ describe('AssignmentEditorPage', () => {
     });
     expect(page.form.controls.title.value).toBe('Ещё');
     expect(page.form.controls.description.value).toBe('1. Найдите 10%\n\n2. Найдите 20%');
+  });
+
+  it('preserves AI request, sources and draft when the supporting pane is closed', async () => {
+    const { page, host } = await create([], true);
+    const state = fixture.debugElement.injector.get(HomeworkAiState);
+    state.prompt.setValue('Create exercises');
+    state.chosen.set(new Set(['textbook-tb-1']));
+    state.draft.set({ title: 'Draft', description: 'Generated text' });
+    exactButton(host, 'ИИ-помощник').click();
+    await fixture.whenStable();
+    expect(host.querySelector('tb-homework-ai-panel')).toBeNull();
+    exactButton(host, 'ИИ-помощник').click();
+    await fixture.whenStable();
+    for (const request of backend.match('/api/teacher/ai/prompts')) request.flush([]);
+    expect(state.prompt.value).toBe('Create exercises');
+    expect(state.chosen().has('textbook-tb-1')).toBe(true);
+    expect(readableText(host)).toContain('Generated text');
+    expect(page.form.controls.description.value).toBe('');
+  });
+
+  it('opens the compact AI assistant as a modal panel and preserves its request on close', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(500)) });
+    backend = TestBed.inject(HttpTestingController);
+    const { host } = await create([], true);
+    const state = fixture.debugElement.injector.get(HomeworkAiState);
+    state.prompt.setValue('Keep this request');
+    exactButton(host, 'ИИ-помощник').click();
+    await fixture.whenStable();
+    expect(document.body.querySelector('[role="dialog"][aria-modal="true"]')).not.toBeNull();
+    const close = document.body.querySelector<HTMLButtonElement>(
+      'button[aria-label="Закрыть ИИ-помощника"]',
+    );
+    expect(close).not.toBeNull();
+    close?.click();
+    await fixture.whenStable();
+    expect(state.prompt.value).toBe('Keep this request');
+    for (const request of backend.match('/api/teacher/ai/prompts')) request.flush([]);
   });
 
   it('offers the assistant the textbooks and the saved files it can read', async () => {
