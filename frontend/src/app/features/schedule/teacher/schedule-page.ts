@@ -248,8 +248,9 @@ const ALL_DAY_START_HOUR = 10;
               <h2 class="tb-schedule-section__title">{{ t.requests }}</h2>
               <ul class="tb-list">
                 @for (request of requests(); track request.id) {
-                  <li [attr.data-tb-label]="colors.studentLabel(request.studentId)">
+                  <li>
                     <tb-avatar
+                      [attr.data-tb-label]="colors.studentLabel(request.studentId)"
                       [name]="request.studentName ?? c.student"
                       [photo]="request.studentAvatar"
                     />

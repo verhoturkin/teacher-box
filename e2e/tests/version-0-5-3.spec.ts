@@ -113,7 +113,9 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
 
   const student = await studentPage(browser);
   await student.goto('/cabinet/schedule');
-  const upcoming = student.locator('p-card').filter({ hasText: 'Ближайшие занятия' });
+  const upcoming = student
+    .locator('section')
+    .filter({ has: student.getByRole('heading', { name: 'Ближайшие занятия', exact: true }) });
   await expect(upcoming).toContainText('Ближняя');
   await expect(upcoming).not.toContainText('Дальняя');
   await upcoming.getByRole('button', { name: 'Перенести' }).click();

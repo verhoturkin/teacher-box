@@ -132,7 +132,10 @@ export class Panes {
     '[animate.enter]': 'enter()',
     '[animate.leave]': 'leave()',
   },
-  template: `<div class="tb-pane__scroll"><ng-content /></div>`,
+  template: `
+    <div class="tb-pane__header"><ng-content select="[tbPaneHeader]" /></div>
+    <div class="tb-pane__scroll"><ng-content /></div>
+  `,
   styles: `
     /*
      * The pane clips to its rounded corners and the scrolling area lies inside it, so the scrollbar never sticks
@@ -150,6 +153,16 @@ export class Panes {
       /* a list lies right on the pane's surface: its group keeps the M3 list container corner, large (16 px) —
          the first and the last rows round their outer corners by it, the rows between by 4 px */
       --tb-list-outer: var(--tb-shape-lg);
+    }
+
+    /* Optional persistent heading/actions; geometry is a portal decision using the pane padding. */
+    .tb-pane__header:not(:empty) {
+      flex: none;
+      padding: var(--tb-space-6) var(--tb-space-6) 0;
+    }
+
+    :host:has(.tb-pane__header:not(:empty)) .tb-pane__scroll {
+      padding-top: 0;
     }
 
     .tb-pane__scroll {
@@ -170,6 +183,10 @@ export class Panes {
     }
 
     @media (width < 37.5em) {
+      .tb-pane__header:not(:empty) {
+        padding: var(--tb-space-4) var(--tb-space-4) 0;
+      }
+
       .tb-pane__scroll {
         padding: var(--tb-space-4);
       }

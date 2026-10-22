@@ -46,7 +46,8 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await details.getByRole('button', { name: 'Сохранить' }).click();
 
   const row = page.locator('li', { hasText: student });
-  await expect(row).toHaveAttribute('data-tb-label', 'violet');
+  await expect(row.locator('tb-avatar')).toHaveAttribute('data-tb-label', 'violet');
+  await expect(row).not.toHaveAttribute('data-tb-label');
 
   await page.getByRole('button', { name: 'Создать группу' }).click();
   await page.getByLabel('Название').fill(group);
@@ -63,7 +64,10 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await pickColor(page, 'Салатовый', groupDetails);
   await groupDetails.getByRole('button', { name: 'Сохранить' }).click();
 
-  await expect(page.locator('li', { hasText: group })).toHaveAttribute('data-tb-label', 'lime');
+  await expect(page.locator('li', { hasText: group }).locator('.tb-list__lead')).toHaveAttribute(
+    'data-tb-label',
+    'lime',
+  );
 
   // 0.23.0: Участники lists the members in their colours and takes one off in place
   await page.getByRole('tab', { name: 'Участники' }).click();
@@ -71,7 +75,7 @@ test('the teacher colours a student and a group', async ({ page }) => {
   const member = page
     .locator('ul.tb-list[aria-label="Участники"] > li')
     .filter({ hasText: student });
-  await expect(member).toHaveAttribute('data-tb-label', 'violet');
+  await expect(member.locator('tb-avatar')).toHaveAttribute('data-tb-label', 'violet');
   await member.getByRole('button', { name: `Убрать из группы: ${student}` }).click();
   await expect(member).toHaveCount(0);
   await expect(page.getByText('В группе пока никого')).toBeVisible();

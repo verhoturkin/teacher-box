@@ -183,7 +183,7 @@ export class BackupsCard implements OnInit {
     if (backup.kind !== null) {
       parts.unshift(KINDS[backup.kind]);
     }
-    if (!this.isAdmin() && this.drive.names().has(backup.name)) {
+    if (this.drive.names().has(backup.name)) {
       parts.push(T.backups.inDrive);
     }
     return parts.join(' · ');
@@ -201,8 +201,8 @@ export class BackupsCard implements OnInit {
         this.creating.set(false);
         this.snackbar.success(T.backups.created(backup.name));
         this.reload();
-        if (!this.isAdmin() && this.drive.connected()) {
-          this.drive.load();
+        if (this.drive.connected()) {
+          this.drive.load(this.area());
         }
       },
       error: () => {
@@ -223,9 +223,9 @@ export class BackupsCard implements OnInit {
   }
 
   sendToDrive(backup: BackupInfo): void {
-    this.api.uploadToDrive(backup.name).subscribe(() => {
+    this.api.uploadToDrive(backup.name, this.area()).subscribe(() => {
       this.snackbar.success(T.backups.sending(backup.name));
-      this.drive.load();
+      this.drive.load(this.area());
     });
   }
 
@@ -262,15 +262,17 @@ export class BackupsCard implements OnInit {
           this.download(backup);
         },
       });
-      if (this.drive.connected()) {
-        items.push({
-          label: T.backups.sendToDrive,
-          icon: 'tb-i tb-i-cloud_upload',
-          command: () => {
-            this.sendToDrive(backup);
-          },
-        });
-      }
+    }
+    if (this.drive.connected()) {
+      items.push({
+        label: T.backups.sendToDrive,
+        icon: 'tb-i tb-i-cloud_upload',
+        command: () => {
+          this.sendToDrive(backup);
+        },
+      });
+    }
+    if (!this.isAdmin()) {
       items.push({
         label: T.backups.deleteItem,
         icon: 'tb-i tb-i-delete',
@@ -289,9 +291,7 @@ export class BackupsCard implements OnInit {
       .pipe(this.state.track())
       .subscribe((backups) => {
         this.backups.set(backups);
-        if (!this.isAdmin()) {
-          this.drive.local.set(new Set(backups.map((backup) => backup.name)));
-        }
+        this.drive.local.set(new Set(backups.map((backup) => backup.name)));
       });
   }
 }

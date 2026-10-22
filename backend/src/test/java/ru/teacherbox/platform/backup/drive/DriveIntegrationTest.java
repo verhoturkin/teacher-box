@@ -97,6 +97,20 @@ class DriveIntegrationTest {
     }
 
     @Test
+    void cloudBackupOperationsAreRestrictedToTheAdministrator() {
+        String adminUri = "/api/admin/backups/google";
+        for (String path : List.of(adminUri, adminUri + "/files")) {
+            assertThat(mvc.get().uri(path).with(TestUsers.teacher(TEACHER))).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(mvc.get().uri(path).with(TestUsers.student(UUID.randomUUID()))).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(mvc.get().uri(path)).hasStatus(HttpStatus.UNAUTHORIZED);
+        }
+        for (String path : List.of(adminUri + "/uploads/name", adminUri + "/files/id/download")) {
+            assertThat(mvc.post().uri(path).with(TestUsers.teacher(TEACHER))).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(mvc.post().uri(path).with(TestUsers.student(UUID.randomUUID()))).hasStatus(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Test
     void withoutTheDriveNothingIsSentOrListed() {
         String name = backups.create().name();
 
@@ -139,6 +153,49 @@ class DriveIntegrationTest {
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
                 assertThat(backups.list()).extracting(BackupService.BackupInfo::name).contains(name));
         assertThat(mvc.post().uri(URI + "/uploads/" + name).with(TestUsers.teacher(TEACHER)))
+                .hasStatus(HttpStatus.ACCEPTED);
+        Files.delete(archive);
+    }
+
+    @Test
+    void theAdministratorTransfersCopiesBetweenTheDriveAndTheServer() throws IOException {
+        String adminUri = "/api/admin/backups/google";
+        connect();
+        assertThat(mvc.get().uri(adminUri).with(TestUsers.admin(TEACHER))).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$.account").isNull();
+                    assertThat(json).extractingPath("$.clientId").isNull();
+                    assertThat(json).extractingPath("$.lastError").isNull();
+                    assertThat(json).extractingPath("$.connected").isEqualTo(true);
+                });
+        when(api.refresh(any(), eq("refresh"))).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.folderExists("access", "folder-1")).thenReturn(true);
+        when(api.list("access", "folder-1")).thenReturn(List.of());
+
+        String name = mvc.post().uri("/api/admin/backups").with(TestUsers.admin(TEACHER)).exchange()
+                .getResponse().getContentAsString().replaceAll(".*\"name\":\"([^\"]+)\".*", "$1");
+
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                verify(api).upload(eq("access"), eq("folder-1"), eq(backups.file(name))));
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                assertThat(mvc.get().uri(adminUri).with(TestUsers.admin(TEACHER))).bodyJson()
+                        .extractingPath("$.lastUploadName").isEqualTo(name));
+
+        Path archive = Files.copy(backups.file(name), platform.dataDir().resolve("cloud-copy.zip"),
+                StandardCopyOption.REPLACE_EXISTING);
+        backups.delete(name);
+        when(api.list("access", "folder-1"))
+                .thenReturn(List.of(new DriveApi.DriveFile("file-1", name, Files.size(archive), null)));
+        doAnswer(call -> Files.copy(archive, call.<Path>getArgument(2), StandardCopyOption.REPLACE_EXISTING))
+                .when(api).download(eq("access"), eq("file-1"), any());
+
+        assertThat(mvc.get().uri(adminUri + "/files").with(TestUsers.admin(TEACHER))).hasStatusOk().bodyJson()
+                .extractingPath("$[0].name").isEqualTo(name);
+        assertThat(mvc.post().uri(adminUri + "/files/file-1/download").with(TestUsers.admin(TEACHER)))
+                .hasStatus(HttpStatus.ACCEPTED).bodyJson().extractingPath("$.name").isEqualTo(name);
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                assertThat(backups.list()).extracting(BackupService.BackupInfo::name).contains(name));
+        assertThat(mvc.post().uri(adminUri + "/uploads/" + name).with(TestUsers.admin(TEACHER)))
                 .hasStatus(HttpStatus.ACCEPTED);
         Files.delete(archive);
     }

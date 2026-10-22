@@ -65,7 +65,7 @@ with the rest of the files by the full reset.
 ## Frontend
 
 `features/identity/`: `login/`, `invite/`, `colors/` (0.20.0: `TeacherColors` — the colours of students and groups
-by id, loaded by the teacher area's guard in `app.routes.ts`, used by every teacher list; `tbChipColors` — paints the
+by id, loaded by the teacher area's guard in `app.routes.ts`, used by every teacher list; since 0.27.0 accents are on avatars and group icons, with a ring around photos, while row backgrounds retain portal surface roles; `tbChipColors` — paints the
 chips of a student / group multiselect; `tb-label-color-field` — the colour select of both dialogs),
 `students/` (0.23.0, list-detail: `students-page.ts` — students and groups in one list pane on `tb-panes` with the chips
 All · Groups · Debtors · No messenger · Disabled (`roster.ts`; balances from billing's overview, messengers from the

@@ -139,6 +139,8 @@ export const en: Translation<typeof ru> = {
     bringBack: 'Bring to the server',
     bringBackLabel: (name: string) => `Bring to the server: ${name}`,
     bringing: (name: string) => `Backup ${name} is coming to the server — then it can be restored`,
+    adminConnectHint:
+      'The teacher can connect Google Drive or change access in the portal settings.',
     restoreHint:
       'After a disaster: connect the same Google Drive to the new portal, bring a backup to the server and restore it.',
   },

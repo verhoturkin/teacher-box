@@ -163,14 +163,18 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
               @if (visibleRows().length > 0) {
                 <ul class="tb-list" [attr.aria-label]="t.title">
                   @for (row of visibleRows(); track row.kind + row.id) {
-                    <li
-                      [attr.data-tb-label]="colorOf(row)"
-                      [class.tb-list__item--current]="isCurrent(row)"
-                    >
+                    <li [class.tb-list__item--current]="isCurrent(row)">
                       @if (row.kind === 'student') {
-                        <tb-avatar [name]="row.name" [photo]="row.student.avatar" />
+                        <tb-avatar
+                          [attr.data-tb-label]="colorOf(row)"
+                          [name]="row.name"
+                          [photo]="row.student.avatar"
+                        />
                       } @else {
-                        <span class="tb-list__lead" aria-hidden="true"
+                        <span
+                          class="tb-list__lead"
+                          [attr.data-tb-label]="colorOf(row)"
+                          aria-hidden="true"
                           ><i class="tb-i tb-i-group"></i
                         ></span>
                       }

@@ -233,11 +233,11 @@ component that shows one adds it to `PRIME`).
   `data-tb-label="<c>"` (or class `tb-label--<c>`) brings `--tb-label`, `--tb-on-label`, `--tb-label-container`,
   `--tb-on-label-container`; the same scheme gives its surface containers lowest / low / high and on-surface /
   on-surface-variant (`--tb-label-surface-container-*`, `--tb-on-label-surface*`, text 4.5:1 on all of them). Where
-  it shows (the teacher only; the colour is looked up by id, `TeacherColors`): a row of a student or a group (list
-  tile, table row, its card on a phone; 0.20.1) is built like any row — container-low on a light card,
-  container-high on a dark one, container-lowest in a dialog — from the colour's scheme instead of the portal's, so
-  only the tint differs; links, amounts and buttons keep their roles; the avatar and a group's lead keep the theme
-  colours, the nearest-lesson card keeps primary-container; chips of student and group multiselects — the container (`tbChipColors`); the teacher's calendar (`showStudent`; the student's never) — a planned
+  it shows (the teacher only; the colour is looked up by id, `TeacherColors`): the avatar of a student or a
+  group's leading icon uses the label container and its paired on-role; a photo keeps its image with a 2 px
+  colour ring (our decision, 0.27.0). Rows keep the portal's neutral surface and selected state; the nearest-lesson
+  card keeps primary-container; chips of student and group multiselects — the container (`tbChipColors`);
+  the teacher's calendar (`showStudent`; the student's never) — a planned
   lesson takes the container, a conducted / missed / cancelled one keeps its status container plus a 4 px stripe
   of the colour at its start. The dialogs pick it in a select «Цвет» with a 20 px swatch per option («Без цвета» — an
   outlined empty circle).
@@ -400,6 +400,15 @@ component that shows one adds it to `PRIME`).
   content loads on first open; open sections in the URL (`?open=`). No page uses them since 247.2: the
   settings of the teacher and of the administrator are list-detail (§ panes above) and the teacher's
   notifications are in the bell's sheet (§8).
+
+Student screens (0.27.0) reuse the teacher’s pane anatomy: schedule has a week/month calendar and a supporting
+pane with mini-month, upcoming lessons and requests; compact starts with the shared day agenda. Payments
+has tonal balance/charged/paid/price figures and a journal with operation filter chips, with receipts kept
+in their rows. This role-specific composition is our product decision.
+
+Administrator settings (0.27.0): an optional `[tbPaneHeader]` projects headings and save actions outside
+the pane scroll area. Fields and category lists scroll independently on desktop; compact keeps page scrolling.
+This persistent-header placement is our product decision.
 
 ## 5. Page anatomy
 

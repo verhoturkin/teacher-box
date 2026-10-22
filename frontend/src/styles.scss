@@ -1387,42 +1387,24 @@ p-button.tb-list__stretched .p-button {
   }
 }
 
-/*
- * A row of a student or a group (a list tile, a table row or its card on a phone; the teacher only) is built like any row: the
- * same surface role — container-low on a light card, container-high on a dark one, container-lowest in a
- * dialog — and the same text roles, taken from the Fidelity scheme of its colour instead of the portal's
- * (its neutral palette, so only the tint differs). Links, amounts and buttons keep their roles: the tones are
- * the portal's. The avatar and the lead keep the colours of the theme; a selected row keeps
- * secondary-container (our decision, not in M3).
+/* Student and group colours mark the avatar or the group lead; list surfaces keep the portal roles.
+ * Our decision: photos keep a colour ring, so their student's colour remains visible too.
  */
-.tb-list > li[data-tb-label],
-.p-datatable-tbody > tr[data-tb-label]:not(.p-datatable-row-selected) {
-  --tb-list-item: var(--tb-label-surface-container-low);
-  color: var(--tb-on-label-surface);
+:is(.tb-avatar, .tb-list__lead)[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
 
-  :is(td, .tb-list__title) {
-    color: var(--tb-on-label-surface);
+  &.tb-avatar--photo {
+    outline: 2px solid var(--tb-label);
+    outline-offset: -2px;
   }
-
-  :is(.tb-list__supporting, .tb-muted, .tb-hint) {
-    color: var(--tb-on-label-surface-variant);
-  }
-}
-
-:root.tb-dark :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
-  --tb-list-item: var(--tb-label-surface-container-high);
-}
-
-:root .p-dialog :is(.tb-list > li, .p-datatable-tbody > tr)[data-tb-label] {
-  --tb-list-item: var(--tb-label-surface-container-lowest);
 }
 
 /*
  * The row of the open detail in a list-detail (`tb-list__item--current`, the students): secondary-container
  * and the emphasized title (M3: a selected list item), over the colour of a student or a group too.
  */
-/* the class twice: above the dark rule of a coloured row (`:root.tb-dark … [data-tb-label]`) */
-:root .tb-list > li.tb-list__item--current.tb-list__item--current {
+:root .tb-list > li.tb-list__item--current {
   --tb-list-item: var(--p-md-secondary-container);
   color: var(--p-md-on-secondary-container);
 
@@ -1437,7 +1419,7 @@ p-button.tb-list__stretched .p-button {
   }
 
   /* the icon or the avatar of the chosen row stands on the surface, as in the list of the settings */
-  > :is(.tb-list__lead, .tb-avatar) {
+  > :is(.tb-list__lead, .tb-avatar):not([data-tb-label]) {
     background: var(--p-md-surface);
   }
 }

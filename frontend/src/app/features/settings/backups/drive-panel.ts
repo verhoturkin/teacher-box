@@ -7,6 +7,7 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -29,7 +30,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { Busy } from '@shared/ui/busy';
 import { SHARED_T } from '@shared/i18n/texts';
 import { CloudBackup } from '../data-access/settings.models';
-import { BackupsApi } from './backups-api';
+import { BackupsApi, BackupsArea } from './backups-api';
 import { DriveStore } from './drive-store';
 import { T } from '../i18n/texts';
 
@@ -71,7 +72,8 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
-            >{{ t.title }} <tb-help-button topic="teacher/backups"
+            >{{ t.title }}
+            <tb-help-button [topic]="area() === 'admin' ? 'admin/backups' : 'teacher/backups'"
           /></span>
         </div>
       </ng-template>
@@ -88,7 +90,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
               t.since((status.connectedAt | date: 'dd.MM.yyyy HH:mm') ?? '')
             }}</span>
           </div>
-          @if (status.account !== null) {
+          @if (area() === 'teacher' && status.account !== null) {
             <p class="tb-muted">{{ t.account(status.account) }}</p>
           }
           <p>{{ t.about(portalName()) }}</p>
@@ -143,15 +145,19 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
             </ul>
           }
           <p class="tb-muted">{{ t.restoreHint }}</p>
-          <div class="tb-actions">
-            <p-button
-              [label]="t.disconnect"
-              severity="danger"
-              [text]="true"
-              [loading]="actions.is('disconnect')"
-              (onClick)="disconnect()"
-            />
-          </div>
+          @if (area() === 'teacher') {
+            <div class="tb-actions">
+              <p-button
+                [label]="t.disconnect"
+                severity="danger"
+                [text]="true"
+                [loading]="actions.is('disconnect')"
+                (onClick)="disconnect()"
+              />
+            </div>
+          }
+        } @else if (area() === 'admin') {
+          <p class="tb-muted">{{ t.adminConnectHint }}</p>
         } @else {
           @if (status.lastError !== null) {
             <p-message severity="warn" styleClass="tb-form-message">{{ t.lost }}</p-message>
@@ -296,6 +302,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
   `,
 })
 export class DrivePanel implements OnInit {
+  readonly area = input<BackupsArea>('teacher');
   protected readonly c = SHARED_T.common;
   protected readonly t = T.drive;
   protected readonly actions = new Busy();
@@ -341,7 +348,7 @@ export class DrivePanel implements OnInit {
 
   ngOnInit(): void {
     this.resultCode.set(this.route.snapshot.queryParamMap.get('drive'));
-    this.store.load();
+    this.store.load(this.area());
   }
 
   protected details(file: CloudBackup): string {
@@ -387,15 +394,17 @@ export class DrivePanel implements OnInit {
   disconnect(): void {
     this.actions.guard('disconnect', this.api.disconnectDrive()).subscribe(() => {
       this.resultCode.set(null);
-      this.store.load();
+      this.store.load(this.area());
     });
   }
 
   bringBack(file: CloudBackup): void {
-    this.actions.guard('bring-' + file.id, this.api.downloadFromDrive(file.id)).subscribe(() => {
-      this.snackbar.success(this.t.bringing(file.name));
-      this.store.load();
-    });
+    this.actions
+      .guard('bring-' + file.id, this.api.downloadFromDrive(file.id, this.area()))
+      .subscribe(() => {
+        this.snackbar.success(this.t.bringing(file.name));
+        this.store.load(this.area());
+      });
   }
 
   copy(text: string): void {

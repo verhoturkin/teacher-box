@@ -17,7 +17,9 @@ function base(area: BackupsArea): string {
   return `/api/${area}/backups`;
 }
 
-const DRIVE = '/api/teacher/backups/google';
+function driveBase(area: BackupsArea): string {
+  return `${base(area)}/google`;
+}
 
 function quiet(): { context: HttpContext } {
   return { context: quietContext() };
@@ -63,35 +65,41 @@ export class BackupsApi {
   }
 
   /** The teacher's Google Drive for copies of the backups (ADR-0037). */
-  driveStatus(): Observable<DriveStatus> {
-    return this.http.get<DriveStatus>(DRIVE, quiet());
+  driveStatus(area: BackupsArea = 'teacher'): Observable<DriveStatus> {
+    return this.http.get<DriveStatus>(driveBase(area), quiet());
   }
 
   saveDriveClient(clientId: string, clientSecret: string): Observable<DriveStatus> {
-    return this.http.put<DriveStatus>(`${DRIVE}/client`, { clientId, clientSecret });
+    return this.http.put<DriveStatus>(`${driveBase('teacher')}/client`, { clientId, clientSecret });
   }
 
   /** The address of Google's consent page. */
   authorizeDrive(origin: string): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>(`${DRIVE}/authorize`, { origin });
+    return this.http.post<{ url: string }>(`${driveBase('teacher')}/authorize`, { origin });
   }
 
   disconnectDrive(): Observable<unknown> {
-    return this.http.delete<unknown>(DRIVE);
+    return this.http.delete<unknown>(driveBase('teacher'));
   }
 
   /** Backups in the Google Drive, newest first. */
-  driveFiles(): Observable<CloudBackup[]> {
-    return this.http.get<CloudBackup[]>(`${DRIVE}/files`, quiet());
+  driveFiles(area: BackupsArea = 'teacher'): Observable<CloudBackup[]> {
+    return this.http.get<CloudBackup[]>(`${driveBase(area)}/files`, quiet());
   }
 
   /** Sends a backup of the server to the Google Drive in the background. */
-  uploadToDrive(name: string): Observable<DriveStatus> {
-    return this.http.post<DriveStatus>(`${DRIVE}/uploads/${encodeURIComponent(name)}`, null);
+  uploadToDrive(name: string, area: BackupsArea = 'teacher'): Observable<DriveStatus> {
+    return this.http.post<DriveStatus>(
+      `${driveBase(area)}/uploads/${encodeURIComponent(name)}`,
+      null,
+    );
   }
 
   /** Brings a backup from the Google Drive to the server in the background. */
-  downloadFromDrive(id: string): Observable<CloudBackup> {
-    return this.http.post<CloudBackup>(`${DRIVE}/files/${encodeURIComponent(id)}/download`, null);
+  downloadFromDrive(id: string, area: BackupsArea = 'teacher'): Observable<CloudBackup> {
+    return this.http.post<CloudBackup>(
+      `${driveBase(area)}/files/${encodeURIComponent(id)}/download`,
+      null,
+    );
   }
 }

@@ -98,19 +98,28 @@ export interface AgendaMark {
     } @else {
       <ul class="tb-agenda__list">
         @for (lesson of dayLessons(); track lesson.id) {
-          <li
-            class="tb-agenda__item"
-            [attr.data-tb-label]="colors.ownerLabel(lesson.studentId, lesson.groupId)"
-          >
+          <li class="tb-agenda__item">
             <button
               type="button"
               class="tb-agenda__row"
               [class.tb-agenda__row--cancelled]="lesson.status === 'CANCELLED'"
               (click)="lessonClick.emit(lesson)"
             >
-              <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
+              @if (showStudent()) {
+                <tb-avatar
+                  [attr.data-tb-label]="colors.ownerLabel(lesson.studentId, lesson.groupId)"
+                  [name]="with(lesson)"
+                  [photo]="lesson.studentAvatar"
+                />
+              } @else {
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i class="tb-i tb-i-calendar_month"></i
+                ></span>
+              }
               <span class="tb-agenda__text">
-                <span class="tb-agenda__title">{{ with(lesson) }}</span>
+                <span class="tb-agenda__title">{{
+                  showStudent() ? with(lesson) : (lesson.topic ?? t.lesson)
+                }}</span>
                 <span class="tb-agenda__supporting">{{ time(lesson) }}</span>
               </span>
             </button>
@@ -273,6 +282,8 @@ export interface AgendaMark {
 export class ScheduleAgenda {
   /** The lessons of the loaded week. */
   readonly lessons = input.required<readonly ScheduledLesson[]>();
+  /** In the student cabinet the topic replaces their own name. */
+  readonly showStudent = input(true);
   /** Past lessons without a mark (`GET /schedule/unmarked`). */
   readonly unmarked = input<readonly ScheduledLesson[]>([]);
   readonly loaded = input(true);

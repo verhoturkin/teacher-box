@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { CloudBackup, DriveStatus } from '../data-access/settings.models';
-import { BackupsApi } from './backups-api';
+import { BackupsApi, BackupsArea } from './backups-api';
 
 /** How often the state is asked again while an upload or a download runs. */
 export const DRIVE_POLL_MS = 3000;
@@ -26,13 +26,16 @@ export class DriveStore {
   /** Grows each time a copy from the Drive has come to the server. */
   readonly arrived = signal(0);
 
+  private area: BackupsArea = 'teacher';
+
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   /** Asks the state (and the copies, once connected); keeps asking while something runs. */
-  load(): void {
+  load(area: BackupsArea = this.area): void {
     this.cancel();
+    this.area = area;
     const before = this.status()?.running ?? null;
-    this.api.driveStatus().subscribe((status) => {
+    this.api.driveStatus(this.area).subscribe((status) => {
       this.status.set(status);
       if (before !== null && status.running === null) {
         if (before.task === 'DOWNLOAD') {
@@ -54,7 +57,7 @@ export class DriveStore {
   }
 
   loadFiles(): void {
-    this.api.driveFiles().subscribe((files) => {
+    this.api.driveFiles(this.area).subscribe((files) => {
       this.files.set(files);
     });
   }

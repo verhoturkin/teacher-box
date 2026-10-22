@@ -209,7 +209,7 @@ const NUMBER = new Intl.NumberFormat(locale());
               @if (list().length > 0) {
                 <ul class="tb-list tb-ops__list" [attr.aria-label]="t.operations">
                   @for (operation of list(); track operation.id) {
-                    <li [attr.data-tb-label]="colors.studentLabel(operation.studentId)">
+                    <li>
                       <span class="tb-ops__lead">
                         <span
                           class="tb-list__lead"
@@ -218,6 +218,7 @@ const NUMBER = new Intl.NumberFormat(locale());
                           ><i [class]="icon(operation)"></i
                         ></span>
                         <tb-avatar
+                          [attr.data-tb-label]="colors.studentLabel(operation.studentId)"
                           [name]="operation.studentName"
                           [photo]="operation.studentAvatar"
                           size="2rem"
@@ -267,8 +268,12 @@ const NUMBER = new Intl.NumberFormat(locale());
               @if (debtors().length > 0) {
                 <ul class="tb-list tb-ops__people">
                   @for (row of debtors(); track row.studentId) {
-                    <li [attr.data-tb-label]="colors.studentLabel(row.studentId)">
-                      <tb-avatar [name]="row.displayName" [photo]="row.avatar" />
+                    <li>
+                      <tb-avatar
+                        [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                        [name]="row.displayName"
+                        [photo]="row.avatar"
+                      />
                       <div class="tb-list__text">
                         <a
                           [routerLink]="['/teacher/students', row.studentId]"
@@ -303,8 +308,12 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <h3 class="tb-ops__overline">{{ t.running }}</h3>
                 <ul class="tb-list tb-ops__people">
                   @for (row of runningOut(); track row.student.studentId) {
-                    <li [attr.data-tb-label]="colors.studentLabel(row.student.studentId)">
-                      <tb-avatar [name]="row.student.displayName" [photo]="row.student.avatar" />
+                    <li>
+                      <tb-avatar
+                        [attr.data-tb-label]="colors.studentLabel(row.student.studentId)"
+                        [name]="row.student.displayName"
+                        [photo]="row.student.avatar"
+                      />
                       <div class="tb-list__text">
                         <a
                           [routerLink]="['/teacher/students', row.student.studentId]"

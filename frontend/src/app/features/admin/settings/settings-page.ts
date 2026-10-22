@@ -147,7 +147,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
     <tb-panes medium="two">
       @if (layout.list()) {
         <tb-pane kind="fixed" [label]="t.sections">
-          <tb-page-header [title]="t.title">
+          <tb-page-header tbPaneHeader [title]="t.title">
             <tb-help-button help topic="admin/settings" />
             <ng-container [ngTemplateOutlet]="saveButton" />
           </tb-page-header>
@@ -171,14 +171,21 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       }
       @if (layout.detail()) {
         <tb-pane [label]="currentGroup()?.name ?? t.title">
+          <div tbPaneHeader>
+            @if (layout.single()) {
+              <tb-page-header
+                [title]="currentGroup()?.name ?? t.title"
+                back="/admin/settings"
+                [backLabel]="t.all"
+              >
+                <ng-container [ngTemplateOutlet]="saveButton" />
+              </tb-page-header>
+            } @else {
+              <h2 class="tb-settings__heading">{{ currentGroup()?.name }}</h2>
+            }
+            <p class="tb-hint tb-settings__summary">{{ currentGroup()?.summary }}</p>
+          </div>
           @if (layout.single()) {
-            <tb-page-header
-              [title]="currentGroup()?.name ?? t.title"
-              back="/admin/settings"
-              [backLabel]="t.all"
-            >
-              <ng-container [ngTemplateOutlet]="saveButton" />
-            </tb-page-header>
             <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
               <ng-container [ngTemplateOutlet]="detail" />
             </tb-load-state>
@@ -200,10 +207,6 @@ function toGroup(settings: readonly AdminSetting[]): Group {
 
     <ng-template #detail>
       @if (currentGroup(); as group) {
-        @if (!layout.single()) {
-          <h2 class="tb-settings__heading">{{ group.name }}</h2>
-        }
-        <p class="tb-hint tb-settings__summary">{{ group.summary }}</p>
         <div class="tb-settings">
           @for (setting of group.editable; track setting.name) {
             <div class="tb-field tb-setting">

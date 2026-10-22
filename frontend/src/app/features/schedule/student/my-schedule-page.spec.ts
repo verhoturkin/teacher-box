@@ -15,6 +15,7 @@ import {
 import { ScheduleApi } from '../data-access/schedule-api';
 import { BusyTime, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { ScheduleCalendar } from '../ui/schedule-calendar';
+import { ScheduleAgenda } from '../ui/schedule-agenda';
 import { MySchedulePage, nextMonday } from './my-schedule-page';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { testProviders } from '@testing/setup';
@@ -119,6 +120,70 @@ describe('MySchedulePage', () => {
         .busyTitle(),
     ).toBe('Занято');
     expect(text).not.toContain('Учитель занят');
+  });
+
+  it('uses calendar and supporting panes and lets the mini-month move the calendar', async () => {
+    await render([]);
+    const host = hostElement(fixture);
+    expect(host.querySelectorAll('tb-pane')).toHaveLength(2);
+    expect(host.querySelector('tb-pane:first-child tb-schedule-calendar')).not.toBeNull();
+    expect(host.querySelector('tb-pane:last-child tb-mini-month')).not.toBeNull();
+    const day = requireElement(host, 'tb-mini-month button[data-date]', HTMLButtonElement);
+    day.click();
+    await fixture.whenStable();
+    const calendar = fixture.debugElement
+      .query(By.directive(ScheduleCalendar))
+      .injector.get(ScheduleCalendar);
+    expect(calendar.focusDate()).toBe(day.getAttribute('data-date'));
+    for (const request of lessonRequests()) request.flush([]);
+    for (const request of busyRequests()) request.flush([]);
+  });
+
+  it('uses the shared compact agenda and switches to week and month with lesson actions', async () => {
+    phone.next({ matches: true, breakpoints: {} });
+    await render([scheduledLesson({ ...future(1), topic: 'Тема в повестке' })]);
+    const host = hostElement(fixture);
+    const agenda = fixture.debugElement
+      .query(By.directive(ScheduleAgenda))
+      .injector.get(ScheduleAgenda);
+    expect(agenda.showStudent()).toBe(false);
+    const row = requireElement(host, '.tb-agenda__row', HTMLButtonElement);
+    expect(readableText(row)).toContain('Тема в повестке');
+    row.click();
+    await fixture.whenStable();
+    expect(
+      readableText(requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement)),
+    ).toContain('Перенести');
+    fixture.componentInstance.closeSheet();
+
+    buttonByText(host, 'Неделя').click();
+    await fixture.whenStable();
+    const calendar = fixture.debugElement
+      .query(By.directive(ScheduleCalendar))
+      .injector.get(ScheduleCalendar);
+    expect(calendar.phoneView()).toBe('timeGridWeek');
+    for (const request of lessonRequests()) request.flush([]);
+    for (const request of busyRequests()) request.flush([]);
+
+    buttonByText(host, 'Месяц').click();
+    await fixture.whenStable();
+    expect(
+      fixture.debugElement
+        .query(By.directive(ScheduleCalendar))
+        .injector.get(ScheduleCalendar)
+        .phoneView(),
+    ).toBe('dayGridMonth');
+    expect(
+      fixture.debugElement.query(By.directive(ScheduleCalendar)).injector.get(ScheduleCalendar),
+    ).not.toBe(calendar);
+    for (const request of lessonRequests()) request.flush([]);
+    for (const request of busyRequests()) request.flush([]);
+
+    buttonByText(host, 'Повестка').click();
+    await fixture.whenStable();
+    expect(fixture.debugElement.query(By.directive(ScheduleAgenda))).not.toBeNull();
+    for (const request of lessonRequests()) request.flush([]);
+    for (const request of busyRequests()) request.flush([]);
   });
 
   it('says when there are no more lessons this week', async () => {
