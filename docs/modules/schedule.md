@@ -73,3 +73,12 @@ Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher)
 the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson or series gets the default topic of the chosen student or group
 (`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) unless the teacher typed a topic. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson
 waits at the new time with «Перенести» / «Отменить перенос» on its card; only «Перенести» sends the edit.
+
+## Unified repetition contract (ADR-0049)
+
+Implementation target for 0.29.0: a lesson owns Once or 1–4-week repetition, with inclusive optional end date.
+Occurrence boundaries use immutable original dates, independently from actual moves. Following-scope edits
+continue the logical occurrence sequence while anchoring actual time to the edited lesson. Completed, charged
+and explicitly edited occurrences are protected; deleted occurrences cannot regenerate. Migration splits every
+stored weekday rule using its ISO-week phase without changing lesson UUIDs or integration/billing identities.
+The rolling horizon and DST resolution stay unchanged. See [ADR-0049](../adr/0049-lesson-owned-repetition.md).

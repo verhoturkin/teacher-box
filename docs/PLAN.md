@@ -89,7 +89,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
 
 ### Stage 260 — A lesson with repetition instead of a standalone regular lesson
 
-- [ ] 260.1 **B/F** Specify and record the unified contract in a new ADR: a lesson has
+- [x] 260.1 **B/F** Specify and record the unified contract in a new ADR: a lesson has
   one-off or weekly repetition with an interval of 1, 2, 3 or 4 weeks, all selectable for new and existing
   lessons, with weekday/time derived from its date and an optional repeat end date.
   Remove standalone Series domain/API/UI CRUD; retain only the internal metadata needed to generate
