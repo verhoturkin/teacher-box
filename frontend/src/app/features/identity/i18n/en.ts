@@ -110,6 +110,9 @@ export const en: Translation<typeof ru> = {
     heading: (name: string) => `Link for the student: ${name}`,
   },
   studentForm: {
+    createKind: 'Create',
+    student: 'Student',
+    group: 'Group',
     newStudent: 'New student',
     name: 'First and last name',
     email: 'Email',

@@ -37,10 +37,10 @@ import { T } from '../i18n/texts';
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="t.title">
-          <tb-help-button help topic="cabinet/billing" />
-        </tb-page-header>
-        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+        <div tbPaneHeader>
+          <tb-page-header [title]="t.title">
+            <tb-help-button help topic="cabinet/billing" />
+          </tb-page-header>
           @if (ledger(); as ledger) {
             <dl class="tb-my-billing-figures">
               <div class="tb-my-billing-figure">
@@ -71,19 +71,15 @@ import { T } from '../i18n/texts';
                 <dd class="tb-figure__value">{{ ledger.lessonPrice | money: ledger.currency }}</dd>
               </div>
             </dl>
-            <section class="tb-my-billing-history" [attr.aria-label]="t.history">
-              <div class="tb-my-billing-history__bar">
-                <h2>{{ t.history }}</h2>
-                <tb-filter-chips
-                  [label]="operations.filters"
-                  [chips]="chips()"
-                  [(value)]="filter"
-                />
-              </div>
-              @if (filteredLedger(); as history) {
-                <tb-ledger-list [ledger]="history" />
-              }
-            </section>
+            <div class="tb-my-billing-history__bar">
+              <h2>{{ t.history }}</h2>
+              <tb-filter-chips [label]="operations.filters" [chips]="chips()" [(value)]="filter" />
+            </div>
+          }
+        </div>
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+          @if (filteredLedger(); as history) {
+            <tb-ledger-list [ledger]="history" />
           }
         </tb-load-state>
       </tb-pane>

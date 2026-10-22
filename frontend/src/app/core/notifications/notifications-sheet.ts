@@ -88,10 +88,14 @@ function pathOf(url: string): string {
   styles: `
     /* M3 standard side sheet ≤ 400 dp; ours (the sketches): a pane of the frame on surface like the others, 28 dp corners,
        24 dp from the trailing edge and the bottom (as tb-pane kind="sheet") */
+    :host {
+      flex: none;
+    }
+
     .tb-notifications-pane {
       position: sticky;
       top: var(--tb-header-height);
-      flex: 0 0 25rem;
+      inline-size: 25rem;
       box-sizing: border-box;
       max-width: 25rem;
       height: calc(100dvh - var(--tb-header-height) - var(--tb-space-6));

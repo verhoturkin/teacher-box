@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -41,6 +42,7 @@ import { MaterialOpener } from './material-opener';
 @Component({
   selector: 'tb-task-review-page',
   imports: [
+    PaneHeader,
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -64,25 +66,27 @@ import { MaterialOpener } from './material-opener';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
-      <tb-page-header
-        [title]="task.assignment.title"
-        [back]="single() ? '/teacher/homework' : null"
-        [backLabel]="t.back"
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="task.assignment.title"
+          [back]="single() ? '/teacher/homework' : null"
+          [backLabel]="t.back"
+        >
+          <tb-help-button help topic="teacher/homework" />
+          <span meta class="tb-task__meta">
+            {{ task.studentName }} ·
+            {{ task.assignment.dueAt ? t.due(date(task.assignment.dueAt)) : noDueDate }}
+            <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
+            · {{ t.attempt(task.submissions.length) }}
+          </span>
+          @if (task.assignment.boardId; as boardId) {
+            <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
+              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
+              <span pButtonLabel>{{ t.openBoard }}</span>
+            </a>
+          }
+        </tb-page-header></ng-template
       >
-        <tb-help-button help topic="teacher/homework" />
-        <span meta class="tb-task__meta">
-          {{ task.studentName }} ·
-          {{ task.assignment.dueAt ? t.due(date(task.assignment.dueAt)) : noDueDate }}
-          <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
-          · {{ t.attempt(task.submissions.length) }}
-        </span>
-        @if (task.assignment.boardId; as boardId) {
-          <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
-            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
-            <span pButtonLabel>{{ t.openBoard }}</span>
-          </a>
-        }
-      </tb-page-header>
 
       <div class="tb-stack" [class.tb-task__room]="toolbar()">
         <section class="tb-task__statement" [class.tb-task__statement--open]="statementOpen()">
@@ -201,11 +205,12 @@ import { MaterialOpener } from './material-opener';
         [students]="[task.studentId]"
       />
     } @else {
-      <tb-page-header
-        [title]="t.title"
-        [back]="single() ? '/teacher/homework' : null"
-        [backLabel]="t.back"
-      />
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="t.title"
+          [back]="single() ? '/teacher/homework' : null"
+          [backLabel]="t.back"
+      /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,

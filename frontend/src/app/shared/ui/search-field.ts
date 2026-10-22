@@ -57,8 +57,9 @@ import { SHARED_T } from '@shared/i18n/texts';
   styles: `
     /* its own width: the field does not change size when «×» comes in */
     :host {
-      display: inline-block;
-      width: min(20rem, 100%);
+      display: block;
+      width: 100%;
+      min-width: 0;
     }
 
     p-iconfield {

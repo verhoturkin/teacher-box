@@ -1,3 +1,4 @@
+import { PaneHeader } from '@shared/ui/panes';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -51,6 +52,7 @@ import { T } from '../i18n/texts';
 @Component({
   selector: 'tb-assignment-page',
   imports: [
+    PaneHeader,
     VideoList,
     Avatar,
     EmptyState,
@@ -77,40 +79,45 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
-      <tb-page-header
-        [title]="assignment.title"
-        [back]="single() ? '/teacher/homework' : null"
-        [backLabel]="t.back"
-      >
-        <tb-help-button help topic="teacher/homework" />
-        <span meta>
-          {{ assignment.dueAt ? t.due(date(assignment.dueAt)) : t.noDueDate }}
-        </span>
-        @if (assignment.boardId; as boardId) {
-          <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
-            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
-            <span pButtonLabel>{{ t.openBoard }}</span>
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="assignment.title"
+          [back]="single() ? '/teacher/homework' : null"
+          [backLabel]="t.back"
+        >
+          <tb-help-button help topic="teacher/homework" />
+          <span meta>
+            {{ assignment.dueAt ? t.due(date(assignment.dueAt)) : t.noDueDate }}
+          </span>
+          @if (assignment.boardId; as boardId) {
+            <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
+              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
+              <span pButtonLabel>{{ t.openBoard }}</span>
+            </a>
+          }
+          <p-button
+            [label]="t.toBoard"
+            icon="tb-i tb-i-co_present"
+            severity="secondary"
+            [disabled]="!hasBoardMaterial()"
+            (onClick)="boardVisible.set(true)"
+          />
+          <a
+            pButton
+            severity="secondary"
+            [routerLink]="['/teacher/homework', assignment.id, 'edit']"
+          >
+            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-edit"></i>
+            <span pButtonLabel>{{ t.edit }}</span>
           </a>
-        }
-        <p-button
-          [label]="t.toBoard"
-          icon="tb-i tb-i-co_present"
-          severity="secondary"
-          [disabled]="!hasBoardMaterial()"
-          (onClick)="boardVisible.set(true)"
-        />
-        <a pButton severity="secondary" [routerLink]="['/teacher/homework', assignment.id, 'edit']">
-          <i pButtonIcon aria-hidden="true" class="tb-i tb-i-edit"></i>
-          <span pButtonLabel>{{ t.edit }}</span>
-        </a>
-        <p-button
-          [label]="r.action"
-          icon="tb-i tb-i-delete"
-          severity="danger"
-          [text]="true"
-          (onClick)="confirmDelete(assignment)"
-        />
-      </tb-page-header>
+          <p-button
+            [label]="r.action"
+            icon="tb-i tb-i-delete"
+            severity="danger"
+            [text]="true"
+            (onClick)="confirmDelete(assignment)"
+          /> </tb-page-header
+      ></ng-template>
 
       <div class="tb-stack">
         <section>
@@ -239,11 +246,12 @@ import { T } from '../i18n/texts';
         (placed)="rememberBoard(assignment.id, $event)"
       />
     } @else {
-      <tb-page-header
-        [title]="t.assignment"
-        [back]="single() ? '/teacher/homework' : null"
-        [backLabel]="t.back"
-      />
+      <ng-template tbPaneHeader
+        ><tb-page-header
+          [title]="t.assignment"
+          [back]="single() ? '/teacher/homework' : null"
+          [backLabel]="t.back"
+      /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
     <p-confirmdialog />

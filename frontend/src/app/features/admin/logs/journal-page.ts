@@ -80,127 +80,123 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane
-          [kind]="current() === 'events' ? 'flexible' : 'fixed'"
-          [label]="t.title"
-          [class.tb-journal__pane]="current() !== 'events' && !layout.single()"
-        >
-          <tb-page-header [title]="t.title">
-            <tb-help-button help topic="admin/diagnostics" />
-          </tb-page-header>
-          <tb-filter-chips
-            class="tb-journal__chips"
-            [label]="t.views"
-            [chips]="chips"
-            [value]="current()"
-            (valueChange)="setView($event)"
-          />
+        <tb-pane [kind]="current() === 'events' ? 'flexible' : 'fixed'" [label]="t.title">
+          <div tbPaneHeader>
+            <tb-page-header [title]="t.title">
+              <tb-help-button help topic="admin/diagnostics" />
+            </tb-page-header>
+            <tb-filter-chips
+              class="tb-journal__chips"
+              [label]="t.views"
+              [chips]="chips"
+              [value]="current()"
+              (valueChange)="setView($event)"
+            />
 
+            @if (current() !== 'events') {
+              <form class="tb-journal__filters" [formGroup]="form" (ngSubmit)="search()">
+                <!-- every filter has its label on the outline: it stays when the field is filled (ADR-0024) -->
+                <div class="tb-journal__main">
+                  <div class="tb-field">
+                    <label for="log-period">{{ t.period }}</label>
+                    <p-select
+                      inputId="log-period"
+                      formControlName="minutes"
+                      [options]="periods"
+                      optionLabel="label"
+                      optionValue="minutes"
+                      [fluid]="true"
+                    />
+                  </div>
+                  <div class="tb-field">
+                    <label for="log-text">{{ t.text }}</label>
+                    <input pInputText id="log-text" formControlName="text" />
+                  </div>
+                </div>
+                <details class="tb-journal__more">
+                  <summary>{{ t.more }}</summary>
+                  <div class="tb-journal__grid">
+                    @if (current() === 'log') {
+                      <div class="tb-field">
+                        <label for="log-level">{{ t.level }}</label>
+                        <p-select
+                          inputId="log-level"
+                          formControlName="level"
+                          [options]="levels"
+                          optionLabel="label"
+                          optionValue="level"
+                          [fluid]="true"
+                        />
+                      </div>
+                    }
+                    <div class="tb-field">
+                      <label for="log-request">{{ t.code }}</label>
+                      <input pInputText id="log-request" formControlName="requestId" />
+                    </div>
+                    <div class="tb-field">
+                      <label for="log-logger">{{ t.logger }}</label>
+                      <input pInputText id="log-logger" formControlName="logger" />
+                    </div>
+                  </div>
+                </details>
+                <p-button
+                  type="submit"
+                  [label]="t.find"
+                  severity="secondary"
+                  icon="tb-i tb-i-search"
+                  [loading]="loading()"
+                  [fluid]="true"
+                />
+              </form>
+            }
+          </div>
           @if (current() === 'events') {
             <tb-events-panel />
           } @else {
-            <form class="tb-journal__filters" [formGroup]="form" (ngSubmit)="search()">
-              <!-- every filter has its label on the outline: it stays when the field is filled (ADR-0024) -->
-              <div class="tb-journal__main">
-                <div class="tb-field">
-                  <label for="log-period">{{ t.period }}</label>
-                  <p-select
-                    inputId="log-period"
-                    formControlName="minutes"
-                    [options]="periods"
-                    optionLabel="label"
-                    optionValue="minutes"
-                    [fluid]="true"
-                  />
-                </div>
-                <div class="tb-field">
-                  <label for="log-text">{{ t.text }}</label>
-                  <input pInputText id="log-text" formControlName="text" />
-                </div>
-              </div>
-              <details class="tb-journal__more">
-                <summary>{{ t.more }}</summary>
-                <div class="tb-journal__grid">
-                  @if (current() === 'log') {
-                    <div class="tb-field">
-                      <label for="log-level">{{ t.level }}</label>
-                      <p-select
-                        inputId="log-level"
-                        formControlName="level"
-                        [options]="levels"
-                        optionLabel="label"
-                        optionValue="level"
-                        [fluid]="true"
-                      />
-                    </div>
-                  }
-                  <div class="tb-field">
-                    <label for="log-request">{{ t.code }}</label>
-                    <input pInputText id="log-request" formControlName="requestId" />
-                  </div>
-                  <div class="tb-field">
-                    <label for="log-logger">{{ t.logger }}</label>
-                    <input pInputText id="log-logger" formControlName="logger" />
-                  </div>
-                </div>
-              </details>
-              <p-button
-                type="submit"
-                [label]="t.find"
-                severity="secondary"
-                icon="tb-i tb-i-search"
-                [loading]="loading()"
-                [fluid]="true"
-              />
-            </form>
-
-            <!-- beside the detail only the list scrolls: the header, the chips and the filters stay -->
-            <div class="tb-journal__scroll">
-              @if (result(); as result) {
-                @if (!result.available) {
-                  <p-message severity="warn">{{ t.noFile }}</p-message>
-                } @else if (result.entries.length === 0) {
-                  <tb-empty-state [compact]="true" icon="tb-i-search" [title]="t.nothing" />
-                } @else {
-                  @if (result.truncated) {
-                    <p class="tb-muted">{{ t.truncated(result.entries.length) }}</p>
-                  }
-                  <ul class="tb-list tb-list--no-lead" [attr.aria-label]="t.entries">
-                    @for (entry of result.entries; track $index) {
-                      <li [class.tb-list__item--current]="selected() === entry">
-                        <div class="tb-list__text">
-                          <button
-                            type="button"
-                            class="tb-list__title tb-list__link tb-journal__row"
-                            [attr.aria-current]="selected() === entry ? 'true' : null"
-                            (click)="open(entry)"
-                          >
-                            <span class="tb-journal__message">{{ entry.message }}</span>
-                          </button>
-                          <span class="tb-list__supporting"
-                            >{{ entry.timestamp | date: 'dd.MM HH:mm:ss' }} ·
-                            {{ short(entry.logger) }}</span
-                          >
-                        </div>
-                        <div class="tb-list__trail">
-                          <p-tag [value]="entry.level" [severity]="severity(entry.level)" />
-                        </div>
-                      </li>
-                    }
-                  </ul>
+            @if (result(); as result) {
+              @if (!result.available) {
+                <p-message severity="warn">{{ t.noFile }}</p-message>
+              } @else if (result.entries.length === 0) {
+                <tb-empty-state [compact]="true" icon="tb-i-search" [title]="t.nothing" />
+              } @else {
+                @if (result.truncated) {
+                  <p class="tb-muted">{{ t.truncated(result.entries.length) }}</p>
                 }
+                <ul class="tb-list tb-list--no-lead" [attr.aria-label]="t.entries">
+                  @for (entry of result.entries; track $index) {
+                    <li [class.tb-list__item--current]="selected() === entry">
+                      <div class="tb-list__text">
+                        <button
+                          type="button"
+                          class="tb-list__title tb-list__link tb-journal__row"
+                          [attr.aria-current]="selected() === entry ? 'true' : null"
+                          (click)="open(entry)"
+                        >
+                          <span class="tb-journal__message">{{ entry.message }}</span>
+                        </button>
+                        <span class="tb-list__supporting"
+                          >{{ entry.timestamp | date: 'dd.MM HH:mm:ss' }} ·
+                          {{ short(entry.logger) }}</span
+                        >
+                      </div>
+                      <div class="tb-list__trail">
+                        <p-tag [value]="entry.level" [severity]="severity(entry.level)" />
+                      </div>
+                    </li>
+                  }
+                </ul>
               }
-              @if (layout.single()) {
-                <tb-logger-levels-panel />
-              }
-            </div>
+            }
+            @if (layout.single()) {
+              <tb-logger-levels-panel />
+            }
           }
         </tb-pane>
       }
       @if (current() !== 'events' && layout.detail()) {
         <tb-pane [label]="t.pickTitle">
           @if (selected(); as entry) {
-            <div class="tb-journal__detail">
+            <div tbPaneHeader>
               @if (layout.single()) {
                 <p-button
                   class="tb-journal__back"
@@ -215,6 +211,10 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
                 <p-tag [value]="entry.level" [severity]="severity(entry.level)" />
                 <span class="tb-muted">{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}</span>
               </div>
+            </div>
+          }
+          @if (selected(); as entry) {
+            <div class="tb-journal__detail">
               <p class="tb-journal__text">{{ entry.message }}</p>
               <dl class="tb-journal__facts">
                 <dt>{{ t.section }}</dt>
@@ -251,19 +251,6 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the lists of homework) */
-    .tb-journal__pane ::ng-deep .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .tb-journal__pane .tb-journal__scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
     .tb-journal__chips {
       margin-block-end: var(--tb-space-4);
     }

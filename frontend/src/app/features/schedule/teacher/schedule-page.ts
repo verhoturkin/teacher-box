@@ -147,7 +147,7 @@ const ALL_DAY_START_HOUR = 10;
   template: `
     <tb-panes>
       <tb-pane [label]="t.calendarPane">
-        <tb-page-header [title]="pageTitle()">
+        <tb-page-header tbPaneHeader [title]="pageTitle()">
           <tb-help-button help topic="teacher/schedule" />
           <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
           @if (mobile()) {
@@ -238,6 +238,7 @@ const ALL_DAY_START_HOUR = 10;
         <tb-pane kind="fixed" class="tb-schedule-side" [label]="t.sidePane">
           @if (!mobile()) {
             <tb-mini-month
+              tbPaneHeader
               [current]="currentDay()"
               [marked]="lessonDays()"
               (dateSelect)="focusDate.set($event)"

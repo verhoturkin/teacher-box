@@ -7,6 +7,9 @@ export const ADMIN_ARTICLES: Readonly<Record<AdminTopic, HelpArticleText>> = {
     title: 'Log and diagnostics',
     summary: 'What the administrator can do and how to help with the server',
     body: `
+Pane headings stay above scrolling content, while search and help text fill the available width.
+Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
+
 The administrator helps with the server: reads the log, checks the integrations and collects data for the developer. The administrator does not see the students' data.
 
 ## Sections

@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
@@ -34,6 +35,9 @@ class SummaryIntegrationTests {
 
     @Autowired
     MutableClock clock;
+
+    @Autowired
+    InstanceTimeZone timeZone;
 
     @Test
     void theTeacherSeesTodayAndWhatNeedsAttention() throws UnsupportedEncodingException {
@@ -64,6 +68,9 @@ class SummaryIntegrationTests {
 
     @Test
     void theTeacherSeesWeekFigures() throws UnsupportedEncodingException {
+        // A cached test clock may be just after Monday midnight; all three lessons must be in this week.
+        Instant midday = timeZone.today(clock).plusDays(1).atTime(12, 0).atZone(timeZone.zoneId()).toInstant();
+        clock.advance(Duration.between(clock.instant(), midday));
         String before = summary();
         UUID student = directory.addStudent("Итоги недели");
         Instant now = clock.instant().truncatedTo(ChronoUnit.SECONDS);

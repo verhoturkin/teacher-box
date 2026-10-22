@@ -115,46 +115,50 @@ const NUMBER = new Intl.NumberFormat(locale());
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="monthTitle()">
-          <tb-help-button help topic="teacher/billing" />
-          @if (!mobile()) {
-            <p-button
-              icon="tb-i tb-i-chevron_left"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [pTooltip]="t.previousMonth"
-              [ariaLabel]="t.previousMonth"
-              (onClick)="shift(-1)"
-            />
-            <p-button
-              icon="tb-i tb-i-chevron_right"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [pTooltip]="t.nextMonth"
-              [ariaLabel]="t.nextMonth"
-              [disabled]="isCurrentMonth()"
-              (onClick)="shift(1)"
-            />
-            <a pButton routerLink="report" [queryParams]="{ month: month() }" severity="secondary">
-              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
-              <span pButtonLabel>{{ t.report }}</span>
-            </a>
-          }
-          <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
-          @if (mobile()) {
-            <p-button
-              class="tb-page-fab"
-              [label]="t.payment"
-              icon="tb-i tb-i-account_balance_wallet"
-              (onClick)="openPayment()"
-              [disabled]="!overview()"
-            />
-          }
-        </tb-page-header>
-
-        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+        <div tbPaneHeader>
+          <tb-page-header [title]="monthTitle()">
+            <tb-help-button help topic="teacher/billing" />
+            @if (!mobile()) {
+              <p-button
+                icon="tb-i tb-i-chevron_left"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [pTooltip]="t.previousMonth"
+                [ariaLabel]="t.previousMonth"
+                (onClick)="shift(-1)"
+              />
+              <p-button
+                icon="tb-i tb-i-chevron_right"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [pTooltip]="t.nextMonth"
+                [ariaLabel]="t.nextMonth"
+                [disabled]="isCurrentMonth()"
+                (onClick)="shift(1)"
+              />
+              <a
+                pButton
+                routerLink="report"
+                [queryParams]="{ month: month() }"
+                severity="secondary"
+              >
+                <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
+                <span pButtonLabel>{{ t.report }}</span>
+              </a>
+            }
+            <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
+            @if (mobile()) {
+              <p-button
+                class="tb-page-fab"
+                [label]="t.payment"
+                icon="tb-i tb-i-account_balance_wallet"
+                (onClick)="openPayment()"
+                [disabled]="!overview()"
+              />
+            }
+          </tb-page-header>
           @if (summary(); as summary) {
             <dl class="tb-ops-figures">
               <div class="tb-ops-figure">
@@ -184,81 +188,83 @@ const NUMBER = new Intl.NumberFormat(locale());
               </div>
             </dl>
 
-            <section class="tb-ops">
-              <div class="tb-ops__bar">
-                <h2 class="tb-ops__title">{{ t.operations }}</h2>
-                <div class="tb-ops__filters">
-                  <tb-filter-chips
-                    [label]="t.filters"
-                    [chips]="chips()"
-                    [value]="filter()"
-                    (valueChange)="setFilter($event)"
-                  />
-                  <p-select
-                    [formControl]="studentControl"
-                    [options]="students()"
-                    optionLabel="displayName"
-                    optionValue="studentId"
-                    [placeholder]="t.student"
-                    [showClear]="true"
-                    [ariaLabel]="t.studentFilter"
-                    styleClass="tb-ops__student"
-                  />
-                </div>
+            <div class="tb-ops__bar">
+              <h2 class="tb-ops__title">{{ t.operations }}</h2>
+              <div class="tb-ops__filters">
+                <tb-filter-chips
+                  [label]="t.filters"
+                  [chips]="chips()"
+                  [value]="filter()"
+                  (valueChange)="setFilter($event)"
+                />
+                <p-select
+                  [formControl]="studentControl"
+                  [options]="students()"
+                  optionLabel="displayName"
+                  optionValue="studentId"
+                  [placeholder]="t.student"
+                  [showClear]="true"
+                  [ariaLabel]="t.studentFilter"
+                  styleClass="tb-ops__student"
+                />
               </div>
-              @if (list().length > 0) {
-                <ul class="tb-list tb-ops__list" [attr.aria-label]="t.operations">
-                  @for (operation of list(); track operation.id) {
-                    <li>
-                      <span class="tb-ops__lead">
-                        <span
-                          class="tb-list__lead"
-                          [class.tb-ops__lead--payment]="operation.kind === 'PAYMENT'"
-                          aria-hidden="true"
-                          ><i [class]="icon(operation)"></i
-                        ></span>
-                        <tb-avatar
-                          [attr.data-tb-label]="colors.studentLabel(operation.studentId)"
-                          [name]="operation.studentName"
-                          [photo]="operation.studentAvatar"
-                          size="2rem"
-                        />
-                      </span>
-                      <div class="tb-list__text">
-                        <a
-                          [routerLink]="['/teacher/students', operation.studentId]"
-                          [queryParams]="paymentsTab"
-                          class="tb-list__title tb-list__link"
-                          >{{ title(operation)
-                          }}<span class="tb-ops__who"> · {{ operation.studentName }}</span></a
-                        >
-                        <span class="tb-list__supporting"
-                          ><span class="tb-ops__who-compact">{{ operation.studentName }} · </span
-                          >{{ details(operation) }}</span
-                        >
-                      </div>
-                      <div class="tb-list__trail">
-                        <span
-                          class="tb-ops__amount"
-                          [class.tb-positive]="operation.amount > 0"
-                          [class.tb-muted]="operation.amount === 0"
-                          >{{ amountText(operation, summary.currency) }}</span
-                        >
-                      </div>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <tb-empty-state icon="tb-i-account_balance_wallet" [title]="t.emptyMonth" />
-              }
-            </section>
+            </div>
+          }
+        </div>
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+          @if (summary(); as summary) {
+            @if (list().length > 0) {
+              <ul class="tb-list tb-ops__list" [attr.aria-label]="t.operations">
+                @for (operation of list(); track operation.id) {
+                  <li>
+                    <span class="tb-ops__lead">
+                      <span
+                        class="tb-list__lead"
+                        [class.tb-ops__lead--payment]="operation.kind === 'PAYMENT'"
+                        aria-hidden="true"
+                        ><i [class]="icon(operation)"></i
+                      ></span>
+                      <tb-avatar
+                        [attr.data-tb-label]="colors.studentLabel(operation.studentId)"
+                        [name]="operation.studentName"
+                        [photo]="operation.studentAvatar"
+                        size="2rem"
+                      />
+                    </span>
+                    <div class="tb-list__text">
+                      <a
+                        [routerLink]="['/teacher/students', operation.studentId]"
+                        [queryParams]="paymentsTab"
+                        class="tb-list__title tb-list__link"
+                        >{{ title(operation)
+                        }}<span class="tb-ops__who"> · {{ operation.studentName }}</span></a
+                      >
+                      <span class="tb-list__supporting"
+                        ><span class="tb-ops__who-compact">{{ operation.studentName }} · </span
+                        >{{ details(operation) }}</span
+                      >
+                    </div>
+                    <div class="tb-list__trail">
+                      <span
+                        class="tb-ops__amount"
+                        [class.tb-positive]="operation.amount > 0"
+                        [class.tb-muted]="operation.amount === 0"
+                        >{{ amountText(operation, summary.currency) }}</span
+                      >
+                    </div>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <tb-empty-state icon="tb-i-account_balance_wallet" [title]="t.emptyMonth" />
+            }
           }
         </tb-load-state>
       </tb-pane>
 
       @if (!mobile()) {
         <tb-pane kind="fixed" [label]="t.byStudents">
-          <div class="tb-ops__bar tb-ops__bar--pane">
+          <div tbPaneHeader class="tb-ops__bar tb-ops__bar--pane">
             <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
           </div>

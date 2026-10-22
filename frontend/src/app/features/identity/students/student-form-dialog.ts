@@ -11,6 +11,7 @@ import {
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
+import { SegmentGroup, Segment } from '@shared/ui/segment-group';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { describeError } from '@core/http/error-messages';
@@ -28,7 +29,16 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-student-form-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, InputText, Message, FieldErrors, SubmitFor],
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Dialog,
+    InputText,
+    Message,
+    FieldErrors,
+    SubmitFor,
+    SegmentGroup,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -39,6 +49,12 @@ import { SHARED_T } from '@shared/i18n/texts';
       [draggable]="false"
     >
       <form tbFieldErrors id="student-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+        <tb-segment-group
+          [label]="t.createKind"
+          [segments]="kinds"
+          [value]="'student'"
+          (valueChange)="choose($event)"
+        />
         <div class="tb-field">
           <label for="displayName">{{ t.name }}</label>
           <input pInputText id="displayName" formControlName="displayName" autocomplete="off" />
@@ -74,6 +90,17 @@ export class StudentFormDialog {
 
   readonly visible = model(false);
   readonly created = output<CreatedStudent>();
+  readonly createGroup = output();
+  protected readonly kinds: Segment<string>[] = [
+    { value: 'student', label: T.studentForm.student },
+    { value: 'group', label: T.studentForm.group },
+  ];
+  protected choose(kind: string): void {
+    if (kind === 'group') {
+      this.visible.set(false);
+      this.createGroup.emit();
+    }
+  }
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);

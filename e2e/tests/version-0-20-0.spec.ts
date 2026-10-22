@@ -49,7 +49,11 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await expect(row.locator('tb-avatar')).toHaveAttribute('data-tb-label', 'violet');
   await expect(row).not.toHaveAttribute('data-tb-label');
 
-  await page.getByRole('button', { name: 'Создать группу' }).click();
+  await create(page, 'Ученик');
+  await page
+    .getByRole('dialog', { name: 'Новый ученик' })
+    .getByRole('button', { name: 'Группа', exact: true })
+    .click();
   await page.getByLabel('Название').fill(group);
   await page.locator('p-multiselect:has(#group-members)').click();
   await page.getByRole('option', { name: student }).click();

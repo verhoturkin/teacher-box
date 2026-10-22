@@ -333,13 +333,13 @@ component that shows one adds it to `PRIME`).
   `injectListDetail(() => routeHasDetail)` — from expanded both panes, on compact and medium only the list or
   the detail by the route; the detail then has «back» (`tb-page-header [back]`) to the list's route. The page
   title is in the header of the first pane. First consumer: help (`/<area>/help[/:topic]`) — the contents with
-  the search and each article's summary in the fixed pane, the article (≤ 66 ch) in the flexible one.
+  the search and each article's summary in the fixed pane, the article using the full flexible pane width.
   `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 % each
   (redesign spec §3.1: Settings only, *ours*). **Settings** (`/teacher/settings[/:category]`, 234,
   `features/settings/settings-categories.ts`): the categories as a segmented list of tonal two-line rows (a 40 px
   tonal icon circle, name, a short «what it holds»; hover — the 8 % state layer; the chosen row — secondary container,
   emphasized name, the icon circle on the surface; the group's outer corners 16 px, the rows between 4 px, 2 px apart;
-  every `tb-list` row has the same hover state layer and no underlined names, 0.24.1)
+  interactive `tb-list` rows have the same hover state layer and no underlined names, 0.28.0)
   in the fixed pane, the chosen one beside it (from expanded `/teacher/settings` shows the first, «Мой
   аккаунт»). Categories in list order: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и
   календарь» (`calendar`: time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры»
@@ -502,8 +502,8 @@ This persistent-header placement is our product decision.
 - **Search field** — always `tb-search-field` (`@shared/ui`, a form control; 0.15.0): the M3 docked search bar, 56 px,
   a filled pill without an outline (in focus too — the focus state layer), the magnifier and «×» «Очистить поиск» (while
   there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
-  button is hidden. Its own width (20 rem, no wider than its place): «×» never resizes it; on a phone it takes the
-  toolbar's width.
+  button is hidden. The search takes the full available width of its pane or card; «×» never resizes it
+  (0.28.0, our layout decision). Filters and sorting controls wrap below it.
 - **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
   («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
   second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
@@ -646,6 +646,24 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   track keeps 16 px from the corners and the thumb is a rounded outline-variant bar (dialogs and sheets the same,
   Firefox gets `scrollbar-width: thin`).
 
+- **Persistent pane headings** (0.28.0, ours): title, search and filters use `[tbPaneHeader]`; the common
+  `.tb-pane__scroll` owns the scrollbar. The header keeps a fixed 16 px bottom gap (our decision),
+  so scrolled rows never touch its controls; trailing heading margins are trimmed. No nested scroll list.
+  Embedded detail components use
+  `<ng-template tbPaneHeader>` (`PaneHeader`), which registers the template with the enclosing `Pane` and
+  unregisters it on destruction. Without a pane, the heading renders in place. Compact layouts retain the
+  window's scroll. Billing keeps the month, figures and journal filters above the scrolling operations.
+- **Notifications width** (0.28.0, ours): the docked bell panel has an explicit 25 rem inline size,
+  matching the medium drawer; its content never resizes the shell.
+- **List interaction** (0.28.0): only rows that open/select as a whole have a hover state layer
+  (`tb-list__link`, `tb-list__stretched`, direct link/button or `tb-list__item--link`). Static rows have no
+  hover; their individual controls retain their own states.
+- **Student/group creation** (0.28.0): the student creation dialog offers «Ученик · Группа». The group
+  choice opens the existing group form. The choice is the first child of `tb-form`, using its normal gap.
+  There is no separate create-group button in the students header.
+- **Monthly payment report** (0.28.0): one flexible pane, persistent title/back/month picker, tonal key
+  figures and sections on the pane surface. Detailed report tables retain their labelled columns.
+
 - **Every list of data inside a card or dialog is a segmented list** `ul.tb-list` (CSS subgrid: lead, text,
   trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px gap, inner corners 4 px,
   outer `--tb-list-outer` — nested in its container (§1: 4 px in a card on a computer and in dialogs, 8 px in a
@@ -667,7 +685,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   - Students and groups (237.2, redesign spec §8) — **one** `tb-list` in the fixed pane of a list-detail
     (`/teacher/students[/:studentId]`, `/teacher/groups/:groupId` — one route, the page stays; «Ученики» in the
     rail and the bar is active on both, `NavItem.alsoActive`): the header «Ученики» + «N учеников · M групп»
-    (current ones) and the icon button «Создать группу»; the search; filter chips «Все · Группы · Должники N ·
+    (current ones); the search; filter chips «Все · Группы · Должники N ·
     Без мессенджера N · Отключённые» (`tb-filter-chips`, below; «Отключённые» — students without access and
     archived groups, they replace the old toggles). From expanded the header, the search and the chips stay and
     only the list scrolls (*ours*); on one pane the window scrolls. Students by name, then groups (group icon in the lead).
@@ -892,6 +910,10 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   cannot be dragged out of the card. A review form is as wide as its card (no `tb-form--narrow`).
 
 ## 11. Accessibility (WCAG 2.2 AA)
+
+- **Focus visibility** (0.28.0, ours): `KeyboardFocus` tracks keyboard/pointer input on the document.
+  Focus rings appear only after keyboard interaction, including on autofocus and focus return. Pointer
+  interaction hides rings; actual focus, input state, validation and elevation remain available.
 
 - Keyboard focus ring: 3 px secondary, 2 px offset (fields: 2 px primary outline). In navigation the ring
   goes around the item and state layers lie over the active indicator, not instead of it.

@@ -90,7 +90,7 @@ export function nextMonday(date: Date): Date {
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="t.title">
+        <tb-page-header tbPaneHeader [title]="t.title">
           <tb-help-button help topic="cabinet/schedule" />
         </tb-page-header>
         @if (mobile()) {
@@ -147,6 +147,7 @@ export function nextMonday(date: Date): Date {
       <tb-pane kind="fixed" class="tb-my-schedule-side" [label]="t.upcoming">
         @if (!mobile()) {
           <tb-mini-month
+            tbPaneHeader
             [current]="currentDay()"
             [marked]="lessonDays()"
             (dateSelect)="focusDate.set($event)"

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
 import { FocusReturn } from '@core/a11y/focus-return';
+import { KeyboardFocus } from '@core/a11y/keyboard-focus';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { CORE_T } from '@core/i18n/texts';
 import { CallHost } from '@features/meetings';
@@ -48,6 +49,7 @@ export class App {
   protected readonly closeLabel = CORE_T.close;
 
   constructor() {
+    inject(KeyboardFocus).start();
     inject(FocusReturn).start();
   }
 

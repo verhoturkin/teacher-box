@@ -62,7 +62,7 @@ function dayTitle(date: Date): string {
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="today()">
+        <tb-page-header tbPaneHeader [title]="today()">
           <tb-help-button help topic="teacher/first-steps" />
           @if (summaryLine(); as line) {
             <span meta class="tb-muted">{{ line }}</span>

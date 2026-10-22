@@ -54,7 +54,7 @@ const MATERIALS = 1;
   template: `
     <tb-panes>
       <tb-pane [label]="t.title">
-        <tb-page-header [title]="greeting()">
+        <tb-page-header tbPaneHeader [title]="greeting()">
           <tb-help-button help topic="cabinet/lesson" />
           @if (summaryLine(); as line) {
             <span meta class="tb-muted">{{ line }}</span>

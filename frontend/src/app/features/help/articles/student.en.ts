@@ -7,6 +7,9 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
     title: 'Sign-in, password and profile',
     summary: 'How to sign in to the cabinet, change the password, the photo and the name',
     body: `
+Pane headings stay above scrolling content, while search and help text fill the available width.
+Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
+
 ## First sign-in
 
 The teacher sends an invitation link. Open it, choose a login and a password — and you are in your cabinet. After that, sign in on the sign-in page with this login and password.

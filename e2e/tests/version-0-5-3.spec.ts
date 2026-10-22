@@ -67,7 +67,7 @@ test('the groups are in the list of students, without tabs', async ({ page, brow
 
   await expect(page.getByRole('tab')).toHaveCount(0);
   // 0.23.0: groups are rows of the same list, the chip «Группы» filters them
-  await expect(page.getByRole('button', { name: 'Создать группу' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Создать группу' })).toHaveCount(0);
   await expect(page.getByRole('group', { name: 'Фильтр списка' })).toContainText('Группы');
   await expect(
     page.locator('ul.tb-list[aria-label="Ученики"] > li').filter({ hasText: STUDENT }),
