@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -52,14 +53,30 @@ public class PreviewService {
                 storage.delete(BoardService.NAMESPACE, stored.key());
                 BoardPreviews.checkSize(stored.size());
             }
-            String old = previews.find(boardId).map(Preview::key).orElse(null);
-            previews.save(boardId, new Preview(stored.key(), stored.size(), clock.instant()));
+            Preview previous = previews.find(boardId).orElse(null);
+            String old = previous == null ? null : previous.key();
+            Instant updatedAt = clock.instant();
+            if (previous != null && !updatedAt.isAfter(previous.updatedAt())) {
+                // H2 timestamp precision is microseconds; keep the image cache key monotonic.
+                updatedAt = previous.updatedAt().plusNanos(1000);
+            }
+            previews.save(boardId, new Preview(stored.key(), stored.size(), updatedAt));
             if (old != null) {
                 storage.delete(BoardService.NAMESPACE, old);
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Cannot read the preview of board " + boardId, e);
         }
+    }
+
+    /** An emptied board must not keep the picture of its previous content. */
+    @Transactional
+    public void clear(UUID boardId) {
+        if (!boards.find(boardId).excalidraw()) {
+            throw new ConflictException("boards.no-scene", "An external board has no preview");
+        }
+        previews.find(boardId).ifPresent(preview -> storage.delete(BoardService.NAMESPACE, preview.key()));
+        previews.delete(boardId);
     }
 
     /** The teacher and the board's students; anyone else gets 404 like for the board itself. */

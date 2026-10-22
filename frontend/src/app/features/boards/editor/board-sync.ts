@@ -46,6 +46,7 @@ export interface BoardServer {
   file(fileId: string): Observable<Blob>;
   /** Puts the preview picture of the board; only the teacher's editor has it (ADR-0048). */
   preview?(png: Blob): Observable<void>;
+  clearPreview?(): Observable<void>;
 }
 
 /** The live channel as the sync uses it (`BoardLive`). */
@@ -92,6 +93,10 @@ export class BoardSync {
   private running: Promise<boolean> | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
   private pollTimer: ReturnType<typeof setInterval> | undefined;
+  private previewRevision = 0;
+  private previewUploaded = -1;
+  private previewRunning: Promise<void> | null = null;
+  private readonly pendingFiles = new Set<Promise<void>>();
   private previewTimer: ReturnType<typeof setTimeout> | undefined;
   private exportPreview: ExcalidrawModules['exportPreview'] | undefined;
   private polling = false;
@@ -148,6 +153,7 @@ export class BoardSync {
       access.getAppState(),
     );
     access.updateScene({ elements: merged, captureUpdate: 'NEVER' });
+    this.schedulePreview();
     void this.fetchMissingFiles(remote);
   }
 
@@ -163,6 +169,7 @@ export class BoardSync {
     if (newElements) this.scheduleBroadcast();
     if (!newElements && sharedState(appState) === this.sharedState) return;
     this.dirty = true;
+    this.schedulePreview();
     this.status.set('saving');
     this.schedule(SAVE_DELAY_MS);
   }
@@ -170,10 +177,18 @@ export class BoardSync {
   /** Saves what is not saved yet. @returns whether everything is on the server */
   async flush(): Promise<boolean> {
     clearTimeout(this.saveTimer);
-    if (this.running) await this.running;
-    if (this.dirty) await this.save();
-    if (this.previewTimer !== undefined && !this.dirty) await this.makePreview();
-    return !this.dirty;
+    for (;;) {
+      if (this.running) await this.running;
+      if (this.dirty) {
+        if (!(await this.save())) return false;
+        continue;
+      }
+      await Promise.all(this.pendingFiles);
+      const revision = this.previewRevision;
+      await this.makePreview();
+      // Drawing can continue during an export/upload. Leave only after its final revision settles.
+      if (!this.busy() && revision === this.previewRevision) return true;
+    }
   }
 
   /** Asks for the others' changes now (e.g. after a copy was restored). */
@@ -199,6 +214,10 @@ export class BoardSync {
 
   private busy(): boolean {
     return this.dirty || this.running !== null;
+  }
+
+  private isStopped(): boolean {
+    return this.stopped;
   }
 
   stop(): void {
@@ -289,35 +308,54 @@ export class BoardSync {
 
   private schedulePreview(): void {
     if (this.server.preview === undefined || this.stopped) return;
+    this.previewRevision++;
     clearTimeout(this.previewTimer);
     this.previewTimer = setTimeout(() => {
       void this.makePreview();
     }, PREVIEW_DELAY_MS);
   }
 
-  /**
-   * Exports the drawing as a PNG and sends it as the board's preview. Quiet: a board without drawing, with
-   * images not loaded yet or a failed export or upload keeps its previous preview.
-   */
+  /** A single serialized exporter shared by the timer and ordinary in-app exit. */
   private async makePreview(): Promise<void> {
     clearTimeout(this.previewTimer);
     this.previewTimer = undefined;
+    if (this.previewRunning) {
+      await this.previewRunning;
+      return this.makePreview();
+    }
+    if (this.previewUploaded === this.previewRevision || this.busy()) return;
+    this.previewRunning = this.previewOnce().finally(() => {
+      this.previewRunning = null;
+    });
+    await this.previewRunning;
+  }
+
+  private async previewOnce(): Promise<void> {
     const access = this.access;
     const send = this.server.preview?.bind(this.server);
     const exportPreview = this.exportPreview;
     if (access === undefined || send === undefined || exportPreview === undefined || this.stopped)
       return;
+    const revision = this.previewRevision;
     const elements = visible(access.getSceneElementsIncludingDeleted());
     const files = access.getFiles();
     const complete = elements.every((element) => {
       const fileId = fileIdOf(element);
       return fileId === null || fileId in files;
     });
-    if (elements.length === 0 || !complete) return;
+    if (!complete) return;
     try {
-      await firstValueFrom(send(await exportPreview(elements, access.getAppState(), files)));
+      if (elements.length === 0) {
+        if (this.server.clearPreview === undefined) return;
+        await firstValueFrom(this.server.clearPreview());
+      } else {
+        const png = await exportPreview(elements, access.getAppState(), files);
+        if (this.isStopped()) return;
+        await firstValueFrom(send(png));
+      }
+      this.previewUploaded = revision;
     } catch {
-      // The next save makes a new one.
+      // Scene saving remains independent; visibility flush or the next save retries the preview.
     }
   }
 
@@ -327,6 +365,7 @@ export class BoardSync {
     const reconcile = this.reconcile;
     if (access === undefined || reconcile === undefined) return;
     const remote = elementsOf(scene.elements);
+    const changed = this.sceneVersion !== scene.sceneVersion;
     this.sceneVersion = scene.sceneVersion;
     this.remember(remote);
     const merged = reconcile(
@@ -342,6 +381,7 @@ export class BoardSync {
         : { ...current, ...sharedAppState(scene.appState) };
     access.updateScene({ elements: merged, appState, captureUpdate: 'NEVER' });
     this.sharedState = sharedState(scene.appState);
+    if (changed) this.schedulePreview();
     void this.fetchMissingFiles(remote);
   }
 
@@ -371,7 +411,15 @@ export class BoardSync {
    * Fetches the images the drawing shows but the editor lacks, a few at a time, and shows each one as soon
    * as it arrives; an image already on its way is not asked for again.
    */
-  private async fetchMissingFiles(elements: readonly OrderedExcalidrawElement[]): Promise<void> {
+  private fetchMissingFiles(elements: readonly OrderedExcalidrawElement[]): Promise<void> {
+    const pending = this.fetchFiles(elements).finally(() => {
+      this.pendingFiles.delete(pending);
+    });
+    this.pendingFiles.add(pending);
+    return pending;
+  }
+
+  private async fetchFiles(elements: readonly OrderedExcalidrawElement[]): Promise<void> {
     const access = this.access;
     if (access === undefined) return;
     const present = access.getFiles();
@@ -388,7 +436,10 @@ export class BoardSync {
         try {
           const blob = await firstValueFrom(this.server.file(fileId));
           const file = await binaryFile(fileId, blob);
-          if (!this.stopped) access.addFiles([file]);
+          if (!this.stopped) {
+            access.addFiles([file]);
+            this.schedulePreview();
+          }
         } catch {
           // An image that cannot be fetched stays a placeholder.
         } finally {

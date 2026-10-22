@@ -252,7 +252,13 @@ describe('BoardPage', () => {
     render();
     const scene = await open();
     const page = fixture.componentInstance;
-    await expect(page.canLeave()).resolves.toBe(true);
+    const initial = page.canLeave();
+    await vi.waitFor(() => {
+      backend
+        .expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1/preview' })
+        .flush(null);
+    });
+    await expect(initial).resolves.toBe(true);
 
     const elements = [anElement('new', 1)];
     scene.state.elements = elements;
@@ -302,6 +308,11 @@ describe('BoardPage', () => {
     backend.expectOne('/api/boards/board-1/scene?since=3').flush(null, {
       status: 204,
       statusText: 'No Content',
+    });
+    await vi.waitFor(() => {
+      backend
+        .expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1/preview' })
+        .flush(null);
     });
   });
 

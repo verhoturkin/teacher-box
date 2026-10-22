@@ -269,6 +269,8 @@ Search fills the pane width; filters and sorting are below it. The «Textbooks»
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.
 
+Returning to Materials waits for the drawing and its card preview. Emptying a board clears its previous picture. Failed uploads or missing images may temporarily leave the previous preview. Closing the browser or tab cannot guarantee that background requests finish.
+
 ## Create a board
 
 1. «Create» → «Board» (on a phone — «Materials» → «New board»).

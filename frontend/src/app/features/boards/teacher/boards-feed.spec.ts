@@ -65,7 +65,9 @@ describe('BoardsFeed', () => {
       .expectOne('/api/teacher/boards')
       .flush([aBoard({ previewUpdatedAt: '2026-10-02T10:00:00Z' }), aBoard({ id: 'b-2' })]);
     await fixture.whenStable();
-    backend.expectOne('/api/boards/board-1/preview').flush(new Blob(['png']));
+    backend
+      .expectOne((request) => request.url === '/api/boards/board-1/preview')
+      .flush(new Blob(['png']));
     await fixture.whenStable();
 
     expect(created).toHaveBeenCalled();

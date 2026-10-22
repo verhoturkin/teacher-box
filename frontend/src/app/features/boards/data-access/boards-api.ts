@@ -122,8 +122,17 @@ export class BoardsApi {
   }
 
   /** The preview of a board the user may open (404 until the first one is made). */
-  preview(boardId: string): Observable<Blob> {
+  clearPreview(boardId: string): Observable<void> {
+    return this.http
+      .delete(`/api/teacher/boards/${boardId}/preview`, {
+        context: quietContext(),
+      })
+      .pipe(map(() => undefined));
+  }
+
+  preview(boardId: string, version?: string | null): Observable<Blob> {
     return this.http.get(`/api/boards/${boardId}/preview`, {
+      params: version ? { v: version } : {},
       responseType: 'blob',
       context: quietContext(),
     });

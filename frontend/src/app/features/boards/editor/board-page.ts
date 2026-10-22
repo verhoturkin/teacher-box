@@ -379,7 +379,10 @@ export class BoardPage implements OnInit, CanLeave {
                   upload: (fileId, blob) => this.api.uploadFile(this.id(), fileId, blob),
                   file: (fileId) => this.api.file(this.id(), fileId),
                   ...(this.teacher()
-                    ? { preview: (png: Blob) => this.api.uploadPreview(this.id(), png) }
+                    ? {
+                        preview: (png: Blob) => this.api.uploadPreview(this.id(), png),
+                        clearPreview: () => this.api.clearPreview(this.id()),
+                      }
                     : {}),
                 },
                 content,

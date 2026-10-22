@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,6 +39,12 @@ class BoardPreviewController {
             HttpServletRequest request) throws IOException {
         previews.save(id, contentType == null ? "" : contentType, Math.max(request.getContentLengthLong(), 0),
                 request.getInputStream());
+    }
+
+    @DeleteMapping("/api/teacher/boards/{id}/preview")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void clear(@PathVariable UUID id) {
+        previews.clear(id);
     }
 
     /** The browser asks again after a minute (the editor replaces it on every save). */

@@ -132,6 +132,15 @@ describe('BoardsApi', () => {
     expect(seen).toHaveLength(1);
   });
 
+  it('clears an obsolete preview and varies the image URL by its revision', () => {
+    api.clearPreview('board-1').subscribe();
+    backend.expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1/preview' }).flush(null);
+    api.preview('board-1', '2026-10-22T10:00:00Z').subscribe();
+    const request = backend.expectOne((request) => request.url === '/api/boards/board-1/preview');
+    expect(request.request.params.get('v')).toBe('2026-10-22T10:00:00Z');
+    request.flush(new Blob(['png']));
+  });
+
   it('lists, makes, restores and deletes copies of a board', () => {
     const seen: unknown[] = [];
     api.backups('board-1').subscribe((backups) => seen.push(backups));

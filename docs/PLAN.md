@@ -73,14 +73,14 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
 
 ### Stage 259 — Current board preview on exit
 
-- [ ] 259.1 **F** Reproduce stale previews in `boards/editor/{board-page,board-sync,excalidraw-island}.ts`
+- [x] 259.1 **F** Reproduce stale previews in `boards/editor/{board-page,board-sync,excalidraw-island}.ts`
   and the Materials feed. `flush()` already attempts a preview when a timer is pending: identify the
   missing path rather than adding a second independent exporter. Track scene/preview revisions and
   serialize pending export/upload work; save the latest scene and await its preview before ordinary
   in-app exit unmounts the canvas. Cover changes arriving while a save/export is in flight, live edits,
   missing image files, empty scenes and failed uploads. Define clearing an obsolete preview for an
   emptied board. Preserve the existing unsaved-scene guard and teacher-only upload permissions.
-- [ ] 259.2 **B/F** Ensure the returned Materials feed reloads board metadata and invalidates the image
+- [x] 259.2 **B/F** Ensure the returned Materials feed reloads board metadata and invalidates the image
   through `previewUpdatedAt` (`boards/teacher/boards-feed.ts`, `boards-api.ts`, backend boards preview
   controller/service as needed). Test that closing and reopening shows the final image. Treat browser
   tab/window termination separately: asynchronous work on unload is not guaranteed; keep background
