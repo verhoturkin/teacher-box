@@ -905,6 +905,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - `.tb-field` with the `label` **first** (or a `tb-copy-row` / `tb-inline` row with the field first): the
   label sits on the outline (Body Small), primary on focus, error on error. A field with its own header
   (`tb-field__header`) keeps the label above. Every field has a visible label (filters too).
+- Label cutouts inherit `--tb-field-surface` from the painted surface (0.29.0, portal implementation):
+  body, panes (including sheet/compact variants), cards, dialogs and drawers declare their actual fill.
+  Transparent cards inherit the enclosing surface instead of declaring a card tone. This keeps profile,
+  account and group forms correct in both themes; a new custom form surface must declare this property
+  alongside its background. `--tb-card` remains a card colour, not an assumption about every form.
 - Required fields: `*` after the label + `aria-required` (`tb-field--required`); optional ones unmarked.
 - Errors: `<form tbFieldErrors>` (`shared/ui/field-errors.ts`) shows text under the field (Body Small, error;
   replaces the hint), sets `aria-invalid` / `aria-describedby`, maps server error codes (e.g. `login.taken`)

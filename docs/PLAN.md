@@ -46,7 +46,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   ratio, readable titles, menus and interaction targets; retain a usable compact layout. Check both
   material types, teacher/student views, single-card lists and long titles. Record sizing in
   `docs/design-system.md` as a portal decision.
-- [ ] 257.4 **F** Fix outlined-label cutout backgrounds in the student's Profile tab
+- [x] 257.4 **F** Fix outlined-label cutout backgrounds in the student's Profile tab
   (`identity/students/student-profile-tab.ts`, `.tb-field` in `styles.scss`). Resolve the label fill from
   its actual containing surface instead of assuming `--tb-card`; inspect account/group profile forms
   that share the same field styling. Check empty/filled/focused/error fields in light/dark themes and

@@ -613,7 +613,7 @@ Lists in blocks (students, payments and payment history, boards, lessons, notifi
 
 The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention» and «Finance»; the notifications are under the bell in the header. Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
 
-Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
+Input fields have their label on the outline, as in Material 3; the label stays visible for empty fields in light and dark themes; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 
 ## Button colours
 

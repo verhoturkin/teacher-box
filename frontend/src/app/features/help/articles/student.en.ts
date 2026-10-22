@@ -173,6 +173,8 @@ Send the bot /stop or disconnect the messenger in «My account» (your photo at 
     title: 'Phone, theme and language',
     summary: 'How to use the cabinet from a phone, turn on the dark theme and choose the language',
     body: `
+Field labels sit on the outline and stay visible even for empty fields in light and dark themes. An error turns the label red.
+
 ## From a phone
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
