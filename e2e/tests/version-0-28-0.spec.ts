@@ -92,8 +92,14 @@ test('payment headings and figures stay outside the scroll area and the report u
 test('notification width is independent of content and matches the medium drawer', async ({
   page,
 }) => {
+  await page.route('**/api/me/notifications/unread-count', (route) =>
+    route.fulfill({ json: { count: 22 } }),
+  );
   await page.setViewportSize({ width: 1700, height: 900 });
-  await page.getByRole('button', { name: 'Уведомления', exact: true }).click();
+  await page.goto('/teacher/billing');
+  const bell = page.locator('tb-notification-bell').getByRole('button');
+  await expect(bell).toHaveAccessibleName('Уведомления, непрочитанных: 22');
+  await bell.click();
   const docked = page.locator('.tb-notifications-pane');
   await expect(docked).toHaveCSS('width', '400px');
   await docked.getByRole('tab', { name: 'Отправленные', exact: true }).click();
