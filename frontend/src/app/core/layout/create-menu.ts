@@ -84,7 +84,18 @@ export function createItems(url: string, message: () => void): FabMenuItem[] {
           label: action.label,
           icon: action.icon,
           link: action.section,
-          queryParams: { ...action.query, [CREATE_PARAM]: action.kind },
+          queryParams: {
+            ...(path === action.section && action.kind === 'board'
+              ? Object.fromEntries(
+                  ['student', 'group'].flatMap((key) => {
+                    const value = search.get(key);
+                    return value ? [[key, value]] : [];
+                  }),
+                )
+              : {}),
+            ...action.query,
+            [CREATE_PARAM]: action.kind,
+          },
         }
       : { label: action.label, icon: action.icon, run: message },
   );

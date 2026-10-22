@@ -146,13 +146,16 @@ describe('AssignmentEditorPage', () => {
     expect(page.canLeave()).toBe(true);
   });
 
-  it('offers only current students and takes those of a group, then takes them off', async () => {
+  it('resolves explicit recipients and ignores unavailable student IDs', async () => {
     const { page } = await create();
-
-    page.addStudents(['s-2', 's-4', 's-2']);
+    page.form.controls.members.setValue([
+      { kind: 'STUDENT', id: 's-2' },
+      { kind: 'STUDENT', id: 's-4' },
+    ]);
+    await fixture.whenStable();
     expect(page.form.controls.studentIds.value).toEqual(['s-2']);
-
-    page.removeStudents(['s-2']);
+    page.form.controls.members.setValue([]);
+    await fixture.whenStable();
     expect(page.form.controls.studentIds.value).toEqual([]);
   });
 

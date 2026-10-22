@@ -39,7 +39,13 @@ describe('BoardDialog', () => {
     expect(bodyText()).toContain('Новая доска');
     expect(bodyText()).toContain('Рисуете вместе с учениками');
     expect(document.body.querySelector('#board-url')).toBeNull();
-    dialog.form.patchValue({ title: ' Алгебра ', groupIds: ['g-1'] });
+    dialog.form.patchValue({
+      title: ' Алгебра ',
+      members: [
+        { kind: 'STUDENT', id: 's-1' },
+        { kind: 'GROUP', id: 'g-1' },
+      ],
+    });
 
     dialog.save();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/boards' });
@@ -98,8 +104,10 @@ describe('BoardDialog', () => {
     expect(dialog.form.getRawValue()).toMatchObject({
       title: 'Холст',
       url: 'https://app.holst.so/board/1',
-      studentIds: ['gone'],
-      groupIds: ['g-1'],
+      members: [
+        { kind: 'GROUP', id: 'g-1' },
+        { kind: 'STUDENT', id: 'gone' },
+      ],
     });
 
     dialog.save();

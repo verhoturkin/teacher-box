@@ -14,10 +14,15 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
-import { ChipColors, GroupPicker } from '@features/identity/parts';
+import {
+  MemberPicker,
+  MemberSelection,
+  StudentGroup,
+  memberRecipients,
+  IdentityApi,
+} from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
@@ -43,11 +48,9 @@ export interface RecipientGroup {
     ReactiveFormsModule,
     Button,
     Dialog,
-    GroupPicker,
+    MemberPicker,
     InputText,
     Message,
-    MultiSelect,
-    ChipColors,
     Textarea,
     FieldErrors,
     SubmitFor,
@@ -90,30 +93,15 @@ export interface RecipientGroup {
         } @else {
           <div class="tb-field">
             <label for="broadcast-students">{{ t.to }}</label>
-            <p-multiselect
+            <tb-member-picker
               inputId="broadcast-students"
-              formControlName="studentIds"
-              [options]="students()"
-              optionLabel="displayName"
-              optionValue="id"
+              formControlName="members"
+              [students]="studentOptions()"
+              [groups]="groups()"
               [placeholder]="t.everyone"
-              [filter]="true"
-              [filterPlaceHolder]="t.search"
-              [ariaFilterLabel]="t.search"
-              display="chip"
-              tbChipColors="student"
-              appendTo="body"
-              [fluid]="true"
             />
             <small class="tb-hint">{{ t.hint }}</small>
           </div>
-          @if (visible()) {
-            <tb-group-picker
-              inputId="broadcast-group"
-              (picked)="addStudents($event)"
-              (dropped)="removeStudents($event)"
-            />
-          }
         }
         <div class="tb-field">
           <label for="broadcast-title">{{ t.subject }}</label>
@@ -150,6 +138,11 @@ export class BroadcastDialog {
   protected readonly t = T.broadcast;
   private readonly api = inject(NotificationsApi);
 
+  private readonly identity = inject(IdentityApi);
+  protected readonly groups = signal<StudentGroup[]>([]);
+  protected readonly studentOptions = computed(() =>
+    this.students().map((student) => ({ id: student.id, name: student.displayName })),
+  );
   readonly visible = model(false);
   readonly students = input<Recipient[]>([]);
   /** The one student to write to (their card): no choice of recipients. */
@@ -163,7 +156,7 @@ export class BroadcastDialog {
   protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
-    studentIds: new FormControl<string[]>([], { nonNullable: true }),
+    members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
     title: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(300)],
@@ -176,22 +169,13 @@ export class BroadcastDialog {
       if (this.visible()) {
         this.error.set(null);
         this.form.reset();
+        if (this.to() === null && this.toGroup() === null) {
+          this.identity.listGroups().subscribe((groups) => {
+            this.groups.set(groups.filter((group) => group.archivedAt === null));
+          });
+        }
       }
     });
-  }
-
-  /** Adds the students of a chosen group. */
-  addStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const known = new Set(this.students().map((student) => student.id));
-    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
-  }
-
-  /** Takes off the students of a group taken off. */
-  removeStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const gone = new Set(ids);
-    control.setValue(control.value.filter((id) => !gone.has(id)));
   }
 
   protected readonly memberNames = computed(() =>
@@ -213,13 +197,24 @@ export class BroadcastDialog {
       return;
     }
     const value = this.form.getRawValue();
+    const studentIds = this.recipientIds(
+      memberRecipients(
+        value.members,
+        this.groups(),
+        this.students().map((student) => student.id),
+      ),
+    );
+    if (studentIds.length === 0 && (value.members.length > 0 || this.toGroup() !== null)) {
+      this.error.set(T.broadcast.noRecipients);
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     this.api
       .broadcast({
         title: value.title.trim(),
         body: value.body.trim() === '' ? null : value.body.trim(),
-        studentIds: this.recipientIds(value.studentIds),
+        studentIds,
       })
       .subscribe({
         next: (recipients) => {

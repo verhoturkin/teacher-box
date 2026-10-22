@@ -75,6 +75,10 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 
 ## Frontend
 
+The material dialog uses the shared `identity/parts` member picker: one searchable field with typed
+student/group chips. It persists individual and group grants separately; group membership stays dynamic.
+Existing members absent from current options remain visible and removable.
+
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 
 - `teacher/boards-feed.ts` — the boards tab of «Материалы» (`features/materials`, `/teacher/materials?tab=boards`, 245.2; `/teacher/boards` redirects; cards with previews, `BoardsFeed` in `parts.ts`; the rest of this item is the behaviour of the former page): all boards,

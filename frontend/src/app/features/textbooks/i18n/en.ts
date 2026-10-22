@@ -55,6 +55,7 @@ export const en: Translation<typeof ru> = {
     coursePlaceholder: 'For example, English, grade 5',
     pageCount: 'Number of pages',
     pageCountHint: 'The portal counts the pages of a PDF itself; for Word, enter them.',
+    members: 'Students and groups',
     students: 'Students',
     studentsPlaceholder: 'Who the textbook is open to',
     groups: 'Groups',

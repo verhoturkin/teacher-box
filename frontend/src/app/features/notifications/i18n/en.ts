@@ -191,6 +191,7 @@ export const en: Translation<typeof ru> = {
     subject: 'Subject',
     text: 'Text',
     send: 'Send',
+    noRecipients: 'The selected groups have no available recipients.',
     failed: 'Could not send the message',
   },
   studentChannels: {

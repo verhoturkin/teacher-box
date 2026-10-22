@@ -273,7 +273,7 @@ Search fills the pane width; filters and sorting are below it. The «Textbooks»
 
 1. «Create» → «Board» (on a phone — «Materials» → «New board»).
 2. Choose the kind and enter the title. For an external board paste the link and open the board by link in its service.
-3. Choose students and groups — as many as you like. All students of a group see its board; a student who left the group no longer sees it.
+3. Search and select recipients in the combined «Students and groups» field — as many as you like. Selected students and groups have separate chips; remove a chip to deselect it. All students of a group see its board; a student who left the group no longer sees it.
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
@@ -321,7 +321,7 @@ Pages of a textbook can be put on a board too — from the «Textbooks» tab or 
 
 1. «Create» → «Homework» (on a phone — «Homework» → «New homework») — the homework editor opens.
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
-3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
+3. Search and select recipients in the combined «Students and groups» field. Students in several groups receive homework once. Removing a group preserves students also selected individually. The due date becomes the start of their next lesson by itself — you can change it.
 4. Bind textbooks and add files right here — they show as cards; click a name to open the textbook or the file (PDF files and pictures open in a new tab).
 5. Need a video — in «Video» click «Add a video» and paste a link (up to 5 videos). YouTube, Rutube and VK Video play right in the homework, other links open in a new tab. Below is «Transcript»: «Take captions from YouTube» fills it with the video's captions (if it has any; when there are several — in different languages, by the author and automatic — the portal asks which to take), «Load subtitles» — from an .srt or .vtt file, or paste the text yourself. The AI assistant relies on the transcript; the student sees it only with «Show the transcript to the student» on.
 6. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
@@ -370,7 +370,7 @@ Textbooks are a tab of the «Materials» section (next to the «Boards» tab, [B
 2. «Choose file». The title is taken from the file name — correct it.
 3. Choose the kind — «Textbook», «Workbook» or «Other» — and the course (e.g. «English, grade 5»): the portal suggests the courses of other textbooks.
 4. The portal counts the pages of a PDF itself; a picture is one page. For a Word file enter the number of pages yourself (optional).
-5. Choose the students and groups the textbook is open to. All students of a group see its textbook.
+5. Search and select who can access the textbook in the combined «Students and groups» field. Remove individual chips or clear the whole selection. All students of a group see its textbook.
 
 ## List
 

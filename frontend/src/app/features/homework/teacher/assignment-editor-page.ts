@@ -22,7 +22,6 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
@@ -32,7 +31,13 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { AiApi, AppliedDraft, HomeworkAiPanel, SourceOption } from '@features/ai/parts';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
-import { ChipColors, GroupPicker, IdentityApi } from '@features/identity/parts';
+import {
+  MemberPicker,
+  MemberSelection,
+  StudentGroup,
+  memberRecipients,
+  IdentityApi,
+} from '@features/identity/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -79,11 +84,9 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     DatePicker,
     InputText,
     Message,
-    MultiSelect,
-    ChipColors,
+    MemberPicker,
     SelectButton,
     Textarea,
-    GroupPicker,
     HomeworkAiPanel,
     ToBoardDialog,
     HelpButton,
@@ -173,28 +176,14 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           <div class="tb-editor__settings">
             @if (isNew()) {
               <div class="tb-field">
-                <label for="editor-students">{{ t.students }}</label>
-                <p-multiselect
+                <label for="editor-students">{{ t.members }}</label>
+                <tb-member-picker
                   inputId="editor-students"
-                  formControlName="studentIds"
-                  [options]="students()"
-                  optionLabel="displayName"
-                  optionValue="id"
-                  [placeholder]="t.studentsPlaceholder"
-                  [filter]="true"
-                  [filterPlaceHolder]="t.search"
-                  [ariaFilterLabel]="t.search"
-                  display="chip"
-                  tbChipColors="student"
-                  appendTo="body"
-                  [fluid]="true"
+                  formControlName="members"
+                  [students]="studentOptions()"
+                  [groups]="groups()"
                 />
               </div>
-              <tb-group-picker
-                inputId="editor-group"
-                (picked)="addStudents($event)"
-                (dropped)="removeStudents($event)"
-              />
             }
             <div class="tb-field">
               <label for="editor-due">{{ t.due }}</label>
@@ -317,6 +306,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     }),
     dueAt: new FormControl<Date | null>(null),
     studentIds: new FormControl<string[]>([], { nonNullable: true }),
+    members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
   });
 
   protected readonly modeValue = toSignal(this.mode.valueChanges, {
@@ -341,6 +331,13 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly backLabel = computed(() => this.assignment()?.title ?? T.editor.back);
 
   protected readonly students = signal<StudentOption[]>([]);
+  protected readonly groups = signal<StudentGroup[]>([]);
+  protected readonly studentOptions = computed(() =>
+    this.students().map((student) => ({ id: student.id, name: student.displayName })),
+  );
+  private readonly chosenMembers = toSignal(this.form.controls.members.valueChanges, {
+    initialValue: [],
+  });
   /** Lessons ahead, for the due date of a new assignment. */
   private readonly lessons = signal<readonly ScheduledLesson[] | null>(null);
   /** The next lesson the due date was set to; `null` when the teacher chose the date. */
@@ -441,6 +438,16 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   constructor() {
     pageDetail(() => this.assignment()?.title);
     effect(() => {
+      const ids = memberRecipients(
+        this.chosenMembers(),
+        this.groups(),
+        this.students().map((student) => student.id),
+      );
+      untracked(() => {
+        this.form.controls.studentIds.setValue(ids);
+      });
+    });
+    effect(() => {
       const students = this.chosenStudents();
       const lessons = this.lessons();
       if (lessons !== null && this.isNew()) {
@@ -461,6 +468,9 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   ngOnInit(): void {
     if (this.isNew()) {
       this.loadStudents();
+      this.identity.listGroups().subscribe((groups) => {
+        this.groups.set(groups.filter((group) => group.archivedAt === null));
+      });
       const today = new Date();
       const until = new Date(
         today.getFullYear(),
@@ -518,22 +528,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     }
     this.dueLesson.set(lesson);
     this.form.controls.dueAt.setValue(lesson);
-  }
-
-  /** Adds the students of a chosen group who can get the assignment. */
-  addStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const known = new Set(this.students().map((student) => student.id));
-    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
-    control.markAsDirty();
-  }
-
-  /** Takes off the students of a group taken off. */
-  removeStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const gone = new Set(ids);
-    control.setValue(control.value.filter((id) => !gone.has(id)));
-    control.markAsDirty();
   }
 
   /**

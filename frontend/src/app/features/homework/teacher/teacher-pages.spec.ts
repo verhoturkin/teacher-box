@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToBoardDialog } from '@features/boards/parts';
 import { TextbookToBoardDialog } from '@features/textbooks/parts';
-import { GroupPicker } from '@features/identity/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
   assignmentDetails,
@@ -430,7 +429,7 @@ describe('AssignmentPage', () => {
     const { fixture, backend } = await render();
     const dialog = await openAssignMore(fixture, backend);
 
-    dialog.toAssign.setValue(['s-3']);
+    dialog.members.setValue([{ kind: 'STUDENT', id: 's-3' }]);
     await fixture.whenStable();
     buttonByText(document.body, 'Выдать').click();
     const request = backend.expectOne('/api/teacher/homework/assignments/a-1/students');
@@ -456,16 +455,18 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
-  it('adds the students of a group who do not have the assignment yet and takes them off', async () => {
+  it('does not reassign students who already have the assignment', async () => {
     const { fixture, backend } = await render();
     const dialog = await openAssignMore(fixture, backend);
-    const picker = fixture.debugElement.query(By.directive(GroupPicker)).injector.get(GroupPicker);
-
-    picker.picked.emit(['s-1', 's-3', 's-9']);
-    expect(dialog.toAssign.value).toEqual(['s-3']);
-
-    picker.dropped.emit(['s-3']);
-    expect(dialog.toAssign.value).toEqual([]);
+    dialog.members.setValue([
+      { kind: 'STUDENT', id: 's-1' },
+      { kind: 'STUDENT', id: 's-3' },
+    ]);
+    await fixture.whenStable();
+    dialog.assign();
+    const request = backend.expectOne('/api/teacher/homework/assignments/a-1/students');
+    expect(request.request.body).toEqual({ studentIds: ['s-3'] });
+    request.flush(assignmentDetails());
     fixture.destroy();
   });
 

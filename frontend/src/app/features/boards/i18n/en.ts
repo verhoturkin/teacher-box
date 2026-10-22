@@ -92,6 +92,7 @@ export const en: Translation<typeof ru> = {
     titlePlaceholder: 'For example, Algebra',
     url: 'Board link',
     urlHint: 'Give access to the board by link, e.g. in Holst.',
+    members: 'Students and groups',
     students: 'Students',
     studentsPlaceholder: 'Who the board is open to',
     groups: 'Groups',

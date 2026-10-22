@@ -33,6 +33,19 @@ describe('createItems', () => {
     expect(labels('/teacher/materialsmith')).toEqual(usual);
   });
 
+  it('keeps the Materials member filter when creating a board from the rail', () => {
+    const board = (url: string) => createItems(url, write).find((item) => item.label === 'Доска');
+    expect(board('/teacher/materials?student=s-1&tab=textbooks')).toMatchObject({
+      queryParams: { student: 's-1', tab: 'boards', create: 'board' },
+    });
+    expect(board('/teacher/materials?group=g-1')).toMatchObject({
+      queryParams: { group: 'g-1', tab: 'boards', create: 'board' },
+    });
+    expect(board('/teacher/billing?student=s-1')).toMatchObject({
+      queryParams: { tab: 'boards', create: 'board' },
+    });
+  });
+
   it('leads each item to its section with ?create=<kind>, «Сообщение» opens over the page ', () => {
     const target = (item: FabMenuItem): unknown =>
       'link' in item ? [item.link, item.queryParams] : 'run';

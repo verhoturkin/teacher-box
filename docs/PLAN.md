@@ -59,11 +59,11 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   access. Preserve typed student/group IDs; support the selection cardinality required by each caller.
   Cover namesakes, duplicate membership, empty options, archived/unavailable values and prefilled
   values. Use existing PrimeNG controls and portal field/error conventions.
-- [ ] 258.2 **F** Replace paired fields in `boards/teacher/board-dialog.ts` and
+- [x] 258.2 **F** Replace paired fields in `boards/teacher/board-dialog.ts` and
   `textbooks/teacher/textbook-dialog.ts`. Preserve STUDENT/GROUP grants and dynamic group membership;
   keep create/edit validation and member prefill, including creation from a student's Materials route.
   Check the existing backlog item about the rail Create action losing `?student=` and resolve it here.
-- [ ] 258.3 **F** Adopt the picker in `homework/teacher/{assignment-editor-page,assign-more-dialog}.ts`
+- [x] 258.3 **F** Adopt the picker in `homework/teacher/{assignment-editor-page,assign-more-dialog}.ts`
   and `notifications/teacher/broadcast-dialog.ts`. These callers resolve groups into a snapshot of
   student IDs; keep deduplication, excluded/already-assigned recipients, scheduled delivery and existing
   validation. Keep each caller's empty-selection meaning (broadcast to all, save without assignment,
@@ -163,9 +163,6 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,
 homework and board lists by name) and the options of student / group selects.
-
-Shell after 0.21.0: on the boards page filtered by a student (`?student=`) the rail «Создать › Доска» drops the
-filter, so the new board's dialog no longer prefills that student (the header «Новая доска» did on desktop).
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 - Shared `tb-steps` and `tb-copy-field` components.

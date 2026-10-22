@@ -20,8 +20,7 @@ import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
-import { ChipColors } from '@features/identity/parts';
+import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
 import { describeError } from '@core/http/error-messages';
 import { formatFileSize } from '@shared/files/file-size';
@@ -57,8 +56,7 @@ export interface MemberOption {
     InputNumber,
     InputText,
     Message,
-    MultiSelect,
-    ChipColors,
+    MemberPicker,
     SelectButton,
     FieldErrors,
     SubmitFor,
@@ -154,39 +152,12 @@ export interface MemberOption {
           </div>
         }
         <div class="tb-field">
-          <label for="textbook-students">{{ t.students }}</label>
-          <p-multiselect
-            inputId="textbook-students"
-            formControlName="studentIds"
-            [options]="studentOptions()"
-            optionLabel="name"
-            optionValue="id"
-            [placeholder]="t.studentsPlaceholder"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="textbook-groups">{{ t.groups }}</label>
-          <p-multiselect
-            inputId="textbook-groups"
-            formControlName="groupIds"
-            [options]="groupOptions()"
-            optionLabel="name"
-            optionValue="id"
-            [placeholder]="t.groupsPlaceholder"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="group"
-            appendTo="body"
-            [fluid]="true"
+          <label for="textbook-members">{{ t.members }}</label>
+          <tb-member-picker
+            inputId="textbook-members"
+            formControlName="members"
+            [students]="studentOptions()"
+            [groups]="groupOptions()"
           />
         </div>
         @if (error(); as message) {
@@ -253,8 +224,7 @@ export class TextbookDialog {
     title: ['', [Validators.required, Validators.maxLength(200)]],
     course: ['', [Validators.maxLength(100)]],
     pageCount: new FormControl<number | null>(null, [Validators.min(1), Validators.max(10000)]),
-    studentIds: [[] as string[]],
-    groupIds: [[] as string[]],
+    members: [[] as MemberSelection[]],
   });
 
   /** A Word file: its pages are the teacher's number. */
@@ -280,8 +250,10 @@ export class TextbookDialog {
           title: textbook?.title ?? '',
           course: textbook?.course ?? '',
           pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
-          studentIds: textbook ? this.memberIds(textbook, 'STUDENT') : [],
-          groupIds: textbook ? this.memberIds(textbook, 'GROUP') : [],
+          members: (textbook?.members ?? []).map((member) => ({
+            kind: member.type,
+            id: member.id,
+          })),
         });
       }
     });
@@ -319,8 +291,12 @@ export class TextbookDialog {
       title: value.title.trim(),
       course: value.course.trim() === '' ? null : value.course.trim(),
       pageCount: this.document() ? value.pageCount : null,
-      studentIds: value.studentIds,
-      groupIds: value.groupIds,
+      studentIds: value.members
+        .filter((member) => member.kind === 'STUDENT')
+        .map((member) => member.id),
+      groupIds: value.members
+        .filter((member) => member.kind === 'GROUP')
+        .map((member) => member.id),
     };
     let request = textbook === null ? null : this.api.change(textbook, input);
     if (request === null && file !== null) {
@@ -342,10 +318,6 @@ export class TextbookDialog {
         this.error.set(describeError(error, T.dialog.failed));
       },
     });
-  }
-
-  private memberIds(textbook: Textbook, type: 'STUDENT' | 'GROUP'): string[] {
-    return textbook.members.filter((member) => member.type === type).map((member) => member.id);
   }
 
   private withMembers(options: readonly MemberOption[], type: 'STUDENT' | 'GROUP'): MemberOption[] {

@@ -12,9 +12,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { MultiSelect } from 'primeng/multiselect';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { ChipColors, GroupPicker, IdentityApi } from '@features/identity/parts';
+import {
+  MemberPicker,
+  MemberSelection,
+  StudentGroup,
+  memberRecipients,
+  IdentityApi,
+} from '@features/identity/parts';
 import { Busy } from '@shared/ui/busy';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -23,10 +28,10 @@ import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { StudentOption } from './assignment-editor-page';
 
-/** «Выдать ещё ученикам»: students and groups side by side; students who have the assignment are not offered. */
+/** «Выдать ещё ученикам»: one typed student/group selection; students who have the assignment are not offered. */
 @Component({
   selector: 'tb-assign-more-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, MultiSelect, ChipColors, GroupPicker, SubmitFor],
+  imports: [ReactiveFormsModule, Button, Dialog, MemberPicker, SubmitFor],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-dialog
@@ -38,28 +43,14 @@ import { StudentOption } from './assignment-editor-page';
     >
       <form id="assign-more-form" class="tb-assign" [formGroup]="form" (ngSubmit)="assign()">
         <div class="tb-field">
-          <label for="assign-students">{{ t.students }}</label>
-          <p-multiselect
+          <label for="assign-students">{{ t.members }}</label>
+          <tb-member-picker
             inputId="assign-students"
-            [options]="unassigned()"
-            [formControl]="toAssign"
-            optionLabel="displayName"
-            optionValue="id"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
+            [formControl]="members"
+            [students]="studentOptions()"
+            [groups]="groups()"
           />
         </div>
-        <tb-group-picker
-          inputId="assign-group"
-          [(selected)]="groups"
-          (picked)="addStudents($event)"
-          (dropped)="removeStudents($event)"
-        />
       </form>
       <ng-template #footer>
         <p-button
@@ -100,23 +91,29 @@ export class AssignMoreDialog {
   readonly saved = output<AssignmentDetails>();
 
   private readonly students = signal<StudentOption[]>([]);
-  readonly toAssign = new FormControl<string[]>([], { nonNullable: true });
+  readonly members = new FormControl<MemberSelection[]>([], { nonNullable: true });
   /** `ngSubmit` needs a form directive: without it «Выдать» would submit the page. */
-  protected readonly form = new FormGroup({ students: this.toAssign });
+  protected readonly form = new FormGroup({ members: this.members });
   /** The groups chosen. */
-  protected readonly groups = signal<readonly string[]>([]);
+  protected readonly groups = signal<StudentGroup[]>([]);
   protected readonly unassigned = computed(() => {
     const assigned = new Set(this.assigned());
     return this.students().filter((student) => !assigned.has(student.id));
   });
-  private readonly chosen = toSignal(this.toAssign.valueChanges, {
-    initialValue: this.toAssign.value,
+  protected readonly studentOptions = computed(() =>
+    this.unassigned().map((student) => ({ id: student.id, name: student.displayName })),
+  );
+  private readonly chosen = toSignal(this.members.valueChanges, {
+    initialValue: this.members.value,
   });
 
   /** Opens the dialog empty, with the current students. */
   open(): void {
-    this.toAssign.setValue([]);
+    this.members.setValue([]);
     this.groups.set([]);
+    this.identity.listGroups(quietContext()).subscribe((groups) => {
+      this.groups.set(groups.filter((group) => group.archivedAt === null));
+    });
     this.visible.set(true);
     this.identity.listStudents(quietContext()).subscribe((students) => {
       this.students.set(
@@ -127,22 +124,12 @@ export class AssignMoreDialog {
     });
   }
 
-  /** Adds the students of a chosen group who do not have the assignment yet. */
-  addStudents(ids: readonly string[]): void {
-    const available = new Set(this.unassigned().map((student) => student.id));
-    this.toAssign.setValue([
-      ...new Set([...this.toAssign.value, ...ids.filter((id) => available.has(id))]),
-    ]);
-  }
-
-  /** Takes off the students of a group taken off. */
-  removeStudents(ids: readonly string[]): void {
-    const gone = new Set(ids);
-    this.toAssign.setValue(this.toAssign.value.filter((id) => !gone.has(id)));
-  }
-
   assign(): void {
-    const studentIds = this.chosen();
+    const studentIds = memberRecipients(
+      this.chosen(),
+      this.groups(),
+      this.unassigned().map((student) => student.id),
+    );
     if (studentIds.length === 0) {
       this.visible.set(false);
       return;
