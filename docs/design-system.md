@@ -802,9 +802,10 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   button stays on the right, so the name keeps its width.
 - **Materials** (245.2–245.3, spec §10.1): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
   `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
-  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), `tb-search-field`,
-  `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»; for textbooks «Все · Учебники · Рабочие
-  тетради · Другое · Ученик или группа»), the sort menu «Сначала изменённые / По названию / Сначала новые», then the
+  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), full-width
+  `tb-search-field`, then a separate row of `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»;
+  for textbooks «Все · Учебники · Рабочие тетради · Другое · Ученик или группа») and the sort menu
+  «Сначала изменённые / По названию / Сначала новые» (0.29.0, our layout decision), then the
   feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
   between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
   `surface container low`, the preview on top (a board's PNG exported by the editor on save, a textbook's cover — the first page of a PDF, an image itself, none for a Word file (245.1): `tb-blob-image` fetches it with the

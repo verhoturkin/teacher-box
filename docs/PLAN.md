@@ -36,7 +36,7 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   `.tb-search__panel`) to the shared scrollbar styling in `styles.scss`. Match panes/dialogs in docked
   and full-screen search, keep the track clear of rounded corners, and retain keyboard scrolling and
   visible active results. Check light/dark themes and long result lists.
-- [ ] 257.2 **F** Make the Materials search span the available pane width like Students
+- [x] 257.2 **F** Make the Materials search span the available pane width like Students
   (`features/materials/{materials-page,my-materials-page}.ts`, `identity/students/students-page.ts`).
   Place filter chips and sorting below it; preserve query, sorting, member filters and tabs. Check
   teacher/student pages, narrow panes and clearing a query without a width jump.

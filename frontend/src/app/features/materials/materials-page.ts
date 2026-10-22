@@ -108,8 +108,8 @@ interface MemberOption {
             />
           }
 
+          <tb-search-field [formControl]="search" [label]="t.search" />
           <div class="tb-materials__bar">
-            <tb-search-field [formControl]="search" [label]="t.search" />
             <tb-filter-chips
               [label]="t.filters"
               [chips]="chips()"
@@ -190,25 +190,9 @@ interface MemberOption {
       margin-block-end: var(--tb-space-3);
     }
 
-    /* a phone: the search and the sort share a row, the chips wrap under them */
     @media (width < 37.5em) {
       .tb-materials__bar {
-        display: grid;
-        grid-template-columns: 1fr;
         gap: var(--tb-space-2);
-      }
-
-      .tb-materials__bar > tb-search-field {
-        inline-size: 100%;
-      }
-
-      .tb-materials__bar > tb-filter-chips {
-        grid-row: 2;
-        grid-column: 1 / -1;
-      }
-
-      .tb-materials__sort {
-        margin-inline-start: 0;
       }
     }
   `,
