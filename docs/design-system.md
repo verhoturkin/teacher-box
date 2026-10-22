@@ -644,7 +644,9 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - **Scrollbars** (0.24.1, *ours* — M3 publishes none): a pane is a clipped, rounded shell (`overflow: clip`) with the
   scrolling area `tb-pane__scroll` inside it, so the scrollbar never sticks out past a corner; the bar is thin, its
   track keeps 16 px from the corners and the thumb is a rounded outline-variant bar (dialogs and sheets the same,
-  Firefox gets `scrollbar-width: thin`).
+  Firefox gets `scrollbar-width: thin`). Global search results (`.tb-search__panel`) use this same
+  styling in docked and full-screen views (0.29.0); the full-screen results can shrink inside the fixed
+  viewport and scroll below the search bar. Scrollbar geometry remains a portal decision.
 
 - **Persistent pane headings** (0.28.0, ours): title, search and filters use `[tbPaneHeader]`; the common
   `.tb-pane__scroll` owns the scrollbar. The header keeps a fixed 16 px bottom gap (our decision),

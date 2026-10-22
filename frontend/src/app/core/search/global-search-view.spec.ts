@@ -114,6 +114,7 @@ describe('GlobalSearchView', () => {
     press(host, 'ArrowDown');
     await fixture.whenStable();
     expect(host.querySelectorAll('[role="option"]')[1]?.getAttribute('aria-selected')).toBe('true');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
     press(host, 'ArrowUp');
     press(host, 'ArrowUp');
     await fixture.whenStable();

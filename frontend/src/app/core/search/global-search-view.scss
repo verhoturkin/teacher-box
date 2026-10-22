@@ -220,6 +220,7 @@
 :host(.tb-search--full) .tb-search__panel {
   position: static;
   flex: 1;
+  min-height: 0;
   max-height: none;
   border-radius: 0;
   background: var(--p-md-surface);

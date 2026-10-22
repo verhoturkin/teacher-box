@@ -410,6 +410,7 @@ body {
 .tb-pane__scroll,
 .tb-notifications-pane,
 .tb-roster__scroll,
+.tb-search__panel,
 .p-dialog-content,
 .p-drawer-content {
   &::-webkit-scrollbar {
@@ -436,6 +437,7 @@ body {
   .tb-pane__scroll,
   .tb-notifications-pane,
   .tb-roster__scroll,
+  .tb-search__panel,
   .p-dialog-content,
   .p-drawer-content {
     scrollbar-color: var(--p-md-outline-variant) transparent;
