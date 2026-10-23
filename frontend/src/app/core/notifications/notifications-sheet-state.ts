@@ -1,4 +1,12 @@
-import { DestroyRef, Injectable, InjectionToken, Type, inject, signal } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable,
+  InjectionToken,
+  TemplateRef,
+  Type,
+  inject,
+  signal,
+} from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
@@ -26,6 +34,8 @@ export class NotificationsSheetState {
 
   readonly open = this.openState.asReadonly();
   readonly tab = signal<NotificationsTab>('inbox');
+  /** Inbox action projected into the frame without importing a feature into core. */
+  readonly headerAction = signal<TemplateRef<unknown> | null>(null);
 
   show(tab: NotificationsTab = this.tab()): void {
     this.tab.set(tab);

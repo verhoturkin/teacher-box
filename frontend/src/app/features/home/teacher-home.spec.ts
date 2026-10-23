@@ -152,7 +152,7 @@ describe('TeacherHome breakpoints', () => {
     [1700, 'tb-feed--3', true],
     [1300, 'tb-feed--2', true],
     [900, 'tb-feed--1', true],
-    [500, 'tb-feed--1', false],
+    [500, 'tb-feed--1', true],
   ])('at %i px the feed is %s (today list and week figures: %s)', async (width, cls, wide) => {
     const host = await render(width);
 
@@ -160,6 +160,7 @@ describe('TeacherHome breakpoints', () => {
     expect(host.querySelector('tb-today-lessons') !== null).toBe(wide);
     expect(host.querySelector('tb-week-figures') !== null).toBe(wide);
     expect(host.querySelector('tb-finance-widget')).not.toBeNull();
+    expect(host.querySelector('tb-page-header [meta]') !== null).toBe(width >= 600);
   });
 });
 

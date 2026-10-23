@@ -121,7 +121,6 @@ test('assignments are filtered by a connected group, with a search to clear', as
   await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
   await filters.getByRole('button', { name: /^Активные/ }).click();
 
-  await page.getByRole('button', { name: 'Поиск', exact: true }).click();
   const search = page.getByRole('searchbox', { name: 'Название или ученик' });
   await search.fill(STUDENT);
   await expect(page.getByRole('link', { name: ASSIGNMENT })).toBeVisible();

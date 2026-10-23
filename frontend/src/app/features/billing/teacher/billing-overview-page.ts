@@ -18,7 +18,6 @@ import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { locale } from '@core/i18n/language';
 import { injectMobile } from '@core/layout/mobile';
-import { compactBar } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
@@ -118,7 +117,10 @@ const NUMBER = new Intl.NumberFormat(locale());
         <div tbPaneHeader>
           <tb-page-header [title]="monthTitle()">
             <tb-help-button help topic="teacher/billing" />
-            @if (!mobile()) {
+            <div class="tb-ops-month-actions">
+              @if (mobile()) {
+                <span>{{ monthTitle() }}</span>
+              }
               <p-button
                 icon="tb-i tb-i-chevron_left"
                 [text]="true"
@@ -140,14 +142,14 @@ const NUMBER = new Intl.NumberFormat(locale());
               />
               <a
                 pButton
-                routerLink="report"
+                routerLink="/teacher/billing/report"
                 [queryParams]="{ month: month() }"
                 severity="secondary"
               >
                 <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
                 <span pButtonLabel>{{ t.report }}</span>
               </a>
-            }
+            </div>
             <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
             @if (mobile()) {
               <p-button
@@ -377,6 +379,13 @@ const NUMBER = new Intl.NumberFormat(locale());
     }
   `,
   styles: `
+    .tb-ops-month-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+    }
+
     /* the four figures of the month: tonal blocks of the list group's corner (ours); the debt is the error container */
     .tb-ops-figures {
       display: grid;
@@ -545,32 +554,20 @@ const NUMBER = new Intl.NumberFormat(locale());
       }
     }
 
-    /*
-     * A phone (spec §10.2, sketch): the figures are a strip that scrolls sideways to the edge of the screen, tiles
-     * of label and value; the chips stand in one row; the journal rows show the kind, then «name · day» under it, and
-     * the avatar alone leads. The section title and the student filter stay for the wider windows (ours).
-     */
+    /* Compact keeps all figures and filters visible; journal supporting text wraps inside the tile. */
     @media (width < 37.5em) {
       .tb-ops-figures {
-        display: flex;
-        gap: var(--tb-space-3);
-        margin: 0 calc(-1 * var(--tb-space-4)) var(--tb-space-4);
-        padding-inline: var(--tb-space-4);
-        overflow-x: auto;
-        scroll-padding-inline: var(--tb-space-4);
-        scroll-snap-type: x proximity;
-        scrollbar-width: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-block-end: var(--tb-space-4);
       }
 
       .tb-ops-figure {
-        flex: none;
-        min-inline-size: 9.5rem;
-        scroll-snap-align: start;
-        white-space: nowrap;
+        min-inline-size: 0;
       }
 
-      .tb-ops-figure__note {
-        display: none;
+      .tb-ops-figure .tb-figure__value {
+        font: var(--tb-type-headline-s);
+        overflow-wrap: anywhere;
       }
 
       .tb-ops__title,
@@ -578,16 +575,7 @@ const NUMBER = new Intl.NumberFormat(locale());
         display: none;
       }
 
-      .tb-ops__filters tb-filter-chips {
-        flex-wrap: nowrap;
-        margin: 0 calc(-1 * var(--tb-space-4));
-        padding-inline: var(--tb-space-4);
-        overflow-x: auto;
-        scrollbar-width: none;
-      }
-
       .tb-ops__filters {
-        flex-wrap: nowrap;
         inline-size: 100%;
       }
 
@@ -604,9 +592,8 @@ const NUMBER = new Intl.NumberFormat(locale());
       }
 
       .tb-ops__list .tb-list__supporting {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
 
       .tb-ops__who-compact {
@@ -645,12 +632,6 @@ export class BillingOverviewPage implements OnInit {
   protected readonly monthTitle = computed(() => {
     const label = monthLabel(this.month());
     return label.charAt(0).toUpperCase() + label.slice(1);
-  });
-  /** The title of the top app bar of a phone: the month, with the year only when it is not the current one. */
-  private readonly barTitle = computed(() => {
-    const [year] = this.month().split('-');
-    const name = this.monthTitle().split(' ')[0] ?? '';
-    return year === String(new Date().getFullYear()) ? name : `${name} ${year ?? ''}`;
   });
   protected readonly isCurrentMonth = computed(() => this.month() >= toIsoMonth(new Date()));
 
@@ -723,40 +704,6 @@ export class BillingOverviewPage implements OnInit {
   });
 
   constructor() {
-    // a phone: the top app bar says the month with «‹» and «⋮» (the next month, the report; spec §10.2)
-    compactBar(() =>
-      this.mobile()
-        ? {
-            title: this.barTitle(),
-            menuLabel: this.t.moreActions,
-            actions: [
-              {
-                icon: 'chevron_left',
-                label: this.t.previousMonth,
-                command: () => {
-                  this.shift(-1);
-                },
-              },
-            ],
-            menu: [
-              {
-                label: this.t.nextMonth,
-                icon: 'tb-i tb-i-chevron_right',
-                disabled: this.isCurrentMonth(),
-                command: () => {
-                  this.shift(1);
-                },
-              },
-              {
-                label: this.t.report,
-                icon: 'tb-i tb-i-download',
-                routerLink: 'report',
-                queryParams: { month: this.month() },
-              },
-            ],
-          }
-        : null,
-    );
     openOnCreate('payment', () => {
       this.openPayment();
     });

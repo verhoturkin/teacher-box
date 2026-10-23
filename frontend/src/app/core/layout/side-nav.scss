@@ -23,7 +23,7 @@
   scrollbar-width: thin;
 }
 
-/* ours: the logo in line with the icons, Title Medium, a long name wraps instead of being cut */
+/* ours: the logo in line with the icons, Title Large, a long name wraps instead of being cut */
 .tb-side-nav__brand {
   display: flex;
   flex: none;
@@ -33,7 +33,7 @@
   margin-bottom: var(--tb-space-2);
   padding: 0 var(--tb-space-4);
   color: var(--p-md-on-surface);
-  font: var(--tb-type-title-m);
+  font: var(--tb-type-title-l-emphasized);
   overflow-wrap: anywhere;
 
   tb-portal-logo {

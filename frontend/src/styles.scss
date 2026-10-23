@@ -3135,6 +3135,37 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
+/* Notifications: compact margins and top sheet corners are portal decisions using M3 shape tokens. */
+.p-drawer.tb-notifications-modal {
+  .p-card > .p-card-body {
+    padding: 0;
+  }
+
+  .p-drawer-header {
+    flex-wrap: nowrap;
+  }
+
+  .tb-notifications-modal__title {
+    flex: 1;
+    min-inline-size: 0;
+    font: var(--tb-type-title-l);
+  }
+
+  @media (width < 37.5em) {
+    top: var(--tb-space-2);
+    border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+    overflow: hidden;
+
+    .p-drawer-header {
+      padding-inline: var(--tb-space-4);
+    }
+
+    .p-drawer-content {
+      padding-inline: var(--tb-space-4);
+    }
+  }
+}
+
 /* The bell's sheet (redesign spec §10.3): M3 side sheet at most 400 dp */
 .p-drawer.tb-side-sheet--narrow {
   width: min(25rem, calc(100vw - 2 * var(--tb-space-4)));

@@ -135,7 +135,6 @@ test('the student’s homework is filtered to hand in, in review and done, with 
   await expect(filters.getByRole('button', { name: /^Сдать/ })).toBeVisible();
   await expect(filters.getByRole('button', { name: /^На проверке/ })).toBeVisible();
   await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Поиск', exact: true }).click();
   const search = page.getByRole('searchbox', { name: 'Название задания' });
   await search.fill(RUN);
   await expect(page.getByRole('link', { name: HOMEWORK })).toBeVisible();

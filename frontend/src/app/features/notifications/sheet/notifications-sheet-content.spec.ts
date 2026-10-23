@@ -77,12 +77,14 @@ describe('NotificationsSheetContent', () => {
     await fixture.whenStable();
 
     expect(state.tab()).toBe('sent');
+    expect(state.headerAction()).toBeNull();
     expect(tabs(host)[1]?.getAttribute('aria-selected')).toBe('true');
     expect(readableText(host)).toContain('Написать ученикам');
 
     state.tab.set('inbox');
     await fixture.whenStable();
     expect(tabs(host)[0]?.getAttribute('aria-selected')).toBe('true');
+    expect(state.headerAction()).not.toBeNull();
   });
 
   it('opens on the tab the sheet was asked for', async () => {
@@ -97,5 +99,10 @@ describe('NotificationsSheetContent', () => {
     expect(tabs(host)).toHaveLength(0);
     expect(host.querySelector('tb-inbox-panel')).not.toBeNull();
     expect(host.querySelector('tb-broadcasts-panel')).toBeNull();
+    expect(state.headerAction()).not.toBeNull();
+    expect(host.querySelector('.tb-notification__dot')).toBeNull();
+    expect(host.querySelector('button[aria-label="Прочитать все"]')).toBeNull();
+    fixture.destroy();
+    expect(state.headerAction()).toBeNull();
   });
 });

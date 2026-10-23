@@ -131,7 +131,9 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/students" />
               @if (state.ready()) {
-                <span meta class="tb-muted">{{ summary() }}</span>
+                @if (!mobile()) {
+                  <span meta class="tb-muted">{{ summary() }}</span>
+                }
               }
               <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
               @if (mobile()) {

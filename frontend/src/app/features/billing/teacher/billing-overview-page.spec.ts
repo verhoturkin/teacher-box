@@ -301,18 +301,19 @@ describe('BillingOverviewPage on a phone', () => {
     fixture.destroy();
   });
 
-  it('gives the top app bar the month, «‹» and «⋮» with the next month and the report', () => {
-    const bar = TestBed.inject(RailState).compactBar();
-
-    expect(bar?.title).toMatch(/^[А-ЯЁ][а-яё]+$/);
-    expect(bar?.actions.map((action) => action.label)).toEqual(['Предыдущий месяц']);
-    expect(bar?.menu.map((item) => item.label)).toEqual(['Следующий месяц', 'Отчёт за месяц']);
-    expect(bar?.menu[0]?.disabled).toBe(true);
-    expect(bar?.menu[1]?.queryParams).toEqual({ month: MONTH });
+  it('shows both month arrows and a report link directly in the page', () => {
+    const host = hostElement(fixture);
+    expect(TestBed.inject(RailState).compactBar()).toBeNull();
+    expect(buttonByText(host, 'Предыдущий месяц')).not.toBeNull();
+    expect(buttonByText(host, 'Следующий месяц').disabled).toBe(true);
+    const report = requireElement(host, 'a[href*="/teacher/billing/report"]', HTMLAnchorElement);
+    expect(report.getAttribute('href')).toContain('month=' + MONTH);
+    expect(host.querySelector('p-button.tb-page-fab')).not.toBeNull();
   });
 
-  it('moves to the previous month with «‹» of the top app bar', async () => {
-    TestBed.inject(RailState).compactBar()?.actions[0]?.command();
+  it('navigates months and updates the report month', async () => {
+    const host = hostElement(fixture);
+    buttonByText(host, 'Предыдущий месяц').click();
     const [year, month] = MONTH.split('-').map(Number);
     const previous = toIsoMonth(new Date(year ?? 0, (month ?? 1) - 2, 1));
     backend
@@ -322,22 +323,11 @@ describe('BillingOverviewPage on a phone', () => {
       .expectOne(matching('/api/teacher/billing/operations', { month: previous }))
       .flush(operations([], previous));
     await fixture.whenStable();
-
-    expect(TestBed.inject(RailState).compactBar()?.menu[0]?.disabled).toBe(false);
-  });
-
-  it('keeps the month actions and the supporting pane out of the page and shows the FAB', () => {
-    const host = hostElement(fixture);
-
-    expect(host.querySelector('button[aria-label="Предыдущий месяц"]')).toBeNull();
-    expect(host.querySelector('a[href*="report"]')).toBeNull();
-    expect(readableText(host)).not.toContain('По ученикам');
-    expect(host.querySelector('p-button.tb-page-fab')).not.toBeNull();
-  });
-
-  it('releases the top app bar when the page goes', () => {
-    fixture.destroy();
-
-    expect(TestBed.inject(RailState).compactBar()).toBeNull();
+    expect(buttonByText(host, 'Следующий месяц').disabled).toBe(false);
+    expect(
+      requireElement(host, 'a[href*="/teacher/billing/report"]', HTMLAnchorElement).getAttribute(
+        'href',
+      ),
+    ).toContain('month=' + previous);
   });
 });

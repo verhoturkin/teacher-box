@@ -132,26 +132,9 @@ import { T } from '../i18n/texts';
       }
     }
 
-    /* Our decision: use the teacher's horizontally scrolling figures on compact. */
-    @media (width < 37.5em) {
-      .tb-my-billing-figures {
-        display: flex;
-        margin-inline: calc(-1 * var(--tb-space-4));
-        padding-inline: var(--tb-space-4);
-        overflow-x: auto;
-        scroll-snap-type: x proximity;
-      }
-
-      .tb-my-billing-figure {
-        flex: 0 0 12rem;
-        scroll-snap-align: start;
-      }
-
-      .tb-my-billing-history__bar tb-filter-chips {
-        flex-wrap: nowrap;
-        max-inline-size: 100%;
-        overflow-x: auto;
-      }
+    .tb-my-billing-figure .tb-figure__value {
+      font: var(--tb-type-headline-s);
+      overflow-wrap: anywhere;
     }
   `,
 })

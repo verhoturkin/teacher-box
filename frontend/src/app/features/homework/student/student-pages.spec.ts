@@ -91,8 +91,7 @@ describe('MyHomeworkPage', () => {
     await fixture.whenStable();
 
     const host = hostElement(fixture);
-    host.querySelector<HTMLButtonElement>('button[aria-label="Поиск"]')?.click();
-    await fixture.whenStable();
+    expect(host.querySelector('button[aria-label="Поиск"]')).toBeNull();
     const search = host.querySelector<HTMLInputElement>('input[aria-label="Название задания"]');
     if (search === null) {
       throw new Error('no search');
@@ -106,7 +105,8 @@ describe('MyHomeworkPage', () => {
     await fixture.whenStable();
     expect(readableText(host)).toContain('Ничего не найдено');
 
-    host.querySelector<HTMLButtonElement>('button[aria-label="Скрыть поиск"]')?.click();
+    search.value = '';
+    search.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     buttonByText(host, 'Готовые').click();
     await fixture.whenStable();

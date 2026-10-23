@@ -13,10 +13,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Button } from 'primeng/button';
-import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
-import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -42,15 +39,13 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
 
 /**
  * Student: homework as a list-detail (redesign spec §9), like the teacher's: the list pane has the connected
- * group «Сдать · На проверке · Готовые» with the counts, one search under the filter button of the header and
+ * group «Сдать · На проверке · Готовые» with the counts, a persistent search above the list and
  * tonal rows on the pane's surface; the detail pane is the task with the answer form
  * (`/cabinet/homework/:taskId`). On one pane the route decides what is shown, «back» leads to the list.
  */
 @Component({
   selector: 'tb-my-homework-page',
   imports: [
-    Button,
-    ButtonAttributes,
     EmptyState,
     HelpButton,
     LoadStateView,
@@ -63,7 +58,6 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
     SearchField,
     SegmentGroup,
     TaskStatusTag,
-    Tooltip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -73,27 +67,11 @@ const FILTER_OF: Record<TaskStatus, Filter> = {
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="cabinet/homework" />
-              @if (tasks().length > 0) {
-                <p-button
-                  icon="tb-i tb-i-filter_list"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
-                  [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
-                  [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
-                  (onClick)="toggleSearch()"
-                />
-              }
             </tb-page-header>
-            @if (tasks().length > 0) {
-              <div class="tb-hw__filters">
-                <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
-                @if (searchOpen()) {
-                  <tb-search-field [formControl]="search" [label]="t.search" />
-                }
-              </div>
-            }
+            <div class="tb-hw__filters">
+              <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
+              <tb-search-field [formControl]="search" [label]="t.search" />
+            </div>
           </div>
 
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -195,7 +173,6 @@ export class MyHomeworkPage implements OnInit {
 
   protected readonly tasks = signal<MyTask[]>([]);
   protected readonly state = new LoadState();
-  protected readonly searchOpen = signal(false);
   protected readonly search = new FormControl('', { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
   protected readonly searching = computed(() => this.query().trim() !== '');
@@ -256,13 +233,6 @@ export class MyHomeworkPage implements OnInit {
     this.api.myTasks().subscribe((tasks) => {
       this.tasks.set(tasks);
     });
-  }
-
-  protected toggleSearch(): void {
-    if (this.searchOpen()) {
-      this.search.setValue('');
-    }
-    this.searchOpen.update((open) => !open);
   }
 
   /** «до 12.10.2026 18:00» or «без срока». */

@@ -113,7 +113,7 @@ export class ScheduleCalendar {
   readonly unmarked = input<readonly ScheduledLesson[]>([]);
   /**
    * A phone's own screen of the calendar (the teacher's «Неделя», «Месяц»): that view without the footer of
-   * views, which the «⋮» of the page replaces. Without it a phone shows the list with the footer.
+   * views, which the page’s screen chips replace. Without it a phone shows the list with the footer.
    */
   readonly phoneView = input<CalendarView | null>(null);
 

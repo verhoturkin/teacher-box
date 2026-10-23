@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  TemplateRef,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -31,7 +43,16 @@ interface InboxPart {
  */
 @Component({
   selector: 'tb-inbox-panel',
-  imports: [EmptyState, Button, Card, ButtonAttributes, LoadStateView, NotificationList, Tooltip],
+  imports: [
+    NgTemplateOutlet,
+    EmptyState,
+    Button,
+    Card,
+    ButtonAttributes,
+    LoadStateView,
+    NotificationList,
+    Tooltip,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -40,18 +61,9 @@ interface InboxPart {
           @if (part.items.length === 0) {
             <tb-empty-state icon="tb-i-notifications" [title]="t.nothing" />
           } @else {
-            <div class="tb-inbox-header">
-              <p-button
-                icon="tb-i tb-i-done_all"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.readAll"
-                [pTooltip]="t.readAll"
-                [loading]="busy.is('all')"
-                (onClick)="markAllRead()"
-              />
-            </div>
+            @if (!inSheet()) {
+              <div class="tb-inbox-header"><ng-container *ngTemplateOutlet="readAll" /></div>
+            }
             <tb-notification-list
               [label]="t.unreadList"
               [items]="part.items"
@@ -117,9 +129,25 @@ interface InboxPart {
         </div>
       </tb-load-state>
     </p-card>
+    <ng-template #readAll>
+      @if (unreadPart(); as part) {
+        @if (part.items.length > 0) {
+          <p-button
+            icon="tb-i tb-i-done_all"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [ariaLabel]="t.readAll"
+            [pTooltip]="t.readAll"
+            [loading]="busy.is('all')"
+            (onClick)="markAllRead()"
+          />
+        }
+      }
+    </ng-template>
   `,
   styles: `
-    /* «Прочитать все» is an icon button at the end of the row (the sketch puts it in the sheet's header) */
+    /* Standalone inbox fallback; in the bell sheet the action is projected into the header. */
     .tb-inbox-header {
       display: flex;
       justify-content: flex-end;
@@ -137,6 +165,23 @@ interface InboxPart {
   `,
 })
 export class InboxPanel implements OnInit {
+  readonly inSheet = input(false);
+  readonly headerActive = input(true);
+  private readonly sheet = inject(NotificationsSheetState);
+  private readonly readAll = viewChild<TemplateRef<unknown>>('readAll');
+
+  constructor() {
+    effect((onCleanup) => {
+      const action = this.readAll();
+      if (this.inSheet() && this.headerActive() && action) {
+        this.sheet.headerAction.set(action);
+        onCleanup(() => {
+          if (this.sheet.headerAction() === action) this.sheet.headerAction.set(null);
+        });
+      }
+    });
+  }
+
   protected readonly t = T.inbox;
   protected readonly busy = new Busy();
   private readonly api = inject(NotificationsApi);
