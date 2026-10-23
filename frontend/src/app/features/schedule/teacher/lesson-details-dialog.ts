@@ -18,6 +18,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
+import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
 import { Tooltip } from 'primeng/tooltip';
@@ -27,7 +28,12 @@ import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { Observable } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
-import { LessonOutcome, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  FollowingLessons,
+  RepeatScope,
+  LessonOutcome,
+  ScheduledLesson,
+} from '../data-access/schedule.models';
 import {
   ATTENDANCE_LABELS,
   STATUS_LABELS,
@@ -53,6 +59,7 @@ import { SHARED_T } from '@shared/i18n/texts';
   imports: [
     Avatar,
     FormsModule,
+    Select,
     Button,
     Checkbox,
     Dialog,
@@ -230,6 +237,29 @@ import { SHARED_T } from '@shared/i18n/texts';
       }
       <ng-template #footer>
         @if (lesson(); as lesson) {
+          @if ((cancelling() || deleting()) && lesson.seriesId) {
+            <div class="tb-field">
+              <label id="lesson-action-scope-label" for="lesson-action-scope">{{
+                repeatTexts.scope
+              }}</label>
+              <p-select
+                inputId="lesson-action-scope"
+                ariaLabelledBy="lesson-action-scope-label"
+                [ngModel]="scope()"
+                (ngModelChange)="chooseScope($event)"
+                [options]="scopes"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
+            @if (preview(); as affected) {
+              <p-message severity="info">{{
+                repeatTexts.affected(affected.affected.length, affected.protectedLessons.length)
+              }}</p-message>
+            }
+          }
           @if (deleting()) {
             <p-button
               [label]="c.cancel"
@@ -363,6 +393,30 @@ import { SHARED_T } from '@shared/i18n/texts';
 })
 export class LessonDetailsDialog {
   protected readonly c = SHARED_T.common;
+  protected readonly repeatTexts = T.lessonDialog;
+  protected readonly scope = signal<RepeatScope>('ONLY');
+  protected readonly preview = signal<FollowingLessons | null>(null);
+  protected readonly scopes = [
+    { value: 'ONLY', label: T.lessonDialog.onlyThis },
+    { value: 'FOLLOWING', label: T.lessonDialog.thisFollowing },
+  ];
+
+  protected chooseScope(scope: RepeatScope): void {
+    this.scope.set(scope);
+    this.preview.set(null);
+    const lesson = this.lesson();
+    if (scope === 'FOLLOWING' && lesson) {
+      this.api.following(lesson.id).subscribe({
+        next: (preview) => {
+          if (this.scope() === 'FOLLOWING' && this.lesson()?.id === lesson.id)
+            this.preview.set(preview);
+        },
+        error: (error: unknown) => {
+          this.error.set(describeError(error, T.lessonDialog.previewFailed));
+        },
+      });
+    }
+  }
   protected readonly t = T.details;
   protected readonly colors = inject(TeacherColors);
   private readonly api = inject(ScheduleApi);
@@ -451,6 +505,8 @@ export class LessonDetailsDialog {
   constructor() {
     effect(() => {
       if (this.visible()) {
+        this.scope.set('ONLY');
+        this.preview.set(null);
         this.cancelling.set(false);
         this.deleting.set(false);
         this.overlap.set(false);
@@ -499,32 +555,47 @@ export class LessonDetailsDialog {
   }
 
   cancel(): void {
+    if (this.scope() === 'FOLLOWING' && this.preview() === null) return;
     const reason = this.reason().trim();
     this.run((lesson) =>
       this.api.cancel(lesson.id, {
         reason: reason === '' ? null : reason,
         byStudent: this.byStudent(),
         charge: this.byStudent() && this.charge(),
+        scope: this.scope(),
+        version: lesson.version,
+        repeatVersion: this.preview()?.repeatVersion ?? lesson.repeatVersion,
       }),
     );
   }
 
   deleteLesson(): void {
     const lesson = this.lesson();
-    if (lesson === null || this.pending()) {
+    if (
+      lesson === null ||
+      this.pending() ||
+      (this.scope() === 'FOLLOWING' && this.preview() === null)
+    ) {
       return;
     }
     this.pending.set(true);
-    this.api.deleteLesson(lesson.id).subscribe({
-      next: () => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.deleted.emit(lesson.id);
-      },
-      error: () => {
-        this.pending.set(false);
-      },
-    });
+    this.api
+      .deleteLesson(
+        lesson.id,
+        this.scope(),
+        lesson.version,
+        this.preview()?.repeatVersion ?? lesson.repeatVersion,
+      )
+      .subscribe({
+        next: () => {
+          this.pending.set(false);
+          this.visible.set(false);
+          this.deleted.emit(lesson.id);
+        },
+        error: () => {
+          this.pending.set(false);
+        },
+      });
   }
 
   restore(allowOverlap = false): void {

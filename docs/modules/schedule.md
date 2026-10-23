@@ -1,18 +1,21 @@
 # schedule
 
-Lessons and weekly series (student or group), attendance, student reschedule/cancel requests, reminders,
+Lessons with optional weekly repetition (student or group), attendance, student reschedule/cancel requests, reminders,
 calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `shared`, `identity::api`,
 `meetings::api` (room links). Schema `schedule`. ADRs: [0008](../adr/0008-schedule.md),
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md).
 
 ## Rules
 
-- **Time:** a lesson stores its start as `Instant`; a series stores weekdays, local time and dates in
+- **Time:** a lesson stores its start as `Instant`; its repeat rule stores weekday, local time and dates in
   `TEACHERBOX_TIMEZONE` (DST does not shift lessons). The UI gets the zone from `GET /api/me/schedule/settings`.
-- **Series:** lessons are created ahead up to `TEACHERBOX_SCHEDULE_HORIZON` (84 days) and extended nightly
-  (`SeriesExtension`). A series never changes in place: a change from a date ends the old series the day before
-  and starts a new one; future lessons of the old one are removed except individually moved ones. Unique
-  `(series_id, series_date)`.
+- **Repetition:** Once or every 1–4 weeks, configured in the lesson form, with optional inclusive end date.
+  `OccurrenceGeneration` extends the 84-day rolling horizon (`TEACHERBOX_SCHEDULE_HORIZON`) nightly.
+  Only-this edits preserve the immutable original occurrence date and mark an exception. This-and-following
+  uses that original date as its boundary, ends the old rule and replaces untouched future occurrences.
+  Completed, charged, cancelled and individually edited lessons remain. Once keeps the selected lesson
+  and stops later repetition. Tombstones prevent deleted occurrences from regenerating. Unique
+  `(series_id, series_date)` remains an internal occurrence key; `repeat_rules` is generation metadata.
 - **Overlaps:** one teacher → any overlap is a conflict `409 schedule.overlap`; the UI asks and retries with
   `allowOverlap`.
 - **Participants** (`lesson_participants`): one for an individual lesson; a group series uses the current
@@ -44,19 +47,21 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 
 ## Contract (`schedule::api`)
 
-Events: `LessonScheduled`, `SeriesScheduled`, `SeriesStopped`, `LessonRescheduled`, `ScheduledLessonCancelled`,
+Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `LessonRescheduled`, `ScheduledLessonCancelled`,
 `LessonRestored`, `LessonDeleted`, `LessonStartingSoon`, `LessonChangeRequested`, `LessonChangeResolved`,
 `LessonCompleted`, `LessonCompletionRevoked`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
 Lesson events carry `groupId` and participants. Consumers: `billing` (completion), `notifications` (all).
+Repeat events aggregate notifications; generation itself does not notify per occurrence. Deprecated
+`SeriesScheduled`/`SeriesStopped` records and listeners only drain durable publications from older versions.
 
 ## Data
 
-`series`, `lessons`, `lesson_participants`, `change_requests`, `reminders_sent`, `feeds`, `off_times`,
+`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `reminders_sent`, `feeds`, `off_times`,
 `google_connection`, `google_events`, `google_oauth_states`.
 
 ## REST and bot
 
-`/api/teacher/schedule/**` (lessons, series, requests, unmarked, summary — besides today's counters it has
+`/api/teacher/schedule/**` (lessons, requests, unmarked, summary — besides today's counters it has
 `weekConducted` and `weekMissed`, lessons marked as held / missed in the current Monday–Sunday week of the instance
 time zone, for the Today page (239.1); `off-times`, `google`;
 `GET lessons?from&to` takes `studentId` — the student's lessons, group lessons included — or `groupId` for the
@@ -64,19 +69,23 @@ student card (237.1); both at once → `schedule.filter-invalid`, an unknown id 
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
 (student).
+Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
+and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
+discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone
+`/series` CRUD is removed. Student requests always concern one occurrence.
 
 ## Frontend
 
-`features/schedule/`: `teacher/` (calendar — FullCalendar, lesson dialog, series, off-time, requests),
+`features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
 `student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact agenda with week/day navigation and week/month switches, lesson bottom sheet), `ui/` (lesson actions), `home/` widgets,
 `schedule-labels.ts`. The teacher's time zone, `teacher/google-calendar-panel.ts` and `ui/calendar-feed-panel.ts` sit in
-the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson or series gets the default topic of the chosen student or group
+the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson gets the default topic of the chosen student or group
 (`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) unless the teacher typed a topic. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson
 waits at the new time with «Перенести» / «Отменить перенос» on its card; only «Перенести» sends the edit.
 
 ## Unified repetition contract (ADR-0049)
 
-Implementation target for 0.29.0: a lesson owns Once or 1–4-week repetition, with inclusive optional end date.
+Since 0.29.0 a lesson owns Once or 1–4-week repetition, with inclusive optional end date.
 Occurrence boundaries use immutable original dates, independently from actual moves. Following-scope edits
 continue the logical occurrence sequence while anchoring actual time to the edited lesson. Completed, charged
 and explicitly edited occurrences are protected; deleted occurrences cannot regenerate. Migration splits every

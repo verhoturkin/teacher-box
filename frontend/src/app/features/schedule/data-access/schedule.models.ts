@@ -9,6 +9,13 @@ export type Weekday =
 export type Attendance = 'EXPECTED' | 'ATTENDED' | 'MISSED' | 'EXCUSED';
 export type AttendanceMark = Exclude<Attendance, 'EXPECTED'>;
 
+export type RepeatScope = 'ONLY' | 'FOLLOWING';
+export interface FollowingLessons {
+  readonly repeatVersion: number | null;
+  readonly affected: readonly string[];
+  readonly protectedLessons: readonly string[];
+}
+
 /** Mirrors `RequestView` of the backend. */
 export interface ChangeRequest {
   readonly id: string;
@@ -56,6 +63,11 @@ export interface ScheduledLesson {
   /** Students of the lesson; a student sees only themselves. */
   readonly participants: readonly Participant[];
   readonly seriesId: string | null;
+  readonly version: number;
+  readonly repeatWeeks: number;
+  readonly repeatUntil: string | null;
+  readonly repeatVersion: number | null;
+  readonly occurrenceDate: string | null;
   readonly startsAt: string;
   readonly endsAt: string;
   readonly durationMinutes: number;
@@ -71,30 +83,6 @@ export interface ScheduledLesson {
   readonly originalStartsAt: string | null;
   /** Unanswered requests of the participants (a student sees only their own). */
   readonly pendingRequests: readonly ChangeRequest[];
-}
-
-/** Mirrors `SeriesView` of the backend: regular lessons with a student or with a group. */
-export interface LessonSeries {
-  readonly id: string;
-  readonly studentId: string | null;
-  readonly studentName: string | null;
-  readonly groupId: string | null;
-  readonly groupName: string | null;
-  readonly weekdays: Weekday[];
-  /** Local time in the instance time zone, `HH:mm:ss`. */
-  readonly startTime: string;
-  readonly durationMinutes: number;
-  readonly intervalWeeks: number;
-  readonly startsOn: string;
-  readonly endsOn: string | null;
-  readonly topic: string | null;
-  readonly meetingUrl: string | null;
-}
-
-export interface SeriesPlanned {
-  readonly series: LessonSeries;
-  /** Lessons created ahead. */
-  readonly lessons: number;
 }
 
 /** Mirrors `ScheduleSettings` of the backend. */
@@ -123,6 +111,11 @@ export interface PlanLessonRequest {
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
+  readonly repeatWeeks?: number;
+  readonly repeatUntil?: string | null;
+  readonly scope?: RepeatScope;
+  readonly version?: number;
+  readonly repeatVersion?: number | null;
 }
 
 export interface EditLessonRequest {
@@ -131,6 +124,11 @@ export interface EditLessonRequest {
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
+  readonly repeatWeeks?: number;
+  readonly repeatUntil?: string | null;
+  readonly scope?: RepeatScope;
+  readonly version?: number;
+  readonly repeatVersion?: number | null;
 }
 
 export interface CancelLessonRequest {
@@ -139,23 +137,9 @@ export interface CancelLessonRequest {
   readonly byStudent: boolean;
   /** Charge the cancellation as a missed lesson. */
   readonly charge: boolean;
-}
-
-/** Regular lessons with a student or with a group: exactly one of the two ids. */
-export interface SeriesRequest {
-  readonly studentId: string | null;
-  readonly groupId: string | null;
-  readonly weekdays: Weekday[];
-  /** `HH:mm` in the instance time zone. */
-  readonly startTime: string;
-  readonly durationMinutes: number;
-  readonly intervalWeeks: number;
-  /** First day; for a change — the day the new settings apply from. */
-  readonly startsOn: string;
-  readonly endsOn: string | null;
-  readonly topic: string | null;
-  readonly meetingUrl: string | null;
-  readonly allowOverlap: boolean;
+  readonly scope?: RepeatScope;
+  readonly version?: number;
+  readonly repeatVersion?: number | null;
 }
 
 export interface ApproveRequest {

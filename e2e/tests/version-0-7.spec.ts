@@ -151,10 +151,10 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await create(page, 'Доска');
   const dialog = page.getByRole('dialog', { name: 'Новая доска' });
   await page.locator('#board-title').fill(BOARD);
-  await page.locator('p-multiselect:has(#board-students)').click();
+  await page.locator('tb-member-picker:has(#board-members) p-multiselect').click();
   await page.getByRole('option', { name: VERA }).click();
   await page.keyboard.press('Escape');
-  await page.locator('p-multiselect:has(#board-groups)').click();
+  await page.locator('tb-member-picker:has(#board-members) p-multiselect').click();
   await page.getByRole('option', { name: GROUP }).click();
   await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();

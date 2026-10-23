@@ -15,7 +15,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
-3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
+3. **Plan lessons.** «Create» → «Lesson» → «Repeat»: once or every 1–4 weeks.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 On the «Today» page the «Getting started» list sits at the end of the «To do» card — only the steps not done yet stay in it, and the bar shows how many are done.
@@ -159,12 +159,12 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
     body: `
 ## Plan a lesson
 
-- **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
-- **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
+«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a topic and meeting link.
+«Repeat» offers Once, Every week, Every 2 weeks, Every 3 weeks and Every 4 weeks for new and existing lessons. The date determines the weekday; the repeat end date is optional. Lessons are generated 84 days ahead and extended daily.
 
-**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
-**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and the «Recurring» and «Time off» tabs. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month», «Recurring» and «Time off» are in the «⋮» menu.
+**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month» and «Time off» are in the «⋮» menu.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -177,7 +177,7 @@ Mark the time you do not work: «Schedule» → «Time off».
 - **Once** — from when to when, e.g. a holiday from Monday to Friday or a visit to the doctor.
 - **Every week** — days of the week and hours, e.g. lunch from 13:00 to 14:00 or a day off on Saturday (00:00–00:00 is the whole day). You can set from which date and until which it applies.
 
-Time off is hatched in the calendar, and listed in the «Time off» tab, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
+Time off is hatched in the calendar, and listed in the «Time off» section, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
 
 Students see this time as «Busy» and cannot ask to move a lesson to it. You can still put a lesson in your time off — the portal does not stop you.
 
@@ -193,6 +193,8 @@ A past lesson without a mark is outlined in red in the calendar; open it and mar
 
 - **Cancel** — the lesson stays in the schedule crossed out, the student gets a notification. A cancelled lesson can be **restored**: open it and click «Restore» — it is back in the schedule and the student gets a notification. If the time is already taken by another lesson, the portal asks.
 - **Delete** — the lesson disappears from the schedule, calendars and reports as if it never existed. Only a planned or cancelled lesson can be deleted; remove the mark of a held or missed one first. If the lesson was planned and has not passed yet, the student gets a cancellation notification.
+
+When editing, cancelling or deleting a repeating lesson choose «Only this lesson» or «This and following». The portal first shows affected existing lessons and protected exceptions. The boundary uses the original occurrence date, even after a move. Completed, charged, cancelled and individually changed occurrences remain; deleted occurrences do not regenerate.
 
 ## Students' requests
 
@@ -724,7 +726,7 @@ Open the lesson and click «Remove the mark» — the charge is undone.
 Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.
 
 **How to move all recurring lessons to another time?**
-«Schedule» → the «Recurring» tab → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.
+Open a lesson → «Edit» → «This and following», then change its date and time. To stop repeating choose «Once»: the selected lesson stays and untouched later occurrences disappear. Completed, charged and individually changed lessons remain.
 
 **Where to download all the data?**
 «Settings» → «Data» → «Backups» → «Back up now» → download the file.

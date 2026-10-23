@@ -27,7 +27,7 @@ public class LessonRepository {
 
     private static final String SELECT = """
             select id, group_id, series_id, series_date, starts_at, duration_minutes, topic, meeting_url, status,
-                   cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version
+                   cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed
             from schedule.lessons
             """;
     private static final String ORDER = " order by starts_at, id";
@@ -39,7 +39,7 @@ public class LessonRepository {
     private record Row(UUID id, @Nullable UUID groupId, @Nullable UUID seriesId, @Nullable LocalDate seriesDate,
             Instant startsAt, int durationMinutes, @Nullable String topic, @Nullable String meetingUrl,
             LessonStatus status, @Nullable CancelledBy cancelledBy, @Nullable String cancelReason,
-            @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version) {
+            @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged) {
     }
 
     private final JdbcClient jdbc;
@@ -80,7 +80,8 @@ public class LessonRepository {
     public void update(Lesson lesson) {
         int updated = jdbc.sql("""
                 update schedule.lessons
-                set starts_at = :startsAt, ends_at = :endsAt, duration_minutes = :duration, topic = :topic,
+                set series_id = :seriesId, series_date = :seriesDate, individually_changed = :individuallyChanged,
+                    starts_at = :startsAt, ends_at = :endsAt, duration_minutes = :duration, topic = :topic,
                     meeting_url = :meetingUrl, status = :status, cancelled_by = :cancelledBy,
                     cancel_reason = :cancelReason, original_starts_at = :originalStartsAt,
                     updated_at = :updatedAt, version = version + 1
@@ -88,6 +89,8 @@ public class LessonRepository {
                 """)
                 .param("id", lesson.id())
                 .param("version", lesson.version())
+                .param("seriesId", lesson.seriesId()).param("seriesDate", lesson.seriesDate())
+                .param("individuallyChanged", lesson.individuallyChanged())
                 .param("startsAt", lesson.startsAt())
                 .param("endsAt", lesson.endsAt())
                 .param("duration", lesson.durationMinutes())
@@ -109,6 +112,7 @@ public class LessonRepository {
 
     /** Deletes the lesson with its participants, requests and sent reminders. */
     public void delete(Lesson lesson) {
+        if (lesson.seriesId() != null && lesson.seriesDate() != null) suppress(lesson.seriesId(), lesson.seriesDate());
         int deleted = jdbc.sql("delete from schedule.lessons where id = :id and version = :version")
                 .param("id", lesson.id())
                 .param("version", lesson.version())
@@ -218,7 +222,7 @@ public class LessonRepository {
         List<UUID> ids = jdbc.sql("""
                 select id from schedule.lessons
                 where series_id = :seriesId and series_date >= :from and status = 'SCHEDULED'
-                  and original_starts_at is null
+                  and original_starts_at is null and individually_changed = false
                   and id not in (select lesson_id from schedule.lesson_participants where completion_id is not null)
                 """)
                 .param("seriesId", seriesId)
@@ -232,11 +236,24 @@ public class LessonRepository {
     }
 
     public boolean existsForSeriesDate(UUID seriesId, LocalDate date) {
-        return jdbc.sql("select count(*) from schedule.lessons where series_id = :seriesId and series_date = :date")
+        return jdbc.sql("""
+                select (select count(*) from schedule.lessons where series_id = :seriesId and series_date = :date)
+                     + (select count(*) from schedule.repeat_exceptions where rule_id = :seriesId and occurrence_date = :date)
+                """)
                 .param("seriesId", seriesId)
                 .param("date", date)
                 .query(Long.class)
                 .single() > 0;
+    }
+
+    public List<Lesson> repeatTail(UUID ruleId, LocalDate from) {
+        return load(jdbc.sql(SELECT + " where series_id = :id and series_date >= :from order by series_date, id")
+                .param("id", ruleId).param("from", from).query(LessonRepository::map).list());
+    }
+
+    public void suppress(UUID ruleId, LocalDate date) {
+        jdbc.sql("merge into schedule.repeat_exceptions(rule_id, occurrence_date) key(rule_id, occurrence_date) values (:id, :date)")
+                .param("id", ruleId).param("date", date).update();
     }
 
     /** Remembers the reminders sent for a lesson (one row per advance time in minutes). */
@@ -307,7 +324,7 @@ public class LessonRepository {
                 .map(row -> Lesson.restore(row.id(), row.groupId(), participants.getOrDefault(row.id(), List.of()),
                         row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.topic(),
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
-                        row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()))
+                        row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged()))
                 .toList();
     }
 
@@ -342,6 +359,6 @@ public class LessonRepository {
                 rs.getObject("original_starts_at", Instant.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
+                rs.getLong("version"), rs.getBoolean("individually_changed"));
     }
 }

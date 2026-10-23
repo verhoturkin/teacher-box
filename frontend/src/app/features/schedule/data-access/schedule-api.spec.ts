@@ -2,26 +2,11 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { ScheduleApi } from './schedule-api';
-import { SeriesRequest } from './schedule.models';
 import { testProviders } from '@testing/setup';
 
 describe('ScheduleApi', () => {
   let api: ScheduleApi;
   let backend: HttpTestingController;
-
-  const series: SeriesRequest = {
-    studentId: 's-1',
-    groupId: null,
-    weekdays: ['MONDAY'],
-    startTime: '18:00',
-    durationMinutes: 60,
-    intervalWeeks: 1,
-    startsOn: '2026-10-01',
-    endsOn: null,
-    topic: null,
-    meetingUrl: null,
-    allowOverlap: false,
-  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -80,27 +65,13 @@ describe('ScheduleApi', () => {
     expect(backend.expectOne('/api/teacher/schedule/unmarked').request.method).toBe('GET');
   });
 
-  it('calls the series and request endpoints', () => {
-    api.series().subscribe();
-    api.planSeries(series).subscribe();
-    api.changeSeries('sr-1', series).subscribe();
-    api.stopSeries('sr-1', '2026-10-05').subscribe();
+  it('calls the request endpoints', () => {
     api.pendingRequests().subscribe();
     api
       .approve('r-1', { startsAt: null, charge: true, answer: 'Ок', allowBusy: false })
       .subscribe();
     api.decline('r-2', 'Нет').subscribe();
 
-    expect(backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/series' })).toBeTruthy();
-    expect(
-      backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/series' }).request.body,
-    ).toEqual(series);
-    expect(
-      backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/series/sr-1' }),
-    ).toBeTruthy();
-    expect(backend.expectOne('/api/teacher/schedule/series/sr-1/stop').request.body).toEqual({
-      from: '2026-10-05',
-    });
     expect(backend.expectOne('/api/teacher/schedule/requests').request.method).toBe('GET');
     expect(backend.expectOne('/api/teacher/schedule/requests/r-1/approve').request.body).toEqual({
       startsAt: null,
@@ -111,6 +82,22 @@ describe('ScheduleApi', () => {
     expect(backend.expectOne('/api/teacher/schedule/requests/r-2/decline').request.body).toEqual({
       answer: 'Нет',
     });
+  });
+
+  it('previews and deletes following occurrences with concurrency versions', () => {
+    api.following('l-1').subscribe();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/following')
+      .flush({ repeatVersion: 3, affected: ['l-1'], protectedLessons: [] });
+    api.deleteLesson('l-1', 'FOLLOWING', 2, 3).subscribe();
+    const request = backend.expectOne(
+      (request) =>
+        request.method === 'DELETE' && request.url === '/api/teacher/schedule/lessons/l-1',
+    );
+    expect(request.request.params.get('scope')).toBe('FOLLOWING');
+    expect(request.request.params.get('version')).toBe('2');
+    expect(request.request.params.get('repeatVersion')).toBe('3');
+    request.flush(null);
   });
 
   it('calls the personal area endpoints', () => {

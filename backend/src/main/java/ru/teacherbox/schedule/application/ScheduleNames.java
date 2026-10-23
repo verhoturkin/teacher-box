@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.schedule.domain.Lesson;
-import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.schedule.domain.RepeatRule;
 
 /**
  * Names of the students and groups that lessons refer to and the students' photos (they live in identity),
@@ -59,7 +59,7 @@ public record ScheduleNames(Map<UUID, String> students, Map<UUID, String> groups
     }
 
     /** Who the series is with: the name of the group or of the student. */
-    public @Nullable String title(Series series) {
+    public @Nullable String title(RepeatRule series) {
         UUID studentId = series.studentId();
         return studentId == null ? group(series.groupId()) : student(studentId);
     }

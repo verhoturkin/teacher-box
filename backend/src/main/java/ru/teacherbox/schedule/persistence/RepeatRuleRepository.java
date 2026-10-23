@@ -16,30 +16,30 @@ import java.util.stream.Collectors;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.schedule.domain.RepeatRule;
 
 @Repository
-public class SeriesRepository {
+public class RepeatRuleRepository {
 
     private static final String SELECT = """
             select id, student_id, group_id, weekdays, start_time, duration_minutes, interval_weeks, starts_on,
-                   ends_on, topic, meeting_url, generated_until, created_at, updated_at, version
-            from schedule.series
+                   ends_on, topic, meeting_url, generated_until, created_at, updated_at, version, origin_date
+            from schedule.repeat_rules
             """;
 
     private final JdbcClient jdbc;
 
-    public SeriesRepository(JdbcClient jdbc) {
+    public RepeatRuleRepository(JdbcClient jdbc) {
         this.jdbc = jdbc;
     }
 
-    public void insert(Series series) {
+    public void insert(RepeatRule series) {
         jdbc.sql("""
-                insert into schedule.series (id, student_id, group_id, weekdays, start_time, duration_minutes,
+                insert into schedule.repeat_rules (id, student_id, group_id, weekdays, start_time, duration_minutes,
                     interval_weeks, starts_on, ends_on, topic, meeting_url, generated_until, created_at, updated_at,
-                    version)
+                    version, origin_date)
                 values (:id, :studentId, :groupId, :weekdays, :startTime, :duration, :interval, :startsOn, :endsOn,
-                    :topic, :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version)
+                    :topic, :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version, :originDate)
                 """)
                 .param("id", series.id())
                 .param("studentId", series.studentId())
@@ -56,13 +56,14 @@ public class SeriesRepository {
                 .param("createdAt", series.createdAt())
                 .param("updatedAt", series.updatedAt())
                 .param("version", series.version())
+                .param("originDate", series.originDate())
                 .update();
     }
 
     /** Persists the mutable part: the end date and how far lessons are generated. */
-    public void update(Series series) {
+    public void update(RepeatRule series) {
         int updated = jdbc.sql("""
-                update schedule.series
+                update schedule.repeat_rules
                 set ends_on = :endsOn, generated_until = :generatedUntil, updated_at = :updatedAt,
                     version = version + 1
                 where id = :id and version = :version
@@ -74,22 +75,27 @@ public class SeriesRepository {
                 .param("updatedAt", series.updatedAt())
                 .update();
         if (updated != 1) {
-            throw new OptimisticLockingFailureException("Series " + series.id() + " was modified");
+            throw new OptimisticLockingFailureException("RepeatRule " + series.id() + " was modified");
         }
         series.markSaved(series.version() + 1);
     }
 
-    public Optional<Series> findById(UUID id) {
+    public Optional<RepeatRule> findById(UUID id) {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(this::map).optional();
     }
 
-    /** Series with lessons on or after {@code date} (a series stopped before its start has none). */
-    public List<Series> findActive(LocalDate date) {
+    /** RepeatRule with lessons on or after {@code date} (a series stopped before its start has none). */
+    public List<RepeatRule> findActive(LocalDate date) {
         return jdbc.sql(SELECT + " where ends_on is null or (ends_on >= :date and ends_on >= starts_on)"
                         + " order by starts_on, id")
                 .param("date", date)
                 .query(this::map)
                 .list();
+    }
+
+    public List<LocalDate> suppressedFrom(UUID id, LocalDate from) {
+        return jdbc.sql("select occurrence_date from schedule.repeat_exceptions where rule_id = :id and occurrence_date >= :from")
+                .param("id", id).param("from", from).query(LocalDate.class).list();
     }
 
     private static String weekdays(List<DayOfWeek> days) {
@@ -102,8 +108,8 @@ public class SeriesRepository {
         return set;
     }
 
-    private Series map(ResultSet rs, int rowNum) throws SQLException {
-        return Series.restore(
+    private RepeatRule map(ResultSet rs, int rowNum) throws SQLException {
+        return RepeatRule.restore(
                 rs.getObject("id", UUID.class),
                 rs.getObject("student_id", UUID.class),
                 rs.getObject("group_id", UUID.class),
@@ -118,6 +124,6 @@ public class SeriesRepository {
                 rs.getObject("generated_until", LocalDate.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
+                rs.getLong("version")).continueFrom(rs.getObject("origin_date", LocalDate.class));
     }
 }

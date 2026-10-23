@@ -25,15 +25,14 @@ import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
-import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.RequestStatus;
-import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.schedule.domain.RepeatRule;
 import ru.teacherbox.schedule.persistence.ChangeRequestRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
-import ru.teacherbox.schedule.persistence.SeriesRepository;
+import ru.teacherbox.schedule.persistence.RepeatRuleRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.time.InstanceTimeZone;
@@ -53,14 +52,14 @@ public class ScheduleQueries {
     private static final int WEEK_DAYS = 7;
 
     private final LessonRepository lessons;
-    private final SeriesRepository series;
+    private final RepeatRuleRepository series;
     private final ChangeRequestRepository requests;
     private final ScheduleDirectory directory;
     private final ScheduleProperties properties;
     private final ZoneId zone;
     private final Clock clock;
 
-    public ScheduleQueries(LessonRepository lessons, SeriesRepository series, ChangeRequestRepository requests,
+    public ScheduleQueries(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
             ScheduleDirectory directory, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
         this.series = series;
@@ -128,13 +127,6 @@ public class ScheduleQueries {
         return requestViews(requests.findByStudent(studentId, STUDENT_REQUESTS));
     }
 
-    /** Series that have lessons today or later. */
-    public List<SeriesView> activeSeries() {
-        List<Series> active = series.findActive(LocalDate.ofInstant(clock.instant(), zone));
-        ScheduleNames names = directory.namesOfSeries(active);
-        return active.stream().map(item -> SeriesView.of(item, names)).toList();
-    }
-
     public ScheduleSummary summary() {
         Instant now = clock.instant();
         LocalDate today = LocalDate.ofInstant(now, zone);
@@ -192,7 +184,7 @@ public class ScheduleQueries {
         return found.stream()
                 .map(lesson -> LessonView.of(lesson, names, pending.getOrDefault(lesson.id(), List.of()).stream()
                         .map(request -> RequestView.of(request, lesson, names, late))
-                        .toList()))
+                        .toList(), lesson.seriesId() == null ? null : series.findById(lesson.seriesId()).orElse(null)))
                 .toList();
     }
 

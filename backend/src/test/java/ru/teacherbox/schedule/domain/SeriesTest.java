@@ -20,14 +20,26 @@ class SeriesTest {
     private static final Instant NOW = Instant.parse("2026-09-30T10:00:00Z");
     private static final LocalDate THURSDAY = LocalDate.of(2026, 10, 1);
 
-    private static Series series(Set<DayOfWeek> days, int interval, @Nullable LocalDate endsOn) {
-        return Series.create(UUID.randomUUID(), UUID.randomUUID(), null, days, LocalTime.of(18, 0, 30), 60, interval,
+    private static RepeatRule series(Set<DayOfWeek> days, int interval, @Nullable LocalDate endsOn) {
+        return RepeatRule.create(UUID.randomUUID(), UUID.randomUUID(), null, days, LocalTime.of(18, 0, 30), 60, interval,
                 THURSDAY, endsOn, null, null, NOW);
     }
 
     @Test
+    void continuesLogicalIdentityAcrossLargeMovesForEveryInterval() {
+        for (int weeks = 1; weeks <= 4; weeks++) {
+            LocalDate origin = THURSDAY.minusDays(70);
+            RepeatRule continued = series(Set.of(DayOfWeek.THURSDAY), weeks, null).continueFrom(origin);
+            assertThat(continued.datesBetween(THURSDAY, THURSDAY.plusWeeks(weeks * 2L)))
+                    .containsExactly(origin, origin.plusWeeks(weeks), origin.plusWeeks(weeks * 2L));
+            assertThat(continued.actualDate(origin.plusWeeks(weeks))).isEqualTo(THURSDAY.plusWeeks(weeks));
+            assertThat(continued.startOn(origin, ZoneId.of("UTC"))).isEqualTo(THURSDAY.atTime(18, 0).toInstant(java.time.ZoneOffset.UTC));
+        }
+    }
+
+    @Test
     void listsTheDaysOfTheSeries() {
-        Series weekly = series(Set.of(DayOfWeek.THURSDAY, DayOfWeek.MONDAY), 1, null);
+        RepeatRule weekly = series(Set.of(DayOfWeek.THURSDAY, DayOfWeek.MONDAY), 1, null);
 
         assertThat(weekly.datesBetween(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 12))).containsExactly(
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 8),
@@ -39,7 +51,7 @@ class SeriesTest {
 
     @Test
     void everyOtherWeekCountsFromTheFirstWeek() {
-        Series fortnightly = series(Set.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), 2, null);
+        RepeatRule fortnightly = series(Set.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), 2, null);
 
         assertThat(fortnightly.datesBetween(THURSDAY, LocalDate.of(2026, 10, 31))).containsExactly(
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 12), LocalDate.of(2026, 10, 15),
@@ -48,7 +60,7 @@ class SeriesTest {
 
     @Test
     void stopsAtTheEndDate() {
-        Series limited = series(Set.of(DayOfWeek.THURSDAY), 1, LocalDate.of(2026, 10, 15));
+        RepeatRule limited = series(Set.of(DayOfWeek.THURSDAY), 1, LocalDate.of(2026, 10, 15));
 
         assertThat(limited.datesBetween(THURSDAY, LocalDate.of(2026, 12, 31))).hasSize(3);
         assertThat(limited.continuesAfter(LocalDate.of(2026, 10, 14))).isTrue();
@@ -57,7 +69,7 @@ class SeriesTest {
 
     @Test
     void keepsTheLocalTimeAcrossDaylightSavingChanges() {
-        Series berlin = series(Set.of(DayOfWeek.THURSDAY), 1, null);
+        RepeatRule berlin = series(Set.of(DayOfWeek.THURSDAY), 1, null);
         ZoneId zone = ZoneId.of("Europe/Berlin");
 
         assertThat(berlin.startOn(LocalDate.of(2026, 10, 22), zone)).isEqualTo(Instant.parse("2026-10-22T16:00:00Z"));
@@ -66,7 +78,7 @@ class SeriesTest {
 
     @Test
     void endsBeforeADay() {
-        Series weekly = series(Set.of(DayOfWeek.THURSDAY), 1, null);
+        RepeatRule weekly = series(Set.of(DayOfWeek.THURSDAY), 1, null);
 
         assertThat(weekly.endBefore(LocalDate.of(2026, 10, 15), NOW)).isTrue();
         assertThat(weekly.endsOn()).isEqualTo(LocalDate.of(2026, 10, 14));
@@ -77,7 +89,7 @@ class SeriesTest {
 
     @Test
     void remembersHowFarLessonsAreCreated() {
-        Series weekly = series(Set.of(DayOfWeek.THURSDAY), 1, null);
+        RepeatRule weekly = series(Set.of(DayOfWeek.THURSDAY), 1, null);
 
         weekly.generatedThrough(LocalDate.of(2026, 12, 1), NOW);
         weekly.generatedThrough(LocalDate.of(2026, 11, 1), NOW);
@@ -96,7 +108,7 @@ class SeriesTest {
     @Test
     void restoresAndTracksVersions() {
         UUID group = UUID.randomUUID();
-        Series restored = Series.restore(UUID.randomUUID(), null, group, Set.of(DayOfWeek.FRIDAY),
+        RepeatRule restored = RepeatRule.restore(UUID.randomUUID(), null, group, Set.of(DayOfWeek.FRIDAY),
                 LocalTime.of(9, 0), 45, 1, THURSDAY, null, "Английский", "https://zoom.us/j/1", THURSDAY, NOW, NOW, 2);
 
         restored.markSaved(3);
@@ -106,7 +118,7 @@ class SeriesTest {
         assertThat(restored.groupId()).isEqualTo(group);
         assertThat(restored.sameOwner(null, group)).isTrue();
         assertThat(restored.sameOwner(group, null)).isFalse();
-        assertThatThrownBy(() -> Series.create(UUID.randomUUID(), null, null, Set.of(DayOfWeek.MONDAY),
+        assertThatThrownBy(() -> RepeatRule.create(UUID.randomUUID(), null, null, Set.of(DayOfWeek.MONDAY),
                 LocalTime.NOON, 60, 1, THURSDAY, null, null, null, NOW)).isInstanceOf(IllegalArgumentException.class);
         assertThat(restored.topic()).isEqualTo("Английский");
         assertThat(restored.meetingUrl()).isEqualTo("https://zoom.us/j/1");

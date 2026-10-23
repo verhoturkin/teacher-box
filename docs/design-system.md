@@ -92,7 +92,7 @@ component that shows one adds it to `PRIME`).
 | New lesson | `calendar_add_on` | `pi-calendar-plus` |
 | Lesson request waiting | `event_upcoming` | `pi-calendar-clock` |
 | Time, deadline soon | `schedule` | `pi-clock` |
-| Series of lessons, retry, return for rework, re-invite | `replay` | `pi-replay` |
+| Lesson repetition, retry, return for rework, re-invite | `replay` | `pi-replay` |
 | Off time | `dark_mode` | `pi-moon` (schedule) |
 | Homework, assignment | `assignment` | `pi-pen-to-square` |
 | Review | `rate_review` | `pi-check-square` |
@@ -156,7 +156,7 @@ component that shows one adds it to `PRIME`).
 | Delete | `delete` | `pi-trash` |
 | Close, remove, unbind | `close` | `pi-times` |
 | Cancel a lesson | `cancel` | `pi-times-circle` |
-| End a series | `stop_circle` | `pi-stop-circle` |
+| Stop following repeats | `stop_circle` | `pi-stop-circle` |
 | Undo, withdraw | `undo` | `pi-undo` |
 | Save | `save` | `pi-save` |
 | Done, chosen | `check` | `pi-check` |
@@ -487,13 +487,13 @@ This persistent-header placement is our product decision.
   pane (`FullCalendar`: week / month, toolbar with filter chips by owner and the time-zone chip «Часовой пояс
   портала»), the supporting pane beside it holds the mini-month (`ui/mini-month.ts`, M3 date picker, docked: weeks from
   Monday, a dot under a day with lessons, the shown day filled; *our decision:* no input — a click on a day only moves
-  the calendar), «Запросы учеников» and the tabs «Регулярные» / «Нерабочее время» (button «Регулярное занятие»).
+  the calendar), «Запросы учеников» and «Нерабочее время». The unified lesson form offers Repeat: Once / every 1–4 weeks, optional end date, and Only this / This and following. Bulk actions disclose affected and protected existing occurrences before submission; completed, charged and individually changed lessons are preserved.
   Lesson states in the grid (`styles.scss`): planned — filled, held / missed — tonal, cancelled — struck through;
   **unmarked** past lesson — a 2 px solid `error` outline (`tb-lesson--unmarked`); **requested change** — a 2 px dashed
   `outline` (`tb-lesson--request`, 3:1 to the card; it was `warning` before); off time — hatched. A lesson is
   marked from its dialog; the «Отметьте прошедшие занятия» card stays on a phone only.
   - Compact (240.3, `ui/schedule-agenda.ts`): the screens «Повестка» / «Неделя» / «Месяц» (a connected button group; the
-    «⋮» menu also leads to «Регулярные» and «Нерабочее время», each a screen of its own with a back arrow); the agenda is a
+    «⋮» menu also leads to «Нерабочее время», a screen of its own with a back arrow); the agenda is a
     week strip (seven days, ‹ ›, today and the chosen day marked) over the day's list; a row is one line (time, who,
     status tag), unmarked lessons sit in a group under the row with «Проведено» / «Пропуск», a jump chip «Не отмечено
     занятий: N» leads to them.
@@ -882,8 +882,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   the kind; the student's «Мои доски» the same (a card without boards is hidden). A tap anywhere on a row opens
   the board: the title is a `tb-list__link` whose `::before` covers the row (`tb-list__item--link` for the hover,
   the focus ring on the row), the «⋮» stays above it.
-- Recurring lessons and days off of the teacher's schedule (0.15.3) — trail «⋮» only («Изменить», «Завершить…» /
-  «Удалить…» red; one popup `p-menu` for both cards).
+- Days off of the teacher's schedule — trail «⋮» only («Изменить», «Удалить…» red).
+  Lesson repetition is edited in the lesson dialog (0.29.0).
 - Backups (0.9.1) — a `tb-list`: database icon; the date + «kind · size»; trail — «⋮» only («Восстановить…»,
   «Скачать», «Удалить…» red), so a row is one line on a phone.
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number

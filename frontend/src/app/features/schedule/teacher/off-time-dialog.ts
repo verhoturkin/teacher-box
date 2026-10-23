@@ -24,7 +24,7 @@ import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
-import { fromTime, toTime } from './series-dialog';
+import { fromTime, toTime } from './lesson-time';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';

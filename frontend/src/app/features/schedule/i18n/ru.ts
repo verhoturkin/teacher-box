@@ -152,6 +152,20 @@ export const ru = {
     failed: 'Не удалось сохранить отметки',
   },
   lessonDialog: {
+    repeat: 'Повтор',
+    repeatUntil: 'Повторять по дату',
+    scope: 'Применить к',
+    onlyThis: 'Только это занятие',
+    thisFollowing: 'Это и следующие',
+    repeatChoice: (weeks: number) =>
+      ['Один раз', 'Каждую неделю', 'Каждые 2 недели', 'Каждые 3 недели', 'Каждые 4 недели'][
+        weeks
+      ] ?? '',
+    previewFailed:
+      'Не удалось рассчитать затрагиваемые занятия. Выберите область действия повторно.',
+    affected: (count: number, protectedCount: number) =>
+      `Существующих занятий для изменения: ${String(count)}. Защищённых исключений, которые сохранятся: ${String(protectedCount)}.`,
+
     newLesson: 'Новое занятие',
     editLesson: 'Изменить занятие',
     with: 'С кем',
@@ -230,31 +244,7 @@ export const ru = {
     approve: 'Согласовать',
     failed: 'Не удалось ответить на запрос',
   },
-  series: {
-    newTitle: 'Регулярные занятия',
-    editTitle: 'Изменить регулярные занятия',
-    with: 'С кем',
-    chooseOwner: 'Выберите ученика или группу',
-    search: 'Поиск',
-    weekdays: 'Дни недели',
-    time: 'Время',
-    duration: 'Длительность, мин',
-    zone: (zone: string) => `Время указывается по часовому поясу портала: ${zone}.`,
-    repeat: 'Повтор',
-    every: 'Каждую неделю',
-    every2: 'Раз в 2 недели',
-    every3: 'Раз в 3 недели',
-    every4: 'Раз в 4 недели',
-    fromDate: 'С даты',
-    changeFrom: 'Изменить с даты',
-    toDate: 'По дату (необязательно)',
-    topic: 'Тема',
-    url: 'Ссылка на онлайн-урок',
-    urlInvalid: 'Ссылка должна начинаться с http:// или https://',
-    overlap: 'Некоторые занятия пересекаются с уже запланированными.',
-    saveAnyway: 'Всё равно сохранить',
-    failed: 'Не удалось сохранить расписание',
-  },
+
   google: {
     title: 'Google Календарь',
     connectedResult: 'Google Календарь подключён. Занятия появятся в нём в течение минуты.',
@@ -326,7 +316,6 @@ export const ru = {
     missedLabel: 'Пропуск',
     markLesson: (name: string) => `Отметить занятие: ${name}`,
     whatLessons: 'занятия',
-    series: 'Регулярные занятия',
     add: 'Добавить',
     addSeries: 'Добавить регулярные занятия',
     whatSeries: 'регулярные занятия',
@@ -348,11 +337,10 @@ export const ru = {
     attendanceSaved: 'Посещаемость сохранена',
     answered: 'Ответ отправлен',
     calendarPane: 'Календарь',
-    sidePane: 'Запросы и повторы',
+    sidePane: 'Запросы и нерабочее время',
     filters: 'Фильтр календаря',
     allOwners: 'Все',
     zoneChip: (portal: string) => `Часовой пояс портала: ${portal}`,
-    regular: 'Регулярные',
     addRegular: 'Регулярное занятие',
     localTime: (browser: string, portal: string) =>
       `Время показано по часовому поясу этого устройства (${browser}), расписание портала — ${portal}.`,

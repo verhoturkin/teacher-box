@@ -7,6 +7,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 
 ## Rules
 
+- **Lesson repetition (0.29.0):** `LessonRepeatScheduled` and `LessonRepeatStopped` aggregate notices;
+  nightly occurrence generation sends none. Legacy `SeriesScheduled`/`SeriesStopped` listeners remain only
+  to replay durable publications from an older release. Billing still consumes individual lesson outcomes.
+
 - Listens to domain events of other modules (producers don't know it) and turns each into an **inbox** record
   plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — templates in
   the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries

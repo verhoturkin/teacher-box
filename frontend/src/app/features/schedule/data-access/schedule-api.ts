@@ -13,17 +13,16 @@ import {
   EditLessonRequest,
   GoogleCalendarStatus,
   LessonOutcome,
-  LessonSeries,
   MyScheduleSummary,
   OffTime,
   OffTimePeriod,
   OffTimeRequest,
   PlanLessonRequest,
+  FollowingLessons,
+  RepeatScope,
   ScheduleSettings,
   ScheduleSummary,
   ScheduledLesson,
-  SeriesPlanned,
-  SeriesRequest,
 } from './schedule.models';
 
 /** Requests whose errors the dialog (e.g. an overlap) or the page (a failed load, ADR-0025) shows itself. */
@@ -75,9 +74,27 @@ export class ScheduleApi {
     );
   }
 
+  following(lessonId: string): Observable<FollowingLessons> {
+    return this.http.get<FollowingLessons>(
+      `/api/teacher/schedule/lessons/${lessonId}/following`,
+      QUIET,
+    );
+  }
+
   /** Deletes a lesson that was not held (planned, or cancelled without a charge). */
-  deleteLesson(lessonId: string): Observable<void> {
-    return this.http.delete(`/api/teacher/schedule/lessons/${lessonId}`).pipe(map(() => undefined));
+  deleteLesson(
+    lessonId: string,
+    scope: RepeatScope = 'ONLY',
+    version?: number,
+    repeatVersion?: number | null,
+  ): Observable<void> {
+    let params = new HttpParams();
+    if (scope === 'FOLLOWING') params = params.set('scope', scope);
+    if (version !== undefined) params = params.set('version', version);
+    if (repeatVersion != null) params = params.set('repeatVersion', repeatVersion);
+    return this.http
+      .delete(`/api/teacher/schedule/lessons/${lessonId}`, { params })
+      .pipe(map(() => undefined));
   }
 
   /** Puts a cancelled lesson back; an overlap with another lesson is reported unless allowed. */
@@ -112,23 +129,6 @@ export class ScheduleApi {
   /** Lessons that have ended without a marked outcome. */
   unmarked(): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked', QUIET);
-  }
-
-  series(): Observable<LessonSeries[]> {
-    return this.http.get<LessonSeries[]>('/api/teacher/schedule/series', QUIET);
-  }
-
-  planSeries(request: SeriesRequest): Observable<SeriesPlanned> {
-    return this.http.post<SeriesPlanned>('/api/teacher/schedule/series', request, QUIET);
-  }
-
-  changeSeries(seriesId: string, request: SeriesRequest): Observable<SeriesPlanned> {
-    return this.http.put<SeriesPlanned>(`/api/teacher/schedule/series/${seriesId}`, request, QUIET);
-  }
-
-  /** Ends a series before `from`; its lessons from that day on are removed. */
-  stopSeries(seriesId: string, from: string): Observable<unknown> {
-    return this.http.post(`/api/teacher/schedule/series/${seriesId}/stop`, { from });
   }
 
   pendingRequests(): Observable<ChangeRequest[]> {

@@ -96,29 +96,29 @@ product decisions, not M3-prescribed values. Use the `m3-expressive` skill for a
   occurrences. Define occurrence identity, timezone/DST behavior, generation horizon, exceptions,
   concurrency and recurrence boundaries. Preserve every existing repeat interval and its phase during
   migration, including 3/4-week repeats; never truncate rules to existing generated lessons.
-- [ ] 260.2 **B** Add contract/domain tests, then implement lesson-owned repeat rules through
+- [x] 260.2 **B** Add contract/domain tests, then implement lesson-owned repeat rules through
   `TeacherScheduleController`, `ScheduleService`, `ScheduleViews` and `LessonRepository`. Replace
   `SeriesExtension` with idempotent occurrence generation. Cover the phase of all 1–4-week intervals, end dates,
   conflicts, non-working time, group/student access, optimistic locking and duplicate prevention.
   Preserve the current rolling generation horizon unless the ADR justifies a change.
-- [ ] 260.3 **B** Add a new Flyway migration from `Series`/`SeriesRepository` storage. Split old
+- [x] 260.3 **B** Add a new Flyway migration from `Series`/`SeriesRepository` storage. Split old
   multi-weekday rules into lesson-owned rules per weekday without changing the original weekly phase.
   Preserve existing lesson UUIDs, UTC/local timing, participants, statuses, original occurrence dates,
   individual moves, completion IDs, student requests and integration references. Preserve rules with no
   upcoming generated lessons and historical/ended rules. Test representative old databases, migrate
   reset SPI/constraints, and remove obsolete storage only after all consumers are converted.
-- [ ] 260.4 **B/F** Define and implement change/cancel/delete scopes from a lesson: Only this lesson or
+- [x] 260.4 **B/F** Define and implement change/cancel/delete scopes from a lesson: Only this lesson or
   This and following. Use original occurrence dates to determine the boundary even for moved lessons.
   A one-off edit is an exception; deleted/cancelled occurrences must not regenerate. Switching the
   following scope to Once keeps the selected lesson and stops later repeats. Preserve completed,
   charged and individually modified lessons; disclose the affected set before a bulk action.
-- [ ] 260.5 **F** Add Repeat to `schedule/teacher/lesson-dialog.ts` and repeat/scope actions to
+- [x] 260.5 **F** Add Repeat to `schedule/teacher/lesson-dialog.ts` and repeat/scope actions to
   `lesson-details-dialog.ts`. Remove `series-dialog.ts`, Regular tabs/screens/buttons in
   `schedule-page.ts`, standalone series models/API methods and quick-create entries. Convert calendar,
   student-profile and compact flows to the same lesson form. Move `fromTime`/`toTime` helpers out of
   the removed dialog for the non-working-time dialog. Offer Once / Every week / Every 2 weeks /
   Every 3 weeks / Every 4 weeks; cover all five choices and bulk scopes.
-- [ ] 260.6 **B** Convert `SeriesScheduled`/`SeriesStopped` consumers through `schedule::api`; verify
+- [x] 260.6 **B** Convert `SeriesScheduled`/`SeriesStopped` consumers through `schedule::api`; verify
   notifications, reminder rescheduling, student requests, archived groups, ICS and Google Calendar.
   Keep billing driven by individual lesson outcomes and preserve `completionId` idempotency. Automatic
   generation must not flood recipients; mass changes must remove stale external events without

@@ -48,6 +48,8 @@ The teacher gets the request and answers — the answer comes as a notification,
 
 If you cancel late, the teacher may charge the lesson as missed.
 
+Repeating lessons appear as individual occurrences. Your move or cancellation request concerns only the selected lesson.
+
 ## Group lessons
 
 If you cannot come to a group lesson, click «I won’t come». If you said so in advance, the teacher knows at once that you will not be there, and the lesson is not charged.

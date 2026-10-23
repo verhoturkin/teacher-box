@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,7 +15,6 @@ import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.meetings.api.MeetingRooms;
 import ru.teacherbox.schedule.domain.Lesson;
-import ru.teacherbox.schedule.domain.Series;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.i18n.Language;
 
@@ -53,12 +51,7 @@ public class ScheduleDirectory {
         return owners.isEmpty() ? names : names.withRooms(rooms.links(owners));
     }
 
-    /** Names for the students and groups of the series. */
-    public ScheduleNames namesOfSeries(Collection<Series> series) {
-        return names(series.stream().map(Series::studentId).filter(Objects::nonNull).collect(Collectors.toSet()),
-                series.stream().map(Series::groupId).filter(Objects::nonNull).collect(Collectors.toSet()));
-    }
-
+    /** Names for the given students and groups. */
     public ScheduleNames names(Collection<UUID> studentIds, Collection<UUID> groupIds) {
         List<StudentSummary> students = users.findStudents(Set.copyOf(studentIds));
         Map<UUID, String> avatars = new HashMap<>();

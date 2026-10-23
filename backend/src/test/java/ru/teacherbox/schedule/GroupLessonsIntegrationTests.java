@@ -31,8 +31,8 @@ import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
-import ru.teacherbox.schedule.api.SeriesScheduled;
-import ru.teacherbox.schedule.api.SeriesStopped;
+import ru.teacherbox.schedule.api.LessonRepeatScheduled;
+import ru.teacherbox.schedule.api.LessonRepeatStopped;
 import ru.teacherbox.schedule.application.LessonReminders;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -156,26 +156,21 @@ class GroupLessonsIntegrationTests {
         UUID group = groups.addGroup("Английский", anna);
         LocalDate first = LocalDate.ofInstant(clock.instant(), MOSCOW).plusDays(15);
 
-        MvcTestResult result = post("/api/teacher/schedule/series", """
-                {"groupId":"%s","weekdays":["%s"],"startTime":"06:00","startsOn":"%s","allowOverlap":true}
-                """.formatted(group, first.getDayOfWeek(), first));
+        MvcTestResult result = post("/api/teacher/schedule/lessons", """
+                {"groupId":"%s","startsAt":"%s","repeatWeeks":1,"allowOverlap":true}
+                """.formatted(group, first.atTime(6, 0).atZone(MOSCOW).toInstant()));
 
         assertThat(result).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
-            assertThat(json).extractingPath("$.series.groupName").isEqualTo("Английский");
-            assertThat(json).extractingPath("$.series.studentId").isNull();
-            assertThat(json).extractingPath("$.lessons").isEqualTo(2);
+            assertThat(json).extractingPath("$.groupName").isEqualTo("Английский");
+            assertThat(json).extractingPath("$.studentId").isNull();
+            assertThat(json).extractingPath("$.repeatWeeks").isEqualTo(1);
         });
-        assertThat(events).contains(SeriesScheduled.class)
-                .matching(SeriesScheduled::groupId, group)
-                .matching(SeriesScheduled::studentIds, List.of(anna));
-        String seriesId = JsonPath.read(body(result), "$.series.id");
-        assertThat(lessonsOfGroup(group)).allSatisfy(lesson -> assertThat(lesson.studentIds()).containsExactly(anna));
+        assertThat(events).contains(LessonRepeatScheduled.class)
+                .matching(LessonRepeatScheduled::groupId, group)
+                .matching(LessonRepeatScheduled::studentIds, List.of(anna));
+        assertThat(lessonsOfGroup(group)).hasSize(2)
+                .allSatisfy(lesson -> assertThat(lesson.studentIds()).containsExactly(anna));
 
-        assertThat(put("/api/teacher/schedule/series/" + seriesId, """
-                {"studentId":"%s","weekdays":["MONDAY"],"startTime":"06:00","startsOn":"%s","allowOverlap":true}
-                """.formatted(anna, first)))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("schedule.series-student-fixed");
     }
 
     @Test
@@ -323,13 +318,13 @@ class GroupLessonsIntegrationTests {
         UUID anna = directory.addStudent("Анна");
         UUID group = groups.addGroup("Летний лагерь", anna);
         LocalDate first = LocalDate.ofInstant(clock.instant(), MOSCOW).plusDays(16);
-        assertThat(post("/api/teacher/schedule/series", """
-                {"groupId":"%s","weekdays":["%s"],"startTime":"05:00","startsOn":"%s","allowOverlap":true}
-                """.formatted(group, first.getDayOfWeek(), first))).hasStatus(HttpStatus.CREATED);
+        assertThat(post("/api/teacher/schedule/lessons", """
+                {"groupId":"%s","startsAt":"%s","repeatWeeks":1,"allowOverlap":true}
+                """.formatted(group, first.atTime(5, 0).atZone(MOSCOW).toInstant()))).hasStatus(HttpStatus.CREATED);
         UUID single = UUID.fromString(id(post("/api/teacher/schedule/lessons", groupLesson(group, Slots.next(clock)))));
 
         scenario.publish(new GroupArchived(group, Instant.now()))
-                .andWaitForEventOfType(SeriesStopped.class)
+                .andWaitForEventOfType(LessonRepeatStopped.class)
                 .matching(event -> group.equals(event.groupId()))
                 .toArriveAndVerify(event -> assertThat(event.studentIds()).containsExactly(anna));
 

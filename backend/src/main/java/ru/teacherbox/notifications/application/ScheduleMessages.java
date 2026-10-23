@@ -17,12 +17,12 @@ enum ScheduleMessages {
         @Override String unknownStudent() { return "Ученик"; }
         @Override String topic(String topic) { return "Тема: " + topic; }
         @Override String newLesson(String when) { return "Новое занятие: " + when; }
-        @Override String series(String weekly) { return "Регулярные занятия " + weekly; }
+        @Override String series(String weekly) { return "Занятия с повтором " + weekly; }
         @Override String seriesDates(String from, @Nullable String to) { return "С " + from + (to == null ? "" : " по " + to); }
         @Override String everyWeeks(int weeks) {
             return ", раз в " + weeks + " " + Plural.russian(weeks, "неделю", "недели", "недель");
         }
-        @Override String seriesStopped() { return "Регулярные занятия завершены"; }
+        @Override String seriesStopped() { return "Занятия с повтором завершены"; }
         @Override String seriesStoppedFrom(String from) { return "Занятия по расписанию с " + from + " отменены."; }
         @Override String moved(String when) { return "Занятие перенесено на " + when; }
         @Override String was(String when) { return "Было: " + when + "."; }
@@ -68,10 +68,10 @@ enum ScheduleMessages {
         @Override String unknownStudent() { return "A student"; }
         @Override String topic(String topic) { return "Topic: " + topic; }
         @Override String newLesson(String when) { return "New lesson: " + when; }
-        @Override String series(String weekly) { return "Regular lessons " + weekly; }
+        @Override String series(String weekly) { return "Repeating lessons " + weekly; }
         @Override String seriesDates(String from, @Nullable String to) { return "From " + from + (to == null ? "" : " to " + to); }
         @Override String everyWeeks(int weeks) { return ", every " + weeks + " weeks"; }
-        @Override String seriesStopped() { return "Regular lessons ended"; }
+        @Override String seriesStopped() { return "Repeating lessons ended"; }
         @Override String seriesStoppedFrom(String from) { return "Scheduled lessons from " + from + " are cancelled."; }
         @Override String moved(String when) { return "Lesson moved to " + when; }
         @Override String was(String when) { return "Was: " + when + "."; }

@@ -12,7 +12,6 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
-import { Tabs, Tab, TabList, TabPanel, TabPanels } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
@@ -26,19 +25,16 @@ import {
   BusyTime,
   ChangeRequest,
   LessonOutcome,
-  LessonSeries,
   OffTime,
   OffTimePeriod,
   ScheduleSettings,
   ScheduledLesson,
-  SeriesPlanned,
 } from '../data-access/schedule.models';
 import {
   browserTimeZone,
   formatLessonStart,
   formatLessonTime,
   formatOffTime,
-  formatWeekly,
   lessonWith,
   requestKindLabel,
   widen,
@@ -56,7 +52,6 @@ import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
 import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
-import { SeriesDialog } from './series-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
 import { TeacherColors } from '@features/identity/parts';
@@ -77,15 +72,14 @@ import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /** A phone's screens: the agenda by default, the others from «⋮» of the top bar (spec §7). */
-type PhoneScreen = 'agenda' | 'week' | 'month' | 'regular' | 'offTime';
+type PhoneScreen = 'agenda' | 'week' | 'month' | 'offTime';
 
-const SCREENS: readonly PhoneScreen[] = ['agenda', 'week', 'month', 'regular', 'offTime'];
+const SCREENS: readonly PhoneScreen[] = ['agenda', 'week', 'month', 'offTime'];
 
 const SCREEN_TITLES: Record<PhoneScreen, () => string> = {
   agenda: () => T.page.screenAgenda,
   week: () => T.page.screenWeek,
   month: () => T.page.screenMonth,
-  regular: () => T.page.series,
   offTime: () => T.page.offTime,
 };
 
@@ -93,7 +87,6 @@ const SCREEN_ICONS: Record<PhoneScreen, string> = {
   agenda: 'tb-i tb-i-view_agenda',
   week: 'tb-i tb-i-calendar_view_week',
   month: 'tb-i tb-i-calendar_month',
-  regular: 'tb-i tb-i-replay',
   offTime: 'tb-i tb-i-dark_mode',
 };
 
@@ -119,11 +112,6 @@ const ALL_DAY_START_HOUR = 10;
     Card,
     ConfirmDialog,
     Menu,
-    Tabs,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
     Tag,
     Panes,
     Pane,
@@ -136,7 +124,6 @@ const ALL_DAY_START_HOUR = 10;
     RequestAnswerDialog,
     ScheduleAgenda,
     ScheduleCalendar,
-    SeriesDialog,
     Tooltip,
     PageHeader,
     EmptyState,
@@ -288,130 +275,63 @@ const ALL_DAY_START_HOUR = 10;
           }
 
           @if (!mobile() || tabsScreen()) {
-            <p-tabs class="tb-tabs" [(value)]="sideTab">
-              @if (!mobile()) {
-                <p-tablist>
-                  <p-tab value="regular"
-                    ><span class="tb-tab-label">{{ t.regular }}</span></p-tab
-                  >
-                  <p-tab value="offTime"
-                    ><span class="tb-tab-label">{{ t.offTime }}</span></p-tab
-                  >
-                </p-tablist>
-              }
-              <p-tabpanels>
-                <p-tabpanel value="regular">
-                  <tb-load-state
-                    [state]="seriesState"
-                    [what]="t.whatSeries"
-                    [compact]="true"
-                    (retry)="loadSeries()"
-                  >
-                    @if (series().length === 0) {
-                      <tb-empty-state
-                        icon="tb-i-replay"
-                        [title]="t.noSeriesTitle"
-                        [hint]="t.noSeriesHint"
-                      />
-                    } @else {
-                      <ul class="tb-list tb-list--no-phone-lead">
-                        @for (item of series(); track item.id) {
-                          <li>
-                            <span class="tb-list__lead" aria-hidden="true"
-                              ><i class="tb-i tb-i-replay"></i
-                            ></span>
-                            <div class="tb-list__text">
-                              <span class="tb-list__title">{{ with(item) }}</span>
-                              <span class="tb-list__supporting">{{ weekly(item) }}</span>
-                            </div>
-                            <div class="tb-list__trail tb-list__trail--icons">
-                              <p-button
-                                icon="tb-i tb-i-more_vert"
-                                [text]="true"
-                                [rounded]="true"
-                                severity="secondary"
-                                [pTooltip]="t.actions(with(item))"
-                                [ariaLabel]="t.actions(with(item))"
-                                [tbAttributes]="{
-                                  'aria-haspopup': 'menu',
-                                  'aria-expanded': menuFor() === item.id ? 'true' : 'false',
-                                }"
-                                (onClick)="openMenu(item.id, seriesMenu(item), $event)"
-                              />
-                            </div>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </tb-load-state>
+            <section class="tb-schedule-section">
+              <h2 class="tb-schedule-section__title">{{ t.offTime }}</h2>
 
-                  <p-button
-                    class="tb-schedule-side__add"
-                    [label]="t.addRegular"
-                    icon="tb-i tb-i-add"
-                    severity="secondary"
-                    [fluid]="true"
-                    [ariaLabel]="t.addSeries"
-                    (onClick)="newSeries()"
+              <tb-load-state
+                [state]="offTimesState"
+                [what]="t.whatOffTime"
+                [compact]="true"
+                (retry)="loadOffTimes()"
+              >
+                @if (offTimes().length === 0) {
+                  <tb-empty-state
+                    icon="tb-i-dark_mode"
+                    [title]="t.noOffTimeTitle"
+                    [hint]="t.noOffTimeHint"
                   />
-                </p-tabpanel>
-                <p-tabpanel value="offTime">
-                  <tb-load-state
-                    [state]="offTimesState"
-                    [what]="t.whatOffTime"
-                    [compact]="true"
-                    (retry)="loadOffTimes()"
-                  >
-                    @if (offTimes().length === 0) {
-                      <tb-empty-state
-                        icon="tb-i-dark_mode"
-                        [title]="t.noOffTimeTitle"
-                        [hint]="t.noOffTimeHint"
-                      />
-                    } @else {
-                      <ul class="tb-list tb-list--no-phone-lead">
-                        @for (item of offTimes(); track item.id) {
-                          <li>
-                            <span class="tb-list__lead" aria-hidden="true"
-                              ><i class="tb-i tb-i-dark_mode"></i
-                            ></span>
-                            <div class="tb-list__text">
-                              <span class="tb-list__title">{{ item.note ?? t.notWorking }}</span>
-                              <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
-                            </div>
-                            <div class="tb-list__trail tb-list__trail--icons">
-                              <p-button
-                                icon="tb-i tb-i-more_vert"
-                                [text]="true"
-                                [rounded]="true"
-                                severity="secondary"
-                                [pTooltip]="t.actions(offTimeText(item))"
-                                [ariaLabel]="t.actions(offTimeText(item))"
-                                [tbAttributes]="{
-                                  'aria-haspopup': 'menu',
-                                  'aria-expanded': menuFor() === item.id ? 'true' : 'false',
-                                }"
-                                (onClick)="openMenu(item.id, offTimeMenu(item), $event)"
-                              />
-                            </div>
-                          </li>
-                        }
-                      </ul>
+                } @else {
+                  <ul class="tb-list tb-list--no-phone-lead">
+                    @for (item of offTimes(); track item.id) {
+                      <li>
+                        <span class="tb-list__lead" aria-hidden="true"
+                          ><i class="tb-i tb-i-dark_mode"></i
+                        ></span>
+                        <div class="tb-list__text">
+                          <span class="tb-list__title">{{ item.note ?? t.notWorking }}</span>
+                          <span class="tb-list__supporting">{{ offTimeText(item) }}</span>
+                        </div>
+                        <div class="tb-list__trail tb-list__trail--icons">
+                          <p-button
+                            icon="tb-i tb-i-more_vert"
+                            [text]="true"
+                            [rounded]="true"
+                            severity="secondary"
+                            [pTooltip]="t.actions(offTimeText(item))"
+                            [ariaLabel]="t.actions(offTimeText(item))"
+                            [tbAttributes]="{
+                              'aria-haspopup': 'menu',
+                              'aria-expanded': menuFor() === item.id ? 'true' : 'false',
+                            }"
+                            (onClick)="openMenu(item.id, offTimeMenu(item), $event)"
+                          />
+                        </div>
+                      </li>
                     }
-                  </tb-load-state>
+                  </ul>
+                }
+              </tb-load-state>
 
-                  <p-button
-                    class="tb-schedule-side__add"
-                    [label]="t.add"
-                    icon="tb-i tb-i-add"
-                    severity="secondary"
-                    [fluid]="true"
-                    [ariaLabel]="t.addOffTime"
-                    (onClick)="newOffTime()"
-                  />
-                </p-tabpanel>
-              </p-tabpanels>
-            </p-tabs>
+              <p-button
+                class="tb-schedule-side__add"
+                [label]="t.add"
+                icon="tb-i tb-i-add"
+                severity="secondary"
+                [fluid]="true"
+                [ariaLabel]="t.addOffTime"
+                (onClick)="newOffTime()"
+              />
+            </section>
           }
         </tb-pane>
       }
@@ -448,15 +368,7 @@ const ALL_DAY_START_HOUR = 10;
       [lesson]="selected()"
       (saved)="done(t.attendanceSaved)"
     />
-    <tb-series-dialog
-      [(visible)]="seriesDialogVisible"
-      [students]="students()"
-      [groups]="groups()"
-      [series]="editingSeries()"
-      [defaultDuration]="defaultDuration()"
-      [timeZone]="settings()?.timeZone ?? null"
-      (saved)="onSeriesSaved($event)"
-    />
+
     <tb-off-time-dialog
       [(visible)]="offTimeDialogVisible"
       [offTime]="editingOffTime()"
@@ -543,7 +455,6 @@ export class SchedulePage implements OnInit {
   protected readonly lessons = signal<ScheduledLesson[]>([]);
   protected readonly requests = signal<ChangeRequest[]>([]);
   protected readonly unmarked = signal<ScheduledLesson[]>([]);
-  protected readonly series = signal<LessonSeries[]>([]);
   protected readonly busy = signal<BusyTime[]>([]);
   protected readonly offTimes = signal<OffTime[]>([]);
   protected readonly offTimePeriods = signal<OffTimePeriod[]>([]);
@@ -574,7 +485,6 @@ export class SchedulePage implements OnInit {
   protected readonly lessonDays = computed(
     () => new Set(this.lessons().map((lesson) => toIsoDate(new Date(lesson.startsAt)))),
   );
-  protected readonly sideTab = signal<string | number>('regular');
   protected readonly localTimeHint = computed(() => {
     const zone = this.settings()?.timeZone;
     return zone === undefined || zone === browserTimeZone()
@@ -593,8 +503,6 @@ export class SchedulePage implements OnInit {
   protected readonly detailsVisible = signal(false);
   protected readonly attendanceVisible = signal(false);
   protected readonly selected = signal<ScheduledLesson | null>(null);
-  protected readonly seriesDialogVisible = signal(false);
-  protected readonly editingSeries = signal<LessonSeries | null>(null);
   protected readonly offTimeDialogVisible = signal(false);
   protected readonly editingOffTime = signal<OffTime | null>(null);
   protected readonly answerVisible = signal(false);
@@ -609,9 +517,7 @@ export class SchedulePage implements OnInit {
   protected readonly calendarScreen = computed(
     () => !this.mobile() || ['agenda', 'week', 'month'].includes(this.screen()),
   );
-  protected readonly tabsScreen = computed(
-    () => this.screen() === 'regular' || this.screen() === 'offTime',
-  );
+  protected readonly tabsScreen = computed(() => this.screen() === 'offTime');
   protected readonly sideShown = computed(
     () =>
       !this.mobile() ||
@@ -648,7 +554,6 @@ export class SchedulePage implements OnInit {
 
   protected readonly calendarState = new LoadState();
   protected readonly attentionState = new LoadState();
-  protected readonly seriesState = new LoadState();
   protected readonly offTimesState = new LoadState();
 
   private range: CalendarRange | null = null;
@@ -788,9 +693,7 @@ export class SchedulePage implements OnInit {
       this.calendarStart.set(this.agendaDay());
     }
     this.screen.set(screen);
-    if (screen === 'regular' || screen === 'offTime') {
-      this.sideTab.set(screen === 'regular' ? 'regular' : 'offTime');
-    } else if (screen === 'agenda') {
+    if (screen === 'agenda') {
       this.selectDay(this.agendaDay(), true);
     }
   }
@@ -808,27 +711,6 @@ export class SchedulePage implements OnInit {
     this.menuFor.set(id);
     this.menuItems.set(items);
     this.menu().toggle(event);
-  }
-
-  /** «Изменить» and «Завершить…» of recurring lessons. */
-  protected seriesMenu(series: LessonSeries): MenuItem[] {
-    return [
-      {
-        label: T.page.editItem,
-        icon: 'tb-i tb-i-edit',
-        command: () => {
-          this.editSeries(series);
-        },
-      },
-      {
-        label: T.page.stopItem,
-        icon: 'tb-i tb-i-stop_circle',
-        styleClass: 'tb-menu-item--danger',
-        command: () => {
-          this.stopSeries(series);
-        },
-      },
-    ];
   }
 
   /** «Изменить» and «Удалить…» of a day off. */
@@ -855,36 +737,6 @@ export class SchedulePage implements OnInit {
   answer(request: ChangeRequest): void {
     this.answering.set(request);
     this.answerVisible.set(true);
-  }
-
-  newSeries(): void {
-    this.editingSeries.set(null);
-    this.seriesDialogVisible.set(true);
-  }
-
-  editSeries(series: LessonSeries): void {
-    this.editingSeries.set(series);
-    this.seriesDialogVisible.set(true);
-  }
-
-  onSeriesSaved(planned: SeriesPlanned): void {
-    this.snackbar.success(T.page.seriesSaved(planned.lessons));
-    this.reload();
-  }
-
-  stopSeries(series: LessonSeries): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
-        header: T.page.stopHeader,
-        message: T.page.stopMessage(this.weekly(series)),
-        acceptLabel: T.page.stop,
-        accept: () => {
-          this.api.stopSeries(series.id, toIsoDate(new Date())).subscribe(() => {
-            this.reload();
-          });
-        },
-      }),
-    );
   }
 
   newOffTime(): void {
@@ -929,10 +781,6 @@ export class SchedulePage implements OnInit {
 
   protected time(lesson: ScheduledLesson): string {
     return formatLessonTime(lesson.startsAt, lesson.endsAt);
-  }
-
-  protected weekly(series: LessonSeries): string {
-    return formatWeekly(series.weekdays, series.startTime);
   }
 
   private confirmOverlap(move: LessonMove): void {
@@ -1014,18 +862,8 @@ export class SchedulePage implements OnInit {
       });
   }
 
-  protected loadSeries(): void {
-    this.api
-      .series()
-      .pipe(this.seriesState.track())
-      .subscribe((series) => {
-        this.series.set(series);
-      });
-  }
-
   private loadSidePanels(): void {
     this.loadOffTimes();
     this.loadAttention();
-    this.loadSeries();
   }
 }

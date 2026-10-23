@@ -13,7 +13,6 @@ import { aGroup } from '@testing/identity-fixtures';
 import {
   changeRequest,
   groupLesson,
-  lessonSeries,
   scheduleSettings,
   scheduledLesson,
 } from '@testing/schedule-fixtures';
@@ -76,8 +75,6 @@ describe('SchedulePage on a phone', () => {
           request.flush([changeRequest({ late: true })]);
         } else if (url === '/api/teacher/schedule/unmarked') {
           request.flush(unmarked);
-        } else if (url === '/api/teacher/schedule/series') {
-          request.flush([lessonSeries()]);
         } else if (url === '/api/teacher/schedule/google') {
           request.flush({ status: 'NOT_CONNECTED', busyEnabled: false });
         } else if (url === '/api/teacher/schedule/lessons') {
@@ -214,15 +211,9 @@ describe('SchedulePage on a phone', () => {
     expect(host.querySelector('.tb-page-title')?.textContent.trim()).toBe('Расписание');
   });
 
-  it('opens the recurring lessons and the off time as screens without tabs', async () => {
+  it('opens time off as a screen without standalone recurring lessons', async () => {
     const host = await render();
     expect(readableText(host)).toContain('Запросы учеников');
-
-    await pickScreen('Регулярные занятия');
-    expect(host.querySelector('.p-tablist')).toBeNull();
-    expect(host.querySelector('tb-schedule-agenda')).toBeNull();
-    expect(readableText(host)).toContain('Регулярное занятие');
-    expect(readableText(host)).not.toContain('Запросы учеников');
 
     await pickScreen('Нерабочее время');
     expect(readableText(host)).toContain('Нерабочее время не отмечено');

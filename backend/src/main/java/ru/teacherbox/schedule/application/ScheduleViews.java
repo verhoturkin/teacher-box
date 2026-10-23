@@ -17,7 +17,7 @@ import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.OffTime;
 import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.schedule.domain.RequestStatus;
-import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.schedule.domain.RepeatRule;
 
 /** Read models of the schedule API. */
 public final class ScheduleViews {
@@ -68,9 +68,16 @@ public final class ScheduleViews {
             @Nullable CancelledBy cancelledBy,
             @Nullable String cancelReason,
             @Nullable Instant originalStartsAt,
-            List<RequestView> pendingRequests) {
+            List<RequestView> pendingRequests,
+            long version,
+            int repeatWeeks,
+            @Nullable LocalDate repeatUntil,
+            @Nullable Long repeatVersion,
+            @Nullable LocalDate occurrenceDate) {
 
-        static LessonView of(Lesson lesson, ScheduleNames names, List<RequestView> pendingRequests) {
+        static LessonView of(Lesson lesson, ScheduleNames names, List<RequestView> pendingRequests, @Nullable RepeatRule rule) {
+            if (rule != null && rule.endsOn() != null && lesson.seriesDate() != null
+                    && rule.actualDate(lesson.seriesDate()).isAfter(rule.endsOn())) rule = null;
             UUID studentId = lesson.isGroup() ? null : lesson.studentId();
             return new LessonView(lesson.id(), studentId, studentId == null ? null : names.student(studentId),
                     names.avatar(studentId), lesson.groupId(), names.group(lesson.groupId()),
@@ -78,7 +85,9 @@ public final class ScheduleViews {
                     lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.topic(),
                     lesson.meetingUrl(), names.joinUrl(lesson), lesson.status(), lesson.cancelledBy(),
                     lesson.cancelReason(),
-                    lesson.originalStartsAt(), List.copyOf(pendingRequests));
+                    lesson.originalStartsAt(), List.copyOf(pendingRequests), lesson.version(),
+                    rule == null ? 0 : rule.intervalWeeks(), rule == null ? null : rule.endsOn(),
+                    rule == null ? null : rule.version(), lesson.seriesDate());
         }
 
         /** What a participant sees: their own attendance and requests, not those of classmates. */
@@ -87,7 +96,8 @@ public final class ScheduleViews {
                     participants.stream().filter(participant -> participant.studentId().equals(participantId)).toList(),
                     seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy,
                     cancelReason, originalStartsAt,
-                    pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList());
+                    pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList(),
+                    version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate);
         }
     }
 
@@ -122,35 +132,6 @@ public final class ScheduleViews {
                     isLate(request.kind(), lesson.startsAt(), request.createdAt(), lateCancellation),
                     request.resolutionComment(), request.createdAt(), request.resolvedAt());
         }
-    }
-
-    /** A series with one student ({@code studentId}) or with a group ({@code groupId}). */
-    public record SeriesView(
-            UUID id,
-            @Nullable UUID studentId,
-            @Nullable String studentName,
-            @Nullable UUID groupId,
-            @Nullable String groupName,
-            List<DayOfWeek> weekdays,
-            LocalTime startTime,
-            int durationMinutes,
-            int intervalWeeks,
-            LocalDate startsOn,
-            @Nullable LocalDate endsOn,
-            @Nullable String topic,
-            @Nullable String meetingUrl) {
-
-        static SeriesView of(Series series, ScheduleNames names) {
-            UUID studentId = series.studentId();
-            return new SeriesView(series.id(), studentId, studentId == null ? null : names.student(studentId),
-                    series.groupId(), names.group(series.groupId()), series.weekdays(), series.startTime(),
-                    series.durationMinutes(), series.intervalWeeks(), series.startsOn(), series.endsOn(),
-                    series.topic(), series.meetingUrl());
-        }
-    }
-
-    /** @param lessons number of lessons created ahead */
-    public record SeriesPlanned(SeriesView series, int lessons) {
     }
 
     /**

@@ -189,16 +189,16 @@ class GoogleCalendarIntegrationTests {
     void removesEventsOfDeletedLessons() throws UnsupportedEncodingException {
         connect();
         UUID student = directory.addStudent("Серия");
-        String body = post("/api/teacher/schedule/series", """
-                {"studentId":"%s","weekdays":["%s"],"startTime":"06:15","startsOn":"%s","allowOverlap":true}
-                """.formatted(student, java.time.LocalDate.now(clock).plusDays(3).getDayOfWeek(),
-                java.time.LocalDate.now(clock).plusDays(3))).getResponse().getContentAsString();
-        String seriesId = com.jayway.jsonpath.JsonPath.read(body, "$.series.id");
+        String body = post("/api/teacher/schedule/lessons", """
+                {"studentId":"%s","startsAt":"%s","repeatWeeks":1,"allowOverlap":true}
+                """.formatted(student, java.time.LocalDate.now(clock).plusDays(3).atTime(6, 15)
+                        .atZone(java.time.ZoneId.of("Europe/Moscow")).toInstant())).getResponse().getContentAsString();
+        String lessonId = com.jayway.jsonpath.JsonPath.read(body, "$.id");
         calendar.sync();
         clearInvocations(google);
 
-        assertThat(post("/api/teacher/schedule/series/" + seriesId + "/stop",
-                "{\"from\":\"%s\"}".formatted(java.time.LocalDate.now(clock)))).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.delete().uri("/api/teacher/schedule/lessons/" + lessonId + "?scope=FOLLOWING")
+                .with(TestUsers.teacher(directory.teacherId()))).hasStatus(HttpStatus.NO_CONTENT);
         calendar.sync();
 
         verify(google, times(4)).deleteEvent(eq("access-1"), eq(CALENDAR), anyString());
