@@ -17,17 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.30.0
-
-Polish assignment creation, the payments filter and the Materials toolbar.
-
-### 263. Editor and list layout fixes (F)
-
-- [x] 263.1 Equal-width authoring and AI panes in `homework/teacher/assignment-editor-page.ts`; align recipient/deadline fields with title validation.
-- [x] 263.2 Render the student filter overlay outside the clipped billing pane (`billing-overview-page.ts`).
-- [x] 263.3 Put Materials search, chips and sorting on one desktop row, matching the measured list search width (364 px in Homework and Students at 1440 px); retain compact wrapping.
-- [x] 263.4 Update design/user docs and add browser regression coverage; verify frontend, E2E types and docs.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,
